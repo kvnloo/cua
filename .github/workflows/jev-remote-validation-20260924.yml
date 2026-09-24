@@ -1,0 +1,142 @@
+name: "Evidence: Jev exact-head remote validation"
+
+on:
+  push:
+    branches: [test/jev-remote-validation-20260924]
+    paths: [.github/workflows/jev-remote-validation-20260924.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  example-tests:
+    if: github.repository == 'kvnloo/cua'
+    name: "${{ matrix.name }}: full example suites"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: timing-4052
+            ref: 5d3a55419194172b31f92cf2aa36b0b603ecac2a
+          - name: backends-3961
+            ref: 50d0698f62921e284c40c05f82d352b4c7cac6be
+    defaults:
+      run:
+        working-directory: libs/cua-driver/examples/jev-use
+        shell: bash
+    env:
+      TYPESAFE_API_KEY: ""
+      JEV_API_KEY: ""
+      JEV_BACKEND: mock
+      PYTHONUNBUFFERED: "1"
+      EVIDENCE_DIR: ${{ runner.temp }}/jev-evidence
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ matrix.ref }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Record exact source identity
+        env:
+          EXPECTED_SOURCE: ${{ matrix.ref }}
+          WORKFLOW_SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          test -z "$(git status --porcelain)"
+          mkdir -p "$EVIDENCE_DIR"
+          printf '%s\n' "$EXPECTED_SOURCE" > "$EVIDENCE_DIR/source-sha.txt"
+          printf '%s\n' "$WORKFLOW_SOURCE" > "$EVIDENCE_DIR/workflow-sha.txt"
+          sha256sum uv.lock package-lock.json > "$EVIDENCE_DIR/lockfile-hashes.txt"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+          enable-cache: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install locked example dependencies
+        run: |
+          set -euo pipefail
+          uv sync --frozen
+          npm ci --ignore-scripts
+          { python --version; node --version; npm --version; uv --version; } > "$EVIDENCE_DIR/tool-versions.txt"
+      - name: Full Python example suite
+        id: python
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          uv run --frozen python -m unittest discover -s python/tests -v 2>&1 | tee "$EVIDENCE_DIR/python-tests.log"
+      - name: Credential-free chooser CLI
+        id: chooser
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          uv run --frozen python verify_choice_cli.py 2>&1 | tee "$EVIDENCE_DIR/chooser-cli.log"
+      - name: Full TypeScript example suite
+        id: typescript
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$EVIDENCE_DIR/typescript-tests.log"
+      - name: TypeScript typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee "$EVIDENCE_DIR/typecheck.log"
+      - name: Confirm tracked source is unchanged
+        id: clean
+        if: always()
+        continue-on-error: true
+        run: git diff --exit-code HEAD -- .
+      - name: Summarize actual results
+        if: always()
+        env:
+          SOURCE_SHA: ${{ matrix.ref }}
+          WORKFLOW_SHA: ${{ github.sha }}
+          CASE_NAME: ${{ matrix.name }}
+          PYTHON_OUTCOME: ${{ steps.python.outcome }}
+          CHOOSER_OUTCOME: ${{ steps.chooser.outcome }}
+          TYPESCRIPT_OUTCOME: ${{ steps.typescript.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          CLEAN_OUTCOME: ${{ steps.clean.outcome }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, re
+          out = pathlib.Path(os.environ['EVIDENCE_DIR'])
+          out.mkdir(exist_ok=True, parents=True)
+          outcomes = {name: os.environ.get(name.upper() + '_OUTCOME', '') for name in ('python', 'chooser', 'typescript', 'typecheck', 'clean')}
+          def read(name):
+              path = out / name
+              return path.read_text() if path.exists() else ''
+          py = re.search(r'Ran (\d+) tests?', read('python-tests.log'))
+          ts = re.search(r'# tests (\d+)', read('typescript-tests.log'))
+          result = {'name': os.environ['CASE_NAME'], 'source_sha': os.environ['SOURCE_SHA'], 'workflow_sha': os.environ['WORKFLOW_SHA'], 'outcomes': outcomes, 'python_tests_run': int(py[1]) if py else None, 'typescript_tests_run': int(ts[1]) if ts else None, 'all_checks_passed': all(v == 'success' for v in outcomes.values()), 'scope': 'Complete checked-in Jev example Python/TypeScript suites, chooser CLI and TypeScript typecheck; no source extraction or changed assertions', 'native_driver_build': 'NOT_RUN', 'desktop_browser_e2e': 'NOT_RUN', 'live_provider_validation': 'NOT_RUN', 'upstream_source_changes': 'NONE'}
+          text = json.dumps(result, indent=2)
+          (out / 'result.json').write_text(text + '\n')
+          print(text)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Exact-head example validation\n```json\n' + text + '\n```\n')
+          PY
+      - name: Retain logs and provenance
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: jev-${{ matrix.name }}-evidence
+          path: ${{ runner.temp }}/jev-evidence/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Require every check to pass
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          result = json.loads((pathlib.Path(os.environ['EVIDENCE_DIR']) / 'result.json').read_text())
+          assert result['all_checks_passed'], result['outcomes']
+          PY
