@@ -31,7 +31,7 @@ jobs:
       JEV_API_KEY: ""
       JEV_BACKEND: mock
       PYTHONUNBUFFERED: "1"
-      EVIDENCE_DIR: ${{ runner.temp }}/jev-evidence
+      EVIDENCE_DIR: ${{ github.workspace }}/.remote-jev-evidence
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
         with:
           name: jev-${{ matrix.name }}-evidence
-          path: ${{ runner.temp }}/jev-evidence/
+          path: ${{ github.workspace }}/.remote-jev-evidence/
           if-no-files-found: error
           retention-days: 14
       - name: Require every check to pass
