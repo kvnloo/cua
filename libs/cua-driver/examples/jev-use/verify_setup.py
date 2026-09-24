@@ -9,7 +9,7 @@ import sys
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from fixture_server import FixtureServer
 
@@ -30,6 +30,13 @@ def fixture(port: int = 0):
 
 
 def verify(command: list[str], url: str, token: str, log: Path) -> dict:
+    # Each runner must prove its own effect, not inherit another runner's result.
+    # The verifier owns isolation even if a runner forgets its optional reset.
+    with urlopen(Request(url + 'reset', data=b''), timeout=2):
+        pass
+    with urlopen(url + 'state', timeout=2) as response:
+        if json.load(response) != {'submitted': None}:
+            raise RuntimeError('Independent fixture did not reset before the runner')
     subprocess.run(command, cwd=BASE, check=True, timeout=180)
     events = [json.loads(line) for line in log.read_text().splitlines()]
     expected = {'event': 'outcome', 'outcome': 'verified', 'token': token}
