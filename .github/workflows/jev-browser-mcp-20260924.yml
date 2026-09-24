@@ -1,0 +1,100 @@
+name: "Evidence: canonical Jev browser MCP"
+
+on:
+  push:
+    branches: [test/jev-browser-mcp-20260924]
+    paths:
+      - .github/workflows/jev-browser-mcp-20260924.yml
+      - scripts/repro/run_canonical_jev_browser.py
+
+permissions:
+  contents: read
+
+jobs:
+  browser-mcp:
+    if: github.repository == 'kvnloo/cua'
+    name: "${{ matrix.name }}: real Driver and browser"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - name: backends-3961
+            candidate: 737cda114ae711713a3dbfa9c9ba76863dfd46b9
+          - name: timing-4052
+            candidate: 5d3a55419194172b31f92cf2aa36b0b603ecac2a
+    env:
+      TYPESAFE_API_KEY: ""
+      JEV_API_KEY: ""
+    steps:
+      - name: Read fork-only evidence controller
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          path: evidence-control
+          persist-credentials: false
+          sparse-checkout: scripts/repro
+      - name: Check out exact product candidate
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ matrix.candidate }}
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+          enable-cache: true
+          cache-dependency-glob: candidate/libs/cua-driver/examples/jev-use/uv.lock
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: candidate/libs/cua-driver/examples/jev-use/package-lock.json
+      - name: Install controller-only YAML reader
+        run: python -m pip --isolated install 'PyYAML==6.0.2'
+      - name: Execute the six canonical recipe bodies without edits or retries
+        env:
+          EXPECTED_SHA: ${{ matrix.candidate }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          python evidence-control/scripts/repro/run_canonical_jev_browser.py \
+            --candidate-dir "$GITHUB_WORKSPACE/candidate" \
+            --expected-sha "$EXPECTED_SHA" \
+            --workflow-sha "$WORKFLOW_SHA" \
+            --evidence-dir "$GITHUB_WORKSPACE/remote-jev-browser-evidence"
+      - name: Upload exact-source evidence or failed-stage diagnostics
+        id: evidence
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: jev-browser-${{ matrix.name }}-evidence
+          path: |
+            remote-jev-browser-evidence/result.json
+            remote-jev-browser-evidence/SHA256SUMS
+            remote-jev-browser-evidence/stage-*.sh
+            remote-jev-browser-evidence/stage-*.log
+            remote-jev-browser-evidence/mock-proof/summary.json
+            remote-jev-browser-evidence/mock-proof/*.jsonl
+          if-no-files-found: error
+          retention-days: 14
+      - name: Require native recipe completion and evidence upload
+        if: always()
+        env:
+          ARTIFACT_ID: ${{ steps.evidence.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.evidence.outputs.artifact-digest }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          result = json.loads(pathlib.Path('remote-jev-browser-evidence/result.json').read_text())
+          assert result['complete'] is True, result
+          assert os.environ['ARTIFACT_ID'], 'missing uploaded evidence'
+          assert len(os.environ['ARTIFACT_DIGEST']) == 64, 'missing archive digest'
+          print('Verified candidate', result['candidate_sha'], 'artifact', os.environ['ARTIFACT_ID'])
+          PY
