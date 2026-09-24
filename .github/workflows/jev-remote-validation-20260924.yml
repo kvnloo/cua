@@ -18,10 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: timing-4052
-            ref: 5d3a55419194172b31f92cf2aa36b0b603ecac2a
           - name: backends-3961
-            ref: 50d0698f62921e284c40c05f82d352b4c7cac6be
+            ref: 9388c28362548755caf5bedd040f3330d02ba4f5
     defaults:
       run:
         working-directory: libs/cua-driver/examples/jev-use
@@ -90,6 +88,42 @@ jobs:
         run: |
           set -o pipefail
           npm run typecheck 2>&1 | tee "$EVIDENCE_DIR/typecheck.log"
+      - name: Prove new tests detect the former selection bug
+        id: regression
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, subprocess
+          out = pathlib.Path(os.environ['EVIDENCE_DIR'])
+          cases = [
+              ('python', pathlib.Path('python/run.py'), '        default=None,', '        default="mock",', ['uv', 'run', '--frozen', 'python', '-m', 'unittest', 'discover', '-s', 'python/tests', '-p', 'test_runner_config.py', '-k', 'omitted_provider', '-v'], 'test_omitted_provider_preserves_environment_backend'),
+              ('typescript', pathlib.Path('typescript/run.ts'), "  if (args.provider !== undefined) {\n    env.JEV_BACKEND = args.provider === 'live' ? 'typesafe' : args.provider;\n  }", "  env.JEV_BACKEND = args.provider === 'live' ? 'typesafe' : (args.provider ?? 'mock');", ['node', '--import', 'tsx', '--test', '--test-name-pattern=omitted runner provider', 'typescript/runner_config.test.ts'], 'omitted runner provider preserves environment backend'),
+          ]
+          results = []
+          for name, path, old, new, command, test_name in cases:
+              original = path.read_bytes()
+              def check(label):
+                  result = subprocess.run(command, capture_output=True, text=True, timeout=90)
+                  log = result.stdout + result.stderr
+                  (out / f'{name}-{label}.log').write_text(log)
+                  assert test_name in log, f'{name}: intended test did not execute'
+                  print(f'{name} {label}: exit={result.returncode}\n{log}')
+                  return result.returncode, log
+              try:
+                  baseline, _ = check('regression-control')
+                  assert baseline == 0, f'{name}: original must pass'
+                  text = original.decode()
+                  assert text.count(old) == 1, f'{name}: nonunique mutation anchor'
+                  path.write_text(text.replace(old, new, 1))
+                  broken, log = check('old-bug-restored')
+                  assert broken != 0 and ('AssertionError' in log or 'ERR_ASSERTION' in log), f'{name}: old bug did not fail the intended assertion'
+              finally:
+                  path.write_bytes(original)
+              restored, _ = check('restored-control')
+              assert restored == 0, f'{name}: restored source must pass'
+              results.append({'language': name, 'baseline_exit': baseline, 'old_bug_exit': broken, 'restored_exit': restored})
+          (out / 'mutation-results.json').write_text(json.dumps(results, indent=2) + '\n')
+          PY
       - name: Confirm tracked source is unchanged
         id: clean
         if: always()
@@ -105,19 +139,20 @@ jobs:
           CHOOSER_OUTCOME: ${{ steps.chooser.outcome }}
           TYPESCRIPT_OUTCOME: ${{ steps.typescript.outcome }}
           TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          REGRESSION_OUTCOME: ${{ steps.regression.outcome }}
           CLEAN_OUTCOME: ${{ steps.clean.outcome }}
         run: |
           python - <<'PY'
           import json, os, pathlib, re
           out = pathlib.Path(os.environ['EVIDENCE_DIR'])
           out.mkdir(exist_ok=True, parents=True)
-          outcomes = {name: os.environ.get(name.upper() + '_OUTCOME', '') for name in ('python', 'chooser', 'typescript', 'typecheck', 'clean')}
+          outcomes = {name: os.environ.get(name.upper() + '_OUTCOME', '') for name in ('python', 'chooser', 'typescript', 'typecheck', 'regression', 'clean')}
           def read(name):
               path = out / name
               return path.read_text() if path.exists() else ''
           py = re.search(r'Ran (\d+) tests?', read('python-tests.log'))
           ts = re.search(r'# tests (\d+)', read('typescript-tests.log'))
-          result = {'name': os.environ['CASE_NAME'], 'source_sha': os.environ['SOURCE_SHA'], 'workflow_sha': os.environ['WORKFLOW_SHA'], 'outcomes': outcomes, 'python_tests_run': int(py[1]) if py else None, 'typescript_tests_run': int(ts[1]) if ts else None, 'all_checks_passed': all(v == 'success' for v in outcomes.values()), 'scope': 'Complete checked-in Jev example Python/TypeScript suites, chooser CLI and TypeScript typecheck; no source extraction or changed assertions', 'native_driver_build': 'NOT_RUN', 'desktop_browser_e2e': 'NOT_RUN', 'live_provider_validation': 'NOT_RUN', 'upstream_source_changes': 'NONE'}
+          result = {'name': os.environ['CASE_NAME'], 'source_sha': os.environ['SOURCE_SHA'], 'workflow_sha': os.environ['WORKFLOW_SHA'], 'outcomes': outcomes, 'python_tests_run': int(py[1]) if py else None, 'typescript_tests_run': int(ts[1]) if ts else None, 'all_checks_passed': all(v == 'success' for v in outcomes.values()), 'scope': 'Full Jev example suites, chooser CLI, typecheck and positive-negative-positive backend-selection regression controls; no source extraction', 'native_driver_build': 'NOT_RUN', 'desktop_browser_e2e': 'NOT_RUN', 'live_provider_validation': 'NOT_RUN', 'note': 'Mutation probes change only disposable runner worktree files, restore exact bytes, and never push production changes.'}
           text = json.dumps(result, indent=2)
           (out / 'result.json').write_text(text + '\n')
           print(text)
