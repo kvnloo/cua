@@ -1,0 +1,172 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/overlay.rs b/libs/cua-driver/rust/crates/platform-linux/src/overlay.rs
+index 69262af..6bcf0ba 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/overlay.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/overlay.rs
+@@ -386,43 +386,68 @@ fn dispatch_wayland_overlay_message(msg: &OverlayMsg) -> WaylandOverlayBackend {
+ 
+ #[cfg(target_os = "linux")]
+ fn dispatch_shell_helper_command(key: &str, cmd: &OverlayCommand, semantic: bool) {
+-    if semantic {
+-        crate::wayland::shell_helper::set_cursor_color(&cursor_overlay::session_fill_hex(key));
+-    }
+-    match cmd {
+-        OverlayCommand::ClickPulse { x, y } if semantic => {
+-            crate::wayland::shell_helper::click_pulse(*x as i32, *y as i32);
+-        }
++    let (method, args) = match cmd {
++        OverlayCommand::ClickPulse { x, y } if semantic => (
++            "ClickPulse",
++            vec![(*x as i32).to_string(), (*y as i32).to_string()],
++        ),
+         OverlayCommand::MoveTo { x, y, .. }
+         | OverlayCommand::SnapTo { x, y, .. }
+-        | OverlayCommand::ClickPulse { x, y } => {
+-            crate::wayland::shell_helper::move_cursor(*x as i32, *y as i32);
+-        }
++        | OverlayCommand::ClickPulse { x, y } => (
++            "MoveCursor",
++            vec![(*x as i32).to_string(), (*y as i32).to_string()],
++        ),
+         OverlayCommand::BeginAction {
+             action,
+             delivery,
+             target,
+-        } if semantic => {
+-            crate::wayland::shell_helper::set_cursor_state(
+-                action.as_str(),
+-                delivery.as_ref().map_or("", |value| value.as_str()),
+-                target.as_ref().map_or("", |value| value.as_str()),
+-                true,
+-            );
+-        }
+-        OverlayCommand::EndAction(action) if semantic => {
+-            crate::wayland::shell_helper::set_cursor_state(action.as_str(), "", "", false);
+-        }
+-        OverlayCommand::SetSessionLabel(label) if semantic => {
+-            crate::wayland::shell_helper::set_session_label(
+-                cursor_overlay::sanitize_session_label(label)
+-                    .as_deref()
+-                    .unwrap_or(""),
+-            );
++        } if semantic => (
++            "SetCursorState",
++            vec![
++                action.as_str().to_owned(),
++                delivery
++                    .as_ref()
++                    .map_or("", |value| value.as_str())
++                    .to_owned(),
++                target
++                    .as_ref()
++                    .map_or("", |value| value.as_str())
++                    .to_owned(),
++                true.to_string(),
++            ],
++        ),
++        OverlayCommand::EndAction(action) if semantic => (
++            "SetCursorState",
++            vec![
++                action.as_str().to_owned(),
++                String::new(),
++                String::new(),
++                false.to_string(),
++            ],
++        ),
++        OverlayCommand::SetSessionLabel(label) if semantic => (
++            "SetSessionLabel",
++            vec![cursor_overlay::sanitize_session_label(label).unwrap_or_default()],
++        ),
++        _ => {
++            // Preserve the existing color-only behavior for unrelated commands.
++            // Hide stays on its singleton path so saturation cannot reject it.
++            if semantic {
++                crate::wayland::shell_helper::set_cursor_color(&cursor_overlay::session_fill_hex(
++                    key,
++                ));
++            }
++            if matches!(cmd, OverlayCommand::SetEnabled(false)) {
++                crate::wayland::shell_helper::hide_cursor();
++            }
++            return;
+         }
+-        OverlayCommand::SetEnabled(false) => crate::wayland::shell_helper::hide_cursor(),
+-        _ => {}
+-    }
++    };
++    crate::wayland::shell_helper::enqueue_visual_with_color(
++        semantic.then(|| cursor_overlay::session_fill_hex(key)),
++        method,
++        args,
++    );
+ }
+ 
+ pub fn is_enabled() -> bool {
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/wayland/shell_helper.rs b/libs/cua-driver/rust/crates/platform-linux/src/wayland/shell_helper.rs
+index 80bffaa..08fec19 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/wayland/shell_helper.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/wayland/shell_helper.rs
+@@ -618,22 +618,28 @@ impl VisualDispatcher {
+     }
+ 
+     fn enqueue(&self, request: VisualRequest) -> Result<(), VisualQueueError> {
++        self.enqueue_batch(vec![request])
++    }
++
++    // Capacity counts helper calls, not batches. Only a singleton hide may
++    // use the reserved terminal slot; ordinary batches fit completely or fail.
++    fn enqueue_batch(&self, requests: Vec<VisualRequest>) -> Result<(), VisualQueueError> {
+         let (lock, ready) = &*self.shared;
+         let mut queue = lock.lock().unwrap_or_else(|e| e.into_inner());
+         if queue.closed {
+             return Err(VisualQueueError::Closed);
+         }
+-        if request.is_hide() {
++        if requests.len() == 1 && requests[0].is_hide() {
+             // Reserve one terminal slot so removal cannot be lost to a full
+             // queue. Consecutive hides are idempotent. Ordinary commands count
+             // ALL pending entries toward capacity, keeping the total <= N + 1.
+             if queue.pending.back().is_some_and(VisualRequest::is_hide) {
+                 return Ok(());
+             }
+-        } else if queue.pending.len() >= VISUAL_QUEUE_CAPACITY {
++        } else if requests.len() > VISUAL_QUEUE_CAPACITY.saturating_sub(queue.pending.len()) {
+             return Err(VisualQueueError::Full);
+         }
+-        queue.pending.push_back(request);
++        queue.pending.extend(requests);
+         ready.notify_one();
+         Ok(())
+     }
+@@ -676,10 +682,29 @@ fn with_visual_dispatcher<R>(body: impl FnOnce(Option<&VisualDispatcher>) -> R)
+ }
+ 
+ fn enqueue_visual(method: &'static str, args: Vec<String>) {
++    enqueue_visual_with_color(None, method, args);
++}
++
++/// Admit a semantic update and its session color under one queue lock.
++/// This is atomic admission, not atomic execution of separate helper calls.
++pub(crate) fn enqueue_visual_with_color(
++    color: Option<String>,
++    method: &'static str,
++    args: Vec<String>,
++) {
+     let result = with_visual_dispatcher(|dispatcher| {
+-        dispatcher
+-            .ok_or(VisualQueueError::Closed)
+-            .and_then(|dispatcher| dispatcher.enqueue(VisualRequest { method, args }))
++        let dispatcher = dispatcher.ok_or(VisualQueueError::Closed)?;
++        let request = VisualRequest { method, args };
++        match color {
++            Some(color) => dispatcher.enqueue_batch(vec![
++                VisualRequest {
++                    method: "SetCursorColor",
++                    args: vec![color],
++                },
++                request,
++            ]),
++            None => dispatcher.enqueue(request),
++        }
+     });
+     if let Err(error) = result {
+         tracing::warn!(method, ?error, "GNOME visual queue rejected command");
