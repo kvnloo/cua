@@ -79,7 +79,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          npm test 2>&1 | tee "$EVIDENCE_DIR/typescript-tests.log"
+          uv run --frozen python verify_choice_cli.py 2>&1 | tee "$EVIDENCE_DIR/chooser-cli.log"
       - name: Full TypeScript example suite
         id: typescript
         continue-on-error: true
