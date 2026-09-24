@@ -19,7 +19,9 @@ jobs:
       matrix:
         include:
           - name: backends-3961
-            ref: 9388c28362548755caf5bedd040f3330d02ba4f5
+            ref: 737cda114ae711713a3dbfa9c9ba76863dfd46b9
+          - name: timing-4052
+            ref: 5d3a55419194172b31f92cf2aa36b0b603ecac2a
     defaults:
       run:
         working-directory: libs/cua-driver/examples/jev-use
@@ -29,7 +31,9 @@ jobs:
       JEV_API_KEY: ""
       JEV_BACKEND: mock
       PYTHONUNBUFFERED: "1"
-      EVIDENCE_DIR: ${{ github.workspace }}/.remote-jev-evidence
+      # upload-artifact excludes directories starting with a dot by default.
+      # Keep evidence non-hidden rather than enabling uploads of hidden files.
+      EVIDENCE_DIR: ${{ github.workspace }}/remote-jev-evidence
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -75,7 +79,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          uv run --frozen python verify_choice_cli.py 2>&1 | tee "$EVIDENCE_DIR/chooser-cli.log"
+          npm test 2>&1 | tee "$EVIDENCE_DIR/typescript-tests.log"
       - name: Full TypeScript example suite
         id: typescript
         continue-on-error: true
@@ -90,6 +94,7 @@ jobs:
           npm run typecheck 2>&1 | tee "$EVIDENCE_DIR/typecheck.log"
       - name: Prove new tests detect the former selection bug
         id: regression
+        if: matrix.name == 'backends-3961'
         continue-on-error: true
         run: |
           python - <<'PY'
@@ -146,32 +151,59 @@ jobs:
           import json, os, pathlib, re
           out = pathlib.Path(os.environ['EVIDENCE_DIR'])
           out.mkdir(exist_ok=True, parents=True)
-          outcomes = {name: os.environ.get(name.upper() + '_OUTCOME', '') for name in ('python', 'chooser', 'typescript', 'typecheck', 'regression', 'clean')}
+          names = ['python', 'chooser', 'typescript', 'typecheck', 'clean']
+          if os.environ['CASE_NAME'] == 'backends-3961':
+              names.append('regression')
+          outcomes = {name: os.environ.get(name.upper() + '_OUTCOME', '') for name in names}
           def read(name):
               path = out / name
               return path.read_text() if path.exists() else ''
           py = re.search(r'Ran (\d+) tests?', read('python-tests.log'))
           ts = re.search(r'# tests (\d+)', read('typescript-tests.log'))
-          result = {'name': os.environ['CASE_NAME'], 'source_sha': os.environ['SOURCE_SHA'], 'workflow_sha': os.environ['WORKFLOW_SHA'], 'outcomes': outcomes, 'python_tests_run': int(py[1]) if py else None, 'typescript_tests_run': int(ts[1]) if ts else None, 'all_checks_passed': all(v == 'success' for v in outcomes.values()), 'scope': 'Full Jev example suites, chooser CLI, typecheck and positive-negative-positive backend-selection regression controls; no source extraction', 'native_driver_build': 'NOT_RUN', 'desktop_browser_e2e': 'NOT_RUN', 'live_provider_validation': 'NOT_RUN', 'note': 'Mutation probes change only disposable runner worktree files, restore exact bytes, and never push production changes.'}
+          result = {'name': os.environ['CASE_NAME'], 'source_sha': os.environ['SOURCE_SHA'], 'workflow_sha': os.environ['WORKFLOW_SHA'], 'outcomes': outcomes, 'python_tests_run': int(py[1]) if py else None, 'typescript_tests_run': int(ts[1]) if ts else None, 'validation_checks_passed': all(v == 'success' for v in outcomes.values()), 'scope': 'Full checked-in Jev example suites, chooser CLI and full-example typecheck; backend candidate also runs configuration sensitivity controls', 'native_driver_build': 'NOT_RUN', 'desktop_browser_e2e': 'NOT_RUN', 'live_provider_validation': 'NOT_RUN', 'note': 'Test success and artifact delivery are separate gates. Mutation probes restore exact worktree bytes; no product source is pushed.'}
           text = json.dumps(result, indent=2)
           (out / 'result.json').write_text(text + '\n')
           print(text)
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
               summary.write('## Exact-head example validation\n```json\n' + text + '\n```\n')
           PY
+      - name: Inventory evidence bytes before upload
+        if: always()
+        run: |
+          python - <<'PY'
+          import hashlib, os, pathlib
+          out = pathlib.Path(os.environ['EVIDENCE_DIR'])
+          files = sorted(p for p in out.iterdir() if p.is_file() and p.suffix in ('.txt', '.json', '.log'))
+          assert files and (out / 'result.json').is_file(), 'missing evidence summary'
+          assert all(not p.name.startswith('.') for p in files)
+          manifest = ''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in files)
+          (out / 'SHA256SUMS').write_text(manifest)
+          print(manifest)
+          PY
       - name: Retain logs and provenance
+        id: evidence
         if: always()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
         with:
           name: jev-${{ matrix.name }}-evidence
-          path: ${{ github.workspace }}/.remote-jev-evidence/
+          path: |
+            ${{ github.workspace }}/remote-jev-evidence/*.txt
+            ${{ github.workspace }}/remote-jev-evidence/*.json
+            ${{ github.workspace }}/remote-jev-evidence/*.log
+            ${{ github.workspace }}/remote-jev-evidence/SHA256SUMS
           if-no-files-found: error
           retention-days: 14
-      - name: Require every check to pass
+      - name: Require validation and artifact delivery
         if: always()
+        env:
+          ARTIFACT_ID: ${{ steps.evidence.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.evidence.outputs.artifact-digest }}
         run: |
           python - <<'PY'
           import json, os, pathlib
           result = json.loads((pathlib.Path(os.environ['EVIDENCE_DIR']) / 'result.json').read_text())
-          assert result['all_checks_passed'], result['outcomes']
+          assert result['validation_checks_passed'], result['outcomes']
+          assert os.environ['ARTIFACT_ID'], 'validation passed but evidence was not uploaded'
+          assert len(os.environ['ARTIFACT_DIGEST']) == 64, 'missing archive digest'
+          print('Uploaded artifact', os.environ['ARTIFACT_ID'], 'SHA256', os.environ['ARTIFACT_DIGEST'])
           PY
