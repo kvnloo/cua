@@ -1,0 +1,48 @@
+name: "Evidence: GNOME cursor atomic admission red-green"
+
+on:
+  push:
+    branches: [test/gnome-cursor-atomic-fix-4011]
+    paths:
+      - scripts/repro/gnome-cursor-atomic-fix-4011.py
+      - .github/workflows/gnome-cursor-atomic-fix-4011.yml
+
+permissions:
+  contents: read
+
+jobs:
+  characterize:
+    if: github.repository == 'kvnloo/cua'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+          fetch-depth: 12
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /libs/cua-driver/rust/crates/platform-linux/src/wayland/shell_helper.rs
+            /libs/cua-driver/rust/crates/platform-linux/src/overlay.rs
+            /scripts/repro/gnome-cursor-admission-4011.py
+            /scripts/repro/gnome-cursor-atomic-fix-4011.py
+      - name: Baseline must fail and candidate must pass unchanged regression
+        run: python3 scripts/repro/gnome-cursor-atomic-fix-4011.py
+      - name: Record bounded evidence
+        if: always()
+        run: |
+          {
+            echo '## Atomic cursor admission experiment'
+            echo 'Fork-only source-component test. No desktop or full-workspace certification.'
+            echo 'Baseline must reproduce 4 controls passing and 1 failing regression. Candidate must pass the unchanged regression plus additional boundaries.'
+            echo '```json'
+            cat atomic-evidence/result.json 2>/dev/null || echo '{"result":"incomplete; inspect raw build/test logs"}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cursor-atomic-fix-4011-evidence
+          path: atomic-evidence/
+          if-no-files-found: error
+          retention-days: 14
