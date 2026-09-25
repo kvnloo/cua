@@ -102,6 +102,13 @@ function structuredContent(request) {
     case "click":
       submitted = fieldValue;
       return { ok: true };
+    case "observe_visual": {
+      // PROTOTYPE protocol extension (fork research artifact): capture and
+      // parse in one round trip, daemon-side. No upstream contract change.
+      captureSeq += 1;
+      const captureId = `cap-${captureSeq}`;
+      return { capture_id: captureId, ...visualPayload(captureId) };
+    }
     case "fixture_submitted":
       return { submitted };
     default:
