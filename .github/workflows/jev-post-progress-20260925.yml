@@ -1,0 +1,95 @@
+name: "Evidence: Jev failure after partial progress"
+
+on:
+  push:
+    branches: [test/jev-post-progress-20260925]
+    paths:
+      - .github/workflows/jev-post-progress-20260925.yml
+      - scripts/repro/jev_post_progress.py
+      - scripts/repro/test_jev_post_progress.py
+
+permissions:
+  contents: read
+
+jobs:
+  http-browser:
+    if: github.repository == 'kvnloo/cua'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TYPESAFE_API_KEY: ""
+      JEV_API_KEY: ""
+    steps:
+      - name: Read evidence controller
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          path: evidence-control
+          persist-credentials: false
+          sparse-checkout: scripts/repro
+      - name: Check out unchanged PR candidate
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: 737cda114ae711713a3dbfa9c9ba76863dfd46b9
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+          enable-cache: true
+          cache-dependency-glob: candidate/libs/cua-driver/examples/jev-use/uv.lock
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: candidate/libs/cua-driver/examples/jev-use/package-lock.json
+      - name: Validate observer, responder, and acceptance-oracle sensitivity
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/candidate/libs/cua-driver/examples/jev-use
+        run: |
+          set -euo pipefail
+          python -m pip --isolated install 'PyYAML==6.0.2'
+          cd evidence-control/scripts/repro
+          python -B -m unittest -v test_jev_post_progress.py 2>&1 | tee "$GITHUB_WORKSPACE/controller-tests.log"
+      - name: Execute canonical bootstrap and six partial-progress cases
+        env:
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          python evidence-control/scripts/repro/jev_post_progress.py bootstrap \
+            --candidate-dir "$GITHUB_WORKSPACE/candidate" \
+            --workflow-sha "$WORKFLOW_SHA" \
+            --evidence-dir "$GITHUB_WORKSPACE/post-progress-evidence"
+      - name: Retain all evidence including failures
+        id: evidence
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: jev-post-progress-browser
+          path: |
+            post-progress-evidence/
+            controller-tests.log
+          if-no-files-found: error
+          retention-days: 14
+      - name: Require six classified cases and delivered evidence
+        if: always()
+        env:
+          ARTIFACT_ID: ${{ steps.evidence.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.evidence.outputs.artifact-digest }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path('post-progress-evidence')
+          result = json.loads((root / 'result.json').read_text())
+          proof = json.loads((root / 'http-proof/summary.json').read_text())
+          assert result['complete'] and result['tracked_candidate_source_unchanged'], result
+          assert proof['complete'] and len(proof['cases']) == 6, proof
+          assert all(case['case_passed'] for case in proof['cases'])
+          assert os.environ['ARTIFACT_ID'] and len(os.environ['ARTIFACT_DIGEST']) == 64
+          print('Six partial-progress cases passed; source', result['candidate_sha'])
+          PY
