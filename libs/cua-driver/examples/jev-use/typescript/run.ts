@@ -19,6 +19,13 @@ import {
   ObservationLedger,
   needsVisualObservation,
 } from './observation.js';
+import {
+  discardCapture,
+  startSpeculativeCapture,
+  visualFromCapture,
+  VisualSpeculator,
+  type ObserveStepArgs,
+} from './speculate.js';
 
 type Arguments = {
   provider: 'mock' | 'live';
@@ -172,6 +179,9 @@ async function run(args: Arguments): Promise<Outcome> {
   const client = new Client({ name: 'cua-driver-jev-use-example', version: '0.1.0' });
   const history: Record<string, unknown>[] = [];
   const ledger = new ObservationLedger();
+  // Sticky predictor for the visual path: when the previous step needed it,
+  // this step's capture fires alongside the snapshot (see speculate.ts).
+  const speculator = new VisualSpeculator();
   async function writeEvent(path: string | undefined, event: Record<string, unknown>) {
     const line = JSON.stringify(
       event.event === 'outcome'
@@ -217,12 +227,38 @@ async function run(args: Arguments): Promise<Outcome> {
       }
 
       const decisionStarted = performance.now();
+      // Speculative capture: when the previous step needed the visual path,
+      // fire get_window_state alongside this step's get_browser_state. The
+      // capture is independent of the snapshot, so they overlap; if the
+      // visual fallback fires again, only parse_visual_regions remains as an
+      // extra round trip (2 groups instead of 3). A mispredicted capture is
+      // discarded and recorded as discarded — never as consumed evidence.
+      // Zero protocol change; see typescript/speculate.ts for the policy.
+      const visualAvailable =
+        captureBoundClick &&
+        availableTools.has('get_window_state') &&
+        availableTools.has('parse_visual_regions');
+      const observeArgs: ObserveStepArgs = {
+        targetId,
+        tabId,
+        pid,
+        windowId: Number(window.window_id),
+      };
+      const boundCall = (name: string, callArgs: Record<string, unknown>) =>
+        driver.call(name, callArgs);
       const snapshotStarted = performance.now();
-      const snapshot = (await driver.call('get_browser_state', {
+      // The snapshot is the critical path: it is issued first, then the
+      // speculative capture fires alongside it. On a FIFO transport the
+      // snapshot must not queue behind the capture.
+      const snapshotPromise = driver.call('get_browser_state', {
         target_id: targetId,
         tab_id: tabId,
         snapshot_format: 'semantic_v2',
-      })) as BrowserSnapshot;
+      }) as Promise<BrowserSnapshot>;
+      const capturePromise = visualAvailable
+        ? startSpeculativeCapture(boundCall, observeArgs, speculator.shouldSpeculate())
+        : undefined;
+      const snapshot = await snapshotPromise;
       ledger.record(
         { kind: 'snapshot', latencyMs: Math.round((performance.now() - snapshotStarted) * 100) / 100 },
         step,
@@ -234,15 +270,26 @@ async function run(args: Arguments): Promise<Outcome> {
       // modality (#3963).
       let candidates = buildCandidates(snapshot, token, undefined, captureBoundClick);
       let visual: VisualObservation | undefined;
-      if (needsVisualObservation(candidates)) {
+      const visualNeeded = needsVisualObservation(candidates);
+      if (visualNeeded) {
         const visualStarted = performance.now();
-        visual = await optionalVisualObservation(
-          driver,
-          pid,
-          Number(window.window_id),
-          availableTools,
-          captureBoundClick,
-        );
+        if (capturePromise) {
+          try {
+            visual = await visualFromCapture(boundCall, capturePromise, observeArgs);
+          } catch {
+            // Speculative capture failed; fall through to the sequential path.
+            visual = undefined;
+          }
+        }
+        if (!visual) {
+          visual = await optionalVisualObservation(
+            driver,
+            pid,
+            Number(window.window_id),
+            availableTools,
+            captureBoundClick,
+          );
+        }
         if (visual) {
           ledger.record(
             {
@@ -254,7 +301,12 @@ async function run(args: Arguments): Promise<Outcome> {
           );
           candidates = buildCandidates(snapshot, token, visual, captureBoundClick);
         }
+      } else if (capturePromise) {
+        // Paid for but unused: report the waste, discard the promise.
+        ledger.record({ kind: 'visual', discarded: true, latencyMs: 0 }, step);
+        discardCapture(capturePromise);
       }
+      speculator.observe(visualNeeded);
       if (!candidates.length) {
         await writeEvent(args.log, { event: 'outcome', outcome: 'abstained', step });
         return 'abstained';

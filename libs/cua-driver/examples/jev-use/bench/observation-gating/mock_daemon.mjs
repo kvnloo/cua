@@ -25,7 +25,7 @@ function flag(name, def) {
   return i >= 0 && i + 1 < args.length ? args[i + 1] : def;
 }
 const socketPath = flag("--socket", null);
-const scenario = flag("--scenario", "dom-complete");
+let scenario = flag("--scenario", "dom-complete");
 const regionCount = Math.max(1, parseInt(flag("--regions", "50"), 10));
 if (!socketPath) throw new Error("missing --socket");
 if (!["dom-complete", "visual-fallback"].includes(scenario)) {
@@ -111,6 +111,22 @@ function structuredContent(request) {
     }
     case "fixture_submitted":
       return { submitted };
+    case "set_field": {
+      // Bench control: preset the verification field so a step's visual need
+      // is deterministic (mock-only).
+      fieldValue = String(callArgs.value ?? "");
+      return { ok: true };
+    }
+    case "set_scenario": {
+      // Bench control: switch the served scenario mid-run so a scripted
+      // visual-need sequence can be driven step by step. Mock-only.
+      const next = String(callArgs.scenario);
+      if (!["dom-complete", "visual-fallback"].includes(next)) {
+        return { error: `unknown scenario: ${next}` };
+      }
+      scenario = next;
+      return { ok: true, scenario: next };
+    }
     default:
       return { error: `mock daemon has no handler for ${name}` };
   }

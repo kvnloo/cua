@@ -7,6 +7,13 @@ export type ObservationRecord = Readonly<{
   kind: ObservationKind;
   captureId?: string;
   latencyMs: number;
+  /**
+   * True when the loop paid for this observation but never consumed it
+   * (a speculative capture on a step whose snapshot turned out actionable).
+   * A discarded record is RPC spend, never evidence — provenance honesty
+   * demands it be reported as waste, not as an observation.
+   */
+  discarded?: boolean;
 }>;
 
 /**
