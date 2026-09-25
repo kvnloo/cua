@@ -23,6 +23,7 @@ from core import (
     validate_choice,
 )
 from jev_adapter import choose_live, choose_mock_adapter
+from observation import needs_visual_observation
 
 
 def fixture_state(fixture_url: str) -> dict[str, str | None]:
@@ -200,19 +201,33 @@ async def run(args: argparse.Namespace) -> str:
                         "snapshot_format": "semantic_v2",
                     },
                 )
-                visual = await optional_visual_observation(
-                    driver,
-                    pid,
-                    int(window["window_id"]),
-                    available_tools,
-                    capture_bound_click,
-                )
+                # Modality-gated observation: the visual path (get_window_state +
+                # parse_visual_regions) is only consumed by the visual-submit
+                # fallback in build_candidates. When the snapshot already
+                # yields an actionable candidate, paying for it is pure
+                # overhead — observe only the needed modality.
                 candidates = build_candidates(
                     snapshot,
                     token,
-                    visual,
+                    None,
                     capture_bound_click=capture_bound_click,
                 )
+                visual: VisualObservation | None = None
+                if needs_visual_observation(candidates):
+                    visual = await optional_visual_observation(
+                        driver,
+                        pid,
+                        int(window["window_id"]),
+                        available_tools,
+                        capture_bound_click,
+                    )
+                    if visual is not None:
+                        candidates = build_candidates(
+                            snapshot,
+                            token,
+                            visual,
+                            capture_bound_click=capture_bound_click,
+                        )
                 if not candidates:
                     write_event(log_path, {"event": "outcome", "outcome": "abstained", "step": step})
                     return "abstained"
