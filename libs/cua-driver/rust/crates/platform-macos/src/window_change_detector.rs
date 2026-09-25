@@ -366,7 +366,11 @@ impl Snapshot {
             };
 
             if !new_windows.is_empty() || foreground_changed {
-                return Changes::from_parts(new_windows, foreground_changed, PollProvenance::Polled);
+                return Changes::from_parts(
+                    new_windows,
+                    foreground_changed,
+                    PollProvenance::Polled,
+                );
             }
             if Instant::now() >= deadline {
                 return Changes::no_change();
