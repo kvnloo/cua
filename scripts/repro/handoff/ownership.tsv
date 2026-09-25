@@ -1,0 +1,14 @@
+requirement	current_owner	smallest_delta	evidence	disposition
+optional visual capture	jev-use caller	lazy_vision.needs_visual_capture	libs/cua-driver/examples/jev-use/python/tests/test_lazy_vision.py	not wired into run.py
+one executable candidate	jev-use caller	deterministic_fast_path.single_executable_candidate	libs/cua-driver/examples/jev-use/python/tests/test_deterministic_fast_path.py	not wired into run.py
+two-action run	jev-use caller	guarded_run.admit_guarded_run	libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py	not a Driver tool
+stale batch child	caller harness	stale_batch.run_batch	libs/cua-driver/examples/jev-use/python/tests/test_stale_batch.py	not a second batch API
+passive versus action	caller policy	passive_observation.action_target	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	no public schema
+walk time	WalkBudget	none	libs/cua-driver/rust/crates/cua-driver-core/src/walk_budget.rs	existing owner
+verify_state screenshot and elapsed_ms	expectation.rs	none	libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.py	call site locked only
+window-change poll	platform-macos Changes	PollProvenance	libs/cua-driver/rust/crates/platform-macos/src/window_change_detector.rs	internal field
+browser ref generation	caller rule	browser_revision.bind	libs/cua-driver/examples/jev-use/python/tests/test_browser_revision.py	not a second snapshot service
+cancellation order	existing request-id owner	cancellation_lifetime.Lifetime	libs/cua-driver/examples/jev-use/python/tests/test_cancellation_lifetime.py	no new runtime
+run length 4 as a constant	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_run_length.py	not adopted
+universal shadow store	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	not adopted
+second verifier	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	expectations stay recipe-local

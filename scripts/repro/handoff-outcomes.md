@@ -30,11 +30,19 @@ Asked for live metrics before a fast path is eligible. Not measured. `single_exe
 
 ### Issue 5
 
-Caller-side plan and the fresh-observation gate are in `guarded_run.py`. Negative cases do not dispatch the second child. Wall-clock and fixture success were not measured, so there is no verdict.
+Downstream prototype: `guarded_run.py`. Tests: `test_guarded_run.py`.
+
+Facts allowed to survive child 1: the two candidate ids, their tools, and the token the caller already held.
+
+Facts not allowed to survive: the Submit ref, the field value, and the capture id from before the type. The second child runs only when a fresh observation still has that token, the same Submit ref, and a capture id.
+
+Raw fixture receipts were not produced on this Linux host. No shared helper was added. No verdict.
 
 ### Issue 6
 
-`stale_batch.run_batch` re-resolves child 2 before dispatch. Same identity may run. A missing target or a new identity is refused. A failed or unknown first child does not start child 2. No live app trace.
+Invariant: a preflight of snapshot S does not authorize child 2 after child 1 mutates the target child 2 was planned against. `stale_batch.run_batch` resolves child 2 again and refuses a missing target or a new identity. Regression fixture: `test_stale_batch.py`.
+
+Freshness stays caller-managed. It is not moved into shared execution code. Latency and an independent app trace were not captured on this Linux host, so there is no turn-count claim.
 
 ### Issue 8
 
@@ -74,11 +82,15 @@ Blocked on macOS and Windows machines. This host cannot show whether `include_ac
 
 ### Issue 18
 
-Blocked on a macOS machine. No AX event trace was captured. No signal is marked safe.
+Blocked. Missing machine: macOS.
+
+Asked for raw AX event and capture traces, a safe/noisy/unusable table, and a recommendation on `unchanged_since`. None of that was captured. No signal is marked safe. No miss rate was invented.
 
 ### Issue 19
 
-Blocked on a Windows machine. No UIA event trace was captured. No signal is marked safe.
+Blocked. Missing machine: Windows.
+
+Asked for raw UIA event traces and a safe/noisy/unusable table. None of that was captured. No signal is marked safe. No miss rate was invented.
 
 ### Issue 20
 
@@ -123,7 +135,9 @@ No new service is required for these rows.
 
 ### Issue 52
 
-The mechanism table at the top is the matrix. Rows without a decision stay undecided. Do not close the experiment issues from this table.
+The decision table is `scripts/repro/handoff/decision-table.tsv`. Columns: evidence, missing evidence, owner, public surface cost, next action.
+
+Rows with a test cite that test. Rows for the macOS AX census and the Windows UIA census name the missing machine. No experiment issue is closed from this table.
 
 ### Issue 53
 
@@ -131,7 +145,11 @@ No universal shadow store was added. `shadow_probe` keeps a sample and refuses t
 
 ### Issue 54
 
-Length 4 is not a constant. See the mechanism table and `run_length.py`. Admission stays on the #5 dependency check.
+Deleted: a shared constant of 4 actions. Evidence: `test_run_length.py`, and `recommend_cap(7, 10)` returns the cap-at-2 advice.
+
+Local: the #5 dependency check in `guarded_run.py`.
+
+Shared: nothing. Run length stays caller-configured.
 
 ### Issue 55
 
@@ -139,7 +157,11 @@ Length 4 is not a constant. See the mechanism table and `run_length.py`. Admissi
 
 ### Issue 56
 
-Observation stays on `get_window_state`, `WalkBudget`, and `verify_state`. Passive rows do not become a second tree. Conditional skip is not enabled.
+Before: `get_window_state`, `WalkBudget`, `verify_state`, and the jev-use visual path.
+
+After: the same owners. Not added: a second tree for passive rows, a conditional-skip service, another walk budget.
+
+Eliminated concepts: universal shadow store, capture skip from event absence, passive row as an action target.
 
 ### Issue 57
 
@@ -151,25 +173,25 @@ Compiled expectations name `field_value_equals` and `fixture_submitted_equals`. 
 
 ### Issue 59
 
-`stale_batch.py` revalidates identity and is not a Driver tool. `guarded_run.py` is caller policy. Mechanical batching stays on trycua/cua#2794 and #3494.
+| | Driver mechanical batch | Caller guarded run |
+| --- | --- | --- |
+| Owner | trycua/cua#2794 and #3494 | `guarded_run.py` |
+| Stale later child | `stale_batch.py` refuses a new identity | fresh observation must still match the planned Submit ref |
+| Integration | the caller resolves again before dispatch | no new Driver tool |
+
+The integration point is the caller, immediately before the second dispatch.
 
 ### Issue 60
 
-Cancellation is an issuance lifetime, not a lifecycle manager. Freshness is a ref generation check. They are not composed into a new service.
+The five sequences are in `scripts/repro/handoff/sequences.md`. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Neither sequence introduces a second state owner.
 
 ### Issue 61
 
-Delta against current CUA, not a new platform: caller functions beside jev-use, `WalkBudget` left in place, `verify_state` left in place, macOS `Changes` gained an internal poll tag, no public schema, no capture skipping, no default chooser change.
+The downstream rewrite is `scripts/repro/handoff/rfc-3963-delta.md`. Upstream #3963 was not edited.
 
 ### Issue 62
 
-Upstream order, only after the missing evidence exists:
-
-1. trycua/cua#4164 native walker trace, then the existing verify_state owner.
-2. trycua/cua#4165 live A/B, then the existing jev-use caller.
-3. trycua/cua#4052 whole-task clocks, using the split in `task_accounting.py`.
-4. trycua/cua#3796 cancellation slice on the existing request owner.
-5. No upstream PR from this branch.
+The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a change, a dependency, an evidence path, and a posting status. Length 4 is `KILLED` because `test_run_length.py` shows the wasted children. The other items wait on a live trial, a missing machine, or an RFC decision.
 
 ## Consolidation
 
@@ -203,23 +225,33 @@ Each new function is a file under the jev-use example plus a unit test. No Drive
 
 ### Issue 46
 
-The chooser input is unchanged because `run.py` does not project it. Shrinking that input is not done.
+Blocked for the A/B receipts. Missing session: a live chooser run was not executed on this Linux host.
+
+The projection was not added. `run.py` still sends the existing candidate list. There is no smaller chooser state to recommend from a receipt.
 
 ### Issue 47
 
-History length was not measured. No step was dropped from the runner.
+Blocked. A per-task history-sensitivity run was not executed on this Linux host. No step was removed from the runner, and no typed-history proposal is justified.
 
 ### Issue 48
 
-`choose_mock` remains the offline chooser. Fast path does not call Jev. Provider parity between mock, Jev, and S1 was not run.
+Blocked. Mock versus Jev versus local S1 was not run on this Linux host.
+
+`choose_mock` is still the offline chooser. `deterministic_fast_path.py` does not import Jev. That is not a parity matrix.
 
 ### Issue 49
 
-No second harness imports these functions. Cross-harness reuse is not shown.
+No second harness was spiked, so there is no comparison table and nothing to delete. Cross-harness reuse is not shown. The functions stay under the jev-use example.
 
 ### Issue 50
 
-`run.py` and the canonical workflow docs were not rewritten. These files are experiment modules. They do not replace `WORKFLOW.md`.
+| Doc or skill | Touched by this branch | Patch needed |
+| --- | --- | --- |
+| `run.py` | no call to the new functions | none until one is wired |
+| canonical `WORKFLOW.md` | not edited | none; these files are experiments |
+| jev-use guide | not edited | none until a mechanism is promoted |
+
+No doc change is required while the runner is unchanged.
 
 ## Promotion
 
@@ -275,48 +307,90 @@ No public settlement or revision field is added. `PollProvenance` stays crate-in
 
 ### Issue 63
 
-#4164 is not ready to leave draft. The no-elements observe call is locked. The native walker count is not.
+Verdict: KEEP DRAFT.
+
+SHA checked: `c5ee191c02b11448ffefcc38b78b064a87d8ef23` call site, locked by `test_verify_elapsed_order.py` (`observe(..., false, true)`).
+
+Limitation: no native walker counter. Promotion packet status in `promotion-dag.json` is `WAITING ON DOWNSTREAM EXPERIMENT`. The upstream PR description was not updated.
 
 ### Issue 64
 
-#4165 is not ready to leave draft. The skip rule is unit-tested. The outcome A/B was not run.
+Verdict: KEEP DRAFT.
+
+The skip rule is `test_lazy_vision.py`. The outcome-level A/B artifact was not produced. No helper was added. The upstream PR description was not updated.
 
 ### Issue 65
 
-Passive text is readable. It is not an action target. That is the compatibility rule to take back to #3904. The Calculator case is still blocked on macOS.
+Recommendation for #3904, not an implementation PR.
+
+Test vector: `Row("calc-result", "6", passive=True)` is readable through `verification_text` and `action_target` raises `AuthorityError`. `Row("calc-equals", "=", passive=False)` remains a target.
+
+The native Calculator case is blocked on a macOS machine. No competing PR was opened.
 
 ### Issue 66
 
-One mechanical owner remains #2794/#3494. `stale_batch.py` is the caller-side refusal test, not a second batch tool. `guarded_run.py` stays caller-side.
+Canonical owner: trycua/cua#2794 and #3494 for mechanical batching.
+
+Stale-target regression: `test_stale_batch.py` cases for disappeared target, new identity with the same label, and failed or unknown first child.
+
+`guarded_run.py` stays caller-side. No batch API was added.
 
 ### Issue 67
 
-The #3796 handoff is the event order in `cancellation_lifetime.py`: do not release capacity before native exit, and do not apply the cancel to another issuance. No competing runtime.
+Verdict: NEEDS DESIGN DECISION before an upstream slice. The downstream order test is `test_cancellation_lifetime.py`. It does not pre-decide the #3796 implementation. Slice 1, after RFC approval, belongs on the existing request-id owner. Ready when that RFC approves the slice, not before.
 
 ### Issue 68
 
-Browser freshness on this branch is `browser_revision.py`. It does not create a shadow snapshot store. #3873 remains the upstream snapshot owner.
+Current-head owner for snapshot freshness remains trycua/cua#3873.
+
+Phase-2 concepts that are unnecessary on this branch: a second snapshot authority, and a universal shadow store.
+
+The caller rule that stays is `browser_revision.py`: same label, new generation, refuse.
 
 ### Issue 69
 
-Phase-0 accounting on this branch is `task_accounting.py` plus the existing #4052 timing work already on `test/jev-use-phase-timing` and `test/jev-task-timing-wave2-20260925`. Those branches were not merged here. Runner lifetime is not the oracle.
+Measurement owner: verified-outcome milliseconds in `task_accounting.py`. Runner lifetime is a different field and `outcome_time` does not return it.
+
+Fields: `cold_setup_ms`, `verified_outcome_ms`, `runner_lifetime_ms`, `named_span_ms`.
+
+No double count: the reported outcome is `verified_outcome_ms` only. The #4052 branches were not merged into this one.
 
 ### Issue 70
 
-No policy function was added under the provider adapter. `deterministic_fast_path.py`, `guarded_run.py`, and `lazy_vision.py` sit beside the caller.
+Scope lock for #3961: NO CHANGE NEEDED on the provider adapter.
+
+Policy files sit beside the caller: `deterministic_fast_path.py`, `guarded_run.py`, `lazy_vision.py`. None of them is imported by the provider adapter.
 
 ### Issue 71
 
-No public settlement field. Internal poll provenance is enough for the macOS detector change. #4009 does not gain a field from this branch.
+| Consumer | Signal today | Decision |
+| --- | --- | --- |
+| tool suffix | `result_suffix` | existing wording |
+| restore | `needs_restore` | existing boolean |
+| poll split | `PollProvenance` | internal only |
+
+Recommendation: NO PUBLIC FIELD.
 
 ### Issue 72
 
-`list_apps` was not reimplemented. Whether #3492 removes the need is not proven here.
+Blocked. An exact-head A/B of `list_apps` against #3492 was not run on this Linux host. No second cache was implemented. No recommendation is invented from an unrun trial.
 
 ### Issue 73
 
-Same delta as issue 61. Disposition for each broad RFC idea on this branch: caller-local function, existing owner, or not done. No standalone target architecture was added.
+Committed at `scripts/repro/handoff/rfc-3963-delta.md`. Upstream #3963 was not edited.
 
 ### Issue 74
 
-Same order as issue 62. Waves 9–10 do not start from this branch. The first upstream packets are still #4164 and #4165, and both still lack the evidence their own issues name.
+Machine-readable DAG: `scripts/repro/handoff/promotion-dag.json`.
+
+| id | status |
+| --- | --- |
+| 4164 | WAITING ON DOWNSTREAM EXPERIMENT |
+| 4165 | WAITING ON DOWNSTREAM EXPERIMENT |
+| 4052 | WAITING ON DOWNSTREAM EXPERIMENT |
+| 3796 | WAITING ON RFC DECISION |
+| 3904 | WAITING ON DOWNSTREAM EXPERIMENT |
+| 2794-3494 | WAITING ON DOWNSTREAM EXPERIMENT |
+| run-length-4 | KILLED |
+
+The killed row cites `test_run_length.py`. No other row is marked killed.
