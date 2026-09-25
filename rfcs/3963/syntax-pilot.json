@@ -1,0 +1,1034 @@
+{
+  "schema": "cua.static_pilot.v1",
+  "commit": "a959b2a23f8099769d0d57e4b8c2c8e70bf7d036",
+  "path": "libs/cua-driver/examples/jev-use/python/run.py",
+  "git_blob_sha": "ef05eebefbc8c8bf5e076a74755397625e5e4a8e",
+  "sha256": "5a15932f07f890bde545cca8262be9f66a6c5cc3b5c88e6e4a382875320fcdd8",
+  "parser": "Python standard library ast.parse",
+  "source_lines": 340,
+  "source_executed": false,
+  "declarations": [
+    {
+      "name": "fixture_state",
+      "kind": "FunctionDef",
+      "start": 28,
+      "end": 30
+    },
+    {
+      "name": "validate_fixture_url",
+      "kind": "FunctionDef",
+      "start": 33,
+      "end": 47
+    },
+    {
+      "name": "select_tab_id",
+      "kind": "FunctionDef",
+      "start": 50,
+      "end": 54
+    },
+    {
+      "name": "reset_fixture",
+      "kind": "FunctionDef",
+      "start": 57,
+      "end": 61
+    },
+    {
+      "name": "Driver",
+      "kind": "ClassDef",
+      "start": 64,
+      "end": 78
+    },
+    {
+      "name": "Driver.__init__",
+      "kind": "FunctionDef",
+      "start": 65,
+      "end": 67
+    },
+    {
+      "name": "Driver.call",
+      "kind": "AsyncFunctionDef",
+      "start": 69,
+      "end": 78
+    },
+    {
+      "name": "supports_capture_bound_click",
+      "kind": "FunctionDef",
+      "start": 81,
+      "end": 90
+    },
+    {
+      "name": "optional_visual_observation",
+      "kind": "AsyncFunctionDef",
+      "start": 93,
+      "end": 130
+    },
+    {
+      "name": "wait_for_window",
+      "kind": "AsyncFunctionDef",
+      "start": 133,
+      "end": 143
+    },
+    {
+      "name": "write_event",
+      "kind": "FunctionDef",
+      "start": 146,
+      "end": 151
+    },
+    {
+      "name": "run",
+      "kind": "AsyncFunctionDef",
+      "start": 154,
+      "end": 317
+    },
+    {
+      "name": "parse_args",
+      "kind": "FunctionDef",
+      "start": 320,
+      "end": 330
+    },
+    {
+      "name": "main",
+      "kind": "FunctionDef",
+      "start": 333,
+      "end": 336
+    }
+  ],
+  "imports": [
+    {
+      "module": "__future__",
+      "name": "annotations",
+      "line": 1
+    },
+    {
+      "module": "argparse",
+      "name": null,
+      "line": 3
+    },
+    {
+      "module": "asyncio",
+      "name": null,
+      "line": 4
+    },
+    {
+      "module": "json",
+      "name": null,
+      "line": 5
+    },
+    {
+      "module": "os",
+      "name": null,
+      "line": 6
+    },
+    {
+      "module": "time",
+      "name": null,
+      "line": 7
+    },
+    {
+      "module": "uuid",
+      "name": null,
+      "line": 8
+    },
+    {
+      "module": "pathlib",
+      "name": "Path",
+      "line": 9
+    },
+    {
+      "module": "typing",
+      "name": "Any",
+      "line": 10
+    },
+    {
+      "module": "urllib.parse",
+      "name": "urlsplit",
+      "line": 11
+    },
+    {
+      "module": "urllib.request",
+      "name": "Request",
+      "line": 12
+    },
+    {
+      "module": "urllib.request",
+      "name": "urlopen",
+      "line": 12
+    },
+    {
+      "module": "mcp",
+      "name": "ClientSession",
+      "line": 14
+    },
+    {
+      "module": "mcp",
+      "name": "StdioServerParameters",
+      "line": 14
+    },
+    {
+      "module": "mcp.client.stdio",
+      "name": "stdio_client",
+      "line": 15
+    },
+    {
+      "module": "core",
+      "name": "VisualObservation",
+      "line": 17
+    },
+    {
+      "module": "core",
+      "name": "VisualObservationError",
+      "line": 17
+    },
+    {
+      "module": "core",
+      "name": "build_candidates",
+      "line": 17
+    },
+    {
+      "module": "core",
+      "name": "classify",
+      "line": 17
+    },
+    {
+      "module": "core",
+      "name": "parse_visual_regions",
+      "line": 17
+    },
+    {
+      "module": "core",
+      "name": "validate_choice",
+      "line": 17
+    },
+    {
+      "module": "jev_adapter",
+      "name": "choose_live",
+      "line": 25
+    },
+    {
+      "module": "jev_adapter",
+      "name": "choose_mock_adapter",
+      "line": 25
+    }
+  ],
+  "calls": [
+    {
+      "scope": "fixture_state",
+      "expression": "urlopen",
+      "line": 29,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "fixture_state",
+      "expression": "fixture_url.rstrip",
+      "line": 29,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "fixture_state",
+      "expression": "json.loads",
+      "line": 30,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "fixture_state",
+      "expression": "response.read",
+      "line": 30,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "validate_fixture_url",
+      "expression": "urlsplit",
+      "line": 34,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "validate_fixture_url",
+      "expression": "argparse.ArgumentTypeError",
+      "line": 44,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "validate_fixture_url",
+      "expression": "value.rstrip",
+      "line": 47,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "select_tab_id",
+      "expression": "RuntimeError",
+      "line": 52,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "select_tab_id",
+      "expression": "next",
+      "line": 53,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "select_tab_id",
+      "expression": "tab.get",
+      "line": 53,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "select_tab_id",
+      "expression": "str",
+      "line": 54,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "reset_fixture",
+      "expression": "Request",
+      "line": 58,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "reset_fixture",
+      "expression": "fixture_url.rstrip",
+      "line": 58,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "reset_fixture",
+      "expression": "urlopen",
+      "line": 59,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "reset_fixture",
+      "expression": "RuntimeError",
+      "line": 61,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "self.session.call_tool",
+      "line": 70,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "RuntimeError",
+      "line": 72,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "isinstance",
+      "line": 74,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "RuntimeError",
+      "line": 75,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "data.get",
+      "line": 76,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "data.get",
+      "line": 76,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "RuntimeError",
+      "line": 77,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "Driver.call",
+      "expression": "data.get",
+      "line": 77,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "getattr",
+      "line": 83,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "getattr",
+      "line": 85,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "isinstance",
+      "line": 86,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "getattr",
+      "line": 87,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "isinstance",
+      "line": 88,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "schema.get",
+      "line": 88,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "supports_capture_bound_click",
+      "expression": "isinstance",
+      "line": 89,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "optional_visual_observation",
+      "expression": "{'get_window_state', 'parse_visual_regions'}.issubset",
+      "line": 100,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "optional_visual_observation",
+      "expression": "driver.call",
+      "line": 105,
+      "literal_driver_tool": "get_window_state",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "optional_visual_observation",
+      "expression": "capture.get",
+      "line": 113,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "optional_visual_observation",
+      "expression": "isinstance",
+      "line": 114,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "optional_visual_observation",
+      "expression": "driver.call",
+      "line": 116,
+      "literal_driver_tool": "parse_visual_regions",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "optional_visual_observation",
+      "expression": "parse_visual_regions",
+      "line": 123,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "range",
+      "line": 134,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "(await driver.call('list_windows', {'pid': pid})).get",
+      "line": 135,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "driver.call",
+      "line": 135,
+      "literal_driver_tool": "list_windows",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "window.get",
+      "line": 136,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "max",
+      "line": 138,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "asyncio.sleep",
+      "line": 142,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "wait_for_window",
+      "expression": "RuntimeError",
+      "line": 143,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "write_event",
+      "expression": "json.dumps",
+      "line": 147,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "write_event",
+      "expression": "print",
+      "line": 148,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "write_event",
+      "expression": "log_path.open",
+      "line": 150,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "write_event",
+      "expression": "stream.write",
+      "line": 151,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "uuid.uuid4",
+      "line": 155,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "uuid.uuid4",
+      "line": 156,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "Path",
+      "line": 158,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "log_path.write_text",
+      "line": 160,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "reset_fixture",
+      "line": 161,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "StdioServerParameters",
+      "line": 163,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "os.getenv",
+      "line": 163,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "stdio_client",
+      "line": 164,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "ClientSession",
+      "line": 165,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "session.initialize",
+      "line": 166,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "session.list_tools",
+      "line": 167,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "supports_capture_bound_click",
+      "line": 169,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "Driver",
+      "line": 170,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "driver.call",
+      "line": 171,
+      "literal_driver_tool": "browser_prepare",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "int",
+      "line": 175,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "wait_for_window",
+      "line": 176,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "driver.call",
+      "line": 177,
+      "literal_driver_tool": "get_browser_state",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "select_tab_id",
+      "line": 181,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "driver.call",
+      "line": 182,
+      "literal_driver_tool": "browser_navigate",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "range",
+      "line": 187,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "fixture_state",
+      "line": 188,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "classify",
+      "line": 189,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "oracle.get",
+      "line": 189,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 191,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "time.perf_counter",
+      "line": 194,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "driver.call",
+      "line": 195,
+      "literal_driver_tool": "get_browser_state",
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "optional_visual_observation",
+      "line": 203,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "int",
+      "line": 206,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "build_candidates",
+      "line": 210,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 217,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "choose_mock_adapter",
+      "line": 221,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "asyncio.to_thread",
+      "line": 225,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "validate_choice",
+      "line": 230,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "round",
+      "line": 235,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "time.perf_counter",
+      "line": 235,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "history.append",
+      "line": 248,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 249,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 253,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "time.perf_counter",
+      "line": 266,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "driver.call",
+      "line": 269,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 271,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "type",
+      "line": 278,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "round",
+      "line": 282,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "time.perf_counter",
+      "line": 282,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "history.append",
+      "line": 295,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 296,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "range",
+      "line": 300,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "fixture_state",
+      "line": 301,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "classify",
+      "line": 302,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "oracle.get",
+      "line": 303,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 306,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "asyncio.sleep",
+      "line": 310,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "fixture_state",
+      "line": 312,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "classify",
+      "line": 313,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "oracle.get",
+      "line": 314,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "run",
+      "expression": "write_event",
+      "line": 316,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "argparse.ArgumentParser",
+      "line": 321,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.add_argument",
+      "line": 322,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.add_argument",
+      "line": 323,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.add_argument",
+      "line": 326,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.add_argument",
+      "line": 327,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.add_argument",
+      "line": 328,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.add_argument",
+      "line": 329,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "parse_args",
+      "expression": "parser.parse_args",
+      "line": 330,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "main",
+      "expression": "parse_args",
+      "line": 334,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "main",
+      "expression": "asyncio.run",
+      "line": 335,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "main",
+      "expression": "run",
+      "line": 335,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "main",
+      "expression": "SystemExit",
+      "line": 336,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    },
+    {
+      "scope": "<module>",
+      "expression": "main",
+      "line": 340,
+      "literal_driver_tool": null,
+      "resolution": "syntactic_callsite_not_runtime_resolution"
+    }
+  ],
+  "limitations": [
+    "One Python file only.",
+    "No Rust or TypeScript parser installed or run.",
+    "No macro expansion, compiled graph, FFI resolution or complete dynamic call graph.",
+    "Literal tool calls do not prove their branch runs or has a particular cost.",
+    "candidate.tool and generic call_tool remain runtime-dispatched."
+  ]
+}
