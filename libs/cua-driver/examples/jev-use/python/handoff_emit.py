@@ -9,7 +9,16 @@ from action_consumer import required_cases
 from caller_route import route
 from core import Candidate
 from goal_gates import accept_completion, use_model_done_gate
-from guarded_run import ChildStatus, FreshObservation, GuardedRunPlan, PlannedChild, second_child_allowed
+from guarded_run import (
+    ChildStatus,
+    Decision,
+    FreshObservation,
+    GuardedRunPlan,
+    PlannedChild,
+    admit_guarded_run,
+    second_child_allowed,
+)
+from stale_batch import Child, Target, run_batch
 from observation_replay import Observation, policy_killed, replay
 from run_length import execute_capped, recommend_cap, wasted_after_stop
 from task_battery import evaluate
@@ -150,6 +159,79 @@ def linux_classification(census: dict) -> dict:
     }
 
 
+def guarded_receipts() -> list[dict[str, object]]:
+    candidates = [
+        _candidate("type-verification-value", "browser_type"),
+        _candidate("submit-form", "browser_click"),
+        _candidate("reobserve", None),
+        _candidate("abstain", None),
+    ]
+    plan = admit_guarded_run(
+        candidates,
+        Decision("run", ("type-verification-value", "submit-form")),
+        token="proof",
+        submit_ref="ref-submit",
+    )
+    assert plan is not None
+    single = admit_guarded_run(
+        candidates,
+        Decision("single", ("type-verification-value",)),
+        token="proof",
+        submit_ref="ref-submit",
+    )
+    cases: list[tuple[str, ChildStatus, FreshObservation | None]] = [
+        ("verified", "verified", FreshObservation("proof", "ref-submit", "capture-2")),
+        ("refuted", "refuted", FreshObservation("proof", "ref-submit", "capture-2")),
+        ("unknown", "unknown", FreshObservation("proof", "ref-submit", "capture-2")),
+        ("stale", "stale", None),
+        ("rebound", "verified", FreshObservation("proof", "ref-other", "capture-2")),
+        ("refused", "refused", FreshObservation("proof", "ref-submit", "capture-2")),
+    ]
+    rows = []
+    for name, status, fresh in cases:
+        rows.append(
+            {
+                "case": name,
+                "admitted": True,
+                "second_dispatch": second_child_allowed(status, fresh, plan),
+                "wall_time_ms": None,
+            }
+        )
+    rows.append({"case": "single-action-choice", "admitted": single is not None, "second_dispatch": False, "wall_time_ms": None})
+    return rows
+
+
+def stale_receipts() -> list[dict[str, object]]:
+    children = [
+        Child("field", Target("id-field", "field")),
+        Child("submit", Target("id-submit", "submit")),
+    ]
+
+    def trace_for(world: dict[str, Target], status: str) -> dict[str, object]:
+        current = dict(world)
+
+        def apply() -> str:
+            if status == "ok-disappear":
+                current.pop("submit", None)
+                return "ok"
+            if status == "ok-rebind":
+                current["submit"] = Target("id-submit-2", "submit")
+                return "ok"
+            return status
+
+        traced = run_batch(children, lambda label: current.get(label), apply)
+        return {
+            "status": status,
+            "preflight": traced.preflight,
+            "dispatched": traced.dispatched,
+            "refused": traced.refused,
+            "elapsed_ms": None,
+        }
+
+    base = {"field": Target("id-field", "field"), "submit": Target("id-submit", "submit")}
+    return [trace_for(base, status) for status in ("ok", "ok-disappear", "ok-rebind", "failed", "unknown")]
+
+
 def write_all(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     census_path = directory.parent / "atspi-census-20260925.json"
@@ -164,6 +246,8 @@ def write_all(directory: Path) -> None:
     (directory / "issue-25-caps.json").write_text(json.dumps(cap_report(), indent=2) + "\n")
     (directory / "issue-33-dispatch.json").write_text(json.dumps(dispatch_counts(), indent=2) + "\n")
     (directory / "issue-44-routing.json").write_text(json.dumps(routing_table(), indent=2) + "\n")
+    (directory / "issue-5-receipts.jsonl").write_text("".join(json.dumps(row) + "\n" for row in guarded_receipts()))
+    (directory / "issue-6-receipts.jsonl").write_text("".join(json.dumps(row) + "\n" for row in stale_receipts()))
 
 
 if __name__ == "__main__":

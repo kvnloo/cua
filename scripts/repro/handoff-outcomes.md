@@ -37,16 +37,16 @@ Missing session on this Linux host: a live interleaved fixture trial. Eligibilit
 ### Issue 5
 
 Architecture note: `scripts/repro/handoff/issue-5-architecture.md`.
+Receipts from `admit_guarded_run` and `second_child_allowed`: `scripts/repro/handoff/issue-5-receipts.jsonl`.
 
-Prototype `guarded_run.py`. Tests `test_guarded_run.py`. Facts that survive child 1 are the run decision, the two ids and tools, and the token already held. The pre-type field value, capture id, and a Submit ref the fresh observation no longer shows do not survive.
-
-Raw fixture receipts were not produced on this Linux host. No verdict. No shared helper.
+`wall_time_ms` is null. A refuted first child does not dispatch the second. A single-action provider choice is not admitted. No shared helper.
 
 ### Issue 6
 
 Handoff: `scripts/repro/handoff/issue-6-handoff.md`.
+Receipts from `stale_batch.run_batch`: `scripts/repro/handoff/issue-6-receipts.jsonl`.
 
-Invariant: preflight does not authorize child 2. Regression fixture: `test_stale_batch.py`. Latency and an independent app trace were not captured on this Linux host. Recommendation: freshness stays caller-managed.
+`elapsed_ms` is null. A disappeared target and a rebound identity are refused. Freshness stays caller-managed.
 
 ### Issue 8
 
@@ -101,15 +101,11 @@ Same ref and generation binds. Same label with a new generation is refused. `tes
 
 ### Issue 18
 
-Blocked. Missing machine: macOS.
-
-Asked for raw AX event and capture traces, a safe/noisy/unusable table, and a recommendation on `unchanged_since`. None of that was captured. No signal is marked safe. No miss rate was invented.
+Blocked. `scripts/repro/handoff/issue-18-block.md`. Missing machine: macOS. No AX trace was captured and no miss rate was invented.
 
 ### Issue 19
 
-Blocked. Missing machine: Windows.
-
-Asked for raw UIA event traces and a safe/noisy/unusable table. None of that was captured. No signal is marked safe. No miss rate was invented.
+Blocked. `scripts/repro/handoff/issue-19-block.md`. Missing machine: Windows. No UIA trace was captured and no miss rate was invented.
 
 ### Issue 20
 
@@ -171,7 +167,7 @@ Rows with a test cite that test. Rows for the macOS AX census and the Windows UI
 
 ### Issue 53
 
-No universal shadow store was added. `shadow_probe` keeps a sample and refuses to skip. Revision facts stay on the browser ref (`browser_revision.py`) and on the AT-SPI events already recorded. A second shadow authority is not introduced.
+`scripts/repro/handoff/issue-53-diagram.md`. Browser generation, the shadow probe, and #3873 stay separate. macOS AX and Windows UIA stay ununified because those machines were not available.
 
 ### Issue 54
 
@@ -183,7 +179,7 @@ Shared: nothing. Run length stays caller-configured.
 
 ### Issue 55
 
-`PollProvenance` is an internal field on macOS `Changes`. `needs_restore` and `result_suffix` do not grow a public wording. No public settlement field is added on this branch.
+`scripts/repro/handoff/issue-55-consumers.md`. No public field. No promotion dependency.
 
 ### Issue 56
 
@@ -195,11 +191,11 @@ Eliminated concepts: universal shadow store, capture skip from event absence, pa
 
 ### Issue 57
 
-The caller loop is unchanged in `run.py`. Fast path, guarded run, and lazy vision are functions the runner does not call. The chooser still runs unless a later change wires one of them.
+`scripts/repro/handoff/issue-57-dataflow.md`. `run.py` still calls the chooser. The new functions are not on that path. No reusable helper is extracted.
 
 ### Issue 58
 
-Compiled expectations name `field_value_equals` and `fixture_submitted_equals`. They do not call a new verifier. The existing fixture `/state` and `verify_state` remain the checkers. One recipe does not justify a second verifier type.
+`scripts/repro/handoff/issue-58-routing.md`. Expectations route to the fixture field or `/state`. A second verifier type is not added.
 
 ### Issue 59
 
@@ -227,7 +223,7 @@ The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a
 
 ### Issue 39
 
-Fast path, guarded run, stale batch, and compiled expectations each have one caller. None is extracted into a shared helper.
+`scripts/repro/handoff/issue-39-report.md`. No abstraction has two call sites. No refactor was performed.
 
 ### Issue 40
 
@@ -239,15 +235,15 @@ Both read that fixture. Parity is claimed only for compiled expectations. The ot
 
 ### Issue 41
 
-A candidate still carries id, description, tool, arguments, and optional capture id. The fast path and guarded run read those fields. They do not add an authority token.
+`scripts/repro/handoff/issue-41-schema.md`. The candidate envelope is unchanged. No authority token and no public Driver API were added.
 
 ### Issue 42
 
-Only the jev-use form and submit ids compile expectations. That is one recipe. No shared compiler is created.
+`scripts/repro/handoff/issue-42-overlap.md`. Python and TypeScript both read `issue-40-fixture.json`. The compiler remains recipe-local.
 
 ### Issue 43
 
-The guarded run is the verification-form pair (type, then submit). A second workflow was not implemented. Reuse is not claimed.
+`scripts/repro/handoff/issue-43-graph.md`. `run.py` does not call `guarded_run.py`. A second workflow was not implemented, so the abstraction is not adopted.
 
 ### Issue 44
 
@@ -258,29 +254,23 @@ Tests: `test_caller_route.py`.
 
 ### Issue 45
 
-Each new function is a file under the jev-use example plus a unit test. No Driver method, schema field, or dependency was added except the internal macOS poll tag. Complexity is not traded against a measured millisecond.
+`scripts/repro/handoff/issue-45-ledger.tsv`. Milliseconds removed are `not measured` on every row.
 
 ### Issue 46
 
-Blocked. Missing session on this Linux host: a live chooser A/B.
-
-Asked for projection definitions, A/B receipts, and a smallest safe chooser state. Not produced. `run.py` still sends the existing candidate list. No receipt was invented.
+Blocked. `scripts/repro/handoff/issue-46-block.md`. Missing session on this Linux host: a live chooser A/B. No receipt was invented.
 
 ### Issue 47
 
-Blocked. Missing session on this Linux host: a per-task history-sensitivity run.
-
-Asked for a sensitivity table and a typed-history proposal. Not produced. No step was removed from the runner.
+Blocked. `scripts/repro/handoff/issue-47-block.md`. Missing session on this Linux host: a per-task history-sensitivity run.
 
 ### Issue 48
 
-Blocked. Missing providers on this Linux host: a live Jev session and a local S1 session.
-
-Asked for a parity matrix across mock, Jev, and S1. Not produced. `choose_mock` remains the offline chooser. `deterministic_fast_path.py` does not import Jev.
+Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Linux host: a live Jev session and a local S1 session.
 
 ### Issue 49
 
-No second harness was spiked, so there is no comparison table and nothing to delete. Cross-harness reuse is not shown. The functions stay under the jev-use example.
+`scripts/repro/handoff/issue-49-spike.md`. No second harness was written. Nothing was deleted.
 
 ### Issue 50
 
@@ -296,34 +286,27 @@ No doc change is required while the runner is unchanged.
 
 ### Issue 27
 
-| Optimization | Gate | Contract field |
-| --- | --- | --- |
-| lazy visual skip | a semantic executable candidate already exists | none; caller predicate only |
-| fast path | exactly one executable candidate | none |
-| guarded run | explicit run decision plus a fresh observation | none |
-| conditional skip | not enabled | none |
-
-No new capability field. Do not route on a selector the driver has not reported as honored.
+Compatibility matrix: `scripts/repro/handoff/issue-27-matrix.tsv`. No existing contract field gates these optimizations. No new capability field was added.
 
 ### Issue 28
 
-Lazy vision is a caller predicate. An older driver that lacks the visual tools already makes `optional_visual_observation` return none. No new fallback schema.
+`scripts/repro/handoff/issue-28-note.md`. Tests are `test_lazy_vision.py`. Recommendation: no new caller helper and no new public Driver API.
 
 ### Issue 29
 
-No public field was added, so the contract generator does not need a promotion checklist for this branch.
+`scripts/repro/handoff/issue-29-checklist.md`. No public field was added, so the example diff was not kept.
 
 ### Issue 30
 
-Guarded run and conditional skip are not on by default. Rollback is "do not call the function." Phase 2B skip is not enabled, so it has nothing to roll back.
+`scripts/repro/handoff/issue-30-transitions.md`. The off state is `run.py` not calling the functions. No config framework was added.
 
 ### Issue 31
 
-Promotion matrix for this branch: Linux unit tests only. macOS and Windows rows are empty. Local tests are not cross-platform qualification.
+`scripts/repro/handoff/issue-31-manifest.json`. Every row sets `historical_green_certifies` to false. macOS and Windows rows name those machines.
 
 ### Issue 32
 
-Unsupported fast path and guarded run return none or raise. They do not report a successful slower default as if the optimization ran.
+`scripts/repro/handoff/issue-32-negative.md`. Unsupported inputs return none or raise. They do not pretend the optimization succeeded.
 
 ### Issue 33
 
@@ -333,23 +316,23 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 34
 
-No telemetry field with window titles, tokens, or screenshots was added. `task_accounting` stores milliseconds only.
+`scripts/repro/handoff/issue-34-privacy.md`. `TrialClocks` stores four integer millisecond fields and no window title, token, or screenshot.
 
 ### Issue 35
 
-Regression budget: do not add a CI wall-clock gate. The sample check is the existing unit tests of the caller functions. A green unit run does not certify a latency change. No workflow file was added.
+`scripts/repro/handoff/issue-35-budget.md`. No CI wall-clock gate was added. A green unit run does not certify a latency change.
 
 ### Issue 36
 
-Plans carry candidate ids and a token. They do not store a process-global capture or ref. Isolation across real sessions was not executed.
+`scripts/repro/handoff/issue-36-isolation.md`. `finish` rejects a different issuance. Real concurrent sessions were not executed on this Linux host.
 
 ### Issue 37
 
-`optional_visual_observation` returns none when the visual tools are absent or the call raises. The semantic path does not gain authority from that failure.
+`scripts/repro/handoff/issue-37-fallback.md`. A missing visual result does not become permission to act on a visual target.
 
 ### Issue 38
 
-No public settlement or revision field is added. `PollProvenance` stays crate-internal. There is no migration to publish.
+`scripts/repro/handoff/issue-38-migration.md`. No production field was added. `PollProvenance` stays internal.
 
 ## Assimilation
 
@@ -363,9 +346,7 @@ Limitation: no native walker counter. Promotion packet status in `promotion-dag.
 
 ### Issue 64
 
-Verdict: KEEP DRAFT.
-
-The skip rule is `test_lazy_vision.py`. The outcome-level A/B artifact was not produced. No helper was added. The upstream PR description was not updated.
+Blocked. `scripts/repro/handoff/issue-64-block.md`. Missing session on this Linux host: the exact-head outcome A/B for trycua/cua#4165. No helper was added.
 
 ### Issue 65
 
@@ -421,7 +402,7 @@ Recommendation: NO PUBLIC FIELD.
 
 ### Issue 72
 
-Blocked. An exact-head A/B of `list_apps` against #3492 was not run on this Linux host. No second cache was implemented. No recommendation is invented from an unrun trial.
+Blocked. `scripts/repro/handoff/issue-72-block.md`. Missing session on this Linux host: an exact-head A/B of `list_apps` against #3492. No second cache was implemented.
 
 ### Issue 73
 

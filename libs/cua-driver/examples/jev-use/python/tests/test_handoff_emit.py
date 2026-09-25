@@ -29,6 +29,14 @@ class HandoffEmitTest(unittest.TestCase):
         self.assertEqual(dispatch_counts()[0]["second_dispatch"], 1)
         self.assertEqual(cap_report()["rows"][2]["wasted"], 3)
         self.assertIn("fast-path", json.dumps(routing_table()))
+        from handoff_emit import guarded_receipts, stale_receipts
+
+        receipts = json.loads((HANDOFF / "issue-5-receipts.jsonl").read_text().splitlines()[1])
+        self.assertFalse(receipts["second_dispatch"])
+        self.assertEqual(guarded_receipts()[1]["case"], "refuted")
+        stale = stale_receipts()
+        self.assertEqual(stale[1]["refused"], ["submit"])
+        self.assertIsNone(stale[0]["elapsed_ms"])
 
 
 if __name__ == "__main__":
