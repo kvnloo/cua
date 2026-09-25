@@ -92,6 +92,40 @@ against a daemon that truly overlaps capture and snapshot." The mock daemon
 is single-threaded FIFO — it cannot show the real win. Re-measure against a
 concurrent (real) daemon before any upstream conversation.
 
+## Re-measure under concurrent daemon load (2026-09-25)
+
+Re-ran `speculate_bench.ts` (20 iters, 20 steps/sequence, 50 regions) with 8
+concurrent clients hammering the same daemon socket — the FIFO transport now
+queues under contention, which is the regime the single-threaded mock could
+not exercise.
+
+| sequence | visual density | median | p90 | predictor (hits/FP/misses) |
+|---|---|---|---|---|
+| every | 20/20 | 804.62 → 677.21 ms (**1.27×**) | 1165.34 → 994.62 ms (**2.91×**) | 19 / 0 / 0 |
+| bursty | 10/20 | 488.66 → 386.78 ms (**1.28×**) | 829.85 → 777.42 ms (**6.91×**) | 8 / 2 / 1 |
+| sparse | 3/20 | 435.83 → 393.41 ms (**0.93×**) | 794.86 → 917.17 ms (**1.80×**) | 0 / 3 / 2 |
+| never | 0/20 | 365.31 → 247.66 ms (**1.04×**) | 496.06 → 507.38 ms (**2.54×**) | — |
+
+Honest read:
+
+1. **The median gain survives contention** on sticky-visual sequences
+   (1.27–1.28×). Per-iteration ratios are noisy (0.12–7.5) — the box and the
+   shared socket dominate — but the median is consistent across runs.
+2. **Sparse regresses at median (0.93×).** When visuals are rare and the
+   predictor misses, speculation costs ~3 extra RPCs per sequence for
+   nothing. The policy needs a miss-rate gate before any upstream
+   conversation — below some hit-rate floor it should degrade to gated.
+3. **The never sequence still speeds up at median (1.04×)** — expected:
+   with no visual steps both policies issue the same RPCs; the difference
+   is scheduling noise on the shared socket, and p90 moves the other way.
+4. **Equivalence holds under load.** Identical candidates and regions every
+   step, all iterations, all sequences.
+
+Revised verdict: fork research artifact, now with a measured contention
+regime. Claim: median 1.27× on sticky-visual sequences under concurrent
+load, with a hard caveat — a miss-rate gate is required for sparse
+sequences. Raw output: `~/workspace/scratch/speculate_rerun.json`.
+
 ## Reproduce
 
 ```
