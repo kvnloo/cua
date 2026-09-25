@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -17,6 +18,16 @@ def candidate(candidate_id: str, tool: str | None) -> Candidate:
 
 
 class CompiledExpectationTest(unittest.TestCase):
+    def test_shared_fixture_matches_compile_expectation(self) -> None:
+        path = Path(__file__).resolve().parents[6] / "scripts/repro/handoff/issue-40-fixture.json"
+        for row in json.loads(path.read_text(encoding="utf-8")):
+            compiled = compile_expectation(candidate(row["id"], row["tool"]), row["token"])
+            if row["expect"] is None:
+                self.assertIsNone(compiled)
+            else:
+                self.assertEqual(compiled.kind, row["expect"]["kind"])
+                self.assertEqual(compiled.token, row["expect"]["token"])
+
     def test_type_and_submit_compile_stable_expectations(self) -> None:
         typed = compile_expectation(candidate("type-verification-value", "browser_type"), "proof")
         submit = compile_expectation(candidate("submit-form", "browser_click"), "proof")

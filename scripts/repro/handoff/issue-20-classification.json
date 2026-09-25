@@ -1,0 +1,42 @@
+{
+  "host": "Linux-7.2.2-1-cachyos-x86_64-with-glibc2.44",
+  "signals": [
+    {
+      "event": "object:children-changed:add",
+      "class": "noisy hint",
+      "safe_for_reuse": false,
+      "reason": "false negatives were not measured"
+    },
+    {
+      "event": "object:state-changed:focused",
+      "class": "noisy hint",
+      "safe_for_reuse": false,
+      "reason": "false negatives were not measured"
+    },
+    {
+      "event": "object:text-caret-moved",
+      "class": "noisy hint",
+      "safe_for_reuse": false,
+      "reason": "false negatives were not measured"
+    },
+    {
+      "event": "object:text-changed:delete",
+      "class": "noisy hint",
+      "safe_for_reuse": false,
+      "reason": "false negatives were not measured"
+    },
+    {
+      "event": "object:text-changed:insert",
+      "class": "noisy hint",
+      "safe_for_reuse": false,
+      "reason": "false negatives were not measured"
+    }
+  ],
+  "recommendation": "event absence stays always-observe; no Linux scope supports unchanged_since",
+  "not_tested": [
+    "process restart",
+    "web-content navigation",
+    "false-negative rate",
+    "event latency distribution"
+  ]
+}

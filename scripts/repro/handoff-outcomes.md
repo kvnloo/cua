@@ -89,11 +89,15 @@ Both compile `field_value_equals` and `fixture_submitted_equals` for the two exe
 
 ### Issue 16
 
-Blocked on macOS and Windows machines. This host cannot show whether `include_accessibility_tree` and `include_screenshot` behave the same on those drivers. No selector was changed.
+Machine-readable matrix: `scripts/repro/handoff/issue-16-matrix.tsv`.
+
+Linux source names `include_accessibility_tree` and `include_screenshot`. Runtime on macOS was not measured. Missing machine: macOS. Runtime on Windows was not measured. Missing machine: Windows. Recommendation: fail closed and do not advertise the selectors as equivalent. No selector was changed.
 
 ### Issue 17
 
-`browser_revision.bind` accepts a ref only when the ref and generation match the current node. The same label on a new generation raises `StaleRefError`. This is the browser rule the later conditional-observation notes have to respect. It is not a CDP conformance log.
+Transition table: `scripts/repro/handoff/issue-17-transitions.json`.
+
+Same ref and generation binds. Same label with a new generation is refused. `test_browser_revision.py` is the fixture. This table is what issue 11 has to respect. It is not a CDP log.
 
 ### Issue 18
 
@@ -109,23 +113,34 @@ Asked for raw UIA event traces and a safe/noisy/unusable table. None of that was
 
 ### Issue 20
 
-One GTK3 probe wrote `scripts/repro/atspi-census-20260925.json`. Text, caret, focus, and children-changed events arrived. False negatives, web navigation, and process restart were not measured. Event absence stays always-observe. No signal is marked safe for reuse.
+Trace: `scripts/repro/atspi-census-20260925.json`.
+Classification: `scripts/repro/handoff/issue-20-classification.json`.
+
+Every recorded event is a noisy hint. `safe_for_reuse` is false because false negatives were not measured. Recommendation: no Linux scope supports `unchanged_since`. macOS and Windows are not in this file.
 
 ### Issue 21
 
-`observation_replay.replay` never skips the recorded text-change. A synthetic step with no invalidator and a real change counts as a false reuse and `policy_killed` is true. Synthetic skips are labeled synthetic. Production skipping is off.
+Comparison: `scripts/repro/handoff/issue-21-comparison.json`, written by `observation_replay.replay`.
+
+The recorded GTK text-change is not skipped. A synthetic false reuse kills the policy. Production skipping is off. Break-even skips for macOS and Windows are null. Missing machines: macOS and Windows.
 
 ### Issue 23
 
-`use_model_done_gate` is false when an independent oracle exists, which is the jev-use `/state` fixture. `accept_completion` trusts the oracle over a model that says done. A task with no oracle may use the model bit. No latency table.
+Result table: `scripts/repro/handoff/issue-23-goals.json`, written by `use_model_done_gate` and `accept_completion`.
+
+The jev-use fixture keeps its `/state` oracle, so the model done-gate stays off. A model that says done does not override a failed oracle. No latency was measured. These heads were not added to #3961.
 
 ### Issue 24
 
-`task_battery.evaluate` fast-paths a single executable form candidate and does not fast-path two clicks. `promote_globally` is false for that pair. There is no interleaved runner and no wall-clock table.
+Per-task table: `scripts/repro/handoff/issue-24-battery.json`, written by `task_battery.evaluate`.
+
+Form-fill takes the fast path. The ambiguous modal does not. `promote_globally` is false. `wall_time_ms` is null because no interleaved live runner was executed on this Linux host.
 
 ### Issue 25
 
-Uses the #5 guard. Cap 4 with a refuted first child runs one child and wastes three. `recommend_cap` tells the caller to keep the cap at 2 for that early-stop mix. Not a latency result, and 4 is not embedded.
+Cap report: `scripts/repro/handoff/issue-25-caps.json`, written by `execute_capped` and `recommend_cap`.
+
+A refuted first child at cap 4 runs 1 and wastes 3. Recommendation: keep the cap at 2 for that mix, and do not embed 4. `wall_time_ms` is null. Run length stays caller-configured.
 
 ## Pruning
 
@@ -216,7 +231,11 @@ Fast path, guarded run, stale batch, and compiled expectations each have one cal
 
 ### Issue 40
 
-Python is the implementation on this branch. No TypeScript port of these functions was added, so parity is not claimed.
+Shared fixture: `scripts/repro/handoff/issue-40-fixture.json`.
+Python runner: `test_compiled_expectations.py`.
+TypeScript runner: `typescript/compiled_expectations.test.ts`.
+
+Both read that fixture. Parity is claimed only for compiled expectations. The other helpers were not mirrored.
 
 ### Issue 41
 
@@ -232,7 +251,10 @@ The guarded run is the verification-form pair (type, then submit). A second work
 
 ### Issue 44
 
-Routing that this branch will honor: semantic executable candidate means visual capture is optional; more than one executable candidate means the chooser runs; a run requires an explicit run decision; passive rows never route to an action. Anything else stays on the current driver path.
+Routing table: `scripts/repro/handoff/issue-44-routing.json`, written by `caller_route.route`.
+Tests: `test_caller_route.py`.
+
+`run.py` does not call `route`. The table is not fed into the runner, because the live verdicts it depends on are still missing.
 
 ### Issue 45
 
@@ -240,19 +262,21 @@ Each new function is a file under the jev-use example plus a unit test. No Drive
 
 ### Issue 46
 
-Blocked for the A/B receipts. Missing session: a live chooser run was not executed on this Linux host.
+Blocked. Missing session on this Linux host: a live chooser A/B.
 
-The projection was not added. `run.py` still sends the existing candidate list. There is no smaller chooser state to recommend from a receipt.
+Asked for projection definitions, A/B receipts, and a smallest safe chooser state. Not produced. `run.py` still sends the existing candidate list. No receipt was invented.
 
 ### Issue 47
 
-Blocked. A per-task history-sensitivity run was not executed on this Linux host. No step was removed from the runner, and no typed-history proposal is justified.
+Blocked. Missing session on this Linux host: a per-task history-sensitivity run.
+
+Asked for a sensitivity table and a typed-history proposal. Not produced. No step was removed from the runner.
 
 ### Issue 48
 
-Blocked. Mock versus Jev versus local S1 was not run on this Linux host.
+Blocked. Missing providers on this Linux host: a live Jev session and a local S1 session.
 
-`choose_mock` is still the offline chooser. `deterministic_fast_path.py` does not import Jev. That is not a parity matrix.
+Asked for a parity matrix across mock, Jev, and S1. Not produced. `choose_mock` remains the offline chooser. `deterministic_fast_path.py` does not import Jev.
 
 ### Issue 49
 
@@ -272,7 +296,14 @@ No doc change is required while the runner is unchanged.
 
 ### Issue 27
 
-Do not route on an optional observation until the driver reports that it honored the selector. This branch does not negotiate a new capability.
+| Optimization | Gate | Contract field |
+| --- | --- | --- |
+| lazy visual skip | a semantic executable candidate already exists | none; caller predicate only |
+| fast path | exactly one executable candidate | none |
+| guarded run | explicit run decision plus a fresh observation | none |
+| conditional skip | not enabled | none |
+
+No new capability field. Do not route on a selector the driver has not reported as honored.
 
 ### Issue 28
 
@@ -296,7 +327,9 @@ Unsupported fast path and guarded run return none or raise. They do not report a
 
 ### Issue 33
 
-`typed_choice` does not continue after refusal, skipped observation, or an unverifiable effect. `second_child_allowed` does not continue after unknown. That is the no-replay rule in unit form. No injected live failure was run.
+Dispatch counts: `scripts/repro/handoff/issue-33-dispatch.json`, written by `second_child_allowed`.
+
+Verified is the only status in that file with a second dispatch. Refuted, unknown, stale, rebound, and refused stay at one dispatch. An independent app-state oracle was not attached on this Linux host. The recommendation is the typed rule already in `action_consumer.py`: do not replay after unknown.
 
 ### Issue 34
 
@@ -304,7 +337,7 @@ No telemetry field with window titles, tokens, or screenshots was added. `task_a
 
 ### Issue 35
 
-No CI wall-clock gate was added.
+Regression budget: do not add a CI wall-clock gate. The sample check is the existing unit tests of the caller functions. A green unit run does not certify a latency change. No workflow file was added.
 
 ### Issue 36
 
