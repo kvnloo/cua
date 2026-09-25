@@ -37,7 +37,7 @@ class HandoffRecordTest(unittest.TestCase):
         self.assertIn("cap at 2", advice)
         dag = json.loads((HANDOFF / "promotion-dag.json").read_text(encoding="utf-8"))
         length = next(item for item in dag["items"] if item["id"] == "run-length-4")
-        self.assertEqual(length["posting_status"], "KILLED")
+        self.assertEqual(length["posting_status"], "WAITING ON DOWNSTREAM EXPERIMENT")
         self.assertTrue((ROOT / length["evidence"]).is_file())
 
     def test_fast_path_and_passive_rules_match_the_decision_table(self) -> None:

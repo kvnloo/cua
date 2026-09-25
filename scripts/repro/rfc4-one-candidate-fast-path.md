@@ -8,7 +8,7 @@ Downstream experiment. The default jev-use chooser is unchanged.
 
 ## What this commit does not claim
 
-Live interleaved trials are not in this commit. There is no KEEP / REVISE / KILL verdict.
+Live interleaved trials are not in this commit. No promotion verdict is issued.
 
 The unit test `test_rule_acts_when_a_chooser_would_reobserve` records the authority the rule removes: one executable candidate is admitted even when a chooser would reobserve. That case has to be measured on the fixture before any promotion.
 

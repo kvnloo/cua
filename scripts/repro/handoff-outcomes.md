@@ -1,6 +1,6 @@
 # Handoff outcomes
 
-Downstream record for the open `kvnloo/cua` GPT queue. Draft PR 26, branch `test/rfc-fast-path-one-candidate-20260925`. No issue is closed from this file. Words KEEP, REVISE, and KILL appear only in the mechanism table, and only next to a test that was run.
+Downstream record for the open `kvnloo/cua` GPT queue. Draft PR 26, branch `test/rfc-fast-path-one-candidate-20260925`. No issue is closed from this file. No promotion verdict is applied. A unit test is not a substitute for a missing trace.
 
 Host: Linux. `platform-macos` was not compiled here. No Windows machine was available.
 
@@ -8,9 +8,9 @@ Host: Linux. `platform-macos` was not compiled here. No Windows machine was avai
 
 | Mechanism | Decision | Why | Evidence |
 | --- | --- | --- | --- |
-| Embedding guarded-run length 4 as a shared constant | KILL | A planned length of 4 still stops after a failed first postcondition and wastes the rest. That is not a reason to hard-code 4. | `libs/cua-driver/examples/jev-use/python/tests/test_run_length.py` |
-| Treating a passive observation row as an action target | KILL | Verification may read the row. Minting an action target from it raises. | `libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py` |
-| Skipping a capture because a shadow probe said so | KILL | The probe constructor rejects `skip_capture=True`. The recorded GTK text-change is logged and still observed. | `libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py` |
+| Embedding guarded-run length 4 as a shared constant | BLOCKED | The unit test stops after a failed first postcondition and wastes the rest. Fixture latency was not measured, so no promotion state is applied. | `libs/cua-driver/examples/jev-use/python/tests/test_run_length.py` |
+| Treating a passive observation row as an action target | BLOCKED | The unit test refuses to mint an action target. Missing machine: macOS, for the Calculator log. | `libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py` |
+| Skipping a capture because a shadow probe said so | BLOCKED | The probe constructor rejects `skip_capture=True`. The false-negative census was not measured. Missing machines: macOS and Windows. | `libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py` |
 
 Every other mechanism in this queue stays undecided. Unit admission is not a live interleaved trial.
 
@@ -20,19 +20,19 @@ Every other mechanism in this queue stays undecided. Unit admission is not a liv
 
 Blocked. The block file is `scripts/repro/handoff/issue-2-block.md`.
 
-Missing session on this Linux host: a live Driver, Chromium fixture, and model run. The JSONL receipts, command log, summary table, and verdict for trycua/cua#4165 were not produced and were not invented.
+Missing on this Linux host: an exact-head Driver, a Chromium fixture, and a model run. `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The JSONL receipts, command log, summary table, and promotion verdict for trycua/cua#4165 were not produced and were not invented.
 
 ### Issue 3
 
 Blocked. The block file is `scripts/repro/handoff/issue-3-block.md`.
 
-Missing trace on this Linux host: an accessibility walker count. The six predicate cases were not traced. The call-site lock in `test_verify_elapsed_order.py` is not that trace and is not a verdict.
+Missing machines: macOS and Windows. Missing on this Linux host: an exact-head AT-SPI walker count. The probe shows no top-level windows. The six predicate cases were not traced. The call-site lock in `test_verify_elapsed_order.py` is not that trace and is not a promotion verdict.
 
 ### Issue 4
 
 Blocked. The block file is `scripts/repro/handoff/issue-4-block.md`.
 
-Missing session on this Linux host: a live interleaved fixture trial. Eligibility metrics were not measured. `single_executable_candidate` is not an eligibility verdict, and the default chooser is unchanged.
+Missing on this Linux host: an exact-head interleaved fixture trial. Installed driver `cua-driver 0.28.2` is not pinned head `c5ee191c02b11448ffefcc38b78b064a87d8ef23`, and no daemon is running. Eligibility metrics were not measured. `single_executable_candidate` is not an eligibility verdict, and the default chooser is unchanged.
 
 ### Issue 5
 
@@ -50,7 +50,7 @@ Receipts from `stale_batch.run_batch`: `scripts/repro/handoff/issue-6-receipts.j
 
 ### Issue 8
 
-Blocked on a macOS machine. The Calculator result in trycua/cua#2958 was not driven. The downstream rule in `passive_observation.py` lets verification read a passive row and refuses to mint an action target. That is not native evidence and not a patch recommendation with a passing Calculator log.
+Blocked. `scripts/repro/handoff/issue-8-block.md`. Missing machine: macOS. The Calculator result in trycua/cua#2958 was not driven. The downstream rule in `passive_observation.py` lets verification read a passive row and refuses to mint an action target. That is not native evidence and not a patch recommendation with a passing Calculator log.
 
 ### Issue 9
 
@@ -60,7 +60,7 @@ Blocked on a macOS machine. The Calculator result in trycua/cua#2958 was not dri
 
 Blocked. The block file is `scripts/repro/handoff/issue-10-block.md`.
 
-Missing session on this Linux host: the 4-arm benchmark. No task×arm×trial JSONL was written, and no trial time was invented. `task_accounting.outcome_time` returns verified-outcome time only.
+Missing on this Linux host: the 4-arm benchmark on an exact-head driver. Installed binary `cua-driver 0.28.2`, daemon not running, no top-level windows. No task×arm×trial JSONL was written, and no trial time was invented. `task_accounting.outcome_time` returns verified-outcome time only.
 
 ### Issue 11
 
@@ -78,7 +78,7 @@ Skipped observation, unavailable observation, suspected noop, and a probe failur
 
 Blocked. The block file is `scripts/repro/handoff/issue-13-block.md`.
 
-Missing workload on this Linux host: a slow native tree with per-phase timings. No latency number was invented. `WalkBudget` already starts at the first admitted node. No second budget was added.
+Missing on this Linux host: a slow native tree. The probe found no top-level windows. Missing machines for the other platforms: macOS and Windows. No latency number was invented. `WalkBudget` already starts at the first admitted node. No second budget was added.
 
 ### Issue 14
 
@@ -150,9 +150,7 @@ Abstractions that disappear: a universal shadow store, a second verifier, a shar
 
 ### Issue 52
 
-`scripts/repro/handoff/decision-table.tsv` has one decision per mechanism: KEEP, REVISE, KILL, or BLOCKED, plus evidence, missing evidence, owner, public surface cost, and next action.
-
-There is no KEEP and no REVISE. KILL is only the shared run length of 4 (`test_run_length.py`), a passive row used as an action target (`test_passive_observation.py`), and a capture skip from the shadow probe (`test_shadow_probe.py`). Those three rows still say to leave #25, #8, and #11 open. Every other mechanism is BLOCKED, including the rows that name the missing macOS machine and the missing Windows machine. No downstream issue was closed. #7, #15, and #22 were already closed before this queue.
+`scripts/repro/handoff/decision-table.tsv` has evidence, missing evidence, owner, public surface cost, and next action. Every decision cell is BLOCKED. The run-length, passive-row, and shadow-skip rows stay blocked because fixture latency, the macOS Calculator log, and the false-negative census were not produced. The AX and UIA rows name the missing macOS and Windows machines. No downstream issue was closed. #7, #15, and #22 were already closed before this queue. #25, #8, and #11 stay open.
 
 ### Issue 53
 
@@ -198,7 +196,7 @@ The downstream rewrite is `scripts/repro/handoff/rfc-3963-delta.md`. It has the 
 
 ### Issue 62
 
-The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a change, a dependency, evidence already complete, evidence still missing, an action, a stop condition, and a posting status. Length 4 is `KILLED` because `test_run_length.py` shows the wasted children. The elapsed-ms order comment is the only `READY NOW` item, and it claims no speedup. The other items wait on a live trial, a missing machine, or an RFC decision. No new upstream pull request.
+The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a change, a dependency, evidence already complete, evidence still missing, an action, a stop condition, and a posting status. Length 4 waits on the fixture-latency trial. The elapsed-ms order comment is the only `READY NOW` item, and it claims no speedup. The other items wait on a live trial, a missing machine, or an RFC decision. No new upstream pull request.
 
 ## Consolidation
 
@@ -255,7 +253,7 @@ Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Li
 
 ### Issue 50
 
-`scripts/repro/handoff/issue-50-docs.md` and `scripts/repro/handoff/issue-50-matrix.tsv`. The matrix cites `WORKFLOW.md`, the Linux, macOS, and Windows skills, the jev-use README, `action-result-contract.md`, `perception-extension.md`, and RFC 3931. Each cited quote is on the named line. No KEEP is recorded, so the patch plan is to leave those files unedited. Lines that must not be weakened include tree-only observation, unknown-is-not-success, and one capture per action.
+`scripts/repro/handoff/issue-50-docs.md` and `scripts/repro/handoff/issue-50-matrix.tsv`. The matrix cites `WORKFLOW.md`, the Linux, macOS, and Windows skills, the jev-use README, `action-result-contract.md`, `perception-extension.md`, and RFC 3931. Each cited quote is on the named line. No promotion state is recorded, so the patch plan is to leave those files unedited. Lines that must not be weakened include tree-only observation, unknown-is-not-success, and one capture per action.
 
 ## Promotion
 
@@ -315,11 +313,11 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Verdict: KEEP DRAFT. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. Trace: none. The native walker counter was not captured on this Linux host. The upstream pull request description was not changed.
+Verdict withheld. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. Trace: none. Missing machines: macOS and Windows. This Linux host has no exact-head walker log: `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The upstream pull request description was not changed.
 
 ### Issue 64
 
-Blocked. `scripts/repro/handoff/issue-64-block.md`. Missing session on this Linux host: the exact-head outcome A/B for trycua/cua#4165. No helper was added.
+Blocked. `scripts/repro/handoff/issue-64-block.md`. Missing on this Linux host: an exact-head driver session for the trycua/cua#4165 outcome A/B. `linux-host-probe.txt` shows installed `cua-driver 0.28.2`, no daemon, and no top-level windows. The pinned head is `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No helper was added. No verdict was issued.
 
 ### Issue 65
 
@@ -365,7 +363,7 @@ Recommendation: NO PUBLIC FIELD. `typed_choice` already returns continue, observ
 
 ### Issue 72
 
-Blocked. `scripts/repro/handoff/issue-72-block.md`. Missing session on this Linux host: an exact-head A/B of `list_apps` against #3492. No second cache was implemented.
+Blocked. `scripts/repro/handoff/issue-72-block.md`. Missing on this Linux host: an exact-head `list_apps` A/B against trycua/cua#3492. The installed binary is `cua-driver 0.28.2` and the daemon is not running. No second cache was implemented.
 
 ### Issue 73
 
@@ -378,14 +376,14 @@ Machine-readable DAG: `scripts/repro/handoff/promotion-dag.json`. Human queue: `
 | id | status | action |
 | --- | --- | --- |
 | elapsed-ms-boundary | READY NOW | comment, not posted, no speedup claim |
-| run-length-4 | KILLED | no action |
+| run-length-4 | WAITING ON DOWNSTREAM EXPERIMENT | no action |
 | 3961-scope | ASSIMILATED | no action, NO CHANGE NEEDED |
 | 4009-public-field | ASSIMILATED | no action, NO PUBLIC FIELD |
 | 4052 | WAITING ON DOWNSTREAM EXPERIMENT | no action |
-| 4164 | WAITING ON DOWNSTREAM EXPERIMENT | KEEP DRAFT, description not updated |
+| 4164 | WAITING ON DOWNSTREAM EXPERIMENT | verdict withheld, description not updated |
 | 4165 | WAITING ON DOWNSTREAM EXPERIMENT | not sent |
 | 3904 | WAITING ON DOWNSTREAM EXPERIMENT | missing machine: macOS |
 | 2794-3494 | WAITING ON DOWNSTREAM EXPERIMENT | elapsed_ms is null |
 | 3796 | WAITING ON RFC DECISION | not sent |
 
-The killed row cites `test_run_length.py`. No new upstream pull request. Draft pull request 26 was not merged.
+The length-4 row waits on fixture latency and cites `test_run_length.py` only for the wasted-child count. No new upstream pull request. Draft pull request 26 was not merged.

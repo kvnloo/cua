@@ -14,6 +14,6 @@ conditional observation	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/te
 platform invalidation signals	BLOCKED	scripts/repro/atspi-census-20260925.json	macOS machine and Windows machine	platform listeners	none	do not mark a signal safe; leave kvnloo/cua#18 and #19 open
 chooser projection and history compression	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_caller_route.py	live chooser session	jev-use caller	none	leave kvnloo/cua#46 and #47 open
 helper extraction	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	a second semantically identical call site	none	none	do not extract; leave kvnloo/cua#39 open
-guarded-run length 4 as a shared constant	KILL	libs/cua-driver/examples/jev-use/python/tests/test_run_length.py	fixture latency was not measured	none	none	do not embed 4; leave kvnloo/cua#25 open
-passive row as an action target	KILL	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	macOS Calculator trace	caller policy	none	do not mint an action target; leave kvnloo/cua#8 open
-capture skip from a shadow probe	KILL	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	false-negative census	shadow_probe	none	do not skip; leave kvnloo/cua#11 open
+guarded-run length 4 as a shared constant	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_run_length.py	fixture latency report required by kvnloo/cua#25; exact-head driver session missing on this Linux host	none	none	do not embed 4; leave kvnloo/cua#25 open
+passive row as an action target	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	macOS machine for the Calculator trace	caller policy	none	do not mint an action target; leave kvnloo/cua#8 open
+capture skip from a shadow probe	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	false-negative census; missing machines macOS and Windows	shadow_probe	none	do not skip; leave kvnloo/cua#11 open

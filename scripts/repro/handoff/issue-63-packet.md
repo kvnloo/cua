@@ -1,6 +1,6 @@
 # Issue 63
 
-Verdict: KEEP DRAFT.
+Verdict withheld. The promotion packet requires a native walker trace, and that trace was not recorded.
 
 Upstream pin: `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
@@ -10,7 +10,7 @@ Test: `libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.p
 
 Source: `libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs`. `elapsed_ms` is assigned at line 310. The optional screenshot path then calls `observe(input.pid, input.window_id, false, true)` at line 329. The second flag is the screenshot. The third argument is `false`, so this call does not ask for elements.
 
-Trace: none. The native walker counter was not captured on this Linux host. AX, UIA, and AT-SPI idle counts were not measured.
+Trace: none. Missing machines: macOS for an AX walker count, and Windows for a UIA walker count. Missing on this Linux host: an exact-head AT-SPI walker log. `scripts/repro/handoff/linux-host-probe.txt` records the installed binary `cua-driver 0.28.2`, a daemon that is not running, no top-level windows, and an AT-SPI bus with nothing to walk. The pinned head is `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. AX, UIA, and AT-SPI idle counts were not measured.
 
 Limitation: the call site is not proof that those walkers stayed idle.
 

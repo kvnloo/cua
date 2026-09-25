@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -74,7 +75,7 @@ class HandoffPruningTest(unittest.TestCase):
             self.assertEqual(row["must_not_weaken"], "yes")
         docs = (HANDOFF / "issue-50-docs.md").read_text(encoding="utf-8")
         self.assertIn("do not edit", docs)
-        self.assertIn("no KEEP", docs)
+        self.assertIn("BLOCKED", docs)
 
     def test_ownership_uses_the_six_outcomes_and_deletes_the_extra_services(self) -> None:
         allowed = {
@@ -127,18 +128,19 @@ class HandoffPruningTest(unittest.TestCase):
     def test_decision_table_kills_only_the_behaviors_the_functions_refuse(self) -> None:
         with (HANDOFF / "decision-table.tsv").open(encoding="utf-8") as handle:
             rows = list(csv.DictReader(handle, delimiter="\t"))
-        killed = sorted(row["mechanism"] for row in rows if row["decision"] == "KILL")
         self.assertEqual(
-            killed,
-            [
-                "capture skip from a shadow probe",
-                "guarded-run length 4 as a shared constant",
-                "passive row as an action target",
-            ],
+            sorted(row["decision"] for row in rows),
+            ["BLOCKED"] * len(rows),
         )
+        blocked_names = {row["mechanism"] for row in rows}
+        for name in (
+            "capture skip from a shadow probe",
+            "guarded-run length 4 as a shared constant",
+            "passive row as an action target",
+        ):
+            self.assertIn(name, blocked_names)
         for row in rows:
-            self.assertIn(row["decision"], {"KEEP", "REVISE", "KILL", "BLOCKED"})
-            self.assertNotIn(row["decision"], {"KEEP", "REVISE"})
+            self.assertEqual(row["decision"], "BLOCKED")
             self.assertTrue((ROOT / row["evidence"]).is_file())
             if row["decision"] == "BLOCKED":
                 self.assertTrue(row["missing_evidence"])
@@ -238,8 +240,9 @@ class HandoffPruningTest(unittest.TestCase):
 
     def test_keep_draft_packet_matches_the_unlocked_walker(self) -> None:
         packet = (HANDOFF / "issue-63-packet.md").read_text(encoding="utf-8")
-        self.assertIn("KEEP DRAFT", packet)
+        self.assertIn("Verdict withheld", packet)
         self.assertIn("Trace: none", packet)
+        self.assertIn("Missing machines: macOS", packet)
         self.assertIn(FORK_SHA, packet)
         source = (
             ROOT / "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs"
@@ -350,7 +353,7 @@ class HandoffPruningTest(unittest.TestCase):
             "fixed GuardedRun length",
         ):
             self.assertIn(gone, text)
-        self.assertIn("There is no KEEP and no REVISE", text)
+        self.assertIn("gives every mechanism the state BLOCKED", text)
 
     def test_promotion_dag_is_the_posting_queue(self) -> None:
         dag = json.loads((HANDOFF / "promotion-dag.json").read_text(encoding="utf-8"))
@@ -358,7 +361,6 @@ class HandoffPruningTest(unittest.TestCase):
             "READY NOW",
             "WAITING ON DOWNSTREAM EXPERIMENT",
             "WAITING ON RFC DECISION",
-            "KILLED",
             "ASSIMILATED",
         }
         ids = [item["id"] for item in dag["items"]]
@@ -386,6 +388,16 @@ class HandoffPruningTest(unittest.TestCase):
         self.assertIn("Nothing in this queue was posted upstream", queue)
         self.assertLess(queue.index("elapsed-ms-boundary"), queue.index("`4052`"))
         self.assertLess(queue.index("`4052`"), queue.index("`3796`"))
+
+    def test_repro_notes_do_not_apply_a_promotion_verdict(self) -> None:
+        banned = re.compile(r"\b(KEEP|REVISE|KILL|KILLED)\b")
+        hits = []
+        for path in (ROOT / "scripts" / "repro").rglob("*"):
+            if path.suffix.lower() not in {".md", ".tsv", ".json", ".txt", ".jsonl"}:
+                continue
+            if banned.search(path.read_text(encoding="utf-8", errors="replace")):
+                hits.append(str(path.relative_to(ROOT)))
+        self.assertEqual(hits, [])
 
 
 if __name__ == "__main__":

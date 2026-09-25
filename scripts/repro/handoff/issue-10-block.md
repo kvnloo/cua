@@ -1,8 +1,10 @@
 # Issue 10
 
-Blocked. Missing session on this Linux host: the 4-arm task benchmark.
+Blocked. The 4-arm benchmark was not run.
 
-Asked for: task × arm × trial JSONL, an analysis script over those trials, raw logs, exact commands, and a summary table. Failed and abstained trials would have to be kept.
+Missing on this Linux host: an exact-head Driver session and a model provider for the four arms. Installed binary: `cua-driver 0.28.2`. Daemon: not running. Top-level windows: none. See `scripts/repro/handoff/linux-host-probe.txt`. Pinned head: `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+
+Asked for: task × arm × trial JSONL, an analysis script over those trials, raw logs, exact commands, and a summary table.
 
 Not produced: that JSONL or table.
 Not invented: trial milliseconds.

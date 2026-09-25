@@ -1,8 +1,10 @@
 # Issue 4
 
-Blocked. Missing session on this Linux host: a live interleaved fixture trial with an independent task oracle.
+Blocked. The interleaved fixture trial was not run.
 
-Asked for: success, model requests, decisions, actions, observations, wall time, and the cases where Jev would reobserve but the rule would act. A fast path is not eligible without those.
+Missing on this Linux host: an exact-head Driver session and an independent task oracle. Installed binary: `cua-driver 0.28.2`. Daemon: not running. Top-level windows: none. See `scripts/repro/handoff/linux-host-probe.txt`. Pinned head: `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+
+Asked for: success, model requests, decisions, actions, observations, wall time, and the cases where Jev would reobserve but the rule would act.
 
 Not produced: those measurements or an eligibility verdict.
 Not invented: hit rate or wall time.

@@ -31,17 +31,9 @@ Dispositions used: `already exists`, `caller/recipe-local`, and `delete from pla
 
 ## 4. Disposition table
 
-`scripts/repro/handoff/decision-table.tsv` gives each mechanism one of KEEP, REVISE, KILL, or BLOCKED, plus the missing evidence, the owner, the public-surface cost, and the next action.
+`scripts/repro/handoff/decision-table.tsv` gives every mechanism the state BLOCKED, plus the missing evidence, the owner, the public-surface cost, and the next action. Issue 52 also names three other decision states. None of those was applied. The unit tests for run length, passive rows, and the shadow probe do not include the fixture latency report, the macOS Calculator log, or the false-negative census those issues require.
 
-No downstream issue was closed by this draft. #7, #15, and #22 were already closed before this queue.
-
-KILL is recorded only for three behaviors the unit tests demonstrate:
-
-- a shared run length of 4 (`test_run_length.py`)
-- using a passive row as an action target (`test_passive_observation.py`)
-- skipping a capture from the shadow probe (`test_shadow_probe.py`)
-
-Those KILL rows still leave #25, #8, and #11 open, because fixture latency, the macOS Calculator log, and the false-negative census were not produced. Every other mechanism is BLOCKED. There is no KEEP and no REVISE.
+No downstream issue was closed by this draft. #7, #15, and #22 were already closed before this queue. #25, #8, and #11 stay open.
 
 ## 5. Remaining deltas
 

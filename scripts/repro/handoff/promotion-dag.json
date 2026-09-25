@@ -27,13 +27,13 @@
       "branch": "test/rfc-fast-path-one-candidate-20260925",
       "sha": "92b5035ea08b2126f947db0dfd8ecf829013d7b4",
       "evidence_complete": "execute_capped wastes 3 children when the first postcondition fails",
-      "evidence_missing": "fixture latency",
+      "evidence_missing": "fixture latency on an exact-head driver session; this Linux host has cua-driver 0.28.2, no daemon, and no top-level windows",
       "action": "no action",
       "dependency": "none",
       "stop_condition": "do not add max_run_length=4",
       "change": "do not embed length 4",
       "evidence": "libs/cua-driver/examples/jev-use/python/tests/test_run_length.py",
-      "posting_status": "KILLED",
+      "posting_status": "WAITING ON DOWNSTREAM EXPERIMENT",
       "issue": 54,
       "comment": "A four-child plan that fails its first guard runs one child and wastes three. Do not standardize 4."
     },
@@ -86,7 +86,7 @@
       "evidence": "libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.py",
       "posting_status": "WAITING ON DOWNSTREAM EXPERIMENT",
       "issue": 63,
-      "comment": "KEEP DRAFT. The call site passes false for elements. No walker trace was captured."
+      "comment": "Verdict withheld. The call site passes false for elements. No walker trace was captured."
     },
     {
       "id": "4165",

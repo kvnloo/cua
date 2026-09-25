@@ -22,4 +22,4 @@ Tests: `libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py`.
 
 ## Receipts
 
-No live fixture JSONL was produced on this Linux host. The unit tests are the execution record of the prototype. There is no KEEP verdict, because wall time and fixture success were not measured. No shared helper was added.
+No live fixture JSONL was produced on this Linux host. The unit tests are the execution record of the prototype. No promotion verdict is issued, because wall time and fixture success were not measured. No shared helper was added.
