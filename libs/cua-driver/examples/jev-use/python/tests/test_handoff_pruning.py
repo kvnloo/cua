@@ -389,6 +389,28 @@ class HandoffPruningTest(unittest.TestCase):
         self.assertLess(queue.index("elapsed-ms-boundary"), queue.index("`4052`"))
         self.assertLess(queue.index("`4052`"), queue.index("`3796`"))
 
+    def test_issue_55_graph_matches_typed_choice(self) -> None:
+        text = (HANDOFF / "issue-55-consumers.md").read_text(encoding="utf-8")
+        self.assertIn("No new public field", text)
+        self.assertIn("stays open", text)
+        self.assertIn("no wire marker is added", text)
+        self.assertIn("Dropped per #3971", text)
+        source = (
+            ROOT / "libs/cua-driver/rust/crates/platform-macos/src/window_change_detector.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn("\n    poll: PollProvenance,\n", source)
+        self.assertNotIn("pub poll: PollProvenance", source)
+        with (HANDOFF / "issue-55-edges.tsv").open(encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t"))
+        self.assertGreaterEqual(len(rows), 4)
+        for row in rows:
+            choice = typed_choice(
+                row["effect"],
+                row["observation"],
+                passive_success=row["passive_success"] == "true",
+            )
+            self.assertEqual(choice, row["decision"], row["consumer"])
+
     def test_blocked_notes_name_the_linux_host(self) -> None:
         names = (
             "issue-2-block.md",

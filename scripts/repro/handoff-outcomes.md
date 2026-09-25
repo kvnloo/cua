@@ -164,7 +164,7 @@ Deleted: a shared constant of 4. Local: the per-child check in `guarded_run.py`.
 
 ### Issue 55
 
-`scripts/repro/handoff/issue-55-consumers.md`. No public field. No promotion dependency.
+`scripts/repro/handoff/issue-55-consumers.md` and `scripts/repro/handoff/issue-55-edges.tsv`. The edges are `typed_choice` results. trycua/cua#3946 adds no wire marker, #3971 asks for an explicit skip and has no failing regression, and #4009 only proposes `post_dispatch_observation`. No new public field. The issue stays open.
 
 ### Issue 56
 
