@@ -1,0 +1,31 @@
+name: RFC3963 read-only dependency census
+on:
+  push:
+    branches: [research/rfc3963-dependency-census-20260925]
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+jobs:
+  census:
+    if: github.repository == 'kvnloo/cua'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Load this exact scanner commit
+        env:
+          SCANNER_SHA: ${{ github.sha }}
+        run: curl --fail --location --retry 3 "https://raw.githubusercontent.com/kvnloo/cua/${SCANNER_SHA}/scan.py" -o scan.py
+      - name: Read public history and pinned tracked source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scan.py
+      - name: Retain census and completeness manifest
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: rfc3963-repository-census
+          path: export/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
