@@ -73,19 +73,55 @@ pub struct Snapshot {
     _lease: Option<SuppressionLease>,
 }
 
+/// Whether `detect` actually polled. Not part of the public tool schema.
+///
+/// `NotPolled` is the trusted opt-out. `Polled` includes a completed poll
+/// that observed no change. `Failed` is a detector error, not a quiet poll.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PollProvenance {
+    NotPolled,
+    Polled,
+    Failed,
+}
+
 /// Result of `detect()` — what changed during the action window.
 #[derive(Debug, Clone)]
 pub struct Changes {
     pub new_windows: Vec<WindowEvent>,
     pub foreground_changed: bool,
+    poll: PollProvenance,
 }
 
 impl Changes {
-    pub fn no_change() -> Self {
+    fn from_parts(
+        new_windows: Vec<WindowEvent>,
+        foreground_changed: bool,
+        poll: PollProvenance,
+    ) -> Self {
         Self {
-            new_windows: Vec::new(),
-            foreground_changed: false,
+            new_windows,
+            foreground_changed,
+            poll,
         }
+    }
+
+    /// A completed poll that saw no window or foreground change.
+    pub fn no_change() -> Self {
+        Self::from_parts(Vec::new(), false, PollProvenance::Polled)
+    }
+
+    /// The host opted out of observation. This is not a completed no-change poll.
+    pub(crate) fn not_polled() -> Self {
+        Self::from_parts(Vec::new(), false, PollProvenance::NotPolled)
+    }
+
+    /// The detector did not finish. Do not report this as a successful poll.
+    pub(crate) fn poll_failed() -> Self {
+        Self::from_parts(Vec::new(), false, PollProvenance::Failed)
+    }
+
+    pub fn poll(&self) -> PollProvenance {
+        self.poll
     }
 
     /// True when we found evidence that the action triggered a cross-app
@@ -285,7 +321,7 @@ impl Snapshot {
     pub(crate) fn detect_bounded(self, bounds: WindowObservationBounds) -> Changes {
         if bounds.skips_observation() {
             drop(self);
-            return Changes::no_change();
+            return Changes::not_polled();
         }
         self.detect_with(bounds.timeout, bounds.poll)
     }
@@ -299,7 +335,7 @@ impl Snapshot {
         // thread; the lease's Drop runs there when detect_with returns.
         tokio::task::spawn_blocking(move || self.detect())
             .await
-            .unwrap_or_else(|_| Changes::no_change())
+            .unwrap_or_else(|_| Changes::poll_failed())
     }
 
     /// Same as `detect()` but with configurable timing.
@@ -330,10 +366,7 @@ impl Snapshot {
             };
 
             if !new_windows.is_empty() || foreground_changed {
-                return Changes {
-                    new_windows,
-                    foreground_changed,
-                };
+                return Changes::from_parts(new_windows, foreground_changed, PollProvenance::Polled);
             }
             if Instant::now() >= deadline {
                 return Changes::no_change();
@@ -353,6 +386,20 @@ mod tests {
         let c = Changes::no_change();
         assert_eq!(c.result_suffix(), "");
         assert!(!c.needs_restore());
+        assert_eq!(c.poll(), PollProvenance::Polled);
+    }
+
+    #[test]
+    fn opt_out_is_not_a_completed_no_change_poll() {
+        let skipped = Changes::not_polled();
+        let polled = Changes::no_change();
+        assert_ne!(skipped.poll(), polled.poll());
+        assert!(!skipped.needs_restore());
+        assert!(!polled.needs_restore());
+        assert_eq!(skipped.result_suffix(), "");
+        assert_eq!(polled.result_suffix(), "");
+        assert_eq!(Changes::poll_failed().poll(), PollProvenance::Failed);
+        assert_ne!(Changes::poll_failed().poll(), PollProvenance::Polled);
     }
 
     #[test]
@@ -365,6 +412,7 @@ mod tests {
                 title: "New Tab".into(),
             }],
             foreground_changed: false,
+            poll: PollProvenance::Polled,
         };
         assert!(c.needs_restore());
         assert_eq!(
@@ -397,6 +445,7 @@ mod tests {
                 },
             ],
             foreground_changed: true,
+            poll: PollProvenance::Polled,
         };
         let suffix = c.result_suffix();
         // BTreeMap sort order is alphabetical by app name → Chrome before Mail.
@@ -411,6 +460,7 @@ mod tests {
         let c = Changes {
             new_windows: vec![],
             foreground_changed: true,
+            poll: PollProvenance::Polled,
         };
         assert!(c.needs_restore());
         assert_eq!(
@@ -429,6 +479,7 @@ mod tests {
                 title: "".into(),
             }],
             foreground_changed: false,
+            poll: PollProvenance::Polled,
         };
         // No title → just the app name, no parentheses.
         assert_eq!(
