@@ -1,10 +1,26 @@
 # Issue 50
 
-| Doc or skill | Touched by this branch | Patch plan |
-| --- | --- | --- |
-| `libs/cua-driver/examples/jev-use/python/run.py` | the new functions are not called | none until one is wired |
-| canonical `WORKFLOW.md` | not edited | none while these files stay experiments |
-| jev-use README | not edited | none until a mechanism is promoted |
-| platform skills | not edited | none |
+Doc and skill matrix: `scripts/repro/handoff/issue-50-matrix.tsv`.
 
-No documentation patch is required yet.
+Audited, and left unedited:
+
+- `libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md`
+- `LINUX.md`, `MACOS.md`, `WINDOWS.md` in the same skill directory
+- `libs/cua-driver/examples/jev-use/README.md`
+- `libs/cua-driver/docs/action-result-contract.md`
+- `libs/cua-driver/docs/perception-extension.md`
+- `rfcs/3931-cua-perception-and-jev-use.md`
+
+`run.py` does not call the experiment functions, so no KEEP in `decision-table.tsv` schedules a documentation patch. The decision table has no KEEP row.
+
+Patch plan: do not edit those files on this branch.
+
+Lines that must not be weakened, even if a later KEEP is earned:
+
+- `WORKFLOW.md` line 44: tree-only observation cannot ground a pixel action.
+- `WORKFLOW.md` line 127: canceled, partial, or unknown actions are not replayed.
+- `WORKFLOW.md` line 44 again: event absence is not permission to skip.
+- RFC 3931 line 403: one capture authorizes at most one action.
+- `action-result-contract.md` line 94: `unknown` is not success.
+
+The only line a future lazy-vision KEEP would revisit is `WORKFLOW.md` line 38, which says `get_window_state` requests the tree and a grounding screenshot by default. That KEEP is not recorded. macOS and Windows skill lines were read here and were not executed.

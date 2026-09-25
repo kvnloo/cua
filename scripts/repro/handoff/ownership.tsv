@@ -1,14 +1,19 @@
 requirement	current_owner	smallest_delta	evidence	disposition
-optional visual capture	jev-use caller	lazy_vision.needs_visual_capture	libs/cua-driver/examples/jev-use/python/tests/test_lazy_vision.py	not wired into run.py
-one executable candidate	jev-use caller	deterministic_fast_path.single_executable_candidate	libs/cua-driver/examples/jev-use/python/tests/test_deterministic_fast_path.py	not wired into run.py
-two-action run	jev-use caller	guarded_run.admit_guarded_run	libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py	not a Driver tool
-stale batch child	caller harness	stale_batch.run_batch	libs/cua-driver/examples/jev-use/python/tests/test_stale_batch.py	not a second batch API
-passive versus action	caller policy	passive_observation.action_target	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	no public schema
-walk time	WalkBudget	none	libs/cua-driver/rust/crates/cua-driver-core/src/walk_budget.rs	existing owner
-verify_state screenshot and elapsed_ms	expectation.rs	none	libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.py	call site locked only
-window-change poll	platform-macos Changes	PollProvenance	libs/cua-driver/rust/crates/platform-macos/src/window_change_detector.rs	internal field
-browser ref generation	caller rule	browser_revision.bind	libs/cua-driver/examples/jev-use/python/tests/test_browser_revision.py	not a second snapshot service
-cancellation order	existing request-id owner	cancellation_lifetime.Lifetime	libs/cua-driver/examples/jev-use/python/tests/test_cancellation_lifetime.py	no new runtime
-run length 4 as a constant	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_run_length.py	not adopted
-universal shadow store	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	not adopted
-second verifier	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	expectations stay recipe-local
+telemetry and timing	verify_state elapsed_ms and caller task_accounting.py	outcome_time returns verified_outcome_ms only	libs/cua-driver/examples/jev-use/python/tests/test_task_accounting.py	caller/recipe-local
+observation projection	get_window_state include_screenshot and include_accessibility_tree	none on this branch	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	already exists
+deterministic fast path	jev-use caller	deterministic_fast_path.single_executable_candidate	libs/cua-driver/examples/jev-use/python/tests/test_deterministic_fast_path.py	caller/recipe-local
+compiled postconditions	jev-use example	compiled_expectations.compile_expectation	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	caller/recipe-local
+guarded runs	jev-use caller	guarded_run.admit_guarded_run	libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py	caller/recipe-local
+mechanical batching	trycua/cua#2794 and #3494	no Driver change; stale_batch.run_batch re-resolves the next child	libs/cua-driver/examples/jev-use/python/tests/test_stale_batch.py	already exists
+settlement provenance	platform-macos Changes	PollProvenance stays a private field	libs/cua-driver/rust/crates/platform-macos/src/window_change_detector.rs	already exists
+passive evidence	caller policy	passive_observation.action_target	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	caller/recipe-local
+freshness and revision tracking	snapshot identity on the observation response	browser_revision.bind for a browser ref and generation	libs/cua-driver/examples/jev-use/python/tests/test_browser_revision.py	caller/recipe-local
+cancellation	existing request-id owner	cancellation_lifetime.Lifetime is an order probe, not a new runtime	libs/cua-driver/examples/jev-use/python/tests/test_cancellation_lifetime.py	already exists
+conditional observation	none	shadow_probe.record refuses skip_capture	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	delete from plan
+provider adapters	jev_adapter.py	no speed-RFC policy import	libs/cua-driver/examples/jev-use/python/jev_adapter.py	already exists
+hard-coded run length of 4	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_run_length.py	delete from plan
+universal shadow store	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	delete from plan
+second verifier	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	delete from plan
+shared postcondition compiler	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	delete from plan
+shared guarded-run type	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py	delete from plan
+generic lifecycle service	none	deleted	libs/cua-driver/examples/jev-use/python/tests/test_cancellation_lifetime.py	delete from plan

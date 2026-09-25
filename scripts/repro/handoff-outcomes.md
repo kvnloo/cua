@@ -144,15 +144,15 @@ A refuted first child at cap 4 runs 1 and wastes 3. Recommendation: keep the cap
 
 Machine-readable matrix: `scripts/repro/handoff/ownership.tsv`.
 
-Columns: requirement, current owner, smallest delta, evidence, disposition.
+Columns: requirement, current owner, smallest delta, evidence, disposition. Each disposition is one of: already exists, extend existing owner minimally, caller/recipe-local, shared helper earned by two call sites, new public/runtime owner, delete from plan. No row uses a new public owner or a shared helper. The covered requirements include telemetry, observation projection, the fast path, compiled postconditions, guarded runs, batching, settlement provenance, passive evidence, freshness, cancellation, conditional observation, and provider adapters.
 
-Abstractions that disappear: a universal shadow store, a second verifier, a shared postcondition compiler, a shared guarded-run type, and a hard-coded run length of 4.
+Abstractions that disappear: a universal shadow store, a second verifier, a shared postcondition compiler, a shared guarded-run type, a generic lifecycle service, and a hard-coded run length of 4.
 
 ### Issue 52
 
-`scripts/repro/handoff/decision-table.tsv` has evidence, missing evidence, owner, public surface cost, and next action.
+`scripts/repro/handoff/decision-table.tsv` has one decision per mechanism: KEEP, REVISE, KILL, or BLOCKED, plus evidence, missing evidence, owner, public surface cost, and next action.
 
-No downstream issue is closed. The three decided rows cite `test_run_length.py`, `test_passive_observation.py`, and `test_shadow_probe.py`. The AX and UIA rows name the missing macOS and Windows machines.
+There is no KEEP and no REVISE. KILL is only the shared run length of 4 (`test_run_length.py`), a passive row used as an action target (`test_passive_observation.py`), and a capture skip from the shadow probe (`test_shadow_probe.py`). Those three rows still say to leave #25, #8, and #11 open. Every other mechanism is BLOCKED, including the rows that name the missing macOS machine and the missing Windows machine. No downstream issue was closed. #7, #15, and #22 were already closed before this queue.
 
 ### Issue 53
 
@@ -162,7 +162,7 @@ No downstream issue is closed. The three decided rows cite `test_run_length.py`,
 
 `scripts/repro/handoff/issue-54-recommendation.md`.
 
-Deleted: a shared constant of 4. Local: `guarded_run.py`. Shared: nothing.
+Deleted: a shared constant of 4. Local: the per-child check in `guarded_run.py`. Shared: nothing. `recommend_cap(7, 10)` says to keep the cap at 2. A refuted first child under cap 4 runs 1 and wastes 3. Fixture latency was not measured, so #25 stays open.
 
 ### Issue 55
 
@@ -172,7 +172,7 @@ Deleted: a shared constant of 4. Local: `guarded_run.py`. Shared: nothing.
 
 `scripts/repro/handoff/issue-56-architecture.md`.
 
-Before and after, observation stays on `get_window_state`, `WalkBudget`, and `verify_state`. The eliminated services are listed in that file.
+Before and after, modality stays on `get_window_state`, the walk stays on `WalkBudget`, passive rows stay a caller policy, snapshot identity stays `snapshot_id` / `capture_id`, hints stay on `shadow_probe.record`, and postconditions stay on `verify_state`. `elapsed_ms` is closed at `expectation.rs` line 310, before `observe` at line 329. Eliminated: ObservationService, ObservationBudgetService, RevisionService, and PassiveEvidenceService.
 
 ### Issue 57
 
@@ -186,19 +186,19 @@ Before and after, observation stays on `get_window_state`, `WalkBudget`, and `ve
 
 `scripts/repro/handoff/issue-59-contract.md`.
 
-The integration point is the caller, immediately before the second dispatch. No new Driver tool.
+Mechanical batching stays with trycua/cua#2794 and #3494. The caller guarded run stays in `guarded_run.py`. The integration point is the caller, immediately before the second dispatch. `run_batch` can dispatch `field` and `submit` on unchanged identities without reading the field token. `second_child_allowed` does not claim a transport saving. No competing batch API.
 
 ### Issue 60
 
-The five sequences are in `scripts/repro/handoff/sequences.md`. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Neither sequence introduces a second state owner.
+The five sequences are in `scripts/repro/handoff/sequences.md`: fresh guarded child, stale refusal, cancel while queued, cancel after native admission, and session end during admitted work. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Authorization stays on the existing session policy. There is no ExecutionContext and no LifecycleService.
 
 ### Issue 61
 
-The downstream rewrite is `scripts/repro/handoff/rfc-3963-delta.md`. Upstream #3963 was not edited.
+The downstream rewrite is `scripts/repro/handoff/rfc-3963-delta.md`. It has the north-star, the invariants, the current owners, the remaining deltas, the phase gates, the deleted abstractions, the dependency graph, and the migration plan. Upstream #3963 was not edited.
 
 ### Issue 62
 
-The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a change, a dependency, an evidence path, and a posting status. Length 4 is `KILLED` because `test_run_length.py` shows the wasted children. The other items wait on a live trial, a missing machine, or an RFC decision.
+The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a change, a dependency, evidence already complete, evidence still missing, an action, a stop condition, and a posting status. Length 4 is `KILLED` because `test_run_length.py` shows the wasted children. The elapsed-ms order comment is the only `READY NOW` item, and it claims no speedup. The other items wait on a live trial, a missing machine, or an RFC decision. No new upstream pull request.
 
 ## Consolidation
 
@@ -255,7 +255,7 @@ Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Li
 
 ### Issue 50
 
-`scripts/repro/handoff/issue-50-docs.md`. No documentation patch is required while `run.py` does not call the new functions.
+`scripts/repro/handoff/issue-50-docs.md` and `scripts/repro/handoff/issue-50-matrix.tsv`. The matrix cites `WORKFLOW.md`, the Linux, macOS, and Windows skills, the jev-use README, `action-result-contract.md`, `perception-extension.md`, and RFC 3931. Each cited quote is on the named line. No KEEP is recorded, so the patch plan is to leave those files unedited. Lines that must not be weakened include tree-only observation, unknown-is-not-success, and one capture per action.
 
 ## Promotion
 
@@ -315,7 +315,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Verdict: KEEP DRAFT. The native walker counter was not captured on this Linux host. The upstream pull request description was not changed.
+Verdict: KEEP DRAFT. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. Trace: none. The native walker counter was not captured on this Linux host. The upstream pull request description was not changed.
 
 ### Issue 64
 
@@ -325,43 +325,43 @@ Blocked. `scripts/repro/handoff/issue-64-block.md`. Missing session on this Linu
 
 `scripts/repro/handoff/issue-65-3904.md`.
 
-The test vectors are the passive result row and the equals button. No competing pull request. The Calculator log is blocked on a macOS machine.
+Prepared comment, not posted. No competing pull request. `verification_text` on `calc-result` returns `6` and `action_target` raises. `action_target` on `calc-equals` returns that id. The Calculator log is blocked. Missing machine: macOS.
 
 ### Issue 66
 
 `scripts/repro/handoff/issue-66-comment.md`.
 
-Owner: trycua/cua#2794 and #3494. The regression fixture is `test_stale_batch.py`. No batch API was added.
+Prepared comment, not posted. Canonical owner: trycua/cua#2794 and #3494. The regression fixture is `test_stale_batch.py`: unchanged identity dispatches both children, a disappeared target and a new identity are refused, and a failed or unknown first child does not start the second. `elapsed_ms` is null. No batch API was added.
 
 ### Issue 67
 
 `scripts/repro/handoff/issue-67-plan.md`.
 
-Verdict: NEEDS DESIGN DECISION. The order test is already committed. READY WHEN RFC APPROVES the slice on the existing request-id owner.
+Verdict: NEEDS DESIGN DECISION. The seam is the existing request-id owner. `Lifetime` covers cancel-while-queued, cancel-after-admission, capacity until exit, and a foreign issuance. Held keys, pointer cleanup, late cancel, and request-id reuse before dispatch are not in that probe. READY WHEN RFC APPROVES the slice. Not before. No scheduler was added.
 
 ### Issue 68
 
 `scripts/repro/handoff/issue-68-map.md`.
 
-Snapshot freshness stays with trycua/cua#3873. A second snapshot authority and a universal shadow store are unnecessary here.
+trycua/cua#3873 was fetched open on 2026-09-25. Its body describes a snapshot store invalidated on read and does not mention a quota. This branch did not merge it. On the pin, `snapshot_id` and `capture_id` stay distinct, and a later snapshot invalidates a pending token. Unnecessary here: a second snapshot authority, a universal shadow store, and RevisionService.
 
 ### Issue 69
 
 `scripts/repro/handoff/issue-69-measurement.md`.
 
-The reported outcome is `verified_outcome_ms` only. Runner lifetime is not added to it.
+Decision: downstream benchmark-only tooling. Do not add the report to #4052. Fields: `cold_setup_ms`, `verified_outcome_ms`, `runner_lifetime_ms`, `named_span_ms`. `outcome_time` returns `verified_outcome_ms` only. The >90% battery was not run. No trial time was invented.
 
 ### Issue 70
 
 `scripts/repro/handoff/issue-70-scope.md`.
 
-NO CHANGE NEEDED on the #3961 provider adapter. The policy files are not imported there.
+NO CHANGE NEEDED on the #3961 provider adapter. `jev_adapter.py` does not import `deterministic_fast_path`, `guarded_run`, `lazy_vision`, or `goal_gates`. `run.py` does not import them either. No code was added.
 
 ### Issue 71
 
 `scripts/repro/handoff/issue-71-decision.md`.
 
-Recommendation: NO PUBLIC FIELD. The tool suffix and restore boolean stay the existing signals.
+Recommendation: NO PUBLIC FIELD. `typed_choice` already returns continue, observe, or stop. Escalation stays advice in `WORKFLOW.md` line 121. `result_suffix` and `needs_restore` stay the existing signals. `PollProvenance` stays internal and was not compiled on this Linux host. No promotion dependency.
 
 ### Issue 72
 
@@ -369,20 +369,23 @@ Blocked. `scripts/repro/handoff/issue-72-block.md`. Missing session on this Linu
 
 ### Issue 73
 
-Committed at `scripts/repro/handoff/rfc-3963-delta.md`. Upstream #3963 was not edited.
+Committed at `scripts/repro/handoff/rfc-3963-delta.md`. The draft has the north-star, a disposition table, the remaining deltas, the deleted architecture, and the phase gates. Upstream #3963 was not edited. The #3873 body fetched on 2026-09-25 does not state a quota. `elapsed_ms` stays verification-loop time. Phase 2B has no safe skip evidence.
 
 ### Issue 74
 
-Machine-readable DAG: `scripts/repro/handoff/promotion-dag.json`.
+Machine-readable DAG: `scripts/repro/handoff/promotion-dag.json`. Human queue: `scripts/repro/handoff/issue-74-queue.md`. Nothing was posted upstream.
 
-| id | status |
-| --- | --- |
-| 4164 | WAITING ON DOWNSTREAM EXPERIMENT |
-| 4165 | WAITING ON DOWNSTREAM EXPERIMENT |
-| 4052 | WAITING ON DOWNSTREAM EXPERIMENT |
-| 3796 | WAITING ON RFC DECISION |
-| 3904 | WAITING ON DOWNSTREAM EXPERIMENT |
-| 2794-3494 | WAITING ON DOWNSTREAM EXPERIMENT |
-| run-length-4 | KILLED |
+| id | status | action |
+| --- | --- | --- |
+| elapsed-ms-boundary | READY NOW | comment, not posted, no speedup claim |
+| run-length-4 | KILLED | no action |
+| 3961-scope | ASSIMILATED | no action, NO CHANGE NEEDED |
+| 4009-public-field | ASSIMILATED | no action, NO PUBLIC FIELD |
+| 4052 | WAITING ON DOWNSTREAM EXPERIMENT | no action |
+| 4164 | WAITING ON DOWNSTREAM EXPERIMENT | KEEP DRAFT, description not updated |
+| 4165 | WAITING ON DOWNSTREAM EXPERIMENT | not sent |
+| 3904 | WAITING ON DOWNSTREAM EXPERIMENT | missing machine: macOS |
+| 2794-3494 | WAITING ON DOWNSTREAM EXPERIMENT | elapsed_ms is null |
+| 3796 | WAITING ON RFC DECISION | not sent |
 
-The killed row cites `test_run_length.py`. No other row is marked killed.
+The killed row cites `test_run_length.py`. No new upstream pull request. Draft pull request 26 was not merged.
