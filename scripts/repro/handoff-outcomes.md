@@ -142,28 +142,17 @@ A refuted first child at cap 4 runs 1 and wastes 3. Recommendation: keep the cap
 
 ### Issue 51
 
-Owners, from the code this branch actually touched:
+Machine-readable matrix: `scripts/repro/handoff/ownership.tsv`.
 
-| Behavior | Owner |
-| --- | --- |
-| Optional visual capture | jev-use caller, `lazy_vision.py` |
-| One executable candidate | jev-use caller, `deterministic_fast_path.py` |
-| Two-action run | jev-use caller, `guarded_run.py` |
-| Stale batch child | caller batch harness, `stale_batch.py`, not a new Driver tool |
-| Passive versus action | caller policy, `passive_observation.py` |
-| Walk time | existing `WalkBudget` |
-| verify_state timing and screenshot evidence | existing `expectation.rs` |
-| Window-change poll provenance | existing macOS `Changes` |
-| Browser ref generation | caller rule `browser_revision.py` until the typed browser owner is named in an upstream patch |
-| Cancellation order | existing request-id owner, exercised by `cancellation_lifetime.py` |
+Columns: requirement, current owner, smallest delta, evidence, disposition.
 
-No new service is required for these rows.
+Abstractions that disappear: a universal shadow store, a second verifier, a shared postcondition compiler, a shared guarded-run type, and a hard-coded run length of 4.
 
 ### Issue 52
 
-The decision table is `scripts/repro/handoff/decision-table.tsv`. Columns: evidence, missing evidence, owner, public surface cost, next action.
+`scripts/repro/handoff/decision-table.tsv` has evidence, missing evidence, owner, public surface cost, and next action.
 
-Rows with a test cite that test. Rows for the macOS AX census and the Windows UIA census name the missing machine. No experiment issue is closed from this table.
+No downstream issue is closed. The three decided rows cite `test_run_length.py`, `test_passive_observation.py`, and `test_shadow_probe.py`. The AX and UIA rows name the missing macOS and Windows machines.
 
 ### Issue 53
 
@@ -171,11 +160,9 @@ Rows with a test cite that test. Rows for the macOS AX census and the Windows UI
 
 ### Issue 54
 
-Deleted: a shared constant of 4 actions. Evidence: `test_run_length.py`, and `recommend_cap(7, 10)` returns the cap-at-2 advice.
+`scripts/repro/handoff/issue-54-recommendation.md`.
 
-Local: the #5 dependency check in `guarded_run.py`.
-
-Shared: nothing. Run length stays caller-configured.
+Deleted: a shared constant of 4. Local: `guarded_run.py`. Shared: nothing.
 
 ### Issue 55
 
@@ -183,11 +170,9 @@ Shared: nothing. Run length stays caller-configured.
 
 ### Issue 56
 
-Before: `get_window_state`, `WalkBudget`, `verify_state`, and the jev-use visual path.
+`scripts/repro/handoff/issue-56-architecture.md`.
 
-After: the same owners. Not added: a second tree for passive rows, a conditional-skip service, another walk budget.
-
-Eliminated concepts: universal shadow store, capture skip from event absence, passive row as an action target.
+Before and after, observation stays on `get_window_state`, `WalkBudget`, and `verify_state`. The eliminated services are listed in that file.
 
 ### Issue 57
 
@@ -199,13 +184,9 @@ Eliminated concepts: universal shadow store, capture skip from event absence, pa
 
 ### Issue 59
 
-| | Driver mechanical batch | Caller guarded run |
-| --- | --- | --- |
-| Owner | trycua/cua#2794 and #3494 | `guarded_run.py` |
-| Stale later child | `stale_batch.py` refuses a new identity | fresh observation must still match the planned Submit ref |
-| Integration | the caller resolves again before dispatch | no new Driver tool |
+`scripts/repro/handoff/issue-59-contract.md`.
 
-The integration point is the caller, immediately before the second dispatch.
+The integration point is the caller, immediately before the second dispatch. No new Driver tool.
 
 ### Issue 60
 
@@ -274,13 +255,7 @@ Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Li
 
 ### Issue 50
 
-| Doc or skill | Touched by this branch | Patch needed |
-| --- | --- | --- |
-| `run.py` | no call to the new functions | none until one is wired |
-| canonical `WORKFLOW.md` | not edited | none; these files are experiments |
-| jev-use guide | not edited | none until a mechanism is promoted |
-
-No doc change is required while the runner is unchanged.
+`scripts/repro/handoff/issue-50-docs.md`. No documentation patch is required while `run.py` does not call the new functions.
 
 ## Promotion
 
@@ -338,11 +313,9 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 63
 
-Verdict: KEEP DRAFT.
+`scripts/repro/handoff/issue-63-packet.md`.
 
-SHA checked: `c5ee191c02b11448ffefcc38b78b064a87d8ef23` call site, locked by `test_verify_elapsed_order.py` (`observe(..., false, true)`).
-
-Limitation: no native walker counter. Promotion packet status in `promotion-dag.json` is `WAITING ON DOWNSTREAM EXPERIMENT`. The upstream PR description was not updated.
+Verdict: KEEP DRAFT. The native walker counter was not captured on this Linux host. The upstream pull request description was not changed.
 
 ### Issue 64
 
@@ -350,55 +323,45 @@ Blocked. `scripts/repro/handoff/issue-64-block.md`. Missing session on this Linu
 
 ### Issue 65
 
-Recommendation for #3904, not an implementation PR.
+`scripts/repro/handoff/issue-65-3904.md`.
 
-Test vector: `Row("calc-result", "6", passive=True)` is readable through `verification_text` and `action_target` raises `AuthorityError`. `Row("calc-equals", "=", passive=False)` remains a target.
-
-The native Calculator case is blocked on a macOS machine. No competing PR was opened.
+The test vectors are the passive result row and the equals button. No competing pull request. The Calculator log is blocked on a macOS machine.
 
 ### Issue 66
 
-Canonical owner: trycua/cua#2794 and #3494 for mechanical batching.
+`scripts/repro/handoff/issue-66-comment.md`.
 
-Stale-target regression: `test_stale_batch.py` cases for disappeared target, new identity with the same label, and failed or unknown first child.
-
-`guarded_run.py` stays caller-side. No batch API was added.
+Owner: trycua/cua#2794 and #3494. The regression fixture is `test_stale_batch.py`. No batch API was added.
 
 ### Issue 67
 
-Verdict: NEEDS DESIGN DECISION before an upstream slice. The downstream order test is `test_cancellation_lifetime.py`. It does not pre-decide the #3796 implementation. Slice 1, after RFC approval, belongs on the existing request-id owner. Ready when that RFC approves the slice, not before.
+`scripts/repro/handoff/issue-67-plan.md`.
+
+Verdict: NEEDS DESIGN DECISION. The order test is already committed. READY WHEN RFC APPROVES the slice on the existing request-id owner.
 
 ### Issue 68
 
-Current-head owner for snapshot freshness remains trycua/cua#3873.
+`scripts/repro/handoff/issue-68-map.md`.
 
-Phase-2 concepts that are unnecessary on this branch: a second snapshot authority, and a universal shadow store.
-
-The caller rule that stays is `browser_revision.py`: same label, new generation, refuse.
+Snapshot freshness stays with trycua/cua#3873. A second snapshot authority and a universal shadow store are unnecessary here.
 
 ### Issue 69
 
-Measurement owner: verified-outcome milliseconds in `task_accounting.py`. Runner lifetime is a different field and `outcome_time` does not return it.
+`scripts/repro/handoff/issue-69-measurement.md`.
 
-Fields: `cold_setup_ms`, `verified_outcome_ms`, `runner_lifetime_ms`, `named_span_ms`.
-
-No double count: the reported outcome is `verified_outcome_ms` only. The #4052 branches were not merged into this one.
+The reported outcome is `verified_outcome_ms` only. Runner lifetime is not added to it.
 
 ### Issue 70
 
-Scope lock for #3961: NO CHANGE NEEDED on the provider adapter.
+`scripts/repro/handoff/issue-70-scope.md`.
 
-Policy files sit beside the caller: `deterministic_fast_path.py`, `guarded_run.py`, `lazy_vision.py`. None of them is imported by the provider adapter.
+NO CHANGE NEEDED on the #3961 provider adapter. The policy files are not imported there.
 
 ### Issue 71
 
-| Consumer | Signal today | Decision |
-| --- | --- | --- |
-| tool suffix | `result_suffix` | existing wording |
-| restore | `needs_restore` | existing boolean |
-| poll split | `PollProvenance` | internal only |
+`scripts/repro/handoff/issue-71-decision.md`.
 
-Recommendation: NO PUBLIC FIELD.
+Recommendation: NO PUBLIC FIELD. The tool suffix and restore boolean stay the existing signals.
 
 ### Issue 72
 
