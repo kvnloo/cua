@@ -28,6 +28,13 @@ class ShadowProbeTest(unittest.TestCase):
         sample = record("gtk3-entry", "cua-atspi-probe", types)
         self.assertFalse(sample.skip_capture)
         self.assertIn("object:text-changed:insert", sample.invalidators)
+        table = (trace.parent / "handoff" / "issue-11-surfaces.md").read_text(encoding="utf-8")
+        self.assertIn("No capture skipping was enabled", table)
+        self.assertIn("not measured", table)
+        self.assertIn("Missing machine: macOS", table)
+        self.assertIn("Missing machine: Windows", table)
+        for name in sample.invalidators:
+            self.assertIn(name, table)
 
     def test_constructor_rejects_a_skip(self) -> None:
         from shadow_probe import ShadowSample

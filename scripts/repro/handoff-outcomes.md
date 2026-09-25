@@ -64,9 +64,9 @@ Missing on this Linux host: the 4-arm benchmark on an exact-head driver. Install
 
 ### Issue 11
 
-Shadow line, produced by `shadow_probe.record` from the GTK census: `scripts/repro/handoff/issue-11-shadow.jsonl`.
+Shadow line: `scripts/repro/handoff/issue-11-shadow.jsonl`. Surface table: `scripts/repro/handoff/issue-11-surfaces.md`.
 
-`skip_capture` is false. `false_retention_observed` and `reconciliation_cost_ms` are null because this host did not measure them. No capture skipping was enabled. Phase 2A is not accepted.
+`skip_capture` is false. False retention and reconciliation cost were not measured. No capture skipping was enabled. Missing machine: macOS. Missing machine: Windows.
 
 ### Issue 12
 
