@@ -13,6 +13,8 @@
 | restore | `Changes.needs_restore` | OTHER EXISTING SIGNAL |
 | poll split | `PollProvenance` | NO PUBLIC FIELD |
 
-Recommendation: NO PUBLIC FIELD.
+Recommendation from this caller table: NO PUBLIC FIELD.
 
-There is no promotion dependency, because nothing is published. The macOS crate was not compiled here, so this is not a claim that the detector ran.
+trycua/cua#4009 does propose `post_dispatch_observation` with values `completed`, `skipped`, and `unavailable`. The closure comment https://github.com/kvnloo/cua/issues/71#issuecomment-5841034133 says that field is justified by trycua/cua#3971. The fetched #3971 body asks for skipped observation to be explicit. It does not contain a regression that fails unless the field exists. This table does not adopt a new field from that comment.
+
+The macOS crate was not compiled here, so this is not a claim that the detector ran.

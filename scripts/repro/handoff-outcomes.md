@@ -26,7 +26,7 @@ Missing on this Linux host: an exact-head Driver, a Chromium fixture, and a mode
 
 Blocked. The block file is `scripts/repro/handoff/issue-3-block.md`.
 
-Missing machines: macOS and Windows. Missing on this Linux host: an exact-head AT-SPI walker count. The probe shows no top-level windows. The six predicate cases were not traced. The call-site lock in `test_verify_elapsed_order.py` is not that trace and is not a promotion verdict.
+The macOS counts are cited in `scripts/repro/handoff/issue-3-macos-trace.md` from https://github.com/trycua/cua/pull/4164#issuecomment-5840994846. Missing machine: Windows, for a UIA walker count. This Linux host still has no exact-head AT-SPI walker log. No promotion verdict is applied. The call-site lock in `test_verify_elapsed_order.py` is not that trace.
 
 ### Issue 4
 

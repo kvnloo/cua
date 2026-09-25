@@ -389,6 +389,31 @@ class HandoffPruningTest(unittest.TestCase):
         self.assertLess(queue.index("elapsed-ms-boundary"), queue.index("`4052`"))
         self.assertLess(queue.index("`4052`"), queue.index("`3796`"))
 
+    def test_blocked_notes_name_the_linux_host(self) -> None:
+        names = (
+            "issue-2-block.md",
+            "issue-4-block.md",
+            "issue-10-block.md",
+            "issue-46-block.md",
+            "issue-47-block.md",
+            "issue-48-block.md",
+            "issue-64-block.md",
+            "issue-72-block.md",
+        )
+        for name in names:
+            text = (HANDOFF / name).read_text(encoding="utf-8")
+            self.assertIn("Missing machine: this Linux host.", text, name)
+        windows = (HANDOFF / "issue-19-block.md").read_text(encoding="utf-8")
+        self.assertIn("Missing machine: Windows", windows)
+        macos = (HANDOFF / "issue-18-block.md").read_text(encoding="utf-8")
+        self.assertIn("Missing machine: macOS", macos)
+        cited = (HANDOFF / "issue-3-macos-trace.md").read_text(encoding="utf-8")
+        self.assertIn(
+            "https://github.com/trycua/cua/pull/4164#issuecomment-5840994846",
+            cited,
+        )
+        self.assertIn("not a walk this Linux host ran", cited)
+
     def test_repro_notes_do_not_apply_a_promotion_verdict(self) -> None:
         banned = re.compile(r"\b(KEEP|REVISE|KILL|KILLED)\b")
         hits = []
