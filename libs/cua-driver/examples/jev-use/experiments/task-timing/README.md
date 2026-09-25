@@ -1,84 +1,109 @@
-# Whole-task timing: fork-only Python experiment
+# Whole-task timing: fork-only experiment
 
-Refs trycua/cua#4052, #3963. This is an unselected measurement experiment, not
-an upstream runtime change. It deliberately leaves the active #4052 and #3961
-branches, their runners, and all Driver contracts unchanged.
+Refs trycua/cua#4052 and #3963. This is an unselected measurement experiment,
+not an accepted public contract or a competing upstream implementation. Both
+tracked runners and both active upstream branches remain unchanged.
 
 ## Reproduce
 
-From this directory on the experiment branch:
+From this directory, with Python and the repository's TypeScript dependency
+available:
 
 ```sh
 python instrument.py
 python -m unittest -v
+node instrument_ts.cjs
+node test_task_timing_ts.cjs
 ```
 
-The generator requires the exact #4052 runner Git blob
-`003bdf23d41e7fa71a74583bb760d576503e908f`, from candidate
-`5d3a55419194172b31f92cf2aa36b0b603ecac2a`. It refuses drift, even with
-`python -O`, and creates only local `baseline.py`, `run.py`, and a reviewable
-`runner-timing.patch`. It does not edit the tracked runner.
+For a globally installed TypeScript compiler, set `NODE_PATH=$(npm root -g)`
+for the two Node commands. No provider key, network, desktop, or SDK installation
+is needed for these controlled tests. Node 22.16.0 and TypeScript 5.8.3 were used
+locally; the generated timer also passes strict typechecking with Node types.
 
-Only the standard library is needed for these controlled tests. MCP, the
-provider, candidate builder and fixture are substituted at their boundaries;
-the real baseline and generated runner control flow is executed. This is not
-native Driver, browser, cloud-provider, or model-quality qualification.
+Each generator refuses drift from the exact #4052 runner. Python Git blob:
+`003bdf23d41e7fa71a74583bb760d576503e908f`; TypeScript Git blob:
+`dbb26b67143b425b21d26ebb257e1e76f7cc25c3`. The common source candidate is
+`5d3a55419194172b31f92cf2aa36b0b603ecac2a`.
 
-## What is measured
+Generated baseline and instrumented copies are ignored local files. Python
+also writes `runner-timing.patch`; TypeScript's printed copy is directly
+comparable to `baseline-ts.ts`. The original runners are never edited.
 
-The generated runner buffers explicit same-clock intervals for 17 statement
-regions: setup operations, semantic and optional visual observation, candidate
-construction, provider decisions, choice validation, actions, fixture checks
-and the existing verification sleeps. It adds no Driver/provider calls, retry,
-shorter wait, authorization change, or action-selection policy.
+## Two facts, not one success flag
 
-One `task_root` closes after the existing session/transport cleanup, before the
-extra timing records are flushed. It covers entry to `run`, including fixture
-reset and session setup; imports, CLI parsing and process exit are outside it.
-`setup_ms` marks successful navigation before the task loop, or stays null when
-setup fails. It is not an overlapping duration to sum with child spans.
+Schema version 2 retains the cleanup-inclusive `task_root` and adds:
 
-The recipe return is recorded as `outcome_source:
-recipe_return_not_independent_oracle`. Verification calls are timed, but an
-independent success oracle remains a separate requirement. A phase exception
-records its class, never its message, arguments, screenshot or typed contents.
-Existing recipe logs are not changed or made more private by this addition.
+- `terminal_observation`: the first existing fixture classification that is
+  `verified` or `refuted`, with a same-clock `at_ms` and explicit source.
+- `post_terminal_observation_ms`: elapsed time after that classification until
+  root end, or null when no terminal fixture observation was obtained.
 
-At most 512 spans are buffered. Overflow is explicit in `dropped_spans`.
-A timing-sink failure cannot replace the original return, exception, or
-cancellation; it can leave incomplete telemetry. Missing roots, dropped spans,
-foreign task/clock identities, and incomplete streams must reject a coverage
-claim, not count as success. Process kill or interpreter failure is not covered.
+These are passive marks at the three existing classification sites. They add
+no fixture read, model request, action, retry, or completion policy. An
+`unknown`, abstention, dry run, or ordinary runner return does not invent a
+verified observation. Refutation is terminal but is not success.
 
-Union intervals instead of summing parent/child durations. Report residual time
-explicitly; startup/context management, cleanup and local bookkeeping can remain
-unattributed. Neither the whole-task >90% gate nor instrumentation overhead has
-been qualified on a native run. Do not mix these rows with old decision-only
-records or advertise a latency improvement from this experiment.
+A successful fixture check followed by a cleanup exception now retains BOTH
+facts: `terminal_observation.verdict: verified`, and the original unknown
+runner outcome plus cleanup error. It does not swallow or relabel that error.
 
-## Executed local validation
+The mark records when the existing fixture result was classified, not the
+exact instant the application changed or presented a frame. The tail includes
+remaining logging, bookkeeping and cleanup; it is not labeled pure cleanup.
+No claims are made about independent native fixture validity by these tests.
 
-Six unittest methods pass, including 15 baseline/treatment scenario comparisons:
-verified, refuted, empty candidates, provider abstention, explicit abstention,
-reobserve, dry run, action/observation/provider/verification/reset failures,
-action cancellation, cleanup failure and delayed verification. Calls/arguments,
-state, oracle reads, sleeps, cleanup order, return/error and legacy non-timing
-events match. Separate checks cover timing-sink failure, cleanup-before-root,
-exact fake-clock intervals, no recorded payload, buffer overflow and task IDs.
+## Timing scope and accounting
 
-Three deliberately broken generated copies were detected: missing root,
-missing verification spans and missing wait spans. None is committed. These are
-sensitivity checks, not additional native tests. This Python-only result does
-not qualify TypeScript parity, real optional-visual behavior, live provider
-behavior or a later rebased candidate.
+The root covers run entry through existing context/client cleanup and closes
+before extra timing records are flushed. Imports, CLI parsing, process exit,
+and the extra flush are outside it. Overhead measurements therefore need an
+EXTERNAL interval around the complete runner call, including the flush.
 
-## Next decision
+`setup_ms` is a boundary, not another duration to add to child spans. Use the
+union of intervals for coverage. Keep residual time visible. Clock identifiers
+are task-local; matching schema does not make timestamps from different
+processes or languages subtractable.
 
-Should completed-task latency end at independent task verification, with cleanup
-reported separately, while a second root records total runner lifetime? This
-prototype deliberately labels its current cleanup-inclusive boundary instead
-of calling it time-to-goal. Resolve that metric boundary before porting it to
-both runners and interleaving real baseline/treatment trials.
+At most 512 spans are buffered; drops are explicit. Timing output failure must
+not replace the existing return or exception, but can leave incomplete data.
+Missing roots, dropped spans, incomplete streams and mismatched identities
+must not pass an accounting gate. Process-kill durability is not implemented.
 
-AI-assisted implementation and review. No production change or native timing
-speedup is claimed.
+The TypeScript async wrappers add promise boundaries and incur overhead. The
+controlled checks establish call/outcome parity in their scenarios, not native
+scheduling equivalence, cancellation-race equivalence, or zero observer effect.
+Python and TypeScript retain their existing error/cancellation behavior rather
+than forcing both languages into a new policy.
+
+## Executed checks
+
+- Eleven Python unittest methods, including 15 baseline/treatment scenarios,
+  plus terminal-observation and cleanup-error controls.
+- Twenty TypeScript baseline/treatment scenarios: normal and delayed success,
+  refutation, abstention, reobserve, dry run, setup/observation/provider/action/
+  verifier failures, abort-like action failure, cleanup error/delay,
+  second-provider failure after progress, optional-visual success/failure and
+  a controlled asynchronous provider.
+- TypeScript additionally tests four timing-sink failure cases, explicit
+  buffer overflow, original exception identity, no exception payload, and
+  single-use finalization. Both generators reject changed baseline bytes.
+- Fake-clock records match between languages after removing task/clock IDs.
+- Four broken variants are detected: missing terminal marks in either
+  language, missing Python verification spans and missing TypeScript waits.
+
+The runner control flow is real; MCP, providers, fixture reads and desktop
+behavior are controlled substitutes. No native Driver, live provider,
+full-example dependency typecheck, or whole-task >90% promotion is claimed.
+Local controlled overhead probes are diagnostics, not a native speedup.
+
+## Remaining gate
+
+Resolve the metric-boundary question in trycua/cua#4052 before selecting an
+upstream follow-up. Then use an exact-candidate native fixture, interleaved
+baseline/treatment, independently observed outcomes, all failure/abstention
+rows, and an external timer that includes telemetry output. Retain explicit
+residual time and verify both languages. Do not inherit #3961's earlier
+browser certification for this different experiment.
+
+AI-assisted implementation and review. No product latency improvement claimed.

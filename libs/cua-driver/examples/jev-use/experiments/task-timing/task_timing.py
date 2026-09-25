@@ -22,6 +22,7 @@ class TaskTiming:
         self._dropped = 0
         self._setup_end: float | None = None
         self._closed = False
+        self._terminal: dict[str, Any] | None = None
 
     def _elapsed(self) -> float:
         return (self._clock() - self._start) / 1_000_000
@@ -29,6 +30,14 @@ class TaskTiming:
     def setup_complete(self) -> None:
         if self._setup_end is None:
             self._setup_end = self._elapsed()
+
+    def observe_classification(self, verdict: str) -> None:
+        """Record an existing fixture classification; perform no new observation."""
+        if verdict in {"verified", "refuted"} and self._terminal is None:
+            self._terminal = {
+                "verdict": verdict, "at_ms": self._elapsed(),
+                "source": "existing_fixture_state_classification",
+            }
 
     @contextmanager
     def span(self, phase: str) -> Iterator[None]:
@@ -63,4 +72,9 @@ class TaskTiming:
             "error_type": error_type, "dry_run": dry_run,
             "dropped_spans": self._dropped,
             "scope": "run_entry_through_context_cleanup_before_timing_flush",
+            "schema_version": 2,
+            "terminal_observation": self._terminal,
+            "post_terminal_observation_ms": (
+                end - self._terminal["at_ms"] if self._terminal else None
+            ),
         }]

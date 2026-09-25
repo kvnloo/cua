@@ -64,9 +64,9 @@ wrapper='''async def run(args: argparse.Namespace) -> str:
             outcome = "cancelled"
         raise
     finally:
-        events = task_timing.finish(outcome, dry_run=args.dry_run, error_type=error_type)
-        # Timing I/O must not replace the recipe result or its original exception.
+        # Extra telemetry must not replace the recipe result or exception.
         try:
+            events = task_timing.finish(outcome, dry_run=args.dry_run, error_type=error_type)
             log_path = Path(args.log) if args.log else None
             for event in events:
                 write_event(log_path, event)
@@ -76,6 +76,23 @@ wrapper='''async def run(args: argparse.Namespace) -> str:
 
 '''
 out=out.replace('def parse_args() -> argparse.Namespace:',wrapper+'def parse_args() -> argparse.Namespace:')
+# Mark each existing classify result, not the runner return. A later cleanup
+# exception must not erase a fixture verdict already observed.
+parsed = ast.parse(out)
+marks = []
+for n in ast.walk(parsed):
+    if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Call)
+            and isinstance(n.value.func, ast.Name) and n.value.func.id == 'classify'):
+        target = n.targets[0]
+        if not isinstance(target, ast.Name):
+            raise SystemExit('Unexpected classifier target')
+        marks.append((n.end_lineno, n.col_offset, target.id))
+if len(marks) != 3:
+    raise SystemExit(f'Refusing classifier drift: {len(marks)} sites')
+lines = out.splitlines(keepends=True)
+for end, indent, name in sorted(marks, reverse=True):
+    lines.insert(end, ' ' * indent + f'task_timing.observe_classification({name})\n')
+out = ''.join(lines)
 ast.parse(out)
 (root/'baseline.py').write_text(source)
 (root/'run.py').write_text(out)
