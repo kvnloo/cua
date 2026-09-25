@@ -1,15 +1,23 @@
 # Closed issues
 
-These four issues are closed on GitHub. This file cites the comments. It does not apply a promotion label of its own.
+These issues are closed on GitHub. Each row cites the closing comment. This file does not apply a promotion label.
 
-| Issue | State | Citation |
-| --- | --- | --- |
-| 3 | closed | https://github.com/kvnloo/cua/issues/3#issuecomment-5841162781 and the macOS trace https://github.com/trycua/cua/pull/4164#issuecomment-5840994846 |
-| 55 | closed | https://github.com/kvnloo/cua/issues/55#issuecomment-5841163381 |
-| 63 | closed | https://github.com/kvnloo/cua/issues/63#issuecomment-5841024385 and the same macOS trace |
-| 71 | closed | https://github.com/kvnloo/cua/issues/71#issuecomment-5841164075 |
+| Issue | Closing comment |
+| --- | --- |
+| 3 | https://github.com/kvnloo/cua/issues/3#issuecomment-5841162781 |
+| 53 | https://github.com/kvnloo/cua/issues/53#issuecomment-5841217853 |
+| 55 | https://github.com/kvnloo/cua/issues/55#issuecomment-5841163381 |
+| 57 | https://github.com/kvnloo/cua/issues/57#issuecomment-5841218654 |
+| 58 | https://github.com/kvnloo/cua/issues/58#issuecomment-5841219609 |
+| 60 | https://github.com/kvnloo/cua/issues/60#issuecomment-5841220395 |
+| 63 | https://github.com/kvnloo/cua/issues/63#issuecomment-5841024385 |
+| 66 | https://github.com/kvnloo/cua/issues/66#issuecomment-5841212006 |
+| 68 | https://github.com/kvnloo/cua/issues/68#issuecomment-5841209233 |
+| 69 | https://github.com/kvnloo/cua/issues/69#issuecomment-5841210703 |
+| 70 | https://github.com/kvnloo/cua/issues/70#issuecomment-5841210085 |
+| 71 | https://github.com/kvnloo/cua/issues/71#issuecomment-5841164075 |
 
-Issue 3's macOS counts are also copied, as a citation, in `scripts/repro/handoff/issue-3-macos-trace.md`. This branch still has no Windows UIA walker log and no Linux AT-SPI walker log.
+Issue 3 and issue 63 also cite the macOS trace https://github.com/trycua/cua/pull/4164#issuecomment-5840994846. That trace is copied in `scripts/repro/handoff/issue-3-macos-trace.md`. This branch still has no Windows UIA walker log and no Linux AT-SPI walker log.
 
 Issue 55's caller graph is `scripts/repro/handoff/issue-55-consumers.md`. It does not add a public field.
 

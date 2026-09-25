@@ -436,6 +436,21 @@ class HandoffPruningTest(unittest.TestCase):
         )
         self.assertIn("not a walk this Linux host ran", cited)
 
+    def test_closed_issue_citations_and_machine_blocks(self) -> None:
+        closed = (HANDOFF / "closed-issues.md").read_text(encoding="utf-8")
+        for number in (3, 53, 55, 57, 58, 60, 63, 66, 68, 69, 70, 71):
+            self.assertIn(f"| {number} |", closed)
+            self.assertIn(f"issues/{number}#issuecomment-", closed)
+        blocks = {
+            "issue-2-block.md": "Missing machine: this Linux host.",
+            "issue-4-block.md": "Missing machine: this Linux host.",
+            "issue-8-block.md": "Missing machine: macOS",
+            "issue-46-block.md": "Missing machine: this Linux host.",
+            "issue-64-block.md": "Missing machine: this Linux host.",
+        }
+        for name, phrase in blocks.items():
+            self.assertIn(phrase, (HANDOFF / name).read_text(encoding="utf-8"), name)
+
     def test_repro_notes_do_not_apply_a_promotion_verdict(self) -> None:
         banned = re.compile(r"\b(KEEP|REVISE|KILL|KILLED)\b")
         hits = []
