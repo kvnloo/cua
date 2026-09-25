@@ -6,15 +6,21 @@ import { compileExpectation, providerCannotReplace, type Candidate } from './com
 
 const fixture = JSON.parse(
   readFileSync(new URL('../../../../../scripts/repro/handoff/issue-40-fixture.json', import.meta.url), 'utf8'),
-) as Array<{ id: string; tool: string | null; token: string; expect: { kind: string; token: string } | null }>;
+) as Array<{
+  id: string;
+  tool: string | null;
+  token: string;
+  capture_id?: string;
+  expect: { kind: string; token: string } | null;
+}>;
 
-function candidate(id: string, tool: string | null): Candidate {
-  return { id, description: id, tool, arguments: {} };
+function candidate(id: string, tool: string | null, captureId?: string | null): Candidate {
+  return { id, description: id, tool, arguments: {}, capture_id: captureId ?? null };
 }
 
 test('shared fixture matches compileExpectation', () => {
   for (const row of fixture) {
-    const compiled = compileExpectation(candidate(row.id, row.tool), row.token);
+    const compiled = compileExpectation(candidate(row.id, row.tool, row.capture_id), row.token);
     assert.deepEqual(compiled, row.expect);
   }
 });
@@ -29,6 +35,11 @@ test('type and submit compile the same expectations as the Python module', () =>
     token: 'proof',
   });
   assert.equal(compileExpectation(candidate('reobserve', null), 'proof'), null);
+  assert.deepEqual(
+    compileExpectation(candidate('visual-submit', 'browser_click', 'cap-1'), 'proof'),
+    { kind: 'fixture_submitted_equals', token: 'proof' },
+  );
+  assert.equal(compileExpectation(candidate('visual-submit', 'browser_click', null), 'proof'), null);
 });
 
 test('provider output does not replace the compiled expectation', () => {

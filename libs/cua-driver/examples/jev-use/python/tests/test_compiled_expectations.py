@@ -8,7 +8,13 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE / "python"))
 
-from compiled_expectations import Expectation, compile_expectation, provider_cannot_replace
+from browser_revision import BrowserNode, StaleRefError
+from compiled_expectations import (
+    Expectation,
+    accept_if_bound,
+    compile_expectation,
+    provider_cannot_replace,
+)
 from core import Candidate
 from guarded_run import Decision, FreshObservation, admit_guarded_run, second_child_allowed
 
@@ -21,7 +27,14 @@ class CompiledExpectationTest(unittest.TestCase):
     def test_shared_fixture_matches_compile_expectation(self) -> None:
         path = Path(__file__).resolve().parents[6] / "scripts/repro/handoff/issue-40-fixture.json"
         for row in json.loads(path.read_text(encoding="utf-8")):
-            compiled = compile_expectation(candidate(row["id"], row["tool"]), row["token"])
+            built = Candidate(
+                row["id"],
+                row["id"],
+                row["tool"],
+                {},
+                capture_id=row.get("capture_id"),
+            )
+            compiled = compile_expectation(built, row["token"])
             if row["expect"] is None:
                 self.assertIsNone(compiled)
             else:
@@ -51,9 +64,25 @@ class CompiledExpectationTest(unittest.TestCase):
             submit_ref="ref-submit",
         )
         assert plan is not None
-        self.assertFalse(
-            second_child_allowed("unknown", FreshObservation("proof", "ref-submit", "cap"), plan)
+        fresh = FreshObservation("proof", "ref-submit", "cap")
+        self.assertFalse(second_child_allowed("unknown", fresh, plan))
+        self.assertFalse(second_child_allowed("refuted", fresh, plan))
+
+    def test_stale_ref_refuses_before_the_expectation_can_succeed(self) -> None:
+        compiled = compile_expectation(
+            Candidate("visual-submit", "visual-submit", "browser_click", {}, capture_id="cap-1"),
+            "proof",
         )
+        assert compiled is not None
+        stale = BrowserNode("ref-submit", 2, "Submit")
+        with self.assertRaises(StaleRefError):
+            accept_if_bound(stale, "ref-submit", 1, compiled)
+        current = BrowserNode("ref-submit", 1, "Submit")
+        self.assertEqual(accept_if_bound(current, "ref-submit", 1, compiled), compiled)
+
+    def test_visual_submit_without_a_capture_has_no_expectation(self) -> None:
+        bare = Candidate("visual-submit", "visual-submit", "browser_click", {})
+        self.assertIsNone(compile_expectation(bare, "proof"))
 
 
 if __name__ == "__main__":

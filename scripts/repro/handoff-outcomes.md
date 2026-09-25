@@ -82,10 +82,11 @@ Missing on this Linux host: a slow native tree. The probe found no top-level win
 
 ### Issue 14
 
+Schema note: `scripts/repro/handoff/issue-14-schema.md`.
 Python: `compiled_expectations.py` and `test_compiled_expectations.py`.
 TypeScript: `typescript/compiled_expectations.ts` and `typescript/compiled_expectations.test.ts`.
 
-Both compile `field_value_equals` and `fixture_submitted_equals` for the two executable ids, return null for reobserve and abstain, and ignore a provider replacement. No shared abstraction was added. No upstream change.
+Both compile `field_value_equals` and `fixture_submitted_equals`. A visual submit also needs `capture_id`. `accept_if_bound` refuses a stale ref before it returns the expectation. Unknown and refuted do not start the next child. Wall time was not measured. Missing machine: this Linux host. No shared abstraction was added.
 
 ### Issue 16
 
@@ -202,7 +203,7 @@ The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a
 
 ### Issue 39
 
-`scripts/repro/handoff/issue-39-report.md`. No abstraction has two call sites. No refactor was performed.
+`scripts/repro/handoff/issue-39-report.md` and `scripts/repro/handoff/issue-39-inventory.json`. `extraction_inventory.inventory` finds no production call site outside the jev-use example. Every row stays recipe-local. No refactor was performed.
 
 ### Issue 40
 
@@ -218,11 +219,11 @@ Both read that fixture. Parity is claimed only for compiled expectations. The ot
 
 ### Issue 42
 
-`scripts/repro/handoff/issue-42-overlap.md`. Python and TypeScript both read `issue-40-fixture.json`. The compiler remains recipe-local.
+`scripts/repro/handoff/issue-42-overlap.md`. The form compiler and `toggle_expectations.py` do not import each other. Their predicates differ. No shared compiler was extracted.
 
 ### Issue 43
 
-`scripts/repro/handoff/issue-43-graph.md`. `run.py` does not call `guarded_run.py`. A second workflow was not implemented, so the abstraction is not adopted.
+`scripts/repro/handoff/issue-43-graph.md`. `guarded_run.py` and `toggle_run.py` do not import each other. The form oracle is a submit ref. The toggle oracle is a boolean. No shared primitive was added.
 
 ### Issue 44
 
