@@ -27,6 +27,32 @@ def typed_choice(effect: Effect, observation: Observation, *, passive_success: b
     return "stop"
 
 
+def required_cases() -> list[dict[str, str | bool]]:
+    """The cases named by kvnloo/cua#12. Each row is decided by typed_choice."""
+    rows = [
+        ("observation skipped after successful action", "confirmed", "skipped", False),
+        ("observation completed and no relevant change", "confirmed", "completed", False),
+        ("observation unavailable", "unverifiable", "unavailable", False),
+        ("passive result proves success", "unverifiable", "completed", True),
+        ("suspected noop", "suspected_noop", "completed", False),
+        ("explicit refusal before dispatch", "refused", "skipped", False),
+        ("action may have dispatched then probe failed", "unverifiable", "unavailable", False),
+    ]
+    decided = []
+    for name, effect, observation, passive in rows:
+        decided.append(
+            {
+                "case": name,
+                "effect": effect,
+                "observation": observation,
+                "passive_success": passive,
+                "typed": typed_choice(effect, observation, passive_success=passive),
+                "naive": naive_choice(effect, observation, passive_success=passive),
+            }
+        )
+    return decided
+
+
 def naive_choice(effect: Effect, observation: Observation, *, passive_success: bool) -> Choice:
     if passive_success:
         return "continue"

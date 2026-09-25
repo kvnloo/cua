@@ -12,6 +12,15 @@ from shadow_probe import record
 
 
 class ShadowProbeTest(unittest.TestCase):
+    def test_written_shadow_line_matches_record(self) -> None:
+        root = Path(__file__).resolve().parents[6]
+        line = json.loads((root / "scripts/repro/handoff/issue-11-shadow.jsonl").read_text(encoding="utf-8"))
+        census = json.loads((root / "scripts/repro/atspi-census-20260925.json").read_text(encoding="utf-8"))
+        sample = record(line["surface"], line["identity"], tuple(census["event_types"]))
+        self.assertEqual(line["skip_capture"], sample.skip_capture)
+        self.assertFalse(line["skip_capture"])
+        self.assertIsNone(line["reconciliation_cost_ms"])
+
     def test_recorded_gtk_text_change_does_not_skip(self) -> None:
         trace = Path(__file__).resolve().parents[6] / "scripts/repro/atspi-census-20260925.json"
         payload = json.loads(trace.read_text(encoding="utf-8"))

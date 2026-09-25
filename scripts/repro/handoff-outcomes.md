@@ -18,31 +18,35 @@ Every other mechanism in this queue stays undecided. Unit admission is not a liv
 
 ### Issue 2
 
-Asked for outcome-level A/B receipts under `scripts/repro/` and a verdict for trycua/cua#4165. Those receipts were not produced. `lazy_vision.needs_visual_capture` is the admission rule only: a semantic executable candidate skips optional visual capture, and a capture-bound candidate does not. Live Driver, Chromium, and model session: not run on this host.
+Blocked. The block file is `scripts/repro/handoff/issue-2-block.md`.
+
+Missing session on this Linux host: a live Driver, Chromium fixture, and model run. The JSONL receipts, command log, summary table, and verdict for trycua/cua#4165 were not produced and were not invented.
 
 ### Issue 3
 
-Asked for a native walker count of 0 on screenshot evidence. Not measured. The call site in `expectation.rs` is locked: the screenshot read calls `observe(..., false, true)`. That is not a platform trace.
+Blocked. The block file is `scripts/repro/handoff/issue-3-block.md`.
+
+Missing trace on this Linux host: an accessibility walker count. The six predicate cases were not traced. The call-site lock in `test_verify_elapsed_order.py` is not that trace and is not a verdict.
 
 ### Issue 4
 
-Asked for live metrics before a fast path is eligible. Not measured. `single_executable_candidate` admits only one non-reserved tooled candidate. The default chooser is unchanged. A chooser that would reobserve is recorded as a different choice, not promoted.
+Blocked. The block file is `scripts/repro/handoff/issue-4-block.md`.
+
+Missing session on this Linux host: a live interleaved fixture trial. Eligibility metrics were not measured. `single_executable_candidate` is not an eligibility verdict, and the default chooser is unchanged.
 
 ### Issue 5
 
-Downstream prototype: `guarded_run.py`. Tests: `test_guarded_run.py`.
+Architecture note: `scripts/repro/handoff/issue-5-architecture.md`.
 
-Facts allowed to survive child 1: the two candidate ids, their tools, and the token the caller already held.
+Prototype `guarded_run.py`. Tests `test_guarded_run.py`. Facts that survive child 1 are the run decision, the two ids and tools, and the token already held. The pre-type field value, capture id, and a Submit ref the fresh observation no longer shows do not survive.
 
-Facts not allowed to survive: the Submit ref, the field value, and the capture id from before the type. The second child runs only when a fresh observation still has that token, the same Submit ref, and a capture id.
-
-Raw fixture receipts were not produced on this Linux host. No shared helper was added. No verdict.
+Raw fixture receipts were not produced on this Linux host. No verdict. No shared helper.
 
 ### Issue 6
 
-Invariant: a preflight of snapshot S does not authorize child 2 after child 1 mutates the target child 2 was planned against. `stale_batch.run_batch` resolves child 2 again and refuses a missing target or a new identity. Regression fixture: `test_stale_batch.py`.
+Handoff: `scripts/repro/handoff/issue-6-handoff.md`.
 
-Freshness stays caller-managed. It is not moved into shared execution code. Latency and an independent app trace were not captured on this Linux host, so there is no turn-count claim.
+Invariant: preflight does not authorize child 2. Regression fixture: `test_stale_batch.py`. Latency and an independent app trace were not captured on this Linux host. Recommendation: freshness stays caller-managed.
 
 ### Issue 8
 
@@ -54,23 +58,34 @@ Blocked on a macOS machine. The Calculator result in trycua/cua#2958 was not dri
 
 ### Issue 10
 
-`task_accounting.outcome_time` returns verified-outcome time and will not return runner lifetime. A named span under 90 percent of that outcome fails `phase0_spans_cover_outcome`. The 4-arm live benchmark was not run.
+Blocked. The block file is `scripts/repro/handoff/issue-10-block.md`.
+
+Missing session on this Linux host: the 4-arm benchmark. No task×arm×trial JSONL was written, and no trial time was invented. `task_accounting.outcome_time` returns verified-outcome time only.
 
 ### Issue 11
 
-`shadow_probe.record` always stores `skip_capture=False`. The GTK census file is an input to the test, not a license to skip. No false-retention corpus and no reconciliation-cost measurement, so Phase 2A is not accepted.
+Shadow line, produced by `shadow_probe.record` from the GTK census: `scripts/repro/handoff/issue-11-shadow.jsonl`.
+
+`skip_capture` is false. `false_retention_observed` and `reconciliation_cost_ms` are null because this host did not measure them. No capture skipping was enabled. Phase 2A is not accepted.
 
 ### Issue 12
 
-`action_consumer.typed_choice` observes again when the poll was skipped, the effect is unverifiable, or the observation is unavailable. Refusal stops. Passive success may continue. The naive policy replays those cases. No Calculator run.
+Raw cases, each decided by `typed_choice`: `scripts/repro/handoff/issue-12-cases.jsonl`. `test_action_consumer.py` reloads that file and checks every row against `typed_choice`.
+
+Skipped observation, unavailable observation, suspected noop, and a probe failure after dispatch are `observe`, not a replay. Refusal is `stop`. Passive success is `continue`. No public field was added for #4009. The missing native case is still the macOS Calculator trace.
 
 ### Issue 13
 
-`WalkBudget` in `walk_budget.rs` starts its clock at the first admitted node and says setup is outside that budget, with a separate backend backstop. `walk_budget_owner.WalkSplit` names the same three owners from timings a caller supplies. No slow native tree was walked on this host, so there is no per-phase log and no new budget type.
+Blocked. The block file is `scripts/repro/handoff/issue-13-block.md`.
+
+Missing workload on this Linux host: a slow native tree with per-phase timings. No latency number was invented. `WalkBudget` already starts at the first admitted node. No second budget was added.
 
 ### Issue 14
 
-`compile_expectation` attaches field or fixture equality to the two executable jev-use ids and returns nothing for reobserve and abstain. `provider_cannot_replace` keeps the compiled value. One recipe is not a shared helper.
+Python: `compiled_expectations.py` and `test_compiled_expectations.py`.
+TypeScript: `typescript/compiled_expectations.ts` and `typescript/compiled_expectations.test.ts`.
+
+Both compile `field_value_equals` and `fixture_submitted_equals` for the two executable ids, return null for reobserve and abstain, and ignore a provider replacement. No shared abstraction was added. No upstream change.
 
 ### Issue 16
 
