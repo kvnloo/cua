@@ -21,6 +21,13 @@ class VerifyElapsedOrderTest(unittest.TestCase):
         # kvnloo/cua#22 option 1. Do not fold screenshot work into elapsed_ms.
         self.assertIn("verify_state: {}", SOURCE.read_text(encoding="utf-8"))
 
+    def test_screenshot_evidence_observe_requests_no_elements(self) -> None:
+        # kvnloo/cua#3 call site. This does not prove the native walker obeyed it.
+        text = SOURCE.read_text(encoding="utf-8")
+        start = text.index("if input.include_screenshot == Some(true)")
+        window = text[start : start + 500]
+        self.assertIn("observe(input.pid, input.window_id, false, true)", window)
+
 
 if __name__ == "__main__":
     unittest.main()
