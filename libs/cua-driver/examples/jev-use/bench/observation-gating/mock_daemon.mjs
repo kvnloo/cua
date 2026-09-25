@@ -27,6 +27,10 @@ function flag(name, def) {
 const socketPath = flag("--socket", null);
 let scenario = flag("--scenario", "dom-complete");
 const regionCount = Math.max(1, parseInt(flag("--regions", "50"), 10));
+// --keep-alive: keep each connection open and serve every newline-delimited
+// request on it, instead of one request per connection. Fork prototype only;
+// the real daemon closes after one request (see REPORT-keepalive.md).
+const keepAlive = args.includes("--keep-alive");
 if (!socketPath) throw new Error("missing --socket");
 if (!["dom-complete", "visual-fallback"].includes(scenario)) {
   throw new Error(`unknown scenario: ${scenario}`);
@@ -140,41 +144,44 @@ try {
 const server = net.createServer((connection) => {
   let buffer = "";
   connection.setEncoding("utf8");
+  const respond = (payload) => connection.write(`${JSON.stringify(payload)}\n`);
   connection.on("data", (chunk) => {
     buffer += chunk;
-    const newline = buffer.indexOf("\n");
-    if (newline < 0) return;
-    let request;
-    try {
-      request = JSON.parse(buffer.slice(0, newline));
-    } catch {
-      connection.end(`${JSON.stringify({ ok: false, error: "bad json" })}\n`);
-      return;
-    }
-    if (request.method === "metadata") {
-      connection.end(
-        `${JSON.stringify({
+    // Keep-alive mode: drain every complete request line in the buffer.
+    // One-request-per-connection mode: serve only the first.
+    for (;;) {
+      const newline = buffer.indexOf("\n");
+      if (newline < 0) break;
+      const line = buffer.slice(0, newline);
+      buffer = buffer.slice(newline + 1);
+      let request;
+      try {
+        request = JSON.parse(line);
+      } catch {
+        connection.end(`${JSON.stringify({ ok: false, error: "bad json" })}\n`);
+        return;
+      }
+      if (request.method === "metadata") {
+        respond({
           ok: true,
           result: {
             driver_version: "mock-0.0.0",
             contract_version: "0.8.0",
             embedded: false,
           },
-        })}\n`,
-      );
-      return;
-    }
-    const isError = request.name === "fixture_submitted" ? false : false;
-    connection.end(
-      `${JSON.stringify({
+        });
+        continue;
+      }
+      respond({
         ok: true,
         result: {
           content: [{ type: "text", text: "mock daemon" }],
           structuredContent: structuredContent(request),
-          isError,
+          isError: false,
         },
-      })}\n`,
-    );
+      });
+    }
+    if (!keepAlive) connection.end();
   });
 });
 
