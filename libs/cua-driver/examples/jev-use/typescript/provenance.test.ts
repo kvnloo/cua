@@ -59,11 +59,68 @@ describe('ProvenanceLedger', () => {
       observedBeforeEffect: true,
       observedAfterEffect: true,
       effectConfirmedBy: 'tree-diff',
+      status: 'completed',
     });
     const record = ledger.step(1)!;
     assert.deepEqual(record.dispatch!.evidenceKinds, ['snapshot', 'driver']);
     assert.equal(record.settlement!.verifiedBy, 'snapshot-diff');
     assert.equal(ledger.settled(1), true);
+    assert.equal(record.postDispatch, 'completed');
+  });
+
+  it("noteDriverField 'skipped' records not-performed and touches nothing else", () => {
+    const ledger = new ProvenanceLedger();
+    ledger.noteDispatch(1, { candidateId: 'click-x', tool: 'click', evidenceKinds: ['snapshot'] });
+    ledger.noteSettlement(1, { verifiedBy: 'unverified', latencyMs: 0 });
+    ledger.noteDriverField(1, {
+      actionId: 'click-x',
+      observedBeforeEffect: false,
+      observedAfterEffect: false,
+      effectConfirmedBy: 'tree-diff',
+      status: 'skipped',
+    });
+    const record = ledger.step(1)!;
+    // "not performed" is recorded explicitly — it must not promote evidence
+    // or settlement, and must not read as "performed and saw no change".
+    assert.equal(record.postDispatch, 'skipped');
+    assert.deepEqual(record.dispatch!.evidenceKinds, ['snapshot']);
+    assert.equal(record.settlement!.verifiedBy, 'unverified');
+    assert.equal(ledger.settled(1), false);
+  });
+
+  it("noteDriverField 'unavailable' records the absent capability", () => {
+    const ledger = new ProvenanceLedger();
+    ledger.noteDispatch(1, { candidateId: 'click-x', tool: 'click', evidenceKinds: ['snapshot'] });
+    ledger.noteDriverField(1, {
+      actionId: 'click-x',
+      observedBeforeEffect: false,
+      observedAfterEffect: false,
+      effectConfirmedBy: 'none',
+      status: 'unavailable',
+    });
+    const record = ledger.step(1)!;
+    assert.equal(record.postDispatch, 'unavailable');
+    assert.deepEqual(record.dispatch!.evidenceKinds, ['snapshot']);
+    assert.equal(record.settlement, undefined);
+  });
+
+  it("noteDriverField 'completed' never promotes effect on status alone", () => {
+    const ledger = new ProvenanceLedger();
+    ledger.noteDispatch(1, { candidateId: 'click-x', tool: 'click', evidenceKinds: ['snapshot'] });
+    ledger.noteDriverField(1, {
+      actionId: 'click-x',
+      observedBeforeEffect: true,
+      observedAfterEffect: true,
+      effectConfirmedBy: 'none',
+      status: 'completed',
+    });
+    const record = ledger.step(1)!;
+    // The poll ran, but effect confirmation is absent: status alone is not
+    // settlement. This is #4009's "never promotes effect" rule.
+    assert.equal(record.postDispatch, 'completed');
+    assert.deepEqual(record.dispatch!.evidenceKinds, ['snapshot', 'driver']);
+    assert.equal(record.settlement, undefined);
+    assert.equal(ledger.settled(1), false);
   });
 
   it('noteDriverField with effectConfirmedBy none leaves settlement alone', () => {
@@ -74,6 +131,7 @@ describe('ProvenanceLedger', () => {
       observedBeforeEffect: false,
       observedAfterEffect: false,
       effectConfirmedBy: 'none',
+      status: 'completed',
     });
     assert.equal(ledger.step(1)!.settlement, undefined);
     assert.equal(ledger.settled(1), false);
@@ -88,6 +146,7 @@ describe('ProvenanceLedger', () => {
       observedBeforeEffect: true,
       observedAfterEffect: true,
       effectConfirmedBy: 'capture-compare',
+      status: 'completed',
     });
     assert.equal(ledger.step(1)!.settlement!.verifiedBy, 'fixture');
   });

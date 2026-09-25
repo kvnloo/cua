@@ -30,9 +30,26 @@ sends nothing like it today. It pins the shape the ledger will consume
 (`observedBeforeEffect`, `observedAfterEffect`, `effectConfirmedBy`) so the
 example-side contract doesn't drift from the contract-crate design while
 #4009 is under discussion. `noteDriverField` is the only entry point that
-accepts it; it promotes `driver` into the step's evidence kinds and upgrades
-an `unverified` settlement to `snapshot-diff` — never demoting a
+accepts it; on `completed` it promotes `driver` into the step's evidence kinds
+and upgrades an `unverified` settlement to `snapshot-diff` — never demoting a
 `fixture`-confirmed one (the oracle is stronger than the driver's report).
+On `skipped`/`unavailable` it records the status and touches nothing else.
+
+### The post_dispatch_observation mapping (2026-09-25)
+
+#4009's proposal now includes `post_dispatch_observation` with values
+`completed` / `skipped` / `unavailable`, sitting beside `signal` and never
+promoting `effect`. The ledger maps it as:
+
+| #4009 value | ledger behavior |
+|---|---|
+| `completed` | Record `postDispatch: 'completed'`; fold `driver` evidence; settlement promotion still gated on `effectConfirmedBy` only — status alone never settles a step. |
+| `skipped` | Record `postDispatch: 'skipped'`; settlement and evidence untouched. "Not performed" is explicit and must never read as "performed and saw no change." |
+| `unavailable` | Record `postDispatch: 'unavailable'`; settlement and evidence untouched. |
+
+The `postDispatch` field is part of the handoff record, so a consumer can
+distinguish "the driver never observed this step" from "the driver
+observed and saw no relevant change" without re-running the observation.
 
 ## Wiring points in run.ts (when #4009 lands)
 

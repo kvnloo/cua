@@ -35,10 +35,26 @@ export type StepProvenance = Readonly<{
   observations: readonly ObservationRecord[];
   dispatch?: DispatchRecord;
   settlement?: SettlementRecord;
+  /** #4009 post_dispatch_observation status, once the driver reports it. */
+  postDispatch?: PostDispatchStatus;
 }>;
 
 /**
- * Reserved adapter for the driver-reported post-dispatch observation field
+ * The post_dispatch_observation status vocabulary from #4009's proposal
+ * (folded in 2026-09-25): the driver reports whether post-dispatch
+ * observation ran, and the field NEVER promotes `effect`.
+ *
+ * - `completed`: the poll ran to its bound (including a timeout). The
+ *   observation happened; nothing is claimed about the effect.
+ * - `skipped`: the observation was NOT performed. This is the distinction
+ *   Kevin's #4009 comment required: "not performed" must stay different
+ *   from "performed and saw no relevant change."
+ * - `unavailable`: the driver cannot do post-dispatch observation at all.
+ */
+export type PostDispatchStatus = 'completed' | 'skipped' | 'unavailable';
+
+/**
+ * Adapter for the driver-reported post-dispatch observation field
  * (the ActionResult vocabulary thread, #4009).
  *
  * The driver never sends this field today — there is no field on
@@ -50,6 +66,9 @@ export type StepProvenance = Readonly<{
  * - `observedAfterEffect`: the driver captured a post-action observation.
  * - `effectConfirmedBy`: how the driver knows the effect happened —
  *   tree diff, capture comparison, or nothing.
+ * - `status`: the #4009 post_dispatch_observation status. A `completed`
+ *   status never promotes `effect` — effect confirmation comes only from
+ *   `effectConfirmedBy`, never from the poll having run.
  *
  * `ProvenanceLedger.noteDriverField` is the only entry point that accepts
  * this type; wiring it to the real MCP response belongs in run.ts when
@@ -60,6 +79,7 @@ export type PostDispatchObservation = Readonly<{
   observedBeforeEffect: boolean;
   observedAfterEffect: boolean;
   effectConfirmedBy: 'tree-diff' | 'capture-compare' | 'none';
+  status: PostDispatchStatus;
 }>;
 
 /**
@@ -108,32 +128,49 @@ export class ProvenanceLedger {
 
   /**
    * Fold a driver-reported post-dispatch observation into the step that
-   * dispatched the action. Today the driver never sends this (see
-   * PostDispatchObservation); when it does, the field promotes the
-   * evidence record: a step whose settlement was 'unverified' becomes
-   * 'snapshot-diff'-equivalent ('fixture' stays — the oracle is stronger).
+   * dispatched the action, using #4009's post_dispatch_observation status:
+   *
+   * - `completed`: the poll ran to its bound. Folds 'driver' into the
+   *   evidence kinds and applies the existing effectConfirmedBy promotion —
+   *   but NEVER promotes `effect` on status alone: a completed poll is not
+   *   effect confirmation.
+   * - `skipped`: the observation was NOT performed. Recorded explicitly so
+   *   "not performed" can never be read as "performed and saw no change";
+   *   settlement is untouched.
+   * - `unavailable`: the capability is absent. Recorded; settlement
+   *   untouched.
    */
   noteDriverField(step: number, field: PostDispatchObservation): void {
     const existing = this.entry(step);
-    const dispatch = existing.dispatch
-      ? {
-          ...existing.dispatch,
-          evidenceKinds: existing.dispatch.evidenceKinds.includes('driver')
-            ? existing.dispatch.evidenceKinds
-            : [...existing.dispatch.evidenceKinds, 'driver'],
-        }
-      : undefined;
-    const settlement: SettlementRecord | undefined =
-      field.effectConfirmedBy === 'none'
-        ? existing.settlement
-        : { verifiedBy: existing.settlement?.verifiedBy === 'fixture' ? 'fixture' : 'snapshot-diff', latencyMs: 0 };
+    const status = field.status;
+    if (status === 'completed') {
+      const dispatch = existing.dispatch
+        ? {
+            ...existing.dispatch,
+            evidenceKinds: existing.dispatch.evidenceKinds.includes('driver')
+              ? existing.dispatch.evidenceKinds
+              : [...existing.dispatch.evidenceKinds, 'driver'],
+          }
+        : undefined;
+      const settlement: SettlementRecord | undefined =
+        field.effectConfirmedBy === 'none'
+          ? existing.settlement
+          : { verifiedBy: existing.settlement?.verifiedBy === 'fixture' ? 'fixture' : 'snapshot-diff', latencyMs: 0 };
+      this.records.set(
+        step,
+        Object.freeze({
+          ...existing,
+          postDispatch: status,
+          ...(dispatch ? { dispatch: Object.freeze(dispatch) } : {}),
+          ...(settlement ? { settlement: Object.freeze(settlement) } : {}),
+        }) as StepProvenance,
+      );
+      return;
+    }
+    // skipped / unavailable: record the status, touch nothing else.
     this.records.set(
       step,
-      Object.freeze({
-        ...existing,
-        ...(dispatch ? { dispatch: Object.freeze(dispatch) } : {}),
-        ...(settlement ? { settlement: Object.freeze(settlement) } : {}),
-      }) as StepProvenance,
+      Object.freeze({ ...existing, postDispatch: status }) as StepProvenance,
     );
   }
 
