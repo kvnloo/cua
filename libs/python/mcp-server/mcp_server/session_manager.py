@@ -209,13 +209,25 @@ class SessionManager:
 
     async def unregister_task(self, session_id: str, task_id: str) -> None:
         """Unregister a task from a session."""
+        needs_cleanup = False
         async with self._session_lock:
             if session_id in self._sessions:
                 self._sessions[session_id].active_tasks.discard(task_id)
                 logger.debug(f"Unregistered task {task_id} from session {session_id}")
+                # A session marked for shutdown while tasks were active must be
+                # reclaimed once its last task unregisters. The cleanup loop
+                # skips is_shutting_down sessions, so without this the session
+                # (and its pooled computer) would leak forever.
+                needs_cleanup = (
+                    self._sessions[session_id].is_shutting_down
+                    and not self._sessions[session_id].active_tasks
+                )
+        if needs_cleanup:
+            await self._force_cleanup_session(session_id)
 
     async def cleanup_session(self, session_id: str) -> None:
         """Cleanup a specific session."""
+        should_cleanup = False
         async with self._session_lock:
             if session_id not in self._sessions:
                 return
@@ -228,6 +240,12 @@ class SessionManager:
                 session.is_shutting_down = True
                 return
 
+            # Decide under the lock, act outside it: _force_cleanup_session
+            # re-acquires _session_lock, which is not reentrant — awaiting it
+            # here would deadlock the calling task forever.
+            should_cleanup = True
+
+        if should_cleanup:
             # Actually cleanup the session
             await self._force_cleanup_session(session_id)
 
