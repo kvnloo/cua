@@ -347,7 +347,7 @@ def serve() -> FastMCP:
         Get statistics about active sessions and resource usage.
         """
         session_manager = get_session_manager()
-        return session_manager.get_session_stats()
+        return await session_manager.get_session_stats()
 
     @server.tool(structured_output=False)
     async def cleanup_session(ctx: Context, session_id: str) -> str:

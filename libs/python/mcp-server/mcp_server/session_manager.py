@@ -272,32 +272,27 @@ class SessionManager:
             except Exception as e:
                 logger.error(f"Error in cleanup loop: {e}")
 
-    def get_session_stats(self) -> Dict[str, Any]:
-        """Get statistics about active sessions."""
+    async def get_session_stats(self) -> Dict[str, Any]:
+        """Get statistics about active sessions.
 
-        async def _get_stats():
-            async with self._session_lock:
-                return {
-                    "total_sessions": len(self._sessions),
-                    "max_concurrent": self.max_concurrent_sessions,
-                    "sessions": {
-                        session_id: {
-                            "created_at": session.created_at,
-                            "last_activity": session.last_activity,
-                            "active_tasks": len(session.active_tasks),
-                            "is_shutting_down": session.is_shutting_down,
-                        }
-                        for session_id, session in self._sessions.items()
-                    },
-                }
-
-        # Run in current event loop or create new one
-        try:
-            loop = asyncio.get_running_loop()
-            return asyncio.run_coroutine_threadsafe(_get_stats(), loop).result()
-        except RuntimeError:
-            # No event loop running, create a new one
-            return asyncio.run(_get_stats())
+        Async: the MCP tool calling this always runs on a live event loop, so
+        the old run_coroutine_threadsafe(...).result() dual-path deadlocked
+        the loop thread. Await this directly instead.
+        """
+        async with self._session_lock:
+            return {
+                "total_sessions": len(self._sessions),
+                "max_concurrent": self.max_concurrent_sessions,
+                "sessions": {
+                    session_id: {
+                        "created_at": session.created_at,
+                        "last_activity": session.last_activity,
+                        "active_tasks": len(session.active_tasks),
+                        "is_shutting_down": session.is_shutting_down,
+                    }
+                    for session_id, session in self._sessions.items()
+                },
+            }
 
 
 # Global session manager instance
