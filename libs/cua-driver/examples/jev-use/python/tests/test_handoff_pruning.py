@@ -413,7 +413,6 @@ class HandoffPruningTest(unittest.TestCase):
 
     def test_blocked_notes_name_the_linux_host(self) -> None:
         names = (
-            "issue-2-block.md",
             "issue-4-block.md",
             "issue-10-block.md",
             "issue-46-block.md",
@@ -425,6 +424,8 @@ class HandoffPruningTest(unittest.TestCase):
         for name in names:
             text = (HANDOFF / name).read_text(encoding="utf-8")
             self.assertIn("Missing machine: this Linux host.", text, name)
+        issue2 = (HANDOFF / "issue-2-block.md").read_text(encoding="utf-8")
+        self.assertIn("This Linux host is present. It is not the missing machine.", issue2)
         windows = (HANDOFF / "issue-19-block.md").read_text(encoding="utf-8")
         self.assertIn("Missing machine: Windows", windows)
         macos = (HANDOFF / "issue-18-block.md").read_text(encoding="utf-8")
@@ -442,7 +443,6 @@ class HandoffPruningTest(unittest.TestCase):
             self.assertIn(f"| {number} |", closed)
             self.assertIn(f"issues/{number}#issuecomment-", closed)
         blocks = {
-            "issue-2-block.md": "Missing machine: this Linux host.",
             "issue-4-block.md": "Missing machine: this Linux host.",
             "issue-8-block.md": "Missing machine: macOS",
             "issue-46-block.md": "Missing machine: this Linux host.",
@@ -450,6 +450,8 @@ class HandoffPruningTest(unittest.TestCase):
         }
         for name, phrase in blocks.items():
             self.assertIn(phrase, (HANDOFF / name).read_text(encoding="utf-8"), name)
+        issue2 = (HANDOFF / "issue-2-block.md").read_text(encoding="utf-8")
+        self.assertIn("This Linux host is present. It is not the missing machine.", issue2)
 
     def test_repro_notes_do_not_apply_a_promotion_verdict(self) -> None:
         banned = re.compile(r"\b(KEEP|REVISE|KILL|KILLED)\b")

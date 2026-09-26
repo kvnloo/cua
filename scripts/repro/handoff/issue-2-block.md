@@ -2,9 +2,17 @@
 
 Blocked. The outcome A/B was not run.
 
-Missing machine: this Linux host. The pinned driver build is not installed here (`cua-driver 0.28.2` is installed, the daemon is not running, and there are no top-level windows).
+This Linux host is present. It is not the missing machine.
 
-Missing on this Linux host: an exact-head Driver, a Chromium fixture, and a model session. `scripts/repro/handoff/linux-host-probe.txt` records installed `cua-driver 0.28.2`, exit 1 from `cua-driver status` (`Cua Driver daemon is not running`), and no top-level windows. The issues pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. That binary is not this host's installed driver.
+Missing runtime on this host, recorded in `scripts/repro/handoff/linux-host-probe.txt`:
+
+- The pinned driver `c5ee191c02b11448ffefcc38b78b064a87d8ef23` is not installed. The installed binary is `cua-driver 0.28.2`.
+- `cua-driver status` exited 1. The daemon is not running.
+- The display returned no top-level windows.
+- No Chromium fixture was driven.
+- No model session was run.
+
+This is not a macOS census and not a Windows census.
 
 Asked for under `scripts/repro/`: raw JSONL receipts, the exact command and environment, a summary table, and a promotion verdict for trycua/cua#4165.
 

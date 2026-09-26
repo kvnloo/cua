@@ -20,7 +20,7 @@ Every other mechanism in this queue stays undecided. Unit admission is not a liv
 
 Blocked. The block file is `scripts/repro/handoff/issue-2-block.md`.
 
-Missing on this Linux host: an exact-head Driver, a Chromium fixture, and a model run. `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The JSONL receipts, command log, summary table, and promotion verdict for trycua/cua#4165 were not produced and were not invented.
+This Linux host is present. It is not the missing machine. The pinned driver is not installed, the daemon is not running, and no Chromium or model session was run. The JSONL receipts, command log, summary table, and promotion verdict for trycua/cua#4165 were not produced and were not invented.
 
 ### Issue 3
 
@@ -123,15 +123,15 @@ The recorded GTK text-change is not skipped. A synthetic false reuse kills the p
 
 ### Issue 23
 
-Result table: `scripts/repro/handoff/issue-23-goals.json`, written by `use_model_done_gate` and `accept_completion`.
+Result table: `scripts/repro/handoff/issue-23-goals.json`, written by `goal_gates.task_rows`.
 
-The jev-use fixture keeps its `/state` oracle, so the model done-gate stays off. A model that says done does not override a failed oracle. No latency was measured. These heads were not added to #3961.
+Arms A, B, and C are `arm_ordinary_completed`, `arm_factorized_completed`, and `arm_local`. The fixture `/state` row keeps the model done-gate off, and a failed oracle is not overridden. `cannot_answer` is `unknown`, which is distinct from false, and that row's action is `reobserve`. A model done with no oracle and a false ground truth records `premature_stop`. A model not-done with a true ground truth records `missed_completion`. `confidence_threshold` is null and `calibration_trials` is 0. Latency was not measured. These heads were not added to #3961.
 
 ### Issue 24
 
-Per-task table: `scripts/repro/handoff/issue-24-battery.json`, written by `task_battery.evaluate`.
+Per-task table: `scripts/repro/handoff/issue-24-battery.json`, written by `task_battery.battery_table`, which calls `run_interleaved`.
 
-Form-fill takes the fast path. The ambiguous modal does not. `promote_globally` is false. `wall_time_ms` is null because no interleaved live runner was executed on this Linux host.
+Five tasks and four arms: baseline, lazy vision, exact candidate, and guarded run. Fill-submit is the fast path. The modal is not. Two executable actions can be admitted by `admit_guarded_run`; one executable action cannot. `promote_globally` is false. `live_success` and `wall_time_ms` are null. This Linux host is present. The pinned driver session was not run.
 
 ### Issue 25
 
@@ -234,7 +234,7 @@ Tests: `test_caller_route.py`.
 
 ### Issue 45
 
-`scripts/repro/handoff/issue-45-ledger.tsv`. Milliseconds removed are `not measured` on every row.
+`scripts/repro/handoff/issue-45-ledger.tsv`, written by `cost_ledger.ledger_tsv`. Each candidate mechanism names an evidence file. Public fields added are 0. Conditional observation and shared helper extraction are `not added`. Milliseconds, model calls, and observation calls removed are `not measured`. The class for an existing owner with no public surface is free consolidation. No vanity score was invented.
 
 ### Issue 46
 
@@ -250,7 +250,7 @@ Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Li
 
 ### Issue 49
 
-`scripts/repro/handoff/issue-49-spike.md`. No second harness was written. Nothing was deleted.
+`scripts/repro/handoff/issue-49-spike.md` and `scripts/repro/handoff/issue-49-comparison.json`. The five concepts call the shipped functions. The second harness was not added. Every row records that transfer as deleted. No TypeSafe or Jev import was added.
 
 ### Issue 50
 
@@ -260,11 +260,13 @@ Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Li
 
 ### Issue 27
 
-Compatibility matrix: `scripts/repro/handoff/issue-27-matrix.tsv`. No existing contract field gates these optimizations. No new capability field was added.
+Compatibility matrix: `scripts/repro/handoff/issue-27-matrix.tsv`, written by `compatibility_matrix.matrix_tsv`. The probe is `scripts/repro/handoff/issue-27-probe.py`.
+
+The rule is schema/property preflight. `include_accessibility_tree` is on the contract input and the Linux implementation, and it is absent from the Linux stub schema. `include_screenshot` is on `get_window_state` and `verify_state`. `post_dispatch_observation` is absent from the contract crate. Fast path and guarded run are caller predicates, not contract fields. Conditional skip is not enabled. Live `tools/list` was not captured. No second capability registry was added.
 
 ### Issue 28
 
-`scripts/repro/handoff/issue-28-note.md`. Tests are `test_lazy_vision.py`. Recommendation: no new caller helper and no new public Driver API.
+`scripts/repro/handoff/issue-28-note.md` and `scripts/repro/handoff/issue-28-decisions.json`. The rows call `optional_visual_observation` on a fake session. Recommendation: no new caller helper and no new public Driver API. This Linux host is present. The live current-versus-old driver session was not run.
 
 ### Issue 29
 
@@ -290,11 +292,11 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 34
 
-`scripts/repro/handoff/issue-34-privacy.md`. `TrialClocks` stores four integer millisecond fields and no window title, token, or screenshot.
+`scripts/repro/handoff/issue-34-privacy.md`. `project_event` keeps the four integer clocks and drops `SECRET-MARKER` text. `run.py` still writes the fixture token and was not changed.
 
 ### Issue 35
 
-`scripts/repro/handoff/issue-35-budget.md`. No CI wall-clock gate was added. A green unit run does not certify a latency change.
+`scripts/repro/handoff/issue-35-budget.md`. Structural counters are the hard CI layer. Milliseconds stay an evidence artifact. This Linux host is present. The pinned driver session for native benchmarks was not run. No CI workflow file was added.
 
 ### Issue 36
 
@@ -306,7 +308,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 38
 
-`scripts/repro/handoff/issue-38-migration.md`. No production field was added. `PollProvenance` stays internal.
+`scripts/repro/handoff/issue-38-migration.md` and `scripts/repro/handoff/issue-38-matrix.tsv`. The selected shape is no field added. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
 
 ## Assimilation
 

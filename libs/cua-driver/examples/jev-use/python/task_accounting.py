@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 
 @dataclass(frozen=True)
@@ -26,3 +26,22 @@ def phase0_spans_cover_outcome(trial: TrialClocks) -> bool:
 def outcome_time(trial: TrialClocks) -> int:
     """The number a report may call time-to-verified-outcome."""
     return trial.verified_outcome_ms
+
+
+def event_schema() -> dict[str, object]:
+    return {
+        "fields": {item.name: "int" for item in fields(TrialClocks)},
+        "forbidden": ["window_title", "token", "screenshot", "ocr_text", "prompt", "credential"],
+    }
+
+
+def project_event(raw: dict[str, object]) -> dict[str, int]:
+    """Allowlist projection. Anything else, including marker text, is dropped."""
+    schema = event_schema()
+    projected: dict[str, int] = {}
+    for key in schema["fields"]:
+        value = raw.get(key)
+        if isinstance(value, bool) or not isinstance(value, int):
+            continue
+        projected[key] = value
+    return projected
