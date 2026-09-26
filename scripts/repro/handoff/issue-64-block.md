@@ -1,11 +1,21 @@
-# Issue 64
+# Issue 64 — final disposition
 
-Blocked. The exact-head outcome A/B for trycua/cua#4165 was not run.
+Final disposition: **SUPERSEDED / closed duplicate**.
 
-This Linux host is present. It is not the missing machine.
+trycua/cua#4165 is closed. Its lazy-parse ordering and candidate-invariance test were explicitly salvaged into trycua/cua#4196.
 
-Missing prerequisite: pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23` is not an installed release. The installed release is `cua-driver 0.28.2`. The daemon is not running and there is no top-level window. See `scripts/repro/handoff/linux-host-probe.txt`.
+#4196 merged as upstream commit:
+`24aaf8d1965b3b7c1530cbb9d58758ec89472d92`.
 
-Asked for that artifact, a pull-request description update, and a verdict. Not produced. No helper was added. No verdict was issued. The unit rule in `test_lazy_vision.py` is not the A/B.
+A fork-only exact-head A/B artifact exists at:
+- branch `muse/issue-64-exact-head-ab`
+- commit `147158cf9caed69489607f7e6736dc9282bdd815`
+- path `scripts/repro/handoff/issue-64/`
 
-https://github.com/kvnloo/cua/issues/64#issuecomment-5841763905 does not contain that A/B. It points remaining evidence at kvnloo/cua#2.
+Controlled results:
+- default fixture: auto verified in 2 steps with 0 visual tool calls; always verified with 4;
+- visual fixture: auto verified with 2 visual tool calls; always verified with 4.
+
+This controlled harness uses a fake async Driver and does not prove a real perception-enabled desktop visual action. That remaining gap belongs to downstream #2 against merged #4196.
+
+Do not reopen #64 to qualify closed #4165.
