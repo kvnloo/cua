@@ -76,18 +76,32 @@ class ImageRetentionCallback(AsyncCallbackHandler):
 
             to_remove.add(idx)  # remove the computer_call_output itself
 
-            # Remove the immediately preceding computer_call with matching call_id (if present)
+            # Find the computer_call with the matching call_id. It is not
+            # guaranteed to sit immediately before its output (batched turns
+            # emit [call A, call B, output A, output B]; resumed histories can
+            # interleave arbitrarily), so scan backward instead of assuming
+            # idx - 1. Leaving the call behind would send an unpaired
+            # computer_call that the Responses API rejects on the next step.
             call_id = messages[idx].get("call_id")
-            prev_idx = idx - 1
-            if (
-                prev_idx >= 0
-                and messages[prev_idx].get("type") == "computer_call"
-                and messages[prev_idx].get("call_id") == call_id
-            ):
-                to_remove.add(prev_idx)
+            call_idx: Optional[int] = None
+            for j in range(idx - 1, -1, -1):
+                m = messages[j]
+                if (
+                    isinstance(m, dict)
+                    and m.get("type") == "computer_call"
+                    and m.get("call_id") == call_id
+                ):
+                    call_idx = j
+                    break
+            if call_idx is not None:
+                to_remove.add(call_idx)
                 # Check a single reasoning immediately before that computer_call
-                r_idx = prev_idx - 1
-                if r_idx >= 0 and messages[r_idx].get("type") == "reasoning":
+                r_idx = call_idx - 1
+                if (
+                    r_idx >= 0
+                    and isinstance(messages[r_idx], dict)
+                    and messages[r_idx].get("type") == "reasoning"
+                ):
                     to_remove.add(r_idx)
 
         # Construct filtered list
