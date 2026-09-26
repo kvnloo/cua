@@ -248,13 +248,19 @@ export class AgentClient {
       return { status: this.peer?.open ? 'connected' : 'disconnected' };
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.options.timeout);
     try {
-      const response = await fetch(`${this.url}/health`);
+      const response = await fetch(`${this.url}/health`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
       if (response.ok) {
         return { status: 'healthy' };
       }
       return { status: 'unhealthy' };
     } catch {
+      clearTimeout(timeoutId);
       return { status: 'unreachable' };
     }
   }
