@@ -182,21 +182,62 @@ export class BrowserBashAgent {
         if (toolCall.function.name !== "bash") {
           throw new Error(`Unsupported tool: ${toolCall.function.name}`)
         }
-        return {
-          toolCall,
-          arguments: normalizeBashArguments(JSON.parse(toolCall.function.arguments) as BashToolArguments),
+        try {
+          return {
+            toolCall,
+            arguments: normalizeBashArguments(
+              JSON.parse(toolCall.function.arguments) as BashToolArguments,
+            ),
+            invalidReason: undefined as string | undefined,
+          }
+        } catch (error) {
+          // A model can emit arguments that are not valid JSON or that fail
+          // validation. Feed that back as a tool error so the model can retry
+          // instead of killing the whole run with an uncaught exception.
+          return {
+            toolCall,
+            arguments: null as NormalizedBashArguments | null,
+            invalidReason:
+              error instanceof Error ? error.message : "Invalid tool arguments",
+          }
         }
       })
-      for (const { toolCall, arguments: arguments_ } of calls) {
-        onEvent({ type: "tool_start", toolCall, arguments: arguments_ })
+      // Display arguments for calls that never became executable.
+      const invalidDisplayArguments: NormalizedBashArguments = {
+        command: "(invalid tool arguments)",
+        timeout_ms: BASH_TIMEOUT.default,
+        max_output_chars: BASH_OUTPUT.default,
+      }
+      for (const call of calls) {
+        if (call.arguments !== null) {
+          onEvent({ type: "tool_start", toolCall: call.toolCall, arguments: call.arguments })
+        }
       }
       const results: Array<{ toolCall: ToolCall; result: BashToolResult }> = []
-      for (const { toolCall, arguments: arguments_ } of calls) {
+      for (const call of calls) {
+        if (call.arguments === null) {
+          const result: BashToolResult = {
+            stdout: "",
+            stderr: `Invalid tool arguments: ${call.invalidReason}`,
+            exit_code: 1,
+            timed_out: false,
+            truncated: false,
+          }
+          onEvent({
+            type: "tool_result",
+            toolCall: call.toolCall,
+            arguments: invalidDisplayArguments,
+            result,
+            sensitiveOutputs: [],
+          })
+          results.push({ toolCall: call.toolCall, result })
+          continue
+        }
         this.sensitiveOutputs?.drain()
-        const result = await this.executeBash(conversationID, arguments_, signal)
+        const result = await this.executeBash(conversationID, call.arguments, signal)
         const sensitiveOutputs = this.sensitiveOutputs?.drain() ?? []
-        onEvent({ type: "tool_result", toolCall, arguments: arguments_, result, sensitiveOutputs })
-        results.push({ toolCall, result })
+        onEvent({ type: "tool_result", toolCall: call.toolCall, arguments: call.arguments, result, sensitiveOutputs })
+        results.push({ toolCall: call.toolCall, result })
       }
       turnMessages = results.map(({ toolCall, result }) => ({
         role: "tool",
