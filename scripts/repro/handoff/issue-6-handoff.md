@@ -12,7 +12,7 @@ Variants covered: target remains valid, target disappears, identity changes whil
 
 ## Latency and turn count
 
-Not measured on this Linux host. No independent app-state log was captured. No speedup is claimed.
+Turn count is `len(dispatched)` in `scripts/repro/handoff/issue-6-receipts.jsonl`, from `stale_batch.run_batch`. Unchanged identity dispatches 2. A disappeared target, a rebound identity, a failed first child, and an unknown first child each dispatch 1. `elapsed_ms` is null. Wall-clock latency was not measured on this host. No speedup is claimed.
 
 ## Recommendation
 

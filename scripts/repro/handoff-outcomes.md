@@ -46,7 +46,7 @@ Receipts from `admit_guarded_run` and `second_child_allowed`: `scripts/repro/han
 Handoff: `scripts/repro/handoff/issue-6-handoff.md`.
 Receipts from `stale_batch.run_batch`: `scripts/repro/handoff/issue-6-receipts.jsonl`.
 
-`elapsed_ms` is null. A disappeared target and a rebound identity are refused. Freshness stays caller-managed.
+Turn count is the length of `dispatched` in `scripts/repro/handoff/issue-6-receipts.jsonl`. Unchanged identity dispatches 2. A disappeared target, a rebound identity, a failed first child, and an unknown first child each dispatch 1. `elapsed_ms` is null. Wall-clock latency was not measured. Freshness stays caller-managed.
 
 ### Issue 8
 
@@ -54,7 +54,9 @@ Blocked. `scripts/repro/handoff/issue-8-block.md`. Missing machine: macOS. The C
 
 ### Issue 9
 
-`cancellation_lifetime.Lifetime` records admitted, cancellation observed, native exit, permit release, then public result. Release before native exit raises. A different issuance raises. This is the order #3796 asked to see. It is not a trace from the existing core owner, and no competing runtime was added. Handoff: slice 1 belongs on the existing request-id owner after RFC approval, not on a new service.
+Event-order trace: `scripts/repro/handoff/issue-9-trace.json`, written by `cancellation_lifetime.trace_record`.
+
+The events are admitted, cancellation observed, native exit, permit release, then public result. Release before native exit raises. A different issuance raises. The owner is the existing request-id owner. No competing runtime was added. Handoff: slice 1 belongs on that owner after RFC approval.
 
 ### Issue 10
 
@@ -288,7 +290,7 @@ The rule is schema/property preflight. `include_accessibility_tree` is on the co
 
 Dispatch counts: `scripts/repro/handoff/issue-33-dispatch.json`, written by `second_child_allowed`.
 
-Verified is the only status in that file with a second dispatch. Refuted, unknown, stale, rebound, and refused stay at one dispatch. An independent app-state oracle was not attached on this Linux host. The recommendation is the typed rule already in `action_consumer.py`: do not replay after unknown.
+Verified is the only status in that file with a second dispatch. Refuted, unknown, stale, rebound, and refused stay at one dispatch. `fixture_submitted` is the retained app-state oracle, and `second_child_allowed` does not read it. The unknown row reaches `submitted` and still does not dispatch the second child. The recommendation is the typed rule already in `action_consumer.py`: do not replay after unknown. A live application process was not attached.
 
 ### Issue 34
 
@@ -316,23 +318,23 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Verdict withheld. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. Trace: none. Missing machines: macOS and Windows. This Linux host has no exact-head walker log: `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The upstream pull request description was not changed.
+Verdict withheld in `scripts/repro/handoff/issue-63-packet.md`. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. The macOS walker counts are the trace at https://github.com/trycua/cua/pull/4164#issuecomment-5840994846, cited by https://github.com/kvnloo/cua/issues/63#issuecomment-5841024385. This host did not run that trace. Trace from this host: none. Missing machines: macOS and Windows. `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The upstream pull request description was not changed from this branch.
 
 ### Issue 64
 
-`scripts/repro/handoff/issue-64-block.md` and https://github.com/kvnloo/cua/issues/64#issuecomment-5841479030. The A/B was not run. `linux-host-probe.txt` shows installed `cua-driver 0.28.2`, no daemon, and no top-level windows. The comment points the remaining outcome evidence at trycua/cua#4196 and kvnloo/cua#2. No helper was added. No verdict was issued.
+Blocked. The issue is open. `scripts/repro/handoff/issue-64-block.md`. https://github.com/kvnloo/cua/issues/64#issuecomment-5841479030 does not contain the exact-head A/B artifact, so it is not the deliverable. `linux-host-probe.txt` shows installed `cua-driver 0.28.2`, no daemon, and no top-level windows. No helper was added. No verdict was issued.
 
 ### Issue 65
 
-`scripts/repro/handoff/issue-65-3904.md`.
+`scripts/repro/handoff/issue-65-3904.md`. `test_passive_vectors_match_the_3904_comment` calls `verification_text` and `action_target`.
 
-Prepared comment, not posted. No competing pull request. `verification_text` on `calc-result` returns `6` and `action_target` raises. `action_target` on `calc-equals` returns that id. The Calculator log is blocked. Missing machine: macOS.
+Vector 1: `verification_text` on `calc-result` returns `6`, and `action_target` on that passive row raises. Vector 2: `action_target` on `calc-equals` returns that id. No competing pull request. The file was not sent to trycua/cua#3904. The Calculator accessibility log was not captured. Missing machine: macOS.
 
 ### Issue 66
 
-`scripts/repro/handoff/issue-66-comment.md`.
+`scripts/repro/handoff/issue-66-comment.md`. The consolidation note is https://github.com/trycua/cua/issues/3494#issuecomment-5841211600, and the closing record is https://github.com/kvnloo/cua/issues/66#issuecomment-5841212006.
 
-Prepared comment, not posted. Canonical owner: trycua/cua#2794 and #3494. The regression fixture is `test_stale_batch.py`: unchanged identity dispatches both children, a disappeared target and a new identity are refused, and a failed or unknown first child does not start the second. `elapsed_ms` is null. No batch API was added.
+Canonical owner: trycua/cua#2794 and #3494. The regression fixture is `test_stale_batch.py`: unchanged identity dispatches both children, a disappeared target and a new identity are refused, and a failed or unknown first child does not start the second. `elapsed_ms` is null. No batch API was added.
 
 ### Issue 67
 
@@ -350,7 +352,7 @@ trycua/cua#3873 was fetched open on 2026-09-25. Its body describes a snapshot st
 
 `scripts/repro/handoff/issue-69-measurement.md`.
 
-Decision: downstream benchmark-only tooling. Do not add the report to #4052. Fields: `cold_setup_ms`, `verified_outcome_ms`, `runner_lifetime_ms`, `named_span_ms`. `outcome_time` returns `verified_outcome_ms` only. The >90% battery was not run. No trial time was invented.
+Decision: downstream benchmark-only tooling. Do not add the report to #4052. Fields: `cold_setup_ms`, `verified_outcome_ms`, `runner_lifetime_ms`, `named_span_ms`. `outcome_time` returns `verified_outcome_ms` only. The whole-task battery stays open on issue 10, where the pinned driver session was not run. No trial time was invented.
 
 ### Issue 70
 

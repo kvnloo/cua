@@ -26,7 +26,20 @@ class HandoffEmitTest(unittest.TestCase):
         self.assertFalse(comparison["production_skipping"])
         fresh = replay_comparison()
         self.assertTrue(fresh["false_reuse_kills"])
-        self.assertEqual(dispatch_counts()[0]["second_dispatch"], 1)
+        counts = dispatch_counts()
+        self.assertEqual(counts[0]["second_dispatch"], 1)
+        unknown = next(row for row in counts if row["status"] == "unknown")
+        self.assertEqual(unknown["second_dispatch"], 0)
+        self.assertTrue(unknown["app_state_reached"])
+        from guarded_run import second_child_allowed
+        import inspect
+
+        self.assertNotIn("fixture_submitted", inspect.getsource(second_child_allowed))
+        from handoff_emit import stale_receipts as fresh_stale
+
+        turns = [len(row["dispatched"]) for row in fresh_stale()]
+        self.assertEqual(turns, [2, 1, 1, 1, 1])
+        self.assertTrue(all(row["elapsed_ms"] is None for row in fresh_stale()))
         self.assertEqual(cap_report()["rows"][2]["wasted"], 3)
         self.assertIn("fast-path", json.dumps(routing_table()))
         from handoff_emit import guarded_receipts, stale_receipts

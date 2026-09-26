@@ -90,13 +90,33 @@ def cap_report() -> dict[str, object]:
     return {"rows": rows, "recommendation": recommend_cap(7, 10), "wall_time_ms": None}
 
 
+def fixture_submitted(world: dict[str, object]) -> bool:
+    """Retained app-state fact. second_child_allowed does not read it."""
+    return world.get("submitted") is True
+
+
 def dispatch_counts() -> list[dict[str, object]]:
     plan = _plan()
     fresh = FreshObservation("proof", "ref-submit", "capture-2")
+    worlds = {
+        "verified": {"submitted": True},
+        "refuted": {"submitted": False},
+        "unknown": {"submitted": True},
+        "stale": {"submitted": False},
+        "rebound": {"submitted": False},
+        "refused": {"submitted": False},
+    }
     rows = []
     for status in ("verified", "refuted", "unknown", "stale", "rebound", "refused"):
         allowed = second_child_allowed(status, None if status == "stale" else fresh, plan)
-        rows.append({"status": status, "first_dispatch": 1, "second_dispatch": int(allowed)})
+        rows.append(
+            {
+                "status": status,
+                "first_dispatch": 1,
+                "second_dispatch": int(allowed),
+                "app_state_reached": fixture_submitted(worlds[status]),
+            }
+        )
     return rows
 
 

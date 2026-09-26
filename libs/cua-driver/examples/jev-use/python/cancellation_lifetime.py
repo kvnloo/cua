@@ -37,3 +37,23 @@ class Lifetime:
         if not self.released:
             raise RuntimeError("public result returned before permit release")
         self.events.append(f"public-result:{self.issuance}")
+
+
+def legal_event_trace(issuance: str = "req-1") -> list[str]:
+    """The order slice 1 has to show. Release stays after native exit."""
+    life = Lifetime(issuance)
+    life.admit()
+    life.observe_cancel()
+    life.native_exit()
+    life.release()
+    life.finish()
+    return list(life.events)
+
+
+def trace_record(issuance: str = "req-1") -> dict[str, object]:
+    return {
+        "issuance": issuance,
+        "events": legal_event_trace(issuance),
+        "owner": "existing request-id owner",
+        "competing_runtime": False,
+    }
