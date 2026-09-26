@@ -444,7 +444,9 @@ class HandoffPruningTest(unittest.TestCase):
 
     def test_closed_issue_citations_and_machine_blocks(self) -> None:
         closed = (HANDOFF / "closed-issues.md").read_text(encoding="utf-8")
-        for number in (3, 53, 57, 58, 68, 70):
+        for number in (
+            3, 28, 30, 34, 35, 37, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 66, 68, 69, 70, 71,
+        ):
             self.assertIn(f"| {number} |", closed)
             self.assertIn(f"issues/{number}#issuecomment-", closed)
         blocks = {
