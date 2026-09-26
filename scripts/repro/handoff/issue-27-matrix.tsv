@@ -1,0 +1,10 @@
+optimization	existing_contract_field	contract	linux_stub	linux_impl	verify_state	rule	caller_result	live_tools_list
+omit accessibility traversal	get_window_state.include_accessibility_tree	present	absent	present	absent	schema/property preflight	stub schema omits the field	not captured
+omit screenshot	include_screenshot	present	present	present	present	schema/property preflight	present on get_window_state and verify_state	not captured
+bounded verification	verify_state.timeout_ms	present	absent	present	present	schema/property preflight	stable_samples present	not captured
+settlement or revision	none	absent	absent	absent	absent	do not add a second capability registry	no public field on this branch	not captured
+lazy visual skip	click.capture_id when advertised	caller	caller	caller	caller	schema/property preflight	semantic off; visual candidate still needs capture true	not captured
+fast path	none	caller	caller	caller	caller	caller predicate; not a contract field	type-verification-value	not captured
+guarded run	none	caller	caller	caller	caller	caller predicate; not a contract field	type-verification-value	not captured
+conditional skip	none	not enabled	not enabled	not enabled	not enabled	not enabled	not enabled	not captured
+# pinned_upstream	c5ee191c02b11448ffefcc38b78b064a87d8ef23

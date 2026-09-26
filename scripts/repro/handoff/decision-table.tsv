@@ -1,0 +1,19 @@
+mechanism	decision	evidence	missing_evidence	owner	public_surface_cost	next_action
+phase-correct telemetry	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_task_accounting.py	live 4-arm benchmark	task_accounting.py	none	leave kvnloo/cua#10 open; do not compare speedups
+lazy vision	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_lazy_vision.py	live Driver Chromium model outcome A/B	jev-use caller	none	do not promote #4165; leave kvnloo/cua#2 open
+verifier screenshot-only projection	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.py	native accessibility walker counter	expectation.rs	none	do not promote #4164; leave kvnloo/cua#3 open
+exact single-candidate fast path	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_deterministic_fast_path.py	live interleaved fixture trial	jev-use caller	none	leave the chooser in place; leave kvnloo/cua#4 open
+compiled postconditions	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	a second semantically identical recipe	jev-use example	none	do not extract a shared helper; leave kvnloo/cua#14 open
+guarded runs	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py	live wall-time receipts	jev-use caller	none	leave kvnloo/cua#5 open
+batch freshness	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_stale_batch.py	independent app-state trace and elapsed_ms	caller harness	none	leave freshness caller-managed; leave kvnloo/cua#6 open
+settlement provenance	BLOCKED	libs/cua-driver/rust/crates/platform-macos/src/window_change_detector.rs	macOS compile and a consumer regression that fails without a public field	platform-macos Changes	none on the public schema	do not add a public field; leave kvnloo/cua#7 closed as it was before this queue
+passive native observations	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	macOS Calculator trace	caller policy	none	leave kvnloo/cua#8 open
+action-result consumer policy	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_action_consumer.py	a live consumer session	action_consumer.py	none	do not add a public field for #4009; leave kvnloo/cua#12 open
+revision shadowing	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	false-retention corpus and reconciliation cost	shadow_probe.py	none	do not skip; leave kvnloo/cua#11 open
+conditional observation	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_observation_replay.py	false-negative census	observation_replay.py	none	do not skip production captures; leave kvnloo/cua#21 open
+platform invalidation signals	BLOCKED	scripts/repro/atspi-census-20260925.json	macOS machine and Windows machine	platform listeners	none	do not mark a signal safe; leave kvnloo/cua#18 and #19 open
+chooser projection and history compression	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_caller_route.py	live chooser session	jev-use caller	none	leave kvnloo/cua#46 and #47 open
+helper extraction	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_compiled_expectations.py	a second semantically identical call site	none	none	do not extract; leave kvnloo/cua#39 open
+guarded-run length 4 as a shared constant	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_run_length.py	fixture latency report required by kvnloo/cua#25; exact-head driver session missing on this Linux host	none	none	do not embed 4; leave kvnloo/cua#25 open
+passive row as an action target	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_passive_observation.py	macOS machine for the Calculator trace	caller policy	none	do not mint an action target; leave kvnloo/cua#8 open
+capture skip from a shadow probe	BLOCKED	libs/cua-driver/examples/jev-use/python/tests/test_shadow_probe.py	false-negative census; missing machines macOS and Windows	shadow_probe	none	do not skip; leave kvnloo/cua#11 open

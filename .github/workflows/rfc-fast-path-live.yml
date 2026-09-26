@@ -1,0 +1,205 @@
+name: "RFC fast-path live A/B"
+
+on:
+  push:
+    branches:
+      - test/rfc-fast-path-one-candidate-20260925
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rfc-fast-path-live-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  x11:
+    name: Real Driver / Chromium fast-path pilot
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CUA_DRIVER_BIN: ${{ github.workspace }}/upstream/libs/cua-driver/rust/target/release/cua-driver
+      CUA_DRIVER_PERMISSION_MODE: unrestricted
+      CUA_DRIVER_DANGEROUSLY_BYPASS_APPROVALS: "1"
+      CUA_E2E_BROWSER_NO_SANDBOX: "1"
+      CUA_E2E_BROWSER_STDERR: "1"
+      UPSTREAM_SHA: 7ee9b37edc4ebc5f7f606682ae2699d1baa5d397
+
+    steps:
+      - name: Check out evidence branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Check out pinned upstream product
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: trycua/cua
+          ref: ${{ env.UPSTREAM_SHA }}
+          path: upstream
+
+      - uses: dtolnay/rust-toolchain@4716b85f2fac3e324e64fa2810f6b5c3905760a5 # 1.97.1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+          enable-cache: true
+          cache-dependency-glob: upstream/libs/cua-driver/examples/jev-use/uv.lock
+
+      - name: Install Linux desktop dependencies and canonical Chromium path
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            xvfb dbus-x11 at-spi2-core openbox picom clang pkg-config \
+            libdbus-1-dev libpipewire-0.3-dev libspa-0.2-dev libei-dev \
+            libx11-dev libxi-dev libxtst-dev libxext-dev libssl-dev \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+
+          chromium_source="$(readlink -f "$(command -v chromium)")"
+          "$chromium_source" --version
+          sudo install -d -o root -g root -m 0755 /usr/lib/chromium-browser
+          sudo cp -a "$(dirname "$chromium_source")/." /usr/lib/chromium-browser/
+          chromium_wrapper="$(dirname "$chromium_source")/chrome-wrapper"
+          test -f "$chromium_wrapper" && test -x "$chromium_wrapper"
+          sudo install -o root -g root -m 0755 \
+            "$chromium_wrapper" /usr/lib/chromium-browser/chromium-browser.real
+
+          bootstrap_wrapper="$RUNNER_TEMP/chromium-browser"
+          cat > "$bootstrap_wrapper" <<'SH'
+          #!/bin/bash
+          set -euo pipefail
+          args=("$@")
+          for index in "${!args[@]}"; do
+            if [[ "${args[$index]}" == about:blank ]]; then
+              args[$index]='data:text/html,<title>Cua%20Driver</title>'
+            fi
+          done
+          exec /usr/lib/chromium-browser/chromium-browser.real "${args[@]}"
+          SH
+          sudo install -o root -g root -m 0755 \
+            "$bootstrap_wrapper" /usr/lib/chromium-browser/chromium-browser
+          sudo chown -R root:root /usr/lib/chromium-browser
+          sudo chmod -R go-w /usr/lib/chromium-browser
+
+          candidate=/usr/lib/chromium-browser/chromium-browser
+          test -f "$candidate" && test -x "$candidate"
+          test "$(readlink -f "$candidate")" = "$candidate"
+          path="$candidate"
+          while true; do
+            test ! -L "$path"
+            test "$(stat -c %u "$path")" -eq 0
+            test -z "$(find "$path" -maxdepth 0 -perm /022 -print -quit)"
+            test "$path" = / && break
+            path="$(dirname "$path")"
+          done
+
+      - name: Build pinned upstream Driver
+        run: |
+          cargo build --locked --release -p cua-driver --features portal-input \
+            --manifest-path upstream/libs/cua-driver/rust/Cargo.toml
+          "$CUA_DRIVER_BIN" --version
+          test "$(git -C upstream rev-parse HEAD)" = "$UPSTREAM_SHA"
+
+      - name: Install pinned upstream jev-use dependencies
+        working-directory: upstream/libs/cua-driver/examples/jev-use
+        run: uv sync --frozen
+
+      - name: Run interleaved real-browser A/B
+        run: |
+          set -euo pipefail
+          session_script="$RUNNER_TEMP/fast-path-x11.sh"
+          cat > "$session_script" <<'SH'
+          set -euo pipefail
+          evidence_root="$1"
+          upstream_root="$2"
+          output="$3"
+          real_driver="$CUA_DRIVER_BIN"
+          driver_wrapper="$RUNNER_TEMP/fast-path-driver-with-e2e-hooks"
+          {
+            echo '#!/bin/bash'
+            echo 'export CUA_E2E_BROWSER_NO_SANDBOX=1'
+            echo 'export CUA_E2E_BROWSER_STDERR=1'
+            printf 'exec %q "$@"\n' "$real_driver"
+          } > "$driver_wrapper"
+          chmod 0700 "$driver_wrapper"
+
+          openbox >"$RUNNER_TEMP/fast-path-openbox.log" 2>&1 &
+          picom --backend xrender --config /dev/null >"$RUNNER_TEMP/fast-path-picom.log" 2>&1 &
+          sleep 2
+
+          cd "$upstream_root/libs/cua-driver/examples/jev-use"
+          uv run --frozen python "$evidence_root/scripts/repro/fast_path_live_ab.py" \
+            --upstream-root "$upstream_root" \
+            --evidence-root "$evidence_root" \
+            --driver-bin "$driver_wrapper" \
+            --trials 6 \
+            --output "$output"
+          SH
+          chmod 0700 "$session_script"
+
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+            dbus-run-session -- bash "$session_script" \
+            "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/upstream" \
+            "$RUNNER_TEMP/fast-path-live-ab.json"
+
+      - name: Audit evidence boundary
+        env:
+          EVIDENCE_SHA: ${{ github.sha }}
+        run: |
+          python3 - "$RUNNER_TEMP/fast-path-live-ab.json" "$RUNNER_TEMP/fast-path-run-summary.json" <<'PY'
+          import json, os, pathlib, sys
+          source, output = map(pathlib.Path, sys.argv[1:])
+          report = json.loads(source.read_text())
+          assert report["upstream_sha"] == os.environ["UPSTREAM_SHA"]
+          rows = [row for row in report["rows"] if not row["force_first_reobserve"]]
+          assert len(rows) == 12
+          assert all(row["outcome"] == "verified" for row in rows)
+          assert all(row["oracle"]["submitted"] == row["token"] for row in rows)
+
+          baseline = [row for row in rows if row["arm"] == "baseline"]
+          treatment = [row for row in rows if row["arm"] == "fast-path"]
+          assert all(row["provider_calls"] == 2 for row in baseline)
+          assert all(row["provider_calls"] == 0 for row in treatment)
+          assert all(
+              all(event["route"] == "fast-path" and not event["provider_called"]
+                  for event in row["route_events"])
+              for row in treatment
+          )
+
+          authority = report["summary"]["authority_probe"]
+          assert len(authority) == 2
+          b = next(row for row in authority if row["arm"] == "baseline")
+          t = next(row for row in authority if row["arm"] == "fast-path")
+          assert b["route_events"][0]["provider_choice"] == "reobserve"
+          assert t["route_events"][0]["counterfactual_provider_choice"] == "reobserve"
+          assert t["route_events"][0]["provider_called"] is False
+
+          summary = {
+              "evidence_branch_sha": os.environ["EVIDENCE_SHA"],
+              "upstream_sha": report["upstream_sha"],
+              "normal_trials": len(rows),
+              "all_normal_outcomes_verified": True,
+              "baseline_provider_calls": sum(row["provider_calls"] for row in baseline),
+              "treatment_provider_calls": sum(row["provider_calls"] for row in treatment),
+              "authority_divergence_proven": True,
+              "claim_boundary": report["claim_boundary"],
+          }
+          output.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload content-free A/B evidence
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: rfc-fast-path-live-ab
+          path: |
+            ${{ runner.temp }}/fast-path-live-ab.json
+            ${{ runner.temp }}/fast-path-run-summary.json
+            ${{ runner.temp }}/fast-path-openbox.log
+            ${{ runner.temp }}/fast-path-picom.log
+          if-no-files-found: error
+          retention-days: 14

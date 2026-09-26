@@ -1,0 +1,27 @@
+invariant	source	line	quote	must_not_weaken	patch_if_keep
+screenshot/tree modality	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	10	use a fresh, valid screenshot and the window pixel route	yes	none; lazy vision is not called by run.py
+screenshot/tree modality	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	38	requests the accessibility tree and a grounding screenshot by default	yes	revisit only after a live lazy-vision promotion; that promotion is not recorded
+screenshot/tree modality	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	44	it cannot ground a pixel action	yes	must not be weakened to allow a pixel action without an image
+reobserve after mutation	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	71	reobserve before typing into it	yes	none
+reobserve after mutation	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	83	After movement, resize, navigation, or a competing desktop interaction, reobserve.	yes	none
+unknown is not success	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	103	are not success	yes	none
+unverifiable actions	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	117	Delivery cannot prove effect; observe before retrying	yes	none
+no blind replay	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	127	Never replay canceled, partial, or unknown actions automatically.	yes	must not be weakened for a guarded run or a shadow skip
+stale tokens/captures	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	53	A later snapshot can invalidate a pending action	yes	none
+unknown is not success	libs/cua-driver/docs/action-result-contract.md	94	must never be promoted to success	yes	none
+screenshot/tree modality	libs/cua-driver/docs/action-result-contract.md	96	the screenshot is uninterpreted evidence	yes	none
+unverifiable actions	libs/cua-driver/docs/action-result-contract.md	152	not failure and not success	yes	none
+visual capture one-action lifetime	rfcs/3931-cua-perception-and-jev-use.md	403	at most one action derived from that capture	yes	must not be weakened into a multi-action capture lease
+reobserve after mutation	rfcs/3931-cua-perception-and-jev-use.md	405	the client must reobserve before selecting another action	yes	none
+no blind replay	rfcs/3931-cua-perception-and-jev-use.md	412	never blind replay	yes	none
+chooser authority	rfcs/3931-cua-perception-and-jev-use.md	443	The chooser returns exactly one supplied candidate ID.	yes	none
+chooser authority	libs/cua-driver/examples/jev-use/README.md	201	The chooser never executes an action or verifies completion.	yes	none
+unknown is not success	libs/cua-driver/examples/jev-use/README.md	46	a screenshot as proof of success	yes	the /state oracle stays the proof
+stale tokens/captures	libs/cua-driver/examples/jev-use/README.md	52	rather than reusing an older reference	yes	none
+stale tokens/captures	libs/cua-driver/rust/Skills/cua-driver/WINDOWS.md	519	Targets from previous turns are stale	yes	none
+stale tokens/captures	libs/cua-driver/rust/Skills/cua-driver/MACOS.md	141	invalidates older targets immediately	yes	read on this Linux host; not executed
+screenshot/tree modality	libs/cua-driver/rust/Skills/cua-driver/LINUX.md	6	Use [WORKFLOW.md](WORKFLOW.md) for exact targets and verification	yes	none
+visual capture one-action lifetime	libs/cua-driver/docs/perception-extension.md	106	Reobserve after every action attempt.	yes	none
+stale tokens/captures	libs/cua-driver/docs/perception-extension.md	99	An accessibility `snapshot_id` is a different	yes	none
+guarded runs/batching	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	127	Never replay canceled, partial, or unknown actions automatically.	yes	no guarded-run section is added while wall time is unmeasured
+future conditional observation	libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md	44	only when tree-only observation is enough	yes	must not become permission to skip when an event is absent
