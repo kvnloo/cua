@@ -12,6 +12,7 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE / "python"))
 
+from chooser_projection import history_report, projection_report
 from compatibility_matrix import LINUX_STUB, matrix_tsv
 from core import Candidate
 from cost_ledger import ledger_tsv
@@ -19,6 +20,7 @@ from goal_gates import done_label, task_rows
 from guarded_run import Decision, admit_guarded_run
 from migration_matrix import documented_versions, migration_tsv
 from old_driver_fallback import decision_rows
+from provider_parity import parity_report
 from regression_budget import (
     WorkCounts,
     ci_may_gate_on_milliseconds,
@@ -213,6 +215,44 @@ class OpenPacketTest(unittest.TestCase):
         self.assertEqual(by_case["malformed capture id"]["outcome"], "none")
         self.assertTrue(all(row["live_driver"] == "not used" for row in rows))
         self.assertTrue(all(row["gains_authority"] is False for row in rows))
+
+    def test_projection_history_and_mock_parity_call_the_shipped_checks(self) -> None:
+        candidates = [
+            Candidate(
+                "type-verification-value",
+                "Type the token.",
+                "browser_type",
+                {"text": "secret"},
+            )
+        ]
+        report = projection_report(candidates)
+        self.assertEqual(report["chooser_fields"], ["description", "id"])
+        self.assertTrue(report["arguments_stay_local"])
+        self.assertEqual(report["receipts"], "not produced")
+        recorded = json.loads((HANDOFF / "issue-46-projection.json").read_text(encoding="utf-8"))
+        self.assertEqual(recorded, report)
+        history = history_report()
+        self.assertEqual(history["kept_fields"], ["outcome", "selected_id"])
+        self.assertTrue(history["extra_field_rejected"])
+        self.assertIsNone(history["measured_success"])
+        self.assertEqual(history["proposal"], "not justified")
+        self.assertEqual(
+            json.loads((HANDOFF / "issue-47-history.json").read_text(encoding="utf-8")),
+            history,
+        )
+        parity = parity_report()
+        mock = parity["rows"][0]
+        self.assertEqual(mock["provider"], "mock")
+        self.assertEqual(mock["selected_id"], "type-verification-value")
+        self.assertTrue(mock["malformed_rejected"])
+        self.assertTrue(mock["arguments_on_candidate"])
+        self.assertFalse(mock["arguments_in_selected_id"])
+        self.assertEqual(parity["rows"][1]["ran"], "not run")
+        self.assertEqual(parity["rows"][2]["ran"], "not run")
+        self.assertEqual(
+            json.loads((HANDOFF / "issue-48-parity.json").read_text(encoding="utf-8")),
+            parity,
+        )
 
 
 if __name__ == "__main__":

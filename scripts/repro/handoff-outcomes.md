@@ -32,7 +32,7 @@ The macOS counts are cited in `scripts/repro/handoff/issue-3-macos-trace.md` fro
 
 Blocked. The block file is `scripts/repro/handoff/issue-4-block.md`.
 
-Missing on this Linux host: an exact-head interleaved fixture trial. Installed driver `cua-driver 0.28.2` is not pinned head `c5ee191c02b11448ffefcc38b78b064a87d8ef23`, and no daemon is running. Eligibility metrics were not measured. `single_executable_candidate` is not an eligibility verdict, and the default chooser is unchanged.
+This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`, which is not an installed release. Eligibility metrics were not measured. `single_executable_candidate` is not an eligibility verdict, and the default chooser is unchanged.
 
 ### Issue 5
 
@@ -62,7 +62,7 @@ The events are admitted, cancellation observed, native exit, permit release, the
 
 Blocked. The block file is `scripts/repro/handoff/issue-10-block.md`.
 
-Missing on this Linux host: the 4-arm benchmark on an exact-head driver. Installed binary `cua-driver 0.28.2`, daemon not running, no top-level windows. No task×arm×trial JSONL was written, and no trial time was invented. `task_accounting.outcome_time` returns verified-outcome time only.
+This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23` plus a model session. No task×arm×trial JSONL was written, and no trial time was invented. `task_accounting.outcome_time` returns verified-outcome time only.
 
 ### Issue 11
 
@@ -240,15 +240,15 @@ Tests: `test_caller_route.py`.
 
 ### Issue 46
 
-Blocked. `scripts/repro/handoff/issue-46-block.md`. Missing session on this Linux host: a live chooser A/B. No receipt was invented.
+`scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`. The shipped request keeps `id` and `description` and rejects tool arguments. Receipts were not produced. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Recommendation: the smallest safe chooser state is id and description.
 
 ### Issue 47
 
-Blocked. `scripts/repro/handoff/issue-47-block.md`. Missing session on this Linux host: a per-task history-sensitivity run.
+`scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`. Accepted history keeps `selected_id` and `outcome`. An extra field is rejected. Measured success is null, so no shorter history is proposed. The missing prerequisite for a live battery is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
 ### Issue 48
 
-Blocked. `scripts/repro/handoff/issue-48-block.md`. Missing providers on this Linux host: a live Jev session and a local S1 session.
+`scripts/repro/handoff/issue-48-parity.json`, from `provider_parity.parity_report`. The mock row calls `choose_mock` and `validate_choice`. A malformed id is rejected. Jev and S1 were not run. Recommendation: provider-specific policy stays in the adapter.
 
 ### Issue 49
 
@@ -322,7 +322,7 @@ Blocked. The issue is open. `scripts/repro/handoff/issue-63-packet.md` withholds
 
 ### Issue 64
 
-Blocked. The issue is open. `scripts/repro/handoff/issue-64-block.md`. https://github.com/kvnloo/cua/issues/64#issuecomment-5841479030 does not contain the exact-head A/B artifact, so it is not the deliverable. `linux-host-probe.txt` shows installed `cua-driver 0.28.2`, no daemon, and no top-level windows. No helper was added. No verdict was issued.
+Blocked. The issue is open. `scripts/repro/handoff/issue-64-block.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. https://github.com/kvnloo/cua/issues/64#issuecomment-5841763905 does not contain the A/B. No helper was added. No verdict was issued.
 
 ### Issue 65
 
@@ -364,7 +364,7 @@ The issue is open. `scripts/repro/handoff/issue-71-decision.md` is the consumer-
 
 ### Issue 72
 
-Blocked. `scripts/repro/handoff/issue-72-block.md`. Missing on this Linux host: an exact-head `list_apps` A/B against trycua/cua#3492. The installed binary is `cua-driver 0.28.2` and the daemon is not running. No second cache was implemented.
+Blocked. `scripts/repro/handoff/issue-72-block.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No second cache was implemented. No recommendation was invented.
 
 ### Issue 73
 

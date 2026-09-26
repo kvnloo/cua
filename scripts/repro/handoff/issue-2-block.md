@@ -4,9 +4,9 @@ Blocked. The outcome A/B was not run.
 
 This Linux host is present. It is not the missing machine.
 
-Missing runtime on this host, recorded in `scripts/repro/handoff/linux-host-probe.txt`:
+Missing prerequisite: pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23` is not an installed release. Recorded in `scripts/repro/handoff/linux-host-probe.txt`:
 
-- The pinned driver `c5ee191c02b11448ffefcc38b78b064a87d8ef23` is not installed. The installed binary is `cua-driver 0.28.2`.
+- The installed binary is `cua-driver 0.28.2`.
 - `cua-driver status` exited 1. The daemon is not running.
 - The display returned no top-level windows.
 - No Chromium fixture was driven.

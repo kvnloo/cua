@@ -418,18 +418,17 @@ class HandoffPruningTest(unittest.TestCase):
             self.assertEqual(choice, row["decision"], row["consumer"])
 
     def test_blocked_notes_name_the_linux_host(self) -> None:
-        names = (
+        for name in (
+            "issue-2-block.md",
             "issue-4-block.md",
             "issue-10-block.md",
-            "issue-46-block.md",
-            "issue-47-block.md",
-            "issue-48-block.md",
             "issue-64-block.md",
             "issue-72-block.md",
-        )
-        for name in names:
+        ):
             text = (HANDOFF / name).read_text(encoding="utf-8")
-            self.assertIn("Missing machine: this Linux host.", text, name)
+            self.assertIn("This Linux host is present. It is not the missing machine.", text, name)
+            self.assertIn("c5ee191c02b11448ffefcc38b78b064a87d8ef23", text, name)
+            self.assertNotIn("Missing machine: this Linux host.", text, name)
         issue2 = (HANDOFF / "issue-2-block.md").read_text(encoding="utf-8")
         self.assertIn("This Linux host is present. It is not the missing machine.", issue2)
         windows = (HANDOFF / "issue-19-block.md").read_text(encoding="utf-8")
@@ -449,10 +448,10 @@ class HandoffPruningTest(unittest.TestCase):
             self.assertIn(f"| {number} |", closed)
             self.assertIn(f"issues/{number}#issuecomment-", closed)
         blocks = {
-            "issue-4-block.md": "Missing machine: this Linux host.",
+            "issue-4-block.md": "This Linux host is present. It is not the missing machine.",
             "issue-8-block.md": "Missing machine: macOS",
-            "issue-46-block.md": "Missing machine: this Linux host.",
-            "issue-64-block.md": "Missing machine: this Linux host.",
+            "issue-10-block.md": "pinned driver commit",
+            "issue-72-block.md": "pinned driver commit",
         }
         for name, phrase in blocks.items():
             self.assertIn(phrase, (HANDOFF / name).read_text(encoding="utf-8"), name)
