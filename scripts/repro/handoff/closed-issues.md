@@ -25,9 +25,6 @@ Live GitHub issue state is authoritative. This table cites the latest comment se
 | 43 | https://github.com/kvnloo/cua/issues/43#issuecomment-5841815783 |
 | 44 | https://github.com/kvnloo/cua/issues/44#issuecomment-5841816755 |
 | 45 | https://github.com/kvnloo/cua/issues/45#issuecomment-5841817588 |
-| 46 | https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526 |
-| 47 | https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690 |
-| 48 | https://github.com/kvnloo/cua/issues/48#issuecomment-5841889913 |
 | 49 | https://github.com/kvnloo/cua/issues/49#issuecomment-5841819744 |
 | 50 | https://github.com/kvnloo/cua/issues/50#issuecomment-5841820708 |
 | 51 | https://github.com/kvnloo/cua/issues/51#issuecomment-5841786836 |
@@ -42,8 +39,6 @@ Live GitHub issue state is authoritative. This table cites the latest comment se
 | 60 | https://github.com/kvnloo/cua/issues/60#issuecomment-5841775336 |
 | 61 | https://github.com/kvnloo/cua/issues/61#issuecomment-5841784924 |
 | 62 | https://github.com/kvnloo/cua/issues/62#issuecomment-5841785856 |
-| 63 | https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086 |
-| 64 | https://github.com/kvnloo/cua/issues/64#issuecomment-5841890244 |
 | 65 | https://github.com/kvnloo/cua/issues/65#issuecomment-5841835649 |
 | 66 | https://github.com/kvnloo/cua/issues/66#issuecomment-5841778555 |
 | 67 | https://github.com/kvnloo/cua/issues/67#issuecomment-5841832968 |
@@ -54,8 +49,4 @@ Live GitHub issue state is authoritative. This table cites the latest comment se
 
 Issue 3 cites the macOS trace. Element plus screenshot went from 2 AX walks to 1. Window-only plus screenshot went from 1 to 0. The element control without a screenshot stayed 1 to 1. Head `fb7841be7`. That trace is copied in `scripts/repro/handoff/issue-3-macos-trace.md`. This host did not run that trace. Missing machine: Windows, for a UIA walker count.
 
-Issue 63 is closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. The measurement comment https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432 records head `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254` and the macOS Calculator walk counts. This host did not run that walk. Missing machine: Windows.
-
-Issues 46, 47, and 48 are closed. Their latest comments are the reopen notes. The local files record the chooser projection, the history shape, and the mock parity row. A/B receipts, a sensitivity table, and the Jev and S1 runs were not produced.
-
-Issue 64 is closed. Its latest comment is the reopen note and does not contain the A/B. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+Issues 46, 47, 48, 63, and 64 are open. Their closing comments do not contain the evidence those bodies require. Issue 63 cites the macOS Calculator counts and stays blocked on the missing Windows walker. Missing machine: Windows.

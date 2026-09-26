@@ -243,15 +243,15 @@ Tests: `test_caller_route.py`.
 
 ### Issue 46
 
-Closed at https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526. That comment is the reopen note. It does not include A/B receipts. `scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`, keeps `id` and `description` and rejects tool arguments. Receipts were not produced. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Recommendation: the smallest safe chooser state is id and description.
+Open. https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526 does not include A/B receipts. `scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`, keeps `id` and `description` and rejects tool arguments. Receipts were not produced. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Recommendation: the smallest safe chooser state is id and description.
 
 ### Issue 47
 
-Closed at https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690. That comment is the reopen note. It does not include a sensitivity table. `scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`, keeps `selected_id` and `outcome`. An extra field is rejected. Measured success is null, so no shorter history is proposed. The missing prerequisite for a live battery is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+Open. https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690 does not include a sensitivity table. `scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`, keeps `selected_id` and `outcome`. An extra field is rejected. Measured success is null, so no shorter history is proposed. The missing prerequisite for a live battery is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
 ### Issue 48
 
-Closed at https://github.com/kvnloo/cua/issues/48#issuecomment-5841889913. That comment is the reopen note. It does not include a provider run. `scripts/repro/handoff/issue-48-parity.json`, from `provider_parity.parity_report`. The mock row calls `choose_mock` and `validate_choice`. A malformed id is rejected. Jev and S1 were not run. Recommendation: provider-specific policy stays in the adapter.
+Open. https://github.com/kvnloo/cua/issues/48#issuecomment-5841889913 does not include a Jev or S1 run. `scripts/repro/handoff/issue-48-parity.json`, from `provider_parity.parity_report`. The mock row calls `choose_mock` and `validate_choice`. A malformed id is rejected. Jev and S1 were not run. Recommendation: provider-specific policy stays in the adapter.
 
 ### Issue 49
 
@@ -321,11 +321,11 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. The measurement comment is https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432: head `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254`, element plus screenshot 2 AX walks to 1, window-only plus screenshot 1 to 0, control stayed 1 to 1, screenshot 460×816. This host did not run that walk. The local packet is `scripts/repro/handoff/issue-63-packet.md`. Missing machine: Windows, for a UIA count. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329.
+Open and blocked. The measurement comment is https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432: head `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254`, element plus screenshot 2 AX walks to 1, window-only plus screenshot 1 to 0, control stayed 1 to 1, screenshot 460×816. This host did not run that walk. The local packet is `scripts/repro/handoff/issue-63-packet.md`. Missing machine: Windows, for a UIA count. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329.
 
 ### Issue 64
 
-Blocked. Closed at https://github.com/kvnloo/cua/issues/64#issuecomment-5841890244. That comment does not contain the A/B. `scripts/repro/handoff/issue-64-block.md` cites the fake-driver report at `147158cf9caed69489607f7e6736dc9282bdd815`, which uses head `24aaf8d1965b3b7c1530cbb9d58758ec89472d92` and is not pinned commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. This Linux host is present. It is not the missing machine. No helper was added on this branch. No verdict was issued.
+Open and blocked. https://github.com/kvnloo/cua/issues/64#issuecomment-5841890244 does not contain the pinned-commit desktop A/B. `scripts/repro/handoff/issue-64-block.md` cites the fake-driver report at `147158cf9caed69489607f7e6736dc9282bdd815`, which uses head `24aaf8d1965b3b7c1530cbb9d58758ec89472d92` and is not pinned commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. This Linux host is present. It is not the missing machine. No helper was added on this branch. No verdict was issued.
 
 ### Issue 65
 
