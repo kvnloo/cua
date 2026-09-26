@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from core import Candidate
 from compiled_expectations import compile_expectation
-from deterministic_fast_path import single_executable_candidate
-from guarded_run import Decision, FreshObservation, admit_guarded_run, second_child_allowed
+from deterministic_fast_path import explain_fast_path, single_executable_candidate
+from guarded_run import (\n    Decision,\n    FreshObservation,\n    admit_guarded_run,\n    explain_second_child,\n)
 
 
 def _candidate(candidate_id: str, tool: str | None, capture_id: str | None = None) -> Candidate:
@@ -147,6 +147,7 @@ def parity_corpus() -> list[dict[str, object]]:
     ]
     rows: list[dict[str, object]] = []
     for name, candidates, kind, child_ids, status, observation, focus in cases:
+        fast_evidence = explain_fast_path(candidates)
         exact = single_executable_candidate(candidates)
         plan = admit_guarded_run(
             candidates,
@@ -154,14 +155,21 @@ def parity_corpus() -> list[dict[str, object]]:
             token="proof",
             submit_ref="ref-submit",
         )
-        second = False if plan is None else second_child_allowed(status, observation, plan)
+        second_evidence = (
+            None if plan is None else explain_second_child(status, observation, plan)
+        )
+        second = False if second_evidence is None else second_evidence.allowed
         compiled = compile_expectation(focus, "proof")
         rows.append(
             {
                 "case": name,
                 "fast_path_id": None if exact is None else exact.id,
+                "fast_path_route": fast_evidence.route,
+                "executable_count": fast_evidence.executable_count,
+                "provider_called": fast_evidence.provider_called,
                 "run_admitted": plan is not None,
                 "second_dispatch": second,
+                "second_reason": None if second_evidence is None else second_evidence.reason,
                 "expectation_kind": None if compiled is None else compiled.kind,
             }
         )
