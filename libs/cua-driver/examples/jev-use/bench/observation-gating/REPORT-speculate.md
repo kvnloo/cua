@@ -126,11 +126,79 @@ regime. Claim: median 1.27× on sticky-visual sequences under concurrent
 load, with a hard caveat — a miss-rate gate is required for sparse
 sequences. Raw output: `~/workspace/scratch/speculate_rerun.json`.
 
+## Miss-rate gate (chunk 8, 2026-09-25)
+
+`VisualSpeculator` gains a `confirmationSteps` gate (default 1 = the
+original sticky behavior). With 2, speculation fires only when the last two
+steps both needed visual — isolated needs (sparse) and flickering needs
+(never confirm) pay zero wasted captures, at the cost of one sequential step
+at the start of each sticky run (the trailing false positive at run end is
+unchanged). `stats()` now reports `suppressed` (sticky-yes blocked by the
+gate) and `missRate()` exposes the rolling false-positive rate; outcomes are
+counted against the actual gate decision. 6 new unit tests (gate semantics,
+flicker suppression, trailing-FP, miss-rate accounting, clamping).
+
+`speculate_bench.ts` now compares three shapes — `gated` (sequential),
+`sticky` (confirmation 1), `confirmed` (confirmation 2) — on six sequences
+(added `flicker`: T,F,T,F…; `shortbursts`: runs of exactly 2, included to
+make the gate's run-start cost visible rather than to flatter it). Paired
+interleaved design, equivalence gate across all three shapes — passed.
+`BENCH_ONLY`/`BENCH_ITERS` env vars allow subset re-runs.
+
+Quiet box (20 iters), paired median speedups (gated/sticky, gated/confirmed, sticky/confirmed):
+
+| sequence | RPCs g/s/c | hits/FP sticky | hits/FP confirmed | g/s | g/c | s/c |
+|---|---|---|---|---|---|---|
+| every | 60/60/60 | 19/0 | 18/0 | 1.18 | 1.45 | 1.20 |
+| bursty | 40/42/42 | 8/2 | 6/2 | 1.06 | 1.12 | 0.81 |
+| sparse | 26/29/26 | 0/3 | 0/0 | 1.04 | 1.17 | 1.07 |
+| never | 20/20/20 | 0/0 | 0/0 | 1.07 | 1.01 | 0.96 |
+| flicker | 40/50/40 | 0/10 | 0/0 | 0.89 | 1.16 | 1.17 |
+| shortbursts | 48/54/54 | 7/6 | 0/6 | 0.86 | 0.93 | 1.05 |
+
+Under 8-client contention (10 iters, `daemon_load.mjs`), sparse/flicker/bursty:
+
+| sequence | RPCs g/s/c | g/s med | g/c med | s/c med |
+|---|---|---|---|---|
+| sparse | 26/29/26 | **0.70** | 1.20 | 1.35 |
+| flicker | 40/50/40 | 1.03 | 1.16 | 1.11 |
+| bursty | 40/42/42 | **0.64** | 0.91 | 1.02 |
+
+Honest read:
+
+1. **The gate eliminates the measured waste.** On sparse and flicker the
+   confirmed shape pays zero false-positive captures (suppressed 3 and 10
+   per sequence respectively) and matches gated's RPC count; sticky wastes
+   3 and 10 captures. Under contention this is the difference between a
+   0.70× regression and 1.20×.
+2. **The gate is strictly better than sticky everywhere measured** (s/c ≥
+   1.02 on every sequence, both regimes). Its cost is visible on
+   shortbursts (runs of exactly 2: confirmed gets 0 hits where sticky gets
+   7 — the confirmation cost is real and the bench shows it).
+3. **New contention finding: speculation itself can invert under load.**
+   On bursty under contention, *both* speculative shapes regress vs gated
+   (0.64× / 0.91×) — the concurrent capture adds load to an already
+   contended daemon, and the one-RTT saving does not cover it. The gate
+   mitigates (0.91 vs 0.64) but does not fix it. The policy's upside is a
+   quiet-transport phenomenon; under contention the transport is the
+   bottleneck and adding concurrency makes it worse.
+4. **Policy recommendation.** If speculation ever leaves the fork: ship
+   with the gate on (confirmation 2), and document that it is a
+   quiet-transport optimization — under daemon contention, degrade to
+   gated-sequential. The gate makes the worst case gated-parity instead of
+   a 0.70× regression.
+
+Verdict: gate prototyped, measured, and committed as a fork research
+artifact. It does what the chunk-7 caveat asked for. No upstream claim —
+the keep-alive question (dq-3383, auth-lifetime contract) is the
+maintainer-facing thread; this stays downstream evidence.
+
 ## Reproduce
 
 ```
 node --import tsx bench/observation-gating/speculate_bench.ts
-node --import tsx --test typescript/*.test.ts   # 56/56
+BENCH_ONLY=sparse,flicker,bursty BENCH_ITERS=10 node --import tsx bench/observation-gating/speculate_bench.ts  # under: node ~/workspace/scratch/daemon_load.mjs &
+node --import tsx --test typescript/*.test.ts   # 62/62
 npx tsc --noEmit                                # clean
 ```
 

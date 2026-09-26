@@ -44,28 +44,97 @@ describe('VisualSpeculator', () => {
   it('starts cold: no speculation before any observation', () => {
     const speculator = new VisualSpeculator();
     assert.equal(speculator.shouldSpeculate(), false);
-    assert.deepEqual(speculator.stats(), { hits: 0, falsePositives: 0, misses: 0 });
+    assert.deepEqual(speculator.stats(), { hits: 0, falsePositives: 0, misses: 0, suppressed: 0 });
+    assert.equal(speculator.missRate(), undefined);
   });
 
   it('is sticky: follows the previous step, not a longer history', () => {
     const speculator = new VisualSpeculator();
+    speculator.shouldSpeculate();
     speculator.observe(true);
     assert.equal(speculator.shouldSpeculate(), true);
+    speculator.shouldSpeculate();
     speculator.observe(true);
     assert.equal(speculator.shouldSpeculate(), true);
+    speculator.shouldSpeculate();
     speculator.observe(false);
     assert.equal(speculator.shouldSpeculate(), false);
+    speculator.shouldSpeculate();
     speculator.observe(false);
     assert.equal(speculator.shouldSpeculate(), false);
   });
 
-  it('counts hits, false positives, and misses; the cold step counts none', () => {
+  it('counts hits, false positives, and misses against the actual decision', () => {
     const speculator = new VisualSpeculator();
-    speculator.observe(true); // cold step: predicts nothing, records nothing
-    speculator.observe(true); // hit
+    speculator.shouldSpeculate();
+    speculator.observe(true); // cold step: nothing speculated -> miss
+    speculator.shouldSpeculate();
+    speculator.observe(true); // sticky yes -> hit
+    speculator.shouldSpeculate();
+    speculator.observe(false); // sticky yes, not needed -> false positive
+    speculator.shouldSpeculate();
+    speculator.observe(true); // sticky no, needed -> miss
+    assert.deepEqual(speculator.stats(), { hits: 1, falsePositives: 1, misses: 2, suppressed: 0 });
+    assert.equal(speculator.missRate(), 0.5);
+  });
+
+  it('a lone missRate of 1.0 after pure false positives', () => {
+    const speculator = new VisualSpeculator();
+    speculator.shouldSpeculate();
+    speculator.observe(true);
+    speculator.shouldSpeculate();
     speculator.observe(false); // false positive
-    speculator.observe(true); // miss
-    assert.deepEqual(speculator.stats(), { hits: 1, falsePositives: 1, misses: 1 });
+    assert.equal(speculator.missRate(), 1);
+  });
+});
+
+describe('miss-rate gate (confirmationSteps)', () => {
+  it('clamps confirmationSteps to a positive integer', () => {
+    assert.equal(new VisualSpeculator(0).confirmationSteps, 1);
+    assert.equal(new VisualSpeculator(-3).confirmationSteps, 1);
+    assert.equal(new VisualSpeculator(2.7).confirmationSteps, 2);
+    assert.equal(new VisualSpeculator().confirmationSteps, 1);
+  });
+
+  it('with 2: an isolated visual need never triggers a wasted capture', () => {
+    const speculator = new VisualSpeculator(2);
+    speculator.shouldSpeculate();
+    speculator.observe(true); // cold miss, one confirmed need
+    assert.equal(speculator.shouldSpeculate(), false); // gate blocks the sticky yes
+    speculator.observe(false); // nothing was speculated: no false positive
+    assert.deepEqual(speculator.stats(), { hits: 0, falsePositives: 0, misses: 1, suppressed: 1 });
+  });
+
+  it('with 2: fires on a confirmed run, at the cost of one sequential step', () => {
+    const speculator = new VisualSpeculator(2);
+    speculator.shouldSpeculate();
+    speculator.observe(true); // cold miss
+    assert.equal(speculator.shouldSpeculate(), false); // suppressed: only one confirmed
+    speculator.observe(true); // sequential miss
+    assert.equal(speculator.shouldSpeculate(), true); // two confirmed -> fire
+    speculator.observe(true); // hit
+    assert.deepEqual(speculator.stats(), { hits: 1, falsePositives: 0, misses: 2, suppressed: 1 });
+    assert.equal(speculator.missRate(), 0);
+  });
+
+  it('with 2: flickering need never fires (no repeated false positives)', () => {
+    const speculator = new VisualSpeculator(2);
+    for (let i = 0; i < 6; i += 1) {
+      speculator.shouldSpeculate();
+      speculator.observe(i % 2 === 0); // T,F,T,F,T,F
+    }
+    assert.deepEqual(speculator.stats(), { hits: 0, falsePositives: 0, misses: 3, suppressed: 3 });
+  });
+
+  it('with 2: still fires after the run ends (trailing false positive unchanged)', () => {
+    const speculator = new VisualSpeculator(2);
+    speculator.shouldSpeculate();
+    speculator.observe(true);
+    speculator.shouldSpeculate();
+    speculator.observe(true);
+    assert.equal(speculator.shouldSpeculate(), true); // run of 2 confirmed
+    speculator.observe(false); // the run ended: one unavoidable false positive
+    assert.deepEqual(speculator.stats(), { hits: 0, falsePositives: 1, misses: 2, suppressed: 1 });
   });
 });
 
@@ -178,6 +247,6 @@ describe('speculation policy over two steps', () => {
     const visual = await visualFromCapture(call, capture2 as Promise<Record<string, any>>, ARGS);
     assert.equal(visual.regions.length, 1);
     speculator.observe(true);
-    assert.deepEqual(speculator.stats(), { hits: 1, falsePositives: 0, misses: 0 });
+    assert.deepEqual(speculator.stats(), { hits: 1, falsePositives: 0, misses: 1, suppressed: 0 });
   });
 });

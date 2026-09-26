@@ -17,6 +17,16 @@
  * 3). On a mispredicted step the capture is discarded (one wasted RPC);
  * on a missed prediction the loop falls back to the sequential path.
  *
+ * Miss-rate gate (chunk 8): the sticky predictor wastes exactly one capture
+ * per isolated visual need — and under socket contention even that waste
+ * measured as a 0.93x median regression on the sparse sequence (chunk 7).
+ * `confirmationSteps` gates speculation on a confirmed run: speculate only
+ * when the last `confirmationSteps` steps all needed visual. With 2, isolated
+ * needs (sparse) and flickering needs (alternating) never trigger a wasted
+ * capture, at the cost of one sequential step at the start of each sticky
+ * run (and the trailing false positive at run end is unchanged). The default
+ * 1 preserves the original sticky behavior.
+ *
  * Measured in bench/observation-gating/speculate_bench.ts against the mock
  * daemon with scripted visual-need sequences. Zero protocol change — works
  * against the real daemon today.
@@ -33,34 +43,72 @@ export const VISUAL_PARSE_OPTIONS = {
 } as const;
 
 /**
- * Sticky predictor for "will this step need the visual path?".
+ * Sticky predictor for "will this step need the visual path?", behind a
+ * miss-rate gate.
+ *
  * Starts cold (no speculation on the first step); thereafter follows the
- * previous step's outcome. Also tracks prediction accuracy so the loop's
- * ledger can report how often speculation paid off.
+ * previous step's outcome. The gate (`confirmationSteps`) requires that many
+ * consecutive visual-needing steps before a speculative capture fires —
+ * with 2, isolated needs (sparse) and flickering needs (alternating) never
+ * pay for a wasted capture. Also tracks prediction accuracy so the loop's
+ * ledger can report how often speculation paid off, plus `suppressed` (the
+ * gate blocked a sticky-yes) and a rolling miss rate over actual
+ * speculations.
+ *
+ * Usage mirrors run.ts: consult shouldSpeculate() once per step, then
+ * observe(needed) once. The decision is consumed by observe(); outcomes are
+ * counted against the actual decision, not the raw predictor.
  */
 export class VisualSpeculator {
   private lastNeeded: boolean | undefined;
+  private consecutiveNeeded = 0;
+  private lastDecision = false;
   private hits = 0;
   private falsePositives = 0;
   private misses = 0;
+  private suppressed = 0;
+  readonly confirmationSteps: number;
+
+  constructor(confirmationSteps: number = 1) {
+    this.confirmationSteps = Math.max(1, Math.floor(confirmationSteps));
+  }
 
   shouldSpeculate(): boolean {
-    return this.lastNeeded === true;
+    const stickyYes = this.lastNeeded === true;
+    const decision = stickyYes && this.consecutiveNeeded >= this.confirmationSteps;
+    this.lastDecision = decision;
+    if (stickyYes && !decision) this.suppressed += 1;
+    return decision;
   }
 
   observe(needed: boolean): void {
-    if (this.lastNeeded === true && needed) this.hits += 1;
-    else if (this.lastNeeded === true) this.falsePositives += 1;
-    else if (this.lastNeeded === false && needed) this.misses += 1;
+    const speculated = this.lastDecision;
+    if (speculated && needed) this.hits += 1;
+    else if (speculated && !needed) this.falsePositives += 1;
+    else if (!speculated && needed) this.misses += 1;
+    if (needed) this.consecutiveNeeded += 1;
+    else this.consecutiveNeeded = 0;
     this.lastNeeded = needed;
+    this.lastDecision = false; // consume: one decision per step
   }
 
-  stats(): { hits: number; falsePositives: number; misses: number } {
+  stats(): { hits: number; falsePositives: number; misses: number; suppressed: number } {
     return {
       hits: this.hits,
       falsePositives: this.falsePositives,
       misses: this.misses,
+      suppressed: this.suppressed,
     };
+  }
+
+  /**
+   * False positives / total speculations so far; undefined before any
+   * speculation. The gate's own health signal: a high rate means the
+   * predictor is firing into needs that aren't there.
+   */
+  missRate(): number | undefined {
+    const total = this.hits + this.falsePositives;
+    return total === 0 ? undefined : this.falsePositives / total;
   }
 }
 
