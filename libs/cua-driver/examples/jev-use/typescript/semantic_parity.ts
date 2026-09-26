@@ -2,14 +2,30 @@ import { compileExpectation, type Candidate } from './compiled_expectations.ts';
 
 type Kind = 'run' | 'single' | 'reobserve' | 'abstain';
 type Status = 'verified' | 'refuted' | 'unknown' | 'stale' | 'rebound' | 'refused';
+type FastPathRoute = 'fast-path' | 'chooser';
+type SecondReason =
+  | 'allowed'
+  | 'refuted'
+  | 'unknown'
+  | 'stale'
+  | 'rebound'
+  | 'refused'
+  | 'missing_observation'
+  | 'missing_capture'
+  | 'field_mismatch'
+  | 'submit_ref_mismatch';
 
 type Fresh = { field_value: string | null; submit_ref: string | null; capture_id: string | null };
 
 export type ParityRow = {
   case: string;
   fast_path_id: string | null;
+  fast_path_route: FastPathRoute;
+  executable_count: number;
+  provider_called: boolean;
   run_admitted: boolean;
   second_dispatch: boolean;
+  second_reason: SecondReason | null;
   expectation_kind: string | null;
 };
 
@@ -19,10 +35,27 @@ function candidate(id: string, tool: string | null, captureId?: string | null): 
   return { id, description: id, tool, arguments: {}, capture_id: captureId ?? null };
 }
 
-function singleExecutable(candidates: Candidate[]): string | null {
+function explainFastPath(candidates: Candidate[]): {
+  route: FastPathRoute;
+  executableCount: number;
+  candidateId: string | null;
+  providerCalled: boolean;
+} {
   const executable = candidates.filter((item) => !RESERVED.has(item.id) && item.tool != null);
-  if (executable.length !== 1) return null;
-  return executable[0].id;
+  if (executable.length === 1) {
+    return {
+      route: 'fast-path',
+      executableCount: 1,
+      candidateId: executable[0].id,
+      providerCalled: false,
+    };
+  }
+  return {
+    route: 'chooser',
+    executableCount: executable.length,
+    candidateId: null,
+    providerCalled: true,
+  };
 }
 
 function admit(
@@ -41,16 +74,19 @@ function admit(
   return { token, submitRef };
 }
 
-function secondAllowed(
+function explainSecond(
   status: Status,
   fresh: Fresh | null,
   plan: { token: string; submitRef: string },
-): boolean {
-  if (status !== 'verified' || fresh == null) return false;
-  if (!fresh.capture_id) return false;
-  if (fresh.field_value !== plan.token) return false;
-  if (fresh.submit_ref !== plan.submitRef) return false;
-  return true;
+): { allowed: boolean; reason: SecondReason } {
+  if (status !== 'verified') return { allowed: false, reason: status };
+  if (fresh == null) return { allowed: false, reason: 'missing_observation' };
+  if (!fresh.capture_id) return { allowed: false, reason: 'missing_capture' };
+  if (fresh.field_value !== plan.token) return { allowed: false, reason: 'field_mismatch' };
+  if (fresh.submit_ref !== plan.submitRef) {
+    return { allowed: false, reason: 'submit_ref_mismatch' };
+  }
+  return { allowed: true, reason: 'allowed' };
 }
 
 export function parityCorpus(): ParityRow[] {
@@ -191,14 +227,19 @@ export function parityCorpus(): ParityRow[] {
     },
   ];
   return cases.map((item) => {
-    const exact = singleExecutable(item.candidates);
+    const fast = explainFastPath(item.candidates);
     const plan = admit(item.candidates, item.kind, item.childIds, 'proof', 'ref-submit');
+    const second = plan == null ? null : explainSecond(item.status, item.fresh, plan);
     const compiled = compileExpectation(item.focus, 'proof');
     return {
       case: item.case,
-      fast_path_id: exact,
+      fast_path_id: fast.candidateId,
+      fast_path_route: fast.route,
+      executable_count: fast.executableCount,
+      provider_called: fast.providerCalled,
       run_admitted: plan != null,
-      second_dispatch: plan != null && secondAllowed(item.status, item.fresh, plan),
+      second_dispatch: second?.allowed ?? false,
+      second_reason: second?.reason ?? null,
       expectation_kind: compiled == null ? null : compiled.kind,
     };
   });
