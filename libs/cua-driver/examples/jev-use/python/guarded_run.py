@@ -14,6 +14,18 @@ from core import Candidate
 
 RESERVED_CANDIDATE_IDS = frozenset({"reobserve", "abstain"})
 ChildStatus = Literal["verified", "refuted", "unknown", "stale", "rebound", "refused"]
+SecondChildReason = Literal[
+    "allowed",
+    "refuted",
+    "unknown",
+    "stale",
+    "rebound",
+    "refused",
+    "missing_observation",
+    "missing_capture",
+    "field_mismatch",
+    "submit_ref_mismatch",
+]
 
 
 @dataclass(frozen=True)
@@ -48,6 +60,14 @@ class Decision:
     child_ids: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class SecondChildEvidence:
+    """Content-free receipt explaining whether child 2 may dispatch."""
+
+    allowed: bool
+    reason: SecondChildReason
+
+
 def admit_guarded_run(
     candidates: list[Candidate],
     decision: Decision,
@@ -73,13 +93,27 @@ def admit_guarded_run(
     return GuardedRunPlan(chosen[0], chosen[1], token, submit_ref)
 
 
-def second_child_allowed(status: ChildStatus, fresh: FreshObservation | None, plan: GuardedRunPlan) -> bool:
-    if status != "verified" or fresh is None:
-        return False
+def explain_second_child(
+    status: ChildStatus,
+    fresh: FreshObservation | None,
+    plan: GuardedRunPlan,
+) -> SecondChildEvidence:
+    if status != "verified":
+        return SecondChildEvidence(False, status)
+    if fresh is None:
+        return SecondChildEvidence(False, "missing_observation")
     if not fresh.capture_id:
-        return False
+        return SecondChildEvidence(False, "missing_capture")
     if fresh.field_value != plan.token:
-        return False
+        return SecondChildEvidence(False, "field_mismatch")
     if fresh.submit_ref != plan.submit_ref:
-        return False
-    return True
+        return SecondChildEvidence(False, "submit_ref_mismatch")
+    return SecondChildEvidence(True, "allowed")
+
+
+def second_child_allowed(
+    status: ChildStatus,
+    fresh: FreshObservation | None,
+    plan: GuardedRunPlan,
+) -> bool:
+    return explain_second_child(status, fresh, plan).allowed
