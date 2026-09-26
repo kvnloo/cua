@@ -690,6 +690,70 @@ def test_unix_download_bounds_network_waits_on_every_attempt(tmp_path: Path) -> 
 
 
 @requires_posix_bash
+def test_unix_api_curl_bounds_network_waits(tmp_path: Path) -> None:
+    """github_api_curl must carry connect/max-time flags on every call.
+
+    Version resolution walks up to ten paginated API requests; an unbounded
+    curl turns one stalled connection into a forever-hung install with no
+    fail-fast. API responses are small, so a fixed max-time is safe.
+    """
+    calls = tmp_path / "api-calls"
+    script = tmp_path / "run-api-curl.sh"
+    script.write_text(
+        textwrap.dedent(
+            f"""\
+            set -uo pipefail
+            curl() {{
+                printf '%s\\n' "$*" >> "{calls.as_posix()}"
+                printf '200'
+                return 0
+            }}
+            {_extract_shell_function(_unix_source(), "github_api_curl")}
+            github_api_curl -fsSL "https://api.github.com/repos/trycua/cua/releases?page=1"
+            GITHUB_TOKEN="secret-token" github_api_curl -fsSL "https://api.github.com/repos/trycua/cua/releases?page=2"
+            """
+        ),
+        encoding="utf-8",
+    )
+    result = subprocess.run(["bash", script.as_posix()], capture_output=True, text=True)
+    assert result.returncode == 0
+    call_lines = calls.read_text(encoding="utf-8").splitlines()
+    assert len(call_lines) == 2
+    for call in call_lines:
+        assert "--connect-timeout" in call
+        assert "--max-time" in call
+    # The timeout flags must not disturb the token plumbing.
+    assert "Authorization: Bearer secret-token" in call_lines[1]
+    assert "secret-token" not in result.stdout
+
+
+@requires_posix_bash
+def test_unix_small_fetch_call_sites_bound_network_waits() -> None:
+    """Static guard: every remaining metadata curl must bound its wait.
+
+    The bootstrap (install.sh), the _install-common.sh loader, and the
+    post-install hints fetch are all small text downloads; a fixed
+    --max-time cannot truncate them but an unbounded wait hangs the
+    install forever on a stalled connection.
+    """
+    rust_installer = (SCRIPTS / "_install-rust.sh").read_text(encoding="utf-8")
+    sh_installer = (SCRIPTS / "install.sh").read_text(encoding="utf-8")
+    checks = (
+        (sh_installer, "RUST_INSTALLER_URL", "install.sh bootstrap"),
+        (rust_installer, "_CUA_INSTALL_COMMON_URL", "_install-rust.sh common loader"),
+        (rust_installer, "HINTS_URL", "_install-rust.sh hints fetch"),
+    )
+    for source, marker, label in checks:
+        line = next(
+            l
+            for l in source.splitlines()
+            if "curl -fsSL" in l and marker in l
+        )
+        assert "--connect-timeout" in line, label
+        assert "--max-time" in line, label
+
+
+@requires_posix_bash
 def test_unix_download_does_not_retry_auth_failure_or_fallback(tmp_path: Path) -> None:
     returncode, calls, stderr = _run_download(tmp_path, "auth")
     assert returncode == 1

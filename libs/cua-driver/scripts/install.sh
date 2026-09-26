@@ -113,8 +113,10 @@ else
         printf 'error: curl not found on PATH; cannot fetch %s\n' "$RUST_INSTALLER_URL" >&2
         exit 1
     fi
-    # `exec` so the Rust installer replaces this process.
-    RUST_INSTALLER_SCRIPT="$(curl -fsSL "$RUST_INSTALLER_URL")" || {
+    # `exec` so the Rust installer replaces this process. The fetched script
+    # is small: bound the wait so a stalled connection fails fast instead of
+    # hanging the install forever.
+    RUST_INSTALLER_SCRIPT="$(curl -fsSL --connect-timeout 30 --max-time 120 "$RUST_INSTALLER_URL")" || {
         printf 'error: failed to download Rust installer from %s\n' "$RUST_INSTALLER_URL" >&2
         exit 1
     }

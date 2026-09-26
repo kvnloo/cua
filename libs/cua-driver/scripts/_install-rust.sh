@@ -96,7 +96,7 @@ if [[ -n "${BASH_SOURCE[0]:-}" && "${BASH_SOURCE[0]}" != "-" && -f "${BASH_SOURC
 fi
 if [[ "$_cua_install_common_loaded" == "0" ]] && command -v curl >/dev/null 2>&1; then
     _cua_install_common_tmp="$(mktemp -t cua-install-common.XXXXXX 2>/dev/null || mktemp)"
-    if curl -fsSL "$_CUA_INSTALL_COMMON_URL" -o "$_cua_install_common_tmp" 2>/dev/null; then
+    if curl -fsSL --connect-timeout 30 --max-time 120 "$_CUA_INSTALL_COMMON_URL" -o "$_cua_install_common_tmp" 2>/dev/null; then
         # shellcheck source=/dev/null
         . "$_cua_install_common_tmp" && _cua_install_common_loaded=1
     fi
@@ -623,12 +623,16 @@ CUA_DRIVER_RS_BAKED_VERSION="0.28.2" # published-installer-version
 # can appear in installer output. Release-asset downloads stay unauthenticated:
 # the repository is public and curl may redirect them to another GitHub host.
 # GH_TOKEN takes precedence, matching the GitHub CLI.
+#
+# Bounded network waits: API responses are small, so a fixed --max-time is
+# safe here. Without it a stalled connection hangs the version-resolution
+# loop (up to ten paginated requests) forever with no fail-fast.
 github_api_curl() {
     local token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
     if [[ -n "$token" ]]; then
-        curl -H "Authorization: Bearer $token" "$@"
+        curl --connect-timeout 30 --max-time 60 -H "Authorization: Bearer $token" "$@"
     else
-        curl "$@"
+        curl --connect-timeout 30 --max-time 60 "$@"
     fi
 }
 
@@ -1403,7 +1407,7 @@ fi
 # in each installer where they're per-shell natural.
 HINTS_URL="https://cua.ai/driver/post-install-hints.txt"
 HINTS_TXT="$TMP_DIR/post-install-hints.txt"
-if curl -fsSL "$HINTS_URL" -o "$HINTS_TXT" 2>/dev/null && [ -s "$HINTS_TXT" ]; then
+if curl -fsSL --connect-timeout 30 --max-time 120 "$HINTS_URL" -o "$HINTS_TXT" 2>/dev/null && [ -s "$HINTS_TXT" ]; then
     sed "s|{{BINARY}}|$BIN_LINK|g" "$HINTS_TXT"
 else
     # Network fetch failed — print a one-line essentials fallback so the
