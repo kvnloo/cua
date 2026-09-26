@@ -39,7 +39,7 @@ This Linux host is present. It is not the missing machine. The missing prerequis
 Architecture note: `scripts/repro/handoff/issue-5-architecture.md`.
 Receipts from `admit_guarded_run` and `second_child_allowed`: `scripts/repro/handoff/issue-5-receipts.jsonl`.
 
-`wall_time_ms` is null. A refuted first child does not dispatch the second. A single-action provider choice is not admitted. No shared helper.
+`wall_time_ms` is null. A refuted first child does not dispatch the second. A single-action provider choice is not admitted. The outcome and latency comparison was not run. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No shared helper.
 
 ### Issue 6
 
@@ -96,13 +96,13 @@ Both compile `field_value_equals` and `fixture_submitted_equals`. A visual submi
 
 Machine-readable matrix: `scripts/repro/handoff/issue-16-matrix.tsv`, from `handoff_emit.selector_report`.
 
-Linux source has `include_accessibility_tree` and `include_screenshot`. Both disabled is rejected by `GetWindowStateInput.validate`. Linux runtime was not captured: the daemon is not running, there are no top-level windows, and the installed binary is 0.28.2 rather than the pinned commit. Missing machine: macOS. Missing machine: Windows. No selector was changed.
+Linux source has `include_accessibility_tree` and `include_screenshot`. Both disabled is rejected by `GetWindowStateInput.validate`. Linux runtime was not captured. Missing machine: macOS and Windows. The producer log the issue requires was not recorded. No selector was changed.
 
 ### Issue 17
 
 Transition table: `scripts/repro/handoff/issue-17-transitions.json`, from `browser_revision.transition_rows`.
 
-Same ref and generation binds. Same label with a new generation is refused, and the refusal text is the `StaleRefError` from `bind`. `test_browser_revision.py` calls `bind`. The live browser battery was not run. `scripts/repro/handoff/issue-17-not-run.json` names navigation, tab switch, frame replacement, process restart, and a live fixture state.
+Same ref and generation binds. Same label with a new generation is refused, and the refusal text is the `StaleRefError` from `bind`. `test_browser_revision.py` calls `bind`. The live browser battery was not run. `scripts/repro/handoff/issue-17-not-run.json` names navigation, tab switch, frame replacement, process restart, and a live fixture state. That file is the record. The transition table is not the runtime battery.
 
 ### Issue 18
 
@@ -135,7 +135,7 @@ Arms A, B, and C are `arm_ordinary_completed`, `arm_factorized_completed`, and `
 
 Per-task table: `scripts/repro/handoff/issue-24-battery.json`, written by `task_battery.battery_table`, which calls `run_interleaved`.
 
-Five tasks and four arms: baseline, lazy vision, exact candidate, and guarded run. Fill-submit is the fast path. The modal is not. Two executable actions can be admitted by `admit_guarded_run`; one executable action cannot. `promote_globally` is false. `live_success` and `wall_time_ms` are null. This Linux host is present. The pinned driver session was not run.
+Five tasks and four arms are in the structural table. `live_success` is null and `wall_time_ms` is null. The live battery the issue requires was not run. `scripts/repro/handoff/issue-24-gap.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
 ### Issue 25
 
@@ -313,7 +313,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 38
 
-`scripts/repro/handoff/issue-38-migration.md`, `scripts/repro/handoff/issue-38-matrix.tsv`, and `scripts/repro/handoff/issue-38-commands.json`. The selected shape on this checkout is no field added. `command_report` finds no `post_dispatch_observation` symbol, so no implementation SHA was selected and the generator check was not run. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
+`scripts/repro/handoff/issue-38-migration.md`, `scripts/repro/handoff/issue-38-matrix.tsv`, and `scripts/repro/handoff/issue-38-commands.json`. The selected shape on this checkout is no field added. `command_report` finds no `post_dispatch_observation` symbol, so no implementation SHA was selected and the generator check was not run. That command file is not the implementation-SHA audit the issue requires. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
 
 ## Assimilation
 

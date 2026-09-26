@@ -46,6 +46,7 @@ def browser_transitions() -> list[dict[str, str]]:
 def browser_not_run() -> dict[str, object]:
     return {
         "live_browser_battery": "not run",
+        "gap": "no browser fixture was run on this Linux host",
         "missing": [
             "navigation",
             "tab switch",
@@ -219,7 +220,7 @@ def selector_report(root: Path) -> list[dict[str, str]]:
             "linux_runtime": runtime,
             "macos_runtime": "not measured on this host",
             "windows_runtime": "not measured on this host",
-            "missing_machine": "macOS and Windows",
+            "missing_machine": "Missing machine: macOS. Missing machine: Windows.",
         },
         {
             "selector": "include_screenshot",
@@ -227,7 +228,7 @@ def selector_report(root: Path) -> list[dict[str, str]]:
             "linux_runtime": runtime,
             "macos_runtime": "not measured on this host",
             "windows_runtime": "not measured on this host",
-            "missing_machine": "macOS and Windows",
+            "missing_machine": "Missing machine: macOS. Missing machine: Windows.",
         },
         {
             "selector": "both disabled",
@@ -235,7 +236,7 @@ def selector_report(root: Path) -> list[dict[str, str]]:
             "linux_runtime": runtime,
             "macos_runtime": "not measured on this host",
             "windows_runtime": "not measured on this host",
-            "missing_machine": "macOS and Windows",
+            "missing_machine": "Missing machine: macOS. Missing machine: Windows.",
         },
     ]
 

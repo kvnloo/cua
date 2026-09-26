@@ -2,7 +2,7 @@ issue	words	evidence
 2	blocked	https://github.com/kvnloo/cua/issues/2#issuecomment-5841479881 ; scripts/repro/handoff/issue-2-block.md ; excerpt: This Linux host is present. It is not the missing machine. ; pinned driver commit c5ee191c02b11448ffefcc38b78b064a87d8ef23 is not an installed release
 3	deliverable	https://github.com/kvnloo/cua/issues/3#issuecomment-5841162781 ; scripts/repro/handoff/issue-3-macos-trace.md ; excerpt: not a walk this Linux host ran
 4	blocked	https://github.com/kvnloo/cua/issues/4#issuecomment-5839566765 ; scripts/repro/handoff/issue-4-block.md ; excerpt: This Linux host is present. It is not the missing machine. ; pinned driver commit c5ee191c02b11448ffefcc38b78b064a87d8ef23 is not an installed release
-5	deliverable	https://github.com/kvnloo/cua/issues/5#issuecomment-5839870505 ; scripts/repro/handoff/issue-5-architecture.md ; excerpt: wall_time_ms
+5	blocked	scripts/repro/handoff/issue-5-architecture.md ; excerpt: were not measured ; This Linux host is present. It is not the missing machine. ; pinned driver commit c5ee191c02b11448ffefcc38b78b064a87d8ef23 is not an installed release
 6	blocked	https://github.com/kvnloo/cua/issues/6#issuecomment-5840228506 ; scripts/repro/handoff/issue-6-handoff.md ; excerpt: Missing machine: Windows
 8	blocked	https://github.com/kvnloo/cua/issues/8#issuecomment-5840562954 ; scripts/repro/handoff/issue-8-block.md ; excerpt: Missing machine: macOS
 9	deliverable	scripts/repro/handoff/issue-9-coverage.json ; excerpt: queued_cancel_enters_native
@@ -11,14 +11,14 @@ issue	words	evidence
 12	deliverable	https://github.com/kvnloo/cua/issues/12#issuecomment-5841844613 ; scripts/repro/handoff/issue-12-cases.jsonl ; excerpt: observe
 13	blocked	https://github.com/kvnloo/cua/issues/13#issuecomment-5840780095 ; scripts/repro/handoff/issue-13-block.md ; excerpt: Missing machine: macOS
 14	deliverable	https://github.com/kvnloo/cua/issues/14#issuecomment-5841888036 ; scripts/repro/handoff/issue-14-schema.md ; excerpt: field_value_equals
-16	deliverable	https://github.com/kvnloo/cua/issues/16#issuecomment-5841041213 ; scripts/repro/handoff/issue-16-matrix.tsv ; excerpt: not captured
-17	deliverable	scripts/repro/handoff/issue-17-transitions.json ; excerpt: same ref and generation
+16	blocked	scripts/repro/handoff/issue-16-matrix.tsv ; excerpt: Missing machine: macOS. Missing machine: Windows.
+17	blocked	scripts/repro/handoff/issue-17-not-run.json ; excerpt: not run
 18	blocked	https://github.com/kvnloo/cua/issues/18#issuecomment-5840563745 ; scripts/repro/handoff/issue-18-block.md ; excerpt: Missing machine: macOS
 19	blocked	https://github.com/kvnloo/cua/issues/19#issuecomment-5840781300 ; scripts/repro/handoff/issue-19-block.md ; excerpt: Missing machine: Windows
 20	deliverable	https://github.com/kvnloo/cua/issues/20#issuecomment-5839870885 ; scripts/repro/handoff/issue-20-classification.json ; excerpt: noisy hint
 21	deliverable	https://github.com/kvnloo/cua/issues/21#issuecomment-5841842537 ; scripts/repro/handoff/issue-21-comparison.json ; excerpt: production_skipping
 23	deliverable	https://github.com/kvnloo/cua/issues/23#issuecomment-5841841559 ; scripts/repro/handoff/issue-23-goals.json ; excerpt: premature_stop
-24	deliverable	scripts/repro/handoff/issue-24-battery.json ; excerpt: live_success
+24	blocked	scripts/repro/handoff/issue-24-gap.md ; excerpt: `live_success` is null ; This Linux host is present. It is not the missing machine. ; pinned driver commit c5ee191c02b11448ffefcc38b78b064a87d8ef23 is not an installed release
 25	deliverable	https://github.com/kvnloo/cua/issues/25#issuecomment-5841839123 ; scripts/repro/handoff/issue-25-caps.json ; excerpt: wall_time_ms
 27	deliverable	https://github.com/kvnloo/cua/issues/27#issuecomment-5841821679 ; scripts/repro/handoff/issue-27-matrix.tsv ; excerpt: include_accessibility_tree
 28	deliverable	https://github.com/kvnloo/cua/issues/28#issuecomment-5841799755 ; scripts/repro/handoff/issue-28-note.md ; excerpt: optional_visual_observation
@@ -31,7 +31,7 @@ issue	words	evidence
 35	deliverable	https://github.com/kvnloo/cua/issues/35#issuecomment-5841801869 ; scripts/repro/handoff/issue-35-budget.md ; excerpt: do not add a CI wall-clock gate
 36	deliverable	scripts/repro/handoff/issue-36-sessions.json ; excerpt: concurrent_processes
 37	deliverable	https://github.com/kvnloo/cua/issues/37#issuecomment-5841797635 ; scripts/repro/handoff/issue-37-fallback.md ; excerpt: visual
-38	deliverable	https://github.com/kvnloo/cua/issues/38#issuecomment-5841042181 ; scripts/repro/handoff/issue-38-commands.json ; excerpt: generator_check
+38	blocked	scripts/repro/handoff/issue-38-commands.json ; excerpt: not run
 39	deliverable	https://github.com/kvnloo/cua/issues/39#issuecomment-5841813733 ; scripts/repro/handoff/issue-39-inventory.json ; excerpt: recipe-local
 40	deliverable	scripts/repro/handoff/issue-40-semantic.json ; excerpt: one executable candidate
 41	deliverable	https://github.com/kvnloo/cua/issues/41#issuecomment-5841838139 ; scripts/repro/handoff/issue-41-schema.md ; excerpt: Candidate envelope, unchanged
@@ -39,9 +39,9 @@ issue	words	evidence
 43	deliverable	https://github.com/kvnloo/cua/issues/43#issuecomment-5841815783 ; scripts/repro/handoff/issue-43-graph.md ; excerpt: does not import
 44	deliverable	https://github.com/kvnloo/cua/issues/44#issuecomment-5841816755 ; scripts/repro/handoff/issue-44-routing.json ; excerpt: fast-path
 45	deliverable	https://github.com/kvnloo/cua/issues/45#issuecomment-5841817588 ; scripts/repro/handoff/issue-45-ledger.tsv ; excerpt: not measured
-46	deliverable	https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526 ; scripts/repro/handoff/issue-46-projection.json ; excerpt: receipts
-47	deliverable	https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690 ; scripts/repro/handoff/issue-47-history.json ; excerpt: measured_success
-48	deliverable	https://github.com/kvnloo/cua/issues/48#issuecomment-5841889913 ; scripts/repro/handoff/issue-48-parity.json ; excerpt: not run
+46	blocked	scripts/repro/handoff/issue-46-block.md ; excerpt: not produced ; This Linux host is present. It is not the missing machine. ; pinned driver commit c5ee191c02b11448ffefcc38b78b064a87d8ef23 is not an installed release
+47	blocked	scripts/repro/handoff/issue-47-block.md ; excerpt: not justified ; This Linux host is present. It is not the missing machine. ; pinned driver commit c5ee191c02b11448ffefcc38b78b064a87d8ef23 is not an installed release
+48	blocked	scripts/repro/handoff/issue-48-block.md ; excerpt: was not executed on this host
 49	deliverable	https://github.com/kvnloo/cua/issues/49#issuecomment-5841819744 ; scripts/repro/handoff/issue-49-spike.md ; excerpt: second harness
 50	deliverable	https://github.com/kvnloo/cua/issues/50#issuecomment-5841820708 ; scripts/repro/handoff/issue-50-docs.md ; excerpt: unedited
 51	deliverable	https://github.com/kvnloo/cua/issues/51#issuecomment-5841786836 ; scripts/repro/handoff/ownership.tsv ; excerpt: caller/recipe-local

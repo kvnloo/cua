@@ -1,6 +1,10 @@
 # Issue 47
 
-Closed at https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690.
+Open. The required artifact is a full-history versus compact-history sensitivity table. It was not run.
+
+This Linux host is present. It is not the missing machine.
+
+https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690.
 
 The measurement is `scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`. Accepted items keep `selected_id` and `outcome`. An extra field is rejected. `measured_success` is null. The proposal is `not justified`, so no shorter history is proposed.
 

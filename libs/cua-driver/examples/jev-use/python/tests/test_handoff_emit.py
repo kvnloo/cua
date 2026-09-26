@@ -87,7 +87,8 @@ class HandoffEmitTest(unittest.TestCase):
         self.assertEqual(browser_not_run()["live_browser_battery"], "not run")
         selectors = selector_report(ROOT)
         self.assertIn("daemon is not running", selectors[0]["linux_runtime"])
-        self.assertIn("macOS and Windows", selectors[0]["missing_machine"])
+        self.assertIn("Missing machine: macOS", selectors[0]["missing_machine"])
+        self.assertIn("Missing machine: Windows", selectors[0]["missing_machine"])
         self.assertEqual(selectors[2]["linux_source"], "rejected by validate")
         self.assertEqual((HANDOFF / "issue-16-matrix.tsv").read_text(encoding="utf-8").splitlines()[0].count("\t"), 5)
 
