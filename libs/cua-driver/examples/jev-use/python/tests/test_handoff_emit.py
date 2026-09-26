@@ -8,7 +8,17 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE / "python"))
 
-from handoff_emit import cap_report, dispatch_counts, replay_comparison, routing_table, write_all
+from handoff_emit import (
+    browser_not_run,
+    cap_report,
+    dispatch_counts,
+    injection_report,
+    replay_comparison,
+    routing_table,
+    selector_report,
+    session_isolation,
+    write_all,
+)
 
 ROOT = Path(__file__).resolve().parents[6]
 HANDOFF = ROOT / "scripts" / "repro" / "handoff"
@@ -50,6 +60,36 @@ class HandoffEmitTest(unittest.TestCase):
         stale = stale_receipts()
         self.assertEqual(stale[1]["refused"], ["submit"])
         self.assertIsNone(stale[0]["elapsed_ms"])
+        injections = injection_report()
+        self.assertEqual(
+            json.loads((HANDOFF / "issue-33-injections.json").read_text(encoding="utf-8")),
+            injections,
+        )
+        lost = next(row for row in injections if row["case"] == "response lost")
+        self.assertEqual(lost["replay_dispatch"], 0)
+        self.assertEqual(lost["second_dispatch"], 0)
+        self.assertTrue(lost["app_state_reached"])
+        self.assertNotEqual(lost["typed"], "continue")
+        sessions = session_isolation()
+        self.assertEqual(
+            json.loads((HANDOFF / "issue-36-sessions.json").read_text(encoding="utf-8")),
+            sessions,
+        )
+        self.assertTrue(sessions["lifetime_foreign_rejected"])
+        self.assertFalse(sessions["lifetime_events_shared"])
+        self.assertTrue(sessions["browser_cross_ref_refused"])
+        self.assertFalse(sessions["borrowed_token_authorizes_plan"])
+        self.assertEqual(sessions["concurrent_processes"], "not executed")
+        self.assertEqual(
+            json.loads((HANDOFF / "issue-17-not-run.json").read_text(encoding="utf-8")),
+            browser_not_run(),
+        )
+        self.assertEqual(browser_not_run()["live_browser_battery"], "not run")
+        selectors = selector_report(ROOT)
+        self.assertIn("daemon is not running", selectors[0]["linux_runtime"])
+        self.assertIn("macOS and Windows", selectors[0]["missing_machine"])
+        self.assertEqual(selectors[2]["linux_source"], "rejected by validate")
+        self.assertEqual((HANDOFF / "issue-16-matrix.tsv").read_text(encoding="utf-8").splitlines()[0].count("\t"), 5)
 
 
 if __name__ == "__main__":

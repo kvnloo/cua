@@ -33,7 +33,7 @@ Dispositions used: `already exists`, `caller/recipe-local`, and `delete from pla
 
 `scripts/repro/handoff/decision-table.tsv` gives every mechanism the state BLOCKED, plus the missing evidence, the owner, the public-surface cost, and the next action. Issue 52 also names three other decision states. None of those was applied. The unit tests for run length, passive rows, and the shadow probe do not include the fixture latency report, the macOS Calculator log, or the false-negative census those issues require.
 
-No downstream issue was closed by this draft. #7, #15, and #22 were already closed before this queue. #25, #8, and #11 stay open.
+No downstream issue was closed by this draft. #7, #15, and #22 were already closed before this queue. #8 stays open. #25 and #11 are closed on GitHub, and their rows stay BLOCKED because the measurements were not produced here.
 
 ## 5. Remaining deltas
 

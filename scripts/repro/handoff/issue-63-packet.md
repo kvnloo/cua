@@ -1,24 +1,19 @@
-# Issue 63 — final promotion packet
+# Issue 63
 
-Final disposition: **PROMOTE / completed**.
+Verdict withheld. The promotion packet requires a native walker trace from this host, and that trace was not recorded here.
 
-Canonical upstream PR: trycua/cua#4164.
-Exact head: `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254`.
+Upstream pin: `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
-Independent native macOS evidence from @will-bogusz:
-- macOS 26.1 arm64, Calculator, 205 AX nodes.
-- 3 identical runs per row.
-- element predicate + screenshot: base 2 AX walks (205,205) → PR 1 walk (205).
-- window-only predicate + screenshot: base 1 walk (205) → PR 0.
-- element predicate without screenshot: 1 → 1 control.
-- final screenshot remained one 460×816 PNG with identical encoded size.
+Fork evidence that contains the call-site lock: `92b5035ea08b2126f947db0dfd8ecf829013d7b4` on `test/rfc-fast-path-one-candidate-20260925`.
 
-Focused PR regression: `observation_args_request_only_needed_modalities`, pinning screenshot-only vs element-bearing observation arguments and preserving `_observation_only`.
+Cited macOS Calculator comment, not a walk this Linux host ran: head `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254`. Element plus screenshot went from 2 AX walks to 1. Window-only plus screenshot went from 1 to 0. The element control without a screenshot stayed 1 to 1. The screenshot size in that comment is 460×816.
 
-Limitations:
-- producer-count proof, not a latency claim;
-- native trace is macOS only;
-- cross-platform runtime selector parity remains downstream issue #16;
-- upstream fork workflows are blocked by GitHub `action_required`, not failing tests.
+Test: `libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.py`.
 
-The old "trace missing / verdict withheld" text is obsolete. Live issue #63 is closed completed.
+Source: `libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs`. `elapsed_ms` is assigned at line 310. The optional screenshot path then calls `observe(input.pid, input.window_id, false, true)` at line 329. The second flag is the screenshot. The third argument is `false`, so this call does not ask for elements.
+
+Trace: none. Missing machines: macOS for an AX walker count, and Windows for a UIA walker count. Missing on this Linux host: an exact-head AT-SPI walker log.
+
+Limitation: the call site and the cited comment are not a walker log from this host.
+
+The upstream pull request description was not updated from this branch.

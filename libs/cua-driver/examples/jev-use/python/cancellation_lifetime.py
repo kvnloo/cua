@@ -50,6 +50,65 @@ def legal_event_trace(issuance: str = "req-1") -> list[str]:
     return list(life.events)
 
 
+def isolation_report(issuance: str = "req-1") -> dict[str, object]:
+    """A finished issuance does not accept another issuance's result."""
+    life = Lifetime(issuance)
+    life.admit()
+    life.native_exit()
+    life.release()
+    rejected = False
+    try:
+        life.finish(f"{issuance}-other")
+    except RuntimeError:
+        rejected = True
+    return {
+        "object": "Lifetime",
+        "shared_across_issuances": False,
+        "foreign_issuance_rejected": rejected,
+        "events": list(life.events),
+    }
+
+
+def coverage_report(issuance: str = "req-1") -> dict[str, object]:
+    """The lifetime barriers this probe can execute. Held input is not one of them."""
+    queued = Lifetime(issuance)
+    queued.observe_cancel()
+    admitted = Lifetime(issuance)
+    admitted.admit()
+    early_release_rejected = False
+    try:
+        admitted.release()
+    except RuntimeError:
+        early_release_rejected = True
+    finished = Lifetime(issuance)
+    finished.admit()
+    finished.native_exit()
+    finished.release()
+    foreign_rejected = False
+    try:
+        finished.finish(f"{issuance}-other")
+    except RuntimeError:
+        foreign_rejected = True
+    readiness = Lifetime(issuance)
+    readiness.admit()
+    readiness.native_exit()
+    before_release_rejected = False
+    try:
+        readiness.finish()
+    except RuntimeError:
+        before_release_rejected = True
+    return {
+        "queued_cancel_enters_native": queued.native_exited,
+        "queued_events": list(queued.events),
+        "release_before_native_exit_rejected": early_release_rejected,
+        "held_input": "not in this probe",
+        "held_input_missing_machine": "macOS",
+        "foreign_issuance_rejected": foreign_rejected,
+        "public_result_before_release_rejected": before_release_rejected,
+        "competing_scheduler": False,
+    }
+
+
 def trace_record(issuance: str = "req-1") -> dict[str, object]:
     return {
         "issuance": issuance,

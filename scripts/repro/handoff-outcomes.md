@@ -46,7 +46,7 @@ Receipts from `admit_guarded_run` and `second_child_allowed`: `scripts/repro/han
 Handoff: `scripts/repro/handoff/issue-6-handoff.md`.
 Receipts from `stale_batch.run_batch`: `scripts/repro/handoff/issue-6-receipts.jsonl`.
 
-Turn count is the length of `dispatched` in `scripts/repro/handoff/issue-6-receipts.jsonl`. Unchanged identity dispatches 2. A disappeared target, a rebound identity, a failed first child, and an unknown first child each dispatch 1. `elapsed_ms` is null. Wall-clock latency was not measured. Freshness stays caller-managed.
+Turn count is the length of `dispatched` in `scripts/repro/handoff/issue-6-receipts.jsonl`. Unchanged identity dispatches 2. A disappeared target, a rebound identity, a failed first child, and an unknown first child each dispatch 1. `elapsed_ms` is null. Wall-clock latency was not measured. Freshness stays caller-managed. Native Windows evidence was not captured. Missing machine: Windows.
 
 ### Issue 8
 
@@ -57,6 +57,8 @@ Blocked. `scripts/repro/handoff/issue-8-block.md`. Missing machine: macOS. The C
 Event-order trace: `scripts/repro/handoff/issue-9-trace.json`, written by `cancellation_lifetime.trace_record`.
 
 The events are admitted, cancellation observed, native exit, permit release, then public result. Release before native exit raises. A different issuance raises. The owner is the existing request-id owner. No competing runtime was added. Handoff: slice 1 belongs on that owner after RFC approval.
+
+Coverage of the six barriers: `scripts/repro/handoff/issue-9-coverage.json`, from `cancellation_lifetime.coverage_report`. A cancel observed before admission does not enter native work. Release before native exit is rejected. A foreign issuance is rejected. A public result before release is rejected. Held input is not in this probe. Missing machine: macOS, for held-key and held-drag acceptance.
 
 ### Issue 10
 
@@ -88,19 +90,19 @@ Schema note: `scripts/repro/handoff/issue-14-schema.md`.
 Python: `compiled_expectations.py` and `test_compiled_expectations.py`.
 TypeScript: `typescript/compiled_expectations.ts` and `typescript/compiled_expectations.test.ts`.
 
-Both compile `field_value_equals` and `fixture_submitted_equals`. A visual submit also needs `capture_id`. `accept_if_bound` refuses a stale ref before it returns the expectation. Unknown and refuted do not start the next child. Wall time was not measured. Missing machine: this Linux host. No shared abstraction was added.
+Both compile `field_value_equals` and `fixture_submitted_equals`. A visual submit also needs `capture_id`. `accept_if_bound` refuses a stale ref before it returns the expectation. Unknown and refuted do not start the next child. Wall time was not measured. No shared abstraction was added. Closed at https://github.com/kvnloo/cua/issues/14#issuecomment-5841888036. The comment records the compiler staying recipe-local. It does not include a wall-time comparison.
 
 ### Issue 16
 
-Machine-readable matrix: `scripts/repro/handoff/issue-16-matrix.tsv`.
+Machine-readable matrix: `scripts/repro/handoff/issue-16-matrix.tsv`, from `handoff_emit.selector_report`.
 
-Linux source names `include_accessibility_tree` and `include_screenshot`. Runtime on macOS was not measured. Missing machine: macOS. Runtime on Windows was not measured. Missing machine: Windows. Recommendation: fail closed and do not advertise the selectors as equivalent. No selector was changed.
+Linux source has `include_accessibility_tree` and `include_screenshot`. Both disabled is rejected by `GetWindowStateInput.validate`. Linux runtime was not captured: the daemon is not running, there are no top-level windows, and the installed binary is 0.28.2 rather than the pinned commit. Missing machine: macOS. Missing machine: Windows. No selector was changed.
 
 ### Issue 17
 
-Transition table: `scripts/repro/handoff/issue-17-transitions.json`.
+Transition table: `scripts/repro/handoff/issue-17-transitions.json`, from `browser_revision.transition_rows`.
 
-Same ref and generation binds. Same label with a new generation is refused. `test_browser_revision.py` is the fixture. This table is what issue 11 has to respect. It is not a CDP log.
+Same ref and generation binds. Same label with a new generation is refused, and the refusal text is the `StaleRefError` from `bind`. `test_browser_revision.py` calls `bind`. The live browser battery was not run. `scripts/repro/handoff/issue-17-not-run.json` names navigation, tab switch, frame replacement, process restart, and a live fixture state.
 
 ### Issue 18
 
@@ -115,7 +117,7 @@ Blocked. `scripts/repro/handoff/issue-19-block.md`. Missing machine: Windows. No
 Trace: `scripts/repro/atspi-census-20260925.json`.
 Classification: `scripts/repro/handoff/issue-20-classification.json`.
 
-Every recorded event is a noisy hint. `safe_for_reuse` is false because false negatives were not measured. Recommendation: no Linux scope supports `unchanged_since`. macOS and Windows are not in this file.
+Every recorded event is a noisy hint. `safe_for_reuse` is false because false negatives were not measured. The classification also names window lifecycle, Chromium/Electron navigation, bus reconnect, and a false-negative case as not tested. Recommendation: no Linux scope supports `unchanged_since`. macOS and Windows are not in this file.
 
 ### Issue 21
 
@@ -153,7 +155,7 @@ Abstractions that disappear: a universal shadow store, a second verifier, a shar
 
 ### Issue 52
 
-`scripts/repro/handoff/decision-table.tsv` has evidence, missing evidence, owner, public surface cost, and next action. Every decision cell is BLOCKED. The run-length, passive-row, and shadow-skip rows stay blocked because fixture latency, the macOS Calculator log, and the false-negative census were not produced. The AX and UIA rows name the missing macOS and Windows machines. No downstream issue was closed. #7, #15, and #22 were already closed before this queue. #25, #8, and #11 stay open.
+`scripts/repro/handoff/decision-table.tsv` has evidence, missing evidence, owner, public surface cost, and next action. Every decision cell is BLOCKED. The run-length, passive-row, and shadow-skip rows stay blocked because fixture latency, the macOS Calculator log, and the false-negative census were not produced. The AX and UIA rows name the missing macOS and Windows machines. No downstream issue was closed by this table. #7, #15, and #22 were already closed before this queue. #8 stays open. #25 and #11 are closed on GitHub, and their decision cells stay BLOCKED because the measurements were not produced here.
 
 ### Issue 53
 
@@ -210,10 +212,11 @@ The DAG is `scripts/repro/handoff/promotion-dag.json`. Each item has an owner, a
 ### Issue 40
 
 Shared fixture: `scripts/repro/handoff/issue-40-fixture.json`.
+Semantic corpus: `scripts/repro/handoff/issue-40-semantic.json`, from `semantic_parity.parity_corpus`.
 Python runner: `test_compiled_expectations.py`.
-TypeScript runner: `typescript/compiled_expectations.test.ts`.
+TypeScript runner: `typescript/compiled_expectations.test.ts` and `typescript/semantic_parity.ts`.
 
-Both read that fixture. Parity is claimed only for compiled expectations. The other helpers were not mirrored.
+The test runs the Python corpus and the TypeScript corpus and requires the same fast-path id, run admission, second dispatch, and expectation kind. One executable candidate is admitted by the rule even when the decision is reobserve. A reserved-only table is not. A verified fresh run dispatches the second child. Stale, rebound, missing capture, refuted, and unknown do not.
 
 ### Issue 41
 
@@ -240,15 +243,15 @@ Tests: `test_caller_route.py`.
 
 ### Issue 46
 
-`scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`. The shipped request keeps `id` and `description` and rejects tool arguments. Receipts were not produced. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Recommendation: the smallest safe chooser state is id and description.
+Closed at https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526. That comment is the reopen note. It does not include A/B receipts. `scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`, keeps `id` and `description` and rejects tool arguments. Receipts were not produced. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Recommendation: the smallest safe chooser state is id and description.
 
 ### Issue 47
 
-`scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`. Accepted history keeps `selected_id` and `outcome`. An extra field is rejected. Measured success is null, so no shorter history is proposed. The missing prerequisite for a live battery is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+Closed at https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690. That comment is the reopen note. It does not include a sensitivity table. `scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`, keeps `selected_id` and `outcome`. An extra field is rejected. Measured success is null, so no shorter history is proposed. The missing prerequisite for a live battery is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
 ### Issue 48
 
-`scripts/repro/handoff/issue-48-parity.json`, from `provider_parity.parity_report`. The mock row calls `choose_mock` and `validate_choice`. A malformed id is rejected. Jev and S1 were not run. Recommendation: provider-specific policy stays in the adapter.
+Closed at https://github.com/kvnloo/cua/issues/48#issuecomment-5841889913. That comment is the reopen note. It does not include a provider run. `scripts/repro/handoff/issue-48-parity.json`, from `provider_parity.parity_report`. The mock row calls `choose_mock` and `validate_choice`. A malformed id is rejected. Jev and S1 were not run. Recommendation: provider-specific policy stays in the adapter.
 
 ### Issue 49
 
@@ -280,7 +283,7 @@ The rule is schema/property preflight. `include_accessibility_tree` is on the co
 
 ### Issue 31
 
-`scripts/repro/handoff/issue-31-manifest.json`. Every row sets `historical_green_certifies` to false. macOS and Windows rows name those machines.
+`scripts/repro/handoff/issue-31-manifest.json`, from `promotion_qualification.qualification_rows`. Every row sets `historical_green_certifies` to false. macOS and Windows rows name those machines. The guarded-run row records that wall time was not measured.
 
 ### Issue 32
 
@@ -290,7 +293,7 @@ The rule is schema/property preflight. `include_accessibility_tree` is on the co
 
 Dispatch counts: `scripts/repro/handoff/issue-33-dispatch.json`, written by `second_child_allowed`.
 
-Verified is the only status in that file with a second dispatch. Refuted, unknown, stale, rebound, and refused stay at one dispatch. `fixture_submitted` is the retained app-state oracle, and `second_child_allowed` does not read it. The unknown row reaches `submitted` and still does not dispatch the second child. The recommendation is the typed rule already in `action_consumer.py`: do not replay after unknown. A live application process was not attached.
+Verified is the only status in that file with a second dispatch. Refuted, unknown, stale, rebound, and refused stay at one dispatch. `fixture_submitted` is the retained app-state oracle, and `second_child_allowed` does not read it. The unknown row reaches `submitted` and still does not dispatch the second child. Injection rows: `scripts/repro/handoff/issue-33-injections.json`, from `typed_choice` and `second_child_allowed`. A lost response can still show the fixture submitted, and the replay dispatch stays 0. A live application process was not attached.
 
 ### Issue 34
 
@@ -302,7 +305,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 36
 
-`scripts/repro/handoff/issue-36-isolation.md`. `finish` rejects a different issuance. Real concurrent sessions were not executed on this Linux host.
+`scripts/repro/handoff/issue-36-isolation.md` and `scripts/repro/handoff/issue-36-sessions.json`, from `handoff_emit.session_isolation`. `finish` rejects a different issuance. A browser ref from the other session is refused by `bind`, and that session's own ref still binds. A borrowed token does not authorize the other plan. Concurrent processes were not executed on this Linux host.
 
 ### Issue 37
 
@@ -310,7 +313,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 38
 
-`scripts/repro/handoff/issue-38-migration.md` and `scripts/repro/handoff/issue-38-matrix.tsv`. The selected shape is no field added. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
+`scripts/repro/handoff/issue-38-migration.md`, `scripts/repro/handoff/issue-38-matrix.tsv`, and `scripts/repro/handoff/issue-38-commands.json`. The selected shape on this checkout is no field added. `command_report` finds no `post_dispatch_observation` symbol, so no implementation SHA was selected and the generator check was not run. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
 
 ## Assimilation
 
@@ -318,11 +321,11 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432. That comment includes head `fb7841be7`, element-plus-screenshot walks 2 to 1, window-only-plus-screenshot walks 1 to 0, and the no-screenshot control stayed 1 to 1. This host did not run that trace. The local packet `scripts/repro/handoff/issue-63-packet.md` still withholds a verdict label. Missing machine: Windows, for a UIA count. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329.
+Closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. That comment is the reopen note. An earlier comment, https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432, includes head `fb7841be7`, element-plus-screenshot walks 2 to 1, window-only-plus-screenshot walks 1 to 0, and the no-screenshot control stayed 1 to 1. Neither comment includes a verdict from the required list or the tests. This host did not run that trace. The local packet `scripts/repro/handoff/issue-63-packet.md` withholds a verdict label. Missing machine: Windows, for a UIA count. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329.
 
 ### Issue 64
 
-Blocked. The issue is open. `scripts/repro/handoff/issue-64-block.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. https://github.com/kvnloo/cua/issues/64#issuecomment-5841763905 does not contain the A/B. No helper was added. No verdict was issued.
+Blocked. Closed at https://github.com/kvnloo/cua/issues/64#issuecomment-5841890244. That comment is the reopen note and does not contain the A/B. `scripts/repro/handoff/issue-64-block.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No helper was added. No verdict was issued.
 
 ### Issue 65
 

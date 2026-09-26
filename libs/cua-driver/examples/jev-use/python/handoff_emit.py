@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from action_consumer import required_cases
+from action_consumer import required_cases, typed_choice
+from browser_revision import transition_rows
 from caller_route import route
+from cancellation_lifetime import Lifetime, coverage_report
 from core import Candidate
 from goal_gates import task_rows
 from guarded_run import (
@@ -38,11 +40,20 @@ def _plan() -> GuardedRunPlan:
 
 
 def browser_transitions() -> list[dict[str, str]]:
-    return [
-        {"state": "current", "event": "same ref and generation", "next": "bound", "dispatch": "allowed"},
-        {"state": "current", "event": "same label, new generation", "next": "stale", "dispatch": "refused"},
-        {"state": "current", "event": "ref missing", "next": "stale", "dispatch": "refused"},
-    ]
+    return transition_rows()
+
+
+def browser_not_run() -> dict[str, object]:
+    return {
+        "live_browser_battery": "not run",
+        "missing": [
+            "navigation",
+            "tab switch",
+            "frame or document replacement",
+            "browser process restart",
+            "independent fixture state from a live page",
+        ],
+    }
 
 
 def replay_comparison() -> dict[str, object]:
@@ -120,6 +131,130 @@ def dispatch_counts() -> list[dict[str, object]]:
     return rows
 
 
+def injection_report() -> list[dict[str, object]]:
+    """Dispatch counts after a lost or unverifiable effect. Replay stays at zero."""
+    plan = _plan()
+    fresh = FreshObservation("proof", "ref-submit", "capture-2")
+    cases = (
+        ("response lost", "unknown", None, "unverifiable", "unavailable", {"submitted": True}),
+        ("verification unavailable", "unknown", fresh, "unverifiable", "unavailable", {"submitted": True}),
+        ("verification unknown", "unknown", fresh, "unverifiable", "unavailable", {"submitted": True}),
+        ("provider failure after first child", "refuted", fresh, "refused", "completed", {"submitted": False}),
+        ("cancellation after partial acceptance", "unknown", fresh, "unverifiable", "unavailable", {"submitted": True}),
+        ("stale next child", "stale", None, "unverifiable", "unavailable", {"submitted": False}),
+        ("refused next child", "refused", fresh, "refused", "skipped", {"submitted": False}),
+        ("process disappears after dispatch", "stale", None, "unverifiable", "unavailable", {"submitted": False}),
+    )
+    rows = []
+    for name, status, observation, effect, seen, world in cases:
+        choice = typed_choice(effect, seen, passive_success=False)
+        rows.append(
+            {
+                "case": name,
+                "first_dispatch": 1,
+                "replay_dispatch": int(choice == "continue"),
+                "second_dispatch": int(second_child_allowed(status, observation, plan)),
+                "typed": choice,
+                "app_state_reached": fixture_submitted(world),
+            }
+        )
+    return rows
+
+
+def session_isolation() -> dict[str, object]:
+    """Two caller objects. Finishing one does not release the other."""
+    first = Lifetime("req-a")
+    second = Lifetime("req-b")
+    first.admit()
+    first.native_exit()
+    first.release()
+    second.admit()
+    foreign_rejected = False
+    try:
+        first.finish("req-b")
+    except RuntimeError:
+        foreign_rejected = True
+    from browser_revision import BrowserNode, StaleRefError, bind
+
+    node_a = BrowserNode("ref-a", 1, "Submit")
+    node_b = BrowserNode("ref-b", 1, "Submit")
+    bind(node_a, "ref-a", 1)
+    cross_refused = False
+    try:
+        bind(node_b, "ref-a", 1)
+    except StaleRefError:
+        cross_refused = True
+    own_b = bind(node_b, "ref-b", 1)
+    plan_a = _plan()
+    plan_b = GuardedRunPlan(plan_a.first, plan_a.second, "other-token", "other-ref")
+    borrowed = FreshObservation(plan_b.token, plan_a.submit_ref, "capture-2")
+    return {
+        "lifetime_foreign_rejected": foreign_rejected,
+        "lifetime_events_shared": first.events == second.events,
+        "browser_cross_ref_refused": cross_refused,
+        "other_session_ref_still_binds": own_b.ref,
+        "borrowed_token_authorizes_plan": second_child_allowed("verified", borrowed, plan_a),
+        "capture_registry": "not introduced",
+        "concurrent_processes": "not executed",
+    }
+
+
+def selector_report(root: Path) -> list[dict[str, str]]:
+    probe = (root / "scripts/repro/handoff/linux-host-probe.txt").read_text(encoding="utf-8")
+    window = (root / "libs/cua-driver/rust/crates/cua-driver-contract/src/windows.rs").read_text(encoding="utf-8")
+    verify = (root / "libs/cua-driver/rust/crates/cua-driver-contract/src/verification.rs").read_text(encoding="utf-8")
+    limits = []
+    if "daemon is not running" in probe:
+        limits.append("daemon is not running")
+    if "no top-level windows" in probe:
+        limits.append("no top-level windows")
+    if "cua-driver 0.28.2" in probe:
+        limits.append("installed binary is 0.28.2, not the pinned commit")
+    runtime = "not captured; " + "; ".join(limits)
+    both_rejected = "window observation requires accessibility or screenshot capture" in window
+    return [
+        {
+            "selector": "include_accessibility_tree",
+            "linux_source": "present" if "include_accessibility_tree" in window else "absent",
+            "linux_runtime": runtime,
+            "macos_runtime": "not measured on this host",
+            "windows_runtime": "not measured on this host",
+            "missing_machine": "macOS and Windows",
+        },
+        {
+            "selector": "include_screenshot",
+            "linux_source": "present" if "include_screenshot" in window and "include_screenshot" in verify else "absent",
+            "linux_runtime": runtime,
+            "macos_runtime": "not measured on this host",
+            "windows_runtime": "not measured on this host",
+            "missing_machine": "macOS and Windows",
+        },
+        {
+            "selector": "both disabled",
+            "linux_source": "rejected by validate" if both_rejected else "not found",
+            "linux_runtime": runtime,
+            "macos_runtime": "not measured on this host",
+            "windows_runtime": "not measured on this host",
+            "missing_machine": "macOS and Windows",
+        },
+    ]
+
+
+def selector_tsv(root: Path) -> str:
+    columns = (
+        "selector",
+        "linux_source",
+        "linux_runtime",
+        "macos_runtime",
+        "windows_runtime",
+        "missing_machine",
+    )
+    lines = ["\t".join(columns)]
+    for row in selector_report(root):
+        lines.append("\t".join(row[column] for column in columns))
+    return "\n".join(lines) + "\n"
+
+
 def goal_table() -> list[dict[str, object]]:
     return task_rows()
 
@@ -141,6 +276,15 @@ def routing_table() -> list[dict[str, str]]:
 
 def linux_classification(census: dict) -> dict:
     types = set(census.get("event_types") or [])
+    not_tested = list(census.get("not_tested") or [])
+    for item in (
+        "window lifecycle",
+        "Chromium/Electron navigation",
+        "bus reconnect",
+        "false-negative case",
+    ):
+        if item not in not_tested:
+            not_tested.append(item)
     return {
         "host": census.get("host"),
         "signals": [
@@ -153,7 +297,7 @@ def linux_classification(census: dict) -> dict:
             for event in sorted(types)
         ],
         "recommendation": "event absence stays always-observe; no Linux scope supports unchanged_since",
-        "not_tested": census.get("not_tested"),
+        "not_tested": not_tested,
     }
 
 
@@ -232,12 +376,18 @@ def stale_receipts() -> list[dict[str, object]]:
 
 def write_all(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
+    root = directory.parents[2]
     census_path = directory.parent / "atspi-census-20260925.json"
     census = json.loads(census_path.read_text(encoding="utf-8"))
     (directory / "issue-20-classification.json").write_text(
         json.dumps(linux_classification(census), indent=2) + "\n"
     )
     (directory / "issue-17-transitions.json").write_text(json.dumps(browser_transitions(), indent=2) + "\n")
+    (directory / "issue-17-not-run.json").write_text(json.dumps(browser_not_run(), indent=2) + "\n")
+    (directory / "issue-33-injections.json").write_text(json.dumps(injection_report(), indent=2) + "\n")
+    (directory / "issue-36-sessions.json").write_text(json.dumps(session_isolation(), indent=2) + "\n")
+    (directory / "issue-9-coverage.json").write_text(json.dumps(coverage_report(), indent=2) + "\n")
+    (directory / "issue-16-matrix.tsv").write_text(selector_tsv(root))
     (directory / "issue-21-comparison.json").write_text(json.dumps(replay_comparison(), indent=2) + "\n")
     (directory / "issue-23-goals.json").write_text(json.dumps(goal_table(), indent=2) + "\n")
     (directory / "issue-24-battery.json").write_text(json.dumps(battery_table(), indent=2) + "\n")

@@ -17,6 +17,28 @@ class Expectation:
     token: str
 
 
+def fixture_rows(payload: list[dict]) -> list[dict[str, str | None]]:
+    """Compile each corpus row with the shipped function."""
+    rows = []
+    for item in payload:
+        candidate = Candidate(
+            item["id"],
+            item["id"],
+            item.get("tool"),
+            {},
+            capture_id=item.get("capture_id"),
+        )
+        compiled = compile_expectation(candidate, item["token"])
+        rows.append(
+            {
+                "id": item["id"],
+                "kind": None if compiled is None else compiled.kind,
+                "token": None if compiled is None else compiled.token,
+            }
+        )
+    return rows
+
+
 def compile_expectation(candidate: Candidate, token: str) -> Expectation | None:
     if candidate.id in {"reobserve", "abstain"} or candidate.tool is None:
         return None

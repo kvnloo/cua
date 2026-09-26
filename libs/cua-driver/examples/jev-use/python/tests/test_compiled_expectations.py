@@ -13,6 +13,7 @@ from compiled_expectations import (
     Expectation,
     accept_if_bound,
     compile_expectation,
+    fixture_rows,
     provider_cannot_replace,
 )
 from core import Candidate
@@ -83,6 +84,54 @@ class CompiledExpectationTest(unittest.TestCase):
     def test_visual_submit_without_a_capture_has_no_expectation(self) -> None:
         bare = Candidate("visual-submit", "visual-submit", "browser_click", {})
         self.assertIsNone(compile_expectation(bare, "proof"))
+
+    def test_python_and_typescript_agree_on_the_corpus(self) -> None:
+        import subprocess
+
+        from semantic_parity import parity_corpus
+
+        root = Path(__file__).resolve().parents[6]
+        recorded = json.loads((root / "scripts/repro/handoff/issue-40-semantic.json").read_text(encoding="utf-8"))
+        python_rows = parity_corpus()
+        self.assertEqual(recorded, python_rows)
+        typescript = root / "libs/cua-driver/examples/jev-use/typescript"
+        completed = subprocess.run(
+            [
+                "node",
+                "--experimental-strip-types",
+                "--input-type=module",
+                "-e",
+                "import { parityCorpus } from './semantic_parity.ts'; process.stdout.write(JSON.stringify(parityCorpus()));",
+            ],
+            cwd=typescript,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(python_rows, json.loads(completed.stdout))
+        by_case = {row["case"]: row for row in python_rows}
+        self.assertEqual(by_case["one executable candidate"]["fast_path_id"], "type-verification-value")
+        self.assertIsNone(by_case["reserved reobserve and abstain"]["fast_path_id"])
+        self.assertEqual(by_case["provider would reobserve"]["fast_path_id"], "type-verification-value")
+        self.assertFalse(by_case["provider would reobserve"]["run_admitted"])
+        self.assertTrue(by_case["guarded continuation admitted"]["second_dispatch"])
+        self.assertFalse(by_case["guarded continuation refused"]["run_admitted"])
+        self.assertFalse(by_case["stale observation"]["second_dispatch"])
+        self.assertFalse(by_case["rebound ref"]["second_dispatch"])
+        self.assertFalse(by_case["missing capture"]["second_dispatch"])
+        self.assertFalse(by_case["postcondition refuted"]["second_dispatch"])
+        self.assertFalse(by_case["postcondition unknown"]["second_dispatch"])
+        self.assertIsNone(by_case["visual submit without capture"]["expectation_kind"])
+
+    def test_parity_report_is_the_compiled_fixture(self) -> None:
+        root = Path(__file__).resolve().parents[6]
+        payload = json.loads((root / "scripts/repro/handoff/issue-40-fixture.json").read_text(encoding="utf-8"))
+        recorded = json.loads((root / "scripts/repro/handoff/issue-40-parity.json").read_text(encoding="utf-8"))
+        self.assertEqual(recorded, fixture_rows(payload))
+        by_id = {row["id"]: row for row in recorded}
+        self.assertEqual(by_id["type-verification-value"]["kind"], "field_value_equals")
+        self.assertEqual(by_id["visual-submit"]["kind"], "fixture_submitted_equals")
+        self.assertIsNone(by_id["reobserve"]["kind"])
 
 
 if __name__ == "__main__":

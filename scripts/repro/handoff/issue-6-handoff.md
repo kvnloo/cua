@@ -17,3 +17,5 @@ Turn count is `len(dispatched)` in `scripts/repro/handoff/issue-6-receipts.jsonl
 ## Recommendation
 
 Freshness stays caller-managed, in `stale_batch.py`. It does not move into shared Driver execution code, and no batch API is added.
+
+Native Windows evidence was not captured. Missing machine: Windows.

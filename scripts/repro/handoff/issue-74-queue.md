@@ -11,7 +11,7 @@ Order: an item is listed only after the item it depends on. Comments stay inside
 3. `3961-scope` — ASSIMILATED. No action. NO CHANGE NEEDED on the provider adapter.
 4. `4009-public-field` — ASSIMILATED. No action. NO PUBLIC FIELD. The macOS crate was not compiled here.
 5. `4052` — WAITING ON DOWNSTREAM EXPERIMENT. Depends on the elapsed-ms definition above. The 4-arm benchmark was not run, so this is not sent to #4052.
-6. `4164` — WAITING ON DOWNSTREAM EXPERIMENT. Verdict withheld. The walker counter is missing, so the upstream pull-request description is not updated. Missing machines: macOS and Windows. The Linux walker log is also missing.
+6. `4164` — WAITING ON DOWNSTREAM EXPERIMENT. Verdict withheld on this branch. The macOS Calculator counts are in the upstream comment: element plus screenshot 2 walks to 1, window-only plus screenshot 1 to 0, control stayed 1 to 1. This host did not run that trace. Missing machine: Windows. The Linux walker log is also missing. The upstream pull-request description was not updated from this branch.
 7. `4165` — WAITING ON DOWNSTREAM EXPERIMENT. The outcome A/B was not run. Not sent.
 8. `3904` — WAITING ON DOWNSTREAM EXPERIMENT. Missing machine: macOS. The prepared Calculator vectors are caller-side only. Not sent.
 9. `2794-3494` — WAITING ON DOWNSTREAM EXPERIMENT. The stale-target fixture exists. The app-state trace does not, so the comment is not sent.

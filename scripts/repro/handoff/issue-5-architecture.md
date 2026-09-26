@@ -22,4 +22,4 @@ Tests: `libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py`.
 
 ## Receipts
 
-No live fixture JSONL was produced on this Linux host. The unit tests are the execution record of the prototype. No promotion verdict is issued, because wall time and fixture success were not measured. No shared helper was added.
+`scripts/repro/handoff/issue-5-receipts.jsonl` is the unit record from `admit_guarded_run` and `second_child_allowed`. Every row has `wall_time_ms` null. Success, provider-decision counts, observation counts, and stale-incident counts from a live fixture were not measured. No shared helper was added.

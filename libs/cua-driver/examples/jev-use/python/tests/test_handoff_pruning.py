@@ -445,7 +445,9 @@ class HandoffPruningTest(unittest.TestCase):
     def test_closed_issue_citations_and_machine_blocks(self) -> None:
         closed = (HANDOFF / "closed-issues.md").read_text(encoding="utf-8")
         for number in (
-            3, 28, 30, 34, 35, 37, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 66, 68, 69, 70, 71,
+            3, 11, 12, 14, 21, 23, 25, 27, 28, 29, 30, 32, 34, 35, 37, 39, 41, 42, 43, 44, 45,
+            46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66,
+            67, 68, 69, 70, 71,
         ):
             self.assertIn(f"| {number} |", closed)
             self.assertIn(f"issues/{number}#issuecomment-", closed)
@@ -459,6 +461,46 @@ class HandoffPruningTest(unittest.TestCase):
             self.assertIn(phrase, (HANDOFF / name).read_text(encoding="utf-8"), name)
         issue2 = (HANDOFF / "issue-2-block.md").read_text(encoding="utf-8")
         self.assertIn("This Linux host is present. It is not the missing machine.", issue2)
+
+    def test_committed_ledger_cites_file_excerpts(self) -> None:
+        ledger = (HANDOFF / "queue-ledger.tsv").read_text(encoding="utf-8").splitlines()
+        verdict = (HANDOFF / "verdict-evidence.tsv").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(ledger[0], "number\tprefix\tdisposition\trecord")
+        self.assertEqual(verdict[0], "issue\twords\tevidence")
+        self.assertEqual(len(ledger), 70)
+        self.assertEqual(len(verdict), 70)
+        banned = re.compile(r"\b(KEEP|REVISE|KILL|KILLED|PROMOTE)\b")
+        prefixes = {
+            "[RFC experiment]",
+            "[RFC pruning]",
+            "[RFC consolidation]",
+            "[RFC promotion]",
+            "[RFC assimilation]",
+        }
+        by_number = {}
+        for line, verdict_line in zip(ledger[1:], verdict[1:], strict=True):
+            number, prefix, disposition, record = line.split("\t", 3)
+            issue, words, evidence = verdict_line.split("\t", 2)
+            self.assertEqual(number, issue)
+            self.assertEqual(disposition, words)
+            self.assertEqual(record, evidence)
+            self.assertIn(disposition, {"deliverable", "blocked"})
+            self.assertIn(prefix, prefixes)
+            self.assertIsNone(banned.search(line))
+            self.assertIsNone(banned.search(verdict_line))
+            excerpt = record.split("excerpt: ", 1)[1].split(" ; ", 1)[0]
+            path = next(part.strip() for part in record.split(";") if "scripts/repro/" in part)
+            self.assertIn(excerpt, (ROOT / path).read_text(encoding="utf-8"))
+            by_number[int(number)] = record
+        self.assertEqual(len(by_number), 69)
+        for number in (8, 13, 18):
+            self.assertIn("Missing machine: macOS", by_number[number])
+        for number in (6, 19):
+            self.assertIn("Missing machine: Windows", by_number[number])
+        for number in (2, 4, 10, 64, 72):
+            self.assertIn("This Linux host is present. It is not the missing machine.", by_number[number])
+            self.assertIn("c5ee191c02b11448ffefcc38b78b064a87d8ef23", by_number[number])
+            self.assertNotIn("Missing machine: this Linux host.", by_number[number])
 
     def test_repro_notes_do_not_apply_a_promotion_verdict(self) -> None:
         banned = re.compile(r"\b(KEEP|REVISE|KILL|KILLED)\b")

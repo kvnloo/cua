@@ -18,7 +18,8 @@ from core import Candidate
 from cost_ledger import ledger_tsv
 from goal_gates import done_label, task_rows
 from guarded_run import Decision, admit_guarded_run
-from migration_matrix import documented_versions, migration_tsv
+from migration_matrix import command_report, documented_versions, migration_tsv
+from promotion_qualification import qualification_rows
 from old_driver_fallback import decision_rows
 from provider_parity import parity_report
 from regression_budget import (
@@ -193,6 +194,28 @@ class OpenPacketTest(unittest.TestCase):
         self.assertIn("deny_unknown_fields", recorded)
         self.assertIn("no field added", recorded)
         self.assertIn("not run", recorded)
+        commands = command_report(ROOT)
+        recorded_commands = json.loads((HANDOFF / "issue-38-commands.json").read_text(encoding="utf-8"))
+        self.assertEqual(recorded_commands, commands)
+        self.assertEqual(commands["symbol_in_this_checkout"], [])
+        self.assertIsNone(commands["selected_implementation_sha"])
+        self.assertEqual(commands["generator_check"], "not run")
+        contract = ROOT / "libs/cua-driver/rust/crates/cua-driver-contract/src"
+        self.assertFalse(
+            any("post_dispatch_observation" in path.read_text(encoding="utf-8") for path in contract.rglob("*.rs"))
+        )
+
+    def test_qualification_rows_do_not_transfer_historical_green(self) -> None:
+        rows = qualification_rows()
+        recorded = json.loads((HANDOFF / "issue-31-manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(recorded, rows)
+        self.assertGreaterEqual(len(rows), 8)
+        self.assertTrue(all(row["historical_green_certifies"] is False for row in rows))
+        missing = " ".join(str(row["missing_machine"]) for row in rows)
+        self.assertIn("macOS", missing)
+        self.assertIn("Windows", missing)
+        guarded = next(row for row in rows if row["mechanism"] == "caller guarded run")
+        self.assertIn("wall time not measured", str(guarded["evidence_on_this_host"]))
 
     def test_old_driver_fallback_calls_the_shipped_helper(self) -> None:
         rows = asyncio.run(decision_rows())

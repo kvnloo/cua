@@ -17,4 +17,4 @@ Recipe-local. The public Driver and MCP candidate contract is unchanged. `core.C
 
 Python and TypeScript both read `scripts/repro/handoff/issue-40-fixture.json`. This note is for kvnloo/cua#5. No shared compiler was added upstream.
 
-Wall time was not measured. Missing machine: this Linux host. The pinned driver session is not running (`cua-driver 0.28.2` is installed and the daemon is not running). No speedup is claimed.
+Wall time was not measured. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`, which is not an installed release (`cua-driver 0.28.2` is installed and the daemon is not running). No speedup is claimed.

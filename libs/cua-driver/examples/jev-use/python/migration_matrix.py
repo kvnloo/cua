@@ -118,6 +118,27 @@ def migration_rows(root: Path) -> list[dict[str, str]]:
     ]
 
 
+def command_report(root: Path) -> dict[str, object]:
+    """Search this checkout. Generator commands are not run against an absent field."""
+    contract = root / "libs/cua-driver/rust/crates/cua-driver-contract/src"
+    hits: list[str] = []
+    for path in sorted(contract.rglob("*.rs")):
+        if "post_dispatch_observation" in path.read_text(encoding="utf-8"):
+            hits.append(str(path.relative_to(root)))
+    return {
+        "selected_implementation_sha": None,
+        "symbol_in_this_checkout": hits,
+        "generator_check": "not run",
+        "live_registry_parity": "not run",
+        "old_client_trial": "not run",
+        "new_client_old_daemon_trial": "not run",
+        "reason": (
+            "post_dispatch_observation is absent from the contract crate in this checkout, "
+            "so no #4009 implementation SHA was selected and the generator commands were not run"
+        ),
+    }
+
+
 def migration_tsv(root: Path) -> str:
     lines = ["\t".join(COLUMNS)]
     for row in migration_rows(root):

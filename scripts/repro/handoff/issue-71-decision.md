@@ -1,5 +1,8 @@
 # Issue 71 — final decision
 
+This checkout: NO PUBLIC FIELD. `post_dispatch_observation` is absent from the contract crate here.
+
+
 Final disposition: **ADD OPTIONAL FIELD / completed**.
 
 Live upstream state supersedes the earlier downstream "NO PUBLIC FIELD" recommendation.

@@ -4,7 +4,7 @@ Blocked. The slow-tree timings were not captured.
 
 Missing on this Linux host: a slow native accessibility tree. `scripts/repro/handoff/linux-host-probe.txt` records no top-level windows, so there was no tree to time. The installed driver is `cua-driver 0.28.2`, not pinned head `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
 
-Missing machines for the other platforms named by the cross-platform conclusion: macOS and Windows.
+Missing machine: macOS. Missing machine: Windows.
 
 Asked for: raw per-phase timings, the app, OS, and Driver identity, no-retry failure logs, and an upstream-ready conclusion for trycua/cua#3906.
 
