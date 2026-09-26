@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 from enum import Enum
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
@@ -127,6 +128,22 @@ def parse_permissions(permissions_str: str) -> set[Permission]:
                 logger.warning(f"Unknown permission: {perm}")
 
     return permissions
+
+
+def _resolve_skill_dir(skills_dir: Path, name: str) -> Optional[Path]:
+    """Resolve a skill name to a directory strictly inside the skills directory.
+
+    Returns None when the name is empty or would escape the skills directory
+    (path traversal, absolute paths).
+    """
+    if not name:
+        return None
+    candidate = (skills_dir / name).resolve()
+    try:
+        candidate.relative_to(skills_dir.resolve())
+    except ValueError:
+        return None
+    return candidate
 
 
 def register_parser(subparsers: argparse._SubParsersAction) -> None:
@@ -957,8 +974,6 @@ async def _register_computer_tools(
 
 async def _register_skills_tools(server: "FastMCP", permissions: set[Permission]) -> None:
     """Register skills management tools."""
-    from pathlib import Path
-
     from mcp.server.fastmcp import Context
 
     SKILLS_DIR = Path.home() / ".cua" / "skills"
@@ -1011,10 +1026,10 @@ async def _register_skills_tools(server: "FastMCP", permissions: set[Permission]
             Args:
                 name: Skill name
             """
-            skill_dir = SKILLS_DIR / name
-            skill_file = skill_dir / "SKILL.md"
+            skill_dir = _resolve_skill_dir(SKILLS_DIR, name)
+            skill_file = skill_dir / "SKILL.md" if skill_dir is not None else None
 
-            if not skill_file.exists():
+            if skill_file is None or not skill_file.exists():
                 return json.dumps({"error": f"Skill not found: {name}"})
 
             content = skill_file.read_text()
@@ -1051,9 +1066,9 @@ async def _register_skills_tools(server: "FastMCP", permissions: set[Permission]
             """
             import shutil
 
-            skill_dir = SKILLS_DIR / name
+            skill_dir = _resolve_skill_dir(SKILLS_DIR, name)
 
-            if not skill_dir.exists():
+            if skill_dir is None or not skill_dir.exists():
                 return json.dumps({"error": f"Skill not found: {name}"})
 
             shutil.rmtree(skill_dir)
