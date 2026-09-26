@@ -10,6 +10,14 @@ import type { ScreenSize } from '../types';
 
 export type MouseButton = 'left' | 'middle' | 'right';
 
+/**
+ * Bound for the WebSocket opening handshake. Without it a stalled TCP
+ * connection (e.g. SYN packets blackholed by a firewall) leaves connect()
+ * — and therefore waitForReady()'s retry loop — hanging forever, because
+ * the promise only settles on 'open' or 'error' and neither fires.
+ */
+export const WS_HANDSHAKE_TIMEOUT_MS = 10000;
+
 export interface ComputerInterfaceConnection {
   wsUrl?: string;
   headers?: Record<string, string>;
@@ -82,7 +90,10 @@ export abstract class BaseComputerInterface {
       headers['X-API-Key'] = this.apiKey;
       headers['X-VM-Name'] = this.vmName;
     }
-    const ws = new WebSocket(this.wsUri, { headers });
+    const ws = new WebSocket(this.wsUri, {
+      headers,
+      handshakeTimeout: WS_HANDSHAKE_TIMEOUT_MS,
+    });
     // Constructors open immediately, and some tests only verify inheritance
     // without ever calling connect(). Keep those failed background attempts
     // from surfacing as unhandled process errors; connect() still attaches its
