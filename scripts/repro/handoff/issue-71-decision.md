@@ -1,20 +1,22 @@
-# Issue 71
+# Issue 71 — final decision
 
-`PollProvenance` in `window_change_detector.rs` is a private field. It was not compiled on this Linux host. `needs_restore` and `result_suffix` are the existing public methods. No regression was found that fails unless a new public field exists, so none was added.
+Final disposition: **ADD OPTIONAL FIELD / completed**.
 
-| Caller decision | How it is decided today | Recommendation |
-| --- | --- | --- |
-| continue | `typed_choice("confirmed", "completed", passive_success=False)` returns `continue` | OTHER EXISTING SIGNAL |
-| reobserve | `typed_choice("confirmed", "skipped", passive_success=False)` returns `observe` | OTHER EXISTING SIGNAL |
-| stop | `typed_choice("refused", "skipped", passive_success=False)` returns `stop` | OTHER EXISTING SIGNAL |
-| escalate | `WORKFLOW.md` line 121: escalation is advice, never an automatic retry | OTHER EXISTING SIGNAL |
-| retry forbidden | `WORKFLOW.md` line 127 and `typed_choice` on `unverifiable` return `observe`, not another dispatch | OTHER EXISTING SIGNAL |
-| tool text | `Changes.result_suffix` | OTHER EXISTING SIGNAL |
-| restore | `Changes.needs_restore` | OTHER EXISTING SIGNAL |
-| poll split | `PollProvenance` | NO PUBLIC FIELD |
+Live upstream state supersedes the earlier downstream "NO PUBLIC FIELD" recommendation.
 
-Recommendation from this caller table: NO PUBLIC FIELD.
+trycua/cua#3946 now preserves truthful internal poll provenance.
 
-trycua/cua#4009 does propose `post_dispatch_observation` with values `completed`, `skipped`, and `unavailable`. The closure comment https://github.com/kvnloo/cua/issues/71#issuecomment-5841034133 says that field is justified by trycua/cua#3971. The fetched #3971 body asks for skipped observation to be explicit. It does not contain a regression that fails unless the field exists. This table does not adopt a new field from that comment.
+trycua/cua#4009 has folded the public result field:
 
-The macOS crate was not compiled here, so this is not a claim that the detector ran.
+`post_dispatch_observation: completed | skipped | unavailable`
+
+Consumer reason:
+- `completed`: Driver actually ran its post-dispatch observation to the selected bound.
+- `skipped`: caller/host explicitly did not request that observation.
+- `unavailable`: observation started but its result was lost/unavailable.
+
+This distinction changes the caller's safe next action. Existing #3971 / #2958 evidence shows that treating absence of effect evidence as "no effect" can cause destructive replay of a mutation that already landed.
+
+Implementation/version compatibility is now downstream #38 / upstream #4009.
+
+The old "NO PUBLIC FIELD" table in this file was stale and is replaced by this final disposition.
