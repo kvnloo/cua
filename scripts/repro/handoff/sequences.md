@@ -22,17 +22,18 @@ dispatch submit
 
 `second_child_allowed("verified", fresh, plan)` is the check. The prior Submit ref does not survive by itself.
 
-## 2. Stale child refusal
+## 2. stale refusal
 
 ```text
 admit run
 dispatch type
 fresh observation: submit ref changed or missing
+second_child_allowed returns false
 stop
 submit is not dispatched
 ```
 
-`browser_revision.bind` raises `StaleRefError` when the label is reused on a new generation.
+`second_child_allowed` is false when the fresh submit ref is not the planned ref, so the submit is not dispatched. `browser_revision.bind` raises `StaleRefError` when the label is reused on a new generation.
 
 ## 3. Cancel while queued
 

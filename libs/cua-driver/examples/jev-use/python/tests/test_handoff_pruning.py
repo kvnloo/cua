@@ -230,9 +230,15 @@ class HandoffPruningTest(unittest.TestCase):
         node = BrowserNode("ref-submit", 2, "Submit")
         with self.assertRaises(StaleRefError):
             bind(node, "ref-submit", 1)
+        plan = _plan()
+        moved = FreshObservation(plan.token, "other-ref", "cap-2")
+        self.assertFalse(second_child_allowed("verified", moved, plan))
         text = (HANDOFF / "sequences.md").read_text(encoding="utf-8")
         self.assertIn("No ExecutionContext", text)
         self.assertIn("No LifecycleService", text)
+        self.assertIn("stale refusal", text)
+        self.assertIn("submit is not dispatched", text)
+        self.assertIn("second_child_allowed returns false", text)
         for event in finished.events:
             self.assertIn(event, text)
         for event in queued.events:

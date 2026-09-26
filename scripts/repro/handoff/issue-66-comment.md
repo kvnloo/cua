@@ -1,7 +1,7 @@
 # Issue 66
 
 Posted consolidation note: https://github.com/trycua/cua/issues/3494#issuecomment-5841211600.
-Closing record: https://github.com/kvnloo/cua/issues/66#issuecomment-5841212006.
+The issue is open. https://github.com/kvnloo/cua/issues/66#issuecomment-5841212006 names the owner and does not include the fixture below.
 No batch API was added.
 
 Canonical owner for mechanical composition: trycua/cua#2794 and #3494. kvnloo/cua#6 stays the caller-side regression discussion and should point at those two issues. It should not become a second batch API.

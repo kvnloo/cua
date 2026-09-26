@@ -191,7 +191,7 @@ Mechanical batching stays with trycua/cua#2794 and #3494. The caller guarded run
 
 ### Issue 60
 
-The issue is open. The five sequences are in `scripts/repro/handoff/sequences.md`: fresh guarded child, stale refusal, cancel while queued, cancel after native admission, and session end during admitted work. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Authorization stays on the existing session policy. There is no ExecutionContext and no LifecycleService. The latest comment does not include these sequences.
+The issue is open. The five sequences are in `scripts/repro/handoff/sequences.md`: fresh guarded child, stale refusal, cancel while queued, cancel after native admission, and session end during admitted work. A changed submit ref makes `second_child_allowed` return false, so the submit is not dispatched. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Authorization stays on the existing session policy. There is no ExecutionContext and no LifecycleService. The latest comment does not include these sequences.
 
 ### Issue 61
 
