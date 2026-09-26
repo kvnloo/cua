@@ -278,12 +278,14 @@ class OpenPacketTest(unittest.TestCase):
         )
         block46 = (HANDOFF / "issue-46-block.md").read_text(encoding="utf-8")
         self.assertIn("5841889526", block46)
-        self.assertIn(report["recommendation"], block46)
+        self.assertIn("no smallest-safe projection is claimed", block46)
         self.assertIn(report["receipts"], block46)
+        self.assertNotIn("This Linux host is present. It is not the missing machine.", block46)
         block47 = (HANDOFF / "issue-47-block.md").read_text(encoding="utf-8")
         self.assertIn("5841889690", block47)
         self.assertIsNone(history["measured_success"])
         self.assertIn(history["proposal"], block47)
+        self.assertNotIn("This Linux host is present. It is not the missing machine.", block47)
 
 
 if __name__ == "__main__":

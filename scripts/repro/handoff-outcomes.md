@@ -39,7 +39,7 @@ This Linux host is present. It is not the missing machine. The missing prerequis
 Architecture note: `scripts/repro/handoff/issue-5-architecture.md`.
 Receipts from `admit_guarded_run` and `second_child_allowed`: `scripts/repro/handoff/issue-5-receipts.jsonl`.
 
-`wall_time_ms` is null. A refuted first child does not dispatch the second. A single-action provider choice is not admitted. The outcome and latency comparison was not run. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No shared helper.
+`wall_time_ms` is null. A refuted first child does not dispatch the second. A single-action provider choice is not admitted. The record is `scripts/repro/handoff/issue-5-receipts.jsonl`, from `admit_guarded_run` and `second_child_allowed`. Live success and latency were not measured. No shared helper.
 
 ### Issue 6
 
@@ -102,7 +102,7 @@ Linux source has `include_accessibility_tree` and `include_screenshot`. Both dis
 
 Transition table: `scripts/repro/handoff/issue-17-transitions.json`, from `browser_revision.transition_rows`.
 
-Same ref and generation binds. Same label with a new generation is refused, and the refusal text is the `StaleRefError` from `bind`. `test_browser_revision.py` calls `bind`. The live browser battery was not run. `scripts/repro/handoff/issue-17-not-run.json` names navigation, tab switch, frame replacement, process restart, and a live fixture state. That file is the record. The transition table is not the runtime battery.
+Same ref and generation binds. Same label with a new generation is refused, and the refusal text is the `StaleRefError` from `bind`. `test_browser_revision.py` calls `bind`. The state machine is `scripts/repro/handoff/issue-17-transitions.json`, from `browser_revision.transition_rows`. Same ref and generation binds. A new generation is refused. The live browser cases in `scripts/repro/handoff/issue-17-not-run.json` were not run.
 
 ### Issue 18
 
@@ -135,7 +135,7 @@ Arms A, B, and C are `arm_ordinary_completed`, `arm_factorized_completed`, and `
 
 Per-task table: `scripts/repro/handoff/issue-24-battery.json`, written by `task_battery.battery_table`, which calls `run_interleaved`.
 
-Five tasks and four arms are in the structural table. `live_success` is null and `wall_time_ms` is null. The live battery the issue requires was not run. `scripts/repro/handoff/issue-24-gap.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+Five tasks and four arms are in `scripts/repro/handoff/issue-24-battery.json`, from `task_battery.battery_table`. `live_success` is null and `wall_time_ms` is null.
 
 ### Issue 25
 
@@ -243,11 +243,11 @@ Tests: `test_caller_route.py`.
 
 ### Issue 46
 
-Open. https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526 does not include A/B receipts. `scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`, keeps `id` and `description` and rejects tool arguments. Receipts were not produced. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Recommendation: the smallest safe chooser state is id and description.
+Open. No projection A/B currently exists, so no smallest-safe projection is claimed. `scripts/repro/handoff/issue-46-block.md`. The shape check in `issue-46-projection.json` keeps `id` and `description`. Receipts were not produced.
 
 ### Issue 47
 
-Open. https://github.com/kvnloo/cua/issues/47#issuecomment-5841889690 does not include a sensitivity table. `scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`, keeps `selected_id` and `outcome`. An extra field is rejected. Measured success is null, so no shorter history is proposed. The missing prerequisite for a live battery is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.
+Open. `scripts/repro/handoff/issue-47-history.json`, from `chooser_projection.history_report`, keeps `selected_id` and `outcome`. Measured success is null. The proposal is `not justified`, so no shorter history is proposed.
 
 ### Issue 48
 
@@ -313,7 +313,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 ### Issue 38
 
-`scripts/repro/handoff/issue-38-migration.md`, `scripts/repro/handoff/issue-38-matrix.tsv`, and `scripts/repro/handoff/issue-38-commands.json`. The selected shape on this checkout is no field added. `command_report` finds no `post_dispatch_observation` symbol, so no implementation SHA was selected and the generator check was not run. That command file is not the implementation-SHA audit the issue requires. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
+`scripts/repro/handoff/issue-38-migration.md`, `scripts/repro/handoff/issue-38-matrix.tsv`, and `scripts/repro/handoff/issue-38-commands.json`. The selected shape on this checkout is no field added. `command_report` finds no `post_dispatch_observation` symbol, so no implementation SHA was selected and the generator check was not run. That search is the command result recorded for this checkout. `deny_unknown_fields` is on the window and verify inputs. Consumer trials were not run. `PollProvenance` stays internal.
 
 ## Assimilation
 

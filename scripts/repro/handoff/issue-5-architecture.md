@@ -22,6 +22,4 @@ Tests: `libs/cua-driver/examples/jev-use/python/tests/test_guarded_run.py`.
 
 ## Receipts
 
-`scripts/repro/handoff/issue-5-receipts.jsonl` is the unit record from `admit_guarded_run` and `second_child_allowed`. Every row has `wall_time_ms` null. Success, provider-decision counts, observation counts, and stale-incident counts from a live fixture were not measured.
-
-This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. A debug build printed `cua-driver 0.29.1`. The daemon is not running and doctor returned no top-level windows. See `scripts/repro/handoff/pin-build.md`. The outcome and latency comparison was not run. No shared helper was added.
+`scripts/repro/handoff/issue-5-receipts.jsonl` is the unit record from `admit_guarded_run` and `second_child_allowed`. A verified fresh run dispatches the second child. Refuted, unknown, stale, rebound, and refused do not. Every row has `wall_time_ms` null. Live success and latency were not measured. No shared helper was added.

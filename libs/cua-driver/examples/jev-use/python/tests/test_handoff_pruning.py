@@ -515,13 +515,18 @@ class HandoffPruningTest(unittest.TestCase):
             self.assertIn("Missing machine: macOS", by_number[number])
         for number in (6, 16, 19, 63):
             self.assertIn("Missing machine: Windows", by_number[number])
-        for number in (5, 16, 17, 24, 38, 46, 47, 48, 63):
+        for number in (16, 48, 63):
             self.assertIn(
                 "\tblocked\t",
                 next(line for line in ledger[1:] if line.startswith(f"{number}\t")),
                 number,
             )
-        for number in (2, 4, 5, 10, 24, 46, 47, 64, 72):
+        for number in (5, 17, 24, 38, 46, 47):
+            row = next(line for line in ledger[1:] if line.startswith(f"{number}\t"))
+            self.assertIn("\tdeliverable\t", row, number)
+            self.assertNotIn("This Linux host is present. It is not the missing machine.", row, number)
+            self.assertNotIn("Missing machine:", row, number)
+        for number in (2, 4, 10, 64, 72):
             self.assertIn("This Linux host is present. It is not the missing machine.", by_number[number])
             self.assertIn("c5ee191c02b11448ffefcc38b78b064a87d8ef23", by_number[number])
             self.assertNotIn("Missing machine: this Linux host.", by_number[number])
