@@ -16,6 +16,14 @@ const CUA_VERSION_HEADERS: Record<string, string> = {
   'X-Cua-Client-Version': `playground:${__CUA_VERSION__}`,
 };
 
+/**
+ * Bound for every cloud-adapter fetch: chat persistence, computer listing,
+ * health checks, and model lookups. Without it a stalled connection hangs
+ * the playground UI (spinners that never settle) because none of these
+ * paths pass an AbortSignal of their own.
+ */
+export const CLOUD_API_FETCH_TIMEOUT_MS = 30000;
+
 // =============================================================================
 // API Error Helper
 // =============================================================================
@@ -42,6 +50,7 @@ class CloudPersistenceAdapter implements PersistenceAdapter {
 
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
+      signal: options?.signal ?? AbortSignal.timeout(CLOUD_API_FETCH_TIMEOUT_MS),
       ...options,
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
@@ -138,6 +147,7 @@ class CloudComputerAdapter implements ComputerAdapter {
 
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
+      signal: options?.signal ?? AbortSignal.timeout(CLOUD_API_FETCH_TIMEOUT_MS),
       ...options,
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
@@ -224,6 +234,7 @@ class CloudInferenceAdapter implements InferenceAdapter {
     try {
       const response = await fetch(`${this.baseUrl}/v1/models`, {
         headers: { Authorization: `Bearer ${this.apiKey}`, ...CUA_VERSION_HEADERS },
+        signal: AbortSignal.timeout(CLOUD_API_FETCH_TIMEOUT_MS),
       });
 
       if (!response.ok) {
