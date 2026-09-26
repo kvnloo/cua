@@ -25,6 +25,10 @@ class ObservationRecord:
     kind: ObservationKind
     latency_ms: float
     capture_id: str | None = None
+    # A discarded record is RPC spend, never evidence — provenance honesty
+    # (#4009 vocabulary): a speculated capture that the step did not need is
+    # recorded so the ledger shows where the loop's observation budget went.
+    discarded: bool = False
 
 
 class ObservationLedger:

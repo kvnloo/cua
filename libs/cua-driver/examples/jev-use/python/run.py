@@ -23,7 +23,17 @@ from core import (
     validate_choice,
 )
 from jev_adapter import choose_live, choose_mock_adapter
-from observation import needs_visual_observation
+from observation import (
+    ObservationLedger,
+    ObservationRecord,
+    needs_visual_observation,
+)
+from speculate import (
+    VisualSpeculator,
+    discard_capture,
+    start_speculative_capture,
+    visual_from_capture,
+)
 
 
 def fixture_state(fixture_url: str) -> dict[str, str | None]:
@@ -185,6 +195,18 @@ async def run(args: argparse.Namespace) -> str:
                 {"target_id": target_id, "tab_id": tab_id, "url": args.fixture_url},
             )
 
+            ledger = ObservationLedger()
+            # Speculation policy: sticky predictor behind a miss-rate gate
+            # (confirmation_steps=2 — measured on the TS side: sparse under
+            # contention 0.70x -> 1.20x; gate strictly >= sticky everywhere
+            # measured). Class default stays 1 (original sticky).
+            speculator = VisualSpeculator(2)
+            visual_available = capture_bound_click and {
+                "get_window_state",
+                "parse_visual_regions",
+            }.issubset(available_tools)
+            observe_args = {"pid": pid, "window_id": int(window["window_id"])}
+
             for step in range(1, args.max_steps + 1):
                 oracle = fixture_state(args.fixture_url)
                 current = classify(oracle.get("submitted"), token, steps=step - 1, max_steps=args.max_steps)
@@ -193,13 +215,44 @@ async def run(args: argparse.Namespace) -> str:
                     return current
 
                 started = time.perf_counter()
-                snapshot = await driver.call(
-                    "get_browser_state",
-                    {
-                        "target_id": target_id,
-                        "tab_id": tab_id,
-                        "snapshot_format": "semantic_v2",
-                    },
+                # Speculative capture: when the previous step needed the visual
+                # path, fire get_window_state alongside this step's
+                # get_browser_state. The capture is independent of the
+                # snapshot, so they overlap; if the visual fallback fires
+                # again, only parse_visual_regions remains as an extra round
+                # trip (2 groups instead of 3). A mispredicted capture is
+                # discarded and recorded as discarded — never as consumed
+                # evidence. Zero protocol change; see speculate.py.
+                # The snapshot is the critical path: it is issued first, then
+                # the speculative capture fires alongside it. On a FIFO
+                # transport the snapshot must not queue behind the capture.
+                snapshot_started = time.perf_counter()
+                snapshot_task = asyncio.ensure_future(
+                    driver.call(
+                        "get_browser_state",
+                        {
+                            "target_id": target_id,
+                            "tab_id": tab_id,
+                            "snapshot_format": "semantic_v2",
+                        },
+                    )
+                )
+                capture_task = (
+                    asyncio.ensure_future(
+                        start_speculative_capture(
+                            driver.call, observe_args, speculator.should_speculate()
+                        )
+                    )
+                    if visual_available
+                    else None
+                )
+                snapshot = await snapshot_task
+                ledger.record(
+                    ObservationRecord(
+                        step=step,
+                        kind="snapshot",
+                        latency_ms=round((time.perf_counter() - snapshot_started) * 1000, 2),
+                    )
                 )
                 # Modality-gated observation: the visual path (get_window_state +
                 # parse_visual_regions) is only consumed by the visual-submit
@@ -213,21 +266,55 @@ async def run(args: argparse.Namespace) -> str:
                     capture_bound_click=capture_bound_click,
                 )
                 visual: VisualObservation | None = None
-                if needs_visual_observation(candidates):
-                    visual = await optional_visual_observation(
-                        driver,
-                        pid,
-                        int(window["window_id"]),
-                        available_tools,
-                        capture_bound_click,
-                    )
+                visual_needed = needs_visual_observation(candidates)
+                if visual_needed:
+                    visual_started = time.perf_counter()
+                    if capture_task is not None:
+                        try:
+                            visual = await visual_from_capture(
+                                capture_task,
+                                driver.call,
+                                observe_args,
+                                parse_visual_regions,
+                            )
+                        except Exception:
+                            # Speculative capture failed; fall through to the
+                            # sequential path.
+                            visual = None
+                    if visual is None:
+                        visual = await optional_visual_observation(
+                            driver,
+                            pid,
+                            int(window["window_id"]),
+                            available_tools,
+                            capture_bound_click,
+                        )
                     if visual is not None:
+                        ledger.record(
+                            ObservationRecord(
+                                step=step,
+                                kind="visual",
+                                latency_ms=round(
+                                    (time.perf_counter() - visual_started) * 1000, 2
+                                ),
+                                capture_id=visual.capture_id,
+                            )
+                        )
                         candidates = build_candidates(
                             snapshot,
                             token,
                             visual,
                             capture_bound_click=capture_bound_click,
                         )
+                elif capture_task is not None:
+                    # Paid for but unused: report the waste, discard the task.
+                    ledger.record(
+                        ObservationRecord(
+                            step=step, kind="visual", latency_ms=0.0, discarded=True
+                        )
+                    )
+                    await discard_capture(capture_task)
+                speculator.observe(visual_needed)
                 if not candidates:
                     write_event(log_path, {"event": "outcome", "outcome": "abstained", "step": step})
                     return "abstained"
