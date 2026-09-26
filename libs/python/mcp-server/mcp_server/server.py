@@ -145,11 +145,15 @@ def serve() -> FastMCP:
         """
         session_manager = get_session_manager()
         task_id = str(uuid.uuid4())
+        # Resolved below once the session is open; the error path uses this so
+        # an auto-created session (session_id=None) can still be screenshotted.
+        resolved_session_id: Optional[str] = session_id
 
         try:
             logger.info(f"Starting Cua task: {task} (task_id: {task_id})")
 
             async with session_manager.get_session(session_id) as session:
+                resolved_session_id = session.session_id
                 # Register this task with the session
                 await session_manager.register_task(session.session_id, task_id)
 
@@ -257,8 +261,10 @@ def serve() -> FastMCP:
 
             # Try to get a screenshot from the session if available
             try:
-                if session_id:
-                    async with session_manager.get_session(session_id) as session:
+                if resolved_session_id:
+                    async with session_manager.get_session(
+                        resolved_session_id
+                    ) as session:
                         screenshot = await session.computer.interface.screenshot()
                         return (
                             f"Error during task execution: {str(e)}",
