@@ -15,6 +15,18 @@ fixture shape), get_window_state, parse_visual_regions.
 Usage:
   python3 mock_daemon.py --socket /tmp/cua-mock.sock --regions 50
   python3 mock_daemon.py --socket /tmp/cua-mock.sock --regions 50 --keep-alive
+
+Auth simulation (for the #3383 auth-lifetime deep dive):
+  --auth-ms N            artificial auth delay per auth event (simulates the
+                         macOS accept-loop codesign verification)
+  --auth-mode accept|request
+                         accept: pay auth once per connection (today's model);
+                         request: re-pay before every request (conservative,
+                         what option (b) degrades to if per-connection verify
+                         is TOCTOU-load-bearing)
+  --auth-scope all|history
+                         all: every call pays; history: only history_* methods
+                         pay (option (a) scoping — the reporter's ask)
 """
 
 from __future__ import annotations
@@ -23,6 +35,7 @@ import argparse
 import asyncio
 import json
 import os
+import time
 from typing import Any
 
 PID = 4242
@@ -87,7 +100,14 @@ def _structured_content(request: dict[str, Any], region_count: int) -> dict[str,
         return {"capture_id": f"cap-{_capture_seq}"}
     if name == "parse_visual_regions":
         return _visual_payload(str(args.get("capture_id")), region_count)
+    if name == "history_record":
+        # Dummy History-method stand-in for the auth-scope experiment.
+        return {"recorded": True}
     return {"error": f"mock daemon has no handler for {name}"}
+
+
+def _auth_applies(name: str | None, scope: str) -> bool:
+    return scope == "all" or (isinstance(name, str) and name.startswith("history_"))
 
 
 async def _handle_connection(
@@ -95,8 +115,16 @@ async def _handle_connection(
     writer: asyncio.StreamWriter,
     region_count: int,
     keep_alive: bool,
+    auth_ms: float,
+    auth_mode: str,
+    auth_scope: str,
 ) -> None:
     try:
+        if auth_ms > 0 and auth_mode == "accept" and _auth_applies(None, auth_scope):
+            # accept-time auth: scope "all" pays once per connection;
+            # scope "history" can't decide at accept time, so it defers to
+            # per-request below (the honest model for option (a)).
+            await asyncio.sleep(auth_ms / 1000.0)
         while True:
             line = await reader.readline()
             if not line:
@@ -107,6 +135,14 @@ async def _handle_connection(
                 writer.write(json.dumps({"ok": False, "error": "bad json"}).encode() + b"\n")
                 await writer.drain()
                 return
+            if auth_ms > 0:
+                pay = False
+                if auth_mode == "request":
+                    pay = _auth_applies(request.get("name"), auth_scope)
+                elif auth_scope == "history":
+                    pay = _auth_applies(request.get("name"), auth_scope)
+                if pay:
+                    await asyncio.sleep(auth_ms / 1000.0)
             if request.get("method") == "metadata":
                 payload: dict[str, Any] = {
                     "ok": True,
@@ -138,6 +174,10 @@ async def _main() -> None:
     parser.add_argument("--socket", required=True)
     parser.add_argument("--regions", type=int, default=50)
     parser.add_argument("--keep-alive", action="store_true")
+    parser.add_argument("--auth-ms", type=float, default=0.0,
+                        help="artificial auth delay per auth event, in ms")
+    parser.add_argument("--auth-mode", choices=("accept", "request"), default="accept")
+    parser.add_argument("--auth-scope", choices=("all", "history"), default="all")
     args = parser.parse_args()
 
     try:
@@ -146,7 +186,8 @@ async def _main() -> None:
         pass
 
     async def handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        await _handle_connection(reader, writer, args.regions, args.keep_alive)
+        await _handle_connection(reader, writer, args.regions, args.keep_alive,
+                                 args.auth_ms, args.auth_mode, args.auth_scope)
 
     server = await asyncio.start_unix_server(handle, path=args.socket)
     print(f"ready {args.socket}", flush=True)
