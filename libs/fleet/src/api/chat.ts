@@ -7,6 +7,7 @@ import {
   setLocalVisualPreviewConversationArchived,
   streamLocalVisualPreviewTurn,
 } from "../local-visual-preview"
+import { fleetTimeoutSignal } from "./fetch-timeout"
 
 export type ChatRole = "user" | "assistant" | "tool"
 
@@ -61,6 +62,10 @@ async function chatFetch(path: string, init: RequestInit = {}): Promise<Response
   const token = await getToken()
   return fetch(path, {
     ...init,
+    // Bound connection setup: fetch resolves once response headers arrive,
+    // so this deadline never cuts off a healthy stream's body. Caller signals
+    // still abort early via AbortSignal.any inside fleetTimeoutSignal.
+    signal: fleetTimeoutSignal(init.signal ?? null),
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
@@ -140,6 +145,41 @@ function parseAssistantMessage(value: unknown): ChatMessage {
   }
 }
 
+/** Idle deadline for chat stream reads: abort when no bytes arrive within
+ * this window. Long generations that keep streaming are never affected —
+ * only true stalls (open connection, no data) are cut off. */
+export const CHAT_STREAM_IDLE_TIMEOUT_MS = 120_000
+
+export interface StreamTurnOptions {
+  /** Override the stream-read idle deadline (testing / tuning). */
+  idleTimeoutMs?: number
+}
+
+async function readWithIdleTimeout(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  idleTimeoutMs: number,
+): Promise<ReadableStreamReadResult<Uint8Array>> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      reader.read(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () =>
+            reject(
+              new ChatApiError(
+                `Chat stream stalled: no data received for ${Math.round(idleTimeoutMs / 1000)}s`,
+              ),
+            ),
+          idleTimeoutMs,
+        )
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 export async function createConversation(): Promise<Conversation> {
   if (isLocalVisualPreview()) return createLocalVisualPreviewConversation()
   return chatJson<Conversation>("/api/chat/conversations", { method: "POST" })
@@ -182,6 +222,7 @@ export async function streamTurn(
   messages: ChatMessage[],
   onDelta: (delta: string) => void,
   signal?: AbortSignal,
+  options: StreamTurnOptions = {},
 ): Promise<ChatMessage> {
   if (isLocalVisualPreview()) {
     try {
@@ -202,6 +243,7 @@ export async function streamTurn(
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
+  const idleTimeoutMs = options.idleTimeoutMs ?? CHAT_STREAM_IDLE_TIMEOUT_MS
   let buffer = ""
   let assistant: ChatMessage | undefined
 
@@ -234,7 +276,8 @@ export async function streamTurn(
 
   try {
     while (true) {
-      const { done, value } = await reader.read()
+      // Each chunk rearms the deadline, so only a stalled stream is cut off.
+      const { done, value } = await readWithIdleTimeout(reader, idleTimeoutMs)
       buffer += decoder.decode(value, { stream: !done })
       const lines = buffer.split("\n")
       buffer = lines.pop() ?? ""
