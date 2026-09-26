@@ -8,7 +8,7 @@ BASE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE / "python"))
 
 from core import Candidate
-from deterministic_fast_path import single_executable_candidate
+from deterministic_fast_path import explain_fast_path, single_executable_candidate
 
 
 def candidate(candidate_id: str, tool: str | None) -> Candidate:
@@ -63,6 +63,28 @@ class DeterministicFastPathTest(unittest.TestCase):
         chooser_choice = "reobserve"
         self.assertEqual(getattr(admitted, "id", None), "submit-form")
         self.assertNotEqual(chooser_choice, getattr(admitted, "id", None))
+
+    def test_evidence_marks_fast_path_and_provider_not_called(self) -> None:
+        evidence = explain_fast_path(
+            [candidate("type-verification-value", "browser_type"), *reserved()]
+        )
+        self.assertEqual(evidence.route, "fast-path")
+        self.assertEqual(evidence.executable_count, 1)
+        self.assertEqual(evidence.candidate_id, "type-verification-value")
+        self.assertFalse(evidence.provider_called)
+
+    def test_evidence_marks_ambiguous_case_as_chooser(self) -> None:
+        evidence = explain_fast_path(
+            [
+                candidate("type-verification-value", "browser_type"),
+                candidate("submit-form", "browser_click"),
+                *reserved(),
+            ]
+        )
+        self.assertEqual(evidence.route, "chooser")
+        self.assertEqual(evidence.executable_count, 2)
+        self.assertIsNone(evidence.candidate_id)
+        self.assertTrue(evidence.provider_called)
 
 
 if __name__ == "__main__":
