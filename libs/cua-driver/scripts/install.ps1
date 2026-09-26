@@ -590,7 +590,7 @@ function Import-CuaDriverInstallModuleBootstrap {
             return
         }
     }
-    $body = Invoke-RestMethod -Uri $Url -UseBasicParsing
+    $body = Invoke-RestMethod -Uri $Url -UseBasicParsing -TimeoutSec 30
     $tmp = Join-Path (Get-CuaDriverTempDir) ("CuaDriverInstall-" + [Guid]::NewGuid().ToString('N') + ".psm1")
     Set-Content -LiteralPath $tmp -Value $body -Encoding UTF8
     try {
@@ -939,7 +939,7 @@ function Get-LatestVersionFromApi {
     try {
         for ($page = 1; $page -le 10; $page++) {
             $uri = "https://api.github.com/repos/$Repo/releases?per_page=100&page=$page"
-            $batch = Invoke-RestMethod -Uri $uri -Headers (Get-GitHubApiHeaders) -UseBasicParsing
+            $batch = Invoke-RestMethod -Uri $uri -Headers (Get-GitHubApiHeaders) -UseBasicParsing -TimeoutSec 30
             if (-not $batch -or $batch.Count -eq 0) { break }
             $releaseMatches += @($batch | Where-Object {
                 if ($_.draft) { return $false }

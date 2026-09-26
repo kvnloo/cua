@@ -170,7 +170,7 @@ function Import-CuaDriverInstallModule {
     if (-not $Url) {
         throw "Import-CuaDriverInstallModule: no local file and no -Url to fetch from."
     }
-    $body = Invoke-RestMethod -Uri $Url -UseBasicParsing
+    $body = Invoke-RestMethod -Uri $Url -UseBasicParsing -TimeoutSec 30
     $tmp = Join-Path $env:TEMP ("CuaDriverInstall-" + [Guid]::NewGuid().ToString('N') + ".psm1")
     Set-Content -LiteralPath $tmp -Value $body -Encoding UTF8
     try {
