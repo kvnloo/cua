@@ -672,6 +672,24 @@ def test_unix_download_retries_transient_failure_without_fallback(
 
 
 @requires_posix_bash
+def test_unix_download_bounds_network_waits_on_every_attempt(tmp_path: Path) -> None:
+    """A stalled connection must not hang one retry attempt forever.
+
+    Without a connect/stall timeout, curl's default unbounded wait defeats
+    the 3-attempt retry loop: a hung TCP connection stalls the attempt
+    forever and the retry/backoff logic never fires. Every curl call the
+    downloader makes must carry the bounded-wait flags.
+    """
+    returncode, calls, _ = _run_download(tmp_path, "network")
+    assert returncode == 1
+    assert len(calls) == 3
+    for call in calls:
+        assert "--connect-timeout" in call
+        assert "--speed-limit" in call
+        assert "--speed-time" in call
+
+
+@requires_posix_bash
 def test_unix_download_does_not_retry_auth_failure_or_fallback(tmp_path: Path) -> None:
     returncode, calls, stderr = _run_download(tmp_path, "auth")
     assert returncode == 1

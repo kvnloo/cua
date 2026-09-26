@@ -843,7 +843,14 @@ download_release_tarball() {
         http_code=""
         curl_status=0
         http_code="$(
-            curl -sSL -o "$partial" -w '%{http_code}' "$url"
+            # Bounded network waits: curl has no timeout by default, so a
+            # hung connection would stall this attempt forever and defeat
+            # the retry loop above. --connect-timeout bounds the TCP/TLS
+            # handshake; --speed-limit/--speed-time abort only when the
+            # transfer stalls below 1 KiB/s for a full minute, so
+            # slow-but-alive links are unaffected.
+            curl -sSL --connect-timeout 30 --speed-limit 1024 --speed-time 60 \
+                -o "$partial" -w '%{http_code}' "$url"
         )" || curl_status=$?
         if (( curl_status == 0 )) && [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
             mv "$partial" "$TMP_DIR/$tarball"
