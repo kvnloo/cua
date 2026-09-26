@@ -8,7 +8,7 @@ from pathlib import Path
 from action_consumer import required_cases
 from caller_route import route
 from core import Candidate
-from goal_gates import accept_completion, use_model_done_gate
+from goal_gates import task_rows
 from guarded_run import (
     ChildStatus,
     Decision,
@@ -21,7 +21,7 @@ from guarded_run import (
 from stale_batch import Child, Target, run_batch
 from observation_replay import Observation, policy_killed, replay
 from run_length import execute_capped, recommend_cap, wasted_after_stop
-from task_battery import evaluate
+from task_battery import battery_table as interleaved_battery
 
 
 def _candidate(candidate_id: str, tool: str | None, capture_id: str | None = None) -> Candidate:
@@ -76,18 +76,7 @@ def replay_comparison() -> dict[str, object]:
 
 
 def battery_table() -> list[dict[str, object]]:
-    form = evaluate(
-        "form-fill",
-        [_candidate("type-verification-value", "browser_type"), _candidate("reobserve", None)],
-    )
-    modal = evaluate(
-        "ambiguous-modal",
-        [_candidate("click-a", "click"), _candidate("click-b", "click"), _candidate("reobserve", None)],
-    )
-    return [
-        {"task": form.name, "fast_path": form.fast_path, "decisions": form.decisions, "wall_time_ms": None},
-        {"task": modal.name, "fast_path": modal.fast_path, "decisions": modal.decisions, "wall_time_ms": None},
-    ]
+    return interleaved_battery()
 
 
 def cap_report() -> dict[str, object]:
@@ -112,18 +101,7 @@ def dispatch_counts() -> list[dict[str, object]]:
 
 
 def goal_table() -> list[dict[str, object]]:
-    return [
-        {
-            "task": "jev-use fixture with /state",
-            "model_done_gate": use_model_done_gate(has_independent_oracle=True),
-            "completed": accept_completion(model_says_done=True, oracle_succeeded=False),
-        },
-        {
-            "task": "no independent oracle",
-            "model_done_gate": use_model_done_gate(has_independent_oracle=False),
-            "completed": accept_completion(model_says_done=True, oracle_succeeded=None),
-        },
-    ]
+    return task_rows()
 
 
 def routing_table() -> list[dict[str, str]]:

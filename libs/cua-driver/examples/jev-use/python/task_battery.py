@@ -24,3 +24,33 @@ def evaluate(name: str, candidates: list[Candidate]) -> TaskResult:
 
 def promote_globally(results: list[TaskResult]) -> bool:
     return bool(results) and all(result.fast_path for result in results)
+
+
+def run_interleaved(tasks: list[tuple[str, list[Candidate]]]) -> list[TaskResult]:
+    """One decision per task, in the given order. Wall time is not measured."""
+    return [evaluate(name, candidates) for name, candidates in tasks]
+
+
+def standard_battery() -> list[tuple[str, list[Candidate]]]:
+    def one(name: str, tool: str | None) -> Candidate:
+        return Candidate(name, name, tool, {})
+
+    return [
+        ("fill-submit", [one("submit-form", "browser_click"), one("reobserve", None)]),
+        ("toggle-confirm", [one("toggle-setting", "browser_click"), one("confirm-dialog", "browser_click")]),
+        ("two-fields", [one("field-a", "browser_type"), one("field-b", "browser_type")]),
+        ("modal", [one("open-modal", "browser_click"), one("act-inside", "browser_click")]),
+        ("visual-needed", [one("reobserve", None)]),
+    ]
+
+
+def battery_table() -> list[dict[str, object]]:
+    return [
+        {
+            "task": result.name,
+            "fast_path": result.fast_path,
+            "decisions": result.decisions,
+            "wall_time_ms": None,
+        }
+        for result in run_interleaved(standard_battery())
+    ]

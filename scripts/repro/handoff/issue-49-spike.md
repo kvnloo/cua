@@ -1,3 +1,5 @@
 # Issue 49
 
-No second harness was written. There is no comparison table. Nothing was deleted. The functions stay under the jev-use example, so transfer was not shown.
+Comparison: `scripts/repro/handoff/issue-49-comparison.json`, from `transfer_probe.comparison_rows`.
+
+The shipped rule admits `only-action` when the other candidate is `reobserve`, and admits nothing when two candidates have tools. A second harness that used a plain dict would drop frozen arguments, so that spike was deleted. Nothing else was deleted. No TypeSafe or Jev import was added.
