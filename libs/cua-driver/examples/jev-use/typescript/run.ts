@@ -181,7 +181,11 @@ async function run(args: Arguments): Promise<Outcome> {
   const ledger = new ObservationLedger();
   // Sticky predictor for the visual path: when the previous step needed it,
   // this step's capture fires alongside the snapshot (see speculate.ts).
-  const speculator = new VisualSpeculator();
+  // confirmationSteps=2 (miss-rate gate): isolated and flickering visual
+  // needs never pay for a wasted capture; chunk 8 measured this strictly
+  // >= sticky everywhere (sparse under contention: 0.70x -> 1.20x).
+  // Cost: one sequential step at the start of each sticky run.
+  const speculator = new VisualSpeculator(2);
   async function writeEvent(path: string | undefined, event: Record<string, unknown>) {
     const line = JSON.stringify(
       event.event === 'outcome'
