@@ -172,3 +172,69 @@ def test_keyboard_interrupt_handling(mock_get_binary, mock_run):
 
     exit_code = run_cua_driver(["mcp"])
     assert exit_code == 130
+
+
+def test_get_binary_path_skips_chmod_for_readonly_install(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A runnable read-only install must not be touched by the exec-bit repair."""
+    wrapper = load_wrapper_module()
+    pkg = tmp_path / "pkg"
+    (pkg / "bin").mkdir(parents=True)
+    binary = pkg / "bin" / "cua-driver"
+    binary.write_bytes(b"fake-binary")
+    binary.chmod(0o555)
+    monkeypatch.setattr(wrapper, "__file__", str(pkg / "wrapper.py"))
+
+    chmod_calls = []
+    real_chmod = os.chmod
+    monkeypatch.setattr(os, "chmod", lambda p, m: chmod_calls.append((p, m)))
+
+    assert wrapper.get_binary_path() == binary
+    assert chmod_calls == []
+
+
+def test_get_binary_path_repairs_missing_exec_bit(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """An owned binary without the exec bit is still repaired (sdist/zip case)."""
+    wrapper = load_wrapper_module()
+    pkg = tmp_path / "pkg"
+    (pkg / "bin").mkdir(parents=True)
+    binary = pkg / "bin" / "cua-driver"
+    binary.write_bytes(b"fake-binary")
+    binary.chmod(0o644)
+    monkeypatch.setattr(wrapper, "__file__", str(pkg / "wrapper.py"))
+
+    assert wrapper.get_binary_path() == binary
+    assert os.stat(binary).st_mode & 0o111
+
+
+def test_get_binary_path_unfixable_exec_bit_raises_actionable_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A non-owned, non-executable binary fails with guidance, not a bare traceback."""
+    wrapper = load_wrapper_module()
+    pkg = tmp_path / "pkg"
+    (pkg / "bin").mkdir(parents=True)
+    binary = pkg / "bin" / "cua-driver"
+    binary.write_bytes(b"fake-binary")
+    binary.chmod(0o644)
+    monkeypatch.setattr(wrapper, "__file__", str(pkg / "wrapper.py"))
+
+    real_access = os.access
+    monkeypatch.setattr(
+        os,
+        "access",
+        lambda p, m: False
+        if (str(p) == str(binary) and m == os.X_OK)
+        else real_access(p, m),
+    )
+
+    def _deny_chmod(p, mode):
+        raise PermissionError(1, "Operation not permitted", str(p))
+
+    monkeypatch.setattr(os, "chmod", _deny_chmod)
+
+    with pytest.raises(PermissionError, match="not executable and could not be made executable"):
+        wrapper.get_binary_path()

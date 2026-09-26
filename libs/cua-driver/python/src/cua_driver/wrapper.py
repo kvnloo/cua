@@ -46,9 +46,20 @@ def get_binary_path() -> Path:
             f"This package may not have been built correctly for {sys.platform}."
         )
 
-    # Ensure binary is executable on Unix
-    if sys.platform != "win32":
-        os.chmod(binary_path, 0o755)
+    # Ensure the binary is executable on Unix. Only attempt the repair when the
+    # exec bit is missing: a read-only install (e.g. a Nix store) must not be
+    # touched. If the repair itself is not permitted (binary owned by another
+    # user without the exec bit), fail with an actionable message instead of a
+    # bare PermissionError traceback.
+    if sys.platform != "win32" and not os.access(binary_path, os.X_OK):
+        try:
+            os.chmod(binary_path, 0o755)
+        except OSError as e:
+            raise PermissionError(
+                f"cua-driver binary at {binary_path} is not executable and "
+                f"could not be made executable ({e}); "
+                "reinstall the package or fix the file permissions."
+            ) from e
 
     return binary_path
 
