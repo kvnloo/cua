@@ -24,6 +24,11 @@ import zipfile
 from pathlib import Path
 
 
+# Network timeout for release-artifact downloads. Without this, a stalled
+# connection hangs the wheel build indefinitely on a socket read.
+_NETWORK_TIMEOUT_SECS = 60
+
+
 def get_default_version() -> str:
     """Read the wrapper package version from pyproject.toml."""
     pyproject = Path(__file__).parent / "pyproject.toml"
@@ -139,7 +144,7 @@ def get_expected_sha256(version: str, archive_name: str) -> str:
     print(f"Fetching checksums from {checksums_url}...")
 
     try:
-        with urllib.request.urlopen(checksums_url) as response:
+        with urllib.request.urlopen(checksums_url, timeout=_NETWORK_TIMEOUT_SECS) as response:
             content = response.read().decode("utf-8")
 
         for line in content.splitlines():
@@ -163,7 +168,7 @@ def download_file(url: str, dest: Path, expected_sha256: str) -> None:
     """Download a file with progress indication and SHA256 verification."""
     print(f"Downloading {url}...")
     try:
-        with urllib.request.urlopen(url) as response:
+        with urllib.request.urlopen(url, timeout=_NETWORK_TIMEOUT_SECS) as response:
             total_size = int(response.headers.get("content-length", 0))
             dest.parent.mkdir(parents=True, exist_ok=True)
 

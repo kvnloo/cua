@@ -45,3 +45,41 @@ def test_license_metadata_stays_legacy_upload_compatible():
 
     assert 'license = { text = "MIT" }' in pyproject_text
     assert 'license = "MIT"' not in pyproject_text
+
+
+def test_release_download_uses_network_timeout(monkeypatch):
+    """A stalled release download must fail fast instead of hanging the build."""
+    import pytest
+
+    build_wheel = load_build_wheel_module()
+    seen = {}
+
+    def fake_urlopen(url, **kwargs):
+        seen.update(kwargs)
+        raise RuntimeError("no network in test")
+
+    monkeypatch.setattr(build_wheel.urllib.request, "urlopen", fake_urlopen)
+
+    with pytest.raises(RuntimeError, match="Failed to download"):
+        build_wheel.download_file("https://example.invalid/x.tar.gz", Path("/tmp/x"), "abc")
+
+    assert seen.get("timeout") == build_wheel._NETWORK_TIMEOUT_SECS
+
+
+def test_checksums_fetch_uses_network_timeout(monkeypatch):
+    """A stalled checksums fetch must fail fast instead of hanging the build."""
+    import pytest
+
+    build_wheel = load_build_wheel_module()
+    seen = {}
+
+    def fake_urlopen(url, **kwargs):
+        seen.update(kwargs)
+        raise RuntimeError("no network in test")
+
+    monkeypatch.setattr(build_wheel.urllib.request, "urlopen", fake_urlopen)
+
+    with pytest.raises(RuntimeError, match="Failed to fetch or parse checksums"):
+        build_wheel.get_expected_sha256("0.0.0", "x.tar.gz")
+
+    assert seen.get("timeout") == build_wheel._NETWORK_TIMEOUT_SECS
