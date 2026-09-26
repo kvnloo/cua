@@ -1,5 +1,12 @@
-# Issue 47
+# Issue 47 — deferred
 
-The history shape is `scripts/repro/handoff/issue-47-history.json`.
+Final disposition: **NOT PLANNED NOW / closed**.
 
-This Linux host is present. It is not the missing machine. Measured success is null, so no shorter history is proposed. Missing prerequisite for a live battery: pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23` is not an installed release.
+No history-sensitivity A/B was run and no shorter history policy is proposed.
+
+Reopen only after:
+- #4 or #5 earns KEEP/REVISE;
+- #24 has a multi-task battery;
+- that battery contains real history-dependent cases such as may-have-landed actions, prior refusal/escalation, or early-stopped guarded runs.
+
+Do not reopen merely because the original sensitivity table was not produced.
