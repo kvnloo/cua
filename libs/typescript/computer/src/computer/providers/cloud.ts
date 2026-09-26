@@ -15,6 +15,14 @@ function hashApiKey(apiKey: string): string {
 
 const DEFAULT_API_BASE = process.env.CUA_API_BASE || 'https://api.cua.ai';
 
+/**
+ * Upper bound for the VM-list lookup in fetchAndCacheHost. A stalled
+ * connection to the API must not hang run() forever; on timeout the lookup
+ * falls back to the default host format (same as the existing
+ * failure fallback), preserving graceful degradation.
+ */
+export const CLOUD_VM_LIST_FETCH_TIMEOUT_MS = 10_000;
+
 interface VMInfo {
   name: string;
   host?: string;
@@ -59,6 +67,8 @@ export class CloudComputer extends BaseComputer {
    * Fetch VM list from API and cache the host for this VM.
    */
   private async fetchAndCacheHost(): Promise<string> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CLOUD_VM_LIST_FETCH_TIMEOUT_MS);
     try {
       const response = await fetch(`${this.apiBase}/v1/vms`, {
         headers: {
@@ -69,6 +79,7 @@ export class CloudComputer extends BaseComputer {
             typeof __CUA_VERSION__ !== 'undefined' ? __CUA_VERSION__ : ''
           ),
         },
+        signal: controller.signal,
       });
 
       if (response.ok) {
@@ -82,6 +93,8 @@ export class CloudComputer extends BaseComputer {
       }
     } catch (error) {
       this.logger.warn(`Failed to fetch VM list for host lookup: ${error}`);
+    } finally {
+      clearTimeout(timeout);
     }
 
     // Fall back to default format
