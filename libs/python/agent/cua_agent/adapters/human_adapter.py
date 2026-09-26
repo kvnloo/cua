@@ -129,32 +129,35 @@ class HumanAdapter(CustomLLM):
                     async with session.get(f"{self.base_url}/status/{call_id}") as response:
                         response.raise_for_status()
                         status_data = await response.json()
-
-                    if status_data["status"] == "completed":
-                        result = {}
-                        if "response" in status_data and status_data["response"]:
-                            result["response"] = status_data["response"]
-                        if "tool_calls" in status_data and status_data["tool_calls"]:
-                            result["tool_calls"] = status_data["tool_calls"]
-                        return result
-                    elif status_data["status"] == "failed":
-                        error_msg = status_data.get("error", "Unknown error")
-                        raise Exception(f"Completion failed: {error_msg}")
-
-                    # Check timeout
-                    if time.time() - start_time > self.timeout:
-                        raise TimeoutError(
-                            f"Timeout waiting for human response after {self.timeout} seconds"
-                        )
-
-                    # Wait before checking again
-                    await asyncio.sleep(1.0)
-
                 except Exception as e:
+                    # Only transient transport failures poll again. Status
+                    # handling below runs outside this try on purpose: the
+                    # "failed" raise (and the TimeoutError below) must
+                    # propagate, matching the sync _wait_for_completion.
                     if time.time() - start_time > self.timeout:
                         raise TimeoutError(f"Timeout waiting for human response: {e}")
-                    # Continue trying if we haven't timed out
                     await asyncio.sleep(1.0)
+                    continue
+
+                if status_data["status"] == "completed":
+                    result = {}
+                    if "response" in status_data and status_data["response"]:
+                        result["response"] = status_data["response"]
+                    if "tool_calls" in status_data and status_data["tool_calls"]:
+                        result["tool_calls"] = status_data["tool_calls"]
+                    return result
+                elif status_data["status"] == "failed":
+                    error_msg = status_data.get("error", "Unknown error")
+                    raise Exception(f"Completion failed: {error_msg}")
+
+                # Check timeout
+                if time.time() - start_time > self.timeout:
+                    raise TimeoutError(
+                        f"Timeout waiting for human response after {self.timeout} seconds"
+                    )
+
+                # Wait before checking again
+                await asyncio.sleep(1.0)
 
     def _generate_response(self, messages: List[Dict[str, Any]], model: str) -> Dict[str, Any]:
         """Generate a human response for the given messages.
