@@ -1,4 +1,5 @@
 import { getToken } from "../auth/keycloak"
+import { fleetTimeoutSignal } from "./fetch-timeout"
 
 export type FeatureFlagValueType = "boolean" | "number" | "string" | "json"
 export type FeatureFlagOwnership = "terraform" | "ad_hoc" | "external"
@@ -67,6 +68,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getToken()
   const response = await fetch(path, {
     ...init,
+    signal: fleetTimeoutSignal(init?.signal),
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",

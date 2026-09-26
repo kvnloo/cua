@@ -6,6 +6,7 @@
 // the backend's OPA policy, not just by hiding nav here.
 
 import { getToken } from "../auth/keycloak"
+import { fleetTimeoutSignal } from "./fetch-timeout"
 import { DEFAULT_USAGE_PRICING, type UsagePricing } from "../usagePricing"
 
 export interface FeatureFlags {
@@ -39,6 +40,7 @@ export async function fetchFeatureFlags(
   const promise = (async () => {
     const token = await getToken()
     const response = await fetch("/api/config", {
+      signal: fleetTimeoutSignal(),
       headers: {
         Authorization: token ? `Bearer ${token}` : "",
         "Content-Type": "application/json",

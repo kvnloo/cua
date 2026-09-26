@@ -1,4 +1,5 @@
 import { getToken } from "../auth/keycloak"
+import { fleetTimeoutSignal } from "./fetch-timeout"
 import { isLocalVisualPreview } from "../local-visual-preview"
 
 export type UsageTimeframe = "24h" | "7d" | "30d"
@@ -150,6 +151,7 @@ async function request<T>(path: string, query: URLSearchParams): Promise<T> {
   const token = await getToken()
   const response = await fetch(`${path}?${query}`, {
     headers: { Authorization: token ? `Bearer ${token}` : "" },
+    signal: fleetTimeoutSignal(),
   })
   if (!response.ok) {
     const body = await response.json().catch(() => null) as { error?: string } | null
@@ -178,6 +180,7 @@ async function recordBrowserTimings(
     },
     body: JSON.stringify(timings),
     keepalive: true,
+    signal: fleetTimeoutSignal(),
   })
 }
 

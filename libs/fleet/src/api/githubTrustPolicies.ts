@@ -1,4 +1,5 @@
 import { getToken } from "../auth/keycloak"
+import { fleetTimeoutSignal } from "./fetch-timeout"
 import { isLocalVisualPreview } from "../local-visual-preview"
 
 export interface Namespace {
@@ -49,6 +50,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getToken()
   const response = await fetch(path, {
     ...init,
+    signal: fleetTimeoutSignal(init?.signal),
     headers: {
       "Content-Type": "application/json",
       Authorization: token ? `Bearer ${token}` : "",

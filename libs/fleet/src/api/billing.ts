@@ -4,6 +4,7 @@ import {
 	isLocalVisualPreview,
 	localVisualPreviewPath,
 } from "../local-visual-preview";
+import { fleetTimeoutSignal } from "./fetch-timeout";
 
 export interface SavedCard {
 	brand: string;
@@ -64,6 +65,7 @@ async function billingRequest<T>(
 	if (body !== undefined) headers["Content-Type"] = "application/json";
 	const response = await fetch(path, {
 		method,
+		signal: fleetTimeoutSignal(),
 		headers,
 		body: body === undefined ? undefined : JSON.stringify(body),
 	});
