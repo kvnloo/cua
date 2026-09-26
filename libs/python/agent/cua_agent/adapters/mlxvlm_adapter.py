@@ -185,12 +185,25 @@ class MLXVLMAdapter(CustomLLM):
 
                         if image_url.startswith("data:image/"):
                             # Extract base64 data
-                            base64_data = image_url.split(",")[1]
+                            if "," not in image_url:
+                                raise ValueError(
+                                    f"Malformed data image URL for image {image_index}: "
+                                    "expected 'data:image/<type>;base64,<data>'."
+                                )
+                            base64_data = image_url.split(",", 1)[1]
                             # Convert base64 to PIL Image
                             image_data = base64.b64decode(base64_data)
                             pil_image = Image.open(io.BytesIO(image_data))
                         else:
-                            # Handle file path or URL
+                            # Handle file path only; Image.open treats the
+                            # string as a local path, so a remote URL would
+                            # surface as a misleading FileNotFoundError.
+                            if image_url.startswith(("http://", "https://")):
+                                raise ValueError(
+                                    f"Remote image URLs are not supported by the "
+                                    f"mlxvlm adapter (image {image_index}); pass a "
+                                    "data: URL or a local file path."
+                                )
                             pil_image = Image.open(image_url)
 
                         # Store original image size for coordinate mapping
