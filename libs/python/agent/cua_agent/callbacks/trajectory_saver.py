@@ -22,6 +22,23 @@ from PIL import Image, ImageDraw
 from .base import AsyncCallbackHandler
 
 
+def _redact_secrets(obj: Any) -> Any:
+    """Redact raw credential values before trajectory artifacts are written to disk.
+
+    ``run()`` threads the provider ``api_key`` through run/api kwargs; the
+    trajectory dir is shared (benchmark harnesses upload it), so the raw key
+    must never be persisted.
+    """
+    if isinstance(obj, dict):
+        return {
+            key: "***REDACTED***" if key.lower() == "api_key" else _redact_secrets(value)
+            for key, value in obj.items()
+        }
+    if isinstance(obj, list):
+        return [_redact_secrets(item) for item in obj]
+    return obj
+
+
 def sanitize_image_urls(data: Any) -> Any:
     """
     Recursively search for 'image_url' keys and set their values to '[omitted]'.
@@ -327,7 +344,9 @@ class TrajectorySaverCallback(AsyncCallbackHandler):
                 "trajectory_id": self.trajectory_id,
                 "created_at": str(uuid.uuid1().time),
                 "status": "running",
-                "kwargs": kwargs_to_save,
+                # Never persist raw credentials: run() threads the provider
+                # api_key through these kwargs and trajectories are shared.
+                "kwargs": _redact_secrets(kwargs_to_save),
             }
 
             with open(trajectory_path / "metadata.json", "w") as f:
@@ -385,7 +404,7 @@ class TrajectorySaverCallback(AsyncCallbackHandler):
         if not self.trajectory_id:
             return
 
-        self._save_artifact("api_start", {"kwargs": kwargs})
+        self._save_artifact("api_start", {"kwargs": _redact_secrets(kwargs)})
 
     @override
     async def on_api_end(self, kwargs: Dict[str, Any], result: Any) -> None:
@@ -393,7 +412,7 @@ class TrajectorySaverCallback(AsyncCallbackHandler):
         if not self.trajectory_id:
             return
 
-        self._save_artifact("api_result", {"kwargs": kwargs, "result": result})
+        self._save_artifact("api_result", {"kwargs": _redact_secrets(kwargs), "result": result})
 
     @override
     async def on_screenshot(self, screenshot: Union[str, bytes], name: str = "screenshot") -> None:
@@ -418,7 +437,7 @@ class TrajectorySaverCallback(AsyncCallbackHandler):
         response_data = {
             "timestamp": str(uuid.uuid1().time),
             "model": self.model,
-            "kwargs": kwargs,
+            "kwargs": _redact_secrets(kwargs),
             "response": responses,
         }
 
