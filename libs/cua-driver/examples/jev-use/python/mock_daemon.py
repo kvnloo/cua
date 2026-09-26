@@ -31,12 +31,18 @@ Auth simulation (for the #3383 auth-lifetime deep dive):
                          an auth event, subsequent in-scope requests skip
                          re-auth (the (a)+(b) hybrid prototype: history_*
                          calls skip RE-auth after the first verify)
+  --auth-window-requests N
+                         with --auth-cache: re-verify after N in-scope requests
+                         since the last verify (0 = never)
+  --auth-window-ms T     with --auth-cache: re-verify after T ms since the last
+                         verify (0 = never)
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import itertools
 import json
 import os
 import time
@@ -114,6 +120,17 @@ def _auth_applies(name: str | None, scope: str) -> bool:
     return scope == "all" or (isinstance(name, str) and name.startswith("history_"))
 
 
+def _auth_event(path: str | None, conn_id: int, request: str | None) -> None:
+    """Append one JSON line per auth event (bench observability; mock only)."""
+    if not path:
+        return
+    try:
+        with open(path, "a") as f:
+            f.write(json.dumps({"conn": conn_id, "request": request, "t": time.monotonic()}) + "\n")
+    except OSError:
+        pass
+
+
 async def _handle_connection(
     reader: asyncio.StreamReader,
     writer: asyncio.StreamWriter,
@@ -123,8 +140,14 @@ async def _handle_connection(
     auth_mode: str,
     auth_scope: str,
     auth_cache: bool,
+    auth_window_requests: int,
+    auth_window_ms: float,
+    auth_events: str | None,
+    conn_id: int,
 ) -> None:
     verified = False  # per-connection: has this connection passed auth yet?
+    verified_at = 0.0  # loop time of the last verify (for the time window)
+    requests_since_verify = 0  # in-scope requests since the last verify
     try:
         if auth_ms > 0 and auth_mode == "accept" and _auth_applies(None, auth_scope):
             # accept-time auth: scope "all" pays once per connection;
@@ -132,6 +155,8 @@ async def _handle_connection(
             # per-request below (the honest model for option (a)).
             await asyncio.sleep(auth_ms / 1000.0)
             verified = True
+            verified_at = asyncio.get_running_loop().time()
+            _auth_event(auth_events, conn_id, None)
         while True:
             line = await reader.readline()
             if not line:
@@ -149,14 +174,27 @@ async def _handle_connection(
                 elif auth_scope == "history":
                     pay = _auth_applies(request.get("name"), auth_scope)
                 if pay and auth_cache and verified:
-                    # (a)+(b) hybrid: skip RE-auth after the first verify on
-                    # this connection. The trust window this opens (bundle
-                    # change mid-connection) is exactly the auth-lifetime
-                    # contract question in dq-3383.
-                    pay = False
+                    # (a)+(b) hybrid with a bounded trust window: skip RE-auth
+                    # only while the last verify is still "fresh". A request
+                    # window caps exposure per connection burst; a time window
+                    # caps exposure for idle connections (and bounds
+                    # revocation propagation delay). Both 0 = verify once,
+                    # trust forever (chunk-14 behavior).
+                    now = asyncio.get_running_loop().time()
+                    window_expired = (
+                        (auth_window_requests > 0 and requests_since_verify >= auth_window_requests)
+                        or (auth_window_ms > 0 and (now - verified_at) * 1000.0 >= auth_window_ms)
+                    )
+                    if not window_expired:
+                        pay = False
                 if pay:
                     await asyncio.sleep(auth_ms / 1000.0)
                     verified = True
+                    verified_at = asyncio.get_running_loop().time()
+                    requests_since_verify = 0
+                    _auth_event(auth_events, conn_id, request.get("name"))
+                elif _auth_applies(request.get("name"), auth_scope):
+                    requests_since_verify += 1
             if request.get("method") == "metadata":
                 payload: dict[str, Any] = {
                     "ok": True,
@@ -194,6 +232,14 @@ async def _main() -> None:
     parser.add_argument("--auth-scope", choices=("all", "history"), default="all")
     parser.add_argument("--auth-cache", action="store_true",
                         help="verify-once-per-connection: skip re-auth after the first auth event on a connection")
+    parser.add_argument("--auth-window-requests", type=int, default=0,
+                        help="with --auth-cache: re-verify after this many in-scope requests since the last verify "
+                             "(0 = never; bounds per-connection-burst exposure)")
+    parser.add_argument("--auth-window-ms", type=float, default=0.0,
+                        help="with --auth-cache: re-verify after this many ms since the last verify "
+                             "(0 = never; bounds idle-connection exposure and revocation delay)")
+    parser.add_argument("--auth-events", default=None,
+                        help="append one JSON line per auth event here (bench observability)")
     args = parser.parse_args()
 
     try:
@@ -201,10 +247,14 @@ async def _main() -> None:
     except FileNotFoundError:
         pass
 
+    conn_ids = itertools.count(1)
+
     async def handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         await _handle_connection(reader, writer, args.regions, args.keep_alive,
                                  args.auth_ms, args.auth_mode, args.auth_scope,
-                                 args.auth_cache)
+                                 args.auth_cache, args.auth_window_requests,
+                                 args.auth_window_ms, args.auth_events,
+                                 next(conn_ids))
 
     server = await asyncio.start_unix_server(handle, path=args.socket)
     print(f"ready {args.socket}", flush=True)
