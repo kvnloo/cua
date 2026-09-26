@@ -21,6 +21,11 @@ HOST_URL = os.environ.get("CUABOT_HOST", "http://host.docker.internal:7842")
 TELEMETRY_ENABLED = os.environ.get("CUABOT_TELEMETRY", "false").lower() == "true"
 STARTING_ERROR = "cuabotd is still starting"
 
+# How long (wall-clock) to keep waiting for cuabotd to finish starting.
+STARTUP_WAIT_BUDGET_S = 120.0
+# Delay between startup-wait polls.
+STARTUP_POLL_DELAY_S = 1.0
+
 # Overlay cursor socket
 OVERLAY_SOCKET = "/tmp/cuabot-overlay-cursor.sock"
 
@@ -52,24 +57,47 @@ def log_mcp_tool_call(tool_name: str, tool_args: dict) -> None:
 
 
 def request(endpoint: str, body: dict | None = None) -> dict:
-    """Make HTTP request to cuabotd server with retry on starting error."""
-    max_retries = 120  # 2 minutes max wait
-    retry_delay = 1.0  # 1 second between retries
+    """Make HTTP request to cuabotd server with retry on starting error.
 
-    for attempt in range(max_retries):
-        res = client.post(f"/{endpoint}", json=body)
-        data = res.json()
+    While cuabotd is still starting the request may fail in three ways, all
+    treated as transient within the startup budget:
+      - the explicit {"error": "cuabotd is still starting"} JSON response,
+      - a transport error (e.g. connection refused before the listen socket
+        binds — the most common shape during actual startup),
+      - a non-JSON response (empty body, proxy error page).
+    The wait is bounded by wall-clock time, not attempt count, so slow
+    attempts cannot stretch it past STARTUP_WAIT_BUDGET_S.
+    """
+    deadline = time.monotonic() + STARTUP_WAIT_BUDGET_S
+    announced = False
+
+    def wait_for_startup():
+        nonlocal announced
+        if time.monotonic() >= deadline:
+            raise Exception("Timed out waiting for cuabotd to start")
+        if not announced:
+            print("Waiting for cuabotd to finish starting...", flush=True)
+            announced = True
+        time.sleep(STARTUP_POLL_DELAY_S)
+
+    while True:
+        try:
+            res = client.post(f"/{endpoint}", json=body)
+        except httpx.TransportError:
+            wait_for_startup()
+            continue
+        try:
+            data = res.json()
+        except ValueError:
+            wait_for_startup()
+            continue
         if "error" in data:
             # If server is still starting, wait and retry
             if data["error"] == STARTING_ERROR:
-                if attempt == 0:
-                    print("Waiting for cuabotd to finish starting...", flush=True)
-                time.sleep(retry_delay)
+                wait_for_startup()
                 continue
             raise Exception(data["error"])
         return data
-
-    raise Exception("Timed out waiting for cuabotd to start")
 
 
 @server.tool()
