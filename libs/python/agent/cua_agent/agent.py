@@ -753,16 +753,24 @@ class ComputerAgent:
             if item_type == "computer_call":
                 await self._on_computer_call_start(item)
                 if not computer:
-                    raise ValueError("Computer handler is required for computer calls")
+                    # Keep the model turn paired: report as a recoverable tool
+                    # error instead of aborting the run with an unpaired call.
+                    return [
+                        make_tool_error_item(
+                            "Computer handler is required for computer calls", call_id
+                        )
+                    ]
 
                 # Perform computer actions
                 action = item.get("action")
-                action_type = action.get("type") if action else None
+                if not isinstance(action, dict):
+                    return [make_tool_error_item("Computer action must be an object", call_id)]
+                action_type = action.get("type")
                 if not action_type:
-                    print(
-                        f"Action type is empty or None: action={action}, action_type={action_type}"
-                    )
-                    return []
+                    # An unpaired computer_call is rejected by the Responses API
+                    # on the next step; report it as a tool error so the model
+                    # can correct the call instead of killing the run.
+                    return [make_tool_error_item("Empty computer action received", call_id)]
 
                 # Extract action arguments (all fields except 'type')
                 action_args = {k: v for k, v in action.items() if k != "type"}
@@ -854,7 +862,21 @@ class ComputerAgent:
                 if not function:
                     raise ToolError(f"Function {item.get('name')} not found")
 
-                args = json.loads(item.get("arguments"))
+                args = item.get("arguments")
+                try:
+                    args = json.loads(args) if isinstance(args, str) else args
+                except (json.JSONDecodeError, TypeError) as e:
+                    return [
+                        make_tool_error_item(
+                            f"Function arguments must be a JSON object string: {e}", call_id
+                        )
+                    ]
+                if not isinstance(args, dict):
+                    return [
+                        make_tool_error_item(
+                            "Function arguments must be a JSON object", call_id
+                        )
+                    ]
 
                 # Handle BaseTool instances
                 if isinstance(function, BaseTool):
