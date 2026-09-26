@@ -1,14 +1,7 @@
-# Issue 46 — deferred
+# Issue 46
 
-Final disposition: **NOT PLANNED NOW / closed**.
+Closed at https://github.com/kvnloo/cua/issues/46#issuecomment-5841889526.
 
-No chooser-projection A/B was run, and no smallest-safe projection is claimed.
+The measurement is `scripts/repro/handoff/issue-46-projection.json`, from `chooser_projection.projection_report`. The shipped request keeps `id` and `description`. Tool arguments stay local. Receipts are `not produced`. Recommendation: smallest safe chooser state is id and description.
 
-The work is intentionally deferred until:
-1. #4/#5 identify a surviving decision-deletion route;
-2. #24 provides a multi-task generalization battery;
-3. the route is independently exercisable/observable.
-
-#4196 demonstrated the correct order: prove the path first, then compress unused context.
-
-Do not reopen merely because the original projection deliverable was not produced.
+The missing prerequisite for an A/B receipt is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`, which is not an installed release. A debug build of that commit finished and printed `cua-driver 0.29.1`. `cua-driver status` then exited 1 because the daemon is not running, and `cua-driver doctor` returned no top-level windows. See `scripts/repro/handoff/pin-build.md`. Receipts stay `not produced`.

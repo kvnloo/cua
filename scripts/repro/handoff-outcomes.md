@@ -321,11 +321,11 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. That comment is the reopen note. An earlier comment, https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432, includes head `fb7841be7`, element-plus-screenshot walks 2 to 1, window-only-plus-screenshot walks 1 to 0, and the no-screenshot control stayed 1 to 1. Neither comment includes a verdict from the required list or the tests. This host did not run that trace. The local packet `scripts/repro/handoff/issue-63-packet.md` withholds a verdict label. Missing machine: Windows, for a UIA count. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329.
+Closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. The measurement comment is https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432: head `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254`, element plus screenshot 2 AX walks to 1, window-only plus screenshot 1 to 0, control stayed 1 to 1, screenshot 460×816. This host did not run that walk. The local packet is `scripts/repro/handoff/issue-63-packet.md`. Missing machine: Windows, for a UIA count. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329.
 
 ### Issue 64
 
-Blocked. Closed at https://github.com/kvnloo/cua/issues/64#issuecomment-5841890244. That comment is the reopen note and does not contain the A/B. `scripts/repro/handoff/issue-64-block.md`. This Linux host is present. It is not the missing machine. The missing prerequisite is pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No helper was added. No verdict was issued.
+Blocked. Closed at https://github.com/kvnloo/cua/issues/64#issuecomment-5841890244. That comment does not contain the A/B. `scripts/repro/handoff/issue-64-block.md` cites the fake-driver report at `147158cf9caed69489607f7e6736dc9282bdd815`, which uses head `24aaf8d1965b3b7c1530cbb9d58758ec89472d92` and is not pinned commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. This Linux host is present. It is not the missing machine. No helper was added on this branch. No verdict was issued.
 
 ### Issue 65
 
@@ -363,7 +363,7 @@ NO CHANGE NEEDED on the #3961 provider adapter. `jev_adapter.py` does not import
 
 ### Issue 71
 
-Closed at https://github.com/kvnloo/cua/issues/71#issuecomment-5841780594. `scripts/repro/handoff/issue-71-decision.md` is the consumer-decision table. Recommendation: NO PUBLIC FIELD. `typed_choice` already returns continue, observe, or stop. Escalation stays advice in `WORKFLOW.md` line 121. `result_suffix` and `needs_restore` stay the existing signals. `PollProvenance` stays internal and was not compiled on this Linux host. The latest comment does not include this table.
+Closed at https://github.com/kvnloo/cua/issues/71#issuecomment-5841780594. That comment names `post_dispatch_observation: completed | skipped | unavailable`. `scripts/repro/handoff/issue-71-decision.md` records the comment and the local search: the symbol is absent from this checkout's contract crate. `typed_choice` still returns continue, observe, or stop. `PollProvenance` stays internal and was not compiled on this Linux host.
 
 ### Issue 72
 
@@ -382,9 +382,9 @@ Machine-readable DAG: `scripts/repro/handoff/promotion-dag.json`. Human queue: `
 | elapsed-ms-boundary | READY NOW | comment, not posted, no speedup claim |
 | run-length-4 | WAITING ON DOWNSTREAM EXPERIMENT | no action |
 | 3961-scope | ASSIMILATED | no action, NO CHANGE NEEDED |
-| 4009-public-field | ASSIMILATED | no action, NO PUBLIC FIELD |
+| 4009-public-field | ASSIMILATED | no action; the proposal names the field and this checkout does not contain the symbol |
 | 4052 | WAITING ON DOWNSTREAM EXPERIMENT | no action |
-| 4164 | WAITING ON DOWNSTREAM EXPERIMENT | verdict withheld, description not updated |
+| 4164 | WAITING ON DOWNSTREAM EXPERIMENT | cited macOS walk counts, description not updated |
 | 4165 | WAITING ON DOWNSTREAM EXPERIMENT | not sent |
 | 3904 | WAITING ON DOWNSTREAM EXPERIMENT | missing machine: macOS |
 | 2794-3494 | WAITING ON DOWNSTREAM EXPERIMENT | elapsed_ms is null |

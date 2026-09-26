@@ -276,6 +276,14 @@ class OpenPacketTest(unittest.TestCase):
             json.loads((HANDOFF / "issue-48-parity.json").read_text(encoding="utf-8")),
             parity,
         )
+        block46 = (HANDOFF / "issue-46-block.md").read_text(encoding="utf-8")
+        self.assertIn("5841889526", block46)
+        self.assertIn(report["recommendation"], block46)
+        self.assertIn(report["receipts"], block46)
+        block47 = (HANDOFF / "issue-47-block.md").read_text(encoding="utf-8")
+        self.assertIn("5841889690", block47)
+        self.assertIsNone(history["measured_success"])
+        self.assertIn(history["proposal"], block47)
 
 
 if __name__ == "__main__":

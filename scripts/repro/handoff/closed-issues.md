@@ -54,7 +54,7 @@ Live GitHub issue state is authoritative. This table cites the latest comment se
 
 Issue 3 cites the macOS trace. Element plus screenshot went from 2 AX walks to 1. Window-only plus screenshot went from 1 to 0. The element control without a screenshot stayed 1 to 1. Head `fb7841be7`. That trace is copied in `scripts/repro/handoff/issue-3-macos-trace.md`. This host did not run that trace. Missing machine: Windows, for a UIA walker count.
 
-Issue 63 is closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. That comment is the reopen note. An earlier comment includes the walk counts and does not include a verdict from the required list. The local packet withholds a verdict label.
+Issue 63 is closed at https://github.com/kvnloo/cua/issues/63#issuecomment-5841890086. The measurement comment https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432 records head `fb7841be7c9d2ef666a5dd87be6ca78e2de5d254` and the macOS Calculator walk counts. This host did not run that walk. Missing machine: Windows.
 
 Issues 46, 47, and 48 are closed. Their latest comments are the reopen notes. The local files record the chooser projection, the history shape, and the mock parity row. A/B receipts, a sensitivity table, and the Jev and S1 runs were not produced.
 

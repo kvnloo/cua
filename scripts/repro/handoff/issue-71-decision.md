@@ -1,25 +1,9 @@
-# Issue 71 — final decision
+# Issue 71
 
-This checkout: NO PUBLIC FIELD. `post_dispatch_observation` is absent from the contract crate here.
+Closed at https://github.com/kvnloo/cua/issues/71#issuecomment-5841780594.
 
+That comment says trycua/cua#4009 folded `post_dispatch_observation: completed | skipped | unavailable` into the proposal. The concrete consumer is whether the caller must observe before a replay. Implementation and compatibility stay with #4009 and kvnloo/cua#38.
 
-Final disposition: **ADD OPTIONAL FIELD / completed**.
+This checkout: the symbol is absent from the contract crate. `migration_matrix.command_report` records an empty `symbol_in_this_checkout` and `generator_check` as not run.
 
-Live upstream state supersedes the earlier downstream "NO PUBLIC FIELD" recommendation.
-
-trycua/cua#3946 now preserves truthful internal poll provenance.
-
-trycua/cua#4009 has folded the public result field:
-
-`post_dispatch_observation: completed | skipped | unavailable`
-
-Consumer reason:
-- `completed`: Driver actually ran its post-dispatch observation to the selected bound.
-- `skipped`: caller/host explicitly did not request that observation.
-- `unavailable`: observation started but its result was lost/unavailable.
-
-This distinction changes the caller's safe next action. Existing #3971 / #2958 evidence shows that treating absence of effect evidence as "no effect" can cause destructive replay of a mutation that already landed.
-
-Implementation/version compatibility is now downstream #38 / upstream #4009.
-
-The old "NO PUBLIC FIELD" table in this file was stale and is replaced by this final disposition.
+`typed_choice` still returns continue, observe, or stop without reading that symbol. `PollProvenance` stays a private field of macOS `Changes`. The macOS crate was not compiled on this host.

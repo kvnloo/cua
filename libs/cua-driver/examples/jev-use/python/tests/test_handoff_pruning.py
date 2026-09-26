@@ -246,9 +246,16 @@ class HandoffPruningTest(unittest.TestCase):
 
     def test_keep_draft_packet_matches_the_unlocked_walker(self) -> None:
         packet = (HANDOFF / "issue-63-packet.md").read_text(encoding="utf-8")
-        self.assertIn("Verdict withheld", packet)
-        self.assertIn("Trace: none", packet)
-        self.assertIn("Missing machines: macOS", packet)
+        self.assertIn(
+            "https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432",
+            packet,
+        )
+        self.assertIn("fb7841be7c9d2ef666a5dd87be6ca78e2de5d254", packet)
+        self.assertIn("2 AX walks", packet)
+        self.assertIn("460×816", packet)
+        self.assertIn("This host did not run that walk", packet)
+        self.assertIn("Missing machine: Windows", packet)
+        self.assertNotIn("Trace: none", packet)
         self.assertIn(FORK_SHA, packet)
         source = (
             ROOT / "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs"
@@ -330,7 +337,17 @@ class HandoffPruningTest(unittest.TestCase):
             typed_choice("unverifiable", "unavailable", passive_success=False), "observe"
         )
         text = (HANDOFF / "issue-71-decision.md").read_text(encoding="utf-8")
-        self.assertIn("NO PUBLIC FIELD", text)
+        self.assertIn(
+            "https://github.com/kvnloo/cua/issues/71#issuecomment-5841780594",
+            text,
+        )
+        self.assertIn("post_dispatch_observation: completed | skipped | unavailable", text)
+        from migration_matrix import command_report
+
+        report = command_report(ROOT)
+        self.assertEqual(report["symbol_in_this_checkout"], [])
+        self.assertIn("absent from the contract crate", text)
+        self.assertNotIn("NO PUBLIC FIELD", text)
         workflow = (
             ROOT / "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md"
         ).read_text(encoding="utf-8").splitlines()

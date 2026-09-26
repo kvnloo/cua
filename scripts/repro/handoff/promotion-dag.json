@@ -56,20 +56,20 @@
     },
     {
       "id": "4009-public-field",
-      "surviving_delta": "do not add a public settlement field",
-      "owner": "platform-macos Changes",
+      "surviving_delta": "the proposal names post_dispatch_observation",
+      "owner": "trycua/cua#4009",
       "branch": "test/rfc-fast-path-one-candidate-20260925",
       "sha": "92b5035ea08b2126f947db0dfd8ecf829013d7b4",
-      "evidence_complete": "typed_choice decides continue, observe, and stop without PollProvenance",
-      "evidence_missing": "macOS compile; no consumer regression requires a new field",
+      "evidence_complete": "typed_choice decides continue, observe, and stop; this checkout's contract crate does not contain post_dispatch_observation",
+      "evidence_missing": "generator check at a #4009 implementation SHA",
       "action": "no action",
       "dependency": "none",
-      "stop_condition": "stop if a public field is added without a failing consumer regression",
-      "change": "NO PUBLIC FIELD",
+      "stop_condition": "stop if this branch adds the symbol without the generator check",
+      "change": "cite the proposal; the symbol is absent from this checkout",
       "evidence": "libs/cua-driver/examples/jev-use/python/tests/test_action_consumer.py",
       "posting_status": "ASSIMILATED",
       "issue": 71,
-      "comment": "NO PUBLIC FIELD. result_suffix and needs_restore stay the existing signals. PollProvenance stays internal."
+      "comment": "https://github.com/kvnloo/cua/issues/71#issuecomment-5841780594 names post_dispatch_observation: completed | skipped | unavailable. This checkout does not contain the symbol."
     },
     {
       "id": "4164",
@@ -86,7 +86,7 @@
       "evidence": "libs/cua-driver/examples/jev-use/python/tests/test_verify_elapsed_order.py",
       "posting_status": "WAITING ON DOWNSTREAM EXPERIMENT",
       "issue": 63,
-      "comment": "Verdict withheld. The call site passes false for elements. No walker trace was captured."
+      "comment": "https://github.com/kvnloo/cua/issues/63#issuecomment-5841776432 records head fb7841be7c9d2ef666a5dd87be6ca78e2de5d254. Element plus screenshot went from 2 AX walks to 1. Window-only plus screenshot went from 1 to 0. The control stayed 1 to 1. This host did not run that walk."
     },
     {
       "id": "4165",
