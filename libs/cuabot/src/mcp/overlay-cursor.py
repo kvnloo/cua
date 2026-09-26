@@ -84,6 +84,27 @@ def hex_to_rgb(hex_color: str) -> tuple:
     return tuple(int(hex_color[i : i + 2], 16) / 255.0 for i in (0, 2, 4))
 
 
+def is_valid_hex_color(color: str) -> bool:
+    """True for a 6-digit hex color, with or without a leading '#'."""
+    color = color.lstrip("#")
+    return len(color) == 6 and all(c in "0123456789abcdefABCDEF" for c in color)
+
+
+def resolve_cursor_color(name: str, color: str) -> str:
+    """Resolve the cursor color to a valid 6-digit hex string.
+
+    Falls back to the name-derived color when the explicit value is empty
+    or malformed (a malformed value would otherwise crash hex_to_rgb with
+    a ValueError during startup).
+    """
+    if not color:
+        color = name_to_color(name)
+    color = color.lstrip("#")
+    if not is_valid_hex_color(color):
+        color = name_to_color(name)
+    return color
+
+
 def generate_path(from_pos: tuple, to_pos: tuple, target_steps: int = 20) -> list:
     """Generate a human-like mouse path with gravity and wind forces."""
     s3 = math.sqrt(3)
@@ -557,11 +578,8 @@ def main():
         elif arg.startswith("--color="):
             color = arg.split("=", 1)[1]
 
-    # Generate color from name if not provided
-    if not color:
-        color = name_to_color(name)
-
-    color = color.lstrip("#")
+    # Resolve the cursor color (explicit value validated, else name-derived)
+    color = resolve_cursor_color(name, color)
 
     # Check if already running - send move command instead
     if os.path.exists(SOCKET_PATH):
