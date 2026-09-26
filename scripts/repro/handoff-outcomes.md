@@ -167,7 +167,7 @@ Deleted: a shared constant of 4. Local: the per-child check in `guarded_run.py`.
 
 ### Issue 55
 
-`scripts/repro/handoff/issue-55-consumers.md` and `scripts/repro/handoff/issue-55-edges.tsv`. The edges are `typed_choice` results. trycua/cua#3946 adds no wire marker, #3971 asks for an explicit skip and has no failing regression, and #4009 only proposes `post_dispatch_observation`. No new public field. The issue stays open.
+The issue is open. `scripts/repro/handoff/issue-55-consumers.md` and `scripts/repro/handoff/issue-55-edges.tsv` are the consumer graph. The edges are `typed_choice` results. trycua/cua#3946 adds no wire marker, #3971 asks for an explicit skip and has no failing regression, and #4009 only proposes `post_dispatch_observation`. No new public field. The latest comment does not include this graph.
 
 ### Issue 56
 
@@ -191,7 +191,7 @@ Mechanical batching stays with trycua/cua#2794 and #3494. The caller guarded run
 
 ### Issue 60
 
-The five sequences are in `scripts/repro/handoff/sequences.md`: fresh guarded child, stale refusal, cancel while queued, cancel after native admission, and session end during admitted work. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Authorization stays on the existing session policy. There is no ExecutionContext and no LifecycleService.
+The issue is open. The five sequences are in `scripts/repro/handoff/sequences.md`: fresh guarded child, stale refusal, cancel while queued, cancel after native admission, and session end during admitted work. Freshness is `browser_revision.bind`. Cancellation is `cancellation_lifetime.Lifetime`. Authorization stays on the existing session policy. There is no ExecutionContext and no LifecycleService. The latest comment does not include these sequences.
 
 ### Issue 61
 
@@ -318,7 +318,7 @@ Verified is the only status in that file with a second dispatch. Refuted, unknow
 
 `scripts/repro/handoff/issue-63-packet.md`.
 
-Verdict withheld in `scripts/repro/handoff/issue-63-packet.md`. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. The macOS walker counts are the trace at https://github.com/trycua/cua/pull/4164#issuecomment-5840994846, cited by https://github.com/kvnloo/cua/issues/63#issuecomment-5841024385. This host did not run that trace. Trace from this host: none. Missing machines: macOS and Windows. `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The upstream pull request description was not changed from this branch.
+Blocked. The issue is open. `scripts/repro/handoff/issue-63-packet.md` withholds a verdict. The latest comment does not include an exact SHA, trace counts, or tests. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork evidence `92b5035ea08b2126f947db0dfd8ecf829013d7b4`. `expectation.rs` line 310 closes `elapsed_ms` before `observe(pid, window_id, false, true)` at line 329. Trace from this host: none. Missing machine: macOS and Windows. `linux-host-probe.txt` shows `cua-driver 0.28.2`, no daemon, and no top-level windows. The upstream pull request description was not changed from this branch.
 
 ### Issue 64
 
@@ -332,7 +332,7 @@ Vector 1: `verification_text` on `calc-result` returns `6`, and `action_target` 
 
 ### Issue 66
 
-`scripts/repro/handoff/issue-66-comment.md`. The consolidation note is https://github.com/trycua/cua/issues/3494#issuecomment-5841211600, and the closing record is https://github.com/kvnloo/cua/issues/66#issuecomment-5841212006.
+The issue is open. `scripts/repro/handoff/issue-66-comment.md` is the stale-target fixture design. The consolidation note is https://github.com/trycua/cua/issues/3494#issuecomment-5841211600. The latest issue comment names the owner and does not include this fixture.
 
 Canonical owner: trycua/cua#2794 and #3494. The regression fixture is `test_stale_batch.py`: unchanged identity dispatches both children, a disappeared target and a new identity are refused, and a failed or unknown first child does not start the second. `elapsed_ms` is null. No batch API was added.
 
@@ -350,9 +350,7 @@ trycua/cua#3873 was fetched open on 2026-09-25. Its body describes a snapshot st
 
 ### Issue 69
 
-`scripts/repro/handoff/issue-69-measurement.md`.
-
-Decision: downstream benchmark-only tooling. Do not add the report to #4052. Fields: `cold_setup_ms`, `verified_outcome_ms`, `runner_lifetime_ms`, `named_span_ms`. `outcome_time` returns `verified_outcome_ms` only. The whole-task battery stays open on issue 10, where the pinned driver session was not run. No trial time was invented.
+The issue is open. `scripts/repro/handoff/issue-69-measurement.md` has the decision, the four clock fields, and the no-double-counting diagram. The latest comment names the fields and does not include that diagram. Do not add the report to #4052. `outcome_time` returns `verified_outcome_ms` only. The whole-task battery stays open on issue 10. No trial time was invented.
 
 ### Issue 70
 
@@ -362,9 +360,7 @@ NO CHANGE NEEDED on the #3961 provider adapter. `jev_adapter.py` does not import
 
 ### Issue 71
 
-`scripts/repro/handoff/issue-71-decision.md`.
-
-Recommendation: NO PUBLIC FIELD. `typed_choice` already returns continue, observe, or stop. Escalation stays advice in `WORKFLOW.md` line 121. `result_suffix` and `needs_restore` stay the existing signals. `PollProvenance` stays internal and was not compiled on this Linux host. No promotion dependency.
+The issue is open. `scripts/repro/handoff/issue-71-decision.md` is the consumer-decision table. Recommendation: NO PUBLIC FIELD. `typed_choice` already returns continue, observe, or stop. Escalation stays advice in `WORKFLOW.md` line 121. `result_suffix` and `needs_restore` stay the existing signals. `PollProvenance` stays internal and was not compiled on this Linux host. The latest comment does not include this table.
 
 ### Issue 72
 
