@@ -3,6 +3,7 @@
 import importlib.util
 import io
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -172,3 +173,54 @@ def test_keyboard_interrupt_handling(mock_get_binary, mock_run):
 
     exit_code = run_cua_driver(["mcp"])
     assert exit_code == 130
+
+
+def _load_wrapper_in_pkg(tmp_path: Path, mode: int):
+    """Load wrapper.py from a fake package layout with a bundled binary."""
+    pkg = tmp_path / "pkg"
+    (pkg / "bin").mkdir(parents=True)
+    shutil.copy(
+        Path(__file__).resolve().parents[1] / "src/cua_driver/wrapper.py",
+        pkg / "wrapper.py",
+    )
+    binary = pkg / "bin" / "cua-driver"
+    binary.write_bytes(b"#!/bin/sh\nexit 0\n")
+    os.chmod(binary, mode)
+    spec = importlib.util.spec_from_file_location("cua_driver_wrapper_pkg", pkg / "wrapper.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module, binary
+
+
+def test_get_binary_path_skips_chmod_for_readonly_install(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An already-executable binary must not fail on a read-only install.
+
+    The exec-bit repair must not attempt chmod when the bit is already set:
+    on read-only installs (e.g. Nix-style stores) chmod raises PermissionError
+    even though the binary is fully runnable.
+    """
+    wrapper, binary = _load_wrapper_in_pkg(tmp_path, 0o555)
+    monkeypatch.setattr(os, "access", lambda path, m: True)
+
+    def boom(path, mode):
+        raise PermissionError("read-only install")
+
+    monkeypatch.setattr(os, "chmod", boom)
+
+    assert wrapper.get_binary_path() == binary
+
+
+def test_get_binary_path_repairs_missing_exec_bit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The exec-bit repair still runs when the bit is actually missing."""
+    wrapper, binary = _load_wrapper_in_pkg(tmp_path, 0o644)
+    monkeypatch.setattr(os, "access", lambda path, m: False)
+    calls: list = []
+    monkeypatch.setattr(os, "chmod", lambda path, mode: calls.append((str(path), mode)))
+
+    assert wrapper.get_binary_path() == binary
+    assert calls == [(str(binary), 0o755)]

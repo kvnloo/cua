@@ -46,8 +46,12 @@ def get_binary_path() -> Path:
             f"This package may not have been built correctly for {sys.platform}."
         )
 
-    # Ensure binary is executable on Unix
-    if sys.platform != "win32":
+    # Archives (sdists, zips) don't always preserve the executable bit, so
+    # repair it — but only when the bit is actually missing. An unconditional
+    # chmod writes to the install on every call and fails with PermissionError
+    # on read-only installs (e.g. Nix-style stores) even though the binary is
+    # fully runnable.
+    if sys.platform != "win32" and not os.access(binary_path, os.X_OK):
         os.chmod(binary_path, 0o755)
 
     return binary_path
