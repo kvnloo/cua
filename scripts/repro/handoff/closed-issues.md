@@ -11,6 +11,7 @@ These issues are closed on GitHub. Each row cites the closing comment. This file
 | 58 | https://github.com/kvnloo/cua/issues/58#issuecomment-5841219609 |
 | 60 | https://github.com/kvnloo/cua/issues/60#issuecomment-5841220395 |
 | 63 | https://github.com/kvnloo/cua/issues/63#issuecomment-5841024385 |
+| 64 | https://github.com/kvnloo/cua/issues/64#issuecomment-5841479030 |
 | 66 | https://github.com/kvnloo/cua/issues/66#issuecomment-5841212006 |
 | 68 | https://github.com/kvnloo/cua/issues/68#issuecomment-5841209233 |
 | 69 | https://github.com/kvnloo/cua/issues/69#issuecomment-5841210703 |

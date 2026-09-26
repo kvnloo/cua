@@ -320,7 +320,7 @@ Verdict withheld. Upstream pin `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. Fork 
 
 ### Issue 64
 
-Blocked. `scripts/repro/handoff/issue-64-block.md`. Missing on this Linux host: an exact-head driver session for the trycua/cua#4165 outcome A/B. `linux-host-probe.txt` shows installed `cua-driver 0.28.2`, no daemon, and no top-level windows. The pinned head is `c5ee191c02b11448ffefcc38b78b064a87d8ef23`. No helper was added. No verdict was issued.
+`scripts/repro/handoff/issue-64-block.md` and https://github.com/kvnloo/cua/issues/64#issuecomment-5841479030. The A/B was not run. `linux-host-probe.txt` shows installed `cua-driver 0.28.2`, no daemon, and no top-level windows. The comment points the remaining outcome evidence at trycua/cua#4196 and kvnloo/cua#2. No helper was added. No verdict was issued.
 
 ### Issue 65
 
