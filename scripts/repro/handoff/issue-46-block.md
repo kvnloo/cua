@@ -1,5 +1,14 @@
-# Issue 46
+# Issue 46 — deferred
 
-The projection is `scripts/repro/handoff/issue-46-projection.json`.
+Final disposition: **NOT PLANNED NOW / closed**.
 
-This Linux host is present. It is not the missing machine. A/B receipts were not produced. Missing prerequisite: pinned driver commit `c5ee191c02b11448ffefcc38b78b064a87d8ef23` is not an installed release.
+No chooser-projection A/B was run, and no smallest-safe projection is claimed.
+
+The work is intentionally deferred until:
+1. #4/#5 identify a surviving decision-deletion route;
+2. #24 provides a multi-task generalization battery;
+3. the route is independently exercisable/observable.
+
+#4196 demonstrated the correct order: prove the path first, then compress unused context.
+
+Do not reopen merely because the original projection deliverable was not produced.
