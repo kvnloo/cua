@@ -27,6 +27,10 @@ Auth simulation (for the #3383 auth-lifetime deep dive):
   --auth-scope all|history
                          all: every call pays; history: only history_* methods
                          pay (option (a) scoping — the reporter's ask)
+  --auth-cache           verify-once-per-connection: once a connection has paid
+                         an auth event, subsequent in-scope requests skip
+                         re-auth (the (a)+(b) hybrid prototype: history_*
+                         calls skip RE-auth after the first verify)
 """
 
 from __future__ import annotations
@@ -118,13 +122,16 @@ async def _handle_connection(
     auth_ms: float,
     auth_mode: str,
     auth_scope: str,
+    auth_cache: bool,
 ) -> None:
+    verified = False  # per-connection: has this connection passed auth yet?
     try:
         if auth_ms > 0 and auth_mode == "accept" and _auth_applies(None, auth_scope):
             # accept-time auth: scope "all" pays once per connection;
             # scope "history" can't decide at accept time, so it defers to
             # per-request below (the honest model for option (a)).
             await asyncio.sleep(auth_ms / 1000.0)
+            verified = True
         while True:
             line = await reader.readline()
             if not line:
@@ -141,8 +148,15 @@ async def _handle_connection(
                     pay = _auth_applies(request.get("name"), auth_scope)
                 elif auth_scope == "history":
                     pay = _auth_applies(request.get("name"), auth_scope)
+                if pay and auth_cache and verified:
+                    # (a)+(b) hybrid: skip RE-auth after the first verify on
+                    # this connection. The trust window this opens (bundle
+                    # change mid-connection) is exactly the auth-lifetime
+                    # contract question in dq-3383.
+                    pay = False
                 if pay:
                     await asyncio.sleep(auth_ms / 1000.0)
+                    verified = True
             if request.get("method") == "metadata":
                 payload: dict[str, Any] = {
                     "ok": True,
@@ -178,6 +192,8 @@ async def _main() -> None:
                         help="artificial auth delay per auth event, in ms")
     parser.add_argument("--auth-mode", choices=("accept", "request"), default="accept")
     parser.add_argument("--auth-scope", choices=("all", "history"), default="all")
+    parser.add_argument("--auth-cache", action="store_true",
+                        help="verify-once-per-connection: skip re-auth after the first auth event on a connection")
     args = parser.parse_args()
 
     try:
@@ -187,7 +203,8 @@ async def _main() -> None:
 
     async def handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         await _handle_connection(reader, writer, args.regions, args.keep_alive,
-                                 args.auth_ms, args.auth_mode, args.auth_scope)
+                                 args.auth_ms, args.auth_mode, args.auth_scope,
+                                 args.auth_cache)
 
     server = await asyncio.start_unix_server(handle, path=args.socket)
     print(f"ready {args.socket}", flush=True)
