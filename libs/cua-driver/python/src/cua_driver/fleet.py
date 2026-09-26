@@ -42,9 +42,15 @@ def open_fleet_mcp_driver_channel(client, sandbox, *, service="mcp"):
 
     class FleetServiceTransport(DriverServiceTransport):
         async def send(self, request):
+            # Loop-affinity is a caller-side programming error, not a transport
+            # outcome: raise it loudly instead of sanitizing it into
+            # "completion is unknown" below.
+            if asyncio.get_running_loop() is not loop:
+                raise RuntimeError(
+                    "Fleet Driver channel was opened on a different event loop; "
+                    "create a channel per loop instead of sharing one"
+                )
             try:
-                if asyncio.get_running_loop() is not loop:
-                    raise RuntimeError
                 http_request = (
                     HttpRequestBuilder()
                     .method(request.method)

@@ -174,6 +174,36 @@ def test_response_exactly_at_limit_is_accepted(adapter):
     asyncio.run(check())
 
 
+def test_send_from_different_loop_raises_clear_programming_error(adapter):
+    module, _ = adapter
+
+    async def setup():
+        channel = module.open_fleet_mcp_driver_channel(
+            SimpleNamespace(service_request=None), SimpleNamespace(services=["mcp"])
+        )
+        return channel.transport
+
+    loop_a = asyncio.new_event_loop()
+    try:
+        transport = loop_a.run_until_complete(setup())
+
+        async def send_from_other_loop():
+            request = SimpleNamespace(
+                method="POST", path="/mcp", body=b"", timeout_ms=1, headers=[]
+            )
+            return await transport.send(request)
+
+        loop_b = asyncio.new_event_loop()
+        try:
+            with pytest.raises(RuntimeError, match="different event loop") as error:
+                loop_b.run_until_complete(send_from_other_loop())
+            assert "completion is unknown" not in str(error.value)
+        finally:
+            loop_b.close()
+    finally:
+        loop_a.close()
+
+
 def test_real_generated_channel_uses_fleet_records_and_frozen_target():
     import cua_driver as sdk
     from cua_driver.fleet import open_fleet_mcp_driver_channel
