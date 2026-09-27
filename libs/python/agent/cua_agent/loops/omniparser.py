@@ -510,7 +510,7 @@ Output only the element ID as a single integer.
         )
 
         # Extract element ID from response
-        response_text = response.choices[0].message.content.strip()  # type: ignore
+        response_text = (response.choices[0].message.content or "").strip()
 
         # Try to parse the element ID
         try:
