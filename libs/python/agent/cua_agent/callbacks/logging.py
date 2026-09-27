@@ -136,6 +136,8 @@ class LoggingCallback(AsyncCallbackHandler):
     async def on_computer_call_start(self, item: Dict[str, Any]) -> None:
         """Called when a computer call starts."""
         action = item.get("action", {})
+        if not isinstance(action, dict):
+            action = {}
         action_type = action.get("type", "unknown")
         action_args = {k: v for k, v in action.items() if k != "type"}
 
@@ -199,13 +201,19 @@ class LoggingCallback(AsyncCallbackHandler):
         # Get the role to determine if it's Agent or User
         role = item.get("role", "unknown")
         content_items = item.get("content", [])
+        if not isinstance(content_items, list):
+            content_items = []
 
         # Process content items to build display text
         text_parts = []
         for content_item in content_items:
+            if not isinstance(content_item, dict):
+                continue
             content_type = content_item.get("type", "output_text")
             if content_type == "output_text":
                 text_content = content_item.get("text", "")
+                if not isinstance(text_content, str):
+                    text_content = str(text_content)
                 if not text_content.strip():
                     text_parts.append("[empty]")
                 else:
