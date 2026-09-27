@@ -175,6 +175,10 @@ def sanitize_message(msg: Any) -> Any:
 def get_output_call_ids(messages: List[Dict[str, Any]]) -> List[str]:
     call_ids = []
     for message in messages:
+        # Skip malformed model output entries (non-dict) instead of raising
+        # AttributeError and killing the run.
+        if not isinstance(message, dict):
+            continue
         if (
             message.get("type") == "computer_call_output"
             or message.get("type") == "function_call_output"
