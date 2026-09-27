@@ -8,6 +8,7 @@ import inspect
 import json
 import random
 import time
+from collections.abc import Iterable
 from pathlib import Path
 from typing import (
     Any,
@@ -564,7 +565,15 @@ class ComputerAgent:
         """Process input messages and create schemas for the agent loop"""
         if isinstance(input, str):
             return [{"role": "user", "content": input}]
-        return [get_json(msg) for msg in input]
+        if isinstance(input, dict):
+            # A single message dict passed without the enclosing list.
+            return [get_json(input)]
+        if isinstance(input, Iterable) and not isinstance(input, (bytes, bytearray)):
+            return [get_json(msg) for msg in input]
+        raise ValueError(
+            "messages must be a string, a message dict, or an iterable of "
+            f"message dicts, got {type(input).__name__}"
+        )
 
     def _process_tools(self) -> List[Dict[str, Any]]:
         """Process tools and create schemas for the agent loop"""
