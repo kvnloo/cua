@@ -9,7 +9,12 @@ from __future__ import annotations
 from core import Candidate
 from compiled_expectations import compile_expectation
 from deterministic_fast_path import explain_fast_path, single_executable_candidate
-from guarded_run import (\n    Decision,\n    FreshObservation,\n    admit_guarded_run,\n    explain_second_child,\n)
+from guarded_run import (
+    Decision,
+    FreshObservation,
+    admit_guarded_run,
+    explain_second_child,
+)
 
 
 def _candidate(candidate_id: str, tool: str | None, capture_id: str | None = None) -> Candidate:
@@ -127,6 +132,15 @@ def parity_corpus() -> list[dict[str, object]]:
             submit,
         ),
         (
+            "second action refused",
+            [type_c, submit],
+            "run",
+            ("type-verification-value", "submit-form"),
+            "refused",
+            fresh,
+            submit,
+        ),
+        (
             "visual submit expectation",
             [visual, reobserve],
             "single",
@@ -147,8 +161,9 @@ def parity_corpus() -> list[dict[str, object]]:
     ]
     rows: list[dict[str, object]] = []
     for name, candidates, kind, child_ids, status, observation, focus in cases:
-        fast_evidence = explain_fast_path(candidates)
-        exact = single_executable_candidate(candidates)
+        bound = "type-verification-value" if name == "one executable candidate" else None
+        fast_evidence = explain_fast_path(candidates, bound_completion_id=bound)
+        exact = single_executable_candidate(candidates, bound_completion_id=bound)
         plan = admit_guarded_run(
             candidates,
             Decision(kind, child_ids),

@@ -35,14 +35,21 @@ function candidate(id: string, tool: string | null, captureId?: string | null): 
   return { id, description: id, tool, arguments: {}, capture_id: captureId ?? null };
 }
 
-function explainFastPath(candidates: Candidate[]): {
+function explainFastPath(
+  candidates: Candidate[],
+  boundCompletionId: string | null = null,
+): {
   route: FastPathRoute;
   executableCount: number;
   candidateId: string | null;
   providerCalled: boolean;
 } {
   const executable = candidates.filter((item) => !RESERVED.has(item.id) && item.tool != null);
-  if (executable.length === 1) {
+  if (
+    boundCompletionId != null &&
+    executable.length === 1 &&
+    executable[0].id === boundCompletionId
+  ) {
     return {
       route: 'fast-path',
       executableCount: 1,
@@ -208,6 +215,15 @@ export function parityCorpus(): ParityRow[] {
       focus: submit,
     },
     {
+      case: 'second action refused',
+      candidates: [typeC, submit],
+      kind: 'run',
+      childIds: ['type-verification-value', 'submit-form'],
+      status: 'refused',
+      fresh,
+      focus: submit,
+    },
+    {
       case: 'visual submit expectation',
       candidates: [visual, reobserve],
       kind: 'single',
@@ -227,7 +243,9 @@ export function parityCorpus(): ParityRow[] {
     },
   ];
   return cases.map((item) => {
-    const fast = explainFastPath(item.candidates);
+    const bound =
+      item.case === 'one executable candidate' ? 'type-verification-value' : null;
+    const fast = explainFastPath(item.candidates, bound);
     const plan = admit(item.candidates, item.kind, item.childIds, 'proof', 'ref-submit');
     const second = plan == null ? null : explainSecond(item.status, item.fresh, plan);
     const compiled = compileExpectation(item.focus, 'proof');

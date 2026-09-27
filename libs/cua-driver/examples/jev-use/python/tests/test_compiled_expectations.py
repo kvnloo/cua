@@ -112,8 +112,17 @@ class CompiledExpectationTest(unittest.TestCase):
         by_case = {row["case"]: row for row in python_rows}
         self.assertEqual(by_case["one executable candidate"]["fast_path_id"], "type-verification-value")
         self.assertIsNone(by_case["reserved reobserve and abstain"]["fast_path_id"])
-        self.assertEqual(by_case["provider would reobserve"]["fast_path_id"], "type-verification-value")
+        self.assertIsNone(by_case["provider would reobserve"]["fast_path_id"])
+        self.assertTrue(by_case["provider would reobserve"]["provider_called"])
+        self.assertEqual(by_case["provider would reobserve"]["fast_path_route"], "chooser")
+        self.assertFalse(by_case["one executable candidate"]["provider_called"])
         self.assertFalse(by_case["provider would reobserve"]["run_admitted"])
+        broken = [dict(row) for row in python_rows]
+        target = next(row for row in broken if row["case"] == "provider would reobserve")
+        target["provider_called"] = False
+        target["fast_path_route"] = "fast-path"
+        target["fast_path_id"] = "type-verification-value"
+        self.assertNotEqual(broken, python_rows)
         self.assertTrue(by_case["guarded continuation admitted"]["second_dispatch"])
         self.assertFalse(by_case["guarded continuation refused"]["run_admitted"])
         self.assertFalse(by_case["stale observation"]["second_dispatch"])

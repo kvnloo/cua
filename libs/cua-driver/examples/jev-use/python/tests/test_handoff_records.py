@@ -44,7 +44,12 @@ class HandoffRecordTest(unittest.TestCase):
         admitted = single_executable_candidate(
             [candidate("type-verification-value", "browser_type"), candidate("reobserve", None)]
         )
-        self.assertEqual(admitted.id, "type-verification-value")
+        self.assertIsNone(admitted)
+        bound = single_executable_candidate(
+            [candidate("type-verification-value", "browser_type"), candidate("reobserve", None)],
+            bound_completion_id="type-verification-value",
+        )
+        self.assertEqual(bound.id, "type-verification-value")
         with self.assertRaises(AuthorityError):
             action_target(Row("calc-result", "6", passive=True))
         with self.assertRaises(RuntimeError):

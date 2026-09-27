@@ -20,7 +20,11 @@ class CallerRouteTest(unittest.TestCase):
         semantic = [candidate("type-verification-value", "browser_type"), candidate("reobserve", None)]
         visual = [candidate("submit-form", "click", "cap"), candidate("reobserve", None)]
         two = [candidate("click-a", "click"), candidate("click-b", "click"), candidate("reobserve", None)]
-        self.assertEqual(route(semantic, "single"), "fast-path")
+        self.assertEqual(route(semantic, "single"), "chooser")
+        self.assertEqual(
+            route(semantic, "single", bound_completion_id="type-verification-value"),
+            "fast-path",
+        )
         self.assertEqual(route(visual, "single"), "chooser-with-visual")
         self.assertEqual(route(two, "single"), "chooser")
         self.assertEqual(route(semantic, "run"), "guarded-run")

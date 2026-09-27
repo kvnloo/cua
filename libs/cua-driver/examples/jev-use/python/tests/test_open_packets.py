@@ -78,7 +78,7 @@ class OpenPacketTest(unittest.TestCase):
         )
         self.assertTrue(all(row["live_success"] is None and row["wall_time_ms"] is None for row in table))
         by_key = {(row["task"], row["arm"]): row for row in table}
-        self.assertTrue(by_key[("fill-submit", "lazy-vision")]["fast_path"])
+        self.assertFalse(by_key[("fill-submit", "lazy-vision")]["fast_path"])
         self.assertEqual(by_key[("fill-submit", "lazy-vision")]["visual_parses"], 0)
         self.assertEqual(by_key[("visual-needed", "lazy-vision")]["visual_parses"], 1)
         self.assertEqual(by_key[("two-fields", "guarded-run")]["admission"], "admitted")
@@ -86,7 +86,7 @@ class OpenPacketTest(unittest.TestCase):
         self.assertEqual(by_key[("two-fields", "guarded-run")]["decisions"], 1)
         self.assertEqual(by_key[("fill-submit", "guarded-run")]["admission"], "not admitted")
         form = evaluate("form-fill", [Candidate("only-action", "only-action", "browser_click", {})])
-        self.assertTrue(form.fast_path)
+        self.assertFalse(form.fast_path)
         self.assertFalse(hasattr(form, "retained_ground_truth"))
 
     def test_semantic_budget_does_not_use_milliseconds(self) -> None:
@@ -119,7 +119,7 @@ class OpenPacketTest(unittest.TestCase):
         recorded = json.loads((HANDOFF / "issue-49-comparison.json").read_text(encoding="utf-8"))
         self.assertEqual(recorded, rows)
         by_concept = {row["concept"]: row for row in rows}
-        self.assertEqual(by_concept["one executable candidate"]["shipped_result"], "only-action")
+        self.assertIsNone(by_concept["one executable candidate"]["shipped_result"])
         self.assertEqual(by_concept["freshness"]["shipped_result"], "stale refused")
         self.assertTrue(all(row["second_harness"] == "deleted" for row in rows))
         self.assertEqual(len(rows), 5)

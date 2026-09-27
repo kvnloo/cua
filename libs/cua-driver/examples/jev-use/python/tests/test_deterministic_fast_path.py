@@ -22,7 +22,8 @@ def reserved() -> list[Candidate]:
 class DeterministicFastPathTest(unittest.TestCase):
     def test_one_executable_candidate_is_admitted(self) -> None:
         admitted = single_executable_candidate(
-            [candidate("type-verification-value", "browser_type"), *reserved()]
+            [candidate("type-verification-value", "browser_type"), *reserved()],
+            bound_completion_id="type-verification-value",
         )
         self.assertIsNotNone(admitted)
         assert admitted is not None
@@ -30,7 +31,8 @@ class DeterministicFastPathTest(unittest.TestCase):
 
     def test_submit_candidate_is_admitted(self) -> None:
         admitted = single_executable_candidate(
-            [candidate("submit-form", "browser_click"), *reserved()]
+            [candidate("submit-form", "browser_click"), *reserved()],
+            bound_completion_id="submit-form",
         )
         self.assertIsNotNone(admitted)
         assert admitted is not None
@@ -57,16 +59,19 @@ class DeterministicFastPathTest(unittest.TestCase):
             )
         )
 
-    def test_rule_acts_when_a_chooser_would_reobserve(self) -> None:
+    def test_one_executable_candidate_does_not_override_reobserve(self) -> None:
         candidates = [candidate("submit-form", "browser_click"), *reserved()]
         admitted = single_executable_candidate(candidates)
-        chooser_choice = "reobserve"
-        self.assertEqual(getattr(admitted, "id", None), "submit-form")
-        self.assertNotEqual(chooser_choice, getattr(admitted, "id", None))
+        evidence = explain_fast_path(candidates)
+        self.assertIsNone(admitted)
+        self.assertEqual(evidence.route, "chooser")
+        self.assertTrue(evidence.provider_called)
+        self.assertEqual(evidence.executable_count, 1)
 
     def test_evidence_marks_fast_path_and_provider_not_called(self) -> None:
         evidence = explain_fast_path(
-            [candidate("type-verification-value", "browser_type"), *reserved()]
+            [candidate("type-verification-value", "browser_type"), *reserved()],
+            bound_completion_id="type-verification-value",
         )
         self.assertEqual(evidence.route, "fast-path")
         self.assertEqual(evidence.executable_count, 1)

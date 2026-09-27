@@ -10,12 +10,19 @@ from deterministic_fast_path import single_executable_candidate
 from lazy_vision import needs_visual_capture
 
 
-def route(candidates: list[Candidate], decision_kind: str) -> str:
+def route(
+    candidates: list[Candidate],
+    decision_kind: str,
+    *,
+    bound_completion_id: str | None = None,
+) -> str:
     if decision_kind == "run":
         return "guarded-run"
     if decision_kind in {"reobserve", "abstain"}:
         return decision_kind
-    admitted = single_executable_candidate(candidates)
+    admitted = single_executable_candidate(
+        candidates, bound_completion_id=bound_completion_id
+    )
     if admitted is not None and not needs_visual_capture(candidates):
         return "fast-path"
     if needs_visual_capture(candidates):

@@ -29,8 +29,8 @@ class TaskBatteryTest(unittest.TestCase):
                 candidate("reobserve", None),
             ],
         )
-        self.assertTrue(form.fast_path)
-        self.assertEqual(form.decisions, 0)
+        self.assertFalse(form.fast_path)
+        self.assertEqual(form.decisions, 1)
         self.assertFalse(modal.fast_path)
         self.assertEqual(modal.decisions, 1)
         self.assertFalse(promote_globally([form, modal]))

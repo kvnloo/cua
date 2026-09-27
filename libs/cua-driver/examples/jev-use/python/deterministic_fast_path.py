@@ -33,11 +33,24 @@ def _executable_candidates(candidates: list[Candidate]) -> list[Candidate]:
     ]
 
 
-def explain_fast_path(candidates: list[Candidate]) -> FastPathEvidence:
-    """Explain whether the local rule would act without invoking a provider."""
+def explain_fast_path(
+    candidates: list[Candidate],
+    *,
+    bound_completion_id: str | None = None,
+) -> FastPathEvidence:
+    """Explain whether a bound completion may act without a provider.
+
+    One executable candidate is not authority to act. The provider is skipped
+    only when the caller already names that exact candidate as the required
+    completion of a locally proven obligation.
+    """
 
     executable = _executable_candidates(candidates)
-    if len(executable) == 1:
+    if (
+        bound_completion_id is not None
+        and len(executable) == 1
+        and executable[0].id == bound_completion_id
+    ):
         return FastPathEvidence(
             route="fast-path",
             executable_count=1,
@@ -52,15 +65,14 @@ def explain_fast_path(candidates: list[Candidate]) -> FastPathEvidence:
     )
 
 
-def single_executable_candidate(candidates: list[Candidate]) -> Candidate | None:
-    """Return the only executable candidate, or None when the chooser must run.
+def single_executable_candidate(
+    candidates: list[Candidate],
+    *,
+    bound_completion_id: str | None = None,
+) -> Candidate | None:
+    """Return the bound completion, or None when the chooser must run."""
 
-    Executable means a candidate with a Driver tool whose id is not reserved.
-    Zero or several executable candidates keep the decision with the chooser,
-    including a chooser that would reobserve despite one apparent action.
-    """
-
-    evidence = explain_fast_path(candidates)
+    evidence = explain_fast_path(candidates, bound_completion_id=bound_completion_id)
     if evidence.route != "fast-path" or evidence.candidate_id is None:
         return None
     return next(candidate for candidate in candidates if candidate.id == evidence.candidate_id)
