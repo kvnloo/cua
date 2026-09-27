@@ -64,8 +64,10 @@ class ImageRetentionCallback(AsyncCallbackHandler):
         if len(output_indices) <= self.only_n_most_recent_images:
             return messages
 
-        # Determine which outputs to keep (most recent N)
-        keep_output_indices = set(output_indices[-self.only_n_most_recent_images :])
+        # Determine which outputs to keep (most recent N). Note -0 == 0, so
+        # output_indices[-0:] would be the whole list; N=0 must keep none.
+        n = self.only_n_most_recent_images
+        keep_output_indices = set(output_indices[-n:]) if n > 0 else set()
 
         # Build set of indices to remove in one pass
         to_remove: set[int] = set()
