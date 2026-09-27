@@ -135,6 +135,8 @@ class OpenCUAConfig(ComposedGroundedConfig):
         def _has_screenshot_message(msgs: List[Dict[str, Any]]) -> bool:
             screenshot_text = "Taking a screenshot to see the current computer screen."
             for m in msgs:
+                if not isinstance(m, dict):
+                    continue
                 content = m.get("content")
                 if isinstance(content, str) and screenshot_text in content:
                     return True

@@ -342,6 +342,8 @@ class Qwen35Config(AsyncAgentConfig):
             """Check if messages already contain the 'Taking a screenshot' text."""
             screenshot_text = "Taking a screenshot to see the current computer screen."
             for m in msgs:
+                if not isinstance(m, dict):
+                    continue
                 content = m.get("content")
                 if isinstance(content, str) and screenshot_text in content:
                     return True
