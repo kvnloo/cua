@@ -18,8 +18,10 @@ class YutoriAdapter(CustomLLM):
         self.base_url = base_url or os.environ.get("YUTORI_API_BASE") or YUTORI_API_BASE
         self.api_key = api_key or os.environ.get("YUTORI_API_KEY")
 
-    def _normalize_model(self, model: str) -> str:
+    def _normalize_model(self, model: str | None) -> str:
         """Strip the yutori/ prefix to get the bare model name."""
+        # model may arrive as None through litellm's kwargs; normalize to str.
+        model = model or ""
         if model.startswith("yutori/"):
             return model[len("yutori/") :]
         return model
@@ -42,7 +44,11 @@ class YutoriAdapter(CustomLLM):
 
         extra_headers = {}
         if "extra_headers" in kwargs:
-            extra_headers.update(kwargs.pop("extra_headers"))
+            # A non-dict extra_headers cannot be merged; ignore it instead
+            # of crashing on dict.update.
+            popped = kwargs.pop("extra_headers")
+            if isinstance(popped, dict):
+                extra_headers.update(popped)
         extra_headers["Authorization"] = f"Bearer {api_key}"
 
         params = {
@@ -73,10 +79,14 @@ class YutoriAdapter(CustomLLM):
 
         if "optional_params" in kwargs:
             protected_keys = {"api_key", "extra_headers", "model", "api_base", "stream"}
-            filtered = {
-                k: v for k, v in kwargs["optional_params"].items() if k not in protected_keys
-            }
-            params.update(filtered)
+            optional_params = kwargs["optional_params"]
+            # A non-dict optional_params has no items to forward; ignore it
+            # instead of crashing.
+            if isinstance(optional_params, dict):
+                filtered = {
+                    k: v for k, v in optional_params.items() if k not in protected_keys
+                }
+                params.update(filtered)
 
         if "headers" in kwargs:
             params["headers"] = kwargs["headers"]
