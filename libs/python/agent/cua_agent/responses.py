@@ -276,6 +276,8 @@ def replace_failed_computer_calls_with_function_calls(
     # Find all call_ids that have function_call_output items
     failed_call_ids = set()
     for msg in messages:
+        if not isinstance(msg, dict):
+            continue
         if msg.get("type") == "function_call_output":
             call_id = msg.get("call_id")
             if call_id:
@@ -283,6 +285,8 @@ def replace_failed_computer_calls_with_function_calls(
 
     # Replace computer_call items that have matching call_ids
     for i, msg in enumerate(messages):
+        if not isinstance(msg, dict):
+            continue
         if msg.get("type") == "computer_call" and msg.get("call_id") in failed_call_ids:
 
             # Extract action from computer_call
@@ -318,8 +322,15 @@ def convert_computer_calls_desc2xy(
     converted_items = []
 
     for item in responses_items:
+        if not isinstance(item, dict):
+            converted_items.append(item)
+            continue
         if item.get("type") == "computer_call" and "action" in item:
-            action = item["action"].copy()
+            action = item["action"]
+            if not isinstance(action, dict):
+                converted_items.append(item)
+                continue
+            action = action.copy()
 
             # Handle single element_description
             if "element_description" in action:
