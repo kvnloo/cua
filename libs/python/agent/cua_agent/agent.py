@@ -806,9 +806,14 @@ class ComputerAgent:
 
                 # Handle safety checks
                 pending_checks = item.get("pending_safety_checks", [])
+                if not isinstance(pending_checks, list):
+                    pending_checks = []
                 acknowledged_checks = []
                 for check in pending_checks:
-                    check_message = check.get("message", str(check))
+                    if isinstance(check, dict):
+                        check_message = check.get("message", str(check))
+                    else:
+                        check_message = str(check)
                     acknowledged_checks.append(check)
                     # TODO: implement a callback for safety checks
                     # if acknowledge_safety_check_callback(check_message, allow_always=True):
