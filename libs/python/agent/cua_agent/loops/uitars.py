@@ -779,19 +779,33 @@ class UITARSConfig:
         if _on_api_end:
             await _on_api_end(api_kwargs, response)
 
-        # Extract response content
-        response_content = response.choices[0].message.content.strip()  # type: ignore
-
-        # Parse UITARS response
-        parsed_responses = parse_uitars_response(response_content, original_width, original_height)
-
-        # Convert to computer actions
-        computer_actions = convert_to_computer_actions(
-            parsed_responses, original_width, original_height
+        # Extract response content. An empty choices list (model returned
+        # nothing) or a missing message degrades to an empty step instead of
+        # raising, mirroring the empty-step degrade for unparseable content.
+        choices = getattr(response, "choices", None) or []
+        message = choices[0].message if choices else None
+        raw_content = getattr(message, "content", None)
+        response_content = (
+            raw_content.strip() if isinstance(raw_content, str) else ""
         )
 
+        # Parse UITARS response. Unparseable model output (no Action line,
+        # malformed point strings, ...) degrades to an empty step rather
+        # than killing the run.
+        try:
+            parsed_responses = parse_uitars_response(response_content, original_width, original_height)
+
+            # Convert to computer actions
+            computer_actions = convert_to_computer_actions(
+                parsed_responses, original_width, original_height
+            )
+        except Exception as e:
+            print(f"[uitars] Unparseable model content; returning empty step: {e}")
+            parsed_responses = []
+            computer_actions = []
+
         # Add computer actions to response items
-        thought = parsed_responses[0].get("thought", "")
+        thought = parsed_responses[0].get("thought", "") if parsed_responses else ""
         if thought:
             response_items.append(make_reasoning_item(thought))
         response_items.extend(computer_actions)
