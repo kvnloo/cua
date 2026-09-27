@@ -94,6 +94,13 @@ class PlaygroundServer:
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Invalid JSON body: {str(e)}")
 
+            # A non-object JSON body (array, string, ...) must be a 400, not
+            # an unhandled AttributeError 500 on body.get below.
+            if not isinstance(body, dict):
+                raise HTTPException(
+                    status_code=400, detail="Request body must be a JSON object"
+                )
+
             model = body.get("model")
             input_data = body.get("input")
             if not model or input_data is None:
@@ -161,14 +168,24 @@ class PlaygroundServer:
                                 else:
                                     total_usage[k] = v
                         for msg in result.get("output", []):
-                            if msg.get("type") == "computer_call":
-                                pending_computer_call_ids.add(msg["call_id"])
-                            elif msg.get("type") == "computer_call_output":
-                                pending_computer_call_ids.discard(msg["call_id"])
-                            elif msg.get("type") == "function_call":
-                                pending_computer_call_ids.add(msg["call_id"])
-                            elif msg.get("type") == "function_call_output":
-                                pending_computer_call_ids.discard(msg["call_id"])
+                            # Skip malformed entries: the run loop itself
+                            # tolerates non-dict items, so the bookkeeping must
+                            # too — one bad entry must not flip the whole call
+                            # to "failed".
+                            if not isinstance(msg, dict):
+                                continue
+                            msg_type = msg.get("type")
+                            call_id = msg.get("call_id")
+                            if msg_type == "computer_call":
+                                if call_id:
+                                    pending_computer_call_ids.add(call_id)
+                            elif msg_type == "computer_call_output":
+                                pending_computer_call_ids.discard(call_id)
+                            elif msg_type == "function_call":
+                                if call_id:
+                                    pending_computer_call_ids.add(call_id)
+                            elif msg_type == "function_call_output":
+                                pending_computer_call_ids.discard(call_id)
                         # exit if no pending computer calls
                         if not pending_computer_call_ids:
                             break
