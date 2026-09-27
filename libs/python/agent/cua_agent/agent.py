@@ -734,6 +734,10 @@ class ComputerAgent:
         ignore_call_ids: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """Handle each item; may cause a computer action + screenshot."""
+        if not isinstance(item, dict):
+            # Malformed model output can surface a bare string/number in the
+            # output list; there is nothing to handle.
+            return []
         call_id = item.get("call_id")
         if ignore_call_ids and call_id and call_id in ignore_call_ids:
             return []
