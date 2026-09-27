@@ -1696,7 +1696,10 @@ def _combine_completion_messages(completion_messages: List[Dict[str, Any]]) -> L
 
             # Copy tool_calls if present
             if "tool_calls" in message:
-                new_message["tool_calls"] = message["tool_calls"].copy()
+                tool_calls = message["tool_calls"]
+                new_message["tool_calls"] = (
+                    tool_calls.copy() if isinstance(tool_calls, list) else []
+                )
 
             combined_messages.append(new_message)
         else:
@@ -1711,7 +1714,9 @@ def _combine_completion_messages(completion_messages: List[Dict[str, Any]]) -> L
             if "tool_calls" in message:
                 if "tool_calls" not in last_message:
                     last_message["tool_calls"] = []
-                last_message["tool_calls"].extend(message["tool_calls"])
+                tool_calls = message["tool_calls"]
+                if isinstance(tool_calls, list):
+                    last_message["tool_calls"].extend(tool_calls)
 
     # Post-process to merge consecutive text blocks
     for message in combined_messages:
@@ -1741,9 +1746,20 @@ def _merge_consecutive_text(content_list: List[Dict[str, Any]]) -> List[Dict[str
     merged = []
 
     for item in content_list:
-        if item.get("type") == "text" and merged and merged[-1].get("type") == "text":
-            # Merge with previous text block
-            merged[-1]["text"] += "\n" + item["text"]
+        if not isinstance(item, dict):
+            # Non-dict content items are passed through untouched: the forward
+            # converter deliberately keeps unknown content shapes as-is, so
+            # merging must not raise AttributeError on them mid-predict_step.
+            merged.append(item)
+            continue
+        if (
+            item.get("type") == "text"
+            and merged
+            and isinstance(merged[-1], dict)
+            and merged[-1].get("type") == "text"
+        ):
+            # Merge with previous text block; tolerate missing/non-string text.
+            merged[-1]["text"] = str(merged[-1].get("text", "")) + "\n" + str(item.get("text", ""))
         else:
             merged.append(item.copy())
 
