@@ -115,7 +115,12 @@ def get_last_computer_call_image(messages: List[Dict[str, Any]]) -> Optional[str
             and message["output"].get("type") == "input_image"
         ):
             image_url = message["output"].get("image_url", "")
-            if image_url.startswith("data:image/png;base64,"):
+            # Malformed driver payloads can carry a non-string image_url;
+            # treat them as absent (fall through to a fresh screenshot)
+            # instead of crashing the step.
+            if isinstance(image_url, str) and image_url.startswith(
+                "data:image/png;base64,"
+            ):
                 return image_url.split(",", 1)[1]
     return None
 
