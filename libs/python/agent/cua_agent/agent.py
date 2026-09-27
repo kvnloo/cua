@@ -951,6 +951,10 @@ class ComputerAgent:
         }
         await self._on_run_start(run_kwargs, old_items)
 
+        # Bound before the loop so _on_run_end always receives step kwargs,
+        # even when _on_run_continue stops the run before the first step.
+        loop_kwargs: Dict[str, Any] = {}
+
         while new_items[-1].get("role") != "assistant" if new_items else True:
             # Lifecycle hook: Check if we should continue based on callbacks (e.g., budget manager)
             should_continue = await self._on_run_continue(run_kwargs, old_items, new_items)
