@@ -94,6 +94,8 @@ def _row(
     token: str,
     elapsed_ms: float,
     execution: str = "loopback-fixture",
+    prior_ref: str | None = None,
+    dispatch_ref: str | None = None,
 ) -> dict[str, Any]:
     return {
         "case": case,
@@ -111,6 +113,8 @@ def _row(
         "verified_outcome_ms": round(elapsed_ms, 2),
         "execution": execution,
         "stale_incidents": 1 if second_reason == "stale" else 0,
+        "prior_ref": prior_ref,
+        "dispatch_ref": dispatch_ref,
     }
 
 
@@ -207,6 +211,86 @@ def local_rows(evidence_root: Path) -> list[dict[str, Any]]:
                 oracle=oracle,
                 token=token,
                 elapsed_ms=elapsed,
+            )
+        )
+
+        fixture.reset()
+        started = time.perf_counter()
+        churn = admit_guarded_run(
+            [type_c, submit, reobserve],
+            Decision("run", ("type-verification-value", "submit-form")),
+            token=token,
+            submit_ref="ref-before",
+            target_role="button",
+            target_name="Submit",
+        )
+        assert churn is not None
+        churn_fresh = FreshObservation(
+            token, "ref-after", "cap-2", role="button", name="Submit", match_count=1, resolved_ref="ref-after"
+        )
+        churn_evidence = explain_second_child("verified", churn_fresh, churn)
+        churn_authority = explain_fast_path([submit], bound_completion_id=churn.second.candidate_id)
+        if (
+            churn_evidence.allowed
+            and churn_evidence.dispatch_ref == "ref-after"
+            and churn_authority.route == "fast-path"
+        ):
+            fixture.submit(token)
+        elapsed = (time.perf_counter() - started) * 1000
+        oracle = fixture.state()
+        rows.append(
+            _row(
+                case="benign ref churn",
+                arm="guarded-run",
+                route=churn_authority.route,
+                provider_calls=1,
+                provider_called_on_second=False,
+                second_dispatch=int(oracle.get("submitted") == token),
+                second_reason=churn_evidence.reason,
+                action_calls=1 if oracle.get("submitted") == token else 0,
+                observations=2,
+                outcome="verified" if oracle.get("submitted") == token else "refuted",
+                oracle=oracle,
+                token=token,
+                elapsed_ms=elapsed,
+                prior_ref="ref-before",
+                dispatch_ref=churn_evidence.dispatch_ref,
+            )
+        )
+
+        fixture.reset()
+        started = time.perf_counter()
+        rebound = admit_guarded_run(
+            [type_c, submit, reobserve],
+            Decision("run", ("type-verification-value", "submit-form")),
+            token=token,
+            submit_ref="ref-before",
+            target_role="button",
+            target_name="Submit",
+        )
+        assert rebound is not None
+        rebound_fresh = FreshObservation(
+            token, "ref-other", "cap-2", role="button", name="Other", match_count=1, resolved_ref="ref-other"
+        )
+        rebound_evidence = explain_second_child("verified", rebound_fresh, rebound)
+        elapsed = (time.perf_counter() - started) * 1000
+        rows.append(
+            _row(
+                case="true rebound",
+                arm="guarded-run",
+                route="fast-path",
+                provider_calls=1,
+                provider_called_on_second=False,
+                second_dispatch=int(rebound_evidence.allowed),
+                second_reason=rebound_evidence.reason,
+                action_calls=0,
+                observations=2,
+                outcome="stopped",
+                oracle=fixture.state(),
+                token=token,
+                elapsed_ms=elapsed,
+                prior_ref="ref-before",
+                dispatch_ref=rebound_evidence.dispatch_ref,
             )
         )
 
@@ -361,11 +445,14 @@ async def driver_rows(
 
                 type_c = Candidate("type-verification-value", "type", "browser_type", {})
                 submit_c = Candidate("submit-form", "submit", "browser_click", {})
+                prior_ref = str(button["ref"])
                 plan = admit_guarded_run(
                     [type_c, submit_c],
                     Decision("run", ("type-verification-value", "submit-form")),
                     token=token,
-                    submit_ref=str(button["ref"]),
+                    submit_ref=prior_ref,
+                    target_role=str(button.get("role")),
+                    target_name=str(button.get("name")),
                 )
                 assert plan is not None
                 provider_calls += 1
@@ -401,31 +488,50 @@ async def driver_rows(
                     )
                     observations += 1
                     fresh_field, fresh_button = _refs(fresh_snapshot)
+                    matches = [
+                        ref
+                        for ref in (fresh_snapshot.get("refs") or [])
+                        if ref.get("role") == plan.target_role and ref.get("name") == plan.target_name
+                    ]
                     status = "verified"
-                    submit_ref = str(fresh_button["ref"]) if fresh_button else None
+                    resolved = str(matches[0]["ref"]) if len(matches) == 1 else None
+                    role = plan.target_role if matches else None
+                    name = plan.target_name if matches else None
+                    match_count = len(matches)
+                    proposed = resolved
                     capture = "cap-live"
                     if case == "unknown first postcondition":
                         status = "unknown"
                     elif case == "target disappears":
                         status = "stale"
-                        submit_ref = None
-                    elif case == "target rebound":
-                        status = "rebound"
-                        submit_ref = "rebound-ref"
+                        proposed = None
+                        resolved = None
+                        match_count = 0
+                    elif case in {"target rebound", "true rebound"}:
+                        role = "button"
+                        name = "Rebound"
+                        match_count = 0
+                        proposed = None
+                        resolved = None
+                        fresh_button = None
                     elif case == "stale capture":
                         capture = None
                     elif case == "second action refusal":
                         status = "refused"
                     elif case == "mismatched submit ref":
-                        submit_ref = "other-ref"
+                        proposed = prior_ref
                     elif case == "refuted first postcondition":
                         status = "refuted"
                     elif case == "one executable reobserve":
                         status = "verified"
                     fresh = FreshObservation(
                         None if fresh_field is None else fresh_field.get("value"),
-                        submit_ref,
+                        proposed,
                         capture,
+                        role=role,
+                        name=name,
+                        match_count=match_count,
+                        resolved_ref=resolved,
                     )
                 evidence = explain_second_child(status, fresh, plan)
                 if case == "one executable reobserve":
@@ -445,13 +551,21 @@ async def driver_rows(
                     provider_called_on_second = True
                 elif dispatch:
                     provider_called_on_second = False
-                if dispatch and fresh_button is not None and case != "one executable reobserve":
+                click_ref = evidence.dispatch_ref
+                if (
+                    dispatch
+                    and click_ref
+                    and fresh_button is not None
+                    and click_ref == fresh_button["ref"]
+                    and click_ref != prior_ref
+                    and case != "one executable reobserve"
+                ):
                     await driver.call(
                         "browser_click",
                         {
                             "target_id": target_id,
                             "tab_id": tab_id,
-                            "ref": fresh_button["ref"],
+                            "ref": click_ref,
                             "input_route": "dom_event",
                         },
                     )
@@ -460,6 +574,7 @@ async def driver_rows(
                 reason = evidence.reason if case != "one executable reobserve" else "chooser"
                 if case == "one executable reobserve":
                     route = authority.route
+                    provider_called_on_second = bool(authority.provider_called)
                     second_dispatch = 0
                 oracle = run.fixture_state(fixture_url)
                 if oracle.get("submitted") == token:
@@ -483,6 +598,8 @@ async def driver_rows(
             token=token,
             elapsed_ms=(time.perf_counter() - started) * 1000,
             execution="driver-mcp",
+            prior_ref=prior_ref,
+            dispatch_ref=evidence.dispatch_ref if second_dispatch else None,
         )
 
     try:
@@ -496,6 +613,8 @@ async def driver_rows(
             "missing observation",
             "mismatched submit ref",
             "one executable reobserve",
+            "benign ref churn",
+            "true rebound",
         )
         for case in ("type then submit",):
             for arm in ("baseline", "guarded-run"):

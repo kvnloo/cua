@@ -9,20 +9,22 @@
       "case": "type then submit",
       "arm": "baseline",
       "route": "chooser",
-      "provider_calls": 1,
-      "provider_called_on_second": false,
-      "second_dispatch": 0,
-      "second_reason": "submit_ref_mismatch",
-      "action_calls": 1,
+      "provider_calls": 2,
+      "provider_called_on_second": true,
+      "second_dispatch": 1,
+      "second_reason": "allowed",
+      "action_calls": 2,
       "semantic_observations": 2,
-      "outcome": "stopped",
+      "outcome": "verified",
       "oracle": {
-        "submitted": null
+        "submitted": "guarded-baseline-type then su-1790487581078102669"
       },
-      "token": "guarded-baseline-type then su-1790484904572072823",
-      "verified_outcome_ms": 2252.6,
+      "token": "guarded-baseline-type then su-1790487581078102669",
+      "verified_outcome_ms": 1129.91,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": "p2:2"
     },
     {
       "case": "type then submit",
@@ -30,18 +32,20 @@
       "route": "fast-path",
       "provider_calls": 1,
       "provider_called_on_second": false,
-      "second_dispatch": 0,
-      "second_reason": "submit_ref_mismatch",
-      "action_calls": 1,
+      "second_dispatch": 1,
+      "second_reason": "allowed",
+      "action_calls": 2,
       "semantic_observations": 2,
-      "outcome": "stopped",
+      "outcome": "verified",
       "oracle": {
-        "submitted": null
+        "submitted": "guarded-guarded-run-type then su-1790487582227017889"
       },
-      "token": "guarded-guarded-run-type then su-1790484906843371391",
-      "verified_outcome_ms": 1727.57,
+      "token": "guarded-guarded-run-type then su-1790487582227017889",
+      "verified_outcome_ms": 1073.78,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": "p2:2"
     },
     {
       "case": "refuted first postcondition",
@@ -57,10 +61,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-refuted firs-1790484908571796269",
-      "verified_outcome_ms": 1390.41,
+      "token": "guarded-guarded-run-refuted firs-1790487583301467255",
+      "verified_outcome_ms": 1089.03,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "unknown first postcondition",
@@ -76,10 +82,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-unknown firs-1790484909962977103",
-      "verified_outcome_ms": 1367.3,
+      "token": "guarded-guarded-run-unknown firs-1790487584391213098",
+      "verified_outcome_ms": 1082.53,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "target disappears",
@@ -95,10 +103,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-target disap-1790484911331963743",
-      "verified_outcome_ms": 1320.06,
+      "token": "guarded-guarded-run-target disap-1790487585474321502",
+      "verified_outcome_ms": 1143.63,
       "execution": "driver-mcp",
-      "stale_incidents": 1
+      "stale_incidents": 1,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "target rebound",
@@ -114,10 +124,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-target rebou-1790484912652659464",
-      "verified_outcome_ms": 1292.12,
+      "token": "guarded-guarded-run-target rebou-1790487586618529208",
+      "verified_outcome_ms": 1062.62,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "stale capture",
@@ -133,10 +145,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-stale captur-1790484913945460090",
-      "verified_outcome_ms": 1268.96,
+      "token": "guarded-guarded-run-stale captur-1790487587681768538",
+      "verified_outcome_ms": 1154.39,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "second action refusal",
@@ -152,10 +166,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-second actio-1790484915215061441",
-      "verified_outcome_ms": 1347.85,
+      "token": "guarded-guarded-run-second actio-1790487588836801903",
+      "verified_outcome_ms": 1102.25,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "missing observation",
@@ -171,10 +187,12 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-missing obse-1790484916563744731",
-      "verified_outcome_ms": 1289.67,
+      "token": "guarded-guarded-run-missing obse-1790487589940539431",
+      "verified_outcome_ms": 1049.35,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "mismatched submit ref",
@@ -190,17 +208,19 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-mismatched s-1790484917854076885",
-      "verified_outcome_ms": 1367.02,
+      "token": "guarded-guarded-run-mismatched s-1790487590990622069",
+      "verified_outcome_ms": 1054.59,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     },
     {
       "case": "one executable reobserve",
       "arm": "guarded-run",
       "route": "chooser",
       "provider_calls": 1,
-      "provider_called_on_second": false,
+      "provider_called_on_second": true,
       "second_dispatch": 0,
       "second_reason": "chooser",
       "action_calls": 1,
@@ -209,17 +229,59 @@
       "oracle": {
         "submitted": null
       },
-      "token": "guarded-guarded-run-one executab-1790484919222101890",
-      "verified_outcome_ms": 1279.84,
+      "token": "guarded-guarded-run-one executab-1790487592045937027",
+      "verified_outcome_ms": 1080.58,
       "execution": "driver-mcp",
-      "stale_incidents": 0
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
+    },
+    {
+      "case": "benign ref churn",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 1,
+      "second_reason": "allowed",
+      "action_calls": 2,
+      "semantic_observations": 2,
+      "outcome": "verified",
+      "oracle": {
+        "submitted": "guarded-guarded-run-benign ref c-1790487593127177767"
+      },
+      "token": "guarded-guarded-run-benign ref c-1790487593127177767",
+      "verified_outcome_ms": 1110.3,
+      "execution": "driver-mcp",
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": "p2:2"
+    },
+    {
+      "case": "true rebound",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "rebound",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-true rebound-1790487594238120017",
+      "verified_outcome_ms": 1060.28,
+      "execution": "driver-mcp",
+      "stale_incidents": 0,
+      "prior_ref": "p1:1",
+      "dispatch_ref": null
     }
   ],
   "driver_sha": "7ee9b37edc4ebc5f7f606682ae2699d1baa5d397",
   "driver_version": "cua-driver 0.29.1",
   "browser": "Google Chrome 154.0.8037.57",
-  "browser_path": "/opt/google/chrome/google-chrome",
-  "session": "xvfb-run isolated X11, dbus-run-session, openbox; host display unused",
-  "mcp": "1.30.0",
-  "launch_flag_observed": "--no-sandbox"
+  "session": "xvfb isolated X11",
+  "identity": "semantic_v2 role+name; dispatch ref is the post-mutation ref"
 }

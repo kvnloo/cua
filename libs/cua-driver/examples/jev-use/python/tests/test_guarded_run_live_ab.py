@@ -26,8 +26,8 @@ class GuardedRunLiveAbTest(unittest.TestCase):
         negatives = [
             row
             for row in rows
-            if row["arm"] == "guarded-run" and row["case"] != "type then submit"
-            and row["case"] != "one executable reobserve"
+            if row["arm"] == "guarded-run"
+            and row["case"] not in {"type then submit", "one executable reobserve", "benign ref churn"}
         ]
         self.assertGreaterEqual(len(negatives), 8)
         for row in negatives:
@@ -44,6 +44,15 @@ class GuardedRunLiveAbTest(unittest.TestCase):
         self.assertTrue(reobserve["provider_called_on_second"])
         self.assertEqual(reobserve["second_dispatch"], 0)
         self.assertIsNone(reobserve["oracle"]["submitted"])
+        churn = by_key[("guarded-run", "benign ref churn")]
+        self.assertEqual(churn["dispatch_ref"], "ref-after")
+        self.assertNotEqual(churn["dispatch_ref"], churn["prior_ref"])
+        self.assertEqual(churn["oracle"]["submitted"], churn["token"])
+        self.assertFalse(churn["provider_called_on_second"])
+        rebound = by_key[("guarded-run", "true rebound")]
+        self.assertEqual(rebound["second_dispatch"], 0)
+        self.assertEqual(rebound["second_reason"], "rebound")
+        self.assertIsNone(rebound["oracle"]["submitted"])
         baseline = by_key[("baseline", "type then submit")]
         self.assertEqual(baseline["provider_calls"], 2)
         self.assertTrue(baseline["provider_called_on_second"])

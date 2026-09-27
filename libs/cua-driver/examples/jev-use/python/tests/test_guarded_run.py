@@ -8,7 +8,13 @@ BASE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE / "python"))
 
 from core import Candidate
-from guarded_run import (\n    Decision,\n    FreshObservation,\n    admit_guarded_run,\n    explain_second_child,\n    second_child_allowed,\n)
+from guarded_run import (
+    Decision,
+    FreshObservation,
+    admit_guarded_run,
+    explain_second_child,
+    second_child_allowed,
+)
 
 
 def candidate(candidate_id: str, tool: str | None) -> Candidate:
@@ -107,6 +113,82 @@ class GuardedRunTest(unittest.TestCase):
         )
         self.assertTrue(evidence.allowed)
         self.assertEqual(evidence.reason, "allowed")
+
+    def logical_plan(self):
+        admitted = admit_guarded_run(
+            pool(),
+            Decision("run", ("type-verification-value", "submit-form")),
+            token="proof",
+            submit_ref="ref-before",
+            target_role="button",
+            target_name="Submit",
+        )
+        self.assertIsNotNone(admitted)
+        return admitted
+
+    def test_benign_ref_churn_uses_only_the_fresh_ref(self) -> None:
+        admitted = self.logical_plan()
+        fresh = FreshObservation(
+            "proof",
+            "ref-after",
+            "capture-2",
+            role="button",
+            name="Submit",
+            match_count=1,
+            resolved_ref="ref-after",
+        )
+        evidence = explain_second_child("verified", fresh, admitted)
+        self.assertTrue(evidence.allowed)
+        self.assertEqual(evidence.dispatch_ref, "ref-after")
+        self.assertNotEqual(evidence.dispatch_ref, admitted.submit_ref)
+
+    def test_true_rebound_and_old_ref_reuse_stop(self) -> None:
+        admitted = self.logical_plan()
+        rebound = FreshObservation(
+            "proof",
+            "ref-other",
+            "capture-2",
+            role="button",
+            name="Other",
+            match_count=1,
+            resolved_ref="ref-other",
+        )
+        ambiguous = FreshObservation(
+            "proof",
+            "ref-after",
+            "capture-2",
+            role="button",
+            name="Submit",
+            match_count=2,
+            resolved_ref="ref-after",
+        )
+        missing = FreshObservation(
+            "proof",
+            None,
+            "capture-2",
+            role="button",
+            name="Submit",
+            match_count=0,
+        )
+        reused = FreshObservation(
+            "proof",
+            "ref-before",
+            "capture-2",
+            role="button",
+            name="Submit",
+            match_count=1,
+            resolved_ref="ref-after",
+        )
+        for fresh, reason in (
+            (rebound, "rebound"),
+            (ambiguous, "rebound"),
+            (missing, "rebound"),
+            (reused, "submit_ref_mismatch"),
+        ):
+            evidence = explain_second_child("verified", fresh, admitted)
+            self.assertFalse(evidence.allowed)
+            self.assertEqual(evidence.reason, reason)
+            self.assertIsNone(evidence.dispatch_ref)
 
 
 if __name__ == "__main__":
