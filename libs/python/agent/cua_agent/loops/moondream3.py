@@ -356,14 +356,22 @@ class Moondream3PlusConfig(AsyncAgentConfig):
                 if _on_screenshot:
                     await _on_screenshot(screenshot_b64)
 
-        # If we have a last screenshot, run Moondream detection and labeling
+        # If we have a last screenshot, run Moondream detection and labeling.
+        # Corrupt screenshot bytes (bad base64 / undecodable image) skip
+        # detection instead of killing the step; the thinking-model call
+        # below still runs. (predict_click's decode is guarded on sibling
+        # branch muse/moondream3-predict-click-decode-guard.)
         detected_names: List[str] = []
         if last_image_b64 is not None:
-            base_img = _decode_image_b64(last_image_b64)
-            model_md = get_moondream_model()
-            annotated_b64, detected_names = _annotate_detect_and_label_ui(base_img, model_md)
-            if _on_screenshot:
-                await _on_screenshot(annotated_b64, "annotated_form_ui")
+            try:
+                base_img = _decode_image_b64(last_image_b64)
+            except Exception:
+                base_img = None
+            if base_img is not None:
+                model_md = get_moondream_model()
+                annotated_b64, detected_names = _annotate_detect_and_label_ui(base_img, model_md)
+                if _on_screenshot:
+                    await _on_screenshot(annotated_b64, "annotated_form_ui")
 
             # Also push a user message listing all detected names
             if detected_names:
