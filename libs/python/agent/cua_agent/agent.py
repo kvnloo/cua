@@ -564,6 +564,10 @@ class ComputerAgent:
         """Process input messages and create schemas for the agent loop"""
         if isinstance(input, str):
             return [{"role": "user", "content": input}]
+        if isinstance(input, dict):
+            # A single message dict is not a message list; wrap it instead of
+            # iterating its keys into a list of strings that crashes the loop.
+            return [get_json(input)]
         return [get_json(msg) for msg in input]
 
     def _process_tools(self) -> List[Dict[str, Any]]:
