@@ -23,6 +23,12 @@ class OperatorNormalizerCallback(AsyncCallbackHandler):
     async def on_llm_end(self, output: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         # Mutate in-place as requested, but still return the list for chaining
         for item in output or []:
+            # Malformed model output entries cannot be normalized; leave
+            # them for the downstream handlers instead of raising
+            # AttributeError out of the unisolated on_llm_end chain and
+            # killing the run.
+            if not isinstance(item, dict):
+                continue
             if item.get("type") != "computer_call":
                 continue
             action = item.get("action")
