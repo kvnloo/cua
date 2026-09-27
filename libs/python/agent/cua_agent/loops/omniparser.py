@@ -139,16 +139,28 @@ def _prepare_tools_for_omniparser(tool_schemas: List[Dict[str, Any]]) -> Tuple[T
 async def replace_function_with_computer_call(
     item: Dict[str, Any], id2xy: Dict[int, Tuple[float, float]]
 ):
+    if not isinstance(item, dict):
+        return [item]
     item_type = item.get("type")
 
     def _get_xy(element_id: Optional[int]) -> Union[Tuple[float, float], Tuple[None, None]]:
         if element_id is None:
             return (None, None)
-        return id2xy.get(element_id, (None, None))
+        try:
+            return id2xy.get(element_id, (None, None))
+        except TypeError:
+            # Model-emitted element ids are not always hashable (e.g. lists/dicts).
+            return (None, None)
 
     if item_type == "function_call":
         fn_name = item.get("name")
-        fn_args = json.loads(item.get("arguments", "{}"))
+        try:
+            fn_args = json.loads(item.get("arguments", "{}"))
+        except (ValueError, TypeError):
+            # Malformed model output: leave the item for the next stage.
+            return [item]
+        if not isinstance(fn_args, dict):
+            return [item]
 
         item_id = item.get("id")
         call_id = item.get("call_id")
@@ -209,16 +221,24 @@ async def replace_computer_call_with_function(
         item: The item to convert
         xy2id: Mapping from (x, y) coordinates to element IDs
     """
+    if not isinstance(item, dict):
+        return [item]
     item_type = item.get("type")
 
     def _get_element_id(x: Optional[float], y: Optional[float]) -> Optional[int]:
         """Get element ID from coordinates, return None if coordinates are None"""
         if x is None or y is None:
             return None
-        return xy2id.get((x, y))
+        try:
+            return xy2id.get((x, y))
+        except TypeError:
+            # Model-emitted coordinates are not always hashable (e.g. lists/dicts).
+            return None
 
     if item_type == "computer_call":
         action_data = item.get("action", {})
+        if not isinstance(action_data, dict):
+            return [item]
 
         # Extract coordinates and convert back to element IDs
         element_id = _get_element_id(action_data.get("x"), action_data.get("y"))
