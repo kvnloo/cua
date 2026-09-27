@@ -8,6 +8,20 @@ from litellm.llms.custom_llm import CustomLLM
 from litellm.types.utils import GenericStreamingChunk, ModelResponse
 
 
+def _token_count_estimate(text: Any) -> int:
+    """Word-count usage estimate that tolerates non-string human responses.
+
+    The human UI returns its raw "response" verbatim (see _wait_for_completion):
+    a UI serving structured payloads hands back a dict/list/None, and calling
+    .split() on it raised AttributeError and killed the streaming generator.
+    """
+    if text is None:
+        return 0
+    if not isinstance(text, str):
+        text = str(text)
+    return len(text.split())
+
+
 class HumanAdapter(CustomLLM):
     """Human Adapter for human-in-the-loop completions.
 
@@ -314,9 +328,9 @@ class HumanAdapter(CustomLLM):
                 "text": response_text,
                 "tool_use": None,
                 "usage": {
-                    "completion_tokens": len(response_text.split()),
+                    "completion_tokens": _token_count_estimate(response_text),
                     "prompt_tokens": 0,
-                    "total_tokens": len(response_text.split()),
+                    "total_tokens": _token_count_estimate(response_text),
                 },
             }
             yield generic_chunk
@@ -331,19 +345,27 @@ class HumanAdapter(CustomLLM):
         model = kwargs.get("model", "human")
 
         # Generate human response
-        human_response = await self._async_generate_response(messages, model)
+        human_response_data = await self._async_generate_response(messages, model)
+
+        # _async_generate_response returns a dict ("response"/"tool_calls"),
+        # mirroring the sync streaming() path below.
+        response_text = (
+            human_response_data.get("response", "")
+            if isinstance(human_response_data, dict)
+            else human_response_data
+        )
 
         # Return as single streaming chunk
         generic_streaming_chunk: GenericStreamingChunk = {
             "finish_reason": "stop",
             "index": 0,
             "is_finished": True,
-            "text": human_response,
+            "text": response_text,
             "tool_use": None,
             "usage": {
-                "completion_tokens": len(human_response.split()),
+                "completion_tokens": _token_count_estimate(response_text),
                 "prompt_tokens": 0,
-                "total_tokens": len(human_response.split()),
+                "total_tokens": _token_count_estimate(response_text),
             },
         }
 
