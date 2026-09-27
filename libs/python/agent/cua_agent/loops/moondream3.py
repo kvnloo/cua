@@ -317,7 +317,7 @@ class Moondream3PlusConfig(AsyncAgentConfig):
                 and message["output"].get("type") == "input_image"
             ):
                 image_url = message["output"].get("image_url", "")
-                if image_url.startswith("data:image/png;base64,"):
+                if isinstance(image_url, str) and image_url.startswith("data:image/png;base64,"):
                     last_image_b64 = image_url.split(",", 1)[1]
                     break
 
