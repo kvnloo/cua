@@ -644,19 +644,33 @@ class ComputerAgent:
         return True
 
     async def _on_llm_start(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Prepare messages for the LLM call by applying callbacks."""
+        """Prepare messages for the LLM call by applying callbacks.
+
+        A callback that returns None is treated as "no change" (the previous
+        messages are kept) instead of propagating None into the run loop,
+        where it would crash message iteration with a bare TypeError.
+        """
         result = messages
         for callback in self.callbacks:
             if hasattr(callback, "on_llm_start"):
-                result = await callback.on_llm_start(result)
+                updated = await callback.on_llm_start(result)
+                if updated is not None:
+                    result = updated
         return result
 
     async def _on_llm_end(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Postprocess messages after the LLM call by applying callbacks."""
+        """Postprocess messages after the LLM call by applying callbacks.
+
+        A callback that returns None is treated as "no change" (the previous
+        messages are kept) instead of propagating None into the run loop,
+        where it would crash output handling with a bare TypeError.
+        """
         result = messages
         for callback in self.callbacks:
             if hasattr(callback, "on_llm_end"):
-                result = await callback.on_llm_end(result)
+                updated = await callback.on_llm_end(result)
+                if updated is not None:
+                    result = updated
         return result
 
     async def _on_responses(self, kwargs: Dict[str, Any], responses: Dict[str, Any]) -> None:
