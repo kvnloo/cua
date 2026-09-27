@@ -17,6 +17,7 @@ from ..loops.base import AsyncAgentConfig
 from ..responses import (
     convert_completion_messages_to_responses_items,
     convert_responses_items_to_completion_messages,
+    response_usage_dict,
 )
 from ..types import AgentCapability, AgentResponse, Messages, Tools
 
@@ -412,10 +413,7 @@ class OmniparserConfig(AsyncAgentConfig):
             await _on_api_end(api_kwargs, response)
 
         # Extract usage information
-        usage = {
-            **response.usage.model_dump(),  # type: ignore
-            "response_cost": response._hidden_params.get("response_cost", 0.0),  # type: ignore
-        }
+        usage = response_usage_dict(response)
         if _on_usage:
             await _on_usage(usage)
 

@@ -22,6 +22,7 @@ from ..responses import (
     convert_computer_calls_xy2desc,
     convert_responses_items_to_completion_messages,
     get_all_element_descriptions,
+    response_usage_dict,
 )
 from ..types import AgentCapability, AgentResponse, Messages, Tools
 
@@ -245,10 +246,7 @@ class ComposedGroundedConfig(AsyncAgentConfig):
             await _on_api_end(api_kwargs, response)
 
         # Extract usage information
-        usage = {
-            **response.usage.model_dump(),  # type: ignore
-            "response_cost": response._hidden_params.get("response_cost", 0.0),
-        }
+        usage = response_usage_dict(response)
         if _on_usage:
             await _on_usage(usage)
 

@@ -873,3 +873,23 @@ def convert_completion_messages_to_responses_items(
                 responses_items.append({"role": "user", "content": content})
 
     return responses_items
+
+
+def response_usage_dict(response: Any) -> Dict[str, Any]:
+    """Build a usage dict from a provider response, tolerating missing usage.
+
+    LiteLLM leaves ``response.usage`` as ``None`` for providers that do not
+    report token usage, and a malformed response may lack ``_hidden_params``.
+    Degrade to an empty usage dict (plus ``response_cost`` when available)
+    instead of raising AttributeError and killing the run.
+    """
+    usage_obj = getattr(response, "usage", None)
+    if usage_obj is not None and hasattr(usage_obj, "model_dump"):
+        usage = usage_obj.model_dump()
+    elif isinstance(usage_obj, dict):
+        usage = dict(usage_obj)
+    else:
+        usage = {}
+    hidden_params = getattr(response, "_hidden_params", None) or {}
+    usage["response_cost"] = hidden_params.get("response_cost", 0.0)
+    return usage
