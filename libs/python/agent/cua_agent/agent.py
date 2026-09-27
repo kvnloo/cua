@@ -854,21 +854,29 @@ class ComputerAgent:
                 if not function:
                     raise ToolError(f"Function {item.get('name')} not found")
 
-                args = json.loads(item.get("arguments"))
+                try:
+                    args = json.loads(item.get("arguments"))
 
-                # Handle BaseTool instances
-                if isinstance(function, BaseTool):
-                    # BaseTool.call() handles its own execution
-                    result = function.call(args)
-                else:
-                    # Validate arguments before execution for regular callables
-                    assert_callable_with(function, **args)
-
-                    # Execute function - use asyncio.to_thread for non-async functions
-                    if inspect.iscoroutinefunction(function):
-                        result = await function(**args)
+                    # Handle BaseTool instances
+                    if isinstance(function, BaseTool):
+                        # BaseTool.call() handles its own execution
+                        result = function.call(args)
                     else:
-                        result = await asyncio.to_thread(function, **args)
+                        # Validate arguments before execution for regular callables
+                        assert_callable_with(function, **args)
+
+                        # Execute function - use asyncio.to_thread for non-async functions
+                        if inspect.iscoroutinefunction(function):
+                            result = await function(**args)
+                        else:
+                            result = await asyncio.to_thread(function, **args)
+                except Exception as e:
+                    # Tool execution failures (malformed arguments JSON, argument
+                    # validation errors, or exceptions raised by the tool itself)
+                    # are reported back to the model as a function_call_output
+                    # error item so the run can recover, instead of escaping
+                    # _handle_item and crashing run().
+                    return [make_tool_error_item(repr(e), call_id)]
 
                 # Track function tool execution
                 if self.telemetry_enabled and is_telemetry_enabled():
