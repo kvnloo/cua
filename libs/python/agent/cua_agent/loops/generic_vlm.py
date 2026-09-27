@@ -145,7 +145,13 @@ async def _unnormalize_coordinate(args: Dict[str, Any], dims: Tuple[int, int]) -
     coord = args.get("coordinate")
     if not coord or not isinstance(coord, (list, tuple)) or len(coord) < 2:
         return args
-    x, y = float(coord[0]), float(coord[1])
+    try:
+        x, y = float(coord[0]), float(coord[1])
+    except (TypeError, ValueError):
+        # Non-numeric coordinate entries from the model must not kill the
+        # step: leave the args untouched so downstream validation handles
+        # them instead of raising out of predict_step.
+        return args
     width, height = float(dims[0]), float(dims[1])
     x_abs = max(0.0, min(width, (x / 1000.0) * width))
     y_abs = max(0.0, min(height, (y / 1000.0) * height))
