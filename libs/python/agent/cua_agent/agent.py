@@ -57,10 +57,17 @@ from .types import AgentCapability, IllegalArgumentError, Messages, ToolError
 def assert_callable_with(f, *args, **kwargs):
     """Check if function can be called with given arguments."""
     try:
-        inspect.signature(f).bind(*args, **kwargs)
+        sig = inspect.signature(f)
+    except (TypeError, ValueError):
+        # Builtins and other callables without an introspectable signature
+        # (inspect.signature raises ValueError for e.g. dict.update) cannot
+        # be validated up front; let the call itself raise naturally instead
+        # of crashing argument validation with an unhandled error.
+        return True
+    try:
+        sig.bind(*args, **kwargs)
         return True
     except TypeError as e:
-        sig = inspect.signature(f)
         raise IllegalArgumentError(f"Expected {sig}, got args={args} kwargs={kwargs}") from e
 
 
