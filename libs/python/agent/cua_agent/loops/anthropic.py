@@ -173,6 +173,10 @@ def _convert_responses_items_to_completion_messages(
     scale_factors: Tuple[float, float] = (1.0, 1.0)
 
     for message in messages:
+        if not isinstance(message, dict):
+            # Malformed entry (e.g. a stray string from a mangled payload):
+            # skip instead of raising AttributeError mid-conversion.
+            continue
         msg_type = message.get("type")
         role = message.get("role")
 
@@ -210,8 +214,13 @@ def _convert_responses_items_to_completion_messages(
             content = message.get("content", [])
             if isinstance(content, str):
                 content = [{"type": "output_text", "text": content}]
+            if not isinstance(content, list):
+                # Malformed content (None, int, ...): nothing to transcribe.
+                content = []
 
-            content = "\n".join(item.get("text", "") for item in content)
+            content = "\n".join(
+                str(item.get("text", "")) for item in content if isinstance(item, dict)
+            )
             completion_messages.append({"role": "assistant", "content": content})
 
         elif msg_type == "reasoning":
@@ -271,6 +280,11 @@ def _convert_responses_items_to_completion_messages(
         elif msg_type == "computer_call":
             # Computer call becomes tool use in assistant message
             action = message.get("action", {})
+            if not isinstance(action, dict):
+                # Malformed action (e.g. a bare string from a mangled
+                # payload): degrade to an unknown action instead of raising
+                # AttributeError mid-conversion.
+                action = {}
             action_type = action.get("type")
             call_id = message.get("call_id", "call_1")
 
@@ -667,6 +681,10 @@ def _convert_responses_items_to_completion_messages(
         elif msg_type == "computer_call_output":
             # Computer call output becomes OpenAI function result
             output = message.get("output", {})
+            if not isinstance(output, dict):
+                # Malformed output (e.g. a bare string from a mangled
+                # payload): nothing to convert, skip the entry.
+                continue
             call_id = message.get("call_id", "call_1")
 
             if output.get("type") == "input_image":
