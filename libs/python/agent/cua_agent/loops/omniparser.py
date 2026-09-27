@@ -17,6 +17,7 @@ from ..loops.base import AsyncAgentConfig
 from ..responses import (
     convert_completion_messages_to_responses_items,
     convert_responses_items_to_completion_messages,
+    iter_thinking_choice_messages,
 )
 from ..types import AgentCapability, AgentResponse, Messages, Tools
 
@@ -420,7 +421,7 @@ class OmniparserConfig(AsyncAgentConfig):
             await _on_usage(usage)
 
         response_dict = response.model_dump()  # type: ignore
-        choice_messages = [choice["message"] for choice in response_dict["choices"]]
+        choice_messages = iter_thinking_choice_messages(response_dict)
         responses_items = []
         for choice_message in choice_messages:
             responses_items.extend(convert_completion_messages_to_responses_items([choice_message]))

@@ -30,6 +30,7 @@ from ..responses import (
     convert_computer_calls_xy2desc,
     convert_responses_items_to_completion_messages,
     get_all_element_descriptions,
+    iter_thinking_choice_messages,
 )
 from ..types import AgentCapability
 
@@ -433,7 +434,7 @@ class Moondream3PlusConfig(AsyncAgentConfig):
 
         # Step 4: Convert completion messages back to responses items format
         response_dict = response.model_dump()  # type: ignore
-        choice_messages = [choice["message"] for choice in response_dict["choices"]]
+        choice_messages = iter_thinking_choice_messages(response_dict)
         thinking_output_items: List[Dict[str, Any]] = []
         for choice_message in choice_messages:
             thinking_output_items.extend(

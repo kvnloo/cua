@@ -684,6 +684,28 @@ def convert_responses_items_to_completion_messages(
     return completion_messages
 
 
+def iter_thinking_choice_messages(response_dict: Any) -> List[Dict[str, Any]]:
+    """Extract choice message dicts from a model_dump'd chat completion response.
+
+    Skips malformed entries (missing/non-list "choices", non-dict choices,
+    missing or non-dict "message") so providers returning degenerate response
+    shapes degrade to no output items instead of raising KeyError/TypeError.
+    """
+    messages: List[Dict[str, Any]] = []
+    if not isinstance(response_dict, dict):
+        return messages
+    choices = response_dict.get("choices")
+    if not isinstance(choices, list):
+        return messages
+    for choice in choices:
+        if not isinstance(choice, dict):
+            continue
+        message = choice.get("message")
+        if isinstance(message, dict):
+            messages.append(message)
+    return messages
+
+
 def convert_completion_messages_to_responses_items(
     completion_messages: List[Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
