@@ -684,6 +684,14 @@ def convert_responses_items_to_completion_messages(
     return completion_messages
 
 
+def _safe_image_url(item: Dict[str, Any]) -> Optional[str]:
+    """Extract the image URL from a content item without crashing on malformed shapes."""
+    image_url = item.get("image_url", {})
+    if isinstance(image_url, dict):
+        return image_url.get("url")
+    return None
+
+
 def convert_completion_messages_to_responses_items(
     completion_messages: List[Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
@@ -713,8 +721,14 @@ def convert_completion_messages_to_responses_items(
         # Handle tool calls
         if tool_calls:
             for tool_call in tool_calls:
+                # Malformed provider payloads can put non-dict entries here;
+                # skip them instead of crashing the whole conversion.
+                if not isinstance(tool_call, dict):
+                    continue
                 if tool_call.get("type") == "function":
                     function = tool_call.get("function", {})
+                    if not isinstance(function, dict):
+                        function = {}
                     function_name = function.get("name")
 
                     if function_name in ("computer", "computer_use"):
@@ -779,7 +793,7 @@ def convert_completion_messages_to_responses_items(
                                         "call_id": tool_call_id,
                                         "output": {
                                             "type": "input_image",
-                                            "image_url": item.get("image_url", {}).get("url"),
+                                            "image_url": _safe_image_url(item),
                                         },
                                     }
                                 )
@@ -800,7 +814,10 @@ def convert_completion_messages_to_responses_items(
                     try:
                         # Try to parse as structured output
                         parsed_content = json.loads(content)
-                        if parsed_content.get("type") == "input_image":
+                        if (
+                            isinstance(parsed_content, dict)
+                            and parsed_content.get("type") == "input_image"
+                        ):
                             responses_items.append(
                                 {
                                     "type": "computer_call_output",
@@ -835,7 +852,7 @@ def convert_completion_messages_to_responses_items(
                                 "call_id": tool_call_id,
                                 "output": {
                                     "type": "input_image",
-                                    "image_url": item.get("image_url", {}).get("url"),
+                                    "image_url": _safe_image_url(item),
                                 },
                             }
                         )
@@ -858,7 +875,7 @@ def convert_completion_messages_to_responses_items(
                         user_content.append(
                             {
                                 "type": "input_image",
-                                "image_url": item.get("image_url", {}).get("url"),
+                                "image_url": _safe_image_url(item),
                             }
                         )
                     elif item.get("type") == "text":
