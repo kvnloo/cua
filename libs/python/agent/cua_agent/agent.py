@@ -175,12 +175,25 @@ def sanitize_message(msg: Any) -> Any:
 def get_output_call_ids(messages: List[Dict[str, Any]]) -> List[str]:
     call_ids = []
     for message in messages:
+        if not isinstance(message, dict):
+            continue
         if (
             message.get("type") == "computer_call_output"
             or message.get("type") == "function_call_output"
         ):
             call_ids.append(message.get("call_id"))
     return call_ids
+
+
+def _normalize_step_result(result: Any) -> Dict[str, Any]:
+    """Coerce a predict_step result to the {output, usage} shape the run loop needs."""
+    if not isinstance(result, dict):
+        return {"output": [], "usage": {}}
+    output = result.get("output")
+    if not isinstance(output, list):
+        result = dict(result)
+        result["output"] = []
+    return result
 
 
 def hash_api_key(api_key: Optional[str]) -> Optional[str]:
@@ -734,6 +747,8 @@ class ComputerAgent:
         ignore_call_ids: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """Handle each item; may cause a computer action + screenshot."""
+        if not isinstance(item, dict):
+            return []
         call_id = item.get("call_id")
         if ignore_call_ids and call_id and call_id in ignore_call_ids:
             return []
@@ -951,7 +966,10 @@ class ComputerAgent:
         }
         await self._on_run_start(run_kwargs, old_items)
 
-        while new_items[-1].get("role") != "assistant" if new_items else True:
+        while new_items and (
+            not isinstance(new_items[-1], dict)
+            or new_items[-1].get("role") != "assistant"
+        ):
             # Lifecycle hook: Check if we should continue based on callbacks (e.g., budget manager)
             should_continue = await self._on_run_continue(run_kwargs, old_items, new_items)
             if not should_continue:
@@ -1020,9 +1038,11 @@ class ComputerAgent:
                 },
                 max_retries=self.max_retries,
             )
-            result = get_json(result)
+            result = _normalize_step_result(get_json(result))
 
             result["output"] = await self._on_llm_end(result.get("output", []))
+            # A lifecycle callback may return a non-list; re-normalize before use.
+            result = _normalize_step_result(result)
             await self._on_responses(loop_kwargs, result)
 
             # Yield agent response
@@ -1041,7 +1061,9 @@ class ComputerAgent:
                 )
 
                 if partial_items:
-                    for pi in partial_items:
+                    for pi in partial_items or []:
+                        if not isinstance(pi, dict):
+                            continue
                         pi_type = pi.get("type", "")
                         if pi_type == "computer_call_output":
                             output = pi.get("output", {})
