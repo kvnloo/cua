@@ -10,11 +10,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import threading
 import time
+import traceback
 import urllib.parse
 import urllib.request
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -90,6 +93,7 @@ def _row(
     oracle: dict[str, Any],
     token: str,
     elapsed_ms: float,
+    execution: str = "loopback-fixture",
 ) -> dict[str, Any]:
     return {
         "case": case,
@@ -105,7 +109,8 @@ def _row(
         "oracle": oracle,
         "token": token,
         "verified_outcome_ms": round(elapsed_ms, 2),
-        "execution": "loopback-fixture",
+        "execution": execution,
+        "stale_incidents": 1 if second_reason == "stale" else 0,
     }
 
 
@@ -256,6 +261,254 @@ def local_rows(evidence_root: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _refs(snapshot: dict[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    refs = snapshot.get("refs") or []
+    field = next(
+        (
+            ref
+            for ref in refs
+            if ref.get("role") == "textbox" and ref.get("name") == "verification value"
+        ),
+        None,
+    )
+    button = next(
+        (ref for ref in refs if ref.get("role") == "button" and ref.get("name") == "Submit"),
+        None,
+    )
+    return field, button
+
+
+async def driver_rows(
+    *,
+    evidence_root: Path,
+    upstream_root: Path,
+    driver_bin: str,
+) -> list[dict[str, Any]]:
+    """One real MCP/Chromium session per row. /state is the only success oracle."""
+    import asyncio
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    upstream_example = upstream_root / "libs/cua-driver/examples/jev-use"
+    upstream_python = upstream_example / "python"
+    evidence_python = evidence_root / "libs/cua-driver/examples/jev-use/python"
+    sys.path.insert(0, str(upstream_python))
+    sys.path.insert(0, str(upstream_example))
+    import fixture_server  # type: ignore
+    import run  # type: ignore
+
+    sys.path.insert(0, str(evidence_python))
+    from deterministic_fast_path import explain_fast_path
+    from guarded_run import Decision, FreshObservation, admit_guarded_run, explain_second_child
+
+    fixture = Fixture(lambda address: fixture_server.FixtureServer(address, visual=False))
+    # The evidence Fixture class calls FixtureServer(address) without visual.
+    # Rebuild against the upstream server, which requires the visual flag.
+    fixture.close()
+    server = fixture_server.FixtureServer(("127.0.0.1", 0), visual=False)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    fixture_url = f"http://127.0.0.1:{server.server_port}/"
+    rows: list[dict[str, Any]] = []
+
+    async def one(case: str, arm: str) -> dict[str, Any]:
+        token = f"guarded-{arm}-{case[:12]}-{time.time_ns()}"
+        label = f"guarded-{uuid.uuid4().hex[:8]}"
+        run.reset_fixture(fixture_url)
+        started = time.perf_counter()
+        provider_calls = 0
+        observations = 0
+        action_calls = 0
+        second_dispatch = 0
+        provider_called_on_second = False
+        route = "chooser"
+        reason = "not evaluated"
+        outcome = "not evaluated"
+        env = run.driver_environment()
+        for key, value in os.environ.items():
+            if key.startswith("CUA_E2E_"):
+                env[key] = value
+        params = StdioServerParameters(command=driver_bin, args=["mcp"], env=env)
+        async with stdio_client(params) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                driver = run.Driver(session, label)
+                prepared = await driver.call(
+                    "browser_prepare",
+                    {"allow_launch": True, "profile": {"mode": "isolated_new"}},
+                )
+                pid = int(prepared["prepared_pid"])
+                window = await run.wait_for_window(driver, pid)
+                bound = await driver.call(
+                    "get_browser_state",
+                    {"pid": pid, "window_id": window["window_id"]},
+                )
+                target_id = bound["target_id"]
+                tab_id = run.select_tab_id(bound["tabs"])
+                await driver.call(
+                    "browser_navigate",
+                    {"target_id": target_id, "tab_id": tab_id, "url": fixture_url},
+                )
+                snapshot = await driver.call(
+                    "get_browser_state",
+                    {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"},
+                )
+                observations += 1
+                field, button = _refs(snapshot)
+                if field is None or button is None:
+                    raise RuntimeError(f"fixture snapshot missing field or submit: {case}")
+                from core import Candidate
+
+                type_c = Candidate("type-verification-value", "type", "browser_type", {})
+                submit_c = Candidate("submit-form", "submit", "browser_click", {})
+                plan = admit_guarded_run(
+                    [type_c, submit_c],
+                    Decision("run", ("type-verification-value", "submit-form")),
+                    token=token,
+                    submit_ref=str(button["ref"]),
+                )
+                assert plan is not None
+                provider_calls += 1
+                typed = token if case != "refuted first postcondition" else "wrong-token"
+                await driver.call(
+                    "browser_type",
+                    {
+                        "target_id": target_id,
+                        "tab_id": tab_id,
+                        "ref": field["ref"],
+                        "text": typed,
+                        "replace": True,
+                    },
+                )
+                action_calls += 1
+                fresh_button = None
+                if case == "missing observation":
+                    fresh = None
+                    status = "verified"
+                else:
+                    if case == "target disappears":
+                        await driver.call(
+                            "browser_navigate",
+                            {"target_id": target_id, "tab_id": tab_id, "url": "about:blank"},
+                        )
+                    fresh_snapshot = await driver.call(
+                        "get_browser_state",
+                        {
+                            "target_id": target_id,
+                            "tab_id": tab_id,
+                            "snapshot_format": "semantic_v2",
+                        },
+                    )
+                    observations += 1
+                    fresh_field, fresh_button = _refs(fresh_snapshot)
+                    status = "verified"
+                    submit_ref = str(fresh_button["ref"]) if fresh_button else None
+                    capture = "cap-live"
+                    if case == "unknown first postcondition":
+                        status = "unknown"
+                    elif case == "target disappears":
+                        status = "stale"
+                        submit_ref = None
+                    elif case == "target rebound":
+                        status = "rebound"
+                        submit_ref = "rebound-ref"
+                    elif case == "stale capture":
+                        capture = None
+                    elif case == "second action refusal":
+                        status = "refused"
+                    elif case == "mismatched submit ref":
+                        submit_ref = "other-ref"
+                    elif case == "refuted first postcondition":
+                        status = "refuted"
+                    elif case == "one executable reobserve":
+                        status = "verified"
+                    fresh = FreshObservation(
+                        None if fresh_field is None else fresh_field.get("value"),
+                        submit_ref,
+                        capture,
+                    )
+                evidence = explain_second_child(status, fresh, plan)
+                if case == "one executable reobserve":
+                    authority = explain_fast_path(
+                        [submit_c, Candidate("reobserve", "reobserve", None, {})]
+                    )
+                else:
+                    authority = explain_fast_path(
+                        [submit_c], bound_completion_id=plan.second.candidate_id
+                    )
+                route = authority.route if arm == "guarded-run" else "chooser"
+                dispatch = evidence.allowed and (
+                    arm == "baseline" or authority.route == "fast-path"
+                )
+                if arm == "baseline" and evidence.allowed:
+                    provider_calls += 1
+                    provider_called_on_second = True
+                elif dispatch:
+                    provider_called_on_second = False
+                if dispatch and fresh_button is not None and case != "one executable reobserve":
+                    await driver.call(
+                        "browser_click",
+                        {
+                            "target_id": target_id,
+                            "tab_id": tab_id,
+                            "ref": fresh_button["ref"],
+                            "input_route": "dom_event",
+                        },
+                    )
+                    action_calls += 1
+                    second_dispatch = 1
+                reason = evidence.reason if case != "one executable reobserve" else "chooser"
+                if case == "one executable reobserve":
+                    route = authority.route
+                    second_dispatch = 0
+                oracle = run.fixture_state(fixture_url)
+                if oracle.get("submitted") == token:
+                    outcome = "verified"
+                elif second_dispatch == 0:
+                    outcome = "stopped"
+                else:
+                    outcome = "refuted"
+        return _row(
+            case=case,
+            arm=arm,
+            route=route,
+            provider_calls=provider_calls,
+            provider_called_on_second=provider_called_on_second,
+            second_dispatch=second_dispatch,
+            second_reason=reason,
+            action_calls=action_calls,
+            observations=observations,
+            outcome=outcome,
+            oracle=oracle,
+            token=token,
+            elapsed_ms=(time.perf_counter() - started) * 1000,
+            execution="driver-mcp",
+        )
+
+    try:
+        negatives = (
+            "refuted first postcondition",
+            "unknown first postcondition",
+            "target disappears",
+            "target rebound",
+            "stale capture",
+            "second action refusal",
+            "missing observation",
+            "mismatched submit ref",
+            "one executable reobserve",
+        )
+        for case in ("type then submit",):
+            for arm in ("baseline", "guarded-run"):
+                rows.append(await one(case, arm))
+        for case in negatives:
+            rows.append(await one(case, "guarded-run"))
+    finally:
+        server.shutdown()
+        thread.join(timeout=5)
+        server.server_close()
+    return rows
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence-root", type=Path, required=True)
@@ -263,16 +516,35 @@ def main() -> None:
     parser.add_argument("--driver-bin", default="")
     parser.add_argument("--upstream-root", type=Path)
     args = parser.parse_args()
-    rows = local_rows(args.evidence_root.resolve())
+    evidence_root = args.evidence_root.resolve()
+    rows: list[dict[str, Any]] = []
     driver_blocker = None
-    if not args.driver_bin:
+    driver_version = None
+    if args.driver_bin and args.upstream_root is not None:
+        import asyncio
+
+        try:
+            rows = asyncio.run(
+                driver_rows(
+                    evidence_root=evidence_root,
+                    upstream_root=args.upstream_root.resolve(),
+                    driver_bin=args.driver_bin,
+                )
+            )
+            driver_version = args.driver_bin
+        except Exception as exc:
+            driver_blocker = f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
+    elif not args.driver_bin:
         driver_blocker = "no --driver-bin; Driver/Chromium session was not started"
-    elif args.upstream_root is None:
+        rows = local_rows(evidence_root)
+    else:
         driver_blocker = "no --upstream-root; product checkout was not available"
+        rows = local_rows(evidence_root)
     report = {
         "evidence_kind": "guarded-run-ab",
         "authority_rule": "1024f0627322b85b8b0dc3423abc2f7198133207",
-        "driver_execution": "not started" if driver_blocker else "requested",
+        "driver_execution": "completed" if driver_blocker is None else "not completed",
+        "driver_bin": driver_version,
         "driver_blocker": driver_blocker,
         "rows": rows,
     }

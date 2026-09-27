@@ -1,0 +1,225 @@
+{
+  "evidence_kind": "guarded-run-ab",
+  "authority_rule": "1024f0627322b85b8b0dc3423abc2f7198133207",
+  "driver_execution": "completed",
+  "driver_bin": "/tmp/upstream/libs/cua-driver/rust/target/release/cua-driver",
+  "driver_blocker": null,
+  "rows": [
+    {
+      "case": "type then submit",
+      "arm": "baseline",
+      "route": "chooser",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "submit_ref_mismatch",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-baseline-type then su-1790484904572072823",
+      "verified_outcome_ms": 2252.6,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "type then submit",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "submit_ref_mismatch",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-type then su-1790484906843371391",
+      "verified_outcome_ms": 1727.57,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "refuted first postcondition",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "refuted",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-refuted firs-1790484908571796269",
+      "verified_outcome_ms": 1390.41,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "unknown first postcondition",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "unknown",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-unknown firs-1790484909962977103",
+      "verified_outcome_ms": 1367.3,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "target disappears",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "stale",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-target disap-1790484911331963743",
+      "verified_outcome_ms": 1320.06,
+      "execution": "driver-mcp",
+      "stale_incidents": 1
+    },
+    {
+      "case": "target rebound",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "rebound",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-target rebou-1790484912652659464",
+      "verified_outcome_ms": 1292.12,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "stale capture",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "missing_capture",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-stale captur-1790484913945460090",
+      "verified_outcome_ms": 1268.96,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "second action refusal",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "refused",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-second actio-1790484915215061441",
+      "verified_outcome_ms": 1347.85,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "missing observation",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "missing_observation",
+      "action_calls": 1,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-missing obse-1790484916563744731",
+      "verified_outcome_ms": 1289.67,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "mismatched submit ref",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "submit_ref_mismatch",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-mismatched s-1790484917854076885",
+      "verified_outcome_ms": 1367.02,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    },
+    {
+      "case": "one executable reobserve",
+      "arm": "guarded-run",
+      "route": "chooser",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "chooser",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-guarded-run-one executab-1790484919222101890",
+      "verified_outcome_ms": 1279.84,
+      "execution": "driver-mcp",
+      "stale_incidents": 0
+    }
+  ],
+  "driver_sha": "7ee9b37edc4ebc5f7f606682ae2699d1baa5d397",
+  "driver_version": "cua-driver 0.29.1",
+  "browser": "Google Chrome 154.0.8037.57",
+  "browser_path": "/opt/google/chrome/google-chrome",
+  "session": "xvfb-run isolated X11, dbus-run-session, openbox; host display unused",
+  "mcp": "1.30.0",
+  "launch_flag_observed": "--no-sandbox"
+}
