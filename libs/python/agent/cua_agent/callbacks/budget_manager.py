@@ -34,9 +34,18 @@ class BudgetManagerCallback(AsyncCallbackHandler):
             self.total_cost = 0.0
 
     async def on_usage(self, usage: Dict[str, Any]) -> None:
-        """Track usage costs."""
-        if "response_cost" in usage:
-            self.total_cost += usage["response_cost"]
+        """Track usage costs.
+
+        Provider usage payloads can be malformed (None or a non-dict);
+        the membership test below would raise TypeError out of the
+        callback and kill the run. Malformed payloads and non-numeric
+        costs are skipped; only numeric costs accumulate.
+        """
+        if not isinstance(usage, dict):
+            return
+        cost = usage.get("response_cost")
+        if isinstance(cost, (int, float)) and not isinstance(cost, bool):
+            self.total_cost += cost
 
     async def on_run_continue(
         self,
