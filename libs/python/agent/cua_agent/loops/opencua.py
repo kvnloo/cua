@@ -22,6 +22,7 @@ from ..responses import (
     convert_completion_messages_to_responses_items,
     convert_responses_items_to_completion_messages,
     make_reasoning_item,
+    response_cost,
 )
 from ..types import AgentCapability
 from .composed_grounded import ComposedGroundedConfig
@@ -257,7 +258,7 @@ class OpenCUAConfig(ComposedGroundedConfig):
             **LiteLLMCompletionResponsesConfig._transform_chat_completion_usage_to_responses_usage(  # type: ignore
                 response.usage
             ).model_dump(),
-            "response_cost": response._hidden_params.get("response_cost", 0.0),
+            "response_cost": response_cost(response),
         }
         if _on_usage:
             await _on_usage(usage)

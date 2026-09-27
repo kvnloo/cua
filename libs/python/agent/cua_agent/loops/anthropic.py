@@ -30,6 +30,7 @@ from ..responses import (
     make_scroll_item,
     make_type_item,
     make_wait_item,
+    response_cost,
 )
 from ..types import AgentCapability, AgentResponse, Messages, Tools
 
@@ -1833,7 +1834,7 @@ class AnthropicHostedToolsConfig(AsyncAgentConfig):
             **LiteLLMCompletionResponsesConfig._transform_chat_completion_usage_to_responses_usage(
                 response.usage
             ).model_dump(),
-            "response_cost": response._hidden_params.get("response_cost", 0.0),
+            "response_cost": response_cost(response),
         }
         if _on_usage:
             await _on_usage(responses_usage)

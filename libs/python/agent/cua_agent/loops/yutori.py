@@ -26,6 +26,7 @@ from ..responses import (
     make_function_call_item,
     make_output_text_item,
     make_reasoning_item,
+    response_cost,
 )
 from ..types import AgentCapability
 
@@ -318,7 +319,7 @@ class YutoriN1Config(AsyncAgentConfig):
             **LiteLLMCompletionResponsesConfig._transform_chat_completion_usage_to_responses_usage(  # type: ignore
                 response.usage
             ).model_dump(),
-            "response_cost": response._hidden_params.get("response_cost", 0.0),
+            "response_cost": response_cost(response),
         }
         if _on_usage:
             await _on_usage(usage)

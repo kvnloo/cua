@@ -12,6 +12,7 @@ import litellm
 from PIL import Image
 
 from ..decorators import register_agent
+from ..responses import response_cost
 from ..types import AgentCapability, AgentResponse, Messages, Tools
 
 
@@ -265,10 +266,7 @@ class OpenAIComputerUseConfig:
             output_dict = response.model_dump()
 
         # Add response cost if available
-        if hasattr(response, "_hidden_params"):
-            usage["response_cost"] = response._hidden_params.get("response_cost", 0.0)
-        elif isinstance(response, dict):
-            usage["response_cost"] = response.get("_hidden_params", {}).get("response_cost", 0.0)
+        usage["response_cost"] = response_cost(response)
 
         if _on_usage:
             await _on_usage(usage)

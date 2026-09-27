@@ -873,3 +873,21 @@ def convert_completion_messages_to_responses_items(
                 responses_items.append({"role": "user", "content": content})
 
     return responses_items
+
+
+def response_cost(response: Any) -> float:
+    """Extract the response cost from a litellm response without crashing.
+
+    Some providers (and mocked responses) omit ``_hidden_params`` or set it to
+    None; the loops' usage bookkeeping must degrade to 0.0 instead of raising
+    AttributeError after the model call succeeded. Non-numeric costs degrade
+    to 0.0 as well so downstream cost accumulation never sees None.
+    """
+    if isinstance(response, dict):
+        hidden = response.get("_hidden_params")
+    else:
+        hidden = getattr(response, "_hidden_params", None)
+    if not isinstance(hidden, dict):
+        return 0.0
+    cost = hidden.get("response_cost", 0.0)
+    return cost if isinstance(cost, (int, float)) else 0.0
