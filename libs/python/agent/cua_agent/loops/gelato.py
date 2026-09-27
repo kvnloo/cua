@@ -168,8 +168,13 @@ class GelatoConfig(AsyncAgentConfig):
         # Use liteLLM acompletion
         response = await litellm.acompletion(**api_kwargs)
 
-        # Extract response text
-        output_text = response.choices[0].message.content  # type: ignore
+        # Extract response text. Empty choices (model returned nothing) or a
+        # missing message degrade to None, the documented failure return.
+        choices = getattr(response, "choices", None) or []
+        message = choices[0].message if choices else None
+        output_text = getattr(message, "content", None)
+        if not isinstance(output_text, str) or not output_text:
+            return None
 
         # Extract and rescale coordinates
         pred_x, pred_y = extract_coordinates(output_text)  # type: ignore
