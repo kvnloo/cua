@@ -211,13 +211,18 @@ class TelemetryCallback(AsyncCallbackHandler):
         total_size = 0
 
         for item in items:
+            # Malformed input/provider payloads can place non-dict entries in
+            # the message list; skip them instead of raising AttributeError
+            # and killing the run before it starts.
+            if not isinstance(item, dict):
+                continue
             if item.get("type") == "message" and "content" in item:
                 content = item["content"]
                 if isinstance(content, str):
                     total_size += len(content)
                 elif isinstance(content, list):
                     for part in content:
-                        if isinstance(part, dict) and "text" in part:
+                        if isinstance(part, dict) and isinstance(part.get("text"), str):
                             total_size += len(part["text"])
             elif "content" in item and isinstance(item["content"], str):
                 total_size += len(item["content"])
@@ -229,6 +234,10 @@ class TelemetryCallback(AsyncCallbackHandler):
         trajectory = []
 
         for item in items:
+            # Skip non-dict entries (see _calculate_context_size); item.copy()
+            # below would raise AttributeError on them.
+            if not isinstance(item, dict):
+                continue
             # Include user messages, assistant messages, reasoning, computer calls, and computer outputs
             if (
                 item.get("role") == "user"  # User inputs
