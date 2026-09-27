@@ -151,11 +151,22 @@ class TelemetryCallback(AsyncCallbackHandler):
         if not is_telemetry_enabled():
             return
 
+        if not isinstance(usage, dict):
+            # Malformed provider usage payload: telemetry must not kill the run.
+            return
+
+        def _num(value: Any, default: float = 0) -> float:
+            # Token counts must be numeric; a provider reporting nulls or
+            # strings must not break the running totals.
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return default
+            return value
+
         # Accumulate usage stats
-        self.total_usage["prompt_tokens"] += usage.get("prompt_tokens", 0)
-        self.total_usage["completion_tokens"] += usage.get("completion_tokens", 0)
-        self.total_usage["total_tokens"] += usage.get("total_tokens", 0)
-        self.total_usage["response_cost"] += usage.get("response_cost", 0.0)
+        self.total_usage["prompt_tokens"] += _num(usage.get("prompt_tokens", 0))
+        self.total_usage["completion_tokens"] += _num(usage.get("completion_tokens", 0))
+        self.total_usage["total_tokens"] += _num(usage.get("total_tokens", 0))
+        self.total_usage["response_cost"] += _num(usage.get("response_cost", 0.0))
 
         # Record individual usage event
         usage_data = {
