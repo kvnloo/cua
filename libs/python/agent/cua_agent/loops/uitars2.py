@@ -352,8 +352,12 @@ def _extract_function_schemas_from_tools(
     if not tools:
         return schemas
     for t in tools:
+        if not isinstance(t, dict):
+            continue
         if t.get("type") == "function":
             fn = t.get("function", {})
+            if not isinstance(fn, dict):
+                continue
             name = fn.get("name")
             params = fn.get("parameters", {})
             desc = fn.get("description", "")
