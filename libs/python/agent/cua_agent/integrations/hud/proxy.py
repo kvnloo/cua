@@ -41,6 +41,11 @@ def _map_agent_output_to_openai_blocks(
     """
     blocks: List[ResponseOutputItem] = []
     for item in output_items or []:
+        # Malformed provider output can place non-dict entries in the agent
+        # output list; skip them instead of raising AttributeError and
+        # killing the HUD proxy call.
+        if not isinstance(item, dict):
+            continue
         t = item.get("type")
         if t == "computer_call":
             comp = ResponseComputerToolCall.model_validate(
@@ -59,6 +64,10 @@ def _map_agent_output_to_openai_blocks(
         elif t == "message" and item.get("role") == "assistant":
             content_blocks: List[ResponseOutputText] = []
             for c in item.get("content", []) or []:
+                # Skip malformed content entries instead of raising
+                # TypeError on c["text"].
+                if not isinstance(c, dict):
+                    continue
                 content_blocks.append(
                     ResponseOutputText.model_validate(
                         {
@@ -160,7 +169,9 @@ class FakeAsyncOpenAI:
                 assert agent_result is not None, "Agent failed to produce result"
 
                 output = _map_agent_output_to_openai_blocks(agent_result["output"])
-                usage = agent_result["usage"]
+                # Custom loops may omit "usage" or report it as None; degrade
+                # to empty usage instead of raising KeyError/AttributeError.
+                usage = agent_result.get("usage") or {}
 
                 # Cache conversation context using the last response id
                 block_ids: List[str] = []
