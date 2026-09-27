@@ -465,6 +465,10 @@ def convert_responses_items_to_completion_messages(
     completion_messages = []
 
     for i, message in enumerate(messages):
+        # Malformed (non-dict) entries survive earlier normalization stages;
+        # skip them here rather than crashing the whole conversion.
+        if not isinstance(message, dict):
+            continue
         msg_type = message.get("type")
         role = message.get("role")
 
@@ -643,7 +647,7 @@ def convert_responses_items_to_completion_messages(
                         next_type = None
                         if i + 1 < len(messages):
                             next_msg = messages[i + 1]
-                            next_type = next_msg.get("type")
+                            next_type = next_msg.get("type") if isinstance(next_msg, dict) else None
                         is_next_message_image_result = next_type in [
                             "computer_call_output",
                         ]
@@ -696,9 +700,15 @@ def convert_completion_messages_to_responses_items(
             skip_next = False
             continue
 
+        # Malformed (non-dict) entries survive earlier normalization stages;
+        # skip them here rather than crashing the whole conversion.
+        if not isinstance(message, dict):
+            continue
         role = message.get("role")
         content = message.get("content")
         tool_calls = message.get("tool_calls", [])
+        if not isinstance(tool_calls, list):
+            tool_calls = []
 
         # Handle assistant messages with text content
         if role == "assistant" and content and isinstance(content, str):
@@ -766,6 +776,7 @@ def convert_completion_messages_to_responses_items(
                     next_idx = i + 1
                     if (
                         next_idx < len(completion_messages)
+                        and isinstance(completion_messages[next_idx], dict)
                         and completion_messages[next_idx].get("role") == "user"
                         and isinstance(completion_messages[next_idx].get("content"), list)
                     ):
