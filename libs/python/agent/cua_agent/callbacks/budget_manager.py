@@ -33,8 +33,12 @@ class BudgetManagerCallback(AsyncCallbackHandler):
         if self.reset_after_each_run:
             self.total_cost = 0.0
 
-    async def on_usage(self, usage: Dict[str, Any]) -> None:
+    async def on_usage(self, usage: Any) -> None:
         """Track usage costs."""
+        if not isinstance(usage, dict):
+            # Malformed provider usage payload: nothing to track, and the
+            # budget callback must never kill the run.
+            return
         if "response_cost" in usage:
             self.total_cost += usage["response_cost"]
 

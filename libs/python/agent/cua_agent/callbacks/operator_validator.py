@@ -23,6 +23,10 @@ class OperatorNormalizerCallback(AsyncCallbackHandler):
     async def on_llm_end(self, output: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         # Mutate in-place as requested, but still return the list for chaining
         for item in output or []:
+            if not isinstance(item, dict):
+                # Malformed loop output entry: skip rather than raising
+                # AttributeError and killing the whole callback chain.
+                continue
             if item.get("type") != "computer_call":
                 continue
             action = item.get("action")
