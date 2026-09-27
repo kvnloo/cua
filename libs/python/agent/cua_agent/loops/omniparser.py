@@ -509,8 +509,16 @@ Output only the element ID as a single integer.
             model=llm_model, messages=messages, max_tokens=10, temperature=0.1
         )
 
-        # Extract element ID from response
-        response_text = response.choices[0].message.content.strip()  # type: ignore
+        # Extract element ID from response. Malformed provider payloads
+        # (missing/empty choices, missing message) degrade to None per the
+        # Optional contract instead of raising IndexError/AttributeError.
+        # None model content is handled on sibling branch
+        # muse/omniparser-click-none-content.
+        choices = getattr(response, "choices", None) or []
+        message = choices[0].message if choices else None
+        if message is None:
+            return None
+        response_text = message.content.strip()  # type: ignore
 
         # Try to parse the element ID
         try:
