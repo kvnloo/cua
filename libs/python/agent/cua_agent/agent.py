@@ -648,7 +648,12 @@ class ComputerAgent:
         result = messages
         for callback in self.callbacks:
             if hasattr(callback, "on_llm_start"):
-                result = await callback.on_llm_start(result)
+                updated = await callback.on_llm_start(result)
+                # A callback that returns None (logs and forgets to return, or
+                # mutates in place) must not poison the chain: treat None as
+                # "unchanged" instead of forwarding None into the LLM call.
+                if updated is not None:
+                    result = updated
         return result
 
     async def _on_llm_end(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -656,7 +661,12 @@ class ComputerAgent:
         result = messages
         for callback in self.callbacks:
             if hasattr(callback, "on_llm_end"):
-                result = await callback.on_llm_end(result)
+                updated = await callback.on_llm_end(result)
+                # A callback that returns None (logs and forgets to return, or
+                # mutates in place) must not poison the chain: treat None as
+                # "unchanged" instead of crashing run() on `new_items += None`.
+                if updated is not None:
+                    result = updated
         return result
 
     async def _on_responses(self, kwargs: Dict[str, Any], responses: Dict[str, Any]) -> None:
