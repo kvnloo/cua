@@ -149,13 +149,19 @@ def _create_gemini_client(
 def _find_last_user_text(messages: List[Dict[str, Any]]) -> List[str]:
     texts: List[str] = []
     for msg in reversed(messages):
+        if not isinstance(msg, dict):
+            continue
         if msg.get("type") in (None, "message") and msg.get("role") == "user":
             content = msg.get("content")
             if isinstance(content, str):
                 return [content]
             elif isinstance(content, list):
                 for c in content:
-                    if c.get("type") in ("input_text", "output_text") and c.get("text"):
+                    if (
+                        isinstance(c, dict)
+                        and c.get("type") in ("input_text", "output_text")
+                        and c.get("text")
+                    ):
                         texts.append(c["text"])  # newest first
                 if texts:
                     return list(reversed(texts))
@@ -164,6 +170,8 @@ def _find_last_user_text(messages: List[Dict[str, Any]]) -> List[str]:
 
 def _find_last_screenshot(messages: List[Dict[str, Any]]) -> Optional[bytes]:
     for msg in reversed(messages):
+        if not isinstance(msg, dict):
+            continue
         if msg.get("type") == "computer_call_output":
             out = msg.get("output", {})
             if isinstance(out, dict) and out.get("type") in ("input_image", "computer_screenshot"):
@@ -195,6 +203,10 @@ def _convert_messages_to_gemini_contents(
     screen_w, screen_h = 1024, 768  # Default dimensions
 
     for msg in messages:
+        if not isinstance(msg, dict):
+            # Malformed entry (e.g. a stray string from a mangled payload):
+            # skip instead of raising AttributeError mid-conversion.
+            continue
         msg_type = msg.get("type")
         role = msg.get("role")
 
@@ -207,6 +219,8 @@ def _convert_messages_to_gemini_contents(
                 parts.append(types.Part(text=content))
             elif isinstance(content, list):
                 for c in content:
+                    if not isinstance(c, dict):
+                        continue
                     if c.get("type") in ("input_text", "text") and c.get("text"):
                         parts.append(types.Part(text=c["text"]))
                     elif c.get("type") == "input_image" and c.get("image_url"):
@@ -230,6 +244,8 @@ def _convert_messages_to_gemini_contents(
                 parts.append(types.Part(text=content))
             elif isinstance(content, list):
                 for c in content:
+                    if not isinstance(c, dict):
+                        continue
                     if c.get("type") in ("output_text", "text") and c.get("text"):
                         parts.append(types.Part(text=c["text"]))
 
@@ -239,7 +255,11 @@ def _convert_messages_to_gemini_contents(
         # Reasoning (treat as model output)
         elif msg_type == "reasoning":
             summary = msg.get("summary", [])
+            if not isinstance(summary, list):
+                summary = []
             for s in summary:
+                if not isinstance(s, dict):
+                    continue
                 if s.get("type") == "summary_text" and s.get("text"):
                     contents.append(
                         types.Content(
@@ -251,6 +271,8 @@ def _convert_messages_to_gemini_contents(
         # Computer call (model action) - represent as text description for context
         elif msg_type == "computer_call":
             action = msg.get("action", {})
+            if not isinstance(action, dict):
+                action = {}
             action_type = action.get("type", "unknown")
             action_desc = f"[Action: {action_type}"
             for k, v in action.items():
