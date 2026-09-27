@@ -36,7 +36,11 @@ class BudgetManagerCallback(AsyncCallbackHandler):
     async def on_usage(self, usage: Dict[str, Any]) -> None:
         """Track usage costs."""
         if "response_cost" in usage:
-            self.total_cost += usage["response_cost"]
+            cost = usage["response_cost"]
+            # Providers may report the cost as None or a non-numeric value;
+            # only numeric costs can be added to the budget total.
+            if isinstance(cost, (int, float)) and not isinstance(cost, bool):
+                self.total_cost += cost
 
     async def on_run_continue(
         self,
