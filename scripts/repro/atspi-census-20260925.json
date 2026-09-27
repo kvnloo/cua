@@ -1,0 +1,72 @@
+{
+  "host": "Linux-7.2.2-1-cachyos-x86_64-with-glibc2.44",
+  "gtk": "3.0",
+  "registered": {
+    "object:text-changed": true,
+    "object:text-caret-moved": true,
+    "object:state-changed:focused": true,
+    "object:children-changed": true
+  },
+  "event_count": 8,
+  "event_types": [
+    "object:children-changed:add",
+    "object:state-changed:focused",
+    "object:text-caret-moved",
+    "object:text-changed:delete",
+    "object:text-changed:insert"
+  ],
+  "events": [
+    {
+      "type": "object:children-changed:add",
+      "name": "atspi_text_probe.py",
+      "role": "application"
+    },
+    {
+      "type": "object:children-changed:add",
+      "name": "main",
+      "role": "desktop frame"
+    },
+    {
+      "type": "object:state-changed:focused",
+      "name": "",
+      "role": "text"
+    },
+    {
+      "type": "object:state-changed:focused",
+      "name": "",
+      "role": "text"
+    },
+    {
+      "type": "object:state-changed:focused",
+      "name": "",
+      "role": "panel"
+    },
+    {
+      "type": "object:text-changed:delete",
+      "name": "",
+      "role": "text"
+    },
+    {
+      "type": "object:text-caret-moved",
+      "name": "",
+      "role": "text"
+    },
+    {
+      "type": "object:text-changed:insert",
+      "name": "",
+      "role": "text"
+    }
+  ],
+  "not_tested": [
+    "process restart",
+    "web-content navigation",
+    "false-negative rate",
+    "event latency distribution"
+  ],
+  "classification": {
+    "gtk3-entry-text-change": "invalidation hint only; text-changed events were observed for this one widget, which is not permission to skip a later capture",
+    "focus": "state-changed:focused observed on the probe entry",
+    "structure": "children-changed observed when the probe window and label appeared",
+    "always-observe": "event absence was not measured, so absence stays an always-observe scope"
+  }
+}

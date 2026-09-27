@@ -1,0 +1,206 @@
+{
+  "evidence_kind": "guarded-run-ab",
+  "authority_rule": "1024f0627322b85b8b0dc3423abc2f7198133207",
+  "driver_execution": "not started",
+  "driver_blocker": "no --driver-bin; Driver/Chromium session was not started",
+  "rows": [
+    {
+      "case": "refuted first postcondition",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "refuted",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.02,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "unknown first postcondition",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "unknown",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.02,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "target disappears",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "stale",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.01,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "target rebound",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "rebound",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.01,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "stale capture",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "missing_capture",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.01,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "second action refusal",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "refused",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.01,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "missing observation",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "missing_observation",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.02,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "mismatched submit ref",
+      "arm": "guarded-run",
+      "route": "guarded-run",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 0,
+      "second_reason": "submit_ref_mismatch",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "stopped",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.02,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "type then submit",
+      "arm": "guarded-run",
+      "route": "fast-path",
+      "provider_calls": 1,
+      "provider_called_on_second": false,
+      "second_dispatch": 1,
+      "second_reason": "allowed",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "verified",
+      "oracle": {
+        "submitted": "guarded-local-proof"
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.44,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "one executable reobserve",
+      "arm": "guarded-run",
+      "route": "chooser",
+      "provider_calls": 1,
+      "provider_called_on_second": true,
+      "second_dispatch": 0,
+      "second_reason": "chooser",
+      "action_calls": 0,
+      "semantic_observations": 1,
+      "outcome": "chooser",
+      "oracle": {
+        "submitted": null
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.01,
+      "execution": "loopback-fixture"
+    },
+    {
+      "case": "type then submit",
+      "arm": "baseline",
+      "route": "chooser",
+      "provider_calls": 2,
+      "provider_called_on_second": true,
+      "second_dispatch": 1,
+      "second_reason": "provider",
+      "action_calls": 1,
+      "semantic_observations": 2,
+      "outcome": "verified",
+      "oracle": {
+        "submitted": "guarded-local-proof"
+      },
+      "token": "guarded-local-proof",
+      "verified_outcome_ms": 0.36,
+      "execution": "loopback-fixture"
+    }
+  ]
+}

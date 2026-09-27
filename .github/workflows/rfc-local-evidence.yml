@@ -1,0 +1,160 @@
+name: "RFC local evidence"
+
+on:
+  push:
+    branches:
+      - test/rfc-fast-path-one-candidate-20260925
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rfc-local-evidence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  route-evidence:
+    name: Fast-path / guarded-run route evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: libs/cua-driver/examples/jev-use
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+          enable-cache: true
+          cache-dependency-glob: libs/cua-driver/examples/jev-use/uv.lock
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: libs/cua-driver/examples/jev-use/package-lock.json
+
+      - name: Install locked dependencies
+        run: |
+          uv sync --frozen
+          npm ci --ignore-scripts
+
+      - name: Run Python experiment tests
+        run: |
+          set -o pipefail
+          uv run python -m unittest discover -s python/tests -v \
+            2>&1 | tee "$RUNNER_TEMP/rfc-python-tests.log"
+
+      - name: Run TypeScript tests and typecheck
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/rfc-typescript-tests.log"
+          npm run typecheck 2>&1 | tee "$RUNNER_TEMP/rfc-typescript-typecheck.log"
+
+      - name: Emit Python route corpus
+        run: |
+          uv run python - <<'PY' > "$RUNNER_TEMP/python-parity.json"
+          import json, sys
+          sys.path.insert(0, "python")
+          from semantic_parity import parity_corpus
+          print(json.dumps(parity_corpus(), sort_keys=True))
+          PY
+
+      - name: Emit TypeScript route corpus
+        run: |
+          npx tsx -e 'import { parityCorpus } from "./typescript/semantic_parity.ts"; console.log(JSON.stringify(parityCorpus()))' \
+            > "$RUNNER_TEMP/typescript-parity.json"
+
+      - name: Prove cross-language route parity
+        env:
+          EVIDENCE_SHA: ${{ github.sha }}
+        run: |
+          python - "$RUNNER_TEMP/python-parity.json" "$RUNNER_TEMP/typescript-parity.json" \
+            "$RUNNER_TEMP/rfc-route-summary.json" <<'PY'
+          import json, os, pathlib, sys
+
+          py_path, ts_path, out_path = map(pathlib.Path, sys.argv[1:])
+          python_rows = json.loads(py_path.read_text())
+          typescript_rows = json.loads(ts_path.read_text())
+          if python_rows != typescript_rows:
+              raise SystemExit(
+                  "Python/TypeScript route corpora differ:\n"
+                  + json.dumps(
+                      {"python": python_rows, "typescript": typescript_rows},
+                      indent=2,
+                      sort_keys=True,
+                  )
+              )
+
+          by_case = {row["case"]: row for row in python_rows}
+          one = by_case["one executable candidate"]
+          assert one["fast_path_route"] == "fast-path"
+          assert one["executable_count"] == 1
+          assert one["provider_called"] is False
+          assert one["fast_path_id"] == "type-verification-value"
+
+          authority = by_case["provider would reobserve"]
+          assert authority["fast_path_route"] == "fast-path"
+          assert authority["provider_called"] is False
+
+          admitted = by_case["guarded continuation admitted"]
+          assert admitted["run_admitted"] is True
+          assert admitted["second_dispatch"] is True
+          assert admitted["second_reason"] == "allowed"
+
+          for case, reason in {
+              "stale observation": "missing_observation",
+              "rebound ref": "submit_ref_mismatch",
+              "missing capture": "missing_capture",
+              "postcondition refuted": "refuted",
+              "postcondition unknown": "unknown",
+          }.items():
+              row = by_case[case]
+              assert row["second_dispatch"] is False, row
+              assert row["second_reason"] == reason, row
+
+          summary = {
+              "sha": os.environ["EVIDENCE_SHA"],
+              "python_typescript_equal": True,
+              "case_count": len(python_rows),
+              "fast_path_authority_case": authority,
+              "guarded_admitted_case": admitted,
+              "negative_guarded_cases": {
+                  case: by_case[case]
+                  for case in (
+                      "stale observation",
+                      "rebound ref",
+                      "missing capture",
+                      "postcondition refuted",
+                      "postcondition unknown",
+                  )
+              },
+              "claim_boundary": (
+                  "structural route/admission parity only; not a live browser "
+                  "outcome or latency A/B"
+              ),
+          }
+          out_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload content-free evidence
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: rfc-local-route-evidence
+          path: |
+            ${{ runner.temp }}/python-parity.json
+            ${{ runner.temp }}/typescript-parity.json
+            ${{ runner.temp }}/rfc-route-summary.json
+            ${{ runner.temp }}/rfc-python-tests.log
+            ${{ runner.temp }}/rfc-typescript-tests.log
+            ${{ runner.temp }}/rfc-typescript-typecheck.log
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,20 @@
+# Linux host probe
+date: 2026-09-25
+pinned upstream asked by the issues: c5ee191c02b11448ffefcc38b78b064a87d8ef23
+
+$ cua-driver --version
+cua-driver 0.28.2
+
+$ cua-driver status
+exit 1
+Cua Driver daemon is not running
+
+$ cua-driver doctor
+[ok  ] binary: cua-driver 0.28.2 (x86_64-linux)
+[ok  ] install dir: /home/kvn/.cua-driver/packages/releases/0.28.2-x86_64-unknown-linux-gnu/cua-driver
+         path: /home/kvn/.cua-driver/packages/releases/0.28.2-x86_64-unknown-linux-gnu/cua-driver
+[ok  ] home dir: /home/kvn/.cua-driver (5 release dirs cached)
+[ok  ] telemetry: enabled via default (install-id present)
+[ok  ] display server: Wayland+XWayland (WAYLAND_DISPLAY=wayland-1, DISPLAY=:1)
+[warn] X11 connection: no top-level windows returned (possible disconnected or inaccessible X11 display)
+[ok  ] AT-SPI: org.a11y.Bus reachable via session bus

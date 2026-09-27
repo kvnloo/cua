@@ -1,0 +1,49 @@
+{
+  "production_skipping": false,
+  "recorded": {
+    "always": {
+      "policy": "always",
+      "skips": 0,
+      "false_reuses": 0,
+      "recaptures": 1
+    },
+    "no_trusted_invalidator": {
+      "policy": "no_trusted_invalidator",
+      "skips": 0,
+      "false_reuses": 0,
+      "recaptures": 1
+    }
+  },
+  "synthetic_noop": {
+    "always": {
+      "policy": "always",
+      "skips": 0,
+      "false_reuses": 0,
+      "recaptures": 2
+    },
+    "no_trusted_invalidator": {
+      "policy": "no_trusted_invalidator",
+      "skips": 1,
+      "false_reuses": 0,
+      "recaptures": 1
+    }
+  },
+  "false_reuse_kills": true,
+  "break_even": [
+    {
+      "platform": "linux-gtk3-entry",
+      "skips": 0,
+      "note": "recorded text-change is not reused"
+    },
+    {
+      "platform": "macOS",
+      "skips": null,
+      "missing_machine": "macOS"
+    },
+    {
+      "platform": "Windows",
+      "skips": null,
+      "missing_machine": "Windows"
+    }
+  ]
+}
