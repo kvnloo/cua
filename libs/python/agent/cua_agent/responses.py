@@ -721,6 +721,16 @@ def convert_completion_messages_to_responses_items(
                         # Parse computer action
                         try:
                             action = json.loads(function.get("arguments", "{}"))
+                            if not isinstance(action, dict):
+                                # Model emitted valid JSON that is not an object
+                                # (string, list, null, number). A computer_call
+                                # action must be a dict; degrade to the same
+                                # function_call fallback the bad-JSON path uses.
+                                raise json.JSONDecodeError(
+                                    "arguments is not a JSON object",
+                                    function.get("arguments", "{}"),
+                                    0,
+                                )
                             # Change key from "action" -> "type"
                             if action.get("action"):
                                 action["type"] = action["action"]
