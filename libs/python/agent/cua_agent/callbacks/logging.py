@@ -70,16 +70,35 @@ class LoggingCallback(AsyncCallbackHandler):
             self.logger.setLevel(level)
 
     def _update_usage(self, usage: Dict[str, Any]) -> None:
-        """Update total usage statistics."""
+        """Update total usage statistics.
+
+        Tolerates malformed provider usage payloads: a non-dict usage is
+        ignored, null fields are skipped, nested shape drift (scalar vs
+        dict across calls) resets the key instead of raising, and
+        non-numeric scalars are carried over instead of breaking
+        accumulation.
+        """
+        if not isinstance(usage, dict):
+            # Malformed provider usage payload: logging must not kill the run.
+            return
 
         def add_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> None:
             for key, value in source.items():
+                if value is None:
+                    # Null fields carry no information; keep the running total.
+                    continue
                 if isinstance(value, dict):
-                    if key not in target:
+                    if not isinstance(target.get(key), dict):
                         target[key] = {}
                     add_dicts(target[key], value)
+                elif isinstance(value, bool) or not isinstance(value, (int, float)):
+                    # Non-numeric usage fields (provider metadata, labels)
+                    # cannot accumulate; carry the latest value over.
+                    target[key] = value
                 else:
-                    if key not in target:
+                    if not isinstance(target.get(key), (int, float)) or isinstance(
+                        target.get(key), bool
+                    ):
                         target[key] = 0
                     target[key] += value
 
