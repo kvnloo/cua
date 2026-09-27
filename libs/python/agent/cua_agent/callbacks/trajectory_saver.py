@@ -272,20 +272,34 @@ class TrajectorySaverCallback(AsyncCallbackHandler):
                 json.dump(sanitize_image_urls(artifact), f, indent=2)
         self.current_artifact += 1
 
-    def _update_usage(self, usage: Dict[str, Any]) -> None:
-        """Update total usage statistics."""
+    def _update_usage(self, usage: Any) -> None:
+        """Update total usage statistics.
+
+        Tolerates malformed provider usage payloads: a non-dict usage is
+        ignored, nested shape drift (scalar vs dict across calls) resets
+        the key instead of raising, and non-numeric scalars are carried
+        over instead of breaking accumulation.
+        """
 
         def add_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> None:
             for key, value in source.items():
                 if isinstance(value, dict):
-                    if key not in target:
+                    if not isinstance(target.get(key), dict):
                         target[key] = {}
                     add_dicts(target[key], value)
+                elif isinstance(value, bool) or not isinstance(value, (int, float)):
+                    # Non-numeric usage fields (provider metadata, labels)
+                    # cannot accumulate; carry the latest value over.
+                    target[key] = value
                 else:
-                    if key not in target:
+                    if not isinstance(target.get(key), (int, float)) or isinstance(
+                        target.get(key), bool
+                    ):
                         target[key] = 0
                     target[key] += value
 
+        if not isinstance(usage, dict):
+            return
         add_dicts(self.total_usage, usage)
 
     @override
@@ -399,7 +413,11 @@ class TrajectorySaverCallback(AsyncCallbackHandler):
     async def on_screenshot(self, screenshot: Union[str, bytes], name: str = "screenshot") -> None:
         """Save a screenshot."""
         if isinstance(screenshot, str):
-            screenshot = base64.b64decode(screenshot)
+            try:
+                screenshot = base64.b64decode(screenshot)
+            except Exception:
+                # Corrupt screenshot payload: telemetry must not kill the run.
+                return
         self._save_artifact(name, screenshot)
 
     @override
