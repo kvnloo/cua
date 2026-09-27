@@ -23,6 +23,7 @@ from PIL import Image
 
 from ..decorators import register_agent
 from ..types import AgentCapability
+from .base import first_choice_text
 from .composed_grounded import ComposedGroundedConfig
 
 # Regex patterns for extracting coordinates
@@ -157,7 +158,11 @@ class InternVLConfig(ComposedGroundedConfig):
         }
 
         response = await litellm.acompletion(**api_kwargs)
-        output_text = (response.choices[0].message.content or "").strip()  # type: ignore
+        # A malformed provider response is a prediction miss, not a crash.
+        output_text = first_choice_text(response)
+        if output_text is None:
+            return None
+        output_text = output_text.strip()
 
         # print(f"InternVL output: {output_text}")
 

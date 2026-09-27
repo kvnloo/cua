@@ -78,3 +78,21 @@ class AsyncAgentConfig(Protocol):
             List of capability strings (e.g., ["step", "click"])
         """
         ...
+
+
+def first_choice_text(response: Any) -> Optional[str]:
+    """Return the first choice's message content as text, or None when absent.
+
+    Malformed provider responses (missing/empty/non-list choices, missing
+    message, or non-string content) degrade to None instead of raising
+    IndexError/AttributeError, so grounding loops can treat them as a
+    prediction miss.
+    """
+    choices = getattr(response, "choices", None)
+    if not isinstance(choices, (list, tuple)) or not choices:
+        return None
+    message = getattr(choices[0], "message", None)
+    if message is None:
+        return None
+    content = getattr(message, "content", None)
+    return content if isinstance(content, str) else None

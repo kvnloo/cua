@@ -22,7 +22,7 @@ from PIL import Image
 
 from ..decorators import register_agent
 from ..types import AgentCapability
-from .base import AsyncAgentConfig
+from .base import AsyncAgentConfig, first_choice_text
 
 
 def _strip_hf_prefix(model: str) -> str:
@@ -189,7 +189,11 @@ class HoloConfig(AsyncAgentConfig):
         }
 
         response = await litellm.acompletion(**api_kwargs)
-        output_text = (response.choices[0].message.content or "").strip()  # type: ignore
+        # A malformed provider response is a prediction miss, not a crash.
+        output_text = first_choice_text(response)
+        if output_text is None:
+            return None
+        output_text = output_text.strip()
 
         coords = _parse_click_json(output_text)
         if coords is None:

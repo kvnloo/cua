@@ -14,7 +14,7 @@ import litellm
 from PIL import Image
 
 from ..decorators import register_agent
-from ..loops.base import AsyncAgentConfig
+from ..loops.base import AsyncAgentConfig, first_choice_text
 from ..types import AgentCapability
 
 SYSTEM_PROMPT = """
@@ -118,9 +118,13 @@ class GelatoConfig(AsyncAgentConfig):
         Returns:
             Tuple of (x, y) coordinates or None if prediction fails
         """
-        # Decode base64 image
-        image_data = base64.b64decode(image_b64)
-        image = Image.open(BytesIO(image_data))
+        # Decode base64 image; a corrupt payload or non-image bytes is a
+        # prediction miss, not a crash (documented Optional return).
+        try:
+            image_data = base64.b64decode(image_b64)
+            image = Image.open(BytesIO(image_data))
+        except Exception:
+            return None
         width, height = image.width, image.height
 
         # Smart resize the image (similar to qwen_vl_utils)
@@ -169,7 +173,11 @@ class GelatoConfig(AsyncAgentConfig):
         response = await litellm.acompletion(**api_kwargs)
 
         # Extract response text
-        output_text = response.choices[0].message.content  # type: ignore
+        # A malformed provider response (empty choices, missing message, or
+        # non-text content) is a prediction miss, not a crash.
+        output_text = first_choice_text(response)
+        if output_text is None:
+            return None
 
         # Extract and rescale coordinates
         pred_x, pred_y = extract_coordinates(output_text)  # type: ignore

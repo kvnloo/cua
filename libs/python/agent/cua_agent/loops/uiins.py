@@ -17,7 +17,7 @@ import litellm
 from PIL import Image
 
 from ..decorators import register_agent
-from ..loops.base import AsyncAgentConfig
+from ..loops.base import AsyncAgentConfig, first_choice_text
 from ..types import AgentCapability, AgentResponse, Messages, Tools
 
 SYSTEM_PROMPT = """You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task.\n\n## Output Format\nReturn a json object with a reasoning process in  tags, a function name and arguments within  XML tags:\n```\n\n...\n\n\n{"name": "grounding", "arguments": }\n\n```\n represents the following item of the action space:\n## Action Space{"action": "click", "coordinate": [x, y]}\nYour task is to accurately locate a UI element based on the instruction. You should first analyze instruction in  tags and finally output the function in  tags.\n"""
@@ -107,9 +107,13 @@ class UIInsConfig(AsyncAgentConfig):
         Returns:
             Tuple of (x, y) coordinates or None if prediction fails
         """
-        # Decode base64 image
-        image_data = base64.b64decode(image_b64)
-        image = Image.open(BytesIO(image_data))
+        # Decode base64 image; a corrupt payload or non-image bytes is a
+        # prediction miss, not a crash (documented Optional return).
+        try:
+            image_data = base64.b64decode(image_b64)
+            image = Image.open(BytesIO(image_data))
+        except Exception:
+            return None
         width, height = image.width, image.height
 
         # Smart resize the image (similar to qwen_vl_utils)
@@ -161,7 +165,11 @@ class UIInsConfig(AsyncAgentConfig):
         response = await litellm.acompletion(**api_kwargs)
 
         # Extract response text
-        output_text = response.choices[0].message.content  # type: ignore
+        # A malformed provider response (empty choices, missing message, or
+        # non-text content) is a prediction miss, not a crash.
+        output_text = first_choice_text(response)
+        if output_text is None:
+            return None
 
         # Extract and rescale coordinates
         pred_x, pred_y = parse_coordinates(output_text)  # type: ignore
