@@ -258,6 +258,8 @@ class FaraVlmConfig(AsyncAgentConfig):
         # If there is no screenshot in the conversation, take one now and inject it.
         def _has_any_image(msgs: List[Dict[str, Any]]) -> bool:
             for m in msgs:
+                if not isinstance(m, dict):
+                    continue
                 content = m.get("content")
                 if isinstance(content, list):
                     for p in content:

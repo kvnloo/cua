@@ -331,6 +331,8 @@ class Qwen35Config(AsyncAgentConfig):
         # Also record a pre_output_items assistant message to reflect action.
         def _has_any_image(msgs: List[Dict[str, Any]]) -> bool:
             for m in msgs:
+                if not isinstance(m, dict):
+                    continue
                 content = m.get("content")
                 if isinstance(content, list):
                     for p in content:

@@ -125,6 +125,8 @@ class OpenCUAConfig(ComposedGroundedConfig):
         # ------------------------------------------------------------------
         def _has_any_image(msgs: List[Dict[str, Any]]) -> bool:
             for m in msgs:
+                if not isinstance(m, dict):
+                    continue
                 content = m.get("content")
                 if isinstance(content, list):
                     for p in content:

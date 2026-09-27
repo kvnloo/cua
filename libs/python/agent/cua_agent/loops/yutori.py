@@ -175,16 +175,20 @@ def _convert_n1_action_to_computer_action(
 def _convert_images_to_n1_format(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Convert all images in messages to WebP format optimized for n1."""
     for msg in messages:
+        if not isinstance(msg, dict):
+            continue
         content = msg.get("content")
         if not isinstance(content, list):
             continue
         for part in content:
             if isinstance(part, dict) and part.get("type") == "image_url":
-                url = ((part.get("image_url") or {}).get("url")) or ""
+                image_url_val = part.get("image_url")
+                url = (image_url_val.get("url") if isinstance(image_url_val, dict) else "") or ""
                 if url.startswith("data:") and "," in url:
                     b64 = url.split(",", 1)[1]
                     converted = _prepare_image_for_n1(b64)
-                    part["image_url"]["url"] = f"data:image/webp;base64,{converted}"
+                    if isinstance(image_url_val, dict):
+                        image_url_val["url"] = f"data:image/webp;base64,{converted}"
     return messages
 
 
@@ -239,6 +243,8 @@ class YutoriN1Config(AsyncAgentConfig):
         # If there's no screenshot, take one and inject it
         def _has_any_image(msgs: List[Dict[str, Any]]) -> bool:
             for m in msgs:
+                if not isinstance(m, dict):
+                    continue
                 content = m.get("content")
                 if isinstance(content, list):
                     for p in content:
