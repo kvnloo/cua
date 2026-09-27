@@ -54,6 +54,15 @@ def _prepare_image_for_n1(image_b64: str) -> str:
         return image_b64
 
 
+def _numeric_pair(coords: Any) -> bool:
+    """True when coords holds at least two real numbers (bools excluded)."""
+    return (
+        isinstance(coords, (list, tuple))
+        and len(coords) >= 2
+        and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in coords[:2])
+    )
+
+
 def _unnormalize_coordinates(
     coords: List[int], screen_width: int, screen_height: int
 ) -> Tuple[int, int]:
@@ -73,9 +82,13 @@ def _convert_n1_action_to_computer_action(
     (goto_url, go_back, refresh).
     """
     # Actions with coordinates
+    if not isinstance(args, dict):
+        # Non-object arguments cannot name model parameters; the caller
+        # emits this as a plain function_call instead.
+        args = {}
     coords = args.get("coordinates")
     x, y = None, None
-    if isinstance(coords, (list, tuple)) and len(coords) >= 2:
+    if _numeric_pair(coords):
         x, y = _unnormalize_coordinates(coords, screen_width, screen_height)
 
     if fn_name == "left_click":
@@ -106,12 +119,7 @@ def _convert_n1_action_to_computer_action(
 
     if fn_name == "drag":
         start_coords = args.get("start_coordinates")
-        if (
-            not isinstance(start_coords, (list, tuple))
-            or len(start_coords) < 2
-            or x is None
-            or y is None
-        ):
+        if not _numeric_pair(start_coords) or x is None or y is None:
             return None
         sx, sy = _unnormalize_coordinates(start_coords, screen_width, screen_height)
         return {
@@ -124,7 +132,10 @@ def _convert_n1_action_to_computer_action(
 
     if fn_name == "scroll":
         direction = args.get("direction", "down")
-        amount = int(args.get("amount", 3))
+        try:
+            amount = int(args.get("amount", 3))
+        except (TypeError, ValueError):
+            amount = 3
         # Convert direction + amount to scroll_x/scroll_y pixels
         # Use ~100 pixels per scroll unit as a reasonable default
         pixels_per_unit = 100
@@ -347,6 +358,9 @@ class YutoriN1Config(AsyncAgentConfig):
                 try:
                     args = json.loads(args_str) if isinstance(args_str, str) else args_str
                 except json.JSONDecodeError:
+                    args = {}
+                if not isinstance(args, dict):
+                    # Non-object arguments cannot name model parameters.
                     args = {}
 
                 # Try converting to a computer action

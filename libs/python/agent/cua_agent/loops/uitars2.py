@@ -671,8 +671,12 @@ def _to_response_items(
             m = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point)
             if not m:
                 continue
-            nx = float(m.group(1))
-            ny = float(m.group(2))
+            try:
+                nx = float(m.group(1))
+                ny = float(m.group(2))
+            except ValueError:
+                # The regex also matches strings float() rejects ("1.2.3").
+                continue
             x, y = _denormalize_xy_from_uitars(nx, ny, w, h)
             if fn == "left_double":
                 items.append(make_double_click_item(x, y))
@@ -685,8 +689,11 @@ def _to_response_items(
             m = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point)
             if not m:
                 continue
-            nx = float(m.group(1))
-            ny = float(m.group(2))
+            try:
+                nx = float(m.group(1))
+                ny = float(m.group(2))
+            except ValueError:
+                continue
             x, y = _denormalize_xy_from_uitars(nx, ny, w, h)
             items.append(make_move_item(x, y))
         elif fn == "drag":
@@ -696,8 +703,11 @@ def _to_response_items(
             me = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", ep)
             if not (ms and me):
                 continue
-            nsx, nsy = float(ms.group(1)), float(ms.group(2))
-            nex, ney = float(me.group(1)), float(me.group(2))
+            try:
+                nsx, nsy = float(ms.group(1)), float(ms.group(2))
+                nex, ney = float(me.group(1)), float(me.group(2))
+            except ValueError:
+                continue
             sx, sy = _denormalize_xy_from_uitars(nsx, nsy, w, h)
             ex, ey = _denormalize_xy_from_uitars(nex, ney, w, h)
             items.append(make_drag_item([{"x": sx, "y": sy}, {"x": ex, "y": ey}]))
@@ -719,8 +729,11 @@ def _to_response_items(
             point = params.get("point", "")
             m = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point)
             if m:
-                nx = float(m.group(1))
-                ny = float(m.group(2))
+                try:
+                    nx = float(m.group(1))
+                    ny = float(m.group(2))
+                except ValueError:
+                    nx, ny = 500.0, 500.0
                 x, y = _denormalize_xy_from_uitars(nx, ny, w, h)
             else:
                 x, y = _denormalize_xy_from_uitars(500.0, 500.0, w, h)

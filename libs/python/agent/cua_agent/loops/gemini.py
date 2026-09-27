@@ -340,6 +340,18 @@ def _denormalize(v: int, size: int) -> int:
         return 0
 
 
+def _denormalize_coord(value: Any, size: int) -> Optional[int]:
+    """Denormalize a 0-999 model coordinate.
+
+    Returns None when the model value is malformed (non-numeric), so the
+    caller can drop the action instead of crashing the whole step.
+    """
+    try:
+        return _denormalize(int(value), size)
+    except (TypeError, ValueError):
+        return None
+
+
 def _has_builtin_computer_use(model: str) -> bool:
     """Check if the model has a built-in ComputerUse tool (e.g. gemini-2.5-computer-use-preview)."""
     return "computer-use" in model.lower()
@@ -562,6 +574,9 @@ def _map_gemini_fc_to_computer_call(
 ) -> Optional[Dict[str, Any]]:
     name = fc.get("name")
     args = fc.get("args", {}) or {}
+    if not isinstance(args, dict):
+        # Model-generated non-object arguments cannot name coordinates.
+        return None
 
     # Gemini 3 Flash uses "web_agent_api:" prefix for browser functions
     # Strip the prefix to normalize function names
@@ -570,19 +585,25 @@ def _map_gemini_fc_to_computer_call(
 
     action: Dict[str, Any] = {}
     if name == "click_at":
-        x = _denormalize(int(args.get("x", 0)), screen_w)
-        y = _denormalize(int(args.get("y", 0)), screen_h)
+        x = _denormalize_coord(args.get("x", 0), screen_w)
+        y = _denormalize_coord(args.get("y", 0), screen_h)
+        if x is None or y is None:
+            return None
         action = {"type": "click", "x": x, "y": y, "button": "left"}
     elif name == "type_text_at":
-        x = _denormalize(int(args.get("x", 0)), screen_w)
-        y = _denormalize(int(args.get("y", 0)), screen_h)
+        x = _denormalize_coord(args.get("x", 0), screen_w)
+        y = _denormalize_coord(args.get("y", 0), screen_h)
+        if x is None or y is None:
+            return None
         text = args.get("text", "")
         if args.get("press_enter") == True:
             text += "\n"
         action = {"type": "type", "x": x, "y": y, "text": text}
     elif name == "hover_at":
-        x = _denormalize(int(args.get("x", 0)), screen_w)
-        y = _denormalize(int(args.get("y", 0)), screen_h)
+        x = _denormalize_coord(args.get("x", 0), screen_w)
+        y = _denormalize_coord(args.get("y", 0), screen_h)
+        if x is None or y is None:
+            return None
         action = {"type": "move", "x": x, "y": y}
     elif name == "key_combination":
         keys = str(args.get("keys", ""))
@@ -607,10 +628,15 @@ def _map_gemini_fc_to_computer_call(
             "y": int(screen_h / 2),
         }
     elif name == "scroll_at":
-        x = _denormalize(int(args.get("x", 500)), screen_w)
-        y = _denormalize(int(args.get("y", 500)), screen_h)
+        x = _denormalize_coord(args.get("x", 500), screen_w)
+        y = _denormalize_coord(args.get("y", 500), screen_h)
+        if x is None or y is None:
+            return None
         direction = args.get("direction", "down")
-        magnitude = int(args.get("magnitude", 800))
+        try:
+            magnitude = int(args.get("magnitude", 800))
+        except (TypeError, ValueError):
+            magnitude = 800
         dx, dy = 0, 0
         if direction == "down":
             dy = magnitude
@@ -622,10 +648,12 @@ def _map_gemini_fc_to_computer_call(
             dx = -magnitude
         action = {"type": "scroll", "scroll_x": dx, "scroll_y": dy, "x": x, "y": y}
     elif name == "drag_and_drop":
-        x = _denormalize(int(args.get("x", 0)), screen_w)
-        y = _denormalize(int(args.get("y", 0)), screen_h)
-        dx = _denormalize(int(args.get("destination_x", x)), screen_w)
-        dy = _denormalize(int(args.get("destination_y", y)), screen_h)
+        x = _denormalize_coord(args.get("x", 0), screen_w)
+        y = _denormalize_coord(args.get("y", 0), screen_h)
+        dx = _denormalize_coord(args.get("destination_x", x), screen_w)
+        dy = _denormalize_coord(args.get("destination_y", y), screen_h)
+        if x is None or y is None or dx is None or dy is None:
+            return None
         action = {
             "type": "drag",
             "start_x": x,
