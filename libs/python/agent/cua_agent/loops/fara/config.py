@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import math
 from typing import Any, Dict, List, Optional, Tuple
 
 import litellm
@@ -34,6 +35,29 @@ from .helpers import (
 )
 
 
+def _finite_coord_pair(value: Any) -> Optional[Tuple[float, float]]:
+    """Return (x, y) for a usable two-element coordinate pair, else None."""
+    if isinstance(value, bool) or not isinstance(value, (list, tuple)):
+        return None
+    if len(value) != 2:
+        return None
+    if isinstance(value[0], bool) or isinstance(value[1], bool):
+        return None
+    try:
+        x, y = float(value[0]), float(value[1])
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not (math.isfinite(x) and math.isfinite(y)):
+        return None
+    return x, y
+
+
+def _safe_xy(value: Any) -> Tuple[int, int]:
+    """Round a coordinate pair to ints, defaulting to (0, 0) when unusable."""
+    pair = _finite_coord_pair(value)
+    return (round(pair[0]), round(pair[1])) if pair else (0, 0)
+
+
 def _scale_fara_coordinates(
     args: Dict[str, Any],
     original_dims: Tuple[int, int],
@@ -53,11 +77,17 @@ def _scale_fara_coordinates(
         original_dims: (width, height) of original browser viewport
         resized_dims: (width, height) after smart_resize
     """
-    coord = args.get("coordinate")
-    if not coord or not isinstance(coord, (list, tuple)) or len(coord) < 2:
+    if not isinstance(args, dict):
         return args
+    coord = args.get("coordinate")
+    if coord is None:
+        return args
+    pair = _finite_coord_pair(coord)
+    if pair is None:
+        # Malformed coordinate: drop it rather than crashing the step.
+        return {k: v for k, v in args.items() if k != "coordinate"}
 
-    x, y = float(coord[0]), float(coord[1])
+    x, y = pair
     original_w, original_h = float(original_dims[0]), float(original_dims[1])
     resized_w, resized_h = float(resized_dims[0]), float(resized_dims[1])
 
@@ -78,10 +108,10 @@ def _fara_args_to_sdk_item(args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     FARA format: {"action": "left_click", "coordinate": [100, 200]}
     SDK format:  ResponseComputerToolCallParam with action={"type": "click", "x": 100, "y": 200}
     """
+    if not isinstance(args, dict):
+        return None
     action = args.get("action", "")
-    coordinate = args.get("coordinate", [0, 0])
-    x = coordinate[0] if len(coordinate) > 0 else 0
-    y = coordinate[1] if len(coordinate) > 1 else 0
+    x, y = _safe_xy(args.get("coordinate", [0, 0]))
 
     # Click actions
     if action in ("left_click", "click"):
@@ -121,12 +151,12 @@ def _fara_args_to_sdk_item(args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
     # Drag action
     if action == "left_click_drag":
-        start_coord = args.get("start_coordinate", [0, 0])
-        end_coord = args.get("end_coordinate", [0, 0])
+        start_x, start_y = _safe_xy(args.get("start_coordinate", [0, 0]))
+        end_x, end_y = _safe_xy(args.get("end_coordinate", [0, 0]))
         return make_drag_item(
             path=[
-                {"x": start_coord[0], "y": start_coord[1]},
-                {"x": end_coord[0], "y": end_coord[1]},
+                {"x": start_x, "y": start_y},
+                {"x": end_x, "y": end_y},
             ]
         )
 
@@ -399,6 +429,10 @@ class FaraVlmConfig(AsyncAgentConfig):
         if tool_call and isinstance(tool_call, dict):
             fn_name = tool_call.get("name") or "computer"
             raw_args = tool_call.get("arguments") or {}
+            # Malformed model output: non-object arguments carry no action;
+            # skip the tool call and continue the run on the thoughts text.
+            if not isinstance(raw_args, dict):
+                raw_args = {}
 
             # Scale coordinates from resized image space to original viewport
             if (
@@ -428,12 +462,19 @@ class FaraVlmConfig(AsyncAgentConfig):
         elif tool_calls_array:
             # Priority 2: Use tool_calls field if present (Ollama Cloud format)
             for tc in tool_calls_array:
+                if not isinstance(tc, dict):
+                    continue
                 function = tc.get("function", {})
+                if not isinstance(function, dict):
+                    continue
                 fn_name = function.get("name", "computer")
                 args_str = function.get("arguments", "{}")
 
                 try:
-                    args = json.loads(args_str)
+                    args = json.loads(args_str) if isinstance(args_str, str) else args_str
+                    if not isinstance(args, dict):
+                        # Malformed tool call: skip rather than crashing the step.
+                        continue
 
                     # Scale coordinates from resized image space to original viewport
                     if "coordinate" in args and last_rw is not None and last_rh is not None:
@@ -452,7 +493,7 @@ class FaraVlmConfig(AsyncAgentConfig):
                         # Check for terminate (even if item is None)
                         if args.get("action") == "terminate":
                             has_terminate = True
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, TypeError):
                     pass
 
         elif content_text:
@@ -562,16 +603,18 @@ class FaraVlmConfig(AsyncAgentConfig):
         content_text = ((choice.get("message") or {}).get("content")) or ""
         tool_call = parse_tool_call_from_text(content_text) or {}
         args = tool_call.get("arguments") or {}
+        if not isinstance(args, dict):
+            return None
         # Scale from resized image space to original viewport
         args = _scale_fara_coordinates(
             args,
             original_dims=(w, h),
             resized_dims=(rw, rh),
         )
-        coord = args.get("coordinate")
-        if isinstance(coord, (list, tuple)) and len(coord) >= 2:
-            return int(coord[0]), int(coord[1])
-        return None
+        pair = _finite_coord_pair(args.get("coordinate"))
+        if pair is None:
+            return None
+        return round(pair[0]), round(pair[1])
 
 
 # FARA-specific ComputerUse tool schema (OpenAI function tool format)
