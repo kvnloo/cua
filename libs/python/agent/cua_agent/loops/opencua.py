@@ -6,6 +6,7 @@ Based on OpenCUA model for GUI grounding tasks.
 import base64
 import io
 import json
+import math
 import re
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
@@ -63,6 +64,27 @@ def _rescale_coordinate(
     if resized_w == 0 or resized_h == 0:
         return (x, y)
     return (round(x * orig_w / resized_w), round(y * orig_h / resized_h))
+
+
+def _finite_coord_pair(coord: Any) -> Optional[Tuple[float, float]]:
+    """Best-effort parse of a model-generated two-element coordinate pair.
+
+    Returns None for anything unusable (non-sequence, wrong length, bools,
+    unparseable elements, non-finite values) so callers can degrade gracefully
+    instead of raising on malformed model output.
+    """
+    if not isinstance(coord, (list, tuple)) or len(coord) < 2:
+        return None
+    if isinstance(coord[0], bool) or isinstance(coord[1], bool):
+        return None
+    try:
+        x = float(coord[0])
+        y = float(coord[1])
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not (math.isfinite(x) and math.isfinite(y)):
+        return None
+    return (x, y)
 
 
 @register_agent(models=r"(?i).*OpenCUA.*")
@@ -307,13 +329,24 @@ class OpenCUAConfig(ComposedGroundedConfig):
             tool_call = _parse_tool_call_from_text(content_text)
             if tool_call and isinstance(tool_call, dict):
                 fn_name = tool_call.get("name") or "computer"
-                raw_args = tool_call.get("arguments") or {}
+                raw_args = tool_call.get("arguments")
+                if not isinstance(raw_args, dict):
+                    # Malformed model output: treat as plain text so the step
+                    # degrades instead of raising on non-dict arguments.
+                    print(f"Warning: non-object tool arguments in <tool_call>: {type(raw_args).__name__}")
+                    tool_call = None
 
+            if tool_call and isinstance(tool_call, dict):
                 # Rescale any coordinate field
                 coord = raw_args.get("coordinate")
-                if coord and isinstance(coord, (list, tuple)) and len(coord) >= 2:
-                    rx, ry = _rescale(int(round(float(coord[0]))), int(round(float(coord[1]))))
+                pair = _finite_coord_pair(coord)
+                if pair is not None:
+                    rx, ry = _rescale(int(round(pair[0])), int(round(pair[1])))
                     raw_args = {**raw_args, "coordinate": [rx, ry]}
+                elif "coordinate" in raw_args:
+                    # Unusable coordinate: drop it so the step can still run
+                    print(f"Warning: dropping malformed coordinate in <tool_call>: {coord!r}")
+                    raw_args = {k: v for k, v in raw_args.items() if k != "coordinate"}
 
                 fake_cm = {
                     "role": "assistant",
@@ -337,6 +370,7 @@ class OpenCUAConfig(ComposedGroundedConfig):
         # Priority 3: tool_calls array from response
         else:
             processed_tool_calls = []
+            skipped_texts = []
             for tc in tool_calls_array:
                 function = tc.get("function", {})
                 fn_name = function.get("name", "computer")
@@ -344,12 +378,27 @@ class OpenCUAConfig(ComposedGroundedConfig):
 
                 try:
                     args = json.loads(args_str)
-
+                    if not isinstance(args, dict):
+                        # Valid JSON but not an object: represent as text so the
+                        # step degrades instead of raising in the converter.
+                        print(f"Warning: non-object tool arguments in tool_calls: {type(args).__name__}")
+                        skipped_texts.append(
+                            {
+                                "role": "assistant",
+                                "content": f"Tool call arguments were not an object and were skipped: {args_str[:200]}",
+                            }
+                        )
+                        continue
                     # Rescale coordinates if present
                     coord = args.get("coordinate")
-                    if coord and isinstance(coord, (list, tuple)) and len(coord) >= 2:
-                        rx, ry = _rescale(int(round(float(coord[0]))), int(round(float(coord[1]))))
+                    pair = _finite_coord_pair(coord)
+                    if pair is not None:
+                        rx, ry = _rescale(int(round(pair[0])), int(round(pair[1])))
                         args = {**args, "coordinate": [rx, ry]}
+                    elif "coordinate" in args:
+                        # Unusable coordinate: drop it so the step can still run
+                        print(f"Warning: dropping malformed coordinate in tool_calls: {coord!r}")
+                        args = {k: v for k, v in args.items() if k != "coordinate"}
 
                     # Convert Qwen format to Computer Calls format
                     if fn_name == "computer":
@@ -375,7 +424,9 @@ class OpenCUAConfig(ComposedGroundedConfig):
                 "content": content_text if content_text else "",
                 "tool_calls": processed_tool_calls,
             }
-            output_items.extend(convert_completion_messages_to_responses_items([fake_cm]))
+            output_items.extend(
+                convert_completion_messages_to_responses_items([fake_cm] + skipped_texts)
+            )
 
         return {"output": (pre_output_items + output_items), "usage": usage}
 
