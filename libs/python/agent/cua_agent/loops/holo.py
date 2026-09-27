@@ -189,7 +189,12 @@ class HoloConfig(AsyncAgentConfig):
         }
 
         response = await litellm.acompletion(**api_kwargs)
-        output_text = (response.choices[0].message.content or "").strip()  # type: ignore
+
+        # Extract response text. Empty choices (model returned nothing) or a
+        # missing message degrade to None, the documented failure return.
+        choices = getattr(response, "choices", None) or []
+        message = choices[0].message if choices else None
+        output_text = (getattr(message, "content", None) or "").strip()
 
         coords = _parse_click_json(output_text)
         if coords is None:
