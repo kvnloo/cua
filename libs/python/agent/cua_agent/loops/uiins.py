@@ -160,11 +160,14 @@ class UIInsConfig(AsyncAgentConfig):
         # Use liteLLM acompletion
         response = await litellm.acompletion(**api_kwargs)
 
-        # Extract response text
+        # Extract response text. Model refusals/empty replies yield None
+        # (or non-string) content, whose contract is a None return.
         output_text = response.choices[0].message.content  # type: ignore
+        if not isinstance(output_text, str) or not output_text:
+            return None
 
         # Extract and rescale coordinates
-        pred_x, pred_y = parse_coordinates(output_text)  # type: ignore
+        pred_x, pred_y = parse_coordinates(output_text)
         pred_x *= scale_x
         pred_y *= scale_y
 
