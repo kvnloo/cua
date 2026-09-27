@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from computer import Computer
 
 from .base import AsyncComputerHandler
+from ..types import ToolError
 
 
 class cuaComputerHandler(AsyncComputerHandler):
@@ -95,6 +96,11 @@ class cuaComputerHandler(AsyncComputerHandler):
         assert self.interface is not None
         if isinstance(keys, str):
             keys = keys.replace("-", "+").split("+")
+        # A malformed model-supplied keys payload must degrade to a tool
+        # error, not kill the run: _handle_item only catches ToolError, so a
+        # bare TypeError from len()/unpacking here would abort the whole loop.
+        if not isinstance(keys, (list, tuple)):
+            raise ToolError(f"Invalid keys for keypress: {keys!r}")
         if len(keys) == 1:
             await self.interface.press_key(keys[0])
         else:
@@ -123,6 +129,20 @@ class cuaComputerHandler(AsyncComputerHandler):
 
         if not path:
             return
+
+        # Validate path points before touching the interface: a malformed
+        # model-supplied path must degrade to a tool error, not kill the run
+        # with TypeError/KeyError out of _handle_item (only ToolError is
+        # caught there).
+        if not isinstance(path, (list, tuple)):
+            raise ToolError(f"Invalid drag path: {path!r}")
+        for point in path:
+            if (
+                not isinstance(point, dict)
+                or not isinstance(point.get("x"), (int, float))
+                or not isinstance(point.get("y"), (int, float))
+            ):
+                raise ToolError(f"Invalid drag path point: {point!r}")
 
         # Start drag from first point
         start = path[0]
