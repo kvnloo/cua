@@ -234,7 +234,7 @@ async def _predict_step_with_retry(
         max_retries: Maximum number of retry attempts (total attempts = max_retries + 1).
         base_delay: Base delay in seconds for the first retry; doubles each attempt.
     """
-    if max_retries is None:
+    if max_retries is None or max_retries < 0:
         max_retries = 0
     last_exc: Optional[BaseException] = None
     for attempt in range(max_retries + 1):
