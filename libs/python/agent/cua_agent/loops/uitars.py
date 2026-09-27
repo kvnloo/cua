@@ -414,6 +414,58 @@ def pil_to_base64(image: Image.Image) -> str:
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
+def _scan_uitars_step_messages(messages: Any) -> Tuple[str, Optional[str]]:
+    """Extract the latest instruction text and screenshot base64 from history.
+
+    Returns (instruction, image_data); image_data is None when no usable
+    screenshot was found, and is always a str otherwise -- malformed entries
+    (non-dict messages, non-string image_url values) are skipped instead of
+    crashing the scan.
+    """
+    instruction = ""
+    image_data: Optional[str] = None
+
+    # Convert messages to list if string
+    if isinstance(messages, str):
+        messages = [{"role": "user", "content": messages}]
+
+    # Extract instruction and latest screenshot
+    for message in reversed(messages):
+        if isinstance(message, dict):
+            content = message.get("content", "")
+
+            # Handle different content formats
+            if isinstance(content, str):
+                if not instruction and message.get("role") == "user":
+                    instruction = content
+            elif isinstance(content, list):
+                for item in content:
+                    if isinstance(item, dict):
+                        if item.get("type") == "text" and not instruction:
+                            instruction = item.get("text", "")
+                        elif item.get("type") == "image_url" and not image_data:
+                            image_url = item.get("image_url", {})
+                            if isinstance(image_url, dict):
+                                image_data = image_url.get("url", "")
+                            else:
+                                image_data = image_url
+                            if not isinstance(image_data, str):
+                                image_data = None
+
+            # Also check for computer_call_output with screenshots
+            if message.get("type") == "computer_call_output" and not image_data:
+                output = message.get("output", {})
+                if isinstance(output, dict) and output.get("type") == "input_image":
+                    image_url = output.get("image_url", "")
+                    if isinstance(image_url, str):
+                        image_data = image_url
+
+        if instruction and image_data:
+            break
+
+    return instruction, image_data
+
+
 def process_image_for_uitars(
     image_data: str, max_pixels: int = MAX_PIXELS, min_pixels: int = MIN_PIXELS
 ) -> tuple[Image.Image, int, int]:
@@ -665,42 +717,7 @@ class UITARSConfig:
                 pass
 
         # Process messages to extract instruction and image
-        instruction = ""
-        image_data = None
-
-        # Convert messages to list if string
-        if isinstance(messages, str):
-            messages = [{"role": "user", "content": messages}]
-
-        # Extract instruction and latest screenshot
-        for message in reversed(messages):
-            if isinstance(message, dict):
-                content = message.get("content", "")
-
-                # Handle different content formats
-                if isinstance(content, str):
-                    if not instruction and message.get("role") == "user":
-                        instruction = content
-                elif isinstance(content, list):
-                    for item in content:
-                        if isinstance(item, dict):
-                            if item.get("type") == "text" and not instruction:
-                                instruction = item.get("text", "")
-                            elif item.get("type") == "image_url" and not image_data:
-                                image_url = item.get("image_url", {})
-                                if isinstance(image_url, dict):
-                                    image_data = image_url.get("url", "")
-                                else:
-                                    image_data = image_url
-
-            # Also check for computer_call_output with screenshots
-            if message.get("type") == "computer_call_output" and not image_data:
-                output = message.get("output", {})
-                if isinstance(output, dict) and output.get("type") == "input_image":
-                    image_data = output.get("image_url", "")
-
-            if instruction and image_data:
-                break
+        instruction, image_data = _scan_uitars_step_messages(messages)
 
         if not instruction:
             instruction = (
