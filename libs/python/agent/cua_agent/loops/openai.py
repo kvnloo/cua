@@ -5,6 +5,7 @@ OpenAI computer-use-preview agent loop implementation using liteLLM
 import asyncio
 import base64
 import json
+import math
 from io import BytesIO
 from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
 
@@ -13,6 +14,26 @@ from PIL import Image
 
 from ..decorators import register_agent
 from ..types import AgentCapability, AgentResponse, Messages, Tools
+
+
+def _safe_pixel_int(value: Any) -> Optional[int]:
+    """Coerce a model-emitted coordinate to a finite int pixel value, or None.
+
+    Rejects bools, non-numeric values, unparseable strings, and non-finite
+    numbers instead of letting int()/float() raise mid-step.
+    """
+    if isinstance(value, bool):
+        return None
+    try:
+        num = float(value) if isinstance(value, str) else value
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not isinstance(num, (int, float)) or not math.isfinite(num):
+        return None
+    try:
+        return int(num)
+    except (OverflowError, ValueError):
+        return None
 
 
 async def _map_computer_tool_to_openai(
@@ -398,8 +419,10 @@ Task: Click {instruction}. Output ONLY a click action on the target element.""",
             # Native format: computer_call with action dict
             if item.get("type") == "computer_call" and isinstance(item.get("action"), dict):
                 action = item["action"]
-                if action.get("x") is not None and action.get("y") is not None:
-                    return (int(action.get("x")), int(action.get("y")))
+                x = _safe_pixel_int(action.get("x"))
+                y = _safe_pixel_int(action.get("y"))
+                if x is not None and y is not None:
+                    return (x, y)
 
             # Function calling format: function_call with arguments
             if item.get("type") == "function_call" and item.get("name") == "computer":
@@ -409,9 +432,13 @@ Task: Click {instruction}. Output ONLY a click action on the target element.""",
                         args = json.loads(arguments)
                     else:
                         args = arguments
-                    if args.get("x") is not None and args.get("y") is not None:
-                        return (int(args.get("x")), int(args.get("y")))
-                except (json.JSONDecodeError, TypeError):
+                    if not isinstance(args, dict):
+                        continue
+                    x = _safe_pixel_int(args.get("x"))
+                    y = _safe_pixel_int(args.get("y"))
+                    if x is not None and y is not None:
+                        return (x, y)
+                except (json.JSONDecodeError, TypeError, ValueError):
                     continue
 
         return None
