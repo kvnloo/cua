@@ -757,7 +757,10 @@ class ComputerAgent:
 
                 # Perform computer actions
                 action = item.get("action")
-                action_type = action.get("type") if action else None
+                # A non-dict action (e.g. a bare string from a malformed model
+                # response) has no .get; degrade like a missing action instead
+                # of raising AttributeError and killing the whole run.
+                action_type = action.get("type") if isinstance(action, dict) else None
                 if not action_type:
                     print(
                         f"Action type is empty or None: action={action}, action_type={action_type}"
