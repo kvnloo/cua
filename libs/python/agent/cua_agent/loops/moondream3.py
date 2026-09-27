@@ -471,7 +471,13 @@ class Moondream3PlusConfig(AsyncAgentConfig):
 
         Returns pixel coordinates (x, y) as floats.
         """
-        img = _decode_image_b64(image_b64)
+        try:
+            img = _decode_image_b64(image_b64)
+        except Exception:
+            # Corrupt image data is a miss, not a step-killing error: the
+            # 3x retry loop in predict_step treats a None return as a miss
+            # and leaves the description unmapped.
+            return None
         W, H = img.width, img.height
         model_md = get_moondream_model()
         try:
