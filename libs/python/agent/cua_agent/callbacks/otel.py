@@ -133,8 +133,19 @@ class OtelCallback(AsyncCallbackHandler):
         if not OTEL_AVAILABLE or not is_otel_enabled():
             return
 
-        prompt_tokens = usage.get("prompt_tokens", 0)
-        completion_tokens = usage.get("completion_tokens", 0)
+        if not isinstance(usage, dict):
+            # Malformed provider usage payload: telemetry must not kill the run.
+            return
+
+        def _num(value: Any) -> float:
+            # Token counts must be numeric; a provider reporting nulls or
+            # strings must not break the comparison below.
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return 0
+            return value
+
+        prompt_tokens = _num(usage.get("prompt_tokens", 0))
+        completion_tokens = _num(usage.get("completion_tokens", 0))
 
         if prompt_tokens > 0 or completion_tokens > 0:
             record_tokens(
