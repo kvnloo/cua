@@ -60,8 +60,21 @@ class OperatorNormalizerCallback(AsyncCallbackHandler):
 
             # rename "coordinate" to "x", "y"
             if "coordinate" in action:
-                action["x"] = action["coordinate"][0]
-                action["y"] = action["coordinate"][1]
+                coord = action["coordinate"]
+                if (
+                    isinstance(coord, (list, tuple))
+                    and len(coord) == 2
+                    and all(
+                        isinstance(v, (int, float)) and not isinstance(v, bool)
+                        for v in coord
+                    )
+                ):
+                    action["x"] = coord[0]
+                    action["y"] = coord[1]
+                # Malformed coordinate: drop it instead of subscripting it.
+                # None/short sequences crashed the normalizer (killing the run
+                # out of on_llm_end); a string silently became a char pair and
+                # would have clicked the wrong location.
                 del action["coordinate"]
             if action_type == "click":
                 # convert "click" to "button"
