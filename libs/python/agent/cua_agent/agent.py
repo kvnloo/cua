@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import inspect
 import json
+import logging
 import random
 import time
 from pathlib import Path
@@ -252,6 +253,14 @@ async def _predict_step_with_retry(
             else:
                 raise
     raise last_exc  # unreachable, but satisfies type checkers
+
+
+logger = logging.getLogger(__name__)
+
+# Sentinel returned by ComputerAgent._call_hook_safely when a lifecycle
+# callback raises. Lets dispatchers distinguish "callback failed" from a
+# legitimate None return (None means "no change" for message hooks).
+_HOOK_FAILED = object()
 
 
 class ComputerAgent:
@@ -612,11 +621,30 @@ class ComputerAgent:
     # AGENT RUN LOOP LIFECYCLE HOOKS
     # ============================================================================
 
+    async def _call_hook_safely(self, hook_name: str, callback: Any, *args: Any) -> Any:
+        """Call one lifecycle hook on one callback, isolating callback failures.
+
+        A misbehaving callback (logging, telemetry, budget tracking) must not
+        kill the agent run, so exceptions are logged and swallowed. Returns the
+        callback's return value, or _HOOK_FAILED when it raised.
+        """
+        try:
+            return await getattr(callback, hook_name)(*args)
+        except Exception as e:
+            logger.warning(
+                "[cua-agent] %s.%s raised %s (%s); isolated, continuing",
+                type(callback).__name__,
+                hook_name,
+                type(e).__name__,
+                e,
+            )
+            return _HOOK_FAILED
+
     async def _on_run_start(self, kwargs: Dict[str, Any], old_items: List[Dict[str, Any]]) -> None:
         """Initialize run tracking by calling callbacks."""
         for callback in self.callbacks:
             if hasattr(callback, "on_run_start"):
-                await callback.on_run_start(kwargs, old_items)
+                await self._call_hook_safely("on_run_start", callback, kwargs, old_items)
 
     async def _on_run_end(
         self,
@@ -627,7 +655,7 @@ class ComputerAgent:
         """Finalize run tracking by calling callbacks."""
         for callback in self.callbacks:
             if hasattr(callback, "on_run_end"):
-                await callback.on_run_end(kwargs, old_items, new_items)
+                await self._call_hook_safely("on_run_end", callback, kwargs, old_items, new_items)
 
     async def _on_run_continue(
         self,
@@ -638,8 +666,11 @@ class ComputerAgent:
         """Check if run should continue by calling callbacks."""
         for callback in self.callbacks:
             if hasattr(callback, "on_run_continue"):
-                should_continue = await callback.on_run_continue(kwargs, old_items, new_items)
-                if not should_continue:
+                verdict = await self._call_hook_safely(
+                    "on_run_continue", callback, kwargs, old_items, new_items
+                )
+                # A failed callback abstains; only an explicit falsy verdict stops.
+                if verdict is not _HOOK_FAILED and not verdict:
                     return False
         return True
 
@@ -648,7 +679,10 @@ class ComputerAgent:
         result = messages
         for callback in self.callbacks:
             if hasattr(callback, "on_llm_start"):
-                result = await callback.on_llm_start(result)
+                updated = await self._call_hook_safely("on_llm_start", callback, result)
+                # None means "no change"; a failed callback is skipped too.
+                if updated is not None and updated is not _HOOK_FAILED:
+                    result = updated
         return result
 
     async def _on_llm_end(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -656,20 +690,23 @@ class ComputerAgent:
         result = messages
         for callback in self.callbacks:
             if hasattr(callback, "on_llm_end"):
-                result = await callback.on_llm_end(result)
+                updated = await self._call_hook_safely("on_llm_end", callback, result)
+                # None means "no change"; a failed callback is skipped too.
+                if updated is not None and updated is not _HOOK_FAILED:
+                    result = updated
         return result
 
     async def _on_responses(self, kwargs: Dict[str, Any], responses: Dict[str, Any]) -> None:
         """Called when responses are received."""
         for callback in self.callbacks:
             if hasattr(callback, "on_responses"):
-                await callback.on_responses(get_json(kwargs), get_json(responses))
+                await self._call_hook_safely("on_responses", callback, get_json(kwargs), get_json(responses))
 
     async def _on_computer_call_start(self, item: Dict[str, Any]) -> None:
         """Called when a computer call is about to start."""
         for callback in self.callbacks:
             if hasattr(callback, "on_computer_call_start"):
-                await callback.on_computer_call_start(get_json(item))
+                await self._call_hook_safely("on_computer_call_start", callback, get_json(item))
 
     async def _on_computer_call_end(
         self, item: Dict[str, Any], result: List[Dict[str, Any]]
@@ -677,13 +714,13 @@ class ComputerAgent:
         """Called when a computer call has completed."""
         for callback in self.callbacks:
             if hasattr(callback, "on_computer_call_end"):
-                await callback.on_computer_call_end(get_json(item), get_json(result))
+                await self._call_hook_safely("on_computer_call_end", callback, get_json(item), get_json(result))
 
     async def _on_function_call_start(self, item: Dict[str, Any]) -> None:
         """Called when a function call is about to start."""
         for callback in self.callbacks:
             if hasattr(callback, "on_function_call_start"):
-                await callback.on_function_call_start(get_json(item))
+                await self._call_hook_safely("on_function_call_start", callback, get_json(item))
 
     async def _on_function_call_end(
         self, item: Dict[str, Any], result: List[Dict[str, Any]]
@@ -691,37 +728,37 @@ class ComputerAgent:
         """Called when a function call has completed."""
         for callback in self.callbacks:
             if hasattr(callback, "on_function_call_end"):
-                await callback.on_function_call_end(get_json(item), get_json(result))
+                await self._call_hook_safely("on_function_call_end", callback, get_json(item), get_json(result))
 
     async def _on_text(self, item: Dict[str, Any]) -> None:
         """Called when a text message is encountered."""
         for callback in self.callbacks:
             if hasattr(callback, "on_text"):
-                await callback.on_text(get_json(item))
+                await self._call_hook_safely("on_text", callback, get_json(item))
 
     async def _on_api_start(self, kwargs: Dict[str, Any]) -> None:
         """Called when an LLM API call is about to start."""
         for callback in self.callbacks:
             if hasattr(callback, "on_api_start"):
-                await callback.on_api_start(get_json(kwargs))
+                await self._call_hook_safely("on_api_start", callback, get_json(kwargs))
 
     async def _on_api_end(self, kwargs: Dict[str, Any], result: Any) -> None:
         """Called when an LLM API call has completed."""
         for callback in self.callbacks:
             if hasattr(callback, "on_api_end"):
-                await callback.on_api_end(get_json(kwargs), get_json(result))
+                await self._call_hook_safely("on_api_end", callback, get_json(kwargs), get_json(result))
 
     async def _on_usage(self, usage: Dict[str, Any]) -> None:
         """Called when usage information is received."""
         for callback in self.callbacks:
             if hasattr(callback, "on_usage"):
-                await callback.on_usage(get_json(usage))
+                await self._call_hook_safely("on_usage", callback, get_json(usage))
 
     async def _on_screenshot(self, screenshot: Union[str, bytes], name: str = "screenshot") -> None:
         """Called when a screenshot is taken."""
         for callback in self.callbacks:
             if hasattr(callback, "on_screenshot"):
-                await callback.on_screenshot(screenshot, name)
+                await self._call_hook_safely("on_screenshot", callback, screenshot, name)
 
     # ============================================================================
     # AGENT OUTPUT PROCESSING
