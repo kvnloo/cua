@@ -475,6 +475,10 @@ def convert_responses_items_to_completion_messages(
                 # Handle list content (images, text blocks)
                 completion_content = []
                 for item in content:
+                    # Malformed content entries cannot be converted; skip
+                    # them instead of raising AttributeError and killing the run.
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "input_image":
                         completion_content.append(
                             {"type": "image_url", "image_url": {"url": item.get("image_url")}}
@@ -495,6 +499,10 @@ def convert_responses_items_to_completion_messages(
             if isinstance(content, list):
                 text_parts = []
                 for item in content:
+                    # Malformed content entries cannot contribute text; skip
+                    # them instead of raising AttributeError and killing the run.
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "output_text":
                         text_parts.append(item.get("text", ""))
                     elif item.get("type") == "text":
@@ -510,6 +518,10 @@ def convert_responses_items_to_completion_messages(
             summary = message.get("summary", [])
             text_parts = []
             for item in summary:
+                # Malformed summary entries cannot contribute text; skip them
+                # instead of raising AttributeError and killing the run.
+                if not isinstance(item, dict):
+                    continue
                 if item.get("type") == "summary_text":
                     text_parts.append(item.get("text", ""))
 
@@ -713,6 +725,10 @@ def convert_completion_messages_to_responses_items(
         # Handle tool calls
         if tool_calls:
             for tool_call in tool_calls:
+                # Malformed tool_call entries cannot be converted; skip them
+                # instead of raising AttributeError and killing the run.
+                if not isinstance(tool_call, dict):
+                    continue
                 if tool_call.get("type") == "function":
                     function = tool_call.get("function", {})
                     function_name = function.get("name")
@@ -772,14 +788,20 @@ def convert_completion_messages_to_responses_items(
                         # Found the pattern - extract image from next message
                         next_content = completion_messages[next_idx]["content"]
                         for item in next_content:
+                            # Malformed content entries cannot be converted; skip
+                            # them instead of raising AttributeError and killing the run.
+                            if not isinstance(item, dict):
+                                continue
                             if item.get("type") == "image_url":
+                                image_url = item.get("image_url", {})
+                                url = image_url.get("url") if isinstance(image_url, dict) else None
                                 responses_items.append(
                                     {
                                         "type": "computer_call_output",
                                         "call_id": tool_call_id,
                                         "output": {
                                             "type": "input_image",
-                                            "image_url": item.get("image_url", {}).get("url"),
+                                            "image_url": url,
                                         },
                                     }
                                 )
@@ -828,14 +850,20 @@ def convert_completion_messages_to_responses_items(
             elif isinstance(content, list):
                 # Handle structured content (e.g., images)
                 for item in content:
+                    # Malformed content entries cannot be converted; skip them
+                    # instead of raising AttributeError and killing the run.
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "image_url":
+                        image_url = item.get("image_url", {})
+                        url = image_url.get("url") if isinstance(image_url, dict) else None
                         responses_items.append(
                             {
                                 "type": "computer_call_output",
                                 "call_id": tool_call_id,
                                 "output": {
                                     "type": "input_image",
-                                    "image_url": item.get("image_url", {}).get("url"),
+                                    "image_url": url,
                                 },
                             }
                         )
@@ -854,11 +882,17 @@ def convert_completion_messages_to_responses_items(
                 # Handle structured user content (e.g., text + images)
                 user_content = []
                 for item in content:
+                    # Malformed content entries cannot be converted; skip them
+                    # instead of raising AttributeError and killing the run.
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "image_url":
+                        image_url = item.get("image_url", {})
+                        url = image_url.get("url") if isinstance(image_url, dict) else None
                         user_content.append(
                             {
                                 "type": "input_image",
-                                "image_url": item.get("image_url", {}).get("url"),
+                                "image_url": url,
                             }
                         )
                     elif item.get("type") == "text":
