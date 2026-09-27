@@ -302,6 +302,14 @@ def replace_failed_computer_calls_with_function_calls(
 
 
 # Conversion functions between element descriptions and coordinates
+def _safe_contains(mapping: dict, key) -> bool:
+    """Membership test; unhashable keys simply miss instead of raising TypeError."""
+    try:
+        return key in mapping
+    except TypeError:
+        return False
+
+
 def convert_computer_calls_desc2xy(
     responses_items: List[Dict[str, Any]], desc2xy: Dict[str, tuple]
 ) -> List[Dict[str, Any]]:
@@ -318,13 +326,20 @@ def convert_computer_calls_desc2xy(
     converted_items = []
 
     for item in responses_items:
+        if not isinstance(item, dict):
+            converted_items.append(item)
+            continue
         if item.get("type") == "computer_call" and "action" in item:
-            action = item["action"].copy()
+            action = item["action"]
+            if not isinstance(action, dict):
+                converted_items.append(item)
+                continue
+            action = action.copy()
 
             # Handle single element_description
             if "element_description" in action:
                 desc = action["element_description"]
-                if desc in desc2xy:
+                if _safe_contains(desc2xy, desc):
                     x, y = desc2xy[desc]
                     action["x"] = x
                     action["y"] = y
@@ -335,7 +350,7 @@ def convert_computer_calls_desc2xy(
                 start_desc = action["start_element_description"]
                 end_desc = action["end_element_description"]
 
-                if start_desc in desc2xy and end_desc in desc2xy:
+                if _safe_contains(desc2xy, start_desc) and _safe_contains(desc2xy, end_desc):
                     start_x, start_y = desc2xy[start_desc]
                     end_x, end_y = desc2xy[end_desc]
                     action["path"] = [{"x": start_x, "y": start_y}, {"x": end_x, "y": end_y}]
@@ -370,13 +385,20 @@ def convert_computer_calls_xy2desc(
     converted_items = []
 
     for item in responses_items:
+        if not isinstance(item, dict):
+            converted_items.append(item)
+            continue
         if item.get("type") == "computer_call" and "action" in item:
-            action = item["action"].copy()
+            action = item["action"]
+            if not isinstance(action, dict):
+                converted_items.append(item)
+                continue
+            action = action.copy()
 
             # Handle single x,y coordinates
             if "x" in action and "y" in action:
                 coords = (action["x"], action["y"])
-                if coords in xy2desc:
+                if _safe_contains(xy2desc, coords):
                     action["element_description"] = xy2desc[coords]
                     del action["x"]
                     del action["y"]
@@ -387,7 +409,9 @@ def convert_computer_calls_xy2desc(
                 end_point = action["path"][1]
 
                 if (
-                    "x" in start_point
+                    isinstance(start_point, dict)
+                    and isinstance(end_point, dict)
+                    and "x" in start_point
                     and "y" in start_point
                     and "x" in end_point
                     and "y" in end_point
@@ -396,7 +420,9 @@ def convert_computer_calls_xy2desc(
                     start_coords = (start_point["x"], start_point["y"])
                     end_coords = (end_point["x"], end_point["y"])
 
-                    if start_coords in xy2desc and end_coords in xy2desc:
+                    if _safe_contains(xy2desc, start_coords) and _safe_contains(
+                        xy2desc, end_coords
+                    ):
                         action["start_element_description"] = xy2desc[start_coords]
                         action["end_element_description"] = xy2desc[end_coords]
                         del action["path"]
@@ -423,8 +449,12 @@ def get_all_element_descriptions(responses_items: List[Dict[str, Any]]) -> List[
     descriptions = set()
 
     for item in responses_items:
+        if not isinstance(item, dict):
+            continue
         if item.get("type") == "computer_call" and "action" in item:
             action = item["action"]
+            if not isinstance(action, dict):
+                continue
 
             # Handle single element_description
             if "element_description" in action:
