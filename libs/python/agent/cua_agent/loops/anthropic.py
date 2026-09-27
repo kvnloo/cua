@@ -778,6 +778,24 @@ def _convert_completion_to_responses_items(
                         tool_input = content_item.get("input", {})
                         call_id = content_item.get("id")
 
+                        if not isinstance(tool_input, dict):
+                            # Degrade gracefully: the model emitted a non-object
+                            # input (string/null/list), which cannot carry action
+                            # fields. Emit a failed tool call pair so the model
+                            # can recover instead of killing the whole run.
+                            responses_items.extend(
+                                make_failed_tool_call_items(
+                                    tool_name=tool_name if isinstance(tool_name, str) else "computer",
+                                    tool_kwargs={},
+                                    error_message=(
+                                        f"Invalid tool_use input for '{tool_name}': "
+                                        f"expected object, got {type(tool_input).__name__}"
+                                    ),
+                                    call_id=call_id,
+                                )
+                            )
+                            continue
+
                         # Handle custom function tools (not computer tools)
                         if tool_name != "computer":
                             from ..responses import make_function_call_item
@@ -1090,6 +1108,11 @@ def _convert_completion_to_responses_items(
             # Handle computer tool
             if tool_call.function.name == "computer":
                 try:
+                    # Pre-bound so the inner handler never references unbound
+                    # locals when json.loads fails (malformed model args must
+                    # degrade to a failed tool call pair, not kill the run).
+                    args: Dict[str, Any] = {}
+                    call_id = tool_call.id
                     try:
                         args = json.loads(tool_call.function.arguments)
                         action_type = args.get("action")
