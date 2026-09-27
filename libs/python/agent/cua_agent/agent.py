@@ -854,7 +854,28 @@ class ComputerAgent:
                 if not function:
                     raise ToolError(f"Function {item.get('name')} not found")
 
-                args = json.loads(item.get("arguments"))
+                # Parse tool-call arguments. Malformed JSON (or a non-object
+                # payload) must degrade to a tool error, not kill the run:
+                # only ToolError is caught below, anything else escapes and
+                # aborts the whole agent loop.
+                raw_args = item.get("arguments")
+                try:
+                    args = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    return [
+                        make_tool_error_item(
+                            f"Invalid JSON arguments for function {item.get('name')}: {raw_args!r}",
+                            call_id,
+                        )
+                    ]
+                if not isinstance(args, dict):
+                    return [
+                        make_tool_error_item(
+                            f"Function {item.get('name')} arguments must be a JSON object, "
+                            f"got {type(args).__name__}",
+                            call_id,
+                        )
+                    ]
 
                 # Handle BaseTool instances
                 if isinstance(function, BaseTool):
