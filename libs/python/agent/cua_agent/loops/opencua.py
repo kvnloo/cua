@@ -422,8 +422,15 @@ class OpenCUAConfig(ComposedGroundedConfig):
         # Use liteLLM acompletion
         response = await litellm.acompletion(**api_kwargs)
 
-        # Extract response text
-        output_text = response.choices[0].message.content
+        # Extract response text. Empty choices (model returned nothing) or a
+        # missing/empty message degrade to None, the documented failure return.
+        # (predict_step's malformed tool-call handling is guarded separately
+        # on sibling branch muse/opencua-malformed-coord-rescale.)
+        choices = getattr(response, "choices", None) or []
+        message = choices[0].message if choices else None
+        output_text = getattr(message, "content", None)
+        if not isinstance(output_text, str) or not output_text:
+            return None
 
         # Extract coordinates from click format
         coordinates = extract_coordinates_from_click(output_text)
