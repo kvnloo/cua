@@ -172,6 +172,33 @@ def sanitize_message(msg: Any) -> Any:
     return msg
 
 
+def _message_has_image_content(msg: Any) -> bool:
+    """Return True if a single message carries image content.
+
+    Tolerates non-dict messages and non-dict outputs so a malformed
+    earlier step (or raw user input) cannot crash the Ollama image-input
+    guard in the run loop.
+    """
+    if not isinstance(msg, dict):
+        return False
+    # 1. Check regular message content
+    content = msg.get("content")
+    if isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict) and item.get("type") == "image_url":
+                return True
+    # 2. Check computer_call_output screenshots
+    if msg.get("type") == "computer_call_output":
+        output = msg.get("output", {})
+        if (
+            isinstance(output, dict)
+            and output.get("type") == "input_image"
+            and "image_url" in output
+        ):
+            return True
+    return False
+
+
 def get_output_call_ids(messages: List[Dict[str, Any]]) -> List[str]:
     call_ids = []
     for message in messages:
@@ -984,21 +1011,7 @@ class ComputerAgent:
             ):
 
                 def contains_image_content(msgs):
-                    for m in msgs:
-                        # 1️⃣ Check regular message content
-                        content = m.get("content")
-                        if isinstance(content, list):
-                            for item in content:
-                                if isinstance(item, dict) and item.get("type") == "image_url":
-                                    return True
-
-                        # 2️⃣ Check computer_call_output screenshots
-                        if m.get("type") == "computer_call_output":
-                            output = m.get("output", {})
-                            if output.get("type") == "input_image" and "image_url" in output:
-                                return True
-
-                    return False
+                    return any(_message_has_image_content(m) for m in msgs)
 
                 if contains_image_content(preprocessed_messages):
                     raise ValueError(
