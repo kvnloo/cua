@@ -757,7 +757,13 @@ class ComputerAgent:
 
                 # Perform computer actions
                 action = item.get("action")
-                action_type = action.get("type") if action else None
+                # Malformed model output can yield a truthy non-dict action
+                # (e.g. a bare string); skip it instead of crashing on
+                # action.get / action.items below.
+                if not isinstance(action, dict):
+                    print(f"Computer action is not a dict; skipping: action={action!r}")
+                    return []
+                action_type = action.get("type")
                 if not action_type:
                     print(
                         f"Action type is empty or None: action={action}, action_type={action_type}"
