@@ -1022,26 +1022,52 @@ class ComputerAgent:
             )
             result = get_json(result)
 
-            result["output"] = await self._on_llm_end(result.get("output", []))
+            # Harden the step result: loops may return a non-dict result, or a
+            # result without a usable "output" list (e.g. a custom loop
+            # returning {"usage": ...}). Coerce to a dict with a list output so
+            # the run degrades to an empty turn instead of raising TypeError.
+            if not isinstance(result, dict):
+                result = {"output": [], "usage": {}}
+
+            output_items = result.get("output")
+            if not isinstance(output_items, list):
+                output_items = []
+
+            result["output"] = await self._on_llm_end(output_items)
+            output_items = result["output"]
+            if not isinstance(output_items, list):
+                output_items = []
+                result["output"] = output_items
+
             await self._on_responses(loop_kwargs, result)
 
             # Yield agent response
             yield result
 
+            # A step that produced no usable output would spin the run loop
+            # forever (new_items never gains an assistant-role message);
+            # treat it as an empty turn and end the run instead.
+            if not output_items:
+                break
+
             # Add agent response to new_items
-            new_items += result.get("output")
+            new_items += output_items
 
             # Get output call ids
-            output_call_ids = get_output_call_ids(result.get("output", []))
+            output_call_ids = get_output_call_ids(output_items)
 
             # Handle computer actions
-            for item in result.get("output"):
+            for item in output_items:
                 partial_items = await self._handle_item(
                     item, self.computer_handler, ignore_call_ids=output_call_ids
                 )
 
                 if partial_items:
                     for pi in partial_items:
+                        # Partial items must be dicts; skip malformed entries
+                        # so they neither crash the loop nor poison the history.
+                        if not isinstance(pi, dict):
+                            continue
                         pi_type = pi.get("type", "")
                         if pi_type == "computer_call_output":
                             output = pi.get("output", {})
