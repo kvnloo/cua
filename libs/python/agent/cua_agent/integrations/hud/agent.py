@@ -199,6 +199,11 @@ class MCPComputerAgent(MCPAgent):
                 break
 
             for item in items:
+                # Malformed provider output can place non-dict entries in the
+                # step output list; skip them instead of raising TypeError on
+                # item["type"] and killing the HUD eval run.
+                if not isinstance(item, dict):
+                    continue
                 if item["type"] in [
                     "reasoning",
                     "message",
@@ -211,17 +216,20 @@ class MCPComputerAgent(MCPAgent):
                 # Add messages to output text
                 if item["type"] == "reasoning":
                     output_text.extend(
-                        f"Reasoning: {summary['text']}" for summary in item["summary"]
+                        f"Reasoning: {summary['text']}"
+                        for summary in item["summary"] or []
+                        if isinstance(summary, dict)
                     )
                 elif item["type"] == "message":
-                    if isinstance(item["content"], list):
+                    content = item.get("content")
+                    if isinstance(content, list):
                         output_text.extend(
                             item["text"]
-                            for item in item["content"]
-                            if item["type"] == "output_text"
+                            for item in content
+                            if isinstance(item, dict) and item["type"] == "output_text"
                         )
-                    elif isinstance(item["content"], str):
-                        output_text.append(item["content"])
+                    elif isinstance(content, str):
+                        output_text.append(content)
 
                 # If we get a tool call, we're not done
                 if item["type"] == "computer_call":
