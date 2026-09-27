@@ -7,6 +7,7 @@ Qwen3-VL agent loop implementation using litellm with function/tool calling.
 from __future__ import annotations
 
 import json
+import math
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -140,12 +141,35 @@ def _parse_tool_call_from_text(text: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def _finite_coord_pair(value):
+    """Return (x, y) for a usable two-element coordinate pair, else None."""
+    if isinstance(value, bool) or not isinstance(value, (list, tuple)):
+        return None
+    if len(value) != 2:
+        return None
+    if isinstance(value[0], bool) or isinstance(value[1], bool):
+        return None
+    try:
+        x, y = float(value[0]), float(value[1])
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not (math.isfinite(x) and math.isfinite(y)):
+        return None
+    return x, y
+
+
 async def _unnormalize_coordinate(args: Dict[str, Any], dims: Tuple[int, int]) -> Dict[str, Any]:
     """Coordinates appear in 0..1000 space, scale to actual screen size using dims if provided."""
-    coord = args.get("coordinate")
-    if not coord or not isinstance(coord, (list, tuple)) or len(coord) < 2:
+    if not isinstance(args, dict):
         return args
-    x, y = float(coord[0]), float(coord[1])
+    coord = args.get("coordinate")
+    if coord is None:
+        return args
+    pair = _finite_coord_pair(coord)
+    if pair is None:
+        # Malformed coordinate: drop it rather than crashing the step.
+        return {k: v for k, v in args.items() if k != "coordinate"}
+    x, y = pair
     width, height = float(dims[0]), float(dims[1])
     x_abs = max(0.0, min(width, (x / 1000.0) * width))
     y_abs = max(0.0, min(height, (y / 1000.0) * height))
@@ -432,6 +456,10 @@ class GenericVlmConfig(AsyncAgentConfig):
         if tool_call and isinstance(tool_call, dict):
             fn_name = tool_call.get("name") or "computer"
             raw_args = tool_call.get("arguments") or {}
+            # Malformed model output: non-object arguments carry no action;
+            # skip the tool call and continue the run on the text.
+            if not isinstance(raw_args, dict):
+                raw_args = {}
             # Unnormalize coordinates to actual screen size using last resized dims
             if last_rw is None or last_rh is None:
                 raise RuntimeError(
@@ -459,12 +487,19 @@ class GenericVlmConfig(AsyncAgentConfig):
             # Process and unnormalize coordinates in tool calls
             processed_tool_calls = []
             for tc in tool_calls_array:
+                if not isinstance(tc, dict):
+                    continue
                 function = tc.get("function", {})
+                if not isinstance(function, dict):
+                    continue
                 fn_name = function.get("name", "computer")
                 args_str = function.get("arguments", "{}")
 
                 try:
-                    args = json.loads(args_str)
+                    args = json.loads(args_str) if isinstance(args_str, str) else args_str
+                    if not isinstance(args, dict):
+                        # Malformed tool call: skip rather than crashing the step.
+                        continue
 
                     # Unnormalize coordinates if present
                     if "coordinate" in args and last_rw is not None and last_rh is not None:
@@ -486,7 +521,7 @@ class GenericVlmConfig(AsyncAgentConfig):
                             },
                         }
                     )
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, TypeError):
                     # Keep original if parsing fails
                     processed_tool_calls.append(tc)
 
