@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import math
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -642,6 +643,19 @@ def _to_uitars_messages(
     return uitars_messages
 
 
+def _parse_point_floats(m):
+    """Parse two finite floats from a point regex match; None when unusable."""
+    if not m:
+        return None
+    try:
+        nx, ny = float(m.group(1)), float(m.group(2))
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not (math.isfinite(nx) and math.isfinite(ny)):
+        return None
+    return nx, ny
+
+
 def _to_response_items(
     actions: List[Dict[str, Any]],
     tool_names: Optional[set[str]] = None,
@@ -668,11 +682,10 @@ def _to_response_items(
         elif fn in ("click", "left_double", "right_single"):
             # params.point is like: <point>x y</point> or plain "x y"
             point = params.get("point", "").strip()
-            m = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point)
-            if not m:
+            pair = _parse_point_floats(re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point))
+            if pair is None:
                 continue
-            nx = float(m.group(1))
-            ny = float(m.group(2))
+            nx, ny = pair
             x, y = _denormalize_xy_from_uitars(nx, ny, w, h)
             if fn == "left_double":
                 items.append(make_double_click_item(x, y))
@@ -682,11 +695,10 @@ def _to_response_items(
                 items.append(make_click_item(x, y, "left"))
         elif fn == "move_to":
             point = params.get("point", "").strip()
-            m = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point)
-            if not m:
+            pair = _parse_point_floats(re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point))
+            if pair is None:
                 continue
-            nx = float(m.group(1))
-            ny = float(m.group(2))
+            nx, ny = pair
             x, y = _denormalize_xy_from_uitars(nx, ny, w, h)
             items.append(make_move_item(x, y))
         elif fn == "drag":
@@ -694,10 +706,12 @@ def _to_response_items(
             ep = params.get("end_point", "").strip()
             ms = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", sp)
             me = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", ep)
-            if not (ms and me):
+            spair = _parse_point_floats(ms)
+            epair = _parse_point_floats(me)
+            if spair is None or epair is None:
                 continue
-            nsx, nsy = float(ms.group(1)), float(ms.group(2))
-            nex, ney = float(me.group(1)), float(me.group(2))
+            nsx, nsy = spair
+            nex, ney = epair
             sx, sy = _denormalize_xy_from_uitars(nsx, nsy, w, h)
             ex, ey = _denormalize_xy_from_uitars(nex, ney, w, h)
             items.append(make_drag_item([{"x": sx, "y": sy}, {"x": ex, "y": ey}]))
@@ -717,11 +731,9 @@ def _to_response_items(
             # direction: up/down/left/right. Point optional
             direction = params.get("direction", "down").lower()
             point = params.get("point", "")
-            m = re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point)
-            if m:
-                nx = float(m.group(1))
-                ny = float(m.group(2))
-                x, y = _denormalize_xy_from_uitars(nx, ny, w, h)
+            pair = _parse_point_floats(re.search(r"([\-\d\.]+)\s+([\-\d\.]+)", point))
+            if pair is not None:
+                x, y = _denormalize_xy_from_uitars(pair[0], pair[1], w, h)
             else:
                 x, y = _denormalize_xy_from_uitars(500.0, 500.0, w, h)
             dy = 5 if direction == "up" else -5
