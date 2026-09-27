@@ -719,8 +719,16 @@ def convert_completion_messages_to_responses_items(
 
                     if function_name in ("computer", "computer_use"):
                         # Parse computer action
+                        raw_arguments = function.get("arguments", "{}")
                         try:
-                            action = json.loads(function.get("arguments", "{}"))
+                            action = (
+                                json.loads(raw_arguments)
+                                if isinstance(raw_arguments, str)
+                                else None
+                            )
+                        except json.JSONDecodeError:
+                            action = None
+                        if isinstance(action, dict):
                             # Change key from "action" -> "type"
                             if action.get("action"):
                                 action["type"] = action["action"]
@@ -733,14 +741,17 @@ def convert_completion_messages_to_responses_items(
                                     "status": "completed",
                                 }
                             )
-                        except json.JSONDecodeError:
-                            # Fallback to function call format
+                        else:
+                            # Fallback to function call format (unparseable or
+                            # non-object arguments: "null", "123", "[1,2]", None)
                             responses_items.append(
                                 {
                                     "type": "function_call",
                                     "call_id": tool_call.get("id"),
                                     "name": function_name,
-                                    "arguments": function.get("arguments", "{}"),
+                                    "arguments": raw_arguments
+                                    if isinstance(raw_arguments, str)
+                                    else "{}",
                                     "status": "completed",
                                 }
                             )
