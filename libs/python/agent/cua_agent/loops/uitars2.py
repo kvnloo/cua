@@ -345,6 +345,25 @@ _PROMPT_SUFFIX = (
 SYSTEM_PROMPT = _PROMPT_PREFIX + _format_tool_schemas_json_lines(TOOL_SCHEMAS) + _PROMPT_SUFFIX
 
 
+def _first_choice_message(response_dict: Any) -> Dict[str, Any]:
+    """Return the first choice's message dict, or {} when malformed.
+
+    Provider responses can carry non-dict choices or non-dict message payloads;
+    callers must degrade to an empty message (and the resulting empty action
+    set) instead of raising AttributeError after the model call succeeded.
+    """
+    if not isinstance(response_dict, dict):
+        return {}
+    choices = response_dict.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return {}
+    first = choices[0]
+    if not isinstance(first, dict):
+        return {}
+    msg = first.get("message", {})
+    return msg if isinstance(msg, dict) else {}
+
+
 def _extract_function_schemas_from_tools(
     tools: Optional[List[Dict[str, Any]]],
 ) -> List[Dict[str, Any]]:
@@ -843,9 +862,8 @@ class UITARS2Config:
         # Extract text content (first choice)
         response_dict = response.model_dump()  # type: ignore
         content_text = ""
-        choices = response_dict.get("choices", [])
-        if choices:
-            msg = choices[0].get("message", {})
+        msg = _first_choice_message(response_dict)
+        if msg:
             # message.content may be string or array; gather text pieces
             mc = msg.get("content")
             if isinstance(mc, str):
@@ -919,10 +937,9 @@ class UITARS2Config:
         response = await litellm.acompletion(**api_kwargs)
         # Extract response content
         response_dict = response.model_dump()  # type: ignore
-        choices = response_dict.get("choices", [])
-        if not choices:
+        msg = _first_choice_message(response_dict)
+        if not msg:
             return None
-        msg = choices[0].get("message", {})
         content_text = msg.get("content", "")
         if isinstance(content_text, list):
             text_parts = [
