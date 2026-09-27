@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import math
 from typing import Any, Dict, List, Optional, Tuple
 
 import litellm
@@ -54,6 +55,23 @@ def _prepare_image_for_n1(image_b64: str) -> str:
         return image_b64
 
 
+def _finite_coord_pair(value):
+    """Return (x, y) for a usable two-element coordinate pair, else None."""
+    if isinstance(value, bool) or not isinstance(value, (list, tuple)):
+        return None
+    if len(value) != 2:
+        return None
+    if isinstance(value[0], bool) or isinstance(value[1], bool):
+        return None
+    try:
+        x, y = float(value[0]), float(value[1])
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not (math.isfinite(x) and math.isfinite(y)):
+        return None
+    return x, y
+
+
 def _unnormalize_coordinates(
     coords: List[int], screen_width: int, screen_height: int
 ) -> Tuple[int, int]:
@@ -73,10 +91,13 @@ def _convert_n1_action_to_computer_action(
     (goto_url, go_back, refresh).
     """
     # Actions with coordinates
+    if not isinstance(args, dict):
+        return None
     coords = args.get("coordinates")
     x, y = None, None
-    if isinstance(coords, (list, tuple)) and len(coords) >= 2:
-        x, y = _unnormalize_coordinates(coords, screen_width, screen_height)
+    pair = _finite_coord_pair(coords)
+    if pair is not None:
+        x, y = _unnormalize_coordinates(pair, screen_width, screen_height)
 
     if fn_name == "left_click":
         if x is None or y is None:
@@ -106,14 +127,10 @@ def _convert_n1_action_to_computer_action(
 
     if fn_name == "drag":
         start_coords = args.get("start_coordinates")
-        if (
-            not isinstance(start_coords, (list, tuple))
-            or len(start_coords) < 2
-            or x is None
-            or y is None
-        ):
+        start_pair = _finite_coord_pair(start_coords)
+        if start_pair is None or x is None or y is None:
             return None
-        sx, sy = _unnormalize_coordinates(start_coords, screen_width, screen_height)
+        sx, sy = _unnormalize_coordinates(start_pair, screen_width, screen_height)
         return {
             "action": "drag",
             "start_x": sx,
@@ -124,7 +141,11 @@ def _convert_n1_action_to_computer_action(
 
     if fn_name == "scroll":
         direction = args.get("direction", "down")
-        amount = int(args.get("amount", 3))
+        try:
+            amount = int(args.get("amount", 3))
+        except (TypeError, ValueError, OverflowError):
+            # Malformed amount: fall back to the default scroll size.
+            amount = 3
         # Convert direction + amount to scroll_x/scroll_y pixels
         # Use ~100 pixels per scroll unit as a reasonable default
         pixels_per_unit = 100
@@ -339,14 +360,21 @@ class YutoriN1Config(AsyncAgentConfig):
 
         if tool_calls_array:
             for tc in tool_calls_array:
+                if not isinstance(tc, dict):
+                    continue
                 function = tc.get("function", {})
+                if not isinstance(function, dict):
+                    continue
                 fn_name = function.get("name", "")
                 args_str = function.get("arguments", "{}")
                 tc_id = tc.get("id", "call_0")
 
                 try:
                     args = json.loads(args_str) if isinstance(args_str, str) else args_str
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, TypeError):
+                    args = {}
+                if not isinstance(args, dict):
+                    # Malformed tool call: skip rather than crashing the step.
                     args = {}
 
                 # Try converting to a computer action
