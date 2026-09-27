@@ -167,7 +167,13 @@ class MLXVLMAdapter(CustomLLM):
         image_index = 0
 
         for message in messages:
-            processed_message = {"role": message["role"], "content": []}
+            # Malformed message entries survive earlier run-loop stages as raw
+            # provider output; skip them instead of crashing on subscripts.
+            if not isinstance(message, dict):
+                continue
+            # A missing role defaults to "user", matching the
+            # HuggingFaceLocalAdapter convention in the same family.
+            processed_message = {"role": message.get("role", "user"), "content": []}
 
             content = message.get("content", [])
             if isinstance(content, str):
@@ -177,11 +183,17 @@ class MLXVLMAdapter(CustomLLM):
                 # Multi-modal content
                 processed_content = []
                 for item in content:
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "text":
                         processed_content.append({"type": "text", "text": item.get("text", "")})
                     elif item.get("type") == "image_url":
-                        image_url = item.get("image_url", {}).get("url", "")
-                        pil_image = None
+                        image_url = item.get("image_url", {})
+                        if not isinstance(image_url, dict):
+                            continue
+                        image_url = image_url.get("url", "")
+                        if not isinstance(image_url, str):
+                            continue
 
                         if image_url.startswith("data:image/"):
                             # Extract base64 data
