@@ -174,7 +174,11 @@ def sanitize_message(msg: Any) -> Any:
 
 def get_output_call_ids(messages: List[Dict[str, Any]]) -> List[str]:
     call_ids = []
+    if not isinstance(messages, list):
+        return call_ids
     for message in messages:
+        if not isinstance(message, dict):
+            continue
         if (
             message.get("type") == "computer_call_output"
             or message.get("type") == "function_call_output"
@@ -734,6 +738,11 @@ class ComputerAgent:
         ignore_call_ids: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """Handle each item; may cause a computer action + screenshot."""
+        # Malformed provider output can place non-dict entries in the run
+        # loop's output list; skip them before type dispatch so they neither
+        # crash the handler nor poison the message history.
+        if not isinstance(item, dict):
+            return []
         call_id = item.get("call_id")
         if ignore_call_ids and call_id and call_id in ignore_call_ids:
             return []
@@ -951,7 +960,10 @@ class ComputerAgent:
         }
         await self._on_run_start(run_kwargs, old_items)
 
-        while new_items[-1].get("role") != "assistant" if new_items else True:
+        while not new_items or (
+            not isinstance(new_items[-1], dict)
+            or new_items[-1].get("role") != "assistant"
+        ):
             # Lifecycle hook: Check if we should continue based on callbacks (e.g., budget manager)
             should_continue = await self._on_run_continue(run_kwargs, old_items, new_items)
             if not should_continue:
@@ -985,6 +997,8 @@ class ComputerAgent:
 
                 def contains_image_content(msgs):
                     for m in msgs:
+                        if not isinstance(m, dict):
+                            continue
                         # 1️⃣ Check regular message content
                         content = m.get("content")
                         if isinstance(content, list):
