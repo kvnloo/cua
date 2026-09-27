@@ -398,8 +398,12 @@ Task: Click {instruction}. Output ONLY a click action on the target element.""",
             # Native format: computer_call with action dict
             if item.get("type") == "computer_call" and isinstance(item.get("action"), dict):
                 action = item["action"]
-                if action.get("x") is not None and action.get("y") is not None:
-                    return (int(action.get("x")), int(action.get("y")))
+                try:
+                    if action.get("x") is not None and action.get("y") is not None:
+                        return (int(action.get("x")), int(action.get("y")))
+                except (ValueError, TypeError):
+                    # Malformed coords from the model — skip this item, keep scanning.
+                    continue
 
             # Function calling format: function_call with arguments
             if item.get("type") == "function_call" and item.get("name") == "computer":
@@ -411,7 +415,8 @@ Task: Click {instruction}. Output ONLY a click action on the target element.""",
                         args = arguments
                     if args.get("x") is not None and args.get("y") is not None:
                         return (int(args.get("x")), int(args.get("y")))
-                except (json.JSONDecodeError, TypeError):
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    # Malformed item from the model — skip it, keep scanning.
                     continue
 
         return None
