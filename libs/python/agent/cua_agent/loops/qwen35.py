@@ -178,8 +178,69 @@ def _parse_tool_call_from_text(text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _usable_tool_call_args(tool_call: Any) -> Optional[Dict[str, Any]]:
+    """Return a model tool call's arguments dict, or None when unusable.
+
+    The <tool_call> JSON (priority-1 path) is model-generated text, so
+    ``arguments`` can be any valid JSON value, not just an object. Non-object
+    arguments are not usable tool calls: predict_step drops them and falls
+    through to the text-response path instead of crashing.
+    """
+    if not isinstance(tool_call, dict):
+        return None
+    raw_args = tool_call.get("arguments") or {}
+    return raw_args if isinstance(raw_args, dict) else None
+
+
+async def _normalize_provider_tool_call(
+    tc: Any, dims: Optional[Tuple[int, int]]
+) -> Optional[Dict[str, Any]]:
+    """Normalize one provider ``tool_calls`` entry, or None when unusable.
+
+    Malformed JSON keeps the existing "keep original" behavior (the responses
+    converter degrades it to a function_call). Valid JSON that is not an
+    object is not a usable tool call: returning None drops it instead of
+    crashing in ``_unnormalize_coordinate`` or the responses converter.
+    """
+    if not isinstance(tc, dict):
+        return None
+    function = tc.get("function", {})
+    if not isinstance(function, dict):
+        return None
+    fn_name = function.get("name", "computer")
+    args_str = function.get("arguments", "{}")
+    try:
+        args = json.loads(args_str)
+    except json.JSONDecodeError:
+        # Keep original if parsing fails
+        return tc
+    if not isinstance(args, dict):
+        return None
+    # Unnormalize coordinates if present
+    if "coordinate" in args and dims is not None:
+        args = await _unnormalize_coordinate(args, dims)
+    # Convert Qwen format to Computer Calls format if this is a computer tool
+    if fn_name == "computer":
+        converted_action = convert_qwen_tool_args_to_computer_action(args)
+        if converted_action:
+            args = converted_action
+    return {
+        "type": tc.get("type", "function"),
+        "id": tc.get("id", "call_0"),
+        "function": {
+            "name": fn_name,
+            "arguments": json.dumps(args),
+        },
+    }
+
+
 async def _unnormalize_coordinate(args: Dict[str, Any], dims: Tuple[int, int]) -> Dict[str, Any]:
     """Coordinates appear in 0..1000 space, scale to actual screen size using dims if provided."""
+    if not isinstance(args, dict):
+        # Model-generated tool arguments can be any valid JSON value, not just
+        # an object. Non-object values have no coordinates to unnormalize;
+        # return them unchanged so callers can degrade gracefully.
+        return args
     coord = args.get("coordinate")
     if not coord or not isinstance(coord, (list, tuple)) or len(coord) < 2:
         return args
@@ -491,10 +552,10 @@ class Qwen35Config(AsyncAgentConfig):
 
         # Priority 1: Try to parse tool call from content text (OpenRouter format)
         tool_call = _parse_tool_call_from_text(content_text)
+        tool_call_args = _usable_tool_call_args(tool_call)
 
-        if tool_call and isinstance(tool_call, dict):
+        if tool_call is not None and tool_call_args is not None:
             fn_name = tool_call.get("name") or "computer"
-            raw_args = tool_call.get("arguments") or {}
 
             output_items.append(
                 {
@@ -509,7 +570,7 @@ class Qwen35Config(AsyncAgentConfig):
                 raise RuntimeError(
                     "No screenshots found to derive dimensions for coordinate unnormalization."
                 )
-            args = await _unnormalize_coordinate(raw_args, (last_rw, last_rh))
+            args = await _unnormalize_coordinate(tool_call_args, (last_rw, last_rh))
 
             # Convert Qwen format to Computer Calls format if this is a computer tool
             if fn_name == "computer":
@@ -544,36 +605,15 @@ class Qwen35Config(AsyncAgentConfig):
             )
 
             processed_tool_calls = []
+            dims = (
+                (last_rw, last_rh)
+                if last_rw is not None and last_rh is not None
+                else None
+            )
             for tc in tool_calls_array:
-                function = tc.get("function", {})
-                fn_name = function.get("name", "computer")
-                args_str = function.get("arguments", "{}")
-
-                try:
-                    args = json.loads(args_str)
-
-                    # Unnormalize coordinates if present
-                    if "coordinate" in args and last_rw is not None and last_rh is not None:
-                        args = await _unnormalize_coordinate(args, (last_rw, last_rh))
-
-                    # Convert Qwen format to Computer Calls format if this is a computer tool
-                    if fn_name == "computer":
-                        converted_action = convert_qwen_tool_args_to_computer_action(args)
-                        if converted_action:
-                            args = converted_action
-
-                    processed_tool_calls.append(
-                        {
-                            "type": tc.get("type", "function"),
-                            "id": tc.get("id", "call_0"),
-                            "function": {
-                                "name": fn_name,
-                                "arguments": json.dumps(args),
-                            },
-                        }
-                    )
-                except json.JSONDecodeError:
-                    processed_tool_calls.append(tc)
+                processed = await _normalize_provider_tool_call(tc, dims)
+                if processed is not None:
+                    processed_tool_calls.append(processed)
 
             fake_cm = {
                 "role": "assistant",
