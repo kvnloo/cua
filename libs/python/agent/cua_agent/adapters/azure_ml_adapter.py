@@ -66,7 +66,8 @@ class AzureMLAdapter(CustomLLM):
         # Extract required params
         api_base = kwargs.get("api_base")
         api_key = kwargs.get("api_key")
-        model = kwargs.get("model", "").replace("azure_ml/", "")
+        # model may arrive as None through litellm's kwargs; normalize to str.
+        model = (kwargs.get("model") or "").replace("azure_ml/", "")
         messages = kwargs.get("messages", [])
 
         if not api_base:
@@ -87,16 +88,28 @@ class AzureMLAdapter(CustomLLM):
         # so that after Azure ML's parse, they remain as strings.
         messages_copy = []
         for message in messages:
+            # Malformed message entries survive earlier run-loop stages as raw
+            # provider output; skip them instead of crashing on .copy().
+            if not isinstance(message, dict):
+                continue
             msg_copy = message.copy()
 
             # Check if message has tool_calls that need double-encoding
             if "tool_calls" in msg_copy:
                 tool_calls_copy = []
                 for tool_call in msg_copy["tool_calls"]:
+                    if not isinstance(tool_call, dict):
+                        continue
                     tc_copy = tool_call.copy()
 
-                    if "function" in tc_copy and "arguments" in tc_copy["function"]:
-                        func_copy = tc_copy["function"].copy()
+                    function = tc_copy.get("function")
+                    # A present-but-malformed (non-dict) function cannot carry
+                    # arguments to double-encode; skip the entry rather than
+                    # crashing. Entries without a function pass through.
+                    if function is not None and not isinstance(function, dict):
+                        continue
+                    if isinstance(function, dict) and "arguments" in function:
+                        func_copy = function.copy()
                         arguments = func_copy["arguments"]
 
                         # If arguments is already a string, double-encode it
@@ -182,6 +195,34 @@ class AzureMLAdapter(CustomLLM):
             messages=kwargs.get("messages", []),
         )
 
+    def _extract_stream_fields(self, chunk_json) -> tuple:
+        """Defensively extract fields from a provider streaming chunk.
+
+        Malformed provider chunks (empty/non-list choices, non-dict
+        choices[0], null delta, non-dict chunk body) degrade to an
+        empty-text chunk instead of raising AttributeError/IndexError
+        mid-generator — the generators only catch JSONDecodeError.
+        """
+        if not isinstance(chunk_json, dict):
+            chunk_json = {}
+        choices = chunk_json.get("choices")
+        first = (
+            choices[0]
+            if isinstance(choices, list) and choices and isinstance(choices[0], dict)
+            else {}
+        )
+        delta = first.get("delta")
+        if not isinstance(delta, dict):
+            delta = {}
+        content = delta.get("content", "")
+        if not isinstance(content, str):
+            content = ""
+        finish_reason = first.get("finish_reason")
+        usage = chunk_json.get("usage")
+        if not isinstance(usage, dict):
+            usage = {"completion_tokens": 0, "prompt_tokens": 0, "total_tokens": 0}
+        return content, finish_reason, usage
+
     def streaming(self, *args, **kwargs) -> Iterator[GenericStreamingChunk]:
         """
         Synchronous streaming method.
@@ -204,9 +245,7 @@ class AzureMLAdapter(CustomLLM):
 
                     try:
                         chunk_json = json.loads(data)
-                        delta = chunk_json["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        finish_reason = chunk_json["choices"][0].get("finish_reason")
+                        content, finish_reason, usage = self._extract_stream_fields(chunk_json)
 
                         generic_streaming_chunk: GenericStreamingChunk = {
                             "finish_reason": finish_reason,
@@ -214,10 +253,7 @@ class AzureMLAdapter(CustomLLM):
                             "is_finished": finish_reason is not None,
                             "text": content,
                             "tool_use": None,
-                            "usage": chunk_json.get(
-                                "usage",
-                                {"completion_tokens": 0, "prompt_tokens": 0, "total_tokens": 0},
-                            ),
+                            "usage": usage,
                         }
 
                         yield generic_streaming_chunk
@@ -246,9 +282,7 @@ class AzureMLAdapter(CustomLLM):
 
                     try:
                         chunk_json = json.loads(data)
-                        delta = chunk_json["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        finish_reason = chunk_json["choices"][0].get("finish_reason")
+                        content, finish_reason, usage = self._extract_stream_fields(chunk_json)
 
                         generic_streaming_chunk: GenericStreamingChunk = {
                             "finish_reason": finish_reason,
@@ -256,10 +290,7 @@ class AzureMLAdapter(CustomLLM):
                             "is_finished": finish_reason is not None,
                             "text": content,
                             "tool_use": None,
-                            "usage": chunk_json.get(
-                                "usage",
-                                {"completion_tokens": 0, "prompt_tokens": 0, "total_tokens": 0},
-                            ),
+                            "usage": usage,
                         }
 
                         yield generic_streaming_chunk
