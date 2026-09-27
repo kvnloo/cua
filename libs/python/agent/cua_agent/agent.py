@@ -117,7 +117,11 @@ def get_json(obj: Any, max_depth: int = 10) -> Any:
             seen.add(obj_id)
             try:
                 return {
-                    k: custom_serializer(v, depth + 1, seen.copy())
+                    # json.dumps rejects non-primitive keys (e.g. tuple keys from
+                    # structured tool payloads) with TypeError; coerce them so a
+                    # single odd key cannot kill _process_input before any LLM call.
+                    k if isinstance(k, (str, int, float, bool)) or k is None else str(k):
+                    custom_serializer(v, depth + 1, seen.copy())
                     for k, v in o.items()
                     if v is not None
                 }
