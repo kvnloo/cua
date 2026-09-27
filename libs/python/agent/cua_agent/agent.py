@@ -808,7 +808,14 @@ class ComputerAgent:
                 pending_checks = item.get("pending_safety_checks", [])
                 acknowledged_checks = []
                 for check in pending_checks:
-                    check_message = check.get("message", str(check))
+                    # Safety checks arrive from the model; a non-dict entry
+                    # (e.g. a bare string) has no .get and would raise
+                    # AttributeError, killing the run. Degrade to its str().
+                    check_message = (
+                        check.get("message", str(check))
+                        if isinstance(check, dict)
+                        else str(check)
+                    )
                     acknowledged_checks.append(check)
                     # TODO: implement a callback for safety checks
                     # if acknowledge_safety_check_callback(check_message, allow_always=True):
