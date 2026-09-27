@@ -273,9 +273,17 @@ class ComposedGroundedConfig(AsyncAgentConfig):
 
                 for desc in element_descriptions:
                     for _ in range(3):  # try 3 times
-                        coords = await grounding_agent.predict_click(
-                            model=grounding_model, image_b64=last_image_b64, instruction=desc
-                        )
+                        try:
+                            coords = await grounding_agent.predict_click(
+                                model=grounding_model, image_b64=last_image_b64, instruction=desc
+                            )
+                        except Exception:
+                            # A failing grounding call is treated like a miss: retry,
+                            # then leave the description unmapped instead of letting
+                            # the exception kill the whole step (the thinking model
+                            # already succeeded). CancelledError/KeyboardInterrupt
+                            # (BaseException) still propagate.
+                            continue
                         if coords:
                             self.desc2xy[desc] = coords
                             break
