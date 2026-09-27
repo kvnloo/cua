@@ -57,8 +57,13 @@ class HuggingFaceLocalAdapter(CustomLLM):
         """
         converted_messages = []
 
-        for message in messages:
-            converted_message = {"role": message["role"], "content": []}
+        for message in messages or []:
+            # Malformed entries cannot be converted to HF format; skip them
+            # instead of raising KeyError/AttributeError/TypeError out of the
+            # adapter and killing the run.
+            if not isinstance(message, dict):
+                continue
+            converted_message = {"role": message.get("role", "user"), "content": []}
 
             content = message.get("content", [])
             if isinstance(content, str):
@@ -67,14 +72,21 @@ class HuggingFaceLocalAdapter(CustomLLM):
             elif isinstance(content, list):
                 # Multi-modal content
                 for item in content:
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "text":
                         converted_message["content"].append(
                             {"type": "text", "text": item.get("text", "")}
                         )
                     elif item.get("type") == "image_url":
                         # Convert image_url format to image format
-                        image_url = item.get("image_url", {}).get("url", "")
-                        converted_message["content"].append({"type": "image", "image": image_url})
+                        image_url = item.get("image_url", {})
+                        url = (
+                            image_url.get("url", "")
+                            if isinstance(image_url, dict)
+                            else ""
+                        )
+                        converted_message["content"].append({"type": "image", "image": url})
 
             converted_messages.append(converted_message)
 
