@@ -9,6 +9,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 from PIL import Image
 
 from .base import AsyncComputerHandler
+from ..types import ToolError
 
 
 class CustomComputerHandler(AsyncComputerHandler):
@@ -139,6 +140,14 @@ class CustomComputerHandler(AsyncComputerHandler):
                 # Try to decode bytes to get dimensions
                 img = Image.open(io.BytesIO(result))
                 self._last_screenshot_size = img.size
+            elif isinstance(result, str):
+                # Base64 string: decode before opening, so the documented
+                # base64-str input type feeds the get_dimensions fallback
+                # instead of leaving _last_screenshot_size None and
+                # tripping get_dimensions' assert (AssertionError, not a
+                # ToolError, so _handle_item would kill the whole run).
+                img = Image.open(io.BytesIO(base64.b64decode(result)))
+                self._last_screenshot_size = img.size
         except Exception:
             # If we can't get dimensions, that's okay
             pass
@@ -174,7 +183,13 @@ class CustomComputerHandler(AsyncComputerHandler):
         if "wait" in self.functions:
             await self._call_function(self.functions["wait"], ms)
         else:
-            # Default implementation
+            # Default implementation. A malformed model-supplied ms must
+            # degrade to a tool error, not kill the run: _handle_item only
+            # catches ToolError, so a bare TypeError from ms / 1000.0 here
+            # would abort the whole loop (same class as the cua.py and
+            # sandbox.py wait fixes).
+            if isinstance(ms, bool) or not isinstance(ms, (int, float)):
+                raise ToolError(f"Invalid wait ms: {ms!r}")
             import asyncio
 
             await asyncio.sleep(ms / 1000.0)
