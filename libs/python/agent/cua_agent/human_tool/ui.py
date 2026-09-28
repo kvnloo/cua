@@ -23,9 +23,17 @@ class HumanCompletionUI:
         self.current_scroll_y: int = -120
 
     def format_messages_for_chatbot(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Format messages for display in gr.Chatbot with type='messages'."""
+        """Format messages for display in gr.Chatbot with type='messages'.
+
+        Provider message shapes are not trusted here: a malformed shape
+        (non-dict message/item, string image_url payload, non-string text,
+        non-string tool arguments) degrades to a skipped item instead of
+        raising AttributeError/TypeError out of the UI refresh path.
+        """
         formatted = []
         for msg in messages:
+            if not isinstance(msg, dict):
+                continue
             role = msg.get("role", "user")
             content = msg.get("content", "")
             tool_calls = msg.get("tool_calls", [])
@@ -35,13 +43,17 @@ class HumanCompletionUI:
                 # Multi-modal content - can include text and images
                 formatted_content = []
                 for item in content:
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "text":
                         text = item.get("text", "")
-                        if text.strip():  # Only add non-empty text
+                        if isinstance(text, str) and text.strip():  # Only add non-empty text
                             formatted_content.append(text)
                     elif item.get("type") == "image_url":
-                        image_url = item.get("image_url", {}).get("url", "")
-                        if image_url:
+                        image_url = item.get("image_url", "")
+                        if isinstance(image_url, dict):
+                            image_url = image_url.get("url", "")
+                        if isinstance(image_url, str) and image_url:
                             # Check if it's a base64 image or URL
                             if image_url.startswith("data:image"):
                                 # For base64 images, decode and create gr.Image
@@ -81,18 +93,31 @@ class HumanCompletionUI:
                 formatted.append({"role": role, "content": content})
 
             # Handle tool calls - create separate messages for each tool call
-            if tool_calls:
+            if isinstance(tool_calls, list):
                 for tool_call in tool_calls:
-                    function_name = tool_call.get("function", {}).get("name", "unknown")
-                    arguments_str = tool_call.get("function", {}).get("arguments", "{}")
+                    if not isinstance(tool_call, dict):
+                        continue
+                    function = tool_call.get("function", {})
+                    if not isinstance(function, dict):
+                        function = {}
+                    function_name = function.get("name", "unknown")
+                    arguments_str = function.get("arguments", "{}")
 
                     try:
                         # Parse arguments to format them nicely
-                        arguments = json.loads(arguments_str)
+                        arguments = (
+                            json.loads(arguments_str)
+                            if isinstance(arguments_str, str)
+                            else arguments_str
+                        )
                         formatted_args = json.dumps(arguments, indent=2)
-                    except json.JSONDecodeError:
+                    except (json.JSONDecodeError, TypeError):
                         # If parsing fails, use the raw string
-                        formatted_args = arguments_str
+                        formatted_args = (
+                            arguments_str
+                            if isinstance(arguments_str, str)
+                            else repr(arguments_str)
+                        )
 
                     # Create a formatted message for the tool call
                     tool_call_content = f"```json\n{formatted_args}\n```"
@@ -167,30 +192,41 @@ class HumanCompletionUI:
             return False
 
     def get_last_image_from_messages(self, messages: List[Dict[str, Any]]) -> Optional[Any]:
-        """Extract the last image from the messages for display above conversation."""
+        """Extract the last image from the messages for display above conversation.
+
+        Malformed message shapes (non-dict message/item, non-dict image_url
+        payload) are skipped rather than raising AttributeError.
+        """
         last_image = None
 
         for msg in reversed(messages):  # Start from the last message
+            if not isinstance(msg, dict):
+                continue
             content = msg.get("content", "")
 
             if isinstance(content, list):
                 for item in reversed(content):  # Get the last image in the message
+                    if not isinstance(item, dict):
+                        continue
                     if item.get("type") == "image_url":
-                        image_url = item.get("image_url", {}).get("url", "")
-                        if image_url:
-                            if image_url.startswith("data:image"):
-                                # For base64 images, create a gr.Image component
-                                try:
-                                    header, data = image_url.split(",", 1)
-                                    image_data = base64.b64decode(data)
-                                    image = Image.open(io.BytesIO(image_data))
-                                    return image
-                                except Exception as e:
-                                    print(f"Error loading image: {e}")
-                                    continue
-                            else:
-                                # For URL images, return the URL
-                                return image_url
+                        image_url = item.get("image_url", "")
+                        if isinstance(image_url, dict):
+                            image_url = image_url.get("url", "")
+                        if not isinstance(image_url, str) or not image_url:
+                            continue
+                        if image_url.startswith("data:image"):
+                            # For base64 images, create a gr.Image component
+                            try:
+                                header, data = image_url.split(",", 1)
+                                image_data = base64.b64decode(data)
+                                image = Image.open(io.BytesIO(image_data))
+                                return image
+                            except Exception as e:
+                                print(f"Error loading image: {e}")
+                                continue
+                        else:
+                            # For URL images, return the URL
+                            return image_url
 
         return last_image
 
