@@ -69,6 +69,11 @@ def _strip_cua_prefix(model: str) -> str:
         cua/anthropic/claude-sonnet-4-6    ->  claude-sonnet-4-6
         gemini-3-flash-preview             ->  gemini-3-flash-preview  (unchanged)
     """
+    if not isinstance(model, str):
+        # A non-string model (e.g. None passed to ComputerAgent) has no
+        # .split; pass it through unchanged so find_agent_config degrades to
+        # the intended "no agent config" path instead of raising AttributeError.
+        return model
     parts = model.split("/")
     if parts[0] == "cua" and len(parts) >= 3:
         return "/".join(parts[2:])
@@ -84,6 +89,11 @@ def find_agent_config(model: str) -> Optional[AgentConfigInfo]:
     routed models (e.g. ``cua/google/gemini-3-flash-preview``) resolve
     to the same agent loop as their bare counterparts.
     """
+    if not isinstance(model, str):
+        # matches_model runs re.match against the model; a non-string model
+        # raised TypeError. No pattern can match it, so fail the same way as
+        # an unknown model string.
+        return None
     stripped = _strip_cua_prefix(model)
     for config_info in _agent_configs:
         if config_info.matches_model(model):

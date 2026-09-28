@@ -42,4 +42,7 @@ class AgentConfigInfo(BaseModel):
 
     def matches_model(self, model: str) -> bool:
         """Check if this agent config matches the given model"""
+        if not isinstance(model, str):
+            # re.match raises TypeError on a non-string subject.
+            return False
         return bool(re.match(self.models_regex, model))
