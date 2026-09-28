@@ -6,6 +6,7 @@ import asyncio
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from .base import AsyncComputerHandler
+from ..types import ToolError
 
 
 class SandboxComputerHandler(AsyncComputerHandler):
@@ -44,6 +45,11 @@ class SandboxComputerHandler(AsyncComputerHandler):
         await self._sandbox.keyboard.type(text)
 
     async def wait(self, ms: int = 1000) -> None:
+        # A malformed model-supplied ms must degrade to a tool error, not kill
+        # the run: _handle_item only catches ToolError, so a bare TypeError
+        # from ms / 1000.0 here would abort the whole loop.
+        if isinstance(ms, bool) or not isinstance(ms, (int, float)):
+            raise ToolError(f"Invalid wait ms: {ms!r}")
         await asyncio.sleep(ms / 1000.0)
 
     async def move(self, x: int, y: int) -> None:
@@ -90,6 +96,16 @@ class SandboxComputerHandler(AsyncComputerHandler):
     async def keypress(self, keys: Union[List[str], str]) -> None:
         if isinstance(keys, str):
             keys = [keys]
+        # A malformed model-supplied keys payload must degrade to a tool
+        # error, not kill the run: _handle_item only catches ToolError, so a
+        # bare TypeError from iterating None/int, or AttributeError from
+        # k.lower() on a non-str element, would abort the whole loop. (A dict
+        # payload is especially bad: iterating it silently presses its key
+        # names instead of failing.)
+        if not isinstance(keys, (list, tuple)) or any(
+            not isinstance(k, str) for k in keys
+        ):
+            raise ToolError(f"Invalid keys for keypress: {keys!r}")
         normalized = []
         for k in keys:
             mapped = self._KEY_NAME_MAP.get(k.lower(), k.lower() if len(k) > 1 else k)
