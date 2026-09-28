@@ -18,6 +18,13 @@ class CUAAdapter(CustomLLM):
     def _normalize_model(self, model: str) -> str:
         """Strip known prefixes to get the base model name."""
         known_prefixes = ("cua/", "anthropic/", "gemini/", "google/", "openai/")
+        if not isinstance(model, str):
+            # An explicit model=None (or other non-string) reaches the adapter
+            # when litellm forwards kwargs verbatim; calling .startswith on it
+            # raised AttributeError out of the custom-LLM path (non-retryable
+            # -> run-kill). Normalize to "" so downstream validation, not a
+            # crash, surfaces the problem.
+            return ""
         result = model
         for prefix in known_prefixes:
             if result.startswith(prefix):
@@ -26,6 +33,12 @@ class CUAAdapter(CustomLLM):
 
     def _resolve_route(self, model: str, api_base: str) -> tuple[str, str]:
         """Return (prefixed_model, api_base) for the CUA inference API."""
+        if not isinstance(model, str):
+            # "x" in None raised TypeError on this non-retryable path; see
+            # _normalize_model for why we degrade to "" instead of crashing.
+            model = ""
+        if not isinstance(api_base, str):
+            api_base = self.base_url or ""
         if "anthropic/" in model:
             return f"anthropic/{self._normalize_model(model)}", api_base.removesuffix("/v1")
         elif "gemini/" in model or "google/" in model:
@@ -64,7 +77,12 @@ class CUAAdapter(CustomLLM):
         # merge caller headers first, then force Authorization so it cannot be overridden.
         extra_headers = {}
         if "extra_headers" in kwargs:
-            extra_headers.update(kwargs.pop("extra_headers"))
+            provided = kwargs.pop("extra_headers")
+            # A non-dict extra_headers (malformed caller kwargs) made
+            # dict.update raise TypeError on the non-retryable custom-LLM
+            # path; ignore it instead of killing the run.
+            if isinstance(provided, dict):
+                extra_headers.update(provided)
         extra_headers["Authorization"] = f"Bearer {api_key}"
 
         params = {
@@ -82,20 +100,31 @@ class CUAAdapter(CustomLLM):
 
         if "optional_params" in kwargs:
             protected_keys = {"api_key", "extra_headers", "model", "api_base", "stream"}
-            filtered = {
-                k: v for k, v in kwargs["optional_params"].items() if k not in protected_keys
-            }
+            optional = kwargs["optional_params"]
+            # .items() on a non-dict raised AttributeError on the
+            # non-retryable path; ignore malformed values instead.
+            filtered = (
+                {k: v for k, v in optional.items() if k not in protected_keys}
+                if isinstance(optional, dict)
+                else {}
+            )
             params.update(filtered)
             del kwargs["optional_params"]
 
         if "headers" in kwargs:
-            params["headers"] = kwargs["headers"]
+            if isinstance(kwargs["headers"], dict):
+                params["headers"] = kwargs["headers"]
             del kwargs["headers"]
 
         # Always include CUA version headers
         version_hdrs = cua_version_headers()
         if version_hdrs:
-            params["headers"] = {**version_hdrs, **params.get("headers", {})}
+            existing = params.get("headers")
+            # ** on a non-dict raised TypeError; drop malformed headers.
+            params["headers"] = {
+                **version_hdrs,
+                **(existing if isinstance(existing, dict) else {}),
+            }
 
         # Print dropped parameters
         original_keys = set(kwargs.keys())
@@ -130,7 +159,12 @@ class CUAAdapter(CustomLLM):
         # merge caller headers first, then force Authorization so it cannot be overridden.
         extra_headers = {}
         if "extra_headers" in kwargs:
-            extra_headers.update(kwargs.pop("extra_headers"))
+            provided = kwargs.pop("extra_headers")
+            # A non-dict extra_headers (malformed caller kwargs) made
+            # dict.update raise TypeError on the non-retryable custom-LLM
+            # path; ignore it instead of killing the run.
+            if isinstance(provided, dict):
+                extra_headers.update(provided)
         extra_headers["Authorization"] = f"Bearer {api_key}"
 
         params = {
@@ -148,20 +182,31 @@ class CUAAdapter(CustomLLM):
 
         if "optional_params" in kwargs:
             protected_keys = {"api_key", "extra_headers", "model", "api_base", "stream"}
-            filtered = {
-                k: v for k, v in kwargs["optional_params"].items() if k not in protected_keys
-            }
+            optional = kwargs["optional_params"]
+            # .items() on a non-dict raised AttributeError on the
+            # non-retryable path; ignore malformed values instead.
+            filtered = (
+                {k: v for k, v in optional.items() if k not in protected_keys}
+                if isinstance(optional, dict)
+                else {}
+            )
             params.update(filtered)
             del kwargs["optional_params"]
 
         if "headers" in kwargs:
-            params["headers"] = kwargs["headers"]
+            if isinstance(kwargs["headers"], dict):
+                params["headers"] = kwargs["headers"]
             del kwargs["headers"]
 
         # Always include CUA version headers
         version_hdrs = cua_version_headers()
         if version_hdrs:
-            params["headers"] = {**version_hdrs, **params.get("headers", {})}
+            existing = params.get("headers")
+            # ** on a non-dict raised TypeError; drop malformed headers.
+            params["headers"] = {
+                **version_hdrs,
+                **(existing if isinstance(existing, dict) else {}),
+            }
 
         # Print dropped parameters
         original_keys = set(kwargs.keys())
@@ -198,7 +243,9 @@ class CUAAdapter(CustomLLM):
         # merge caller headers first, then force Authorization so it cannot be overridden.
         extra_headers = {}
         if "extra_headers" in params:
-            extra_headers.update(params.pop("extra_headers"))
+            provided = params.pop("extra_headers")
+            if isinstance(provided, dict):
+                extra_headers.update(provided)
         extra_headers["Authorization"] = f"Bearer {api_key}"
 
         params.update(
@@ -213,7 +260,12 @@ class CUAAdapter(CustomLLM):
         # Always include CUA version headers
         version_hdrs = cua_version_headers()
         if version_hdrs:
-            params["headers"] = {**version_hdrs, **params.get("headers", {})}
+            existing = params.get("headers")
+            # ** on a non-dict raised TypeError; drop malformed headers.
+            params["headers"] = {
+                **version_hdrs,
+                **(existing if isinstance(existing, dict) else {}),
+            }
         # Yield chunks directly from LiteLLM's streaming generator
         for chunk in completion(**params):  # type: ignore
             yield chunk  # type: ignore
@@ -229,7 +281,9 @@ class CUAAdapter(CustomLLM):
         # merge caller headers first, then force Authorization so it cannot be overridden.
         extra_headers = {}
         if "extra_headers" in params:
-            extra_headers.update(params.pop("extra_headers"))
+            provided = params.pop("extra_headers")
+            if isinstance(provided, dict):
+                extra_headers.update(provided)
         extra_headers["Authorization"] = f"Bearer {api_key}"
 
         params.update(
@@ -244,7 +298,12 @@ class CUAAdapter(CustomLLM):
         # Always include CUA version headers
         version_hdrs = cua_version_headers()
         if version_hdrs:
-            params["headers"] = {**version_hdrs, **params.get("headers", {})}
+            existing = params.get("headers")
+            # ** on a non-dict raised TypeError; drop malformed headers.
+            params["headers"] = {
+                **version_hdrs,
+                **(existing if isinstance(existing, dict) else {}),
+            }
         stream = await acompletion(**params)  # type: ignore
         async for chunk in stream:  # type: ignore
             yield chunk  # type: ignore
