@@ -180,6 +180,24 @@ uv run --frozen python verify_native.py --harness appkit --typescript --s1 --out
 The MCP connection stays open across the entire loop. This preserves the
 explicit named Cua Driver session and avoids rebuilding tool state for every
 step.
+
+### Guarded completion
+
+The browser-fixture runners also accept `--guarded-completion`. It is opt-in:
+the default remains one provider decision per action.
+
+With the flag enabled, a provider-selected type action may bind exactly one
+local completion obligation. The next step still takes a **fresh**
+`semantic_v2` snapshot. The runner skips the provider only when that snapshot
+shows the required token in the field and exactly one page-structure
+`button / Submit` target. The completion is bound to the same named Cua
+session, and the click uses only the ref from that fresh snapshot. A foreign
+session, ambiguous/missing target, mismatched field value, changed candidate,
+or stale/tampered ref falls back to the ordinary chooser.
+
+This is caller policy in the example, not a Driver batch API or a reusable
+authorization service. It does not skip the fresh observation.
+
 Page references are snapshot-bound, so the runners take another snapshot after
 the page changes rather than reusing an older reference.
 Visual candidates are also bound to the exact capture ID and screenshot
