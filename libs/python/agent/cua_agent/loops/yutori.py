@@ -72,6 +72,11 @@ def _convert_n1_action_to_computer_action(
     Returns None for actions that should be emitted as function_calls instead
     (goto_url, go_back, refresh).
     """
+    if not isinstance(args, dict):
+        # Malformed provider output can put a non-dict arguments payload in
+        # the tool call; .get on it raised AttributeError out of predict_step.
+        # With no usable arguments there is nothing to convert.
+        return None
     # Actions with coordinates
     coords = args.get("coordinates")
     x, y = None, None
@@ -154,6 +159,8 @@ def _convert_n1_action_to_computer_action(
     if fn_name == "key_press":
         key_comb = args.get("key_comb", "")
         # n1 uses Playwright-compatible key combos like "Control+a", "Escape"
+        if not isinstance(key_comb, str):
+            return None
         keys = [k.strip() for k in key_comb.split("+")]
         return {"action": "keypress", "keys": keys}
 
@@ -325,10 +332,20 @@ class YutoriN1Config(AsyncAgentConfig):
 
         # Parse response
         resp_dict = response.model_dump()  # type: ignore
-        choice = (resp_dict.get("choices") or [{}])[0]
-        message = choice.get("message") or {}
+        # Malformed provider payloads can put non-list choices, non-dict
+        # choices/messages, or non-list tool_calls in the response.
+        # Indexing/subscripting those raised KeyError/AttributeError out of
+        # predict_step (run-kill); degrade to empty shapes instead.
+        choices = resp_dict.get("choices")
+        choice = choices[0] if isinstance(choices, list) and choices else {}
+        if not isinstance(choice, dict):
+            choice = {}
+        message = choice.get("message")
+        if not isinstance(message, dict):
+            message = {}
         content_text = message.get("content") or ""
-        tool_calls_array = message.get("tool_calls") or []
+        tool_calls = message.get("tool_calls")
+        tool_calls_array = tool_calls if isinstance(tool_calls, list) else []
         reasoning_text = message.get("reasoning") or ""
 
         output_items: List[Dict[str, Any]] = []
@@ -339,7 +356,11 @@ class YutoriN1Config(AsyncAgentConfig):
 
         if tool_calls_array:
             for tc in tool_calls_array:
-                function = tc.get("function", {})
+                if not isinstance(tc, dict):
+                    continue
+                function = tc.get("function")
+                if not isinstance(function, dict):
+                    function = {}
                 fn_name = function.get("name", "")
                 args_str = function.get("arguments", "{}")
                 tc_id = tc.get("id", "call_0")
@@ -347,6 +368,8 @@ class YutoriN1Config(AsyncAgentConfig):
                 try:
                     args = json.loads(args_str) if isinstance(args_str, str) else args_str
                 except json.JSONDecodeError:
+                    args = {}
+                if not isinstance(args, dict):
                     args = {}
 
                 # Try converting to a computer action
