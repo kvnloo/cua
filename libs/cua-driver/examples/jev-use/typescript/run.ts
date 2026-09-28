@@ -18,6 +18,11 @@ import {
   type VisualObservation,
 } from './core.js';
 import { driverEnvironment } from './driver_env.js';
+import {
+  planGuardedCompletion,
+  resolveGuardedCompletion,
+  type GuardedCompletionPlan,
+} from './guarded_completion.js';
 import { chooseLiveForTask, chooseMockForTask } from './jev_adapter.js';
 import { FixtureFormTask, fixtureSources, type Task, type TaskSources } from './tasks.js';
 
@@ -30,6 +35,7 @@ type Arguments = {
   token?: string;
   maxSteps: number;
   dryRun: boolean;
+  guardedCompletion: boolean;
   log?: string;
 };
 
@@ -40,6 +46,7 @@ function parseArgs(argv: string[]): Arguments {
     fixtureUrl: 'http://127.0.0.1:8765/',
     maxSteps: 4,
     dryRun: false,
+    guardedCompletion: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
@@ -48,6 +55,7 @@ function parseArgs(argv: string[]): Arguments {
     else if (value === '--token') result.token = argv[++index];
     else if (value === '--max-steps') result.maxSteps = Number(argv[++index]);
     else if (value === '--dry-run') result.dryRun = true;
+    else if (value === '--guarded-completion') result.guardedCompletion = true;
     else if (value === '--log') result.log = argv[++index];
     else if (value === '--visual-observation') {
       const mode = argv[++index];
@@ -104,6 +112,10 @@ export class Driver {
     private readonly client: Client,
     private readonly session: string
   ) {}
+
+  get sessionLabel(): string {
+    return this.session;
+  }
 
   async call(name: string, args: Record<string, unknown>): Promise<Record<string, any>> {
     const result = await this.client.callTool({
@@ -363,6 +375,7 @@ async function run(args: Arguments): Promise<Outcome> {
   // events (timings, probabilities) go only to the JSONL log.
   const history: HistoryEntry[] = [];
   let visualDelivery: VisualDelivery = 'background';
+  let pendingCompletion: GuardedCompletionPlan | undefined;
   if (args.log) await writeFile(args.log, '', 'utf8');
   await task.reset();
 
@@ -428,12 +441,46 @@ async function run(args: Arguments): Promise<Outcome> {
         return 'abstained';
       }
       const visual = sources.visual?.observation;
-      const answer =
-        args.provider === 'mock'
-          ? chooseMockForTask(task, sources, candidates, history)
-          : await chooseLiveForTask(task, sources, candidates, history);
-      if (!answer.choice) return 'abstained';
-      const candidate = validateChoice(answer.choice, candidates, visual?.captureId);
+      let guardedCandidate: Candidate | undefined;
+      if (args.guardedCompletion && pendingCompletion) {
+        guardedCandidate = resolveGuardedCompletion(
+          pendingCompletion,
+          task,
+          sources,
+          candidates,
+          driver.sessionLabel
+        );
+        // A failed proof never keeps authority alive. The ordinary chooser
+        // handles this fresh step instead.
+        pendingCompletion = undefined;
+      }
+
+      let candidate: Candidate;
+      let confidence: number;
+      let probabilities: Record<string, number>;
+      let decisionRoute: 'provider' | 'guarded-completion';
+      if (guardedCandidate) {
+        candidate = guardedCandidate;
+        confidence = 1;
+        probabilities = Object.fromEntries(
+          candidates.map((item) => [item.id, Number(item.id === candidate.id)])
+        );
+        decisionRoute = 'guarded-completion';
+      } else {
+        const answer =
+          args.provider === 'mock'
+            ? chooseMockForTask(task, sources, candidates, history)
+            : await chooseLiveForTask(task, sources, candidates, history);
+        if (!answer.choice) return 'abstained';
+        candidate = validateChoice(answer.choice, candidates, visual?.captureId);
+        confidence = answer.confidence;
+        probabilities = answer.probabilities;
+        decisionRoute = 'provider';
+      }
+      const nextCompletion =
+        args.guardedCompletion && decisionRoute === 'provider'
+          ? planGuardedCompletion(task, sources, candidate, driver.sessionLabel)
+          : undefined;
       const decisionMs = Math.round((performance.now() - decisionStarted) * 100) / 100;
 
       if (candidate.id === 'reobserve') {
@@ -441,12 +488,13 @@ async function run(args: Arguments): Promise<Outcome> {
           event: 'step',
           step,
           candidate: candidate.id,
-          confidence: answer.confidence,
-          probabilities: answer.probabilities,
+          confidence,
+          probabilities,
           decision_ms: decisionMs,
           action_ms: 0,
           dry_run: args.dryRun,
           tool: null,
+          decision_route: decisionRoute,
           visual: visualRecord,
         };
         history.push(task.historyEntry(step, candidate.id));
@@ -459,8 +507,8 @@ async function run(args: Arguments): Promise<Outcome> {
           event: 'outcome',
           outcome: 'abstained',
           step,
-          confidence: answer.confidence,
-          probabilities: answer.probabilities,
+          confidence,
+          probabilities,
           visual: visualRecord,
         });
         return 'abstained';
@@ -482,8 +530,8 @@ async function run(args: Arguments): Promise<Outcome> {
               event: 'step',
               step,
               candidate: candidate.id,
-              confidence: answer.confidence,
-              probabilities: answer.probabilities,
+              confidence,
+              probabilities,
               decision_ms: decisionMs,
               action_ms: Math.round((performance.now() - actionStarted) * 100) / 100,
               dry_run: args.dryRun,
@@ -509,18 +557,20 @@ async function run(args: Arguments): Promise<Outcome> {
           return 'unknown';
         }
         actionMs = Math.round((performance.now() - actionStarted) * 100) / 100;
+        pendingCompletion = nextCompletion;
       }
       const event = {
         event: 'step',
         step,
         candidate: candidate.id,
-        confidence: answer.confidence,
-        probabilities: answer.probabilities,
+        confidence,
+        probabilities,
         decision_ms: decisionMs,
         action_ms: actionMs,
         dry_run: args.dryRun,
         tool: candidate.tool,
         delivery_mode: candidate.arguments.delivery_mode ?? null,
+        decision_route: decisionRoute,
         visual: visualRecord,
       };
       history.push(task.historyEntry(step, candidate.id));
