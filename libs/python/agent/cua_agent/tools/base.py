@@ -182,6 +182,13 @@ class BaseTool(ABC):
         else:
             params_json: dict = params
 
+        # json.loads also parses arrays/strings/numbers; only objects are valid params.
+        if not isinstance(params_json, dict):
+            raise ValueError(
+                "Parameters must be formatted as a JSON object, "
+                f"got {type(params_json).__name__}"
+            )
+
         # Validate against schema if using dict parameters
         if isinstance(self.parameters, dict):
             try:

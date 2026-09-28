@@ -142,6 +142,20 @@ async def ainput(prompt: str = ""):
     return await asyncio.to_thread(input, prompt)
 
 
+def _response_cost(result: Dict[str, Any]) -> float:
+    """Extract response_cost from a run result's usage payload.
+
+    agent.run() yields dict-shaped usage on full steps but a litellm Usage
+    object (no .get) on partial yields; response_cost may also be None.
+    """
+    usage = result.get("usage")
+    if isinstance(usage, dict):
+        cost = usage.get("response_cost", 0)
+    else:
+        cost = getattr(usage, "response_cost", 0)
+    return cost if isinstance(cost, (int, float)) else 0
+
+
 async def chat_loop(
     agent, model: str, container_name: str, initial_prompt: str = "", show_usage: bool = True
 ):
@@ -180,7 +194,7 @@ async def chat_loop(
                 history.extend(result.get("output", []))
 
                 if show_usage:
-                    total_cost += result.get("usage", {}).get("response_cost", 0)
+                    total_cost += _response_cost(result)
 
                 # Process and display the output
                 for item in result.get("output", []):
