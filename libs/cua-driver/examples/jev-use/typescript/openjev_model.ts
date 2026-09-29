@@ -98,6 +98,7 @@ export function validateOpenJevBaseUrl(baseUrl: string, hasApiKey: boolean): str
 
 export function openJevSystemOneUrl(baseUrl: string): string {
   const root = baseUrl.replace(/\/+$/, '');
+  if (root.endsWith('/v1/systemone')) return root;
   return root.endsWith('/v1') ? root + '/systemone' : root + '/v1/systemone';
 }
 

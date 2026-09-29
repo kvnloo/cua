@@ -100,6 +100,10 @@ class ConfigTest(unittest.TestCase):
             systemone_url("https://jev.example"),
             "https://jev.example/v1/systemone",
         )
+        self.assertEqual(
+            systemone_url("https://jev.example/v1/systemone"),
+            "https://jev.example/v1/systemone",
+        )
 
 
 class ModelTest(unittest.TestCase):

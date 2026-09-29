@@ -80,6 +80,10 @@ test('System One endpoint is canonical', () => {
     openJevSystemOneUrl('https://jev.example'),
     'https://jev.example/v1/systemone'
   );
+  assert.equal(
+    openJevSystemOneUrl('https://jev.example/v1/systemone'),
+    'https://jev.example/v1/systemone'
+  );
 });
 
 test('v2 request is sent as bounded state', async () => {

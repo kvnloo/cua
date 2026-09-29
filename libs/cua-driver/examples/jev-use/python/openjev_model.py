@@ -109,6 +109,8 @@ def validate_openjev_base_url(base_url: str, *, has_api_key: bool) -> str:
 
 def systemone_url(base_url: str) -> str:
     root = base_url.rstrip("/")
+    if root.endswith("/v1/systemone"):
+        return root
     return root + "/systemone" if root.endswith("/v1") else root + "/v1/systemone"
 
 
