@@ -1,3 +1,5 @@
+import { createServer, type Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -29,7 +31,17 @@ function request() {
   };
 }
 
-function goodResponse() {
+function goodResponse(): {
+  model: string;
+  answers: {
+    candidate: {
+      type: string;
+      choice: string;
+      confidence: number;
+      probabilities: Record<string, number>;
+    };
+  };
+} {
   return {
     model: 'openjev-fixture',
     answers: {
@@ -167,4 +179,148 @@ test('missing answers is bounded invalid_response', async () => {
     model.score(request()),
     (error: unknown) => error instanceof OpenJevError && error.code === 'invalid_response'
   );
+});
+
+type Deferred<T> = {
+  promise: Promise<T>;
+  resolve: (value: T | PromiseLike<T>) => void;
+  reject: (reason?: unknown) => void;
+};
+
+function deferred<T>(): Deferred<T> {
+  return (
+    Promise as PromiseConstructor & { withResolvers<T>(): Deferred<T> }
+  ).withResolvers<T>();
+}
+
+type Loopback = {
+  baseUrl: string;
+  hits: string[];
+  close: () => Promise<void>;
+};
+
+function listen(
+  respond: (path: string) => { status: number; body: Buffer; headers?: Record<string, string> }
+): Promise<Loopback> {
+  const hits: string[] = [];
+  const server: Server = createServer((req, res) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => {
+      const path = req.url ?? '/';
+      hits.push(path);
+      const reply = respond(path);
+      res.writeHead(reply.status, {
+        'Content-Type': 'application/json',
+        'Content-Length': String(reply.body.length),
+        ...reply.headers,
+      });
+      res.end(reply.body);
+    });
+  });
+  const { promise, resolve } = deferred<Loopback>();
+  server.listen(0, '127.0.0.1', () => {
+    const address = server.address() as AddressInfo;
+    resolve({
+      baseUrl: `http://127.0.0.1:${address.port}`,
+      hits,
+      close: () => {
+        const closed = deferred<void>();
+        server.close((error) => (error ? closed.reject(error) : closed.resolve()));
+        return closed.promise;
+      },
+    });
+  });
+  return promise;
+}
+
+function liveModel(baseUrl: string): OpenJevDecisionModel {
+  return new OpenJevDecisionModel({
+    baseUrl,
+    apiKey: '',
+    model: 'openjev',
+    timeoutMs: 2000,
+  });
+}
+
+test('loopback valid response selects the supplied id once', async () => {
+  const server = await listen(() => ({
+    status: 200,
+    body: Buffer.from(JSON.stringify(goodResponse())),
+  }));
+  try {
+    const result = await liveModel(server.baseUrl).score(request());
+    assert.equal(result.selectedId, 'submit');
+    assert.deepEqual(server.hits, ['/v1/systemone']);
+  } finally {
+    await server.close();
+  }
+});
+
+test('loopback unknown id, 503, and malformed body do not retry', async () => {
+  const unknown = goodResponse();
+  unknown.answers.candidate.choice = 'not-supplied';
+  unknown.answers.candidate.probabilities = {
+    'not-supplied': 0.9,
+    reobserve: 0.05,
+    abstain: 0.05,
+  };
+  const cases = [
+    { name: 'unknown', status: 200, body: JSON.stringify(unknown), code: 'invalid_response' },
+    { name: 'unavailable', status: 503, body: 'unavailable', code: 'http_error' },
+    { name: 'malformed', status: 200, body: 'not-json', code: 'invalid_response' },
+  ];
+  for (const item of cases) {
+    const server = await listen(() => ({
+      status: item.status,
+      body: Buffer.from(item.body),
+    }));
+    try {
+      await assert.rejects(
+        liveModel(server.baseUrl).score(request()),
+        (error: unknown) => error instanceof OpenJevError && error.code === item.code
+      );
+      assert.deepEqual(server.hits, ['/v1/systemone']);
+    } finally {
+      await server.close();
+    }
+  }
+});
+
+test('loopback redirect is refused and not followed', async () => {
+  const server = await listen((path) => {
+    if (path === '/stolen') {
+      return { status: 200, body: Buffer.from('{"followed":true}') };
+    }
+    return {
+      status: 302,
+      body: Buffer.alloc(0),
+      headers: { Location: '/stolen' },
+    };
+  });
+  try {
+    await assert.rejects(
+      liveModel(server.baseUrl).score(request()),
+      (error: unknown) => error instanceof OpenJevError && error.code === 'http_error'
+    );
+    assert.deepEqual(server.hits, ['/v1/systemone']);
+  } finally {
+    await server.close();
+  }
+});
+
+test('loopback oversized response is refused', async () => {
+  const server = await listen(() => ({
+    status: 200,
+    body: Buffer.alloc(256 * 1024 + 1, 0x78),
+  }));
+  try {
+    await assert.rejects(
+      liveModel(server.baseUrl).score(request()),
+      (error: unknown) => error instanceof OpenJevError && error.code === 'response_too_large'
+    );
+    assert.deepEqual(server.hits, ['/v1/systemone']);
+  } finally {
+    await server.close();
+  }
 });

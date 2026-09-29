@@ -4,7 +4,9 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parents[2]
@@ -226,6 +228,128 @@ class ModelTest(unittest.TestCase):
         ])
         self.assertEqual(wire["progress"][0]["required"], 1)
 
+
+
+class _Loopback:
+    """Records one POST and replies without following the client anywhere."""
+
+    def __init__(self, mode: str, body: bytes = b"", status: int = 200) -> None:
+        self.mode = mode
+        self.body = body
+        self.status = status
+        self.hits: list[str] = []
+        outer = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *_args) -> None:
+                return
+
+            def do_POST(self) -> None:
+                length = int(self.headers.get("Content-Length") or 0)
+                self.rfile.read(length)
+                outer.hits.append(self.path)
+                if outer.mode == "redirect":
+                    host, port = self.server.server_address[:2]
+                    self.send_response(302)
+                    self.send_header("Location", f"http://{host}:{port}/stolen")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                payload = outer.body
+                self.send_response(outer.status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+
+    @property
+    def base_url(self) -> str:
+        host, port = self.server.server_address[:2]
+        return f"http://{host}:{port}"
+
+    def close(self) -> None:
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=2)
+
+
+class LoopbackHttpTest(unittest.TestCase):
+    def _model(self, server: _Loopback) -> OpenJevDecisionModel:
+        return OpenJevDecisionModel(
+            OpenJevConfig(server.base_url, timeout_ms=2_000)
+        )
+
+    def test_valid_loopback_response_selects_supplied_id(self) -> None:
+        server = _Loopback("ok", json.dumps(good_response()).encode())
+        try:
+            result = choose(self._model(server), request())
+        finally:
+            server.close()
+        self.assertEqual(result.kind, "selected")
+        self.assertEqual(result.selected_id, "submit")
+        self.assertEqual(server.hits, ["/v1/systemone"])
+
+    def test_unknown_id_is_one_request_and_no_action(self) -> None:
+        bad = good_response()
+        bad["answers"]["candidate"]["choice"] = "not-supplied"
+        bad["answers"]["candidate"]["probabilities"] = {
+            "not-supplied": 0.9,
+            "reobserve": 0.05,
+            "abstain": 0.05,
+        }
+        server = _Loopback("ok", json.dumps(bad).encode())
+        try:
+            result = choose(self._model(server), request())
+        finally:
+            server.close()
+        self.assertEqual(result.kind, "error")
+        self.assertEqual(result.reason, "model_error")
+        self.assertEqual(server.hits, ["/v1/systemone"])
+
+    def test_http_503_is_one_request_and_no_retry(self) -> None:
+        server = _Loopback("error", b"unavailable", status=503)
+        try:
+            with self.assertRaises(OpenJevError) as caught:
+                self._model(server).score(request())
+        finally:
+            server.close()
+        self.assertEqual(caught.exception.code, "http_error")
+        self.assertEqual(server.hits, ["/v1/systemone"])
+
+    def test_malformed_body_is_invalid_response(self) -> None:
+        server = _Loopback("ok", b"not-json")
+        try:
+            with self.assertRaises(OpenJevError) as caught:
+                self._model(server).score(request())
+        finally:
+            server.close()
+        self.assertEqual(caught.exception.code, "invalid_response")
+        self.assertEqual(server.hits, ["/v1/systemone"])
+
+    def test_redirect_is_refused_and_not_followed(self) -> None:
+        server = _Loopback("redirect")
+        try:
+            with self.assertRaises(OpenJevError) as caught:
+                self._model(server).score(request())
+        finally:
+            server.close()
+        self.assertEqual(caught.exception.code, "http_error")
+        self.assertNotIn("/stolen", server.hits)
+        self.assertEqual(server.hits, ["/v1/systemone"])
+
+    def test_oversized_response_is_refused(self) -> None:
+        server = _Loopback("ok", b"x" * (256 * 1024 + 1))
+        try:
+            with self.assertRaises(OpenJevError) as caught:
+                self._model(server).score(request())
+        finally:
+            server.close()
+        self.assertEqual(caught.exception.code, "response_too_large")
+        self.assertEqual(server.hits, ["/v1/systemone"])
 
 if __name__ == "__main__":
     unittest.main()
