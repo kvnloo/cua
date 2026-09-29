@@ -239,9 +239,15 @@ class BrowserTool(BaseComputerTool):
         Returns:
             Result of the action execution
         """
-        # Verify and parse parameters
-        params_dict = self._verify_json_format_args(params)
-        action = params_dict.get("action")
+        # Verify and parse parameters. The parse and the first attribute read
+        # sit outside the per-action try/except below, so a non-dict payload
+        # (e.g. model-emitted arguments shaped as a JSON array) must degrade
+        # to an error dict here instead of raising out of call().
+        try:
+            params_dict = self._verify_json_format_args(params)
+            action = params_dict.get("action")
+        except (ValueError, AttributeError, TypeError) as e:
+            return {"success": False, "error": f"Invalid parameters: {e}"}
 
         if not action:
             return {"success": False, "error": "action parameter is required"}
