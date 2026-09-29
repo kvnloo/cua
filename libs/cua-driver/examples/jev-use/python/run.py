@@ -410,7 +410,7 @@ async def run(args: argparse.Namespace) -> str:
             for step in range(1, task.max_steps + 1):
                 current = task.classify(task.read_oracle(), steps=step - 1)
                 if current in {"verified", "refuted"}:
-                    write_event(log_path, {"event": "outcome", "outcome": current, "token": token})
+                    write_event(log_path, {"event": "outcome", "outcome": current})
                     return current
 
                 started = time.perf_counter()
@@ -446,15 +446,18 @@ async def run(args: argparse.Namespace) -> str:
 
                 visual = sources.visual.observation if sources.visual is not None else None
                 guarded_candidate = None
+                guarded_record: dict[str, Any] = {}
                 provider_decision_ms = 0.0
                 if args.guarded_completion and pending_completion is not None:
-                    guarded_candidate = resolve_guarded_completion(
+                    resolution = resolve_guarded_completion(
                         pending_completion,
                         task,
                         sources,
                         candidates,
                         session=label,
                     )
+                    guarded_candidate = resolution.candidate
+                    guarded_record = {"guarded_completion": resolution.telemetry}
                     # A failed proof never keeps authority alive. The ordinary
                     # chooser handles this fresh step instead.
                     pending_completion = None
@@ -462,32 +465,60 @@ async def run(args: argparse.Namespace) -> str:
                 if guarded_candidate is not None:
                     candidate = guarded_candidate
                     choice = candidate.id
-                    confidence = 1.0
-                    probabilities = {
-                        item.id: float(item.id == candidate.id) for item in candidates
-                    }
+                    confidence = None
+                    probabilities = None
                     decision_route = "guarded-completion"
                 else:
                     provider_started = time.perf_counter()
-                    if args.provider == "mock":
-                        choice, confidence, probabilities = choose_mock_for_task(
-                            task, sources, candidates, history
+                    try:
+                        if args.provider == "mock":
+                            choice, confidence, probabilities = choose_mock_for_task(
+                                task, sources, candidates, history
+                            )
+                        else:
+                            choice, confidence, probabilities = await asyncio.to_thread(
+                                choose_live_for_task, task, sources, candidates, history
+                            )
+                        provider_decision_ms = round(
+                            (time.perf_counter() - provider_started) * 1000, 2
                         )
-                    else:
-                        choice, confidence, probabilities = await asyncio.to_thread(
-                            choose_live_for_task, task, sources, candidates, history
+                        if choice is None:
+                            if guarded_record:
+                                write_event(
+                                    log_path,
+                                    {
+                                        "event": "outcome",
+                                        "outcome": "abstained",
+                                        "step": step,
+                                        "decision_route": "provider",
+                                        **guarded_record,
+                                        "visual": visual_record,
+                                    },
+                                )
+                            return "abstained"
+                        candidate = validate_choice(
+                            choice,
+                            candidates,
+                            current_capture_id=visual.capture_id if visual else None,
                         )
-                    provider_decision_ms = round(
-                        (time.perf_counter() - provider_started) * 1000, 2
-                    )
-                    if choice is None:
-                        return "abstained"
-                    candidate = validate_choice(
-                        choice,
-                        candidates,
-                        current_capture_id=visual.capture_id if visual else None,
-                    )
-                    decision_route = "provider"
+                        decision_route = "provider"
+                    except Exception as error:
+                        if not guarded_record:
+                            raise
+                        write_event(
+                            log_path,
+                            {
+                                "event": "outcome",
+                                "outcome": "unknown",
+                                "step": step,
+                                "phase": "provider",
+                                "error": type(error).__name__,
+                                "decision_route": "provider",
+                                **guarded_record,
+                                "visual": visual_record,
+                            },
+                        )
+                        return "unknown"
 
                 next_completion = (
                     plan_guarded_completion(
@@ -521,6 +552,7 @@ async def run(args: argparse.Namespace) -> str:
                         "dry_run": args.dry_run,
                         "tool": None,
                         "decision_route": decision_route,
+                        **guarded_record,
                         "visual": visual_record,
                     }
                     history.append(task.history_entry(step, candidate.id))
@@ -534,6 +566,8 @@ async def run(args: argparse.Namespace) -> str:
                             "event": "outcome",
                             "outcome": "abstained",
                             "step": step,
+                            "decision_route": decision_route,
+                            **guarded_record,
                             "confidence": confidence,
                             "probabilities": probabilities,
                             "visual": visual_record,
@@ -560,6 +594,7 @@ async def run(args: argparse.Namespace) -> str:
                                 "probabilities": probabilities,
                                 **timing,
                                 "decision_route": decision_route,
+                                **guarded_record,
                                 "action_ms": round((time.perf_counter() - action_started) * 1000, 2),
                                 "total_step_ms": round((time.perf_counter() - started) * 1000, 2),
                                 "dry_run": args.dry_run,
@@ -583,6 +618,8 @@ async def run(args: argparse.Namespace) -> str:
                                 "outcome": "unknown",
                                 "step": step,
                                 "phase": "action",
+                                "decision_route": decision_route,
+                                **guarded_record,
                                 "error": type(error).__name__,
                                 "tool": candidate.tool,
                                 "visual": visual_record,
@@ -606,6 +643,7 @@ async def run(args: argparse.Namespace) -> str:
                     "tool": candidate.tool,
                     "delivery_mode": candidate.arguments.get("delivery_mode"),
                     "decision_route": decision_route,
+                    **guarded_record,
                     "visual": visual_record,
                 }
                 history.append(task.history_entry(step, candidate.id))
@@ -617,13 +655,13 @@ async def run(args: argparse.Namespace) -> str:
                         outcome = task.classify(task.read_oracle(), steps=step)
                         if outcome in {"verified", "refuted"}:
                             write_event(
-                                log_path, {"event": "outcome", "outcome": outcome, "token": token}
+                                log_path, {"event": "outcome", "outcome": outcome}
                             )
                             return outcome
                         await asyncio.sleep(0.1)
 
             outcome = task.classify(task.read_oracle(), steps=task.max_steps)
-            write_event(log_path, {"event": "outcome", "outcome": outcome, "token": token})
+            write_event(log_path, {"event": "outcome", "outcome": outcome})
             return outcome
 
 

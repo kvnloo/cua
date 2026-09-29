@@ -238,6 +238,25 @@ or stale/tampered ref falls back to the ordinary chooser.
 This is caller policy in the example, not a Driver batch API or a reusable
 authorization service. It does not skip the fresh observation.
 
+An accepted step logs `guarded_completion` with `status: "accepted"`, the
+prior and fresh refs, `verification_field: "contains_required_token"`,
+`submit_matches: 1`, and the session label. Its `confidence` and `probabilities`
+are `null`, not model calibration output, and `provider_decision_ms` remains
+zero. A declined proof logs `status: "declined"` and a stable `reason` on the
+following provider step; steps that never attempted a guard omit the record.
+Neither proof records nor outcome JSONL expose the required field value.
+
+The owned fixture can invalidate Submit uniqueness after typing to prove a
+real-Driver fallback without changing Driver or the runners' production flags:
+
+```bash
+uv run --frozen python verify_setup.py --typescript --guarded-completion \
+  --guarded-completion-decline --output-dir /absolute/new/guard-decline-proof
+```
+
+This row requires `provider → provider`, `submit_not_unique`, and success from
+the independent fixture state, rather than trusting the runner's outcome alone.
+
 Page references are snapshot-bound, so the runners take another snapshot after
 the page changes rather than reusing an older reference.
 Visual candidates are also bound to the exact capture ID and screenshot
