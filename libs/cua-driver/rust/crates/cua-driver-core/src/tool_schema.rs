@@ -384,11 +384,9 @@ mod tests {
         let schema = element_token_schema();
         assert_eq!(schema["pattern"], "^s[0-9a-f]{8}:[0-9]+$");
         let validator = jsonschema::validator_for(&schema).expect("element token schema compiles");
-        for (snapshot_id, element_index) in [
-            (0_u32, 0_usize),
-            (1_u32, 42_usize),
-            (u32::MAX, usize::MAX),
-        ] {
+        for (snapshot_id, element_index) in
+            [(0_u32, 0_usize), (1_u32, 42_usize), (u32::MAX, usize::MAX)]
+        {
             let token = crate::element_token::token_for(snapshot_id, element_index);
             assert!(
                 validator.is_valid(&json!(token)),

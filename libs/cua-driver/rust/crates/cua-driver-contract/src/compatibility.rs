@@ -194,12 +194,7 @@ fn compare_allowed_values(
     }
 }
 
-fn compare_pattern(
-    path: &str,
-    portable: &Value,
-    live: &Value,
-    violations: &mut Vec<String>,
-) {
+fn compare_pattern(path: &str, portable: &Value, live: &Value, violations: &mut Vec<String>) {
     let Some(live_pattern) = live.get("pattern") else {
         // A portable-only pattern narrows the client domain and is therefore
         // still a subset of an unconstrained live string.
@@ -436,7 +431,8 @@ mod tests {
     #[test]
     fn pattern_constraints_are_compared_conservatively() {
         let portable = json!({ "type": "string", "pattern": "^s[0-9a-f]{8}:[0-9]+$" });
-        let same = json!({ "type": "string", "pattern": "^s[0-9a-f]{8}:[0-9]+$", "description": "live" });
+        let same =
+            json!({ "type": "string", "pattern": "^s[0-9a-f]{8}:[0-9]+$", "description": "live" });
         assert!(schema_subset_violations(&portable, &same).is_empty());
 
         let live_only = json!({ "type": "string", "pattern": "^s[0-9a-f]{8}:[0-9]+$" });
