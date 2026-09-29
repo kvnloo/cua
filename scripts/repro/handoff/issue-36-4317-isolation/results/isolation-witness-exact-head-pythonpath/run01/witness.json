@@ -1,0 +1,44 @@
+{
+ "cross_session_mutations": [],
+ "ended_mono_ns": 45041996451277,
+ "error": "RuntimeError: browser_type unexpectedly accepted a foreign session capability",
+ "expected": {
+  "A": [
+   [
+    "submit",
+    "session-a-owned"
+   ],
+   [
+    "reset",
+    null
+   ]
+  ],
+  "B": [
+   [
+    "submit",
+    "session-b-owned"
+   ],
+   [
+    "reset",
+    null
+   ],
+   [
+    "submit",
+    "session-b-after-a-end"
+   ]
+  ]
+ },
+ "fixture_order": {
+  "1": "A",
+  "2": "B"
+ },
+ "foreign_value_landed": false,
+ "journal": [],
+ "journals_match_expected": false,
+ "observed": {
+  "A": [],
+  "B": []
+ },
+ "script_summary_complete": false,
+ "started_mono_ns": 45039907704500
+}

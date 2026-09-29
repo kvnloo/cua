@@ -1,0 +1,54 @@
+Cua Driver sends content-free product telemetry by default. Run `cua-driver telemetry disable` to stop it; `cua-driver telemetry status` shows the current setting.
+DANGER: Cua Driver is running in unrestricted mode. Runtime approval prompts are disabled; prompt injection or unintended input may act with every capability allowed by the built-in, managed, and user policy ceilings. Use only in a disposable or fully trusted environment.
+[2m2026-09-29T02:41:30.421590Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 10, body: Str, fds: [] })
+[2m2026-09-29T02:41:30.430430Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+
+DevTools listening on ws://127.0.0.1:31659/devtools/browser/265ea48f-9097-462e-bb47-714a41be08cc
+
+DevTools listening on ws://127.0.0.1:30093/devtools/browser/67dce540-67a9-406f-b479-73655c4e0a7f
+  + Exception Group Traceback (most recent call last):
+  |   File "/mnt/zer0models/github/cua-lanes/evidence/scripts/repro/handoff/issue-36-4317-isolation/isolation_witness.py", line 76, in main
+  |     summary = asyncio.run(verify_session_isolation.run(args.summary_out))
+  |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/home/kvn/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+  |     return runner.run(main)
+  |            ^^^^^^^^^^^^^^^^
+  |   File "/home/kvn/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+  |     return self._loop.run_until_complete(task)
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/home/kvn/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+  |     return future.result()
+  |            ^^^^^^^^^^^^^^^
+  |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/verify_session_isolation.py", line 183, in run
+  |     async with stdio_client(params) as (read, write):
+  |                ^^^^^^^^^^^^^^^^^^^^
+  |   File "/home/kvn/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 231, in __aexit__
+  |     await self.gen.athrow(value)
+  |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 183, in stdio_client
+  |     anyio.create_task_group() as tg,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Exception Group Traceback (most recent call last):
+    |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 189, in stdio_client
+    |     yield read_stream, write_stream
+    |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/verify_session_isolation.py", line 184, in run
+    |     async with ClientSession(read, write) as session:
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/mcp/shared/session.py", line 238, in __aexit__
+    |     return await self._task_group.__aexit__(exc_type, exc_val, exc_tb)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+    |     raise BaseExceptionGroup(
+    | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+    +-+---------------- 1 ----------------
+      | Traceback (most recent call last):
+      |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/verify_session_isolation.py", line 198, in run
+      |     code_b_to_a = await _expect_foreign_refusal(
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |   File "/mnt/zer0models/github/cua-lanes/p0-4317/libs/cua-driver/examples/jev-use/verify_session_isolation.py", line 131, in _expect_foreign_refusal
+      |     raise RuntimeError(f"{tool} unexpectedly accepted a foreign session capability")
+      | RuntimeError: browser_type unexpectedly accepted a foreign session capability
+      +------------------------------------

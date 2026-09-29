@@ -1,0 +1,108 @@
+{
+ "arm": "pr4316-default",
+ "arm_head": "e2e86d70422212d394c95287365c6795e190e27e",
+ "block": 1,
+ "cell_id": "traced-b01-p4-pr4316-default-typescript",
+ "cleanup_after_outcome_ms": 539.06,
+ "cmd": [
+  "node",
+  "--import",
+  "tsx",
+  "typescript/run.ts",
+  "--provider",
+  "mock",
+  "--fixture-url",
+  "http://127.0.0.1:37701/",
+  "--token",
+  "jev-guide-mock",
+  "--max-steps",
+  "4",
+  "--log",
+  "<out>/cells/traced-b01-p4-pr4316-default-typescript/runner.jsonl"
+ ],
+ "counts": {
+  "abstentions": 0,
+  "action_errors_or_refusals": 0,
+  "driver_actions": 2,
+  "guarded_decisions": 0,
+  "provider_decisions": 2,
+  "reobserves": 0,
+  "semantic_observations": 2,
+  "visual_observations": 0
+ },
+ "decision_routes": [
+  "provider",
+  "provider"
+ ],
+ "driver_real": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-4316-e2e86d704",
+ "error": null,
+ "final_state": {
+  "submitted": "jev-guide-mock"
+ },
+ "flags": [],
+ "independently_verified": true,
+ "language": "typescript",
+ "leftover_processes_killed": [],
+ "loadavg_at_spawn": [
+  "2.54",
+  "4.23",
+  "6.67"
+ ],
+ "mode": "traced",
+ "mono_spawn_ns": 44159654370364,
+ "named_step_span_sum_ms": 3169.49,
+ "oracle_polls": 923,
+ "position": 4,
+ "provider": "mock",
+ "rc": 0,
+ "runner_lifetime_ms": 4716.74,
+ "runner_outcome": "verified",
+ "steps": [
+  {
+   "action_error": null,
+   "action_ms": 1604.77,
+   "candidate": "type-verification-value",
+   "candidate_build_ms": 0.24,
+   "decision_ms": 21.87,
+   "decision_route": "provider",
+   "provider_decision_ms": 0.09,
+   "semantic_observe_ms": 21.3,
+   "step": 1,
+   "tool": "browser_type",
+   "total_step_ms": 1626.69,
+   "visual_observe_ms": 0,
+   "visual_status": "skipped"
+  },
+  {
+   "action_error": null,
+   "action_ms": 1536.83,
+   "candidate": "submit-form",
+   "candidate_build_ms": 0.08,
+   "decision_ms": 6.28,
+   "decision_route": "provider",
+   "provider_decision_ms": 0.01,
+   "semantic_observe_ms": 6.17,
+   "step": 2,
+   "tool": "browser_click",
+   "total_step_ms": 1543.13,
+   "visual_observe_ms": 0,
+   "visual_status": "skipped"
+  }
+ ],
+ "timed_out": false,
+ "timeline_ms": {
+  "exit_ms": 4716.74,
+  "oracle_seen_ms": 4177.68,
+  "outcome_event_arrival_ms": [
+   4280.81
+  ],
+  "state_changed_ms": 4176.75,
+  "step_event_arrival_ms": [
+   2632.27,
+   4175.73
+  ]
+ },
+ "trace_file": "cells/traced-b01-p4-pr4316-default-typescript/mcp-trace.jsonl",
+ "traced": true,
+ "verified_outcome_ms": 4177.68
+}

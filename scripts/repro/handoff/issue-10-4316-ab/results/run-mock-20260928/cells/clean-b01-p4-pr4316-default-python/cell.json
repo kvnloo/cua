@@ -1,0 +1,105 @@
+{
+ "arm": "pr4316-default",
+ "arm_head": "e2e86d70422212d394c95287365c6795e190e27e",
+ "block": 1,
+ "cell_id": "clean-b01-p4-pr4316-default-python",
+ "cleanup_after_outcome_ms": 512.93,
+ "cmd": [
+  "/mnt/zer0models/github/cua-lanes/p0-4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+  "python/run.py",
+  "--provider",
+  "mock",
+  "--fixture-url",
+  "http://127.0.0.1:33769/",
+  "--token",
+  "jev-guide-mock",
+  "--max-steps",
+  "4",
+  "--log",
+  "<out>/cells/clean-b01-p4-pr4316-default-python/runner.jsonl"
+ ],
+ "counts": {
+  "abstentions": 0,
+  "action_errors_or_refusals": 0,
+  "driver_actions": 2,
+  "guarded_decisions": 0,
+  "provider_decisions": 2,
+  "reobserves": 0,
+  "semantic_observations": 2,
+  "visual_observations": 0
+ },
+ "decision_routes": [
+  "provider",
+  "provider"
+ ],
+ "driver_real": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-4316-e2e86d704",
+ "error": null,
+ "final_state": {
+  "submitted": "jev-guide-mock"
+ },
+ "flags": [],
+ "independently_verified": true,
+ "language": "python",
+ "leftover_processes_killed": [],
+ "loadavg_at_spawn": [
+  "4.94",
+  "7.22",
+  "8.33"
+ ],
+ "mode": "clean",
+ "mono_spawn_ns": 43833671773022,
+ "named_step_span_sum_ms": 3173.21,
+ "oracle_polls": 902,
+ "position": 4,
+ "provider": "mock",
+ "rc": 0,
+ "runner_lifetime_ms": 4565.71,
+ "runner_outcome": "verified",
+ "steps": [
+  {
+   "action_error": null,
+   "action_ms": 1604.47,
+   "candidate": "type-verification-value",
+   "candidate_build_ms": 0.04,
+   "decision_ms": 23.07,
+   "decision_route": "provider",
+   "provider_decision_ms": 0.0,
+   "semantic_observe_ms": 23.0,
+   "step": 1,
+   "tool": "browser_type",
+   "total_step_ms": 1627.55,
+   "visual_observe_ms": 0.0,
+   "visual_status": "skipped"
+  },
+  {
+   "action_error": null,
+   "action_ms": 1540.23,
+   "candidate": "submit-form",
+   "candidate_build_ms": 0.04,
+   "decision_ms": 5.5,
+   "decision_route": "provider",
+   "provider_decision_ms": 0.0,
+   "semantic_observe_ms": 5.43,
+   "step": 2,
+   "tool": "browser_click",
+   "total_step_ms": 1545.74,
+   "visual_observe_ms": 0.0,
+   "visual_status": "skipped"
+  }
+ ],
+ "timed_out": false,
+ "timeline_ms": {
+  "exit_ms": 4565.71,
+  "oracle_seen_ms": 4052.78,
+  "outcome_event_arrival_ms": [
+   4055.44
+  ],
+  "state_changed_ms": 4049.15,
+  "step_event_arrival_ms": [
+   2508.73,
+   4055.43
+  ]
+ },
+ "traced": false,
+ "verified_outcome_ms": 4052.78
+}

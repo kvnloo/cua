@@ -1,0 +1,110 @@
+{
+ "arm": "pr4316-guarded",
+ "arm_head": "e2e86d70422212d394c95287365c6795e190e27e",
+ "block": 2,
+ "cell_id": "clean-b02-p3-pr4316-guarded-typescript",
+ "cleanup_after_outcome_ms": 687.27,
+ "cmd": [
+  "node",
+  "--import",
+  "tsx",
+  "typescript/run.ts",
+  "--provider",
+  "mock",
+  "--fixture-url",
+  "http://127.0.0.1:27929/",
+  "--token",
+  "jev-guide-mock",
+  "--max-steps",
+  "4",
+  "--log",
+  "<out>/cells/clean-b02-p3-pr4316-guarded-typescript/runner.jsonl",
+  "--guarded-completion"
+ ],
+ "counts": {
+  "abstentions": 0,
+  "action_errors_or_refusals": 0,
+  "driver_actions": 2,
+  "guarded_decisions": 1,
+  "provider_decisions": 1,
+  "reobserves": 0,
+  "semantic_observations": 2,
+  "visual_observations": 0
+ },
+ "decision_routes": [
+  "provider",
+  "guarded-completion"
+ ],
+ "driver_real": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-4316-e2e86d704",
+ "error": null,
+ "final_state": {
+  "submitted": "jev-guide-mock"
+ },
+ "flags": [
+  "--guarded-completion"
+ ],
+ "independently_verified": true,
+ "language": "typescript",
+ "leftover_processes_killed": [],
+ "loadavg_at_spawn": [
+  "3.69",
+  "6.70",
+  "8.12"
+ ],
+ "mode": "clean",
+ "mono_spawn_ns": 43860943387509,
+ "named_step_span_sum_ms": 3167.08,
+ "oracle_polls": 904,
+ "position": 3,
+ "provider": "mock",
+ "rc": 0,
+ "runner_lifetime_ms": 4816.24,
+ "runner_outcome": "verified",
+ "steps": [
+  {
+   "action_error": null,
+   "action_ms": 1605.9,
+   "candidate": "type-verification-value",
+   "candidate_build_ms": 0.34,
+   "decision_ms": 18.92,
+   "decision_route": "provider",
+   "provider_decision_ms": 0.1,
+   "semantic_observe_ms": 18.1,
+   "step": 1,
+   "tool": "browser_type",
+   "total_step_ms": 1624.89,
+   "visual_observe_ms": 0,
+   "visual_status": "skipped"
+  },
+  {
+   "action_error": null,
+   "action_ms": 1537.1,
+   "candidate": "submit-form",
+   "candidate_build_ms": 0.08,
+   "decision_ms": 5.68,
+   "decision_route": "guarded-completion",
+   "provider_decision_ms": 0,
+   "semantic_observe_ms": 5.46,
+   "step": 2,
+   "tool": "browser_click",
+   "total_step_ms": 1542.81,
+   "visual_observe_ms": 0,
+   "visual_status": "skipped"
+  }
+ ],
+ "timed_out": false,
+ "timeline_ms": {
+  "exit_ms": 4816.24,
+  "oracle_seen_ms": 4128.97,
+  "outcome_event_arrival_ms": [
+   4226.55
+  ],
+  "state_changed_ms": 4124.32,
+  "step_event_arrival_ms": [
+   2578.91,
+   4123.67
+  ]
+ },
+ "traced": false,
+ "verified_outcome_ms": 4128.97
+}
