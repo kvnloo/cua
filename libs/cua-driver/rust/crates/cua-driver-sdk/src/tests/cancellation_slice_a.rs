@@ -9,7 +9,7 @@
 
 use super::{CuaDriver, DriverHostOptions};
 use cua_driver_core::protocol::ToolResult;
-use cua_driver_core::tool::{Tool, ToolDef, ToolRegistry};
+use cua_driver_core::tool::{spawn_blocking_owned, Tool, ToolDef, ToolRegistry};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -102,15 +102,19 @@ impl Tool for BarrierTool {
             )
         };
         let shared = self.shared.clone();
-        tokio::task::spawn_blocking(move || {
+        let work = move || {
             shared.ledger.log(format!("native-enter:{id}"));
             entered.notify_one();
             let released = receiver.recv_timeout(WAIT);
             shared.ledger.log(format!("native-exit:{id}"));
             released.expect("test did not release native work");
-        })
-        .await
-        .unwrap();
+        };
+        if args["owned"].as_bool().unwrap_or(false) {
+            // Prototype: the native closure retains the call's admission permit.
+            spawn_blocking_owned(work).await.unwrap();
+        } else {
+            tokio::task::spawn_blocking(work).await.unwrap();
+        }
         self.shared.ledger.log(format!("invoke-end:{id}"));
         ToolResult::text("native complete")
     }
@@ -208,11 +212,15 @@ impl Fixture {
         }
     }
     fn call(&self, id: u64) -> tokio::task::JoinHandle<Result<bool, String>> {
+        self.call_with(id, false)
+    }
+
+    fn call_with(&self, id: u64, owned: bool) -> tokio::task::JoinHandle<Result<bool, String>> {
         let driver = self.driver.clone();
         self.shared.ledger.log(format!("queued:{id}"));
         tokio::spawn(async move {
             driver
-                .call_tool(TOOL.into(), json!({ "id": id }).to_string())
+                .call_tool(TOOL.into(), json!({ "id": id, "owned": owned }).to_string())
                 .await
                 .map(|result| result.is_error)
                 .map_err(|e| e.to_string())
@@ -292,9 +300,9 @@ async fn slice_a_cancel_before_admission_never_enters_native_work() {
 }
 
 /// Observation shared by the B characterization and the B invariant.
-async fn cancel_after_admission_observation() -> (bool, Vec<String>, Value) {
+async fn cancel_after_admission_observation(owned: bool) -> (bool, Vec<String>, Value) {
     let mut fx = Fixture::new(&[1, 2]);
-    let first = fx.call(1);
+    let first = fx.call_with(1, owned);
     phase(&fx.entered(1), "call 1 native-enter").await;
     first.abort();
     assert!(first.await.unwrap_err().is_cancelled());
@@ -304,7 +312,7 @@ async fn cancel_after_admission_observation() -> (bool, Vec<String>, Value) {
     phase(&fx.dropped(1), "call 1 invocation dropped").await;
     let native_1_still_blocked = !fx.shared.ledger.contains("native-exit:1");
 
-    let second = fx.call(2);
+    let second = fx.call_with(2, owned);
     // Positive proof if it happens: native-enter:2 while native 1 has not exited.
     let reusable_before_native_exit =
         !did_not_happen(&fx.entered(2)).await && !fx.shared.ledger.contains("native-exit:1");
@@ -316,7 +324,15 @@ async fn cancel_after_admission_observation() -> (bool, Vec<String>, Value) {
         "public_caller_returned_before_native_exit": native_1_still_blocked,
         "next_call_admitted_before_native_exit": reusable_before_native_exit,
     });
-    write_ledger("B_cancel_after_admission", &fx, observed.clone());
+    write_ledger(
+        if owned {
+            "B_prototype_owned_blocking"
+        } else {
+            "B_cancel_after_admission"
+        },
+        &fx,
+        observed.clone(),
+    );
     (
         reusable_before_native_exit,
         fx.shared.ledger.dump(),
@@ -330,7 +346,7 @@ async fn cancel_after_admission_observation() -> (bool, Vec<String>, Value) {
 #[tokio::test]
 async fn slice_a_current_main_cancel_after_admission_releases_permit_before_native_exit() {
     let (reusable_before_native_exit, ledger, observed) =
-        cancel_after_admission_observation().await;
+        cancel_after_admission_observation(false).await;
     assert!(
         reusable_before_native_exit,
         "current main no longer releases the permit before native exit; update the RFC evidence: {observed} {ledger:#?}"
@@ -346,11 +362,36 @@ async fn slice_a_current_main_cancel_after_admission_releases_permit_before_nati
 #[tokio::test]
 #[ignore = "RFC #3796 kill gate: fails on current main until admitted work is owned until native exit"]
 async fn slice_a_rfc_admitted_capacity_is_owned_until_native_exit() {
-    let (reusable_before_native_exit, ledger, _) = cancel_after_admission_observation().await;
+    let (reusable_before_native_exit, ledger, _) = cancel_after_admission_observation(false).await;
     assert!(
         !reusable_before_native_exit,
         "admitted capacity became reusable before native exit: {ledger:#?}"
     );
+}
+
+/// B. Prototype: a native closure that retains the admission permit (`spawn_blocking_owned`) makes the
+/// same abort keep capacity owned until native exit, while the public caller still returns at once.
+#[tokio::test]
+async fn slice_a_prototype_owned_blocking_keeps_permit_until_native_exit() {
+    let (reusable_before_native_exit, ledger, observed) =
+        cancel_after_admission_observation(true).await;
+    assert!(
+        !reusable_before_native_exit,
+        "prototype still released capacity early: {ledger:#?}"
+    );
+    assert_eq!(
+        observed["public_caller_returned_before_native_exit"],
+        json!(true)
+    );
+    let native_exit = ledger
+        .iter()
+        .position(|e| e.ends_with("native-exit:1"))
+        .unwrap();
+    let next_admitted = ledger
+        .iter()
+        .position(|e| e.ends_with("admitted:2"))
+        .unwrap();
+    assert!(native_exit < next_admitted, "{ledger:#?}");
 }
 
 /// C. Cancel racing the moment the permit becomes available: exactly one side wins per iteration, and a
