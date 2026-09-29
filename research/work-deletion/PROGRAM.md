@@ -33,7 +33,7 @@ Never accept stale refs, cross-session authority, capture mismatch, ambiguous re
 
 Recipe-local/test-local and opt-in. No competing DecisionService, RouterService, PostconditionService, universal shadow-state/lifecycle service, fixed-length GuardedRun or batch API. Genuine Driver/product contract changes require escalation, not speculative implementation.
 
-All agent-created browser/native windows use verified private Xvfb/DBus/openbox or a properly isolated headless compositor. Never the user's physical Hyprland desktop. Quantitative desktop trials are serialized; cheap offline lanes can run concurrently when they do not contaminate measurements. Cleanup claims require process/socket absence checks.
+All agent-created browser/native windows and input tests use a parent-verified separate headless Sway compositor, private HOME/runtime/Wayland/SWAYSOCK/DBus and explicit private Driver ownership. Kevin explicitly requires Sway because physical Hyprland lacks reliable multi-cursor isolation. No native Hyprland, no Xvfb fallback, and no generic browser/computer-use tools that may reuse a cached host-bound daemon. Fail closed when Sway isolation cannot be verified; continue offline lanes. Quantitative desktop trials are serialized; cheap offline lanes can run concurrently when they do not contaminate measurements. Cleanup claims require process/socket absence checks.
 
 No upstream comments, PR-description modifications, force-pushes or unrelated branch changes. No new upstream PR is authorized by this research program.
 

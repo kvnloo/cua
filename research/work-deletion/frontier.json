@@ -155,7 +155,7 @@
         "confounding": 2
       },
       "approximate_priority": 138.88888888888889,
-      "status": "running",
+      "status": "live-paused-sway-safety-gate; offline-preparation-running",
       "lane": "economics",
       "note": "Information-value score, not precision measurement; sequential dependencies override."
     },
@@ -194,10 +194,19 @@
       "note": "Information-value score, not precision measurement; sequential dependencies override."
     }
   ],
-  "highest_priority_sequential_blocker": "Qualify final-head whole-task economics with falsified checker and independent counters.",
+  "highest_priority_sequential_blocker": "Independent safety audit of parent-verified headless Sway/private Driver harness before live economics resumes.",
   "completed_cells": [],
   "replications": [],
-  "counterexamples": [],
+  "counterexamples": [
+    {
+      "id": "host-tool-driver-isolation-gap",
+      "claim": "A tool-managed Driver is automatically isolated from the user desktop.",
+      "classification": "KILL",
+      "observed": "Current-profile embedded Driver inherited physical host HYPRLAND_INSTANCE_SIGNATURE and runtime; identified processes stopped and endpoint checked non-listening.",
+      "attribution": "Consistent with user-reported cursor interference; no claim that these specific processes caused every reported movement.",
+      "next_decision": "Do not use global computer-use helpers; bind tests to private headless Sway/explicit Driver endpoint."
+    }
+  ],
   "work_deleted": [],
   "break_even_regions": [],
   "platform_coverage": {
@@ -236,6 +245,28 @@
     "scout": "sa-0-63f1b3b5",
     "predicate": "sa-1-847b94d5",
     "auditor": "sa-2-f2d7bdc6",
-    "economics": "sa-0-bb2e4415"
+    "economics": "sa-0-bb2e4415",
+    "sway_safety_auditor": "sa-0-4b94d90f"
+  },
+  "execution_policy": {
+    "gui_input": "verified separate headless Sway only",
+    "host_hyprland": "forbidden",
+    "xvfb_fallback": "forbidden",
+    "global_computer_use_helpers": "forbidden: cached daemon can inherit host seat",
+    "live_trials": "paused pending independent Sway safety review",
+    "offline_lanes": "continue",
+    "sway_harness": "research/work-deletion/isolation/sway_session.py",
+    "sway_receipt": "research/work-deletion/isolation/sway-native-input-006.json",
+    "host_focus_preserved": true,
+    "owned_live_processes_after_cleanup": 0,
+    "input_probe_scope": "private Driver delivery acknowledged; actual pointer coordinates NOT independently verified",
+    "negative_controls_rejected": [
+      "host_hyprland_env",
+      "host_display",
+      "host_endpoint_override",
+      "direct_runtime_override",
+      "management_override",
+      "corrupt_private_endpoint_lease"
+    ]
   }
 }
