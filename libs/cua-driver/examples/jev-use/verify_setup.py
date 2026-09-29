@@ -56,6 +56,7 @@ def acted_path(events: list[dict]) -> dict:
         'acted_path': path,
         'submit_delivery_mode': submits[-1].get('delivery_mode') if submits else None,
         'visual_statuses': statuses,
+        'decision_routes': [event.get('decision_route') for event in steps],
         'escalations': [event['escalation'] for event in steps if isinstance(event.get('escalation'), dict)],
     }
 
@@ -69,6 +70,7 @@ def verify(
     require_visual: bool = False,
     expect_visual_status: str | None = None,
     visual_fixture: bool = False,
+    require_guarded_completion: bool = False,
 ) -> dict:
     """Run one runner and independently verify what it did.
 
@@ -112,6 +114,13 @@ def verify(
             'Visual path was required but the runner submitted with '
             f'{path["submit_tool"] or "no action"}; visual statuses: {path["visual_statuses"]}'
         )
+    if require_guarded_completion and path['decision_routes'] != [
+        'provider', 'guarded-completion'
+    ]:
+        raise RuntimeError(
+            'Guarded completion was required but the exact provider→guarded route did not run: '
+            f'{path["decision_routes"]}'
+        )
     return {'outcome': 'verified', 'token': token, 'observed': observed, **path}
 
 
@@ -136,6 +145,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Verify Jev setup with an owned, automatically cleaned-up fixture.')
     parser.add_argument('--live', action='store_true', help='also verify live Jev; requires a TypeSafe key')
     parser.add_argument('--typescript', action='store_true', help='also verify the installed TypeScript agent')
+    parser.add_argument(
+        '--guarded-completion',
+        action='store_true',
+        help='require the opt-in provider→guarded-completion route on the default fixture',
+    )
     parser.add_argument('--port', type=int, default=0, help='fixture port; defaults to an unused loopback port')
     parser.add_argument('--max-steps', type=int, default=4, help='maximum decisions per runner')
     parser.add_argument('--output-dir', type=Path, required=True, help='new directory for evidence; existing paths are refused')
@@ -158,6 +172,7 @@ def main() -> None:
         'complete': False,
         'live_requested': args.live,
         'typescript_requested': args.typescript,
+        'guarded_completion_requested': args.guarded_completion,
         'fixture': 'visual' if args.visual_fixture else 'default',
         'visual_path_required': args.require_visual_path,
         'expected_visual_status': args.expect_visual_status,
@@ -173,6 +188,8 @@ def main() -> None:
                     log = output / f'{language}-{provider}.jsonl'
                     command = runner_command(language, provider)
                     command += ['--fixture-url', url, '--token', token, '--max-steps', str(args.max_steps), '--log', str(log)]
+                    if args.guarded_completion:
+                        command.append('--guarded-completion')
                     result = {
                         'language': language,
                         'provider': provider,
@@ -184,6 +201,7 @@ def main() -> None:
                             require_visual=args.require_visual_path,
                             expect_visual_status=args.expect_visual_status,
                             visual_fixture=args.visual_fixture,
+                            require_guarded_completion=args.guarded_completion,
                         ),
                     }
                     summary['checks'].append(result)
