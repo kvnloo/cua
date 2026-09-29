@@ -383,6 +383,39 @@ mod tests {
     fn element_token_pattern_matches_the_minted_wire_shape() {
         let schema = element_token_schema();
         assert_eq!(schema["pattern"], "^s[0-9a-f]{8}:[0-9]+$");
+        let validator = jsonschema::validator_for(&schema).expect("element_token schema compiles");
+        for (snapshot, index) in [
+            (0, 0),
+            (1, 7),
+            (0x1234, 42),
+            (0x0001_0001, 999),
+            (0xdead_beef, 12_345),
+            (u32::MAX, usize::MAX),
+        ] {
+            let token = crate::element_token::token_for(snapshot, index);
+            assert!(
+                validator.is_valid(&json!(token)),
+                "minted token {token} rejected"
+            );
+        }
+        for stray in [
+            "",
+            "e:fixture",
+            "s0000001:1",
+            "s000000001:1",
+            "S00000001:1",
+            "s0000000g:1",
+            "s00000001",
+            "s00000001:",
+            "s00000001:-1",
+            "s00000001:+1",
+            "s00000001:1 ",
+        ] {
+            assert!(
+                !validator.is_valid(&json!(stray)),
+                "stray {stray:?} accepted"
+            );
+        }
     }
 
     #[test]
