@@ -1,0 +1,111 @@
+{
+  "scope": "hermetic/offline only; live focus isolation remains unqualified",
+  "passed": false,
+  "receipts": [
+    {
+      "name": "evidence-contract-tests",
+      "command": [
+        "/home/kvn/.hermes/tools/python-3.14.7+20260901-linux-x64/bin/python3",
+        "-m",
+        "unittest",
+        "test_contract",
+        "-v"
+      ],
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools",
+      "exit_code": 0,
+      "elapsed_ms": 90.663332,
+      "tests": 5,
+      "stdout_bytes": 63,
+      "stderr_bytes": 784,
+      "passed": true,
+      "raw_output_persisted": false
+    },
+    {
+      "name": "exact-c78-python-hermetic-runner",
+      "command": [
+        "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "python/tests",
+        "-p",
+        "test_guarded_runner.py",
+        "-v"
+      ],
+      "cwd": "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use",
+      "exit_code": 1,
+      "elapsed_ms": 97.764106,
+      "tests": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 3086,
+      "passed": false,
+      "raw_output_persisted": false
+    },
+    {
+      "name": "exact-c78-typescript-hermetic-runner",
+      "command": [
+        "/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin/node",
+        "--import",
+        "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/node_modules/tsx/dist/esm/index.mjs",
+        "--test",
+        "typescript/run_guarded_completion.test.ts"
+      ],
+      "cwd": "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use",
+      "exit_code": 0,
+      "elapsed_ms": 6864.092229,
+      "tests": 20,
+      "stdout_bytes": 4235,
+      "stderr_bytes": 0,
+      "passed": true,
+      "raw_output_persisted": false
+    },
+    {
+      "name": "offline-analysis",
+      "command": [
+        "/home/kvn/.hermes/tools/python-3.14.7+20260901-linux-x64/bin/python3",
+        "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/analyze.py"
+      ],
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools",
+      "exit_code": 0,
+      "elapsed_ms": 167.606081,
+      "tests": null,
+      "stdout_bytes": 4067,
+      "stderr_bytes": 0,
+      "passed": true,
+      "raw_output_persisted": false
+    },
+    {
+      "name": "offline-count-surface",
+      "command": [
+        "/home/kvn/.hermes/tools/python-3.14.7+20260901-linux-x64/bin/python3",
+        "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/count_surface.py",
+        "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/runs/repeat-001",
+        "--out",
+        "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/deterministic-count-surface-qualified-offline.json"
+      ],
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools",
+      "exit_code": 0,
+      "elapsed_ms": 73.815402,
+      "tests": null,
+      "stdout_bytes": 98,
+      "stderr_bytes": 0,
+      "passed": true,
+      "raw_output_persisted": false
+    }
+  ],
+  "tool_hashes": {
+    "safe.py": "5493b8ded8116c925cc93e236e8a8504a28672ba50c4e9e7717fabd8dfcedb19",
+    "mcp_scrub_proxy.py": "174b45a9cf76508206c579b5d362de4a06d0a6fdf242d505edfca0f4a151fc80",
+    "python_entry.py": "b0177447919067bd285c04d6155052f4772f66170ca18bdde367ba897802167a",
+    "typescript_entry.mjs": "a7284b91fe85273fe4baabac26efb1535317f6f37323406bea8c8ebb0b537ae0",
+    "provider-loader.mjs": "a4cb94256703032cc9ba3060dc046cc82ee14c05bd4c664f13b208089b95057f",
+    "launch.py": "6d95ebbd89734b649b43a12174505da21658c3c2e018f08cace5c9897244e37f",
+    "harness.py": "1c623e421e888871b6f4f950cbe09ccca712465e229bbdb8d29f2c98d256e240",
+    "audit.py": "4e7607daec71d7337a83d076555f58ab18a2b8650e9ed31187e455ea5c9f71b8",
+    "test_contract.py": "2d6f8adcc119ad5a59cd496be89fecf032fa170e8f485b1b6e36e0b2a1758580",
+    "count_surface.py": "081d3d42396101b4885659b94bd391eeecd7170a9d4d7e40c07beb9c951df209",
+    "analyze.py": "55b8555ebee5f1d5f1962e33a9965f05398e48cffe7aee47096ce13afaee8e7d",
+    "offline_verify.py": "eb8a7a16a8dc7eb4d13b580579e8221cb5ff6b2f695253ba961c52092843fb26"
+  }
+}

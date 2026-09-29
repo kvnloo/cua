@@ -1,0 +1,14 @@
+{
+  "status": "halted-awaiting-parent-verified-headless-sway",
+  "reason": "User reported mouse movement on physical Hyprland during Xvfb trials and explicitly required Sway.",
+  "qualification_override": "ALL live Xvfb results in this packet are focus-isolation-unqualified, irrespective of earlier path-checker/private_session booleans.",
+  "permitted_followup": "Hermetic/offline analysis only until parent supplies verified headless Sway with private HOME, runtime, WAYLAND_DISPLAY, SWAYSOCK and Driver authority, plus actual backend verification.",
+  "forbidden": ["Further Xvfb live trials", "User compositor or resident daemon connection", "Physical-output Sway", "Sway nested in user Hyprland"],
+  "cleanup": {
+    "owned_marked_live_processes_at_stop": 0,
+    "owned_sigkill_required": 0,
+    "completed_receipts_preserved": 30,
+    "remaining_owned_pid_or_runtime_known": null
+  },
+  "claims_allowed": "Source facts and offline receipt-accounting results, with the live focus-isolation limitation explicit. No safety-qualified live benchmark, no independent-person certification."
+}

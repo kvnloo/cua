@@ -1,0 +1,519 @@
+{
+  "arm": "guarded",
+  "artifact_hashes": {
+    "driver.sh": "422a8315fcfc082b22816cf5f65185e47bb1750363a20b172e9c867e7abc99f7",
+    "http-journal.json": "b5af079440d5520717a13f7075144359ed46622433acd6133b14688a32bc6fff",
+    "mcp.jsonl": "6d77aebc26d518f21abff708e6adc20126828af41a8ebac6ddaa7ebed7eea2ab",
+    "provider.jsonl": "61992cf51b617c789d80c0554f8cc4c6b063a02e607f56efbaea819553b09201",
+    "runner-events.json": "e71af93fc2a2980ad0bfb42b10fdcf845513346155285bc635c994fd0abb3070"
+  },
+  "block": 1,
+  "bootstrap": [
+    {
+      "guarded_flag": true,
+      "source_file_sha256": "b088056874dbd126de2cb7d5bb057a7f44d2ae1a18bec5c4cd4d2348ac9896e6"
+    }
+  ],
+  "checker_corruption_test": {
+    "all_rejected": true,
+    "cases": {
+      "contamination": true,
+      "missing_actual_http": true,
+      "missing_http_journal": true,
+      "missing_provider_entry": true,
+      "wrong_actual_http": true,
+      "wrong_bootstrap_hash": true,
+      "wrong_calls": true,
+      "wrong_command_flag": true,
+      "wrong_driver": true,
+      "wrong_event_route": true,
+      "wrong_flag": true,
+      "wrong_oracle": true,
+      "wrong_refs": true,
+      "wrong_route": true,
+      "wrong_source": true,
+      "wrong_trace_ref": true
+    }
+  },
+  "checker_errors": [],
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/python_entry.py",
+    "--provider",
+    "mock",
+    "--fixture-url",
+    "http://127.0.0.1:37289/",
+    "--max-steps",
+    "4",
+    "--visual-observation",
+    "auto",
+    "--guarded-completion"
+  ],
+  "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+  "events": [
+    {
+      "action_ms": 1611.96,
+      "arrival_ns": 19500031543820,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.08,
+      "decision_ms": 274.26,
+      "decision_route": "provider",
+      "dry_run": false,
+      "event": "step",
+      "model_score_present": true,
+      "provider_decision_ms": 250.31,
+      "semantic_observe_ms": 23.8,
+      "step": 1,
+      "tool": "browser_type",
+      "total_step_ms": 1886.24,
+      "visual_observe_ms": 0.0,
+      "visual_status": "skipped"
+    },
+    {
+      "action_ms": 1553.21,
+      "arrival_ns": 19501592332897,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.03,
+      "decision_ms": 6.54,
+      "decision_route": "guarded-completion",
+      "dry_run": false,
+      "event": "step",
+      "guarded_completion": {
+        "fresh_ref": "p2:2",
+        "prior_ref": "p1:1",
+        "session": "jev-python-f40e9110",
+        "status": "accepted",
+        "submit_matches": 1,
+        "verification_field": "contains_required_token"
+      },
+      "model_score_present": false,
+      "provider_decision_ms": 0.0,
+      "semantic_observe_ms": 6.46,
+      "step": 2,
+      "tool": "browser_click",
+      "total_step_ms": 1559.77,
+      "visual_observe_ms": 0.0,
+      "visual_status": "skipped"
+    },
+    {
+      "arrival_ns": 19501593642229,
+      "event": "outcome",
+      "outcome": "verified"
+    }
+  ],
+  "guarded_flag": true,
+  "harness_hashes": {
+    "audit.py": "0b9d972a7ea2ba7b6fbd472b144008bc89d443ecd435f48094e28725bbc547d6",
+    "count_surface.py": "5bf72631e8b35c31d16e0a735dcc6a3378c569716d6baed5e65f8ff6c31af7cd",
+    "harness.py": "5adce5981db574c0409b0ae97b7edd6dab1902dd5fbe7e1068a5d7ef7f26757d",
+    "launch.py": "2719bfcef5a6e0400c671c461743daa577c6ecde97737c2ab263c8d6729f9fd9",
+    "mcp_scrub_proxy.py": "174b45a9cf76508206c579b5d362de4a06d0a6fdf242d505edfca0f4a151fc80",
+    "provider-loader.mjs": "a4cb94256703032cc9ba3060dc046cc82ee14c05bd4c664f13b208089b95057f",
+    "python_entry.py": "b0177447919067bd285c04d6155052f4772f66170ca18bdde367ba897802167a",
+    "safe.py": "5493b8ded8116c925cc93e236e8a8504a28672ba50c4e9e7717fabd8dfcedb19",
+    "test_contract.py": "7d885392960da96f91424252ada907a36d14a85cdd170202347fbbbf87c7f82b",
+    "typescript_entry.mjs": "a7284b91fe85273fe4baabac26efb1535317f6f37323406bea8c8ebb0b537ae0"
+  },
+  "http_evidence": [
+    {
+      "actor": "runner",
+      "end_ns": 19497556479907,
+      "method": "POST",
+      "path": "/reset",
+      "start_ns": 19497556471638,
+      "status": 204
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19498142317036,
+      "method": "GET",
+      "path": "/",
+      "start_ns": 19498142305378,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19498144856855,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19498144834360,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19500031964605,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19500031948552,
+      "status": 200
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19501587214260,
+      "method": "POST",
+      "path": "/submit",
+      "start_ns": 19501587176194,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19501593106386,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19501593072545,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19501598487072,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19501598454480,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19502120648802,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19502120627404,
+      "status": 200
+    }
+  ],
+  "language": "python",
+  "leftovers_terminated": 0,
+  "mcp": [
+    {
+      "end_ns": 19497749390108,
+      "event": "mcp_call",
+      "id": 0,
+      "name": "initialize",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19497598624009
+    },
+    {
+      "end_ns": 19497802573411,
+      "event": "mcp_call",
+      "id": 1,
+      "name": "tools/list",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false,
+        "tool_count": 62
+      },
+      "start_ns": 19497750280496
+    },
+    {
+      "end_ns": 19498070754224,
+      "event": "mcp_call",
+      "id": 2,
+      "name": "browser_prepare",
+      "request": {
+        "isolated_new": true,
+        "semantic": false,
+        "session": "jev-python-f40e9110"
+      },
+      "result": {
+        "error": false,
+        "prepared_pid_present": true
+      },
+      "start_ns": 19497811477790
+    },
+    {
+      "end_ns": 19498076913508,
+      "event": "mcp_call",
+      "id": 3,
+      "name": "list_windows",
+      "request": {
+        "semantic": false,
+        "session": "jev-python-f40e9110"
+      },
+      "result": {
+        "error": false,
+        "window_count": 1
+      },
+      "start_ns": 19498071518145
+    },
+    {
+      "end_ns": 19498120236002,
+      "event": "mcp_call",
+      "id": 4,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": false,
+        "session": "jev-python-f40e9110"
+      },
+      "result": {
+        "error": false,
+        "field_count": 0,
+        "field_empty": false,
+        "field_matches": false,
+        "ref_count": 0,
+        "submit_refs": [],
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "start_ns": 19498085322012
+    },
+    {
+      "end_ns": 19498143928324,
+      "event": "mcp_call",
+      "id": 5,
+      "name": "browser_navigate",
+      "request": {
+        "semantic": false,
+        "session": "jev-python-f40e9110",
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19498121160902
+    },
+    {
+      "end_ns": 19498168310686,
+      "event": "mcp_call",
+      "id": 6,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-python-f40e9110",
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": true,
+        "field_matches": false,
+        "ref_count": 3,
+        "submit_refs": [
+          "p1:1"
+        ],
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "start_ns": 19498145483856
+    },
+    {
+      "end_ns": 19500021396055,
+      "event": "mcp_call",
+      "id": 7,
+      "name": "browser_type",
+      "request": {
+        "ref": "p1:0",
+        "semantic": false,
+        "session": "jev-python-f40e9110",
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e",
+        "text_present": true
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19498419708555
+    },
+    {
+      "end_ns": 19500038210216,
+      "event": "mcp_call",
+      "id": 8,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-python-f40e9110",
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": false,
+        "field_matches": true,
+        "ref_count": 4,
+        "submit_refs": [
+          "p2:2"
+        ],
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "start_ns": 19500032465148
+    },
+    {
+      "end_ns": 19501583196949,
+      "event": "mcp_call",
+      "id": 9,
+      "name": "browser_click",
+      "request": {
+        "ref": "p2:2",
+        "semantic": false,
+        "session": "jev-python-f40e9110",
+        "tab_id": "tab-442e64b7-0e82-4b09-aec2-e5a554352796",
+        "target_id": "bt-ed8d8935-d028-4b6a-a641-d83758b3941e"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19500038910107
+    }
+  ],
+  "named_spans": [
+    {
+      "end_ns": 19497749390108,
+      "name": "initialize",
+      "start_ns": 19497598624009
+    },
+    {
+      "end_ns": 19497802573411,
+      "name": "tools/list",
+      "start_ns": 19497750280496
+    },
+    {
+      "end_ns": 19498070754224,
+      "name": "browser_prepare",
+      "start_ns": 19497811477790
+    },
+    {
+      "end_ns": 19498076913508,
+      "name": "list_windows",
+      "start_ns": 19498071518145
+    },
+    {
+      "end_ns": 19498120236002,
+      "name": "get_browser_state",
+      "start_ns": 19498085322012
+    },
+    {
+      "end_ns": 19498143928324,
+      "name": "browser_navigate",
+      "start_ns": 19498121160902
+    },
+    {
+      "end_ns": 19498168310686,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19498145483856
+    },
+    {
+      "end_ns": 19500021396055,
+      "name": "browser_type",
+      "start_ns": 19498419708555
+    },
+    {
+      "end_ns": 19500038210216,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19500032465148
+    },
+    {
+      "end_ns": 19501583196949,
+      "name": "browser_click",
+      "start_ns": 19500038910107
+    },
+    {
+      "end_ns": 19498419280475,
+      "name": "provider_entry",
+      "start_ns": 19498169059503
+    },
+    {
+      "end_ns": 19497556479907,
+      "name": "runner_http:/reset",
+      "start_ns": 19497556471638
+    },
+    {
+      "end_ns": 19498144856855,
+      "name": "runner_http:/state",
+      "start_ns": 19498144834360
+    },
+    {
+      "end_ns": 19500031964605,
+      "name": "runner_http:/state",
+      "start_ns": 19500031948552
+    },
+    {
+      "end_ns": 19501593106386,
+      "name": "runner_http:/state",
+      "start_ns": 19501593072545
+    },
+    {
+      "end_ns": 19502120040047,
+      "name": "runner_post_outcome_shutdown",
+      "start_ns": 19501593642229
+    }
+  ],
+  "observe_ms": 0,
+  "oracle": {
+    "final_matches": true,
+    "first_verified_ns": 19501598839064,
+    "http_observer_state_reads": 411,
+    "http_runner_state_reads": 3,
+    "mutation_ns": 19501587205794,
+    "submit_count": 1
+  },
+  "pair_id": "grid-python-p250-o0-b1",
+  "phase": "grid",
+  "position": 1,
+  "private_session": true,
+  "proof_facts": {
+    "click_uses_fresh_ref": true,
+    "field_matches": true,
+    "fresh_ref_changed": true,
+    "session_matches": true
+  },
+  "protected_parameter_transport": "stdin-memory-only",
+  "provider_entries": 1,
+  "provider_journal": [
+    {
+      "event": "provider_enter",
+      "index": 1,
+      "ns": 19498169059503
+    },
+    {
+      "event": "provider_exit",
+      "index": 1,
+      "ns": 19498419280475
+    }
+  ],
+  "provider_kind": "deterministic-original-mock-with-entry-counter",
+  "provider_ms": 250,
+  "qualifies": true,
+  "rc": 0,
+  "routes": [
+    "provider",
+    "guarded-completion"
+  ],
+  "runner_outcome": "verified",
+  "schema_version": 2,
+  "scientific_cell": "python-guarded-p250-o0",
+  "secret_scan_passed": true,
+  "source_runner_sha256": "b088056874dbd126de2cb7d5bb057a7f44d2ae1a18bec5c4cd4d2348ac9896e6",
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "stderr_discarded_bytes": 0,
+  "stdout_discarded_bytes": 0,
+  "survivors_after_cleanup": 0,
+  "timed_out": false,
+  "times": {
+    "cleanup_end_ns": 19502252339086,
+    "cleanup_start_ns": 19502120870187,
+    "critical_path_union_ms": 4476.657911,
+    "exit_ns": 19502120040047,
+    "external_cleanup_ms": 131.468899,
+    "pre_verified_union_ms": 3955.456928,
+    "residual_runner_ms": 439.923076,
+    "runner_lifetime_ms": 4916.580987,
+    "runner_post_verified_ms": 521.200983,
+    "spawn_ns": 19497203459060,
+    "startup_to_first_semantic_ms": 942.024796,
+    "verified_outcome_ms": 4395.380004
+  },
+  "trial_id": "grid-python-p250-o0-b1-guarded"
+}

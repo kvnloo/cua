@@ -1,0 +1,2 @@
+#!/bin/bash
+exec /usr/bin/python3 /mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/mcp_scrub_proxy.py --real /mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/cua-driver-current-main --trace /mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/runs/pilot-001/cells/pilot-python-p0-o0-b1-baseline/mcp.jsonl --observe-ms 0 -- "$@"

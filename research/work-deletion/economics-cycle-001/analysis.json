@@ -1,0 +1,1344 @@
+{
+  "qualification": "ALL LIVE RESULTS FOCUS-ISOLATION-UNQUALIFIED. GUI work halted by user steering.",
+  "total_receipts": 30,
+  "scientific_cells": 14,
+  "trial_key_contract": "run_id/trial_id; trial_id is local to an immutable run directory; scientific_cell excludes block/trial number",
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "source_runner_worktree": "/mnt/zer0models/github/cua-lanes/c4316",
+  "provider_scope": "Exact original deterministic mock chooser, recipe-local entry counters; no paid/network model calls measured.",
+  "model_deletion": "One chooser invocation removed on accepted guard; fallback removes zero.",
+  "observation_deletion": "Zero: both arms execute two fresh semantic observations plus one browser binding observation.",
+  "batching": "Zero: both arms dispatch separate browser_type and browser_click calls.",
+  "surface": "T_baseline-T_guarded = P-H+(R_baseline-R_guarded). Added semantic latency coefficient is zero.",
+  "boundary_identifiability": "Only the unit coefficient on incremental provider delay and zero observation coefficient are identified from counts. H (incremental proof/planning overhead) and a stable wall-time residual are not isolated; no empirical universal P threshold, no observation-dependent boundary.",
+  "limitations": [
+    "All live cells used Xvfb; env isolation did not prove actual input backend and user reported physical mouse movement.",
+    "Stop gate blocks live launch until parent provides verified headless Sway; no owned marked live PIDs remained at stop.",
+    "All cells are traced; MCP projection/provider-entry journaling adds overhead.",
+    "First pilot Python stdout was buffered; not included in repeated-trial summaries. Later cells use PYTHONUNBUFFERED.",
+    "HTTP observer polls every 10 ms; first verified receipt includes polling/scheduling delay. Mutation time separately recorded.",
+    "Named span union excludes overlapped time; residual includes interpreter/setup gaps, local candidate/proof work, serialization and uninstrumented client HTTP time.",
+    "Browser startup is browser_prepare RPC plus window readiness/binding, not an internal Chromium launch timeline.",
+    "No exact-runner hermetic timing replay was constructed. Deterministic surface is explicitly count-accounting replay, not Driver output.",
+    "Same-author source-independent checker is not independent-person certification."
+  ],
+  "repeated_trials": {
+    "python": {
+      "paired_blocks": 3,
+      "pairs": [
+        {
+          "pair_id": "repeat-python-p0-o0-b1",
+          "baseline_minus_guarded_verified_ms": 107.82720299999983,
+          "baseline_minus_guarded_lifetime_ms": 50.69284599999992,
+          "first_arm": "baseline"
+        },
+        {
+          "pair_id": "repeat-python-p0-o0-b2",
+          "baseline_minus_guarded_verified_ms": -240.6058409999996,
+          "baseline_minus_guarded_lifetime_ms": -351.1571590000003,
+          "first_arm": "guarded"
+        },
+        {
+          "pair_id": "repeat-python-p0-o0-b3",
+          "baseline_minus_guarded_verified_ms": -103.7854999999995,
+          "baseline_minus_guarded_lifetime_ms": -50.57099600000038,
+          "first_arm": "baseline"
+        }
+      ],
+      "arms": {
+        "baseline": {
+          "verified_outcome_ms": {
+            "n": 3,
+            "mean": 4146.043721666667,
+            "median": 4173.046438,
+            "min": 4089.630611,
+            "max": 4175.454116
+          },
+          "runner_lifetime_ms": {
+            "n": 3,
+            "mean": 4649.792244333334,
+            "median": 4666.546654,
+            "min": 4616.025568,
+            "max": 4666.804511
+          },
+          "startup_to_first_semantic_ms": {
+            "n": 3,
+            "mean": 961.0159233333334,
+            "median": 981.74849,
+            "min": 919.092697,
+            "max": 982.206583
+          },
+          "external_cleanup_ms": {
+            "n": 3,
+            "mean": 58.829289,
+            "median": 64.837562,
+            "min": 43.781745,
+            "max": 67.86856
+          },
+          "runner_post_verified_ms": {
+            "n": 3,
+            "mean": 503.74852266666664,
+            "median": 493.500216,
+            "min": 491.350395,
+            "max": 526.394957
+          },
+          "critical_path_union_ms": {
+            "n": 3,
+            "mean": 4207.022263666667,
+            "median": 4209.307946,
+            "min": 4193.208983,
+            "max": 4218.549862
+          },
+          "residual_runner_ms": {
+            "n": 3,
+            "mean": 442.76998066666664,
+            "median": 448.254649,
+            "min": 422.816585,
+            "max": 457.238708
+          },
+          "named_span_mean_ms": {
+            "browser_type": 1601.008608,
+            "browser_click": 1533.4025393333334,
+            "runner_post_outcome_shutdown": 504.2314416666667,
+            "browser_prepare": 248.51864,
+            "initialize": 155.48802866666668,
+            "tools/list": 52.908958,
+            "browser_navigate": 39.584163333333336,
+            "get_browser_state": 34.67546866666667,
+            "get_browser_state:semantic": 29.177970666666667,
+            "list_windows": 7.607679,
+            "provider_entry": 0.319605,
+            "runner_http:/state": 0.09183466666666666,
+            "runner_http:/reset": 0.007326666666666666
+          },
+          "counts": {
+            "actual_provider_entries": [
+              2
+            ],
+            "mcp_total_calls": [
+              10
+            ],
+            "fresh_semantic_observations": [
+              2
+            ],
+            "binding_observations": [
+              1
+            ],
+            "mcp_actions": [
+              2
+            ],
+            "mcp_wait_tools": [
+              0
+            ],
+            "window_readiness_polls": [
+              1
+            ],
+            "runner_http_verification_reads": [
+              3
+            ]
+          }
+        },
+        "guarded": {
+          "verified_outcome_ms": {
+            "n": 3,
+            "mean": 4224.898434333333,
+            "median": 4193.416111,
+            "min": 4067.626913,
+            "max": 4413.652279
+          },
+          "runner_lifetime_ms": {
+            "n": 3,
+            "mean": 4766.804014,
+            "median": 4666.596564,
+            "min": 4616.111665,
+            "max": 5017.703813
+          },
+          "startup_to_first_semantic_ms": {
+            "n": 3,
+            "mean": 1032.901333,
+            "median": 1006.742767,
+            "min": 899.908362,
+            "max": 1192.05287
+          },
+          "external_cleanup_ms": {
+            "n": 3,
+            "mean": 66.49057466666667,
+            "median": 66.832266,
+            "min": 48.348554,
+            "max": 84.290904
+          },
+          "runner_post_verified_ms": {
+            "n": 3,
+            "mean": 541.9055796666667,
+            "median": 548.484752,
+            "min": 473.180453,
+            "max": 604.051534
+          },
+          "critical_path_union_ms": {
+            "n": 3,
+            "mean": 4297.263270666666,
+            "median": 4202.504026,
+            "min": 4191.956862,
+            "max": 4497.328924
+          },
+          "residual_runner_ms": {
+            "n": 3,
+            "mean": 469.54074333333335,
+            "median": 474.639702,
+            "min": 413.607639,
+            "max": 520.374889
+          },
+          "named_span_mean_ms": {
+            "browser_type": 1604.939746,
+            "browser_click": 1536.7652383333334,
+            "runner_post_outcome_shutdown": 541.554252,
+            "browser_prepare": 280.1740633333333,
+            "initialize": 171.961486,
+            "tools/list": 55.504569333333336,
+            "get_browser_state": 37.167635000000004,
+            "get_browser_state:semantic": 31.240978333333334,
+            "browser_navigate": 29.867263666666666,
+            "list_windows": 7.806833,
+            "provider_entry": 0.20229766666666665,
+            "runner_http:/state": 0.07195433333333334,
+            "runner_http:/reset": 0.006953666666666667
+          },
+          "counts": {
+            "actual_provider_entries": [
+              1
+            ],
+            "mcp_total_calls": [
+              10
+            ],
+            "fresh_semantic_observations": [
+              2
+            ],
+            "binding_observations": [
+              1
+            ],
+            "mcp_actions": [
+              2
+            ],
+            "mcp_wait_tools": [
+              0
+            ],
+            "window_readiness_polls": [
+              1
+            ],
+            "runner_http_verification_reads": [
+              3
+            ]
+          }
+        }
+      },
+      "paired_verified_delta_ms": {
+        "n": 3,
+        "mean": -78.85471266666643,
+        "median": -103.7854999999995,
+        "min": -240.6058409999996,
+        "max": 107.82720299999983,
+        "student_t_95_ci": [
+          -514.9433344037086,
+          357.2339090703757
+        ],
+        "baseline_slower_pairs": 1
+      },
+      "uncertainty": "Descriptive n=3 Student-t interval, df=2; assumes independent approximately normal pair differences. Not a performance claim; no multiple-comparison adjustment; all live focus isolation unqualified."
+    },
+    "typescript": {
+      "paired_blocks": 3,
+      "pairs": [
+        {
+          "pair_id": "repeat-typescript-p0-o0-b1",
+          "baseline_minus_guarded_verified_ms": 132.18920799999978,
+          "baseline_minus_guarded_lifetime_ms": -49.75057199999992,
+          "first_arm": "baseline"
+        },
+        {
+          "pair_id": "repeat-typescript-p0-o0-b2",
+          "baseline_minus_guarded_verified_ms": 116.47605600000043,
+          "baseline_minus_guarded_lifetime_ms": 99.06272799999988,
+          "first_arm": "baseline"
+        },
+        {
+          "pair_id": "repeat-typescript-p0-o0-b3",
+          "baseline_minus_guarded_verified_ms": 203.54373899999973,
+          "baseline_minus_guarded_lifetime_ms": 249.91271099999994,
+          "first_arm": "guarded"
+        }
+      ],
+      "arms": {
+        "baseline": {
+          "verified_outcome_ms": {
+            "n": 3,
+            "mean": 4353.41319,
+            "median": 4285.138264,
+            "min": 4245.529798,
+            "max": 4529.571508
+          },
+          "runner_lifetime_ms": {
+            "n": 3,
+            "mean": 4883.814487,
+            "median": 4866.814367,
+            "min": 4666.896388,
+            "max": 5117.732706
+          },
+          "startup_to_first_semantic_ms": {
+            "n": 3,
+            "mean": 1167.7179716666667,
+            "median": 1105.1034,
+            "min": 1051.119725,
+            "max": 1346.93079
+          },
+          "external_cleanup_ms": {
+            "n": 3,
+            "mean": 74.614234,
+            "median": 77.705839,
+            "min": 48.731453,
+            "max": 97.40541
+          },
+          "runner_post_verified_ms": {
+            "n": 3,
+            "mean": 530.401297,
+            "median": 581.676103,
+            "min": 421.36659,
+            "max": 588.161198
+          },
+          "critical_path_union_ms": {
+            "n": 3,
+            "mean": 4248.980603666667,
+            "median": 4226.531537,
+            "min": 4174.45744,
+            "max": 4345.952834
+          },
+          "residual_runner_ms": {
+            "n": 3,
+            "mean": 634.8338833333333,
+            "median": 640.28283,
+            "min": 492.438948,
+            "max": 771.779872
+          },
+          "named_span_mean_ms": {
+            "browser_type": 1600.7786483333332,
+            "browser_click": 1535.0287033333334,
+            "runner_post_outcome_shutdown": 471.321817,
+            "browser_prepare": 282.53401766666667,
+            "initialize": 185.935939,
+            "tools/list": 55.20861633333333,
+            "get_browser_state": 52.78031466666667,
+            "get_browser_state:semantic": 28.561366,
+            "browser_navigate": 27.613229,
+            "list_windows": 8.781621666666666,
+            "provider_entry": 0.327755,
+            "runner_http:/state": 0.09169100000000001,
+            "runner_http:/reset": 0.016884666666666666
+          },
+          "counts": {
+            "actual_provider_entries": [
+              2
+            ],
+            "mcp_total_calls": [
+              10
+            ],
+            "fresh_semantic_observations": [
+              2
+            ],
+            "binding_observations": [
+              1
+            ],
+            "mcp_actions": [
+              2
+            ],
+            "mcp_wait_tools": [
+              0
+            ],
+            "window_readiness_polls": [
+              1
+            ],
+            "runner_http_verification_reads": [
+              3,
+              4
+            ]
+          }
+        },
+        "guarded": {
+          "verified_outcome_ms": {
+            "n": 3,
+            "mean": 4202.676855666667,
+            "median": 4168.662208,
+            "min": 4113.34059,
+            "max": 4326.027769
+          },
+          "runner_lifetime_ms": {
+            "n": 3,
+            "mean": 4784.072864666667,
+            "median": 4767.751639,
+            "min": 4716.64696,
+            "max": 4867.819995
+          },
+          "startup_to_first_semantic_ms": {
+            "n": 3,
+            "mean": 1004.1939423333333,
+            "median": 975.44654,
+            "min": 935.799117,
+            "max": 1101.33617
+          },
+          "external_cleanup_ms": {
+            "n": 3,
+            "mean": 71.318752,
+            "median": 80.348539,
+            "min": 50.795735,
+            "max": 82.811982
+          },
+          "runner_post_verified_ms": {
+            "n": 3,
+            "mean": 581.396009,
+            "median": 599.089431,
+            "min": 541.792226,
+            "max": 603.30637
+          },
+          "critical_path_union_ms": {
+            "n": 3,
+            "mean": 4221.842398333333,
+            "median": 4211.452378,
+            "min": 4184.769031,
+            "max": 4269.305786
+          },
+          "residual_runner_ms": {
+            "n": 3,
+            "mean": 562.2304663333333,
+            "median": 556.299261,
+            "min": 531.877929,
+            "max": 598.514209
+          },
+          "named_span_mean_ms": {
+            "browser_type": 1603.889952,
+            "browser_click": 1539.8329433333333,
+            "runner_post_outcome_shutdown": 486.6122633333333,
+            "browser_prepare": 252.78528966666667,
+            "initialize": 159.39883,
+            "tools/list": 53.61856733333333,
+            "get_browser_state": 42.328379999999996,
+            "browser_navigate": 40.888308333333335,
+            "get_browser_state:semantic": 34.60325266666666,
+            "list_windows": 7.536634333333334,
+            "provider_entry": 0.23497300000000002,
+            "runner_http:/state": 0.10623166666666667,
+            "runner_http:/reset": 0.006772666666666666
+          },
+          "counts": {
+            "actual_provider_entries": [
+              1
+            ],
+            "mcp_total_calls": [
+              10
+            ],
+            "fresh_semantic_observations": [
+              2
+            ],
+            "binding_observations": [
+              1
+            ],
+            "mcp_actions": [
+              2
+            ],
+            "mcp_wait_tools": [
+              0
+            ],
+            "window_readiness_polls": [
+              1
+            ],
+            "runner_http_verification_reads": [
+              4
+            ]
+          }
+        }
+      },
+      "paired_verified_delta_ms": {
+        "n": 3,
+        "mean": 150.7363343333333,
+        "median": 132.18920799999978,
+        "min": 116.47605600000043,
+        "max": 203.54373899999973,
+        "student_t_95_ci": [
+          35.4661269078301,
+          266.00654175883653
+        ],
+        "baseline_slower_pairs": 3
+      },
+      "uncertainty": "Descriptive n=3 Student-t interval, df=2; assumes independent approximately normal pair differences. Not a performance claim; no multiple-comparison adjustment; all live focus isolation unqualified."
+    }
+  },
+  "latency_confirmations_unqualified": [
+    {
+      "pair_id": "grid-python-p250-o0-b1",
+      "language": "python",
+      "provider_ms": 250,
+      "semantic_ms": 0,
+      "baseline_verified_ms": 4692.059583,
+      "guarded_verified_ms": 4395.380004,
+      "delta_ms": 296.67957900000056,
+      "predicted_added_cost_delta_ms": 250,
+      "baseline_startup_ms": 1013.232229,
+      "guarded_startup_ms": 942.024796
+    },
+    {
+      "pair_id": "grid-python-p250-o250-b1",
+      "language": "python",
+      "provider_ms": 250,
+      "semantic_ms": 250,
+      "baseline_verified_ms": 9655.752375,
+      "guarded_verified_ms": 8840.66216,
+      "delta_ms": 815.0902150000002,
+      "predicted_added_cost_delta_ms": 250,
+      "baseline_startup_ms": 5409.023503,
+      "guarded_startup_ms": 4486.115203
+    },
+    {
+      "pair_id": "grid-typescript-p250-o0-b1",
+      "language": "typescript",
+      "provider_ms": 250,
+      "semantic_ms": 0,
+      "baseline_verified_ms": 4840.20717,
+      "guarded_verified_ms": 4469.225755,
+      "delta_ms": 370.9814149999993,
+      "predicted_added_cost_delta_ms": 250,
+      "baseline_startup_ms": 1138.869406,
+      "guarded_startup_ms": 1035.334003
+    },
+    {
+      "pair_id": "grid-typescript-p250-o250-b1",
+      "language": "typescript",
+      "provider_ms": 250,
+      "semantic_ms": 250,
+      "baseline_verified_ms": 5215.067518,
+      "guarded_verified_ms": 4996.666145,
+      "delta_ms": 218.4013729999997,
+      "predicted_added_cost_delta_ms": 250,
+      "baseline_startup_ms": 1020.679498,
+      "guarded_startup_ms": 1034.189991
+    }
+  ],
+  "receipt_bindings": [
+    {
+      "trial_key": "fallback-001/fallback-python-p0-o0-b1-fallback",
+      "receipt_path": "runs/fallback-001/cells/fallback-python-p0-o0-b1-fallback/receipt.json",
+      "sha256": "999d1c5406ea292b67c91688dab1da8febd9cbff2827507048a34f26cecd8300",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "fallback-001/fallback-typescript-p0-o0-b1-fallback",
+      "receipt_path": "runs/fallback-001/cells/fallback-typescript-p0-o0-b1-fallback/receipt.json",
+      "sha256": "b0edc49bd3153cb9ce56b78ea2c9dbd21cbfaace8d742bf4659c3222fdff166f",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-python-p250-o0-b1-baseline",
+      "receipt_path": "runs/grid-001/cells/grid-python-p250-o0-b1-baseline/receipt.json",
+      "sha256": "bf417d18bd38104d0d435d602de504729ed5b65c10a8c31f7fb6f1bfaa70802e",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-python-p250-o0-b1-guarded",
+      "receipt_path": "runs/grid-001/cells/grid-python-p250-o0-b1-guarded/receipt.json",
+      "sha256": "56acad53639145cc6081571552b521735c5ee90010b296648cc316fead8fdd88",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-python-p250-o250-b1-baseline",
+      "receipt_path": "runs/grid-001/cells/grid-python-p250-o250-b1-baseline/receipt.json",
+      "sha256": "6e9d7d1a662d4a433c2dea167aaaa75aed91baaea9f553df8e26b5b853a04923",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-python-p250-o250-b1-guarded",
+      "receipt_path": "runs/grid-001/cells/grid-python-p250-o250-b1-guarded/receipt.json",
+      "sha256": "f2c4c94ad31a6fe429ba22e2b6e614b7646e6e80b0a137aba4e0905a11ed9aca",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-typescript-p250-o0-b1-baseline",
+      "receipt_path": "runs/grid-001/cells/grid-typescript-p250-o0-b1-baseline/receipt.json",
+      "sha256": "f65c570526d0a4abed8ebf2df84afb4ae75ac47d9fc1335e58afb146dca58579",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-typescript-p250-o0-b1-guarded",
+      "receipt_path": "runs/grid-001/cells/grid-typescript-p250-o0-b1-guarded/receipt.json",
+      "sha256": "f5aa2e09a6cce9c84d6344584090497900383e3a2ceadf55d794b7f173d3e6e9",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-typescript-p250-o250-b1-baseline",
+      "receipt_path": "runs/grid-001/cells/grid-typescript-p250-o250-b1-baseline/receipt.json",
+      "sha256": "ac82794e3998ec2a575822aa15c7caa2d479947157eb439243308b247dfc5dee",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "grid-001/grid-typescript-p250-o250-b1-guarded",
+      "receipt_path": "runs/grid-001/cells/grid-typescript-p250-o250-b1-guarded/receipt.json",
+      "sha256": "f5d6eb9bc09c24713760e89b8b4fdabf5ab2886fda97ab7ecfdd1364f58c5396",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-001/pilot-python-p0-o0-b1-baseline",
+      "receipt_path": "runs/pilot-001/cells/pilot-python-p0-o0-b1-baseline/receipt.json",
+      "sha256": "d46dd86740eeef527e1bf93d1427abc2396eafc02dd203a21277bab506e31be3",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_calls": true,
+          "wrong_driver": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-001/pilot-python-p0-o0-b1-guarded",
+      "receipt_path": "runs/pilot-001/cells/pilot-python-p0-o0-b1-guarded/receipt.json",
+      "sha256": "fb80e7715a9aba6119f9f49182e03e6076f9a83fdb7d3841b9eb80f24ecaa6ae",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_calls": true,
+          "wrong_driver": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-001/pilot-typescript-p0-o0-b1-baseline",
+      "receipt_path": "runs/pilot-001/cells/pilot-typescript-p0-o0-b1-baseline/receipt.json",
+      "sha256": "99c23c3e41c4c22ac613cdcdb98ce59e336ebdbb39d8a4cd65c2751b8108d334",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_calls": true,
+          "wrong_driver": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-001/pilot-typescript-p0-o0-b1-guarded",
+      "receipt_path": "runs/pilot-001/cells/pilot-typescript-p0-o0-b1-guarded/receipt.json",
+      "sha256": "382b57660aa2d95d403a3fc203afe5edca3d2694267c2b261756961ba3feb082",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_calls": true,
+          "wrong_driver": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-002/pilot-python-p0-o0-b1-baseline",
+      "receipt_path": "runs/pilot-002/cells/pilot-python-p0-o0-b1-baseline/receipt.json",
+      "sha256": "e06c6610dab554a614f244beed743c10df114d614773e3d2c61fb73a53fb56b7",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-002/pilot-python-p0-o0-b1-guarded",
+      "receipt_path": "runs/pilot-002/cells/pilot-python-p0-o0-b1-guarded/receipt.json",
+      "sha256": "494f6d9f4be38d2a47c8281dfbca0bccb459d773298435ff53da0038b99b9973",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-002/pilot-typescript-p0-o0-b1-baseline",
+      "receipt_path": "runs/pilot-002/cells/pilot-typescript-p0-o0-b1-baseline/receipt.json",
+      "sha256": "cde4f6dd82291bd6db73cdebe02fdeb4442f327f6f9c9089c834de118e5ed605",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "pilot-002/pilot-typescript-p0-o0-b1-guarded",
+      "receipt_path": "runs/pilot-002/cells/pilot-typescript-p0-o0-b1-guarded/receipt.json",
+      "sha256": "5808388f4801967a7d7da85c57b8ec90fc97ef7bd220fb8314715a4dae8681d7",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-python-p0-o0-b1-baseline",
+      "receipt_path": "runs/repeat-001/cells/repeat-python-p0-o0-b1-baseline/receipt.json",
+      "sha256": "35973854327614bfe1b4f2ed2a8b86c7a7eaa1a70d0096b6d5e2377f2a66a88b",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-python-p0-o0-b1-guarded",
+      "receipt_path": "runs/repeat-001/cells/repeat-python-p0-o0-b1-guarded/receipt.json",
+      "sha256": "72a4931f2da1e1eb8c6d0657befe69795f38718b4f80097f2e94a0899a81c2cd",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-python-p0-o0-b2-baseline",
+      "receipt_path": "runs/repeat-001/cells/repeat-python-p0-o0-b2-baseline/receipt.json",
+      "sha256": "8dbf0a7c814dc0463f4370e2b4648f28ed00d21fcd7ce7762ef900203ad4b445",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-python-p0-o0-b2-guarded",
+      "receipt_path": "runs/repeat-001/cells/repeat-python-p0-o0-b2-guarded/receipt.json",
+      "sha256": "ff4e0c197adc9f8799f82ba27545504a30fcb4547d5f7e23b4b9d4d24d915ec1",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-python-p0-o0-b3-baseline",
+      "receipt_path": "runs/repeat-001/cells/repeat-python-p0-o0-b3-baseline/receipt.json",
+      "sha256": "3ca44219c1396956d23a81b15cfb0eaf69223b7645353e5706d24128cdda091d",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-python-p0-o0-b3-guarded",
+      "receipt_path": "runs/repeat-001/cells/repeat-python-p0-o0-b3-guarded/receipt.json",
+      "sha256": "05afa057c337261afa767256d290c572cabed8ea86005a2bb7b38230dd6f0d7a",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-typescript-p0-o0-b1-baseline",
+      "receipt_path": "runs/repeat-001/cells/repeat-typescript-p0-o0-b1-baseline/receipt.json",
+      "sha256": "5af7ab9181bc34c75099b532adbf7703deec6c967cd8a25c191e2717bd25b102",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-typescript-p0-o0-b1-guarded",
+      "receipt_path": "runs/repeat-001/cells/repeat-typescript-p0-o0-b1-guarded/receipt.json",
+      "sha256": "6d0818b844751884b8bf03bb6556bb886f55fe301ab4f47fc50047c1bbf52c13",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-typescript-p0-o0-b2-baseline",
+      "receipt_path": "runs/repeat-001/cells/repeat-typescript-p0-o0-b2-baseline/receipt.json",
+      "sha256": "3ef319fca0b4d8d6c792f00821d259f7959eeed12ed73365744d541dd1d66660",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-typescript-p0-o0-b2-guarded",
+      "receipt_path": "runs/repeat-001/cells/repeat-typescript-p0-o0-b2-guarded/receipt.json",
+      "sha256": "1f7c89e689353dbcbbbc92c4bd4ca0166638d73dcf895094bd96a1463a9b16f7",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-typescript-p0-o0-b3-baseline",
+      "receipt_path": "runs/repeat-001/cells/repeat-typescript-p0-o0-b3-baseline/receipt.json",
+      "sha256": "06004ab7e5a26595fc5d7fef04e18cd0ea4d7be64b03a97c9da7a77501fdb810",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    },
+    {
+      "trial_key": "repeat-001/repeat-typescript-p0-o0-b3-guarded",
+      "receipt_path": "runs/repeat-001/cells/repeat-typescript-p0-o0-b3-guarded/receipt.json",
+      "sha256": "dd7414fa4db87fae099bd7f0ffedce2b03d7a31cf20ad1f81fbba721dab800e3",
+      "live_focus_qualified": false,
+      "path_checker_passed": true,
+      "checker_negative_controls": {
+        "all_rejected": true,
+        "cases": {
+          "contamination": true,
+          "missing_actual_http": true,
+          "missing_http_journal": true,
+          "missing_provider_entry": true,
+          "wrong_actual_http": true,
+          "wrong_bootstrap_hash": true,
+          "wrong_calls": true,
+          "wrong_command_flag": true,
+          "wrong_driver": true,
+          "wrong_event_route": true,
+          "wrong_flag": true,
+          "wrong_oracle": true,
+          "wrong_refs": true,
+          "wrong_route": true,
+          "wrong_source": true,
+          "wrong_trace_ref": true
+        }
+      }
+    }
+  ]
+}
