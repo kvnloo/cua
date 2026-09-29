@@ -1,0 +1,540 @@
+{
+  "arm": "guarded",
+  "artifact_hashes": {
+    "driver.sh": "c03d0fa9e3bd659ff9a1f4d6b0c948b5372bf9954032d8ec32767d41a4039a1d",
+    "http-journal.json": "07a038b8216b46d61aea7cfbf714494ad30fe953741e379c772f2e82128f50ea",
+    "mcp.jsonl": "01f285ddecee2ebfcbdf6110dbe65a57d738e31a715f10420b45f87714531053",
+    "provider.jsonl": "b6795e58ae5a834058b47826d78284bc40ba892059363dfb81a4e7c0d98cb9ba",
+    "runner-events.json": "92261d72301caa4a3112175eb91989b28e403c8f78fddf75fbfd04428c6a69f7"
+  },
+  "block": 1,
+  "bootstrap": [
+    {
+      "guarded_flag": true,
+      "source_file_sha256": "ea625bbb7137590ed554b4c4d8c3625810def4adae38f168b120e5c9da89619c"
+    }
+  ],
+  "checker_corruption_test": {
+    "all_rejected": true,
+    "cases": {
+      "contamination": true,
+      "missing_actual_http": true,
+      "missing_http_journal": true,
+      "missing_provider_entry": true,
+      "wrong_actual_http": true,
+      "wrong_bootstrap_hash": true,
+      "wrong_calls": true,
+      "wrong_command_flag": true,
+      "wrong_driver": true,
+      "wrong_event_route": true,
+      "wrong_flag": true,
+      "wrong_oracle": true,
+      "wrong_refs": true,
+      "wrong_route": true,
+      "wrong_source": true,
+      "wrong_trace_ref": true
+    }
+  },
+  "checker_errors": [],
+  "command": [
+    "/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin/node",
+    "--import",
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/node_modules/tsx/dist/esm/index.mjs",
+    "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/typescript_entry.mjs",
+    "--provider",
+    "mock",
+    "--fixture-url",
+    "http://127.0.0.1:19507/",
+    "--max-steps",
+    "4",
+    "--visual-observation",
+    "auto",
+    "--guarded-completion"
+  ],
+  "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+  "events": [
+    {
+      "action_ms": 1608.93,
+      "arrival_ns": 19523452223215,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.29,
+      "decision_ms": 510.86,
+      "decision_route": "provider",
+      "dry_run": false,
+      "event": "step",
+      "model_score_present": true,
+      "provider_decision_ms": 250.43,
+      "semantic_observe_ms": 259.75,
+      "step": 1,
+      "tool": "browser_type",
+      "total_step_ms": 2119.86,
+      "visual_observe_ms": 0,
+      "visual_status": "skipped"
+    },
+    {
+      "action_ms": 1555.88,
+      "arrival_ns": 19525271308721,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.11,
+      "decision_ms": 256.88,
+      "decision_route": "guarded-completion",
+      "dry_run": false,
+      "event": "step",
+      "guarded_completion": {
+        "fresh_ref": "p2:2",
+        "prior_ref": "p1:1",
+        "session": "jev-typescript-eb09438a",
+        "status": "accepted",
+        "submit_matches": 1,
+        "verification_field": "contains_required_token"
+      },
+      "model_score_present": false,
+      "provider_decision_ms": 0,
+      "semantic_observe_ms": 256.57,
+      "step": 2,
+      "tool": "browser_click",
+      "total_step_ms": 1812.8,
+      "visual_observe_ms": 0,
+      "visual_status": "skipped"
+    },
+    {
+      "arrival_ns": 19525403151914,
+      "event": "outcome",
+      "outcome": "verified"
+    }
+  ],
+  "guarded_flag": true,
+  "harness_hashes": {
+    "audit.py": "0b9d972a7ea2ba7b6fbd472b144008bc89d443ecd435f48094e28725bbc547d6",
+    "count_surface.py": "5bf72631e8b35c31d16e0a735dcc6a3378c569716d6baed5e65f8ff6c31af7cd",
+    "harness.py": "5adce5981db574c0409b0ae97b7edd6dab1902dd5fbe7e1068a5d7ef7f26757d",
+    "launch.py": "2719bfcef5a6e0400c671c461743daa577c6ecde97737c2ab263c8d6729f9fd9",
+    "mcp_scrub_proxy.py": "174b45a9cf76508206c579b5d362de4a06d0a6fdf242d505edfca0f4a151fc80",
+    "provider-loader.mjs": "a4cb94256703032cc9ba3060dc046cc82ee14c05bd4c664f13b208089b95057f",
+    "python_entry.py": "b0177447919067bd285c04d6155052f4772f66170ca18bdde367ba897802167a",
+    "safe.py": "5493b8ded8116c925cc93e236e8a8504a28672ba50c4e9e7717fabd8dfcedb19",
+    "test_contract.py": "7d885392960da96f91424252ada907a36d14a85cdd170202347fbbbf87c7f82b",
+    "typescript_entry.mjs": "a7284b91fe85273fe4baabac26efb1535317f6f37323406bea8c8ebb0b537ae0"
+  },
+  "http_evidence": [
+    {
+      "actor": "runner",
+      "end_ns": 19520564029829,
+      "method": "POST",
+      "path": "/reset",
+      "start_ns": 19520564022055,
+      "status": 204
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19521323378001,
+      "method": "GET",
+      "path": "/",
+      "start_ns": 19521323369027,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19521328454448,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19521328429161,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19523453204488,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19523453186371,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19525280674608,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19525280615366,
+      "status": 200
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19525289841592,
+      "method": "POST",
+      "path": "/submit",
+      "start_ns": 19525289785929,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19525292518778,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19525292443997,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19525396270727,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19525396203698,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19525923130036,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19525923110002,
+      "status": 200
+    }
+  ],
+  "language": "typescript",
+  "leftovers_terminated": 0,
+  "mcp": [
+    {
+      "end_ns": 19520779985077,
+      "event": "mcp_call",
+      "id": 0,
+      "name": "initialize",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19520611015936
+    },
+    {
+      "end_ns": 19520841318832,
+      "event": "mcp_call",
+      "id": 1,
+      "name": "tools/list",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false,
+        "tool_count": 62
+      },
+      "start_ns": 19520785940188
+    },
+    {
+      "end_ns": 19521230225829,
+      "event": "mcp_call",
+      "id": 2,
+      "name": "browser_prepare",
+      "request": {
+        "isolated_new": true,
+        "semantic": false,
+        "session": "jev-typescript-eb09438a"
+      },
+      "result": {
+        "error": false,
+        "prepared_pid_present": true
+      },
+      "start_ns": 19520962505493
+    },
+    {
+      "end_ns": 19521239403384,
+      "event": "mcp_call",
+      "id": 3,
+      "name": "list_windows",
+      "request": {
+        "semantic": false,
+        "session": "jev-typescript-eb09438a"
+      },
+      "result": {
+        "error": false,
+        "window_count": 1
+      },
+      "start_ns": 19521232856965
+    },
+    {
+      "end_ns": 19521291997616,
+      "event": "mcp_call",
+      "id": 4,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": false,
+        "session": "jev-typescript-eb09438a"
+      },
+      "result": {
+        "error": false,
+        "field_count": 0,
+        "field_empty": false,
+        "field_matches": false,
+        "ref_count": 0,
+        "submit_refs": [],
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "start_ns": 19521240632970
+    },
+    {
+      "end_ns": 19521325315928,
+      "event": "mcp_call",
+      "id": 5,
+      "name": "browser_navigate",
+      "request": {
+        "semantic": false,
+        "session": "jev-typescript-eb09438a",
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19521292667192
+    },
+    {
+      "end_ns": 19521591171735,
+      "event": "mcp_call",
+      "id": 6,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-typescript-eb09438a",
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": true,
+        "field_matches": false,
+        "ref_count": 3,
+        "submit_refs": [
+          "p1:1"
+        ],
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "start_ns": 19521332322752
+    },
+    {
+      "end_ns": 19523450439050,
+      "event": "mcp_call",
+      "id": 7,
+      "name": "browser_type",
+      "request": {
+        "ref": "p1:0",
+        "semantic": false,
+        "session": "jev-typescript-eb09438a",
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e",
+        "text_present": true
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19521843163741
+    },
+    {
+      "end_ns": 19523710143786,
+      "event": "mcp_call",
+      "id": 8,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-typescript-eb09438a",
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": false,
+        "field_matches": true,
+        "ref_count": 4,
+        "submit_refs": [
+          "p2:2"
+        ],
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "start_ns": 19523454186364
+    },
+    {
+      "end_ns": 19525259901016,
+      "event": "mcp_call",
+      "id": 9,
+      "name": "browser_click",
+      "request": {
+        "ref": "p2:2",
+        "semantic": false,
+        "session": "jev-typescript-eb09438a",
+        "tab_id": "tab-a5767d28-8f7b-469d-9492-69563db58943",
+        "target_id": "bt-228320a9-ac73-4a2e-bc51-ea057451ef6e"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19523711082631
+    }
+  ],
+  "named_spans": [
+    {
+      "end_ns": 19520779985077,
+      "name": "initialize",
+      "start_ns": 19520611015936
+    },
+    {
+      "end_ns": 19520841318832,
+      "name": "tools/list",
+      "start_ns": 19520785940188
+    },
+    {
+      "end_ns": 19521230225829,
+      "name": "browser_prepare",
+      "start_ns": 19520962505493
+    },
+    {
+      "end_ns": 19521239403384,
+      "name": "list_windows",
+      "start_ns": 19521232856965
+    },
+    {
+      "end_ns": 19521291997616,
+      "name": "get_browser_state",
+      "start_ns": 19521240632970
+    },
+    {
+      "end_ns": 19521325315928,
+      "name": "browser_navigate",
+      "start_ns": 19521292667192
+    },
+    {
+      "end_ns": 19521591171735,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19521332322752
+    },
+    {
+      "end_ns": 19523450439050,
+      "name": "browser_type",
+      "start_ns": 19521843163741
+    },
+    {
+      "end_ns": 19523710143786,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19523454186364
+    },
+    {
+      "end_ns": 19525259901016,
+      "name": "browser_click",
+      "start_ns": 19523711082631
+    },
+    {
+      "end_ns": 19521842697275,
+      "name": "provider_entry",
+      "start_ns": 19521592394081
+    },
+    {
+      "end_ns": 19520564029829,
+      "name": "runner_http:/reset",
+      "start_ns": 19520564022055
+    },
+    {
+      "end_ns": 19521328454448,
+      "name": "runner_http:/state",
+      "start_ns": 19521328429161
+    },
+    {
+      "end_ns": 19523453204488,
+      "name": "runner_http:/state",
+      "start_ns": 19523453186371
+    },
+    {
+      "end_ns": 19525280674608,
+      "name": "runner_http:/state",
+      "start_ns": 19525280615366
+    },
+    {
+      "end_ns": 19525396270727,
+      "name": "runner_http:/state",
+      "start_ns": 19525396203698
+    },
+    {
+      "end_ns": 19525922482678,
+      "name": "runner_post_outcome_shutdown",
+      "start_ns": 19525403151914
+    }
+  ],
+  "observe_ms": 250,
+  "oracle": {
+    "final_matches": true,
+    "first_verified_ns": 19525294798906,
+    "http_observer_state_reads": 444,
+    "http_runner_state_reads": 4,
+    "mutation_ns": 19525289825302,
+    "submit_count": 1
+  },
+  "pair_id": "grid-typescript-p250-o250-b1",
+  "phase": "grid",
+  "position": 1,
+  "private_session": true,
+  "proof_facts": {
+    "click_uses_fresh_ref": true,
+    "field_matches": true,
+    "fresh_ref_changed": true,
+    "session_matches": true
+  },
+  "protected_parameter_transport": "stdin-memory-only",
+  "provider_entries": 1,
+  "provider_journal": [
+    {
+      "event": "instrumentation",
+      "instrumented_transpiled_sha256": "dc1d05ba1a5bd1661b18036d3d29a2dc368f7cbc01e6e49e8ba8d8b301f8eff1",
+      "original_transpiled_sha256": "b86b71c45c35c7d75ee347b93bb883d6204050220935042b2551e182eb8ad05e"
+    },
+    {
+      "event": "provider_enter",
+      "index": 1,
+      "ns": 19521592394081
+    },
+    {
+      "event": "provider_exit",
+      "index": 1,
+      "ns": 19521842697275
+    }
+  ],
+  "provider_kind": "deterministic-original-mock-with-entry-counter",
+  "provider_ms": 250,
+  "qualifies": true,
+  "rc": 0,
+  "routes": [
+    "provider",
+    "guarded-completion"
+  ],
+  "runner_outcome": "verified",
+  "schema_version": 2,
+  "scientific_cell": "typescript-guarded-p250-o250",
+  "secret_scan_passed": true,
+  "source_runner_sha256": "ea625bbb7137590ed554b4c4d8c3625810def4adae38f168b120e5c9da89619c",
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "stderr_discarded_bytes": 0,
+  "stdout_discarded_bytes": 0,
+  "survivors_after_cleanup": 0,
+  "timed_out": false,
+  "times": {
+    "cleanup_end_ns": 19526162379891,
+    "cleanup_start_ns": 19525923383247,
+    "critical_path_union_ms": 5023.339428,
+    "exit_ns": 19525922482678,
+    "external_cleanup_ms": 238.996644,
+    "pre_verified_union_ms": 4503.941635,
+    "residual_runner_ms": 601.010489,
+    "runner_lifetime_ms": 5624.349917,
+    "runner_post_verified_ms": 627.683772,
+    "spawn_ns": 19520298132761,
+    "startup_to_first_semantic_ms": 1034.189991,
+    "verified_outcome_ms": 4996.666145
+  },
+  "trial_id": "grid-typescript-p250-o250-b1-guarded"
+}

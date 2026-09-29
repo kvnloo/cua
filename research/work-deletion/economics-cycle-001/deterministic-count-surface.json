@@ -1,0 +1,349 @@
+{
+  "kind": "deterministic-count-accounting-replay-NOT-driver-or-runner-output",
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "inputs": {
+    "cells/repeat-python-p0-o0-b1-baseline/receipt.json": "35973854327614bfe1b4f2ed2a8b86c7a7eaa1a70d0096b6d5e2377f2a66a88b",
+    "cells/repeat-python-p0-o0-b1-guarded/receipt.json": "72a4931f2da1e1eb8c6d0657befe69795f38718b4f80097f2e94a0899a81c2cd",
+    "cells/repeat-python-p0-o0-b2-baseline/receipt.json": "8dbf0a7c814dc0463f4370e2b4648f28ed00d21fcd7ce7762ef900203ad4b445",
+    "cells/repeat-python-p0-o0-b2-guarded/receipt.json": "ff4e0c197adc9f8799f82ba27545504a30fcb4547d5f7e23b4b9d4d24d915ec1",
+    "cells/repeat-python-p0-o0-b3-baseline/receipt.json": "3ca44219c1396956d23a81b15cfb0eaf69223b7645353e5706d24128cdda091d",
+    "cells/repeat-python-p0-o0-b3-guarded/receipt.json": "05afa057c337261afa767256d290c572cabed8ea86005a2bb7b38230dd6f0d7a",
+    "cells/repeat-typescript-p0-o0-b1-baseline/receipt.json": "5af7ab9181bc34c75099b532adbf7703deec6c967cd8a25c191e2717bd25b102",
+    "cells/repeat-typescript-p0-o0-b1-guarded/receipt.json": "6d0818b844751884b8bf03bb6556bb886f55fe301ab4f47fc50047c1bbf52c13",
+    "cells/repeat-typescript-p0-o0-b2-baseline/receipt.json": "3ef319fca0b4d8d6c792f00821d259f7959eeed12ed73365744d541dd1d66660",
+    "cells/repeat-typescript-p0-o0-b2-guarded/receipt.json": "1f7c89e689353dbcbbbc92c4bd4ca0166638d73dcf895094bd96a1463a9b16f7",
+    "cells/repeat-typescript-p0-o0-b3-baseline/receipt.json": "06004ab7e5a26595fc5d7fef04e18cd0ea4d7be64b03a97c9da7a77501fdb810",
+    "cells/repeat-typescript-p0-o0-b3-guarded/receipt.json": "dd7414fa4db87fae099bd7f0ffedce2b03d7a31cf20ad1f81fbba721dab800e3"
+  },
+  "held_fixed": "all non-injected source/driver/fixture/instrumentation/startup/cleanup work",
+  "equation": "T_baseline-T_guarded = P - H + (R_baseline-R_guarded); coefficient(O)=0",
+  "boundary": "P > H + R_guarded-R_baseline; H and stable residual difference not identifiable from small noisy wall-time samples",
+  "surfaces": [
+    {
+      "language": "python",
+      "counts_provider_semantic_action": {
+        "baseline": [
+          2,
+          2,
+          2
+        ],
+        "guarded": [
+          1,
+          2,
+          2
+        ]
+      },
+      "marginal_saved_counts": [
+        1,
+        0,
+        0
+      ],
+      "observation_dependent_boundary_falsified": true,
+      "grid": [
+        {
+          "provider_ms": 0,
+          "semantic_ms": 0,
+          "baseline_added_ms": 0,
+          "guarded_added_ms": 0,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 0,
+          "semantic_ms": 25,
+          "baseline_added_ms": 50,
+          "guarded_added_ms": 50,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 0,
+          "semantic_ms": 250,
+          "baseline_added_ms": 500,
+          "guarded_added_ms": 500,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 0,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2000,
+          "guarded_added_ms": 2000,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 0,
+          "baseline_added_ms": 50,
+          "guarded_added_ms": 25,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 25,
+          "baseline_added_ms": 100,
+          "guarded_added_ms": 75,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 250,
+          "baseline_added_ms": 550,
+          "guarded_added_ms": 525,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2050,
+          "guarded_added_ms": 2025,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 0,
+          "baseline_added_ms": 200,
+          "guarded_added_ms": 100,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 25,
+          "baseline_added_ms": 250,
+          "guarded_added_ms": 150,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 250,
+          "baseline_added_ms": 700,
+          "guarded_added_ms": 600,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2200,
+          "guarded_added_ms": 2100,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 0,
+          "baseline_added_ms": 500,
+          "guarded_added_ms": 250,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 25,
+          "baseline_added_ms": 550,
+          "guarded_added_ms": 300,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 250,
+          "baseline_added_ms": 1000,
+          "guarded_added_ms": 750,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2500,
+          "guarded_added_ms": 2250,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 0,
+          "baseline_added_ms": 2000,
+          "guarded_added_ms": 1000,
+          "baseline_minus_guarded_added_ms": 1000
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 25,
+          "baseline_added_ms": 2050,
+          "guarded_added_ms": 1050,
+          "baseline_minus_guarded_added_ms": 1000
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 250,
+          "baseline_added_ms": 2500,
+          "guarded_added_ms": 1500,
+          "baseline_minus_guarded_added_ms": 1000
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 4000,
+          "guarded_added_ms": 3000,
+          "baseline_minus_guarded_added_ms": 1000
+        }
+      ]
+    },
+    {
+      "language": "typescript",
+      "counts_provider_semantic_action": {
+        "baseline": [
+          2,
+          2,
+          2
+        ],
+        "guarded": [
+          1,
+          2,
+          2
+        ]
+      },
+      "marginal_saved_counts": [
+        1,
+        0,
+        0
+      ],
+      "observation_dependent_boundary_falsified": true,
+      "grid": [
+        {
+          "provider_ms": 0,
+          "semantic_ms": 0,
+          "baseline_added_ms": 0,
+          "guarded_added_ms": 0,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 0,
+          "semantic_ms": 25,
+          "baseline_added_ms": 50,
+          "guarded_added_ms": 50,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 0,
+          "semantic_ms": 250,
+          "baseline_added_ms": 500,
+          "guarded_added_ms": 500,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 0,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2000,
+          "guarded_added_ms": 2000,
+          "baseline_minus_guarded_added_ms": 0
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 0,
+          "baseline_added_ms": 50,
+          "guarded_added_ms": 25,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 25,
+          "baseline_added_ms": 100,
+          "guarded_added_ms": 75,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 250,
+          "baseline_added_ms": 550,
+          "guarded_added_ms": 525,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 25,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2050,
+          "guarded_added_ms": 2025,
+          "baseline_minus_guarded_added_ms": 25
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 0,
+          "baseline_added_ms": 200,
+          "guarded_added_ms": 100,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 25,
+          "baseline_added_ms": 250,
+          "guarded_added_ms": 150,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 250,
+          "baseline_added_ms": 700,
+          "guarded_added_ms": 600,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 100,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2200,
+          "guarded_added_ms": 2100,
+          "baseline_minus_guarded_added_ms": 100
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 0,
+          "baseline_added_ms": 500,
+          "guarded_added_ms": 250,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 25,
+          "baseline_added_ms": 550,
+          "guarded_added_ms": 300,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 250,
+          "baseline_added_ms": 1000,
+          "guarded_added_ms": 750,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 250,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 2500,
+          "guarded_added_ms": 2250,
+          "baseline_minus_guarded_added_ms": 250
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 0,
+          "baseline_added_ms": 2000,
+          "guarded_added_ms": 1000,
+          "baseline_minus_guarded_added_ms": 1000
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 25,
+          "baseline_added_ms": 2050,
+          "guarded_added_ms": 1050,
+          "baseline_minus_guarded_added_ms": 1000
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 250,
+          "baseline_added_ms": 2500,
+          "guarded_added_ms": 1500,
+          "baseline_minus_guarded_added_ms": 1000
+        },
+        {
+          "provider_ms": 1000,
+          "semantic_ms": 1000,
+          "baseline_added_ms": 4000,
+          "guarded_added_ms": 3000,
+          "baseline_minus_guarded_added_ms": 1000
+        }
+      ]
+    }
+  ]
+}

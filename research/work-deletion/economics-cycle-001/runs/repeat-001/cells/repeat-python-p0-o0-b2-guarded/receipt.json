@@ -1,0 +1,518 @@
+{
+  "arm": "guarded",
+  "artifact_hashes": {
+    "driver.sh": "04c77cabda6b18f786ba5e1d027bd3e22a03257d0e1c9cedf2a1f7f7c58e666c",
+    "http-journal.json": "b7162f23ef2b815139e66a54dac6924375717dc157eca0f5d80810b586e80591",
+    "mcp.jsonl": "6ace53b9eff89cfec4093c7f929e549bbbbd7ea8d723ab63dafc8a91606c18cc",
+    "provider.jsonl": "09461a8fdd0c113f24be1d575057562f750ef497d901fb496430b7e989a72cdb",
+    "runner-events.json": "7f664409d6cb55e25395abe7df3cb7e9c0382c5f487f763cfa9df6c3c97c7910"
+  },
+  "block": 2,
+  "bootstrap": [
+    {
+      "guarded_flag": true,
+      "source_file_sha256": "b088056874dbd126de2cb7d5bb057a7f44d2ae1a18bec5c4cd4d2348ac9896e6"
+    }
+  ],
+  "checker_corruption_test": {
+    "all_rejected": true,
+    "cases": {
+      "contamination": true,
+      "missing_actual_http": true,
+      "missing_http_journal": true,
+      "missing_provider_entry": true,
+      "wrong_actual_http": true,
+      "wrong_bootstrap_hash": true,
+      "wrong_calls": true,
+      "wrong_command_flag": true,
+      "wrong_driver": true,
+      "wrong_event_route": true,
+      "wrong_flag": true,
+      "wrong_oracle": true,
+      "wrong_refs": true,
+      "wrong_route": true,
+      "wrong_source": true,
+      "wrong_trace_ref": true
+    }
+  },
+  "checker_errors": [],
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/python_entry.py",
+    "--provider",
+    "mock",
+    "--fixture-url",
+    "http://127.0.0.1:30361/",
+    "--max-steps",
+    "4",
+    "--visual-observation",
+    "auto",
+    "--guarded-completion"
+  ],
+  "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+  "events": [
+    {
+      "action_ms": 1618.84,
+      "arrival_ns": 19360938551992,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.09,
+      "decision_ms": 34.68,
+      "decision_route": "provider",
+      "dry_run": false,
+      "event": "step",
+      "model_score_present": true,
+      "provider_decision_ms": 0.3,
+      "semantic_observe_ms": 34.21,
+      "step": 1,
+      "tool": "browser_type",
+      "total_step_ms": 1653.53,
+      "visual_observe_ms": 0.0,
+      "visual_status": "skipped"
+    },
+    {
+      "action_ms": 1557.26,
+      "arrival_ns": 19362503323255,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.04,
+      "decision_ms": 6.57,
+      "decision_route": "guarded-completion",
+      "dry_run": false,
+      "event": "step",
+      "guarded_completion": {
+        "fresh_ref": "p2:2",
+        "prior_ref": "p1:1",
+        "session": "jev-python-5b1d5afc",
+        "status": "accepted",
+        "submit_matches": 1,
+        "verification_field": "contains_required_token"
+      },
+      "model_score_present": false,
+      "provider_decision_ms": 0.0,
+      "semantic_observe_ms": 6.49,
+      "step": 2,
+      "tool": "browser_click",
+      "total_step_ms": 1563.86,
+      "visual_observe_ms": 0.0,
+      "visual_status": "skipped"
+    },
+    {
+      "arrival_ns": 19362505541775,
+      "event": "outcome",
+      "outcome": "verified"
+    }
+  ],
+  "guarded_flag": true,
+  "harness_hashes": {
+    "audit.py": "0b9d972a7ea2ba7b6fbd472b144008bc89d443ecd435f48094e28725bbc547d6",
+    "harness.py": "5adce5981db574c0409b0ae97b7edd6dab1902dd5fbe7e1068a5d7ef7f26757d",
+    "launch.py": "2719bfcef5a6e0400c671c461743daa577c6ecde97737c2ab263c8d6729f9fd9",
+    "mcp_scrub_proxy.py": "174b45a9cf76508206c579b5d362de4a06d0a6fdf242d505edfca0f4a151fc80",
+    "provider-loader.mjs": "a4cb94256703032cc9ba3060dc046cc82ee14c05bd4c664f13b208089b95057f",
+    "python_entry.py": "b0177447919067bd285c04d6155052f4772f66170ca18bdde367ba897802167a",
+    "safe.py": "5493b8ded8116c925cc93e236e8a8504a28672ba50c4e9e7717fabd8dfcedb19",
+    "test_contract.py": "7d885392960da96f91424252ada907a36d14a85cdd170202347fbbbf87c7f82b",
+    "typescript_entry.mjs": "a7284b91fe85273fe4baabac26efb1535317f6f37323406bea8c8ebb0b537ae0"
+  },
+  "http_evidence": [
+    {
+      "actor": "runner",
+      "end_ns": 19358508397466,
+      "method": "POST",
+      "path": "/reset",
+      "start_ns": 19358508390438,
+      "status": 204
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19359279158071,
+      "method": "GET",
+      "path": "/",
+      "start_ns": 19359279145686,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19359284448519,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19359284417932,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19360938867855,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19360938853897,
+      "status": 200
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19362499748061,
+      "method": "POST",
+      "path": "/submit",
+      "start_ns": 19362499686125,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19362504261742,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19362504219387,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19362506091109,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19362506019166,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19363113389049,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19363113355161,
+      "status": 200
+    }
+  ],
+  "language": "python",
+  "leftovers_terminated": 0,
+  "mcp": [
+    {
+      "end_ns": 19358769921089,
+      "event": "mcp_call",
+      "id": 0,
+      "name": "initialize",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19358555784184
+    },
+    {
+      "end_ns": 19358832208382,
+      "event": "mcp_call",
+      "id": 1,
+      "name": "tools/list",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false,
+        "tool_count": 62
+      },
+      "start_ns": 19358771133084
+    },
+    {
+      "end_ns": 19359165264337,
+      "event": "mcp_call",
+      "id": 2,
+      "name": "browser_prepare",
+      "request": {
+        "isolated_new": true,
+        "semantic": false,
+        "session": "jev-python-5b1d5afc"
+      },
+      "result": {
+        "error": false,
+        "prepared_pid_present": true
+      },
+      "start_ns": 19358851345793
+    },
+    {
+      "end_ns": 19359178633420,
+      "event": "mcp_call",
+      "id": 3,
+      "name": "list_windows",
+      "request": {
+        "semantic": false,
+        "session": "jev-python-5b1d5afc"
+      },
+      "result": {
+        "error": false,
+        "window_count": 1
+      },
+      "start_ns": 19359166780480
+    },
+    {
+      "end_ns": 19359240594498,
+      "event": "mcp_call",
+      "id": 4,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": false,
+        "session": "jev-python-5b1d5afc"
+      },
+      "result": {
+        "error": false,
+        "field_count": 0,
+        "field_empty": false,
+        "field_matches": false,
+        "ref_count": 0,
+        "submit_refs": [],
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "start_ns": 19359188607884
+    },
+    {
+      "end_ns": 19359281762585,
+      "event": "mcp_call",
+      "id": 5,
+      "name": "browser_navigate",
+      "request": {
+        "semantic": false,
+        "session": "jev-python-5b1d5afc",
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19359241598295
+    },
+    {
+      "end_ns": 19359318059159,
+      "event": "mcp_call",
+      "id": 6,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-python-5b1d5afc",
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": true,
+        "field_matches": false,
+        "ref_count": 3,
+        "submit_refs": [
+          "p1:1"
+        ],
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "start_ns": 19359285611250
+    },
+    {
+      "end_ns": 19360931939261,
+      "event": "mcp_call",
+      "id": 7,
+      "name": "browser_type",
+      "request": {
+        "ref": "p1:0",
+        "semantic": false,
+        "session": "jev-python-5b1d5afc",
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326",
+        "text_present": true
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19359320011583
+    },
+    {
+      "end_ns": 19360945060298,
+      "event": "mcp_call",
+      "id": 8,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-python-5b1d5afc",
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": false,
+        "field_matches": true,
+        "ref_count": 4,
+        "submit_refs": [
+          "p2:2"
+        ],
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "start_ns": 19360939286859
+    },
+    {
+      "end_ns": 19362493795710,
+      "event": "mcp_call",
+      "id": 9,
+      "name": "browser_click",
+      "request": {
+        "ref": "p2:2",
+        "semantic": false,
+        "session": "jev-python-5b1d5afc",
+        "tab_id": "tab-e56bac9f-e5d8-4e39-afbd-00fc09a81712",
+        "target_id": "bt-0acded3b-4e5f-476a-a3e3-3be2c2893326"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19360945818411
+    }
+  ],
+  "named_spans": [
+    {
+      "end_ns": 19358769921089,
+      "name": "initialize",
+      "start_ns": 19358555784184
+    },
+    {
+      "end_ns": 19358832208382,
+      "name": "tools/list",
+      "start_ns": 19358771133084
+    },
+    {
+      "end_ns": 19359165264337,
+      "name": "browser_prepare",
+      "start_ns": 19358851345793
+    },
+    {
+      "end_ns": 19359178633420,
+      "name": "list_windows",
+      "start_ns": 19359166780480
+    },
+    {
+      "end_ns": 19359240594498,
+      "name": "get_browser_state",
+      "start_ns": 19359188607884
+    },
+    {
+      "end_ns": 19359281762585,
+      "name": "browser_navigate",
+      "start_ns": 19359241598295
+    },
+    {
+      "end_ns": 19359318059159,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19359285611250
+    },
+    {
+      "end_ns": 19360931939261,
+      "name": "browser_type",
+      "start_ns": 19359320011583
+    },
+    {
+      "end_ns": 19360945060298,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19360939286859
+    },
+    {
+      "end_ns": 19362493795710,
+      "name": "browser_click",
+      "start_ns": 19360945818411
+    },
+    {
+      "end_ns": 19359319536199,
+      "name": "provider_entry",
+      "start_ns": 19359319282537
+    },
+    {
+      "end_ns": 19358508397466,
+      "name": "runner_http:/reset",
+      "start_ns": 19358508390438
+    },
+    {
+      "end_ns": 19359284448519,
+      "name": "runner_http:/state",
+      "start_ns": 19359284417932
+    },
+    {
+      "end_ns": 19360938867855,
+      "name": "runner_http:/state",
+      "start_ns": 19360938853897
+    },
+    {
+      "end_ns": 19362504261742,
+      "name": "runner_http:/state",
+      "start_ns": 19362504219387
+    },
+    {
+      "end_ns": 19363111262193,
+      "name": "runner_post_outcome_shutdown",
+      "start_ns": 19362505541775
+    }
+  ],
+  "observe_ms": 0,
+  "oracle": {
+    "final_matches": true,
+    "first_verified_ns": 19362507210659,
+    "http_observer_state_reads": 407,
+    "http_runner_state_reads": 3,
+    "mutation_ns": 19362499731354,
+    "submit_count": 1
+  },
+  "pair_id": "repeat-python-p0-o0-b2",
+  "phase": "repeat",
+  "position": 0,
+  "private_session": true,
+  "proof_facts": {
+    "click_uses_fresh_ref": true,
+    "field_matches": true,
+    "fresh_ref_changed": true,
+    "session_matches": true
+  },
+  "protected_parameter_transport": "stdin-memory-only",
+  "provider_entries": 1,
+  "provider_journal": [
+    {
+      "event": "provider_enter",
+      "index": 1,
+      "ns": 19359319282537
+    },
+    {
+      "event": "provider_exit",
+      "index": 1,
+      "ns": 19359319536199
+    }
+  ],
+  "provider_kind": "deterministic-original-mock-with-entry-counter",
+  "provider_ms": 0,
+  "qualifies": true,
+  "rc": 0,
+  "routes": [
+    "provider",
+    "guarded-completion"
+  ],
+  "runner_outcome": "verified",
+  "schema_version": 2,
+  "scientific_cell": "python-guarded-p0-o0",
+  "secret_scan_passed": true,
+  "source_runner_sha256": "b088056874dbd126de2cb7d5bb057a7f44d2ae1a18bec5c4cd4d2348ac9896e6",
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "stderr_discarded_bytes": 0,
+  "stdout_discarded_bytes": 0,
+  "survivors_after_cleanup": 0,
+  "timed_out": false,
+  "times": {
+    "cleanup_end_ns": 19363198371491,
+    "cleanup_start_ns": 19363114080587,
+    "critical_path_union_ms": 4497.328924,
+    "exit_ns": 19363111262193,
+    "external_cleanup_ms": 84.290904,
+    "pre_verified_union_ms": 3893.27739,
+    "residual_runner_ms": 520.374889,
+    "runner_lifetime_ms": 5017.703813,
+    "runner_post_verified_ms": 604.051534,
+    "spawn_ns": 19358093558380,
+    "startup_to_first_semantic_ms": 1192.05287,
+    "verified_outcome_ms": 4413.652279
+  },
+  "trial_id": "repeat-python-p0-o0-b2-guarded"
+}

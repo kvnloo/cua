@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Private X11 test session; never inherits Kevin's Wayland desktop.
+set -euo pipefail
+ART=/home/kvn/.local/opt/cua-e2e-x11/root
+NODE22=/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin
+RUN="$(mktemp -d "${TMPDIR:?}/cua-4316-x11.XXXXXX")"
+chmod 700 "$RUN"
+mkdir -p "$RUN/xdg-runtime" "$RUN/home" "$RUN/tmp"
+chmod 700 "$RUN/xdg-runtime"
+env -i \
+  HOME="$RUN/home" USER="$USER" LOGNAME="$USER" SHELL=/bin/bash LANG=C.UTF-8 TERM=xterm \
+  PATH="$ART/usr/bin:$NODE22:/home/kvn/.local/bin:/home/kvn/.cargo/bin:/usr/local/bin:/usr/bin:/bin" \
+  TMPDIR="$RUN/tmp" XDG_RUNTIME_DIR="$RUN/xdg-runtime" XDG_STATE_HOME="$RUN/home/.local/state" \
+  XDG_CONFIG_HOME="$RUN/home/.config" XDG_CACHE_HOME="$RUN/home/.cache" XDG_DATA_HOME="$RUN/home/.local/share" \
+  XDG_DATA_DIRS="$ART/usr/share:/usr/local/share:/usr/share" XDG_CONFIG_DIRS="$ART/etc/xdg:/etc/xdg" \
+  XDG_SESSION_TYPE=x11 LD_LIBRARY_PATH="$ART/usr/lib" UV_CACHE_DIR=/home/kvn/.cache/uv \
+  CUA_DRIVER_BIN=/home/kvn/.hermes/profiles/clean/cache/scratch/cua-4316-current-driver.sh \
+  CUA_DRIVER_PERMISSION_MODE=unrestricted CUA_DRIVER_DANGEROUSLY_BYPASS_APPROVALS=1 \
+  "$ART/usr/bin/xvfb-run" -a --server-args='-screen 0 1920x1080x24 -nolisten tcp' \
+  dbus-run-session -- bash -c '
+    set -uo pipefail
+    run="$1"; shift
+    openbox >"$run/openbox.log" 2>&1 & ob=$!
+    picom --backend xrender --config /dev/null >"$run/picom.log" 2>&1 & pc=$!
+    trap '\''kill "$pc" "$ob" 2>/dev/null; wait "$pc" "$ob" 2>/dev/null || true'\'' EXIT
+    sleep 2
+    printf "[session] DISPLAY=%s private_runtime=%s WAYLAND_DISPLAY=%s\n" "$DISPLAY" "$XDG_RUNTIME_DIR" "${WAYLAND_DISPLAY:-unset}" >&2
+    "$@"
+  ' -- "$RUN" "$@"

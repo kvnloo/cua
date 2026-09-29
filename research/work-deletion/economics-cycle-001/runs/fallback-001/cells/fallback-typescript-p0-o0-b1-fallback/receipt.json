@@ -1,0 +1,551 @@
+{
+  "arm": "fallback",
+  "artifact_hashes": {
+    "driver.sh": "57c1ce9cf8d21cc43bc883e262deae38c253e21e12f7448cc6e71b2db011c7fc",
+    "http-journal.json": "1d0c66891376a457b7140d7c99992f752b9e45532e18a5c85f918f69f8d72677",
+    "mcp.jsonl": "f2e3e6c01f266135c64c1ec0abab5bf6893453483009eda8a5fdeaa75b9a7cdc",
+    "provider.jsonl": "5f5c79341b0d975f4acebaaa334d539e727c576a5a029c5dd138160dcfa39796",
+    "runner-events.json": "74829112bafac66bf5a7f6333698725b32c00adea48c9ba98927d652b778474f"
+  },
+  "block": 1,
+  "bootstrap": [
+    {
+      "guarded_flag": true,
+      "source_file_sha256": "ea625bbb7137590ed554b4c4d8c3625810def4adae38f168b120e5c9da89619c"
+    }
+  ],
+  "checker_corruption_test": {
+    "all_rejected": true,
+    "cases": {
+      "contamination": true,
+      "missing_actual_http": true,
+      "missing_http_journal": true,
+      "missing_provider_entry": true,
+      "wrong_actual_http": true,
+      "wrong_bootstrap_hash": true,
+      "wrong_calls": true,
+      "wrong_command_flag": true,
+      "wrong_driver": true,
+      "wrong_event_route": true,
+      "wrong_flag": true,
+      "wrong_oracle": true,
+      "wrong_refs": true,
+      "wrong_route": true,
+      "wrong_source": true,
+      "wrong_trace_ref": true
+    }
+  },
+  "checker_errors": [],
+  "command": [
+    "/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin/node",
+    "--import",
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/node_modules/tsx/dist/esm/index.mjs",
+    "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools/typescript_entry.mjs",
+    "--provider",
+    "mock",
+    "--fixture-url",
+    "http://127.0.0.1:37251/",
+    "--max-steps",
+    "4",
+    "--visual-observation",
+    "auto",
+    "--guarded-completion"
+  ],
+  "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+  "events": [
+    {
+      "action_ms": 1606.01,
+      "arrival_ns": 19318681194327,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.39,
+      "decision_ms": 42.33,
+      "decision_route": "provider",
+      "dry_run": false,
+      "event": "step",
+      "model_score_present": true,
+      "provider_decision_ms": 0.49,
+      "semantic_observe_ms": 40.99,
+      "step": 1,
+      "tool": "browser_type",
+      "total_step_ms": 1648.44,
+      "visual_observe_ms": 0,
+      "visual_status": "skipped"
+    },
+    {
+      "action_ms": 1461.11,
+      "arrival_ns": 19320152252574,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.11,
+      "decision_ms": 7.78,
+      "decision_route": "provider",
+      "dry_run": false,
+      "event": "step",
+      "guarded_completion": {
+        "reason": "submit_not_unique",
+        "status": "declined"
+      },
+      "model_score_present": true,
+      "provider_decision_ms": 0.11,
+      "semantic_observe_ms": 7.39,
+      "step": 2,
+      "tool": "browser_click",
+      "total_step_ms": 1468.92,
+      "visual_observe_ms": 0,
+      "visual_status": "skipped"
+    },
+    {
+      "arrival_ns": 19320256795008,
+      "event": "outcome",
+      "outcome": "verified"
+    }
+  ],
+  "guarded_flag": true,
+  "harness_hashes": {
+    "audit.py": "0b9d972a7ea2ba7b6fbd472b144008bc89d443ecd435f48094e28725bbc547d6",
+    "harness.py": "5adce5981db574c0409b0ae97b7edd6dab1902dd5fbe7e1068a5d7ef7f26757d",
+    "launch.py": "2719bfcef5a6e0400c671c461743daa577c6ecde97737c2ab263c8d6729f9fd9",
+    "mcp_scrub_proxy.py": "174b45a9cf76508206c579b5d362de4a06d0a6fdf242d505edfca0f4a151fc80",
+    "provider-loader.mjs": "a4cb94256703032cc9ba3060dc046cc82ee14c05bd4c664f13b208089b95057f",
+    "python_entry.py": "b0177447919067bd285c04d6155052f4772f66170ca18bdde367ba897802167a",
+    "safe.py": "5493b8ded8116c925cc93e236e8a8504a28672ba50c4e9e7717fabd8dfcedb19",
+    "test_contract.py": "7d885392960da96f91424252ada907a36d14a85cdd170202347fbbbf87c7f82b",
+    "typescript_entry.mjs": "a7284b91fe85273fe4baabac26efb1535317f6f37323406bea8c8ebb0b537ae0"
+  },
+  "http_evidence": [
+    {
+      "actor": "runner",
+      "end_ns": 19316244760580,
+      "method": "POST",
+      "path": "/reset",
+      "start_ns": 19316244750946,
+      "status": 204
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19317022032296,
+      "method": "GET",
+      "path": "/",
+      "start_ns": 19317022012969,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19317028589093,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19317028553164,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19318682188878,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19318682171858,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19320153306325,
+      "matches": false,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19320153284561,
+      "status": 200
+    },
+    {
+      "actor": "browser",
+      "end_ns": 19320154661482,
+      "method": "POST",
+      "path": "/submit",
+      "start_ns": 19320154610909,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19320166142305,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19320166113073,
+      "status": 200
+    },
+    {
+      "actor": "runner",
+      "end_ns": 19320255777156,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19320255756823,
+      "status": 200
+    },
+    {
+      "actor": "observer",
+      "end_ns": 19320732982160,
+      "matches": true,
+      "method": "GET",
+      "path": "/state",
+      "start_ns": 19320732967708,
+      "status": 200
+    }
+  ],
+  "language": "typescript",
+  "leftovers_terminated": 0,
+  "mcp": [
+    {
+      "end_ns": 19316444814069,
+      "event": "mcp_call",
+      "id": 0,
+      "name": "initialize",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19316293300024
+    },
+    {
+      "end_ns": 19316519091511,
+      "event": "mcp_call",
+      "id": 1,
+      "name": "tools/list",
+      "request": {
+        "semantic": false
+      },
+      "result": {
+        "error": false,
+        "tool_count": 62
+      },
+      "start_ns": 19316450347020
+    },
+    {
+      "end_ns": 19316910407017,
+      "event": "mcp_call",
+      "id": 2,
+      "name": "browser_prepare",
+      "request": {
+        "isolated_new": true,
+        "semantic": false,
+        "session": "jev-typescript-db7ebd9e"
+      },
+      "result": {
+        "error": false,
+        "prepared_pid_present": true
+      },
+      "start_ns": 19316633190023
+    },
+    {
+      "end_ns": 19316927788093,
+      "event": "mcp_call",
+      "id": 3,
+      "name": "list_windows",
+      "request": {
+        "semantic": false,
+        "session": "jev-typescript-db7ebd9e"
+      },
+      "result": {
+        "error": false,
+        "window_count": 1
+      },
+      "start_ns": 19316913925830
+    },
+    {
+      "end_ns": 19316987079157,
+      "event": "mcp_call",
+      "id": 4,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": false,
+        "session": "jev-typescript-db7ebd9e"
+      },
+      "result": {
+        "error": false,
+        "field_count": 0,
+        "field_empty": false,
+        "field_matches": false,
+        "ref_count": 0,
+        "submit_refs": [],
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "start_ns": 19316930437820
+    },
+    {
+      "end_ns": 19317024536179,
+      "event": "mcp_call",
+      "id": 5,
+      "name": "browser_navigate",
+      "request": {
+        "semantic": false,
+        "session": "jev-typescript-db7ebd9e",
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19316988611230
+    },
+    {
+      "end_ns": 19317072449038,
+      "event": "mcp_call",
+      "id": 6,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-typescript-db7ebd9e",
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": true,
+        "field_matches": false,
+        "ref_count": 3,
+        "submit_refs": [
+          "p1:1"
+        ],
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "start_ns": 19317032888914
+    },
+    {
+      "end_ns": 19318679677220,
+      "event": "mcp_call",
+      "id": 7,
+      "name": "browser_type",
+      "request": {
+        "ref": "p1:0",
+        "semantic": false,
+        "session": "jev-typescript-db7ebd9e",
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52",
+        "text_present": true
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19317075048166
+    },
+    {
+      "end_ns": 19318689853356,
+      "event": "mcp_call",
+      "id": 8,
+      "name": "get_browser_state",
+      "request": {
+        "semantic": true,
+        "session": "jev-typescript-db7ebd9e",
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "result": {
+        "error": false,
+        "field_count": 1,
+        "field_empty": false,
+        "field_matches": true,
+        "ref_count": 5,
+        "submit_refs": [
+          "p2:2",
+          "p2:3"
+        ],
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "start_ns": 19318683278244
+    },
+    {
+      "end_ns": 19320150673145,
+      "event": "mcp_call",
+      "id": 9,
+      "name": "browser_click",
+      "request": {
+        "ref": "p2:2",
+        "semantic": false,
+        "session": "jev-typescript-db7ebd9e",
+        "tab_id": "tab-ad8efbd0-2516-4354-87a8-cb537bd448d3",
+        "target_id": "bt-b686c42b-127d-4660-bf86-54f9b1c75e52"
+      },
+      "result": {
+        "error": false
+      },
+      "start_ns": 19318690975920
+    }
+  ],
+  "named_spans": [
+    {
+      "end_ns": 19316444814069,
+      "name": "initialize",
+      "start_ns": 19316293300024
+    },
+    {
+      "end_ns": 19316519091511,
+      "name": "tools/list",
+      "start_ns": 19316450347020
+    },
+    {
+      "end_ns": 19316910407017,
+      "name": "browser_prepare",
+      "start_ns": 19316633190023
+    },
+    {
+      "end_ns": 19316927788093,
+      "name": "list_windows",
+      "start_ns": 19316913925830
+    },
+    {
+      "end_ns": 19316987079157,
+      "name": "get_browser_state",
+      "start_ns": 19316930437820
+    },
+    {
+      "end_ns": 19317024536179,
+      "name": "browser_navigate",
+      "start_ns": 19316988611230
+    },
+    {
+      "end_ns": 19317072449038,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19317032888914
+    },
+    {
+      "end_ns": 19318679677220,
+      "name": "browser_type",
+      "start_ns": 19317075048166
+    },
+    {
+      "end_ns": 19318689853356,
+      "name": "get_browser_state:semantic",
+      "start_ns": 19318683278244
+    },
+    {
+      "end_ns": 19320150673145,
+      "name": "browser_click",
+      "start_ns": 19318690975920
+    },
+    {
+      "end_ns": 19317074499715,
+      "name": "provider_entry",
+      "start_ns": 19317074158731
+    },
+    {
+      "end_ns": 19318690841676,
+      "name": "provider_entry",
+      "start_ns": 19318690763768
+    },
+    {
+      "end_ns": 19316244760580,
+      "name": "runner_http:/reset",
+      "start_ns": 19316244750946
+    },
+    {
+      "end_ns": 19317028589093,
+      "name": "runner_http:/state",
+      "start_ns": 19317028553164
+    },
+    {
+      "end_ns": 19318682188878,
+      "name": "runner_http:/state",
+      "start_ns": 19318682171858
+    },
+    {
+      "end_ns": 19320153306325,
+      "name": "runner_http:/state",
+      "start_ns": 19320153284561
+    },
+    {
+      "end_ns": 19320255777156,
+      "name": "runner_http:/state",
+      "start_ns": 19320255756823
+    },
+    {
+      "end_ns": 19320732487562,
+      "name": "runner_post_outcome_shutdown",
+      "start_ns": 19320256795008
+    }
+  ],
+  "observe_ms": 0,
+  "oracle": {
+    "final_matches": true,
+    "first_verified_ns": 19320166385818,
+    "http_observer_state_reads": 387,
+    "http_runner_state_reads": 4,
+    "mutation_ns": 19320154651165,
+    "submit_count": 1
+  },
+  "pair_id": "fallback-typescript-p0-o0-b1",
+  "phase": "fallback",
+  "position": 0,
+  "private_session": true,
+  "proof_facts": {
+    "click_uses_fresh_ref": true,
+    "field_matches": true,
+    "fresh_ref_changed": true,
+    "session_matches": true
+  },
+  "protected_parameter_transport": "stdin-memory-only",
+  "provider_entries": 2,
+  "provider_journal": [
+    {
+      "event": "instrumentation",
+      "instrumented_transpiled_sha256": "dc1d05ba1a5bd1661b18036d3d29a2dc368f7cbc01e6e49e8ba8d8b301f8eff1",
+      "original_transpiled_sha256": "b86b71c45c35c7d75ee347b93bb883d6204050220935042b2551e182eb8ad05e"
+    },
+    {
+      "event": "provider_enter",
+      "index": 1,
+      "ns": 19317074158731
+    },
+    {
+      "event": "provider_exit",
+      "index": 1,
+      "ns": 19317074499715
+    },
+    {
+      "event": "provider_enter",
+      "index": 2,
+      "ns": 19318690763768
+    },
+    {
+      "event": "provider_exit",
+      "index": 2,
+      "ns": 19318690841676
+    }
+  ],
+  "provider_kind": "deterministic-original-mock-with-entry-counter",
+  "provider_ms": 0,
+  "qualifies": true,
+  "rc": 0,
+  "routes": [
+    "provider",
+    "provider"
+  ],
+  "runner_outcome": "verified",
+  "schema_version": 2,
+  "scientific_cell": "typescript-fallback-p0-o0",
+  "secret_scan_passed": true,
+  "source_runner_sha256": "ea625bbb7137590ed554b4c4d8c3625810def4adae38f168b120e5c9da89619c",
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "stderr_discarded_bytes": 0,
+  "stdout_discarded_bytes": 0,
+  "survivors_after_cleanup": 0,
+  "timed_out": false,
+  "times": {
+    "cleanup_end_ns": 19320780983734,
+    "cleanup_start_ns": 19320733181631,
+    "critical_path_union_ms": 4190.58172,
+    "exit_ns": 19320732487562,
+    "external_cleanup_ms": 47.802103,
+    "pre_verified_union_ms": 3714.868833,
+    "residual_runner_ms": 576.50996,
+    "runner_lifetime_ms": 4767.09168,
+    "runner_post_verified_ms": 566.101744,
+    "spawn_ns": 19315965395882,
+    "startup_to_first_semantic_ms": 1067.493032,
+    "verified_outcome_ms": 4200.989936
+  },
+  "trial_id": "fallback-typescript-p0-o0-b1-fallback"
+}
