@@ -1,0 +1,163 @@
+{
+  "objective": "Delete the largest independently provable computer-use work without creating authority.",
+  "constraints": [
+    "Recipe-local opt-in only",
+    "No upstream writes",
+    "No product architecture",
+    "Do not touch completed evidence or #4316 branch",
+    "Private GUI isolation",
+    "Checker negative controls before qualification"
+  ],
+  "metrics": [
+    "actual provider calls",
+    "steps",
+    "observations/producers",
+    "waits",
+    "independently verified outcome time",
+    "startup",
+    "cleanup",
+    "named-span coverage",
+    "residual",
+    "authority violations"
+  ],
+  "baseline": {
+    "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "upstream_sha": "fe9b0c6d3c0307537bccbfd69f4f801ec219adc0"
+  },
+  "concepts": {},
+  "mechanisms": {},
+  "contradictions": [],
+  "unresolved": [
+    "GC-economics",
+    "GC-break-even",
+    "GC-admission",
+    "evidence-chain",
+    "next-deletion"
+  ],
+  "hypotheses": [
+    {
+      "id": "GC-route",
+      "claim": "Fixture-specific guarded completion deletes the second provider decision without stale action authority.",
+      "mechanism": "recipe-local work deletion",
+      "predictions": [],
+      "falsifiers": [
+        "any optimization-caused stale/wrong mutation",
+        "intended route not executed",
+        "corrupt evidence accepted"
+      ],
+      "eig": 5,
+      "impact": 5,
+      "decision_change": 5,
+      "transferability": 3,
+      "cost": 2,
+      "status": "open",
+      "rival_of": null
+    },
+    {
+      "id": "GC-economics",
+      "claim": "Deleting the second provider decision reduces independently verified outcome time.",
+      "mechanism": "recipe-local work deletion",
+      "predictions": [],
+      "falsifiers": [
+        "any optimization-caused stale/wrong mutation",
+        "intended route not executed",
+        "corrupt evidence accepted"
+      ],
+      "eig": 5,
+      "impact": 5,
+      "decision_change": 5,
+      "transferability": 3,
+      "cost": 2,
+      "status": "open",
+      "rival_of": null
+    },
+    {
+      "id": "GC-break-even",
+      "claim": "Fresh-observation latency can overturn guarded completion benefit versus the ordinary fresh-observing baseline.",
+      "mechanism": "recipe-local work deletion",
+      "predictions": [],
+      "falsifiers": [
+        "any optimization-caused stale/wrong mutation",
+        "intended route not executed",
+        "corrupt evidence accepted"
+      ],
+      "eig": 5,
+      "impact": 5,
+      "decision_change": 5,
+      "transferability": 3,
+      "cost": 2,
+      "status": "open",
+      "rival_of": null
+    },
+    {
+      "id": "GC-admission",
+      "claim": "The exact final predicate safely covers reachable recipe states; extensions require reproof.",
+      "mechanism": "recipe-local work deletion",
+      "predictions": [],
+      "falsifiers": [
+        "any optimization-caused stale/wrong mutation",
+        "intended route not executed",
+        "corrupt evidence accepted"
+      ],
+      "eig": 5,
+      "impact": 5,
+      "decision_change": 5,
+      "transferability": 3,
+      "cost": 2,
+      "status": "open",
+      "rival_of": null
+    },
+    {
+      "id": "evidence-chain",
+      "claim": "The auditor rejects corrupt path/proof/counter/oracle evidence.",
+      "mechanism": "recipe-local work deletion",
+      "predictions": [],
+      "falsifiers": [
+        "any optimization-caused stale/wrong mutation",
+        "intended route not executed",
+        "corrupt evidence accepted"
+      ],
+      "eig": 5,
+      "impact": 5,
+      "decision_change": 5,
+      "transferability": 3,
+      "cost": 2,
+      "status": "open",
+      "rival_of": null
+    },
+    {
+      "id": "next-deletion",
+      "claim": "A large remaining producer/wait/verification cost can disappear under a proven narrower condition.",
+      "mechanism": "recipe-local work deletion",
+      "predictions": [],
+      "falsifiers": [
+        "any optimization-caused stale/wrong mutation",
+        "intended route not executed",
+        "corrupt evidence accepted"
+      ],
+      "eig": 5,
+      "impact": 5,
+      "decision_change": 5,
+      "transferability": 3,
+      "cost": 2,
+      "status": "open",
+      "rival_of": null
+    }
+  ],
+  "evidence": [],
+  "experiments": [],
+  "strategy_log": [
+    {
+      "wave": 1,
+      "mutation": "ADD",
+      "decision": "Parallel cheap scouts/replay/checker attacks; serialize current-head whole-task timing."
+    }
+  ],
+  "dead_ends": [],
+  "no_update_streak": 0,
+  "wave": 1,
+  "wave_budget": null,
+  "deep": true,
+  "loop": "SLOW",
+  "budget_policy": "User continuous request supersedes default wave cap; stop only for listed resource/architecture/value blockers."
+}

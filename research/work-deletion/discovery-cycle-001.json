@@ -1,0 +1,200 @@
+{
+  "upstream_main_sha": "fe9b0c6d3c0307537bccbfd69f4f801ec219adc0",
+  "downstream_source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "rfc": {
+    "body_excerpt": "> **Current-state note \u2014 evidence-drain / assimilation phase**\n>\n> The original RFC below is intentionally preserved as historical design context, but several proposed mechanisms have since been assimilated, narrowed, or killed by repository evidence.\n>\n> **Already assimilated / resolved**\n> - #4164: screenshot-only final evidence read now has native macOS producer proof and is ready for review.\n> - #3946: truthful internal post-action polling provenance is owned there.\n> - #4009: public `post_dispatch_observation = completed | skipped | unavailable` is now the canonical outcome-vocabulary owner.\n> - #3873: `SnapshotStore` is the native element-freshness authority.\n> - #3961: provider plumbing stays provider-only; no Driver policy.\n> - #2794: canonical mechanical batching owner; #3494 should consolidate into it.\n> - #4196: canonical visual-routing owner; it salvaged #4165's semantic-first lazy-parse rule and added the missing visual-only fixture/path attribution.\n>\n> **Deleted from the",
+    "latest_comments": [
+      {
+        "author": "kvnloo",
+        "body": "@f-trycua @injaneity \u2014 could you take another look at #3963 and give us some direction on the remaining roadmap?\n\nWe\u2019ve been keeping the RFC updated as the work progresses: a number of the original ideas have now landed through existing Cua owners, some were explicitly killed after testing/source review, and the remaining work has been narrowed around the mechanisms that still appear useful.\n\nThere is still quite a bit left in the overall \u201cscript-speed computer use\u201d program though \u2014 especially around deleting model decisions, guarded continuation, cheaper/selective observation, passive verification, settle/readiness latency, freshness/session/cancellation guarantees, and whole-task qualification.\n\nThe current critical-path experiment is #4316 + #4317, but I don\u2019t want to optimize only around those two PRs and accidentally steer the broader RFC in a direction that doesn\u2019t match how you want Cua to evolve.\n\nCould you take a look at the RFC\u2019s current-state/remaining-work sections and give us guidance on:\n\n1. Which remaining areas feel most aligned with Cua\u2019s roadmap?\n2. Which mechanisms should stay recipe/caller-side even if they prove useful?\n3. Which ones could eventually justify reusable Driver/Cua primitives if the evidence is strong?\n4. Is there anything in the remaining roadmap you\u2019d prefer we stop pursuing or approach differently?\n\nHappy to use that direction to prioritize the next implementation waves rather than continuing to expand the program independently.\n\n### One extra context point before we change the RFC body\n\nI also re-ran the roadmap against current Cua and the newer computer-use work. My current takeaway is **not** to expand #3963 with another Driver architecture layer.\n\nA lot of the seemingly \u201cnew\u201d execution-side ideas are already represented by work that has landed here \u2014 bounded state walks, truthful action outcomes/escalation, released perception + lazy visual routing, platform input/coordinate fixes, phase timing \u2014 or would recreate services we already pruned from this RFC (universal shadow state, Driver decision/router service, second verifier, generic lifecycle service, competing batch API).\n\nThe genuinely different ideas look more like a **post-#3963 caller-side program**:\n\n- verified practice/trajectory compilation: persist logical intent/dependencies from a successful run, but always rebind fresh Driver authority before replay;\n- event-driven wakeups + the cheapest fresh authoritative projection, with events treated as hints rather than proof;\n- value-of-information routing for AX/screenshot/visual/model/verification work;\n- narrow prepare \u2192 revalidate \u2192 commit runahead for work that can safely overlap action latency;\n- caller-side selection among GUI/browser/CLI/API execution surfaces;\n- small/local models for residual uncertainty rather than another universal policy service.\n\nI\u2019d prefer **not** to add these to the issue body until we get your direction. The main roadmap question for me is therefore also: once the current #3963 closure gates are done, would you rather we (a) close this RFC around the work-deletion/safety/measurement program and put any \u201cpracticed/compiled execution\u201d work in a separate follow-on RFC, or (b) keep those ideas as downstream/caller experiments until one is proven general enough to justify an RFC at all?",
+        "createdAt": "2026-09-29T05:02:50Z",
+        "url": "https://github.com/trycua/cua/issues/3963#issuecomment-5883989307"
+      },
+      {
+        "author": "kvnloo",
+        "body": "Promotion drain update:\n\n- #4335 is now upstream from downstream #81: actionable-domain precedence for passive observations, with Python/TypeScript parity and no passive action authority.\n- Downstream #79 and #80 are green evidence for #4316 (session-bound completion authority + two-action continuation), but remain downstream until #4316 lands so we do not send duplicated stacked diffs upstream.\n- GEV work was drained separately; no change to this RFC\u2019s critical path.\n\nCurrent Cua path stays: #4316 + its authority/continuation evidence \u2192 whole-task A/B.",
+        "createdAt": "2026-09-29T05:25:35Z",
+        "url": "https://github.com/trycua/cua/issues/3963#issuecomment-5884224993"
+      },
+      {
+        "author": "f-trycua",
+        "body": "Maintainer decision: **direction accepted. It will be delivered through separate owner PRs, not as one RFC implementation.**\n\nThanks @kvnloo for the careful pruning and handoffs here. The decision is:\n\n1. **Promotion rule adopted.** A speed change to jev-use or the Driver loop must prove how its target path is forced and show which path actually ran. It must also name the independent oracle for the outcome and keep failure and fallback state visible. A green test that never exercises the intended branch doesn't count.\n2. **Recipe-local and opt-in by default.** Speed mechanisms live in the jev-use example (or the caller) behind explicit flags. Nothing moves into Cua Driver unless a separate RFC promotes it. The deleted services stay deleted: shared shadow state, a second verifier, a Driver decision or router service, and fixed-length guarded runs.\n3. **One PR per mechanism,** evaluated on its own evidence. #4316 (guarded completion) and #4317 (session-isolation proof) are under review against this rule now. #4052 already merged.\n\nDownstream experiments in kvnloo/cua are welcome as evidence, but upstream tracks only the owner PRs and issues. Closing this RFC issue as decided; new mechanisms should link here.\n",
+        "createdAt": "2026-09-29T18:38:05Z",
+        "url": "https://github.com/trycua/cua/issues/3963#issuecomment-5896357755"
+      }
+    ],
+    "number": 3963,
+    "state": "CLOSED",
+    "title": "RFC: script-speed computer use for Cua \u2014 fewer decisions, bounded execution, and revision-aware observation",
+    "updatedAt": "2026-09-29T18:38:06Z",
+    "url": "https://github.com/trycua/cua/issues/3963"
+  },
+  "pr": {
+    "baseRefOid": "fe9b0c6d3c0307537bccbfd69f4f801ec219adc0",
+    "headRefOid": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "latest_comments": [
+      {
+        "body": "Fresh exact-head measurement for `d391a663a`:\n\n- live A/B: **36/36 independently verified outcomes**, 0 hard-invariant violations;\n- baseline used 2 provider decisions; guarded used **1 provider + 1 guarded-completion** in both Python and TypeScript;\n- guarded step 2 had `provider_decision_ms = 0` in every cell;\n- paired verified-outcome delta: median **-182.72 ms** across 18 pairs, bootstrap 95% CI **[-210.72, -83.97]**;\n- step-2 provider-decision delta: median **-176.25 ms**, 18/18 guarded cells faster.\n\nThis is still the narrow claim from the PR: remove one provider decision on the two-step fixture while preserving fresh observation/ref authority. No broader speedup claim.",
+        "createdAt": "2026-09-29T05:53:44Z",
+        "url": "https://github.com/trycua/cua/pull/4316#issuecomment-5884528248"
+      },
+      {
+        "body": "One more CI note. `Linux mock E2E` passed on `d391a663`, so the real Driver/Chromium row already ran the `provider \u2192 guarded-completion` route and the fixture journal verified it. The one failure, `Windows native WinUI3 mock E2E` (`invalid choice: winui3`), comes from the branch predating #4329. It is not caused by this change. Rebasing onto current `main` when you push the logging changes should clear it.",
+        "createdAt": "2026-09-29T18:52:28Z",
+        "url": "https://github.com/trycua/cua/pull/4316#issuecomment-5896581829"
+      }
+    ],
+    "latest_reviews": [
+      {
+        "body": "Thanks, Kevin. This port is careful. The guard is recipe-local and off by default, Python and TypeScript match, the plan never carries an old ref forward as authority, and `verify_setup.py --guarded-completion` fails unless the exact `provider \u2192 guarded-completion` route ran. The fixture journal stays the independent oracle. I ran it locally on `d391a663`: the Python suite (218 tests), `npm test` (105), and `tsc --noEmit` all pass. The branch also merges cleanly with current `main`, including #4330.\n\nThe maintainer direction on #3963 is that a jev-use speed change gets promoted only when it (1) proves how the target path is forced, (2) shows which path actually executed, (3) names the independent oracle, and (4) keeps fallback and failure state visible. This PR meets (1) through (3). Two things are still missing for (2) and (4):\n\n1. **Log the proof, not only the route.** A step with `decision_route: \"guarded-completion\"` says the provider was skipped. It doesn't record why the skip was allowed. Please add a small record to the step event, for example `guarded_completion: {\"status\": \"accepted\", \"prior_ref\": \"...\", \"fresh_ref\": \"...\", \"verification_field\": \"contains_required_token\", \"submit_matches\": 1, \"session\": \"<label>\"}`. That way the JSONL alone shows which facts were re-proven. Refs and the session label are fine to log. The field value is not.\n\n2. **Make declines visible.** Right now `resolve_guarded_completion` / `resolveGuardedCompletion` returns `None`/`undefined` with no reason. A declined guard therefore logs `decision_route: \"provider\"`, which looks the same as a step where the guard never ran. Please return a reason (e.g. `session_mismatch`, `field_not_proven`, `submit_not_unique`, `ref_reused`, `candidate_mismatch`) and log `guarded_completion: {\"status\": \"declined\", \"reason\": ...}` on the provider step that follows. The existing negative unit tests could then assert the specific reason instead of only `None`, which also shows each decline happens for the intended reason.\n\nSmaller, non-blocking:\n\n- On guarded steps, `confidence: 1.0` and the one-hot `probabilities` land in the same fields that provider decisions use. Anything that later aggregates confidence or calibration from these logs would count them as model output. Consider `null` there, since `decision_route` and the new record already describe the step.\n- The live CI row covers only the accepted path. The unit tests cover declines, which I think is enough for this PR. If one real-Driver decline row is cheap (for example, a tampered completion that must fall back to the provider and still verify), it would round out the evidence.\n\nOn the title: `libs/cua-driver/examples/**` is excluded from the `cua-driver-rs` Release Please package, and `CI: Release metadata` treats it as non-product. So `perf(cua-driver)` will not cut a Driver release, and it matches the convention of the other jev-use example PRs (#4052, #4330). It can stay as is.\n\nOnce (1) and (2) are in, I'm happy to rerun CI and merge.\n",
+        "commit": "d391a663a025e52821aaa3b17b3ed2e3926a29fe",
+        "state": "CHANGES_REQUESTED"
+      }
+    ],
+    "state": "OPEN",
+    "url": "https://github.com/trycua/cua/pull/4316"
+  },
+  "fork_issues": [
+    {
+      "number": 78,
+      "title": "[UPSTREAM SALVAGE] Browser runner provider parity + backend receipts",
+      "updatedAt": "2026-09-29T19:02:11Z",
+      "url": "https://github.com/kvnloo/cua/issues/78"
+    },
+    {
+      "number": 75,
+      "title": "[LOCAL] Native/browser jev-use timing field parity",
+      "updatedAt": "2026-09-29T07:36:37Z",
+      "url": "https://github.com/kvnloo/cua/issues/75"
+    },
+    {
+      "number": 74,
+      "title": "[META: WAIT FOR EVIDENCE] Final upstream promotion DAG + posting queue",
+      "updatedAt": "2026-09-29T03:23:22Z",
+      "url": "https://github.com/kvnloo/cua/issues/74"
+    },
+    {
+      "number": 73,
+      "title": "[META: WAIT FOR EVIDENCE] Canonical #3963 current-state rewrite",
+      "updatedAt": "2026-09-29T02:08:52Z",
+      "url": "https://github.com/kvnloo/cua/issues/73"
+    },
+    {
+      "number": 72,
+      "title": "[WAIT: macOS] #3492 exact-head Rust A/B for list_apps consolidation",
+      "updatedAt": "2026-09-26T01:43:40Z",
+      "url": "https://github.com/kvnloo/cua/issues/72"
+    },
+    {
+      "number": 38,
+      "title": "[UPSTREAM CONTRACT] #4009 migration + generated-binding parity for post_dispatch_observation",
+      "updatedAt": "2026-09-26T01:44:13Z",
+      "url": "https://github.com/kvnloo/cua/issues/38"
+    },
+    {
+      "number": 36,
+      "title": "[LOCAL] Multi-session isolation for captures, guarded runs, and revisions",
+      "updatedAt": "2026-09-29T19:02:58Z",
+      "url": "https://github.com/kvnloo/cua/issues/36"
+    },
+    {
+      "number": 31,
+      "title": "[CROSS-PLATFORM] Exact-head promotion matrix for surviving RFC mechanisms",
+      "updatedAt": "2026-09-26T01:44:17Z",
+      "url": "https://github.com/kvnloo/cua/issues/31"
+    },
+    {
+      "number": 20,
+      "title": "[LOCAL: Linux] AT-SPI invalidation-signal fidelity census",
+      "updatedAt": "2026-09-27T06:09:05Z",
+      "url": "https://github.com/kvnloo/cua/issues/20"
+    },
+    {
+      "number": 19,
+      "title": "[WAIT: Windows] UIA invalidation-signal fidelity census",
+      "updatedAt": "2026-09-26T01:44:12Z",
+      "url": "https://github.com/kvnloo/cua/issues/19"
+    },
+    {
+      "number": 16,
+      "title": "[CROSS-PLATFORM] Observation modality selector truth table",
+      "updatedAt": "2026-09-27T08:04:37Z",
+      "url": "https://github.com/kvnloo/cua/issues/16"
+    },
+    {
+      "number": 13,
+      "title": "[WAIT: macOS] Slow native AX read budget composition",
+      "updatedAt": "2026-09-26T01:44:11Z",
+      "url": "https://github.com/kvnloo/cua/issues/13"
+    },
+    {
+      "number": 10,
+      "title": "[LOCAL] Whole-task accounting benchmark across current surviving routes",
+      "updatedAt": "2026-09-29T03:22:41Z",
+      "url": "https://github.com/kvnloo/cua/issues/10"
+    },
+    {
+      "number": 9,
+      "title": "[ACTIVE] Cancellation admission lifetime + owned cleanup evidence",
+      "updatedAt": "2026-09-29T07:59:44Z",
+      "url": "https://github.com/kvnloo/cua/issues/9"
+    },
+    {
+      "number": 8,
+      "title": "[WAIT: RFC + macOS] Passive native verification acceptance",
+      "updatedAt": "2026-09-29T02:49:52Z",
+      "url": "https://github.com/kvnloo/cua/issues/8"
+    },
+    {
+      "number": 6,
+      "title": "[WAIT: Windows] Stale-target batch regression on real app state",
+      "updatedAt": "2026-09-26T01:43:33Z",
+      "url": "https://github.com/kvnloo/cua/issues/6"
+    }
+  ],
+  "fork_open_prs": [
+    {
+      "headRefName": "test/cancellation-admission-hold-20260929",
+      "number": 84,
+      "title": "prototype(cua-driver): retain admission through native exit",
+      "url": "https://github.com/kvnloo/cua/pull/84"
+    },
+    {
+      "headRefName": "feat/browser-provider-parity-20260929",
+      "number": 83,
+      "title": "feat(jev-use): browser provider parity + backend receipts",
+      "url": "https://github.com/kvnloo/cua/pull/83"
+    },
+    {
+      "headRefName": "perf/jev-use-native-timing-parity-20260929-local",
+      "number": 82,
+      "title": "test(cua-driver): align native jev-use timing fields",
+      "url": "https://github.com/kvnloo/cua/pull/82"
+    },
+    {
+      "headRefName": "test/two-action-guarded-continuation-20260928",
+      "number": 80,
+      "title": "test(cua-driver): prove two-action guarded continuation journal",
+      "url": "https://github.com/kvnloo/cua/pull/80"
+    },
+    {
+      "headRefName": "test/bound-completion-session-authority-20260928",
+      "number": 79,
+      "title": "test(cua-driver): prove bound-completion session authority",
+      "url": "https://github.com/kvnloo/cua/pull/79"
+    },
+    {
+      "headRefName": "test/rfc-fast-path-one-candidate-20260925",
+      "number": 26,
+      "title": "test(cua-driver): one executable candidate before Jev",
+      "url": "https://github.com/kvnloo/cua/pull/26"
+    },
+    {
+      "headRefName": "test/jev-task-timing-wave2-20260925",
+      "number": 1,
+      "title": "test(cua-driver): compare fixture and cleanup timing in both runners",
+      "url": "https://github.com/kvnloo/cua/pull/1"
+    }
+  ],
+  "fetched_at_utc": "2026-09-29T20:34:37Z"
+}
