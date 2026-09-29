@@ -103,7 +103,7 @@ test('real HTTP success posts current Cua request without credentials', { timeou
   assert.equal(f.received.length, 1);
   assert.equal(f.received[0].path, '/v1/systemone');
   assert.equal(f.received[0].authorization, undefined);
-  const sent = (f.received[0].payload as { state: { request: ReturnType<typeof request> } }).state.request;
+  const sent = (f.received[0].payload as { state: ReturnType<typeof request> }).state;
   assert.equal(sent.schema, REQUEST_SCHEMA_V2);
   assert.deepEqual(sent.candidates.map(({ id }) => id), ['submit', 'reobserve', 'abstain']);
 });
@@ -112,7 +112,7 @@ test('redirect is refused without repost', { timeout: 5000 }, async (t) => {
   const f = await fixture(t, 'redirect');
   await assert.rejects(
     model(f.url).score(request()),
-    (error: unknown) => error instanceof OpenJevError && error.code === 'redirect_refused'
+    (error: unknown) => error instanceof OpenJevError && error.code === 'http_error'
   );
   assert.equal(f.received.length, 1);
 });

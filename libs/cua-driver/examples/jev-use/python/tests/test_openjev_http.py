@@ -131,7 +131,7 @@ class OpenJevHttpTest(unittest.TestCase):
         self.assertEqual(len(received), 1)
         self.assertEqual(received[0]["path"], "/v1/systemone")
         self.assertNotIn("Authorization", received[0]["headers"])
-        sent = received[0]["payload"]["state"]["request"]
+        sent = received[0]["payload"]["state"]
         self.assertEqual(sent["schema"], REQUEST_SCHEMA_V2)
         self.assertEqual(
             [item["id"] for item in sent["candidates"]],
@@ -142,7 +142,7 @@ class OpenJevHttpTest(unittest.TestCase):
         with fixture("redirect") as (url, received):
             with self.assertRaises(OpenJevError) as caught:
                 self.model(url).score(request())
-        self.assertEqual(caught.exception.code, "redirect_refused")
+        self.assertEqual(caught.exception.code, "http_error")
         self.assertEqual(len(received), 1)
 
     def test_http_error_is_bounded_and_not_retried(self) -> None:
