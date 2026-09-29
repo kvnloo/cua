@@ -71,9 +71,41 @@ pub fn with_runtime_scope<T>(scope: String, action: impl FnOnce() -> T) -> T {
     action()
 }
 
-fn desktop_action_coordinator() -> &'static tokio::sync::Mutex<()> {
-    static COORDINATOR: OnceLock<tokio::sync::Mutex<()>> = OnceLock::new();
-    COORDINATOR.get_or_init(|| tokio::sync::Mutex::new(()))
+fn desktop_action_coordinator() -> &'static Arc<tokio::sync::Mutex<()>> {
+    static COORDINATOR: OnceLock<Arc<tokio::sync::Mutex<()>>> = OnceLock::new();
+    COORDINATOR.get_or_init(|| Arc::new(tokio::sync::Mutex::new(())))
+}
+
+/// PROTOTYPE (RFC #3796 slice A): shared ownership of the desktop action permit.
+///
+/// Dispatch used to hold the coordinator guard in the async frame, so dropping a cancelled caller
+/// released capacity while a `spawn_blocking` native closure was still running. The permit is now
+/// reference-counted and exposed to the invocation; native work that must outlive its caller moves a
+/// clone into its closure (see [`spawn_blocking_owned`]) so capacity is reusable only after native exit.
+#[derive(Clone)]
+pub struct AdmissionHold(#[allow(dead_code)] Arc<tokio::sync::OwnedMutexGuard<()>>);
+
+tokio::task_local! {
+    static ADMISSION_HOLD: AdmissionHold;
+}
+
+/// The admission permit of the current dispatch, if it holds one.
+pub fn current_admission_hold() -> Option<AdmissionHold> {
+    ADMISSION_HOLD.try_with(Clone::clone).ok()
+}
+
+/// `tokio::task::spawn_blocking` whose closure keeps the current call's admission permit until it returns.
+pub async fn spawn_blocking_owned<F, R>(work: F) -> Result<R, tokio::task::JoinError>
+where
+    F: FnOnce() -> R + Send + 'static,
+    R: Send + 'static,
+{
+    let hold = current_admission_hold();
+    tokio::task::spawn_blocking(move || {
+        let _hold = hold;
+        work()
+    })
+    .await
 }
 
 fn active_text_input_pids() -> &'static Mutex<HashSet<i64>> {
@@ -1575,16 +1607,18 @@ impl ToolRegistry {
             &args,
             tool.has_independent_input_lane(&args),
         ) {
-            let coordinator = desktop_action_coordinator();
+            let coordinator = desktop_action_coordinator().clone();
             // Avoid yielding the dispatch task when the process-wide input
             // lane is uncontended. On Windows, that yield creates a window in
             // which the foreground target can lose keyboard eligibility
             // between the fixture's focus proof and SendInput. Contended
             // runtimes still wait and serialize through the same mutex.
-            Some(match coordinator.try_lock() {
-                Ok(guard) => guard,
-                Err(_) => coordinator.lock().await,
-            })
+            Some(AdmissionHold(Arc::new(
+                match coordinator.clone().try_lock_owned() {
+                    Ok(guard) => guard,
+                    Err(_) => coordinator.lock_owned().await,
+                },
+            )))
         } else {
             None
         };
@@ -1625,11 +1659,20 @@ impl ToolRegistry {
         // Desktop pixels read off a capped get_desktop_state image are mapped
         // back to the uncapped capture before any platform interprets them.
         crate::desktop_capture_scale::map_desktop_args(&mut args);
-        let mut result = crate::recording::scope_dispatch_click_capture(
-            pending_turn.as_ref(),
-            tool.invoke(args.clone()),
-        )
-        .await;
+        let invocation = tool.invoke(args.clone());
+        let mut result = match _desktop_action.clone() {
+            Some(hold) => {
+                crate::recording::scope_dispatch_click_capture(
+                    pending_turn.as_ref(),
+                    ADMISSION_HOLD.scope(hold, invocation),
+                )
+                .await
+            }
+            None => {
+                crate::recording::scope_dispatch_click_capture(pending_turn.as_ref(), invocation)
+                    .await
+            }
+        };
         match resolved_name {
             "get_desktop_state" if result.is_error != Some(true) => {
                 crate::desktop_capture_scale::record_desktop_state(
