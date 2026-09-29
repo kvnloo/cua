@@ -427,6 +427,9 @@ async function run(args: Arguments): Promise<Outcome> {
     if ((process.env.JEV_USE_AGENT_CURSOR ?? '').toLowerCase() === 'off') {
       // EXPERIMENT ONLY (not for promotion)
       await driver.call('set_agent_cursor_enabled', { enabled: false });
+    } else if ((process.env.JEV_USE_AGENT_CURSOR ?? '').toLowerCase() === 'fast') {
+      // EXPERIMENT ONLY (not for promotion)
+      await driver.call('set_agent_cursor_motion', { glide_duration_ms: 1, dwell_after_click_ms: 0 });
     }
     const prepared = await driver.call('browser_prepare', {
       allow_launch: true,

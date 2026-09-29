@@ -393,6 +393,8 @@ async def run(args: argparse.Namespace) -> str:
             driver = Driver(session, label)
             if os.getenv("JEV_USE_AGENT_CURSOR", "").lower() == "off":  # EXPERIMENT ONLY (not for promotion)
                 await driver.call("set_agent_cursor_enabled", {"enabled": False})
+            elif os.getenv("JEV_USE_AGENT_CURSOR", "").lower() == "fast":  # EXPERIMENT ONLY
+                await driver.call("set_agent_cursor_motion", {"glide_duration_ms": 1, "dwell_after_click_ms": 0})
             prepared = await driver.call(
                 "browser_prepare",
                 {"allow_launch": True, "profile": {"mode": "isolated_new"}},
