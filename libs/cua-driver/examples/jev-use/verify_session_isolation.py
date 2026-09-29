@@ -12,9 +12,13 @@ import argparse
 import asyncio
 import json
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+# The runner modules (driver_env, run, tasks) live in python/, like verify_native.py expects.
+sys.path.insert(0, str(Path(__file__).resolve().parent / "python"))
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -119,16 +123,31 @@ async def _expect_foreign_refusal(
     foreign_driver: Driver,
     tool: str,
     arguments: dict[str, Any],
+    allowed: tuple[str, ...] = ("browser_binding_stale",),
 ) -> str:
+    """Return the structured refusal code for a call made with a foreign capability.
+
+    Lookup tools refuse as ``{"status": "refused", "refusal": {...}}``, which
+    ``Driver.call`` raises as ``DriverToolError``. Input tools (``browser_type``,
+    ``browser_click``) refuse as an action result ``{"effect": "refused", "error":
+    {"code": ...}}`` with ``isError`` unset, which ``Driver.call`` returns. Both are
+    structured refusals; anything else means the foreign call was accepted.
+    """
     try:
-        await foreign_driver.call(tool, arguments)
+        data = await foreign_driver.call(tool, arguments)
     except DriverToolError as error:
-        if error.code != "browser_binding_stale":
+        code = error.code
+    else:
+        detail = data.get("error") if data.get("effect") == "refused" else None
+        code = detail.get("code") if isinstance(detail, dict) else None
+        if code is None:
             raise RuntimeError(
-                f"{tool} refused for the wrong reason: {error.code!r}"
-            ) from error
-        return error.code
-    raise RuntimeError(f"{tool} unexpectedly accepted a foreign session capability")
+                f"{tool} unexpectedly accepted a foreign session capability "
+                f"(effect={data.get('effect')!r})"
+            )
+    if code not in allowed:
+        raise RuntimeError(f"{tool} refused for the wrong reason: {code!r}")
+    return code
 
 
 def _type_args(binding: BrowserBinding, ref: str, text: str) -> dict[str, Any]:
@@ -275,10 +294,13 @@ async def run(output: Path) -> dict[str, Any]:
                     if ended.get("active") is not False:
                         raise RuntimeError(f"session A did not end: {ended}")
 
+                    # An explicitly ended named session is refused at the session gate
+                    # (session_ended) before any browser binding is consulted.
                     old_a_refusal = await _expect_foreign_refusal(
                         driver_a,
                         "browser_click",
                         _click_args(a, a.submit_ref),
+                        allowed=("session_ended",),
                     )
                     if fixture_state(url_a) != {"submitted": None}:
                         raise RuntimeError("ended session A replayed its old completion")
