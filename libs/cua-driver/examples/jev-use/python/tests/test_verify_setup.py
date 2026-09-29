@@ -119,12 +119,43 @@ class VerifySetupTests(unittest.TestCase):
             acted_path([type_step, self.submit_step('browser_click', 'not_installed')]),
             {'submit_tool': 'browser_click', 'acted_path': 'page_structure',
              'submit_delivery_mode': None,
-             'visual_statuses': ['not_installed', 'not_installed'], 'escalations': []},
+             'visual_statuses': ['not_installed', 'not_installed'],
+             'decision_routes': [None, None], 'escalations': []},
         )
         self.assertEqual(
             acted_path([type_step, self.submit_step('click', 'ok')])['acted_path'], 'visual'
         )
         self.assertEqual(acted_path([type_step])['acted_path'], None)
+
+    def test_acted_path_reports_decision_routes(self):
+        events = [
+            {'event': 'step', 'step': 1, 'candidate': 'type-verification-value',
+             'tool': 'browser_type', 'decision_route': 'provider',
+             'visual': {'status': 'skipped', 'reason': 'page_structure_candidate'}},
+            {**self.submit_step('browser_click', 'not_installed'),
+             'decision_route': 'guarded-completion'},
+        ]
+        self.assertEqual(
+            acted_path(events)['decision_routes'],
+            ['provider', 'guarded-completion'],
+        )
+
+    def test_required_guarded_completion_requires_exact_route(self):
+        events = [
+            {'event': 'step', 'step': 1, 'candidate': 'type-verification-value',
+             'tool': 'browser_type', 'decision_route': 'provider',
+             'visual': {'status': 'skipped', 'reason': 'page_structure_candidate'}},
+            {**self.submit_step('browser_click', 'not_installed'),
+             'decision_route': 'guarded-completion'},
+            {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'},
+        ]
+        result = self.replay(events, require_guarded_completion=True)
+        self.assertEqual(result['decision_routes'], ['provider', 'guarded-completion'])
+
+        wrong = [dict(event) for event in events]
+        wrong[1] = {**wrong[1], 'decision_route': 'provider'}
+        with self.assertRaisesRegex(RuntimeError, 'exact provider→guarded route'):
+            self.replay(wrong, require_guarded_completion=True)
 
     def replay(self, events, *, submit=True, code='0', **options):
         """Run a child that replays a JSONL log and optionally submits the token."""
