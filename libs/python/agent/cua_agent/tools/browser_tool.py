@@ -16,6 +16,19 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _as_coordinate_pair(coordinate):
+    """Return (x, y) for a list/tuple coordinate of length >= 2, else None.
+
+    Malformed model output must not reach the subscript sites in the
+    FARA-compatible action methods: an int raises TypeError on len()/[0]
+    (uncaught by _handle_item, which only handles ToolError), and a short
+    string silently dispatches the wrong point.
+    """
+    if isinstance(coordinate, (list, tuple)) and len(coordinate) >= 2:
+        return coordinate[0], coordinate[1]
+    return None
+
+
 @register_tool("computer_use")
 class BrowserTool(BaseComputerTool):
     """
@@ -508,12 +521,20 @@ class BrowserTool(BaseComputerTool):
     # FARA-compatible action methods
     # These methods accept parameters in the format that FARA model outputs
     # and agent.py passes via **action_args
+    #
+    # coordinate must be a list/tuple pair. A model-supplied int raises
+    # TypeError on len()/subscript (uncaught by _handle_item, which only
+    # handles ToolError), and a 2-char string silently clicks the wrong
+    # point. Malformed shapes return an error dict instead.
 
     async def left_click(self, coordinate=None, x: int = None, y: int = None, **kwargs) -> dict:
         """Left click at coordinates. Supports coordinate array or x/y kwargs."""
         # Accept either coordinate array or x/y kwargs
-        if coordinate and len(coordinate) >= 2:
-            x, y = coordinate[0], coordinate[1]
+        if coordinate is not None:
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            x, y = pair
         if x is None or y is None:
             return {"success": False, "error": "coordinate parameter [x, y] or x/y kwargs required"}
         return await self._action_left_click({"coordinate": [x, y]})
@@ -521,8 +542,11 @@ class BrowserTool(BaseComputerTool):
     async def right_click(self, coordinate=None, x: int = None, y: int = None, **kwargs) -> dict:
         """Right click at coordinates. Supports coordinate array or x/y kwargs."""
         # Accept either coordinate array or x/y kwargs
-        if coordinate and len(coordinate) >= 2:
-            x, y = coordinate[0], coordinate[1]
+        if coordinate is not None:
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            x, y = pair
         if x is None or y is None:
             return {"success": False, "error": "coordinate parameter [x, y] or x/y kwargs required"}
         result = await self.interface.playwright_exec("click", {"x": x, "y": y, "button": "right"})
@@ -531,8 +555,11 @@ class BrowserTool(BaseComputerTool):
     async def middle_click(self, coordinate=None, x: int = None, y: int = None, **kwargs) -> dict:
         """Middle click at coordinates. Supports coordinate array or x/y kwargs."""
         # Accept either coordinate array or x/y kwargs
-        if coordinate and len(coordinate) >= 2:
-            x, y = coordinate[0], coordinate[1]
+        if coordinate is not None:
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            x, y = pair
         if x is None or y is None:
             return {"success": False, "error": "coordinate parameter [x, y] or x/y kwargs required"}
         result = await self.interface.playwright_exec("click", {"x": x, "y": y, "button": "middle"})
@@ -541,8 +568,11 @@ class BrowserTool(BaseComputerTool):
     async def double_click(self, coordinate=None, x: int = None, y: int = None, **kwargs) -> dict:
         """Double click at coordinates. Supports coordinate array or x/y kwargs."""
         # Accept either coordinate array or x/y kwargs
-        if coordinate and len(coordinate) >= 2:
-            x, y = coordinate[0], coordinate[1]
+        if coordinate is not None:
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            x, y = pair
         if x is None or y is None:
             return {"success": False, "error": "coordinate parameter [x, y] or x/y kwargs required"}
         result = await self.interface.playwright_exec("dblclick", {"x": x, "y": y})
@@ -553,8 +583,11 @@ class BrowserTool(BaseComputerTool):
     ) -> dict:
         """Triple click at coordinates. Supports coordinate array or x/y kwargs."""
         # Accept either coordinate array or x/y kwargs
-        if coordinate and len(coordinate) >= 2:
-            x, y = coordinate[0], coordinate[1]
+        if coordinate is not None:
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            x, y = pair
         if x is None or y is None:
             return {"success": False, "error": "coordinate parameter [x, y] or x/y kwargs required"}
         # Triple click is approximated as double click
@@ -563,8 +596,11 @@ class BrowserTool(BaseComputerTool):
     async def mouse_move(self, coordinate=None, x: int = None, y: int = None, **kwargs) -> dict:
         """Move mouse to coordinates. Supports coordinate array or x/y kwargs."""
         # Accept either coordinate array or x/y kwargs
-        if coordinate and len(coordinate) >= 2:
-            x, y = coordinate[0], coordinate[1]
+        if coordinate is not None:
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            x, y = pair
         if x is None or y is None:
             return {"success": False, "error": "coordinate parameter [x, y] or x/y kwargs required"}
         return await self._action_mouse_move({"coordinate": [x, y]})
@@ -577,19 +613,26 @@ class BrowserTool(BaseComputerTool):
         self, coordinate=None, start_coordinate=None, end_coordinate=None, **kwargs
     ) -> dict:
         """Drag from start to end coordinates. FARA-compatible."""
-        if start_coordinate and end_coordinate:
+        if start_coordinate is not None and end_coordinate is not None:
             # Use start/end coordinates if provided
-            await self.automation.move_cursor(start_coordinate[0], start_coordinate[1])
-            await self.automation.mouse_down(start_coordinate[0], start_coordinate[1])
-            await self.automation.move_cursor(end_coordinate[0], end_coordinate[1])
-            await self.automation.mouse_up(end_coordinate[0], end_coordinate[1])
+            start = _as_coordinate_pair(start_coordinate)
+            end = _as_coordinate_pair(end_coordinate)
+            if start is None or end is None:
+                return {"success": False, "error": "start_coordinate and end_coordinate must be [x, y]"}
+            await self.automation.move_cursor(start[0], start[1])
+            await self.automation.mouse_down(start[0], start[1])
+            await self.automation.move_cursor(end[0], end[1])
+            await self.automation.mouse_up(end[0], end[1])
             return {
                 "success": True,
                 "message": f"Dragged from {start_coordinate} to {end_coordinate}",
             }
-        elif coordinate:
+        elif coordinate is not None:
             # Just move to coordinate
-            await self.automation.move_cursor(coordinate[0], coordinate[1])
+            pair = _as_coordinate_pair(coordinate)
+            if pair is None:
+                return {"success": False, "error": "coordinate parameter must be [x, y]"}
+            await self.automation.move_cursor(pair[0], pair[1])
             return {"success": True, "message": f"Moved to {coordinate}"}
         return {
             "success": False,
