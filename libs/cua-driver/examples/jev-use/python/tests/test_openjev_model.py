@@ -83,6 +83,13 @@ class ConfigTest(unittest.TestCase):
                 "https://user:pass@jev.example",
                 has_api_key=False,
             )
+        for suffix in ("?tenant=a", "#fragment"):
+            with self.subTest(suffix=suffix):
+                with self.assertRaisesRegex(OpenJevError, "query or fragment"):
+                    validate_openjev_base_url(
+                        "https://jev.example" + suffix,
+                        has_api_key=False,
+                    )
 
     def test_systemone_endpoint_is_canonical(self) -> None:
         self.assertEqual(
@@ -126,7 +133,7 @@ class ModelTest(unittest.TestCase):
         self.assertEqual(seen["url"], "https://jev.example/v1/systemone")
         self.assertEqual(seen["headers"]["Authorization"], "Bearer secret")
         self.assertEqual(seen["timeout"], 1.25)
-        sent = seen["payload"]["state"]["request"]
+        sent = seen["payload"]["state"]
         self.assertEqual(sent["schema"], REQUEST_SCHEMA_V2)
         self.assertEqual(sent["snapshot_id"], "snap-1")
         self.assertEqual(sent["elements"][0]["label"], "Submit")

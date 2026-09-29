@@ -33,7 +33,6 @@ OpenJevErrorCode = Literal[
     "insecure_credentials",
     "timeout",
     "http_error",
-    "redirect_refused",
     "response_too_large",
     "invalid_response",
 ]
@@ -95,6 +94,11 @@ def validate_openjev_base_url(base_url: str, *, has_api_key: bool) -> str:
             "invalid_url",
             "OPENJEV_BASE_URL must not embed credentials",
         )
+    if parsed.query or parsed.fragment:
+        raise OpenJevError(
+            "invalid_url",
+            "OPENJEV_BASE_URL must not contain a query or fragment",
+        )
     if has_api_key and parsed.scheme != "https":
         raise OpenJevError(
             "insecure_credentials",
@@ -149,7 +153,7 @@ def _default_transport(
     except urllib.error.HTTPError as error:
         if 300 <= error.code < 400:
             raise OpenJevError(
-                "redirect_refused",
+                "http_error",
                 "OpenJev endpoint redirects are refused",
             ) from None
         raise OpenJevError(
@@ -209,7 +213,7 @@ class OpenJevDecisionModel:
         )
         payload = {
             "model": self.config.model,
-            "state": {"request": decision_request_wire(request)},
+            "state": decision_request_wire(request),
             "questions": {
                 "candidate": {
                     "type": "choice",

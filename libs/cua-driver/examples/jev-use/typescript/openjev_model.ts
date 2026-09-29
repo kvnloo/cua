@@ -4,7 +4,7 @@
  * This module scores only caller-supplied candidate IDs. It does not construct
  * Driver actions, retry mutations, or own routing policy.
  */
-import { validateRequest, type ValidatedRequest } from './choose_action.js';
+import { validateRequest } from './choose_action.js';
 
 export const DEFAULT_OPENJEV_MODEL = 'openjev';
 export const DEFAULT_OPENJEV_TIMEOUT_MS = 2500;
@@ -17,7 +17,6 @@ export type OpenJevErrorCode =
   | 'insecure_credentials'
   | 'timeout'
   | 'http_error'
-  | 'redirect_refused'
   | 'response_too_large'
   | 'invalid_response';
 
@@ -82,6 +81,12 @@ export function validateOpenJevBaseUrl(baseUrl: string, hasApiKey: boolean): str
   if (parsed.username || parsed.password) {
     throw new OpenJevError('invalid_url', 'OPENJEV_BASE_URL must not embed credentials');
   }
+  if (parsed.search || parsed.hash) {
+    throw new OpenJevError(
+      'invalid_url',
+      'OPENJEV_BASE_URL must not contain a query or fragment'
+    );
+  }
   if (hasApiKey && parsed.protocol !== 'https:') {
     throw new OpenJevError(
       'insecure_credentials',
@@ -116,10 +121,12 @@ async function defaultTransport(
     if (name === 'TimeoutError' || name === 'AbortError') {
       throw new OpenJevError('timeout', 'OpenJev request timed out');
     }
-    if (name === 'TypeError') {
-      throw new OpenJevError('redirect_refused', 'OpenJev redirect or transport was refused');
-    }
-    throw new OpenJevError('http_error', 'OpenJev endpoint is unreachable');
+    throw new OpenJevError(
+      'http_error',
+      name === 'TypeError'
+        ? 'OpenJev redirect or transport was refused'
+        : 'OpenJev endpoint is unreachable'
+    );
   }
   if (!response.ok) {
     throw new OpenJevError(
@@ -127,12 +134,26 @@ async function defaultTransport(
       'OpenJev endpoint returned HTTP ' + String(response.status)
     );
   }
-  const text = await response.text();
-  if (Buffer.byteLength(text, 'utf8') > MAX_OPENJEV_RESPONSE_BYTES) {
-    throw new OpenJevError('response_too_large', 'OpenJev response is too large');
+  if (!response.body) {
+    throw new OpenJevError('invalid_response', 'OpenJev response has no body');
   }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const chunks: string[] = [];
+  let bytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytes += value.byteLength;
+    if (bytes > MAX_OPENJEV_RESPONSE_BYTES) {
+      await reader.cancel();
+      throw new OpenJevError('response_too_large', 'OpenJev response is too large');
+    }
+    chunks.push(decoder.decode(value, { stream: true }));
+  }
+  chunks.push(decoder.decode());
   try {
-    return JSON.parse(text);
+    return JSON.parse(chunks.join(''));
   } catch {
     throw new OpenJevError('invalid_response', 'OpenJev response is not JSON');
   }
@@ -165,7 +186,7 @@ export class OpenJevDecisionModel {
     );
     const payload = {
       model: this.config.model,
-      state: { request: validated },
+      state: validated,
       questions: {
         candidate: {
           type: 'choice',
@@ -244,6 +265,3 @@ export class OpenJevDecisionModel {
   }
 }
 
-export function validatedOpenJevRequest(value: unknown): ValidatedRequest {
-  return validateRequest(value);
-}

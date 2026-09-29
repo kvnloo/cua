@@ -63,6 +63,12 @@ test('API key requires HTTPS and URL credentials are rejected', () => {
     () => validateOpenJevBaseUrl('https://user:pass@jev.example', false),
     /embed credentials/
   );
+  for (const suffix of ['?tenant=a', '#fragment']) {
+    assert.throws(
+      () => validateOpenJevBaseUrl('https://jev.example' + suffix, false),
+      /query or fragment/
+    );
+  }
 });
 
 test('System One endpoint is canonical', () => {
@@ -103,12 +109,12 @@ test('v2 request is sent as bounded state', async () => {
   assert.equal(seen.headers?.Authorization, 'Bearer secret');
   assert.equal(seen.timeoutMs, 1250);
   const payload = seen.payload as {
-    state: { request: ReturnType<typeof request> };
+    state: ReturnType<typeof request>;
     questions: { candidate: { criteria: Record<string, string> } };
   };
-  assert.equal(payload.state.request.schema, REQUEST_SCHEMA_V2);
-  assert.equal(payload.state.request.snapshot_id, 'snap-1');
-  assert.equal(payload.state.request.elements[0].label, 'Submit');
+  assert.equal(payload.state.schema, REQUEST_SCHEMA_V2);
+  assert.equal(payload.state.snapshot_id, 'snap-1');
+  assert.equal(payload.state.elements[0].label, 'Submit');
   assert.deepEqual(Object.keys(payload.questions.candidate.criteria), [
     'submit',
     'reobserve',
@@ -117,14 +123,14 @@ test('v2 request is sent as bounded state', async () => {
 });
 
 test('unknown candidate is rejected', async () => {
-  const bad = goodResponse();
+  const bad: any = goodResponse();
   bad.answers.candidate.choice = 'not-supplied';
   bad.answers.candidate.probabilities = {
     submit: 0.05,
     reobserve: 0.05,
     abstain: 0.0,
     'not-supplied': 0.9,
-  } as unknown as typeof bad.answers.candidate.probabilities;
+  };
   const model = new OpenJevDecisionModel(
     { baseUrl: 'https://jev.example', apiKey: '', model: 'openjev', timeoutMs: 1000 },
     async () => bad,
