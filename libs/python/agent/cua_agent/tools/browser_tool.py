@@ -303,6 +303,12 @@ class BrowserTool(BaseComputerTool):
         if not keys:
             return {"success": False, "error": "keys parameter is required"}
 
+        # keys must be a list/tuple of key names. A bare string would be
+        # spread char-by-char by hotkey(*keys), silently pressing the wrong
+        # keys; a dict would press its key names. Reject both.
+        if not isinstance(keys, (list, tuple)):
+            return {"success": False, "error": "keys parameter must be a list of key names"}
+
         # Convert keys to proper format and press via hotkey
         try:
             await self.automation.hotkey(*keys)
