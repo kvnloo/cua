@@ -1,0 +1,375 @@
+{
+ "schema": "cua.passive_observation_vectors_v0",
+ "status": "PROPOSAL - not a production contract",
+ "cases": [
+  {
+   "id": "actionable1-passive0-unchanged",
+   "note": "",
+   "input": {
+    "actionable_matches": 1,
+    "passive_matches": [],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "satisfied",
+    "reason": "actionable_domain",
+    "may_mint_action_token": true
+   }
+  },
+  {
+   "id": "actionable1-passive1-unchanged-even-if-passive-disagrees",
+   "note": "",
+   "input": {
+    "actionable_matches": 1,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Other"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "satisfied",
+    "reason": "actionable_domain",
+    "may_mint_action_token": true
+   }
+  },
+  {
+   "id": "actionable1-passive2-unchanged",
+   "note": "",
+   "input": {
+    "actionable_matches": 1,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Ready"
+      }
+     },
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Ready"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "satisfied",
+    "reason": "actionable_domain",
+    "may_mint_action_token": true
+   }
+  },
+  {
+   "id": "actionable-unsatisfied-stays-unsatisfied-passive-cannot-rescue",
+   "note": "",
+   "input": {
+    "actionable_matches": 1,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Ready"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "unsatisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unsatisfied",
+    "reason": "actionable_domain",
+    "may_mint_action_token": true
+   }
+  },
+  {
+   "id": "actionable0-passive1-evaluates-passive-property-satisfied",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Ready"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "satisfied",
+    "reason": "passive_property",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "actionable0-passive1-evaluates-passive-property-unsatisfied",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Busy"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unsatisfied",
+    "reason": "passive_property",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "actionable0-passive2plus-multi-match-unknown",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Ready"
+      }
+     },
+     {
+      "trusted": true,
+      "properties": {
+       "label": "Ready"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unknown",
+    "reason": "multi_match",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "actionable0-passive-trusted-exists-true-satisfied",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {}
+     }
+    ],
+    "predicate": {
+     "exists": true
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "satisfied",
+    "reason": "passive_exists",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "actionable0-missing-requested-property-unsupported",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [
+     {
+      "trusted": true,
+      "properties": {
+       "other": "x"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unknown",
+    "reason": "unsupported_predicate",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "actionable0-passive-untrusted-only-untrusted_source",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [
+     {
+      "trusted": false,
+      "properties": {
+       "label": "Ready"
+      }
+     }
+    ],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unknown",
+    "reason": "untrusted_source",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "absence-satisfied-only-when-both-domains-complete",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [],
+    "predicate": {
+     "exists": false
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "satisfied",
+    "reason": "absent_complete",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "absence-unknown-when-passive-walk-incomplete",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [],
+    "predicate": {
+     "exists": false
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": false
+   },
+   "expect": {
+    "status": "unknown",
+    "reason": "incomplete_walk",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "absence-unknown-when-actionable-walk-truncated",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [],
+    "predicate": {
+     "exists": false
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": false,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unknown",
+    "reason": "incomplete_walk",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "no-match-unsatisfied-only-when-complete",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": true
+   },
+   "expect": {
+    "status": "unsatisfied",
+    "reason": "no_match",
+    "may_mint_action_token": false
+   }
+  },
+  {
+   "id": "no-match-unknown-when-incomplete",
+   "note": "",
+   "input": {
+    "actionable_matches": 0,
+    "passive_matches": [],
+    "predicate": {
+     "property": "label",
+     "equals": "Ready"
+    },
+    "actionable_status_on_main": "satisfied",
+    "actionable_walk_complete": true,
+    "passive_walk_complete": false
+   },
+   "expect": {
+    "status": "unknown",
+    "reason": "incomplete_walk",
+    "may_mint_action_token": false
+   }
+  }
+ ]
+}

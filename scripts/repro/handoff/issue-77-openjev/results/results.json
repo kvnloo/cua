@@ -1,0 +1,159 @@
+{
+ "synthetic_key_used": true,
+ "rows": [
+  {
+   "row": "valid",
+   "exit_code": 0,
+   "wall_ms": 69,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"selected\",\"capture_id\":\"capture-native-1\",\"selected_id\":\"ax:button:increment\",\"model\":\"openjev-fixture\",\"confidence\":0.93,\"probabilities\":{\"ax:button:increment\":0.93,\"reobserve\":0.05,\"abstain\":0.02},\"reason\":null}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "valid",
+     "path": "/valid/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "unknown_candidate_id",
+   "exit_code": 0,
+   "wall_ms": 67,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"error\",\"capture_id\":\"capture-native-1\",\"selected_id\":null,\"model\":\"openjev\",\"confidence\":null,\"probabilities\":{},\"reason\":\"model_error\"}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "unknown",
+     "path": "/unknown/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "malformed_response",
+   "exit_code": 0,
+   "wall_ms": 66,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"error\",\"capture_id\":\"capture-native-1\",\"selected_id\":null,\"model\":\"openjev\",\"confidence\":null,\"probabilities\":{},\"reason\":\"model_error\"}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "malformed",
+     "path": "/malformed/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "http_503",
+   "exit_code": 0,
+   "wall_ms": 68,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"error\",\"capture_id\":\"capture-native-1\",\"selected_id\":null,\"model\":\"openjev\",\"confidence\":null,\"probabilities\":{},\"reason\":\"model_error\"}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "503",
+     "path": "/503/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "redirect_refused",
+   "exit_code": 0,
+   "wall_ms": 66,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"error\",\"capture_id\":\"capture-native-1\",\"selected_id\":null,\"model\":\"openjev\",\"confidence\":null,\"probabilities\":{},\"reason\":\"model_error\"}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "redirect",
+     "path": "/redirect/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "timeout",
+   "exit_code": 0,
+   "wall_ms": 367,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"error\",\"capture_id\":\"capture-native-1\",\"selected_id\":null,\"model\":\"openjev\",\"confidence\":null,\"probabilities\":{},\"reason\":\"model_error\"}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "timeout",
+     "path": "/timeout/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "oversized_response",
+   "exit_code": 0,
+   "wall_ms": 71,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"error\",\"capture_id\":\"capture-native-1\",\"selected_id\":null,\"model\":\"openjev\",\"confidence\":null,\"probabilities\":{},\"reason\":\"model_error\"}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "oversized",
+     "path": "/oversized/v1/systemone",
+     "authorization_present": false,
+     "authorization_matches_secret": false,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "url_credentials_rejected",
+   "exit_code": 1,
+   "wall_ms": 64,
+   "stdout": "",
+   "stderr_tail": "OpenJev setup failed: OPENJEV_BASE_URL must not embed credentials",
+   "responder_requests": [],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "api_key_over_http_rejected",
+   "exit_code": 1,
+   "wall_ms": 66,
+   "stdout": "",
+   "stderr_tail": "OpenJev setup failed: OPENJEV_API_KEY may only be sent to an https:// endpoint",
+   "responder_requests": [],
+   "secret_in_recorded_row": false
+  },
+  {
+   "row": "api_key_over_https_accepted",
+   "exit_code": 0,
+   "wall_ms": 76,
+   "stdout": "{\"schema\":\"cua.decision_choice_v1\",\"kind\":\"selected\",\"capture_id\":\"capture-native-1\",\"selected_id\":\"ax:button:increment\",\"model\":\"openjev-fixture\",\"confidence\":0.93,\"probabilities\":{\"ax:button:increment\":0.93,\"reobserve\":0.05,\"abstain\":0.02},\"reason\":null}",
+   "stderr_tail": "",
+   "responder_requests": [
+    {
+     "mode": "https",
+     "path": "/https/v1/systemone",
+     "authorization_present": true,
+     "authorization_matches_secret": true,
+     "body_bytes": 1083
+    }
+   ],
+   "secret_in_recorded_row": false
+  }
+ ]
+}

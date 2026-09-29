@@ -1,0 +1,97 @@
+{
+ "cross_session_mutations": [],
+ "ended_mono_ns": 49670775720389,
+ "error": null,
+ "expected": {
+  "A": [
+   [
+    "submit",
+    "session-a-owned"
+   ],
+   [
+    "reset",
+    null
+   ]
+  ],
+  "B": [
+   [
+    "submit",
+    "session-b-owned"
+   ],
+   [
+    "reset",
+    null
+   ],
+   [
+    "submit",
+    "session-b-after-a-end"
+   ]
+  ]
+ },
+ "fixture_order": {
+  "1": "A",
+  "2": "B"
+ },
+ "foreign_value_landed": false,
+ "journal": [
+  {
+   "fixture": "A",
+   "mono_ns": 49666170408589,
+   "op": "submit",
+   "value": "session-a-owned"
+  },
+  {
+   "fixture": "B",
+   "mono_ns": 49667708484628,
+   "op": "submit",
+   "value": "session-b-owned"
+  },
+  {
+   "fixture": "A",
+   "mono_ns": 49667709733115,
+   "op": "reset",
+   "value": null
+  },
+  {
+   "fixture": "B",
+   "mono_ns": 49667775654988,
+   "op": "reset",
+   "value": null
+  },
+  {
+   "fixture": "B",
+   "mono_ns": 49670112620978,
+   "op": "submit",
+   "value": "session-b-after-a-end"
+  }
+ ],
+ "journals_match_expected": true,
+ "observed": {
+  "A": [
+   [
+    "submit",
+    "session-a-owned"
+   ],
+   [
+    "reset",
+    null
+   ]
+  ],
+  "B": [
+   [
+    "submit",
+    "session-b-owned"
+   ],
+   [
+    "reset",
+    null
+   ],
+   [
+    "submit",
+    "session-b-after-a-end"
+   ]
+  ]
+ },
+ "script_summary_complete": true,
+ "started_mono_ns": 49658860569724
+}

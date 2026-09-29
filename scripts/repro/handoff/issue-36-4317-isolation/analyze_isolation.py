@@ -60,6 +60,8 @@ def analyze_run(run: Path):
 
     label = {}
     target_owner, tab_owner, ref_owner, ended = {}, {}, {}, set()
+    retired: set[str] = set()   # targets whose owning session was ended; retired for good
+    lifecycle = ("end_session", "start_session")
     rows = []
     for idx, c in enumerate(calls):
         s = c["session"]
@@ -78,17 +80,21 @@ def analyze_run(run: Path):
         kind, code = refusal_of(c["result"])
         owner = target_owner.get(args.get("target_id"))
         cross = owner is not None and owner != label[s]
-        after_end = label[s] in ended and name not in ("end_session",)
+        after_end = label[s] in ended and name not in lifecycle
+        stale_after_restart = (args.get("target_id") in retired and label[s] not in ended and name not in lifecycle)
         if name == "end_session":
             ended.add(label[s])
+            retired |= {t for t, o in target_owner.items() if o == label[s]}
+        if name == "start_session":
+            ended.discard(label[s])
         t_req_abs, t_resp_abs = mono0 + c["t_req"], mono0 + c["t_resp"]
-        if cross or after_end or (name in ("browser_type", "browser_click") and kind == "refused"):
+        if cross or after_end or stale_after_restart or (name in ("browser_type", "browser_click") and kind == "refused"):
             ref = args.get("ref")
             minted = ref_owner.get((args.get("target_id"), ref))
             rows.append({
                 "seq": idx + 1, "tool": name, "calling_session": label[s], "call_session_label": s,
                 "target_owner": owner, "ref": ref, "ref_minted_by": minted[0] if minted else None,
-                "kind": "cross_session" if cross else "ended_session" if after_end else "other_refusal",
+                "kind": "cross_session" if cross else "ended_session" if after_end else "retired_after_same_label_restart" if stale_after_restart else "other_refusal",
                 "driver_result": kind, "refusal_code": code,
                 "dispatch_reached_target": kind == "accepted",
                 "journal_submissions_before": counts(t_req_abs), "journal_submissions_after": counts(t_resp_abs),

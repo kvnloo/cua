@@ -1,0 +1,102 @@
+{
+ "error": null,
+ "expected_tokens": {
+  "A": "tok-a-1790654658",
+  "B": "tok-b-1790654658"
+ },
+ "final_journals": {
+  "A": {
+   "submitted": "tok-a-1790654658"
+  },
+  "B": {
+   "submitted": "tok-b-1790654658"
+  }
+ },
+ "ok": true,
+ "provider_calls_total": {
+  "A": 2,
+  "B": 2
+ },
+ "rows": [
+  {
+   "driver_dispatch_reached_target": false,
+   "executing_session": "guarded-x-b",
+   "fallback_candidate": "submit-form",
+   "fallback_ref": "p6:2",
+   "fallback_ref_owner": "B",
+   "foreign_dispatch_refusal": "browser_binding_stale",
+   "journals_after": {
+    "A": {
+     "submitted": null
+    },
+    "B": {
+     "submitted": null
+    }
+   },
+   "journals_before": {
+    "A": {
+     "submitted": null
+    },
+    "B": {
+     "submitted": null
+    }
+   },
+   "journals_unchanged": true,
+   "owner_ref": "p5:2",
+   "owner_ref_fresh_vs_plan_prior": true,
+   "owner_ref_owner": "A",
+   "plan_owner_session": "guarded-x-a",
+   "provider_calls_added": 1,
+   "route_selected": "provider",
+   "spoofed_label_ref": "p6:2",
+   "spoofed_label_ref_owner": "B",
+   "spoofed_label_route": "guarded-completion",
+   "wrong_session_resolve": null
+  },
+  {
+   "driver_dispatch_reached_target": false,
+   "executing_session": "guarded-x-a",
+   "fallback_candidate": "submit-form",
+   "fallback_ref": "p5:2",
+   "fallback_ref_owner": "A",
+   "foreign_dispatch_refusal": "browser_binding_stale",
+   "journals_after": {
+    "A": {
+     "submitted": null
+    },
+    "B": {
+     "submitted": null
+    }
+   },
+   "journals_before": {
+    "A": {
+     "submitted": null
+    },
+    "B": {
+     "submitted": null
+    }
+   },
+   "journals_unchanged": true,
+   "owner_ref": "p6:2",
+   "owner_ref_fresh_vs_plan_prior": true,
+   "owner_ref_owner": "B",
+   "plan_owner_session": "guarded-x-b",
+   "provider_calls_added": 1,
+   "route_selected": "provider",
+   "spoofed_label_ref": "p5:2",
+   "spoofed_label_ref_owner": "A",
+   "spoofed_label_route": "guarded-completion",
+   "wrong_session_resolve": null
+  }
+ ],
+ "step1": {
+  "A": {
+   "candidate": "type-verification-value",
+   "plan_prior_ref": "p3:1"
+  },
+  "B": {
+   "candidate": "type-verification-value",
+   "plan_prior_ref": "p4:1"
+  }
+ }
+}

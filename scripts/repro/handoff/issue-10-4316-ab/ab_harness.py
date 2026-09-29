@@ -186,6 +186,8 @@ def run_cell(cfg: dict, out: Path, arm: dict, language: str, block: int, positio
             "CUA_LANE_CELL": cell_id,
         }
     )
+    env.update(arm.get("env", {}))  # per-arm Driver launch settings (CUA_DRIVER_*), e.g. window-change bound
+    cell["arm_env"] = dict(arm.get("env", {}))
 
     stop = threading.Event()
 
