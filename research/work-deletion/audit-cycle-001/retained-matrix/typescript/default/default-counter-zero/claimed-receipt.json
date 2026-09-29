@@ -1,0 +1,141 @@
+{
+  "chooser": "mock",
+  "complete": true,
+  "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+  "driver_source_rust_tree": "71e08f221ebdc86ffee0cd8f37085e1fc434f3e6",
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "fixture_journal": [
+    {
+      "committed_expected_value": true,
+      "event": "fixture_submit",
+      "language": "python",
+      "received_expected_value": true
+    },
+    {
+      "committed_expected_value": true,
+      "event": "fixture_submit",
+      "language": "typescript",
+      "received_expected_value": true
+    }
+  ],
+  "isolation": {
+    "DISPLAY": ":99",
+    "HOME": "/home/kvn/.hermes/profiles/clean/cache/scratch/cua-4316-x11.qIdfHM/home",
+    "WAYLAND_DISPLAY": null,
+    "XDG_RUNTIME_DIR": "/home/kvn/.hermes/profiles/clean/cache/scratch/cua-4316-x11.qIdfHM/xdg-runtime"
+  },
+  "jsonl_token_absent": true,
+  "mode": "default",
+  "oracle": "genuine HTTP /submit -> fixture state and independently fetched /state",
+  "real_driver": true,
+  "steps": {
+    "python": [
+      {
+        "action_ms": 1602.48,
+        "candidate": "type-verification-value",
+        "candidate_build_ms": 0.05,
+        "confidence": 1.0,
+        "decision_ms": 18.76,
+        "decision_route": "provider",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "probabilities": {
+          "abstain": 0.0,
+          "reobserve": 0.0,
+          "type-verification-value": 1.0
+        },
+        "provider_decision_ms": 0.0,
+        "semantic_observe_ms": 18.68,
+        "step": 1,
+        "tool": "browser_type",
+        "total_step_ms": 1621.25,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0.0
+      },
+      {
+        "action_ms": 1539.52,
+        "candidate": "submit-form",
+        "candidate_build_ms": 0.04,
+        "confidence": 1.0,
+        "decision_ms": 5.68,
+        "decision_route": "provider",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "probabilities": {
+          "abstain": 0.0,
+          "reobserve": 0.0,
+          "submit-form": 1.0
+        },
+        "provider_decision_ms": 0.01,
+        "semantic_observe_ms": 5.6,
+        "step": 2,
+        "tool": "browser_click",
+        "total_step_ms": 1545.21,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0.0
+      }
+    ],
+    "typescript": [
+      {
+        "action_ms": 1587.16,
+        "candidate": "type-verification-value",
+        "candidate_build_ms": 0.38,
+        "confidence": 1,
+        "decision_ms": 18.18,
+        "decision_route": "provider",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "probabilities": {
+          "abstain": 0,
+          "reobserve": 0,
+          "type-verification-value": 1
+        },
+        "provider_decision_ms": 0.13,
+        "semantic_observe_ms": 17.32,
+        "step": 1,
+        "tool": "browser_type",
+        "total_step_ms": 1605.42,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0
+      },
+      {
+        "action_ms": 1541.98,
+        "candidate": "submit-form",
+        "candidate_build_ms": 0.09,
+        "confidence": 1,
+        "decision_ms": 5.97,
+        "decision_route": "provider",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "probabilities": {
+          "abstain": 0,
+          "reobserve": 0,
+          "submit-form": 1
+        },
+        "provider_decision_ms": 0.01,
+        "semantic_observe_ms": 5.86,
+        "step": 2,
+        "tool": "browser_click",
+        "total_step_ms": 1547.97,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0
+      }
+    ]
+  }
+}

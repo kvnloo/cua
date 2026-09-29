@@ -1,0 +1,54 @@
+{
+  "artifacts": {
+    "claimed-journal.jsonl": "bd7eab3f0afd05fca47aeec8eb592127090968f64e3ffc45bd7bea6c2d715dfe",
+    "claimed-receipt.json": "aa604fd4b6cd2dd111169669cb93f3ac9b335ec56cdc80ead92b43fe39d86c7a",
+    "independent-check.json": "e8c13375b7fb0d29fd270c31531bb9d7f247f9fcbb0f761148cfcb090f9c9dc0",
+    "input.jsonl": "2e210562d703c64c2623aed322281da67e1ca8e5605c8a86bf54db8023bdafd6",
+    "output.jsonl": "2e210562d703c64c2623aed322281da67e1ca8e5605c8a86bf54db8023bdafd6"
+  },
+  "cell_key": "audit001/retained/typescript/accepted/oracle-wrong-submit",
+  "challenge_producer_sha256": "03d5e5fc89318ab03eb2f278cf1d4abfc2166e41434c80153b8db088ee54e5b0",
+  "checker": "unmodified verify_setup.verify",
+  "checker_sha256": "22953ec2484c5871f598747d38fc111e30361ad04c2834caa3b1eb348b12806c",
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "-B",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+    "--child",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/typescript/accepted/oracle-wrong-submit/input.jsonl",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/typescript/accepted/oracle-wrong-submit/output.jsonl",
+    "http://127.0.0.1:17307/",
+    "oracle-wrong-submit"
+  ],
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "independent": {
+    "actor": "adversarial replay child, not Driver",
+    "initially_empty": true,
+    "journal": [
+      {
+        "cell_key": "audit001/retained/typescript/accepted/oracle-wrong-submit",
+        "committed_expected_value": false,
+        "language": "typescript",
+        "received_expected_value": false,
+        "trial_key": "trial-001"
+      }
+    ],
+    "oracle": "unmodified FixtureHandler /submit and independently fetched /state",
+    "state_empty": false,
+    "state_matches_expected": false
+  },
+  "language": "typescript",
+  "mode": "accepted",
+  "mutation": "oracle-wrong-submit",
+  "retained": {
+    "accepted": false,
+    "error": "Independent fixture state does not match the expected token",
+    "error_type": "RuntimeError"
+  },
+  "reused_control": "test_verify_setup.VerifySetupTests.test_rejects_wrong_submission_despite_verified_event",
+  "scope": "FIX verifier challenge, not a new REAL run",
+  "sidecars_consumed_by_retained_checker": false,
+  "source_jsonl": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/exact-accepted/typescript-mock.jsonl",
+  "source_jsonl_sha256": "0e6a242779e82c1c0b2a015603a06587ab99c96e70c5b0995f30979b5ab0566c",
+  "trial_key": "trial-001"
+}

@@ -1,0 +1,54 @@
+{
+  "artifacts": {
+    "claimed-journal.jsonl": "bd7eab3f0afd05fca47aeec8eb592127090968f64e3ffc45bd7bea6c2d715dfe",
+    "claimed-receipt.json": "d28ed0bfd25385cdca9dcabfef8a20040ce4d8619f34be3c30571fce3d6816b2",
+    "independent-check.json": "a875e579788a17b150f222aa7839ede3cd66b77c42068877ae777bac3d3751e9",
+    "input.jsonl": "48da66b7ea00b542d46d818a49910aef74038c0357f9d295bdd2e8fb454ed63d",
+    "output.jsonl": "48da66b7ea00b542d46d818a49910aef74038c0357f9d295bdd2e8fb454ed63d"
+  },
+  "cell_key": "audit001/retained/python/declined/decline-reason-extra",
+  "challenge_producer_sha256": "03d5e5fc89318ab03eb2f278cf1d4abfc2166e41434c80153b8db088ee54e5b0",
+  "checker": "unmodified verify_setup.verify",
+  "checker_sha256": "22953ec2484c5871f598747d38fc111e30361ad04c2834caa3b1eb348b12806c",
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "-B",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+    "--child",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/python/declined/decline-reason-extra/input.jsonl",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/python/declined/decline-reason-extra/output.jsonl",
+    "http://127.0.0.1:14075/",
+    "decline-reason-extra"
+  ],
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "independent": {
+    "actor": "adversarial replay child, not Driver",
+    "initially_empty": true,
+    "journal": [
+      {
+        "cell_key": "audit001/retained/python/declined/decline-reason-extra",
+        "committed_expected_value": true,
+        "language": "python",
+        "received_expected_value": true,
+        "trial_key": "trial-001"
+      }
+    ],
+    "oracle": "unmodified FixtureHandler /submit and independently fetched /state",
+    "state_empty": false,
+    "state_matches_expected": true
+  },
+  "language": "python",
+  "mode": "declined",
+  "mutation": "decline-reason-extra",
+  "retained": {
+    "accepted": false,
+    "error": "Runner did not log the required guard decline and provider fallback",
+    "error_type": "RuntimeError"
+  },
+  "reused_control": null,
+  "scope": "FIX verifier challenge, not a new REAL run",
+  "sidecars_consumed_by_retained_checker": false,
+  "source_jsonl": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/exact-declined/python-mock.jsonl",
+  "source_jsonl_sha256": "21e774c2e612ac65ffda8dfa040ffb5352086c5f21701312d3cbe1e08ef62b20",
+  "trial_key": "trial-001"
+}

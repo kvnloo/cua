@@ -1,0 +1,39 @@
+test_guarded_runner (unittest.loader._FailedTest.test_guarded_runner) ... ERROR
+
+======================================================================
+ERROR: test_guarded_runner (unittest.loader._FailedTest.test_guarded_runner)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_guarded_runner
+Traceback (most recent call last):
+  File "/home/kvn/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kvn/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/libs/cua-driver/examples/jev-use/python/tests/test_guarded_runner.py", line 23, in <module>
+    import run
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/libs/cua-driver/examples/jev-use/python/run.py", line 13, in <module>
+    from mcp import ClientSession, StdioServerParameters
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/mcp/__init__.py", line 1, in <module>
+    from mcp_types import (
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/mcp_types/__init__.py", line 8, in <module>
+    from mcp_types._types import (
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/mcp_types/_types.py", line 13, in <module>
+    from pydantic import (
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/pydantic/__init__.py", line 5, in <module>
+    from ._migration import getattr_migration
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/pydantic/_migration.py", line 4, in <module>
+    from pydantic.warnings import PydanticDeprecatedSince20
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/pydantic/warnings.py", line 5, in <module>
+    from .version import version_short
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/pydantic/version.py", line 7, in <module>
+    from pydantic_core import __version__ as __pydantic_core_version__
+  File "/workspace/hermes-home/installs/59a5ffb977aa25fc/environments/65fec80d05fc471f85cf8f96dff4eae5/venv/lib/python3.14/site-packages/pydantic_core/__init__.py", line 8, in <module>
+    from ._pydantic_core import (
+ModuleNotFoundError: No module named 'pydantic_core._pydantic_core'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

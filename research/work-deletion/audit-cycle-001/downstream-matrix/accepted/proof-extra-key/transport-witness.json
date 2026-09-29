@@ -1,0 +1,75 @@
+{
+  "capture": "pass-through chooser entry counter and independent mock-transport dispatch/observation sink",
+  "cell_key": "audit001/fix/python/accepted",
+  "events": [
+    {
+      "after_actions": 0,
+      "cell_key": "audit001/fix/python/accepted",
+      "field_contains_expected": false,
+      "kind": "observation",
+      "observation": 1,
+      "seq": 1,
+      "session": "jev-python-62bcb65a",
+      "submit_refs": [
+        "p1:1"
+      ],
+      "trial_key": "trial-001"
+    },
+    {
+      "after_actions": 0,
+      "after_observations": 1,
+      "cell_key": "audit001/fix/python/accepted",
+      "kind": "provider_call",
+      "seq": 2,
+      "trial_key": "trial-001"
+    },
+    {
+      "action": 1,
+      "cell_key": "audit001/fix/python/accepted",
+      "kind": "action",
+      "ref": "p2:0",
+      "seq": 3,
+      "session": "jev-python-62bcb65a",
+      "success": true,
+      "tool": "browser_type",
+      "trial_key": "trial-001"
+    },
+    {
+      "after_actions": 1,
+      "cell_key": "audit001/fix/python/accepted",
+      "field_contains_expected": true,
+      "kind": "observation",
+      "observation": 2,
+      "seq": 4,
+      "session": "jev-python-62bcb65a",
+      "submit_refs": [
+        "p2:1"
+      ],
+      "trial_key": "trial-001"
+    },
+    {
+      "action": 2,
+      "cell_key": "audit001/fix/python/accepted",
+      "kind": "action",
+      "ref": "p2:1",
+      "seq": 5,
+      "session": "jev-python-62bcb65a",
+      "success": true,
+      "tool": "browser_click",
+      "trial_key": "trial-001"
+    }
+  ],
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "exit_code": 0,
+  "forced": {
+    "fixture_duplicate_submit": false,
+    "guarded": true
+  },
+  "language": "python",
+  "mode": "accepted",
+  "provider": "mock",
+  "provider_count": 1,
+  "real_driver": false,
+  "scope": "FIX",
+  "trial_key": "trial-001"
+}
