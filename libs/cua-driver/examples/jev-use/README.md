@@ -86,7 +86,10 @@ Only enabled, on-screen, labeled, native (not `in_web_content`) elements
 become candidates; a label equal to the element's value counts as unlabeled.
 Candidate IDs come from the role class, label, and actionable-ancestor path,
 never `element_index`. At most 24 action candidates are offered, plus
-`reobserve` and `abstain`. Labels that suggest deleting, sending, purchasing,
+`reobserve` and `abstain`. When more are eligible, the candidates that perform
+the task's declared steps are kept first, then controls whose label shares a
+word with the goal, then the rest in element order; the kept candidates are
+still presented in element order, and the number dropped is logged. Labels that suggest deleting, sending, purchasing,
 or closing are excluded unless the task allows that risk. Text comes only from
 task parameters. Actions are element-bound `click`, `set_value`, or
 `type_text` with background delivery first; a stale token leads to a fresh
@@ -112,14 +115,15 @@ A visual click is background first; after a structured background refusal,
 the next step offers a separate `<id>:foreground` candidate when the task
 allows foreground delivery.
 
-The same three tasks run on three repository harnesses: `<harness>-counter`
+The same three tasks run on four repository harnesses: `<harness>-counter`
 (set the counter to 3), `<harness>-save-note` (set the Note field and save),
 and `<harness>-choose-size` (select Large and check I agree). The harness is
-`appkit` (macOS AX), `wpf` (Windows UIA), or `gtk3` (Linux AT-SPI). In task
-mode, each harness shows the same labeled controls, so candidate IDs and the
-mock provider's choices are identical on every platform. Task mode is selected
-with `CUA_APPKIT_TASK_STATE`, `CUA_WPF_TASK_STATE`, or `CUA_GTK3_TASK_STATE`.
-WPF and GTK3 show a small dedicated task window.
+`appkit` (macOS AX), `wpf` or `winui3` (Windows UIA), or `gtk3` (Linux
+AT-SPI). In task mode, each harness shows the same labeled controls, so
+candidate IDs and the mock provider's choices are identical on every platform.
+Task mode is selected with `CUA_APPKIT_TASK_STATE`, `CUA_WPF_TASK_STATE`,
+`CUA_WINUI3_TASK_STATE`, or `CUA_GTK3_TASK_STATE`. WPF, WinUI3, and GTK3 show
+a small dedicated task window.
 A fourth task, `canvas-cancel`, clicks the Cancel card on the cross-platform
 visual-only canvas fixture (a custom-painted Tk window with no accessibility
 tree), so it can only succeed through the visual fallback and needs the
@@ -132,7 +136,9 @@ verifier serves the loopback journal the fixture publishes its state to and
 writes that state to the task's state file. Each harness rewrites that
 state file on every change, and the file is the independent oracle. On
 Windows, the title bar's System menu, Minimize, Maximize, and Close buttons
-are window chrome and never become candidates. With Cua Driver 0.30.1 or
+are window chrome and never become candidates. WinUI3 reports the same UIA control
+types as WPF, so both share the Windows role table; WinUI3's static `Text`
+labels are not candidates. With Cua Driver 0.30.1 or
 later, run from this directory:
 
 ```bash
@@ -148,6 +154,9 @@ bash ../../tests/fixtures/build/linux.sh --only gtk3
 # Windows
 ..\..\tests\fixtures\build\windows.ps1 -Targets wpf
 uv run --frozen python verify_native.py --harness wpf --typescript --output-dir $env:TEMP\jev-native-proof
+# or the WinUI3 harness
+..\..\tests\fixtures\build\windows.ps1 -Targets winui3
+uv run --frozen python verify_native.py --harness winui3 --typescript --output-dir $env:TEMP\jev-native-winui3
 ```
 
 `--capture-dir` also records sanitized `get_window_state` fixtures like the
@@ -156,6 +165,31 @@ no `value` for a named text field
 ([#4291](https://github.com/trycua/cua/issues/4291)). With those Drivers,
 `gtk3-save-note` cannot observe its own write, so it keeps offering the write
 until the step budget runs out.
+
+#### Measure accuracy at larger candidate sets
+
+The task-mode harnesses show only a few controls, so each step offers 4 to 7
+candidates. `CUA_APPKIT_TASK_DENSITY` or `CUA_GTK3_TASK_DENSITY` set to `12` or
+`24`, together with the task-state variable, adds benign distractor controls
+(toolbar-style buttons, labeled text fields, checkboxes, and radio groups, some
+close to a task control such as "Save draft" or "Note title") before the task
+controls, which fills the set to about 12 or to the 24-candidate cap.
+`verify_native.py --density 12` or `--density 24` launches the harness that
+way and checks that the harness reports the density. Each runner step logs
+`candidate_count`, `expected_ids` (the declared steps that are due), and
+`expected_offered`, next to the choice, confidence, and `decide_ms`.
+`measure_native.py` turns those logs, or an offline replay of captured
+fixtures through any provider, into an accuracy table by set size:
+
+```bash
+# Score the runner logs of live runs
+uv run --frozen python measure_native.py logs /tmp/jev-native-proof --out /tmp/jev-native-accuracy
+# Replay recorded window states through Cua-S1, comparing depth-first and relevance capping
+uv run --frozen python measure_native.py replay --provider s1 --reps 5 \
+  --fixture gtk3:24:fixtures/native/gtk3-window-state-density-24-v1.json \
+  --cap-order depth_first --cap-order relevance --order element --order shuffled \
+  --out /tmp/jev-native-replay --group-by density,cap_order,order,bucket
+```
 
 #### Choose with Cua-S1
 

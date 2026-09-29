@@ -7,9 +7,9 @@ the closed candidate set, send a validated ``cua.jev_choice_request_v2`` to
 the chooser, dispatch the one selected element-bound action, and read the
 oracle again. The chooser only ever selects a supplied ID.
 
-Built-in tasks drive the AppKit, WPF, or GTK3 harness launched in task mode
-(``CUA_APPKIT_TASK_STATE``, ``CUA_WPF_TASK_STATE``, or ``CUA_GTK3_TASK_STATE``
-set to ``<path>``); ``verify_native.py`` launches it, runs this runner, and
+Built-in tasks drive the AppKit, WPF, WinUI3, or GTK3 harness launched in task
+mode (``CUA_APPKIT_TASK_STATE``, ``CUA_WPF_TASK_STATE``,
+``CUA_WINUI3_TASK_STATE``, or ``CUA_GTK3_TASK_STATE`` set to ``<path>``); ``verify_native.py`` launches it, runs this runner, and
 checks the state file independently.
 """
 
@@ -293,11 +293,17 @@ async def run_task(args: argparse.Namespace, task: NativeTask) -> str:
                         # with a logged outcome instead of a traceback.
                         write_event(log_path, {"event": "outcome", "outcome": "unknown",
                                                "phase": "decide", "step": step,
+                                               "candidate_count": len(plan.candidates),
+                                               "expected_ids": task.expected_next(history),
                                                "error": "S1ServiceError", "reason": str(error)[:128]})
                         return "unknown"
                 else:
                     choice, confidence, probabilities = await asyncio.to_thread(choose_live, request)
                 decide_ms = round((time.perf_counter() - decide_started) * 1000, 2)
+                # Measurement (#4312): the declared steps due now, and whether the
+                # candidate set offered one. IDs only; no values.
+                expected_ids = task.expected_next(history)
+                offered = {candidate.id.removesuffix(":foreground") for candidate in plan.candidates}
                 base_event = {
                     "event": "step",
                     "step": step,
@@ -309,6 +315,8 @@ async def run_task(args: argparse.Namespace, task: NativeTask) -> str:
                     "confidence": confidence,
                     "probabilities": probabilities,
                     "decide_ms": decide_ms,
+                    "expected_ids": expected_ids,
+                    "expected_offered": bool(set(expected_ids) & offered),
                 }
                 if choice is None:
                     write_event(log_path, {**base_event, "event": "outcome", "outcome": "abstained"})
