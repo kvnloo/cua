@@ -1,0 +1,113 @@
+{
+  "passed": false,
+  "blocking_findings": [
+    {
+      "id": "B1",
+      "severity": "high",
+      "location": "sway_session.py:123-155,203-213",
+      "finding": "Cancellation/setup failures can bypass or interrupt cleanup. DBus launches at line 151 before the lifetime try/finally at 155; a signal, append failure, or config-write failure in that window leaves it alive. The signal handler continues raising InterruptedError inside cleanup, so a second cancellation can abort reaping, handler restoration, and receipt creation. Cleanup or host_focus exceptions likewise skip restoration/reporting.",
+      "evidence": "Static control-flow inspection, independently checked with AST: the DBus Popen has no enclosing try/finally; the other three Popen calls do. No cancellation test exists in the reviewed unit file.",
+      "required_before_gui_resume": "Protect setup through teardown with an outer lifetime finally; make teardown cancellation-resistant and handler restoration unconditional. Add offline injected failures before/after every launch and during cleanup. Bound startup/version/IPC subprocess waits, not only the experiment wait. Do not resume broader GUI trials until these paths are exercised."
+    },
+    {
+      "id": "B2",
+      "severity": "high",
+      "location": "sway_session.py:60-94,151,158,181,199",
+      "finding": "Cleanup does not own a complete process tree. It enumerates only live processes whose initial /proc environment contains the lease marker, then waits on explicitly registered direct children. A grandchild that filters that marker is invisible; start_new_session=True is never paired with process-group cleanup. The stated MCP allowlist actually removes this marker before wrapper exec restores it. Numeric PID scan-then-kill also lacks start-time/pidfd revalidation, leaving a PID-reuse collateral-signal race.",
+      "evidence": "Source inspection: owned_processes tests only the environment marker; cleanup uses os.kill(pid, sig), not a stable process identity or owned group/cgroup. Receipt empty lists cover only this predicate, not all descendants.",
+      "required_before_gui_resume": "Use lifetime ownership that survives environment filtering, preferably a dedicated supervised cgroup or equivalent tracked descendants/process groups with stable identities. Prove cancellation during filtered-child startup and descendant env scrubbing leaves no live owned process. Keep marker matching as supplementary evidence, not the sole ownership boundary."
+    },
+    {
+      "id": "B3",
+      "severity": "high",
+      "location": "sway_isolation.py:16-24; private_driver.py:17-28",
+      "finding": "Endpoint validation admits host-route indirection. Resolving only an endpoint's parent and using is_socket follows final-component symlinks; private-looking Driver/Sway paths can therefore target outside sockets. Wayland and DBus endpoints are not required to exist. DBus validation truncates at ',guid=' while the original full address is forwarded, admitting a second nonprivate fallback address. DBUS_SYSTEM_BUS_ADDRESS is also forwarded unchanged by the wrapper.",
+      "evidence": "Exec-intercepted fake-lease tests accepted four endpoint symlinks into an owned scratch sibling, missing Wayland/DBus sockets, a session address 'unix:path=<private>/bus,guid=<32 zeros>;unix:path=/audit/host-bus', and a synthetic external system-bus address. No host socket was contacted. Parent-generated normal env does not supply these hostile values; these are demonstrated refusal-boundary gaps.",
+      "required_before_gui_resume": "Reject symlink/escaped endpoints and validate actual owned sockets. Require one exact private DBus address, or parse and validate every address component; do not validate a truncated prefix and forward the suffix. Build a minimal approved wrapper environment and establish the intended system-bus policy. Account for socket replacement between validation and connection."
+    },
+    {
+      "id": "B4",
+      "severity": "high",
+      "location": "private_driver.py:12-36,48-49; sway_session.py:184-187",
+      "finding": "A lease is self-asserted, not proof of a parent-owned Sway/Driver pair. A fake lease naming the same unrelated Python process as both owners, two merely bound nonlistening sockets, an arbitrary binary, and an arbitrary library path passes every gate. Owner checks bind neither socket peer nor executable/start time to the claimed role; wrapper exec trusts binary/library values from the lease without checking the build pin.",
+      "evidence": "The self_pid_fake_lease control used the audit child's genuine /proc environment and real scratch UNIX socket nodes, not mocked process facts. It reached intercepted exec with '/audit/never-executed-driver'. Removing the MCP-omitted variables also reached exec after restoration. No Sway, Driver, or GUI process was started.",
+      "required_before_gui_resume": "Bind admission to a parent-established lease and fixed verified executable/library identity; validate distinct live owner identities and actual endpoint ownership rather than matching environment strings alone. Reject fabricated, stale, swapped, or nonlistening leases before dispatch. Define the same-UID trust boundary explicitly."
+    },
+    {
+      "id": "B5",
+      "severity": "medium",
+      "location": "private_driver.py:38-49",
+      "finding": "Command routing is a denylist, not fail-closed admission. Unknown operations are executed without a private --socket; ownership switches are checked only in args[1:]. An operation beginning '--socket=/audit/host-driver' passes the wrapper with no private endpoint appended.",
+      "evidence": "unknown_operation and leading_socket_override both reached intercepted exec without a private socket. This proves wrapper admission only: whether the pinned Driver parser rejects that syntax or has other direct/default-daemon operations was not tested or asserted.",
+      "required_before_gui_resume": "Allow only audited operations, distinguish endpoint-bound operations from genuinely offline introspection, and parse/reject ownership overrides across the whole argument vector. Independently establish that endpoint loss cannot trigger default/global-daemon or direct-input fallback in the pinned Driver. Until then this audit cannot certify the requested no-fallback boundary."
+    }
+  ],
+  "nonblocking_findings": [
+    {
+      "id": "N1",
+      "location": "probe_private_driver.py:50-74; sway-native-input-004.json; sway-native-input-005.json",
+      "finding": "The cursor result is delivery-only, not an independently verified pointer position. The probe labels this correctly. Unchanged host focus does not exclude host pointer movement, typing, or scrolling. The missing position oracle is not itself a containment blocker; it blocks claims of verified input effect, not a properly isolated smoke trial."
+    },
+    {
+      "id": "N2",
+      "location": "sway-native-input-004.json:43,74; sway-native-input-005.json:43,74",
+      "finding": "Both receipts match the current session source but certify wrapper SHA-256 385953df0fdb814a46b2c578fc7a9a3c0f468619d807447e633884868f88ab18, not reviewed wrapper 0a66f7dcba7216c6666171ac7e4e76d514db28f276478014fd6ef346ed112db3. They cannot certify the current wrapper. This is an evidence-scope limitation, not independent proof of unsafe behavior. Obtain fresh evidence after fixes; trial 006 was not read."
+    },
+    {
+      "id": "N3",
+      "location": "sway_session.py:137-175,199",
+      "finding": "This is environment routing for trusted same-UID programs, not an OS sandbox. No namespace/device/system-bus restriction prevents an arbitrary admitted command from directly opening known host paths. Only Sway's initial descriptors and input devices are checked, not Driver/descendants after input. Narrow claims and admitted commands accordingly, or add a stronger boundary if hostile code/fallback implementations are in scope. A private Sway seat named seat0 is not by itself the physical seat."
+    }
+  ],
+  "verified_checks": [
+    {
+      "check": "Offline scope",
+      "result": "Read only the five assigned Python files, receipts 004/005, and the permitted build receipt/binary for hashing. No GUI/browser/computer-use tools, Sway, Driver daemon, native input, host socket connections, or host focus queries were executed. Source, skills, branches, and commits were not modified. Scratch fixtures were removed."
+    },
+    {
+      "check": "Existing unit tests",
+      "result": "test_sway_isolation.py: one unittest passed, including its host-route rejection subtests.",
+      "command": "python3 -B -c 'import sys,unittest; sys.path.insert(0,\"/mnt/zer0models/github/cua-lanes/speed-frontier/research/work-deletion/isolation\"); import test_sway_isolation; r=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(test_sway_isolation)); raise SystemExit(not r.wasSuccessful())'"
+    },
+    {
+      "check": "Actual wrapper refusal entrypoint",
+      "result": "Absent lease, malformed JSON lease, and fake dead-owner lease each exited 70 with empty stdout and 'Sway isolation refused' stderr. All used scrubbed environments and scratch runtime directories; the fake binary path was nonexistent."
+    },
+    {
+      "check": "Adversarial fake-lease controls",
+      "case_count": 31,
+      "refused": 20,
+      "reached_intercepted_exec": 11,
+      "method": "Separate isolated Python children, canonical scratch roots, real bound but nonlistening scratch UNIX sockets, and genuine self /proc owner environments. os.execve was replaced by a capture-only BaseException trap; an audit hook rejected actual exec/spawn/fork. No endpoint connections occurred. An initial setup run used a noncanonical scratch alias and failed HOME validation; it was corrected and the complete matrix rerun.",
+      "refused_cases": ["absent_lease", "malformed_lease", "wrong_runtime", "missing_endpoint", "outside_endpoint", "dead_owner", "wrong_owner_marker", "host_display", "host_hyprland", "host_xauthority", "host_atspi", "host_inject", "host_wayland_absolute", "host_bus", "socket_override", "socket_equals_override", "direct_override", "embedded_override", "serve_override", "stop_override"],
+      "exec_trap_cases": ["self_pid_fake_lease", "allowlist_shape", "unknown_operation", "leading_socket_override", "guid_hides_bus_fallback", "inherited_system_bus", "symlink_driver_endpoint", "symlink_sway_endpoint", "symlink_wayland", "symlink_bus", "missing_wayland_and_bus"]
+    },
+    {
+      "check": "Normal-path source guards",
+      "result": "Parent constructs a fresh environment, private HOME/runtime/session DBus, explicit headless/pixman Sway with Xwayland disabled, and explicit Driver socket/pid file. Before Driver launch it checks headless-only output, initial empty input devices, and Sway descriptors for physical device paths. Known client operations receive the private socket. host_focus uses read-only hyprctl activewindow, not host input. These support the normal path but do not cover the blockers."
+    },
+    {
+      "check": "Binary pin",
+      "result": "Executable SHA-256 independently matches the successful permitted build receipt. Source-tree value is recorded provenance, not a fresh Git verification in this restricted audit.",
+      "sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+      "recorded_source_head": "1027f8a77288e0ae2e94f7f6d6fd685f84b518be",
+      "recorded_source_rust_tree": "71e08f221ebdc86ffee0cd8f37085e1fc434f3e6"
+    },
+    {
+      "check": "Reviewed source snapshot",
+      "result": "Hashes checked before and after tests; all unchanged.",
+      "sha256": {
+        "sway_session.py": "5dd2d63184b171dacd5fc84547f3db5b7090b33737d67d387eea509a37a3a4b6",
+        "private_driver.py": "0a66f7dcba7216c6666171ac7e4e76d514db28f276478014fd6ef346ed112db3",
+        "sway_isolation.py": "5955a9491a268ebe911c4fca01cb6b3f7ea33c51deb8a55a138ccd1ffebfd548",
+        "test_sway_isolation.py": "8cc1922047cea544952b511500ce4f120a0d638bbe5805a3b64c9fc14a2d6111",
+        "probe_private_driver.py": "c797308508c9a4d41c7821e6ff33e4afc7e489018f5438b549b99dd8b0782dcb"
+      }
+    },
+    {
+      "check": "Receipt scope",
+      "result": "Parsed 004/005 raw output/focus fields rather than relying solely on complete=true: each records HEADLESS-1, initially empty inputs, equal before/after focus, and an empty marker-based cleanup list. These are historical observations, not independently repeated live checks or proof of every failure path."
+    }
+  ],
+  "summary": "FAIL: broader GUI/input resume is not certified. Normal routing and basic refusal controls are credible, but independently demonstrated endpoint/lease admission gaps and source-grounded cancellation/process-ownership defects require correction. CLI/default-daemon fallback remains unproven within the allowed offline scope. No live host escape was attempted or observed. The acknowledged pointer-position oracle limitation is separate and is not the reason for this blocking verdict."
+}

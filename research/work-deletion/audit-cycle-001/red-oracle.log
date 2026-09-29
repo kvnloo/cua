@@ -1,0 +1,169 @@
+test_counts_are_correlated_to_provider_entries_not_time (__main__.AuditorTests.test_counts_are_correlated_to_provider_entries_not_time) ... ok
+test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) ... 
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='oracle-false') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='preexisting-state') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='wrong-oracle-trial') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='wrong-journal-trial') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='wrong-journal-language') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='journal-false') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='journal-duplicate') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='claim-wrong-pin') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='trace-wrong-pin') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='oracle-wrong-pin') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='trace-wrong-trial') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='forced-off') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='fake-real') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='false-claimed-outcome') ... FAIL
+  test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='receipt-jsonl-disagree') ... FAIL
+test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) ... ok
+test_success_with_unobserved_fresh_ref_is_nonqualifying (__main__.AuditorTests.test_success_with_unobserved_fresh_ref_is_nonqualifying) ... ok
+test_unknown_counter_fields_and_malformed_inputs_fail_closed (__main__.AuditorTests.test_unknown_counter_fields_and_malformed_inputs_fail_closed) ... FAIL
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='oracle-false')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : oracle-false
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='preexisting-state')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : preexisting-state
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='wrong-oracle-trial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : wrong-oracle-trial
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='wrong-journal-trial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : wrong-journal-trial
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='wrong-journal-language')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : wrong-journal-language
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='journal-false')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : journal-false
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='journal-duplicate')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : journal-duplicate
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='claim-wrong-pin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : claim-wrong-pin
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='trace-wrong-pin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : trace-wrong-pin
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='oracle-wrong-pin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : oracle-wrong-pin
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='trace-wrong-trial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : trace-wrong-trial
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='forced-off')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : forced-off
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='fake-real')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : fake-real
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='false-claimed-outcome')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : false-claimed-outcome
+
+======================================================================
+FAIL: test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) (name='receipt-jsonl-disagree')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 86, in test_oracle_attribution_pins_and_forced_mode_are_mandatory
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : receipt-jsonl-disagree
+
+======================================================================
+FAIL: test_unknown_counter_fields_and_malformed_inputs_fail_closed (__main__.AuditorTests.test_unknown_counter_fields_and_malformed_inputs_fail_closed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 93, in test_unknown_counter_fields_and_malformed_inputs_fail_closed
+    self.assertFalse(audit_capture(c,t,o)['qualifying'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.009s
+
+FAILED (failures=16)

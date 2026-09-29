@@ -1,0 +1,108 @@
+test_counts_are_correlated_to_provider_entries_not_time (__main__.AuditorTests.test_counts_are_correlated_to_provider_entries_not_time) ... ok
+test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) ... 
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='fresh-ref') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='prior-ref') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='foreign-session') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='unproven-field') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='ambiguous-target') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='wrong-dispatch-ref') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='wrong-dispatch-session') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='failed-dispatch') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='provider-wrong-order') ... FAIL
+  test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='observation-before-mutation') ... FAIL
+test_success_with_unobserved_fresh_ref_is_nonqualifying (__main__.AuditorTests.test_success_with_unobserved_fresh_ref_is_nonqualifying) ... ok
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='fresh-ref')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : fresh-ref
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='prior-ref')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : prior-ref
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='foreign-session')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : foreign-session
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='unproven-field')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : unproven-field
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='ambiguous-target')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : ambiguous-target
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='wrong-dispatch-ref')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : wrong-dispatch-ref
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='wrong-dispatch-session')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : wrong-dispatch-session
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='failed-dispatch')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : failed-dispatch
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='provider-wrong-order')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : provider-wrong-order
+
+======================================================================
+FAIL: test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) (name='observation-before-mutation')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 61, in test_proof_binds_to_fresh_observation_and_actual_dispatch
+    self.assertFalse(audit_capture(c,t,o)['qualifying'], name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : observation-before-mutation
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.005s
+
+FAILED (failures=10)

@@ -1,0 +1,21 @@
+test_counts_are_correlated_to_provider_entries_not_time (__main__.AuditorTests.test_counts_are_correlated_to_provider_entries_not_time) ... ok
+test_custody_cli_checks_external_anchor_and_witness_hashes (__main__.AuditorTests.test_custody_cli_checks_external_anchor_and_witness_hashes) ... ok
+test_duplicate_json_keys_do_not_silently_choose_last_claim (__main__.AuditorTests.test_duplicate_json_keys_do_not_silently_choose_last_claim) ... FAIL
+test_oracle_attribution_pins_and_forced_mode_are_mandatory (__main__.AuditorTests.test_oracle_attribution_pins_and_forced_mode_are_mandatory) ... ok
+test_proof_binds_to_fresh_observation_and_actual_dispatch (__main__.AuditorTests.test_proof_binds_to_fresh_observation_and_actual_dispatch) ... ok
+test_success_with_unobserved_fresh_ref_is_nonqualifying (__main__.AuditorTests.test_success_with_unobserved_fresh_ref_is_nonqualifying) ... ok
+test_unknown_counter_fields_and_malformed_inputs_fail_closed (__main__.AuditorTests.test_unknown_counter_fields_and_malformed_inputs_fail_closed) ... ok
+
+======================================================================
+FAIL: test_duplicate_json_keys_do_not_silently_choose_last_claim (__main__.AuditorTests.test_duplicate_json_keys_do_not_silently_choose_last_claim)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py", line 136, in test_duplicate_json_keys_do_not_silently_choose_last_claim
+    self.assertEqual(result.returncode,1,'duplicate JSON keys must be rejected, not resolved last-wins')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1 : duplicate JSON keys must be rejected, not resolved last-wins
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.129s
+
+FAILED (failures=1)

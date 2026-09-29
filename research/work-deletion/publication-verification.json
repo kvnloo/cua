@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "scope": "Fork-only evidence publication. No product/workflow changes or GUI execution.",
+  "packet_copy_checks": [
+    {
+      "packet": "research/work-deletion/audit-cycle-001",
+      "sealed_files_verified": 916,
+      "seal_unchanged": true
+    },
+    {
+      "packet": "research/work-deletion/economics-cycle-001",
+      "sealed_files_verified": 266,
+      "seal_unchanged": true
+    },
+    {
+      "packet": "research/work-deletion/predicate-cycle-001",
+      "sealed_files_verified": 583,
+      "seal_unchanged": true
+    }
+  ],
+  "all_changed_paths_within_research_and_abab": true,
+  "changed_or_new_paths_checked": 1793,
+  "credential_shape_scan": {
+    "passed": true,
+    "matching_files": [],
+    "scope": "Common token/private-key patterns; not a complete secret detector. Token/privacy checks are also in sealed packet verification."
+  },
+  "sealed_logs_missing_from_donor_commit": {
+    "count": 19,
+    "resolution": "Copied byte-exact into publication and explicitly staged despite ignore rules; donor packets and seals unchanged."
+  },
+  "failed_safety_gate_preserved": true,
+  "completed_4316_branch_not_changed": true,
+  "raw_evidence_whitespace_exceptions": {
+    "files": [
+      "research/work-deletion/audit-cycle-001/red-binding.log",
+      "research/work-deletion/audit-cycle-001/red-oracle.log"
+    ],
+    "reason": "Preserve sealed raw unittest RED outputs byte-for-byte. Two historical trailing spaces are not normalized; scoped diff-check excludes only these exact evidence files."
+  }
+}

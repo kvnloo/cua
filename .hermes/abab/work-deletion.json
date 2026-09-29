@@ -5,7 +5,7 @@
     "No upstream writes",
     "No product architecture",
     "Do not touch completed evidence or #4316 branch",
-    "Private GUI isolation",
+    "Headless Sway only; independent review failed, GUI/input paused",
     "Checker negative controls before qualification"
   ],
   "metrics": [
@@ -22,17 +22,21 @@
   ],
   "baseline": {
     "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
-    "upstream_sha": "fe9b0c6d3c0307537bccbfd69f4f801ec219adc0"
+    "upstream_sha": "2d0431fb00962c50349ca1a25247e8b502db679b"
   },
   "concepts": {},
   "mechanisms": {},
-  "contradictions": [],
+  "contradictions": [
+    "Old verifier accepts adversarial evidence; fixture success alone does not prove route/call deletion.",
+    "Unknown verification permits repeated submission equally in baseline and guarded runners.",
+    "Private Sway normal-path smoke does not certify endpoint admission, cancellation or descendant cleanup."
+  ],
   "unresolved": [
-    "GC-economics",
-    "GC-break-even",
-    "GC-admission",
-    "evidence-chain",
-    "next-deletion"
+    "current-main #4316 landing",
+    "Sway review B1-B5",
+    "qualifying REAL whole-task economics",
+    "actual-backend/no-replay #83 evidence",
+    "production native cancellation inventory #84/#9"
   ],
   "hypotheses": [
     {
@@ -144,16 +148,34 @@
       "rival_of": null
     }
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "id": "cycle001-parent-verification",
+      "claim": "Receipt integrity verified; claims narrowed; REAL economics and isolation remain blocked",
+      "source": "research/work-deletion/parent-verification-cycle-001.json",
+      "source_class": "measurement",
+      "scope": "offline parent verification, not new live trial",
+      "confidence": "established within recorded scope",
+      "counter": true
+    }
+  ],
   "experiments": [],
   "strategy_log": [
     {
       "wave": 1,
       "mutation": "ADD",
       "decision": "Parallel cheap scouts/replay/checker attacks; serialize current-head whole-task timing."
+    },
+    {
+      "wave": 1,
+      "mutation": "DOWNGRADE",
+      "decision": "Parent validated audit/predicate/economics artifacts; quarantine unqualified live traces, narrow route/admission claims, block GUI resume after failed independent safety review. Latest user steer requests publication, not new feature streams."
     }
   ],
-  "dead_ends": [],
+  "dead_ends": [
+    "Lossless historical predicate replay unavailable: original observations/task/plan objects absent.",
+    "Observation-price break-even premise does not apply to this common-observation recipe."
+  ],
   "no_update_streak": 0,
   "wave": 1,
   "wave_budget": null,

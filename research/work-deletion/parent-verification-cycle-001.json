@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-09-29T21:22:23.474054+00:00",
+  "scope": "Parent re-execution and artifact verification; no GUI/input/live provider and no rewriting completed packets.",
+  "gates": [
+    {
+      "name": "audit-bundle",
+      "command": "env -u PYTHONPATH -u PYTHONHOME PYTHONDONTWRITEBYTECODE=1 python3 -B /mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/validate_bundle.py",
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-audit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "output": "{\"verdict\": \"NONQUALIFYING_RETAINED_REAL_ROUTE\", \"retained_trials\": 94, \"downstream_trials\": 58, \"protected_files_unchanged\": 56, \"seal\": false}"
+    },
+    {
+      "name": "predicate-checker-tests",
+      "command": "env -u PYTHONPATH -u PYTHONHOME PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest test_checker -v",
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-predicate/research/work-deletion/predicate-cycle-001",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "output": "test_cli_rejects_corrupt_receipt (test_checker.ReceiptCheckerTest.test_cli_rejects_corrupt_receipt) ... ok\ntest_rejects_corrupt_receipt_identity_and_claims (test_checker.ReceiptCheckerTest.test_rejects_corrupt_receipt_identity_and_claims) ... ok\ntest_rejects_corrupt_runner_receipts (test_checker.ReceiptCheckerTest.test_rejects_corrupt_runner_receipts) ... ok\ntest_rejects_corrupt_stale_ref_proof (test_checker.ReceiptCheckerTest.test_rejects_corrupt_stale_ref_proof) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.028s\n\nOK"
+    },
+    {
+      "name": "predicate-packet",
+      "command": "env -u PYTHONPATH -u PYTHONHOME PYTHONDONTWRITEBYTECODE=1 python3 -B verify_packet.py",
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-predicate/research/work-deletion/predicate-cycle-001",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "output": "test_exact_source_and_hermetic_setup (__main__.PacketTest.test_exact_source_and_hermetic_setup) ... ok\ntest_normal_fixture_deletes_exactly_one_provider_decision (__main__.PacketTest.test_normal_fixture_deletes_exactly_one_provider_decision) ... ok\ntest_original_corpus_hashes_counts_and_links (__main__.PacketTest.test_original_corpus_hashes_counts_and_links) ... ok\ntest_other_tasks_are_not_broadened (__main__.PacketTest.test_other_tasks_are_not_broadened) ... ok\ntest_packet_manifest_when_present (__main__.PacketTest.test_packet_manifest_when_present) ... ok\ntest_python_typescript_resolver_parity (__main__.PacketTest.test_python_typescript_resolver_parity) ... ok\ntest_receipt_coverage_and_declared_counts (__main__.PacketTest.test_receipt_coverage_and_declared_counts) ... ok\ntest_runner_receipts_match_original_artifacts (__main__.PacketTest.test_runner_receipts_match_original_artifacts) ... ok\ntest_unknown_oracle_is_not_nonreplay_proof (__main__.PacketTest.test_unknown_oracle_is_not_nonreplay_proof) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.039s\n\nOK"
+    },
+    {
+      "name": "predicate-corrupt-evidence",
+      "command": "env -u PYTHONPATH -u PYTHONHOME PYTHONDONTWRITEBYTECODE=1 python3 -B checker.py negative-control.jsonl",
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-predicate/research/work-deletion/predicate-cycle-001",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "passed": true,
+      "output": "{\"errors\": [\"fresh_ref_reused\", \"proof_candidate_mismatch\"], \"ok\": false, \"receipt_count\": 1}"
+    },
+    {
+      "name": "economics-contract-tests",
+      "command": "env -u PYTHONPATH -u PYTHONHOME -u DISPLAY -u WAYLAND_DISPLAY -u SWAYSOCK -u HYPRLAND_INSTANCE_SIGNATURE -u DBUS_SESSION_BUS_ADDRESS -u DBUS_SYSTEM_BUS_ADDRESS PYTHONDONTWRITEBYTECODE=1 CUA_DRIVER_BIN=/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/INTENTIONALLY_NONEXISTENT_GUI_DRIVER python3 -B -m unittest test_contract -v",
+      "cwd": "/mnt/zer0models/github/cua-lanes/speed-economics/research/work-deletion/economics-cycle-001/tools",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "output": "test_rejects_http_metadata_not_supported_by_journal (test_contract.ReceiptTests.test_rejects_http_metadata_not_supported_by_journal) ... ok\ntest_route_counter_oracle_refs_and_source_rejected (test_contract.ReceiptTests.test_route_counter_oracle_refs_and_source_rejected) ... ok\ntest_safety_halt_blocks_before_any_gui_spawn (test_contract.ReceiptTests.test_safety_halt_blocks_before_any_gui_spawn) ... ok\ntest_scrubber_uses_allowlist_not_a_token_replacement (test_contract.ReceiptTests.test_scrubber_uses_allowlist_not_a_token_replacement) ... ok\ntest_wrong_flag_rejected_before_success_can_qualify (test_contract.ReceiptTests.test_wrong_flag_rejected_before_success_can_qualify) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.033s\n\nOK\n{\"blocked\": true, \"reason\": \"verified_headless_sway_required\"}"
+    }
+  ],
+  "source_sha": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "economics": {
+    "artifact_files_verified": 266,
+    "artifact_bytes_verified": 3322287,
+    "receipts": 30,
+    "scientific_cells": 14,
+    "runs": [
+      {
+        "run_id": "fallback-001",
+        "count": 2,
+        "expected_count": 2,
+        "plan_complete": true,
+        "receipt_consistency_passed": true,
+        "live_focus_qualified": false,
+        "negative_controls_passed": true
+      },
+      {
+        "run_id": "grid-001",
+        "count": 8,
+        "expected_count": 8,
+        "plan_complete": true,
+        "receipt_consistency_passed": true,
+        "live_focus_qualified": false,
+        "negative_controls_passed": true
+      },
+      {
+        "run_id": "pilot-001",
+        "count": 4,
+        "expected_count": 4,
+        "plan_complete": true,
+        "receipt_consistency_passed": true,
+        "live_focus_qualified": false,
+        "negative_controls_passed": true
+      },
+      {
+        "run_id": "pilot-002",
+        "count": 4,
+        "expected_count": 4,
+        "plan_complete": true,
+        "receipt_consistency_passed": true,
+        "live_focus_qualified": false,
+        "negative_controls_passed": true
+      },
+      {
+        "run_id": "repeat-001",
+        "count": 12,
+        "expected_count": 12,
+        "plan_complete": true,
+        "receipt_consistency_passed": true,
+        "live_focus_qualified": false,
+        "negative_controls_passed": true
+      }
+    ],
+    "qualification": "All 30 historical live receipts remain focus-isolation-unqualified. Revalidation establishes data consistency only; no speedup promotion."
+  },
+  "audit": {
+    "verdict": "NONQUALIFYING_RETAINED_REAL_ROUTE",
+    "retained_checker": {
+      "accepted": 70,
+      "adversarial_accepted": 60,
+      "adversarial_rejected": 24,
+      "adversarial_trials": 84,
+      "categories": {
+        "additional-outcome": 2,
+        "decline-counter-one": 2,
+        "decline-dry-run": 2,
+        "decline-step-number": 2,
+        "default-counter-zero": 2,
+        "default-route-guarded": 2,
+        "duplicate-proof": 2,
+        "first-action-error": 2,
+        "first-action-missing": 2,
+        "fresh-ref-unobserved": 2,
+        "fresh-ref-whitespace": 2,
+        "guarded-action-error": 2,
+        "guarded-dry-run": 2,
+        "guarded-time-bool": 2,
+        "guarded-tool-none": 2,
+        "guarded-wrong-candidate": 2,
+        "journal-duplicate": 2,
+        "journal-language-wrong": 2,
+        "journal-outcome-false": 2,
+        "prior-ref-unobserved": 2,
+        "proof-uniqueness-bool": 2,
+        "proof-uniqueness-float": 2,
+        "provider-counter-extra": 2,
+        "provider-counter-zero": 2,
+        "receipt-mode-wrong": 2,
+        "receipt-pin-wrong": 2,
+        "receipt-steps-disagree": 2,
+        "session-foreign": 2,
+        "session-whitespace": 2,
+        "step-number-repeated": 2
+      },
+      "new_adversarial_accepted": 60,
+      "new_adversarial_rejected": 20,
+      "new_adversarial_trials": 80,
+      "registered_oracle_controls_reused_on_corpus": 4,
+      "rejected": 24,
+      "total": 94,
+      "valid_controls": 10
+    },
+    "downstream_auditor": {
+      "all_cli_and_core_checks_passed": true,
+      "nonqualifying_corruptions": 53,
+      "qualifying_fix_controls": 5,
+      "total": 58
+    },
+    "source_checks": {
+      "driver_rust_tree": "71e08f221ebdc86ffee0cd8f37085e1fc434f3e6",
+      "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+      "protected_evidence_files_unchanged": 56,
+      "protected_example_files_unchanged": 122,
+      "runner_pin": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+      "source_example_tree": "e619bcacf8e587b26cb96e63f89fa35bdaef5455"
+    },
+    "historical_real_rows_examined": 6,
+    "historical_real_rows_qualifying": 0
+  },
+  "predicate": {
+    "receipts": 270,
+    "resolver_receipts": 214,
+    "runner_receipts": 56,
+    "corpus_original_trials": 240,
+    "corpus_cells": 69,
+    "lossless_historical_replay": false,
+    "scope": "Exact c78 resolver/runner, hermetic external transport; historical cells are structural adaptations, not lossless replay."
+  },
+  "sway": {
+    "independent_review_passed": false,
+    "blocking_findings": [
+      {
+        "id": "B1",
+        "severity": "high",
+        "finding": "Cancellation/setup failures can bypass or interrupt cleanup. DBus launches at line 151 before the lifetime try/finally at 155; a signal, append failure, or config-write failure in that window leaves it alive. The signal handler continues raising InterruptedError inside cleanup, so a second cancellation can abort reaping, handler restoration, and receipt creation. Cleanup or host_focus exceptions likewise skip restoration/reporting."
+      },
+      {
+        "id": "B2",
+        "severity": "high",
+        "finding": "Cleanup does not own a complete process tree. It enumerates only live processes whose initial /proc environment contains the lease marker, then waits on explicitly registered direct children. A grandchild that filters that marker is invisible; start_new_session=True is never paired with process-group cleanup. The stated MCP allowlist actually removes this marker before wrapper exec restores it. Numeric PID scan-then-kill also lacks start-time/pidfd revalidation, leaving a PID-reuse collateral-signal race."
+      },
+      {
+        "id": "B3",
+        "severity": "high",
+        "finding": "Endpoint validation admits host-route indirection. Resolving only an endpoint's parent and using is_socket follows final-component symlinks; private-looking Driver/Sway paths can therefore target outside sockets. Wayland and DBus endpoints are not required to exist. DBus validation truncates at ',guid=' while the original full address is forwarded, admitting a second nonprivate fallback address. DBUS_SYSTEM_BUS_ADDRESS is also forwarded unchanged by the wrapper."
+      },
+      {
+        "id": "B4",
+        "severity": "high",
+        "finding": "A lease is self-asserted, not proof of a parent-owned Sway/Driver pair. A fake lease naming the same unrelated Python process as both owners, two merely bound nonlistening sockets, an arbitrary binary, and an arbitrary library path passes every gate. Owner checks bind neither socket peer nor executable/start time to the claimed role; wrapper exec trusts binary/library values from the lease without checking the build pin."
+      },
+      {
+        "id": "B5",
+        "severity": "medium",
+        "finding": "Command routing is a denylist, not fail-closed admission. Unknown operations are executed without a private --socket; ownership switches are checked only in args[1:]. An operation beginning '--socket=/audit/host-driver' passes the wrapper with no private endpoint appended."
+      }
+    ],
+    "live_resume_authorized": false
+  },
+  "upstream_sha": "2d0431fb00962c50349ca1a25247e8b502db679b",
+  "completed_4316_head_unchanged_and_clean": true,
+  "all_offline_gates_passed": true
+}
