@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -187,6 +189,32 @@ class ModelTest(unittest.TestCase):
         with self.assertRaises(OpenJevError) as caught:
             model.score(request())
         self.assertEqual(caught.exception.code, "invalid_response")
+
+    def test_cli_openjev_missing_config_fails_before_provider_request(self) -> None:
+        env = os.environ.copy()
+        for name in (
+            "OPENJEV_BASE_URL",
+            "OPENJEV_API_KEY",
+            "OPENJEV_MODEL",
+            "OPENJEV_TIMEOUT_MS",
+        ):
+            env.pop(name, None)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(BASE / "python/choose_decision.py"),
+                "--model",
+                "openjev",
+            ],
+            input=json.dumps(decision_request_wire(request())),
+            text=True,
+            capture_output=True,
+            check=False,
+            env=env,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("OpenJev setup failed", result.stderr)
 
     def test_wire_reconstruction_keeps_candidates_and_progress(self) -> None:
         wire = decision_request_wire(request())
