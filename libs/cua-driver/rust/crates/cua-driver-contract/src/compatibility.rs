@@ -448,6 +448,13 @@ mod tests {
     }
 
     #[test]
+    fn portable_only_pattern_is_safe_narrowing() {
+        let portable = json!({ "type": "string", "pattern": "^s[0-9a-f]{8}:[0-9]+$" });
+        let unconstrained_live = json!({ "type": "string", "description": "free text" });
+        assert!(schema_subset_violations(&portable, &unconstrained_live).is_empty());
+    }
+
+    #[test]
     fn unknown_validation_keyword_fails_closed() {
         let portable = json!({ "type": "string", "format": "uuid" });
         let live = json!({ "type": "string" });
