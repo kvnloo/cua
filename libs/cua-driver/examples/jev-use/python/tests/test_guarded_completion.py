@@ -106,6 +106,17 @@ class GuardedCompletionTest(unittest.TestCase):
         sources, selected = self.initial()
         plan = plan_guarded_completion(self.task, sources, selected, session="session-a")
         assert plan is not None
+        reused_sources = fixture_sources(snapshot("proof", [plan.prior_ref]))
+        self.assertIsNone(
+            resolve_guarded_completion(
+                plan,
+                self.task,
+                reused_sources,
+                self.task.candidates(reused_sources),
+                session="session-a",
+            )
+        )
+
         fresh_sources = fixture_sources(snapshot("proof", ["p2:1"]))
         bad = Candidate(
             "submit-form",

@@ -110,6 +110,8 @@ def resolve_guarded_completion(
     if len(matches) != 1:
         return None
     fresh_ref = str(matches[0]["ref"])
+    if fresh_ref == plan.prior_ref:
+        return None
 
     executable = [
         candidate

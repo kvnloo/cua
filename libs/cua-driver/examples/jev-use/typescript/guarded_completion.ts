@@ -88,6 +88,7 @@ export function resolveGuardedCompletion(
   const matches = matchingRefs(sources.page.snapshot, plan.targetRole, plan.targetName);
   if (matches.length !== 1) return undefined;
   const freshRef = String(matches[0].ref);
+  if (freshRef === plan.priorRef) return undefined;
 
   const executable = candidates.filter(
     (candidate) =>

@@ -80,6 +80,12 @@ test('guarded completion refuses old-ref reuse and requires a unique initial tar
   const plan = planGuardedCompletion(task, initial, task.candidates(initial)[0], 'session-a');
   assert.ok(plan);
 
+  const reused = fixtureSources(snapshot('proof', [plan.priorRef]));
+  assert.equal(
+    resolveGuardedCompletion(plan, task, reused, task.candidates(reused), 'session-a'),
+    undefined
+  );
+
   const fresh = fixtureSources(snapshot('proof', ['p2:1']));
   const bad = immutableCandidate({
     id: 'submit-form',
