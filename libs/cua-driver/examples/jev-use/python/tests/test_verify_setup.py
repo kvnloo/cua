@@ -119,12 +119,19 @@ class VerifySetupTests(unittest.TestCase):
             acted_path([type_step, self.submit_step('browser_click', 'not_installed')]),
             {'submit_tool': 'browser_click', 'acted_path': 'page_structure',
              'submit_delivery_mode': None,
-             'visual_statuses': ['not_installed', 'not_installed'], 'escalations': []},
+             'visual_statuses': ['not_installed', 'not_installed'],
+             'decision_routes': [None, None], 'escalations': []},
         )
         self.assertEqual(
             acted_path([type_step, self.submit_step('click', 'ok')])['acted_path'], 'visual'
         )
         self.assertEqual(acted_path([type_step])['acted_path'], None)
+
+    def test_acted_path_reports_decision_routes_in_step_order(self):
+        type_step = {'event': 'step', 'step': 1, 'candidate': 'type-verification-value',
+                     'tool': 'browser_type', 'decision_route': 'provider', 'visual': {'status': 'skipped'}}
+        submit = {**self.submit_step('browser_click', 'skipped'), 'decision_route': 'guarded-completion'}
+        self.assertEqual(acted_path([type_step, submit])['decision_routes'], ['provider', 'guarded-completion'])
 
     def replay(self, events, *, submit=True, code='0', **options):
         """Run a child that replays a JSONL log and optionally submits the token."""
@@ -148,6 +155,22 @@ class VerifySetupTests(unittest.TestCase):
 
     def verified(self, tool, status):
         return [self.submit_step(tool, status), {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'}]
+
+    def guarded_events(self, second_route):
+        type_step = {'event': 'step', 'step': 1, 'candidate': 'type-verification-value', 'tool': 'browser_type',
+                     'decision_route': 'provider', 'visual': {'status': 'skipped'}}
+        submit = {**self.submit_step('browser_click', 'skipped'), 'decision_route': second_route}
+        return [type_step, submit, {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'}]
+
+    def test_guarded_completion_requires_the_exact_provider_then_guarded_routes(self):
+        result = self.replay(self.guarded_events('guarded-completion'), require_guarded_completion=True)
+        self.assertEqual(result['decision_routes'], ['provider', 'guarded-completion'])
+        with self.assertRaisesRegex(RuntimeError, 'Guarded completion was required.*provider.*provider'):
+            self.replay(self.guarded_events('provider'), require_guarded_completion=True)
+
+    def test_default_run_does_not_require_a_guarded_route(self):
+        result = self.replay(self.guarded_events('provider'))
+        self.assertEqual(result['decision_routes'], ['provider', 'provider'])
 
     def test_reports_page_structure_path(self):
         result = self.replay(self.verified('browser_click', 'not_installed'))
