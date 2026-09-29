@@ -1,0 +1,95 @@
+[
+  {
+    "actual_exit": 1,
+    "auditor_sha256": "fbf608775d9fdf340888ae0eb5d7402dd64e6762d61d74146e288c2fab3d2337",
+    "command": [
+      "/home/kvn/.hermes/tools/python-3.14.7+20260901-linux-x64/bin/python",
+      "-B",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py",
+      "AuditorTests.test_success_with_unobserved_fresh_ref_is_nonqualifying"
+    ],
+    "cwd": "/mnt/zer0models/github/cua-lanes/speed-audit",
+    "environment_overrides": {
+      "AUDIT_CHECKER": "retained"
+    },
+    "exact_retained_pin": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "expected_exit": 1,
+    "log": "red-final.log",
+    "log_sha256": "97add4ecd427531cc7cab52e516a2cb9280cb1e6109a720171e719c8faeead1d",
+    "name": "red-final",
+    "test_sha256": "0d124d9624b1a67da731b83c2757972a356372e6c7663649206a05622e178df4"
+  },
+  {
+    "actual_exit": 0,
+    "auditor_sha256": "fbf608775d9fdf340888ae0eb5d7402dd64e6762d61d74146e288c2fab3d2337",
+    "command": [
+      "/home/kvn/.hermes/tools/python-3.14.7+20260901-linux-x64/bin/python",
+      "-B",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py"
+    ],
+    "cwd": "/mnt/zer0models/github/cua-lanes/speed-audit",
+    "environment_overrides": {},
+    "exact_retained_pin": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "expected_exit": 0,
+    "log": "green-final.log",
+    "log_sha256": "bc49b5b4856e2bfccbe8f2d7ecc24a47b22b3ac95671b2df0c8b8b8c9626b526",
+    "name": "green-final",
+    "test_sha256": "0d124d9624b1a67da731b83c2757972a356372e6c7663649206a05622e178df4"
+  },
+  {
+    "actual_exit": 0,
+    "auditor_sha256": "fbf608775d9fdf340888ae0eb5d7402dd64e6762d61d74146e288c2fab3d2337",
+    "command": [
+      "ruff",
+      "check",
+      "--no-fix",
+      "--no-cache",
+      "--select",
+      "E4,E7,E9,F",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/auditor.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/capture_consumers.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/final_checks.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/prepare.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/run_auditor_matrix.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/run_retained_tests.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/validate_bundle.py"
+    ],
+    "cwd": "/mnt/zer0models/github/cua-lanes/speed-audit",
+    "environment_overrides": {},
+    "exact_retained_pin": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "expected_exit": 0,
+    "log": "lint-final.log",
+    "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "name": "lint-final",
+    "test_sha256": "0d124d9624b1a67da731b83c2757972a356372e6c7663649206a05622e178df4"
+  },
+  {
+    "actual_exit": 0,
+    "auditor_sha256": "fbf608775d9fdf340888ae0eb5d7402dd64e6762d61d74146e288c2fab3d2337",
+    "command": [
+      "ruff",
+      "format",
+      "--no-cache",
+      "--check",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/auditor.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/capture_consumers.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/final_checks.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/prepare.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/run_auditor_matrix.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/run_retained_tests.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/test_auditor.py",
+      "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/validate_bundle.py"
+    ],
+    "cwd": "/mnt/zer0models/github/cua-lanes/speed-audit",
+    "environment_overrides": {},
+    "exact_retained_pin": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "expected_exit": 0,
+    "log": "format-final.log",
+    "log_sha256": "2ce9758b9f8abd876ec3e76c589e099e8b05377b1e7ea2331e81ee80f07bdff8",
+    "name": "format-final",
+    "test_sha256": "0d124d9624b1a67da731b83c2757972a356372e6c7663649206a05622e178df4"
+  }
+]

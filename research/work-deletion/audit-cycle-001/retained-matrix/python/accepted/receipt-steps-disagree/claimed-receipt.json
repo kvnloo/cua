@@ -1,0 +1,149 @@
+{
+  "chooser": "mock",
+  "complete": true,
+  "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+  "driver_source_rust_tree": "71e08f221ebdc86ffee0cd8f37085e1fc434f3e6",
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "fixture_journal": [
+    {
+      "committed_expected_value": true,
+      "event": "fixture_submit",
+      "language": "python",
+      "received_expected_value": true
+    },
+    {
+      "committed_expected_value": true,
+      "event": "fixture_submit",
+      "language": "typescript",
+      "received_expected_value": true
+    }
+  ],
+  "isolation": {
+    "DISPLAY": ":99",
+    "HOME": "/home/kvn/.hermes/profiles/clean/cache/scratch/cua-4316-x11.FFJzoE/home",
+    "WAYLAND_DISPLAY": null,
+    "XDG_RUNTIME_DIR": "/home/kvn/.hermes/profiles/clean/cache/scratch/cua-4316-x11.FFJzoE/xdg-runtime"
+  },
+  "jsonl_token_absent": true,
+  "mode": "accepted",
+  "oracle": "genuine HTTP /submit -> fixture state and independently fetched /state",
+  "real_driver": true,
+  "steps": {
+    "python": [
+      {
+        "action_ms": 1599.21,
+        "candidate": "type-verification-value",
+        "candidate_build_ms": 0.08,
+        "confidence": 1.0,
+        "decision_ms": 23.72,
+        "decision_route": "provider",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "probabilities": {
+          "abstain": 0.0,
+          "reobserve": 0.0,
+          "type-verification-value": 1.0
+        },
+        "provider_decision_ms": 0.01,
+        "semantic_observe_ms": 23.57,
+        "step": 1,
+        "tool": "browser_type",
+        "total_step_ms": 1622.94,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0.0
+      },
+      {
+        "action_ms": 1548.0,
+        "candidate": "submit-form",
+        "candidate_build_ms": 0.05,
+        "confidence": null,
+        "decision_ms": 5.78,
+        "decision_route": "guarded-completion",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "guarded_completion": {
+          "fresh_ref": "p2:2",
+          "prior_ref": "p1:1",
+          "session": "jev-python-f7827c2f",
+          "status": "accepted",
+          "submit_matches": 1,
+          "verification_field": "contains_required_token"
+        },
+        "probabilities": null,
+        "provider_decision_ms": 0.0,
+        "semantic_observe_ms": 5.67,
+        "step": 2,
+        "tool": "click",
+        "total_step_ms": 1553.8,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0.0
+      }
+    ],
+    "typescript": [
+      {
+        "action_ms": 1595.15,
+        "candidate": "type-verification-value",
+        "candidate_build_ms": 0.24,
+        "confidence": 1,
+        "decision_ms": 17.02,
+        "decision_route": "provider",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "probabilities": {
+          "abstain": 0,
+          "reobserve": 0,
+          "type-verification-value": 1
+        },
+        "provider_decision_ms": 0.09,
+        "semantic_observe_ms": 16.39,
+        "step": 1,
+        "tool": "browser_type",
+        "total_step_ms": 1612.23,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0
+      },
+      {
+        "action_ms": 1522.06,
+        "candidate": "submit-form",
+        "candidate_build_ms": 0.1,
+        "confidence": null,
+        "decision_ms": 5.69,
+        "decision_route": "guarded-completion",
+        "delivery_mode": null,
+        "dry_run": false,
+        "event": "step",
+        "guarded_completion": {
+          "fresh_ref": "p2:2",
+          "prior_ref": "p1:1",
+          "session": "jev-typescript-fef1ef40",
+          "status": "accepted",
+          "submit_matches": 1,
+          "verification_field": "contains_required_token"
+        },
+        "probabilities": null,
+        "provider_decision_ms": 0,
+        "semantic_observe_ms": 5.42,
+        "step": 2,
+        "tool": "browser_click",
+        "total_step_ms": 1527.77,
+        "visual": {
+          "reason": "page_structure_candidate",
+          "status": "skipped"
+        },
+        "visual_observe_ms": 0
+      }
+    ]
+  }
+}

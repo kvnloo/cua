@@ -1,0 +1,58 @@
+{
+  "artifacts": {
+    "claimed-journal.jsonl": "bd7eab3f0afd05fca47aeec8eb592127090968f64e3ffc45bd7bea6c2d715dfe",
+    "claimed-receipt.json": "d28ed0bfd25385cdca9dcabfef8a20040ce4d8619f34be3c30571fce3d6816b2",
+    "independent-check.json": "f4ff53dcf545f137c4e2cd2ed52ece91ec40ef00e370bee52d70e172267ef01a",
+    "input.jsonl": "f86b54253bfb25ea1bc4164e2562a20a33fa7faf031b61499d59395d3da2d961",
+    "output.jsonl": "f86b54253bfb25ea1bc4164e2562a20a33fa7faf031b61499d59395d3da2d961"
+  },
+  "cell_key": "audit001/retained/typescript/declined/decline-time-zero",
+  "challenge_producer_sha256": "03d5e5fc89318ab03eb2f278cf1d4abfc2166e41434c80153b8db088ee54e5b0",
+  "checker": "unmodified verify_setup.verify",
+  "checker_sha256": "22953ec2484c5871f598747d38fc111e30361ad04c2834caa3b1eb348b12806c",
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "-B",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+    "--child",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/typescript/declined/decline-time-zero/input.jsonl",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/typescript/declined/decline-time-zero/output.jsonl",
+    "http://127.0.0.1:23843/",
+    "decline-time-zero"
+  ],
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "independent": {
+    "actor": "adversarial replay child, not Driver",
+    "initially_empty": true,
+    "journal": [
+      {
+        "cell_key": "audit001/retained/typescript/declined/decline-time-zero",
+        "committed_expected_value": true,
+        "language": "typescript",
+        "received_expected_value": true,
+        "trial_key": "trial-001"
+      }
+    ],
+    "oracle": "unmodified FixtureHandler /submit and independently fetched /state",
+    "state_empty": false,
+    "state_matches_expected": true
+  },
+  "language": "typescript",
+  "mode": "declined",
+  "mutation": "decline-time-zero",
+  "retained": {
+    "accepted": true,
+    "returned_outcome": "verified",
+    "returned_path": "page_structure",
+    "returned_routes": [
+      "provider",
+      "provider"
+    ]
+  },
+  "reused_control": null,
+  "scope": "FIX verifier challenge, not a new REAL run",
+  "sidecars_consumed_by_retained_checker": false,
+  "source_jsonl": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/exact-declined/typescript-mock.jsonl",
+  "source_jsonl_sha256": "bd2461edc938d3e0bb2353c56ce62c157bbf67fcb6ab9016555b23354a7ced00",
+  "trial_key": "trial-001"
+}

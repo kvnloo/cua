@@ -1,0 +1,58 @@
+{
+  "artifacts": {
+    "claimed-journal.jsonl": "bd7eab3f0afd05fca47aeec8eb592127090968f64e3ffc45bd7bea6c2d715dfe",
+    "claimed-receipt.json": "534d0c00a88ec6833f536d60f603d6a0ad11136d4e361ecd3d9b43ddbc5ca96c",
+    "independent-check.json": "d9a0c19c3aa12a51a635fd9b7df03e5ba4b12cb6bb80d4208ced0ec442e51785",
+    "input.jsonl": "12d4354be2fdec55e0fb3af29f0ae55198dcde56d25993cf1ae00bd5e2509dbc",
+    "output.jsonl": "12d4354be2fdec55e0fb3af29f0ae55198dcde56d25993cf1ae00bd5e2509dbc"
+  },
+  "cell_key": "audit001/retained/typescript/default/default-time-zero",
+  "challenge_producer_sha256": "03d5e5fc89318ab03eb2f278cf1d4abfc2166e41434c80153b8db088ee54e5b0",
+  "checker": "unmodified verify_setup.verify",
+  "checker_sha256": "22953ec2484c5871f598747d38fc111e30361ad04c2834caa3b1eb348b12806c",
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "-B",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+    "--child",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/typescript/default/default-time-zero/input.jsonl",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/typescript/default/default-time-zero/output.jsonl",
+    "http://127.0.0.1:26577/",
+    "default-time-zero"
+  ],
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "independent": {
+    "actor": "adversarial replay child, not Driver",
+    "initially_empty": true,
+    "journal": [
+      {
+        "cell_key": "audit001/retained/typescript/default/default-time-zero",
+        "committed_expected_value": true,
+        "language": "typescript",
+        "received_expected_value": true,
+        "trial_key": "trial-001"
+      }
+    ],
+    "oracle": "unmodified FixtureHandler /submit and independently fetched /state",
+    "state_empty": false,
+    "state_matches_expected": true
+  },
+  "language": "typescript",
+  "mode": "default",
+  "mutation": "default-time-zero",
+  "retained": {
+    "accepted": true,
+    "returned_outcome": "verified",
+    "returned_path": "page_structure",
+    "returned_routes": [
+      "provider",
+      "provider"
+    ]
+  },
+  "reused_control": null,
+  "scope": "FIX verifier challenge, not a new REAL run",
+  "sidecars_consumed_by_retained_checker": false,
+  "source_jsonl": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/exact-default/typescript-mock.jsonl",
+  "source_jsonl_sha256": "f1db1ffbc6899be4e668f90e3f52a79205ce44ded4ef7658fd9e9c5d32ff16cb",
+  "trial_key": "trial-001"
+}

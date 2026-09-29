@@ -1,0 +1,107 @@
+{
+  "captures": [
+    {
+      "cell_key": "audit001/fix/python/default",
+      "mode": "default",
+      "provider_entries": 2,
+      "scope": "FIX_ONLY",
+      "trial_key": "trial-001",
+      "verdict": "QUALIFYING_FIX_ONLY"
+    },
+    {
+      "cell_key": "audit001/fix/python/accepted",
+      "mode": "accepted",
+      "provider_entries": 1,
+      "scope": "FIX_ONLY",
+      "trial_key": "trial-001",
+      "verdict": "QUALIFYING_FIX_ONLY"
+    },
+    {
+      "cell_key": "audit001/fix/python/declined",
+      "mode": "declined",
+      "provider_entries": 2,
+      "scope": "FIX_ONLY",
+      "trial_key": "trial-001",
+      "verdict": "QUALIFYING_FIX_ONLY"
+    }
+  ],
+  "downstream_auditor": {
+    "all_cli_and_core_checks_passed": true,
+    "nonqualifying_corruptions": 53,
+    "qualifying_fix_controls": 5,
+    "total": 58
+  },
+  "fixture_custody_sha256": "6052ffffe79bd3e1cea2c3bdbcbe3b66189e2350942b9dff5818201737cbbfbb",
+  "historical_real_rows_examined": 6,
+  "historical_real_rows_qualifying": 0,
+  "limitations": [
+    "No GUI, new REAL Driver execution, live provider, or speed benchmark.",
+    "Fresh correlated FIX witnesses are not retroactive historical REAL evidence.",
+    "Witness hash custody is a local integrity boundary, not authentication against a same-UID actor replacing the externally held root.",
+    "Narrow auditor supports only the captured two-action Python mock-fixture schema; unsupported/missing evidence fails closed.",
+    "Original journals lack trial IDs and original transport/provider counters. Session/proof labels alone do not bind actions."
+  ],
+  "meaning": "Recorded successful outcomes remain evidence of fixture success, not sufficient adversarial proof of intended route or provider-call deletion. No implementation defect or performance claim is made.",
+  "next_decision": "Parent independently verify, then optionally integrate this evidence-only auditor. Do not promote retained rows to route/provider-work-deletion proof. A future separately authorized REAL run needs passive counters/traces, action/session/ref binding and per-trial oracle attribution.",
+  "node_sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+  "node_version": "v22.23.2",
+  "privacy_checks": {
+    "ephemeral_values_checked_at_capture": true,
+    "raw_values_or_per_value_hashes_emitted": false,
+    "retained_values_and_runner_canaries_absent": true
+  },
+  "retained_checker": {
+    "accepted": 70,
+    "adversarial_accepted": 60,
+    "adversarial_rejected": 24,
+    "adversarial_trials": 84,
+    "categories": {
+      "additional-outcome": 2,
+      "decline-counter-one": 2,
+      "decline-dry-run": 2,
+      "decline-step-number": 2,
+      "default-counter-zero": 2,
+      "default-route-guarded": 2,
+      "duplicate-proof": 2,
+      "first-action-error": 2,
+      "first-action-missing": 2,
+      "fresh-ref-unobserved": 2,
+      "fresh-ref-whitespace": 2,
+      "guarded-action-error": 2,
+      "guarded-dry-run": 2,
+      "guarded-time-bool": 2,
+      "guarded-tool-none": 2,
+      "guarded-wrong-candidate": 2,
+      "journal-duplicate": 2,
+      "journal-language-wrong": 2,
+      "journal-outcome-false": 2,
+      "prior-ref-unobserved": 2,
+      "proof-uniqueness-bool": 2,
+      "proof-uniqueness-float": 2,
+      "provider-counter-extra": 2,
+      "provider-counter-zero": 2,
+      "receipt-mode-wrong": 2,
+      "receipt-pin-wrong": 2,
+      "receipt-steps-disagree": 2,
+      "session-foreign": 2,
+      "session-whitespace": 2,
+      "step-number-repeated": 2
+    },
+    "new_adversarial_accepted": 60,
+    "new_adversarial_rejected": 20,
+    "new_adversarial_trials": 80,
+    "registered_oracle_controls_reused_on_corpus": 4,
+    "rejected": 24,
+    "total": 94,
+    "valid_controls": 10
+  },
+  "source_checks": {
+    "driver_rust_tree": "71e08f221ebdc86ffee0cd8f37085e1fc434f3e6",
+    "driver_sha256": "f1d7f2d4ce929a8df80338ac57942bc6535ee5bef4f441f6173688b62da722f7",
+    "protected_evidence_files_unchanged": 56,
+    "protected_example_files_unchanged": 122,
+    "runner_pin": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "source_example_tree": "e619bcacf8e587b26cb96e63f89fa35bdaef5455"
+  },
+  "verdict": "NONQUALIFYING_RETAINED_REAL_ROUTE"
+}

@@ -1,0 +1,46 @@
+{
+  "artifacts": {
+    "claimed-journal.jsonl": "bd7eab3f0afd05fca47aeec8eb592127090968f64e3ffc45bd7bea6c2d715dfe",
+    "claimed-receipt.json": "aa604fd4b6cd2dd111169669cb93f3ac9b335ec56cdc80ead92b43fe39d86c7a",
+    "independent-check.json": "487610c7383ed8ac52a0aedf1b487457a792c2796cf00feb1d69e356776785af",
+    "input.jsonl": "7bedc550c83f10565fa62feba66bb3075ac5bae9ae99d376b46d284fb302052b",
+    "output.jsonl": "7bedc550c83f10565fa62feba66bb3075ac5bae9ae99d376b46d284fb302052b"
+  },
+  "cell_key": "audit001/retained/python/accepted/oracle-no-submit",
+  "challenge_producer_sha256": "03d5e5fc89318ab03eb2f278cf1d4abfc2166e41434c80153b8db088ee54e5b0",
+  "checker": "unmodified verify_setup.verify",
+  "checker_sha256": "22953ec2484c5871f598747d38fc111e30361ad04c2834caa3b1eb348b12806c",
+  "command": [
+    "/mnt/zer0models/github/cua-lanes/c4316/libs/cua-driver/examples/jev-use/.venv/bin/python",
+    "-B",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/challenge_retained.py",
+    "--child",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/python/accepted/oracle-no-submit/input.jsonl",
+    "/mnt/zer0models/github/cua-lanes/speed-audit/research/work-deletion/audit-cycle-001/retained-matrix/python/accepted/oracle-no-submit/output.jsonl",
+    "http://127.0.0.1:32793/",
+    "oracle-no-submit"
+  ],
+  "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+  "independent": {
+    "actor": "adversarial replay child, not Driver",
+    "initially_empty": true,
+    "journal": [],
+    "oracle": "unmodified FixtureHandler /submit and independently fetched /state",
+    "state_empty": true,
+    "state_matches_expected": false
+  },
+  "language": "python",
+  "mode": "accepted",
+  "mutation": "oracle-no-submit",
+  "retained": {
+    "accepted": false,
+    "error": "Independent fixture state does not match the expected token",
+    "error_type": "RuntimeError"
+  },
+  "reused_control": "test_verify_setup.VerifySetupTests.test_required_guard_decline_keeps_the_independent_oracle",
+  "scope": "FIX verifier challenge, not a new REAL run",
+  "sidecars_consumed_by_retained_checker": false,
+  "source_jsonl": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/exact-accepted/python-mock.jsonl",
+  "source_jsonl_sha256": "7bedc550c83f10565fa62feba66bb3075ac5bae9ae99d376b46d284fb302052b",
+  "trial_key": "trial-001"
+}
