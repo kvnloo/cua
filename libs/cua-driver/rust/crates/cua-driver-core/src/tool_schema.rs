@@ -115,6 +115,7 @@ pub fn snapshot_id_schema() -> Value {
 pub fn element_token_schema() -> Value {
     json!({
         "type": "string",
+        "pattern": "^s[0-9a-f]{8}:[0-9]+$",
         "description": "Opaque per-snapshot element handle from \
             `structuredContent.elements[].element_token`. If element_index, \
             snapshot_id, or window_id are also supplied they must agree. Returns \
@@ -214,7 +215,8 @@ fn required_canonical(tool: &str) -> Option<&'static [&'static str]> {
 }
 
 /// Reduce a param schema to the parts that govern client compatibility —
-/// `type`, `enum`, and (recursively) `items` — dropping `description` and any
+/// `type`, `enum`, `pattern`, and (recursively) `items` — dropping
+/// `description` and any
 /// other prose so per-tool wording differences don't trip the gate.
 fn structural(schema: &Value) -> Value {
     let mut out = serde_json::Map::new();
@@ -223,6 +225,9 @@ fn structural(schema: &Value) -> Value {
     }
     if let Some(e) = schema.get("enum") {
         out.insert("enum".into(), e.clone());
+    }
+    if let Some(pattern) = schema.get("pattern") {
+        out.insert("pattern".into(), pattern.clone());
     }
     if let Some(items) = schema.get("items") {
         out.insert("items".into(), structural(items));
@@ -372,6 +377,42 @@ mod tests {
             }
         });
         assert!(shared_schema_violations("click", &tool).is_empty());
+    }
+
+    #[test]
+    fn element_token_pattern_matches_the_minted_wire_shape() {
+        let schema = element_token_schema();
+        assert_eq!(schema["pattern"], "^s[0-9a-f]{8}:[0-9]+$");
+    }
+
+    #[test]
+    fn missing_shared_pattern_is_flagged() {
+        let tool = json!({
+            "type": "object",
+            "properties": {
+                "element_token": { "type": "string" }
+            }
+        });
+        let violations = shared_schema_violations("click", &tool);
+        assert!(
+            violations.iter().any(|item| item.contains("element_token")),
+            "missing element_token pattern must be flagged: {violations:?}"
+        );
+    }
+
+    #[test]
+    fn snapshot_pattern_drift_is_flagged() {
+        let tool = json!({
+            "type": "object",
+            "properties": {
+                "snapshot_id": { "type": "string", "pattern": "^wrong$" }
+            }
+        });
+        let violations = shared_schema_violations("click", &tool);
+        assert!(
+            violations.iter().any(|item| item.contains("snapshot_id")),
+            "snapshot_id pattern drift must be flagged: {violations:?}"
+        );
     }
 
     #[test]

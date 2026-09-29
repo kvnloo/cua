@@ -64,6 +64,10 @@ fn nonempty_string_schema(_: &mut SchemaGenerator) -> Schema {
     json_schema!({ "type": "string", "minLength": 1 })
 }
 
+fn element_token_schema(_: &mut SchemaGenerator) -> Schema {
+    json_schema!({ "type": "string", "pattern": "^s[0-9a-f]{8}:[0-9]+$" })
+}
+
 pub const MULTI_CALL_SESSION_DESCRIPTION: &str =
     "For multi-call work, prefer a short public session label and repeat it on every call that \
      accepts it. Omit it to use the authenticated transport's implicit lifecycle session.";
@@ -652,7 +656,7 @@ struct ClickWireInput {
     #[schemars(schema_with = "number_schema")]
     y: Option<f64>,
     #[serde(default, deserialize_with = "present_click_field")]
-    #[schemars(schema_with = "string_schema")]
+    #[schemars(schema_with = "element_token_schema")]
     element_token: Option<String>,
     #[serde(default, deserialize_with = "present_click_field")]
     #[schemars(schema_with = "nonempty_string_schema")]
@@ -997,6 +1001,10 @@ mod tests {
         assert!(schema["properties"].get("position").is_none());
         assert!(schema["properties"].get("capture_id").is_some());
         assert_eq!(schema["properties"]["capture_id"]["minLength"], 1);
+        assert_eq!(
+            schema["properties"]["element_token"]["pattern"],
+            "^s[0-9a-f]{8}:[0-9]+$"
+        );
     }
 
     #[test]
