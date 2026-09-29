@@ -986,7 +986,7 @@ mod tests {
         for position in [
             json!({"x":-1.5,"y":2.0}),
             json!({"x":-1.5,"y":2.0,"capture_id":"capture-1"}),
-            json!({"element_token":"s1:0"}),
+            json!({"element_token":"s00000001:0"}),
         ] {
             let mut wire = json!({"target":{"kind":"window","pid":7,"window_id":9007199254740993_u64},"delivery_mode":"background"});
             wire.as_object_mut()
@@ -1013,11 +1013,11 @@ mod tests {
             json!({}),
             json!({"x":1}),
             json!({"y":2}),
-            json!({"x":1,"y":2,"element_token":"s1:0"}),
-            json!({"element_token":"s1:0","capture_id":"capture-1"}),
+            json!({"x":1,"y":2,"element_token":"s00000001:0"}),
+            json!({"element_token":"s00000001:0","capture_id":"capture-1"}),
             json!({"x":1,"y":2,"capture_id":"  "}),
-            json!({"x":1,"element_token":"s1:0"}),
-            json!({"x":null,"element_token":"s1:0"}),
+            json!({"x":1,"element_token":"s00000001:0"}),
+            json!({"x":null,"element_token":"s00000001:0"}),
             json!({"element_token":"  "}),
             json!({"x":1,"y":2,"unknown":true}),
         ] {
@@ -1048,7 +1048,7 @@ mod tests {
         };
         assert!(input.validate().is_err());
         input.position = ClickPosition::Element {
-            element_token: "s1:0".into(),
+            element_token: "s00000001:0".into(),
         };
         assert!(input.validate().is_err());
         input.position = ClickPosition::Coordinates { x: 1.0, y: 2.0 };
