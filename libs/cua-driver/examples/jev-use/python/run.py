@@ -391,6 +391,8 @@ async def run(args: argparse.Namespace) -> str:
             available_tools = {tool.name for tool in advertised_tools}
             capture_bound_click = supports_capture_bound_click(advertised_tools)
             driver = Driver(session, label)
+            if os.getenv("JEV_USE_AGENT_CURSOR", "").lower() == "off":  # EXPERIMENT ONLY (not for promotion)
+                await driver.call("set_agent_cursor_enabled", {"enabled": False})
             prepared = await driver.call(
                 "browser_prepare",
                 {"allow_launch": True, "profile": {"mode": "isolated_new"}},

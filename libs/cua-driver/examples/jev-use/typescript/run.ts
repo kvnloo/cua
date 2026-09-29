@@ -424,6 +424,10 @@ async function run(args: Arguments): Promise<Outcome> {
     const availableTools = new Set(advertisedTools.map((tool) => tool.name));
     const captureBoundClick = supportsCaptureBoundClick(advertisedTools);
     const driver = new Driver(client, `jev-typescript-${randomUUID().slice(0, 8)}`);
+    if ((process.env.JEV_USE_AGENT_CURSOR ?? '').toLowerCase() === 'off') {
+      // EXPERIMENT ONLY (not for promotion)
+      await driver.call('set_agent_cursor_enabled', { enabled: false });
+    }
     const prepared = await driver.call('browser_prepare', {
       allow_launch: true,
       profile: { mode: 'isolated_new' },
