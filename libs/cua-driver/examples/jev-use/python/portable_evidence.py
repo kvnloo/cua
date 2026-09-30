@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -106,3 +108,27 @@ def normalize_events(
         "evidence": evidence,
         "invariants": invariants,
     }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log", required=True)
+    parser.add_argument("--revision", required=True)
+    parser.add_argument("--subject", default="jev-use")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    receipt = normalize_events(
+        load_events(args.log),
+        revision=args.revision,
+        subject_id=args.subject,
+    )
+    json.dump(receipt, sys.stdout, indent=2, sort_keys=True)
+    sys.stdout.write("\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
