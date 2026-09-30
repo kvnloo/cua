@@ -1,0 +1,45 @@
+name: Portable Evidence
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - exp/portable-evidence-v0
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Test normalizer
+        run: python libs/cua-driver/examples/jev-use/python/tests/test_portable_evidence.py
+      - name: Generate replay receipt
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          sys.path.insert(0, "libs/cua-driver/examples/jev-use/python")
+          from portable_evidence import normalize_events
+          receipt = normalize_events(
+              [{"event": "outcome", "outcome": "abstained", "backend": "mock"}],
+              revision=os.environ["REVISION"],
+              subject_id="portable-evidence-conformance",
+          )
+          assert receipt["outcome"] == "abstain"
+          with open("portable-evidence.json", "w", encoding="utf-8") as stream:
+              json.dump(receipt, stream, indent=2, sort_keys=True)
+              stream.write("\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portable-evidence-cua-${{ github.sha }}
+          path: portable-evidence.json
