@@ -394,6 +394,21 @@ struct InputExperiment::Impl {
     bool seat_generation_is_active(std::uint64_t generation) const {
         return generation != 0 && generation == seat_generation_active();
     }
+    std::size_t active_seat_resources() const {
+        return std::ranges::count_if(seats, [&](const auto& seat) {
+            return !seat->dead && seat_generation_is_active(seat->generation);
+        });
+    }
+    std::size_t active_pointer_resources() const {
+        return std::ranges::count_if(pointers, [&](const auto& pointer) {
+            return !pointer->dead && seat_generation_is_active(pointer->generation);
+        });
+    }
+    std::size_t active_keyboard_resources() const {
+        return std::ranges::count_if(keyboards, [&](const auto& keyboard) {
+            return !keyboard->dead && seat_generation_is_active(keyboard->generation);
+        });
+    }
     std::uint64_t generation_for(CWlSeat* seat) const {
         const auto found = std::ranges::find_if(seats, [&](const auto& entry) {
             return entry->wl.get() == seat;
@@ -1632,16 +1647,23 @@ std::string InputExperiment::status_json() const {
     std::string states;
     for (const auto& lane : lanes_) {
         if (!states.empty()) states += ',';
-        const bool pointer_focus = std::ranges::any_of(lane->pointers, [](const auto& p) { return !p->dead && bool(p->focus); });
-        const bool keyboard_focus = std::ranges::any_of(lane->keyboards, [](const auto& k) { return !k->dead && bool(k->focus); });
+        const bool pointer_focus = std::ranges::any_of(lane->pointers, [&](const auto& p) {
+            return !p->dead && lane->seat_generation_is_active(p->generation) && bool(p->focus);
+        });
+        const bool keyboard_focus = std::ranges::any_of(lane->keyboards, [&](const auto& k) {
+            return !k->dead && lane->seat_generation_is_active(k->generation) && bool(k->focus);
+        });
         states += std::format(R"({{"lane":{},"epoch":"{}","desktop_generation":{},"reserved":{},"socket_cleanup":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"held_button":{},"held_keys":{},"drag_active":{},"pointer_focus":{},"keyboard_focus":{}}})",
-            lane->lane, lane->epoch, lane->desktop_generation, lane->reservation != nullptr, lane->socket_cleanup, lane->lease != nullptr, lane->seats.size(), lane->pointers.size(), lane->keyboards.size(), lane->dispatches,
+            lane->lane, lane->epoch, lane->desktop_generation, lane->reservation != nullptr, lane->socket_cleanup, lane->lease != nullptr,
+            lane->active_seat_resources(), lane->active_pointer_resources(), lane->active_keyboard_resources(), lane->dispatches,
             lane->held_button, lane->held_keys.size(), lane->drag.has_value(), pointer_focus, keyboard_focus);
     }
     // Aggregate legacy fields remain available to existing test probes.
     return std::format(R"({{"protocol":{},"test_only":{},"seat_lifetime":"compositor","seat_global_lifetime":"lane_claim","upgrade":"desktop_restart","transport_ready":{},"epoch":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"lanes":[{}]}})",
         kProduction ? 3 : 0, !kProduction, !lanes_[0]->suspended && !lanes_[1]->suspended, lanes_[0]->epoch, lanes_[0]->lease != nullptr || lanes_[1]->lease != nullptr,
-        lanes_[0]->seats.size() + lanes_[1]->seats.size(), lanes_[0]->pointers.size() + lanes_[1]->pointers.size(),
-        lanes_[0]->keyboards.size() + lanes_[1]->keyboards.size(), lanes_[0]->dispatches + lanes_[1]->dispatches, states);
+        lanes_[0]->active_seat_resources() + lanes_[1]->active_seat_resources(),
+        lanes_[0]->active_pointer_resources() + lanes_[1]->active_pointer_resources(),
+        lanes_[0]->active_keyboard_resources() + lanes_[1]->active_keyboard_resources(),
+        lanes_[0]->dispatches + lanes_[1]->dispatches, states);
 }
 } // namespace cua::hyprland
