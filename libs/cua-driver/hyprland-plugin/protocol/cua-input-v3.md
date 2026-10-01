@@ -45,7 +45,10 @@ may remain alive only for safe late release/destruction. A later claim creates
 a new seat generation, and old-generation resources can never receive input.
 On libwayland 1.26+ global destruction waits for registry withdrawal
 acknowledgements; older builds retain the removed global metadata for compositor
-lifetime rather than racing a pending bind.
+lifetime rather than racing a pending bind. Client-owned resources that have
+completed release/destruction are pruned before new allocations; retired objects
+that are still live continue to count toward the fixed resource cap, so repeated
+claim cycles cannot turn safe retention into unbounded memory growth.
 
 Driver excludes agent seats from its foreground virtual-input routes. Seat
 ownership does not come from public session labels. The signed experiment uses
