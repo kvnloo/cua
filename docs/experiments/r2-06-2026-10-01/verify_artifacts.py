@@ -79,7 +79,7 @@ def main() -> None:
         fails.append(f"verifier arm: single-read {single_read}/30, bounded {bounded}/30")
 
     readme = (HERE / "README.md").read_text()
-    for needle in ("**17/30**", "**30/30**", "**13/30**", "KEEP H", "2.3–10.1 ms", "4f88adc786ae0ddc4f79bbdabda09850b34502d000f001e61d10e6a13c93f840"):
+    for needle in ("**17/30**", "**30/30**", "**13/30**", "KEEP H", "3.6–10.1 ms", "4f88adc786ae0ddc4f79bbdabda09850b34502d000f001e61d10e6a13c93f840"):
         if needle not in readme:
             fails.append(f"README missing headline {needle!r}")
 

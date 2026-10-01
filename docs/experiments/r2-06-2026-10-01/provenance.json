@@ -10,7 +10,7 @@
  },
  "live_pr_head": "not applicable: R2-06 tests upstream main, not an open PR",
  "lane_branch": "exp/r2-06-trusted-input-20261001 (local only, not pushed)",
- "prereg": {"file": "PREREG.json", "sha256": "4f88adc786ae0ddc4f79bbdabda09850b34502d000f001e61d10e6a13c93f840", "commit": "138f091fbf929f76316648e20436508bb4e3a624", "committed_utc": "2026-10-01T22:03:53Z", "measured_run_lock_acquired_utc": "2026-10-01T22:04:05Z"},
+ "prereg": {"file": "PREREG.json", "sha256": "4f88adc786ae0ddc4f79bbdabda09850b34502d000f001e61d10e6a13c93f840", "commit": "7378fe7e62b31bd13b2a659702283b935a03318a", "commit_note": "publication rewrite of the local pre-registration commit 138f091fbf929f76316648e20436508bb4e3a624 (local only, not published): only four literal local paths in probe_trusted_input.py's sanitiser table were replaced with <redacted: ...> placeholders; PREREG.json byte-identical; authored date preserved, commit date is the rewrite time", "local_commit_authored_utc": "2026-10-01T22:03:53Z (self-attested)", "measured_run_lock_acquired_utc": "2026-10-01T22:04:05Z"},
  "publication_sha": "recorded later by the orchestrator (this packet's commit on the lane branch is not a publication)",
  "driver_binary": {
   "name": "cua-driver-r2-main-229b65b28",
@@ -20,7 +20,7 @@
  },
  "browser": "Google Chrome 151.0.7922.71 (Driver-selected first root-owned candidate, as recorded by the R2 setup smoke; not re-read per trial)",
  "environment": {
-  "session": "cua-x11-session.sh (sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b): private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom xrender, private dbus-run-session, env -i scrubbed (no WAYLAND_DISPLAY/HYPRLAND_*/host XDG_RUNTIME_DIR); no AT-SPI bus",
+  "session": "cua-x11-session.sh (sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b): private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom xrender, private dbus-run-session, env -i scrubbed (no WAYLAND_DISPLAY/HYPRLAND_*/host XDG_RUNTIME_DIR); CUA_SESSION_ATSPI unset, but the Driver D-Bus-activated org.a11y.Bus (at-spi-bus-launcher) in the private session in every block and both pilots, and its persistent AT-SPI listener failed to reach org.a11y.atspi.Registry (same in every arm)",
   "x_input_devices": "Virtual core pointer/keyboard, XTEST pointer/keyboard, Xvfb mouse/keyboard (raw/main/session-env.json)",
   "driver_safety": "defaults: no CUA_DRIVER_PERMISSION_MODE override, no approval bypass, Chromium sandbox on; telemetry default and identical across arms",
   "host": "Linux 7.2.2 x86_64, 10 CPUs (i9-10900KF), 23 GiB RAM; other agents active (1-min loadavg 3.1-11.9 during trials, recorded per trial)",
