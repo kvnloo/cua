@@ -301,7 +301,7 @@ def verify_status(status, enabled):
     assert 'experiment' not in status, 'signed experiment is not production evidence'
     production = status.get('input', {})
     assert production.get('protocol') == 3 and production.get('test_only') is False, 'production v3 required'
-    assert production.get('seat_lifetime') == 'compositor' and production.get('upgrade') == 'desktop_restart'
+    assert production.get('seat_lifetime') == 'compositor' and production.get('seat_global_lifetime') == 'lane_claim' and production.get('upgrade') == 'desktop_restart'
     assert status.get('configured') is enabled and status.get('transport', {}).get('ready') is enabled
     assert production.get('transport_ready') is enabled, 'input transport state not acknowledged'
     assert len(production.get('lanes', [])) == 2 and {r['lane'] for r in production['lanes']} == {0, 1}
