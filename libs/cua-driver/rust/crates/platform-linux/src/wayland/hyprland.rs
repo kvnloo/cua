@@ -347,6 +347,18 @@ pub fn display_layout() -> Result<DisplayLayout> {
     display_layout_from_monitors(query("j/monitors")?)
 }
 
+/// Number of compositor outputs currently advertised by Hyprland. This is
+/// intentionally weaker than `display_layout`: capture uses it to avoid a
+/// first-output-only fallback even when rotation or mixed scale makes the
+/// action coordinate frame unsupported.
+pub fn active_output_count() -> Result<usize> {
+    let monitors: Vec<DisplayMonitor> = query("j/monitors")?;
+    if monitors.is_empty() {
+        bail!("Hyprland display identity requires at least one active output");
+    }
+    Ok(monitors.len())
+}
+
 fn logical_dimensions(monitor: &DisplayMonitor) -> Result<(u32, u32)> {
     if !monitor.scale.is_finite() || monitor.scale <= 0.0 {
         bail!("invalid Hyprland display scale");
@@ -1050,7 +1062,10 @@ mod tests {
         right.x = 1920;
 
         let layout = display_layout_from_monitors(vec![left.clone(), right.clone()]).unwrap();
-        assert_eq!((layout.x, layout.y, layout.width, layout.height), (0, 0, 4480, 1440));
+        assert_eq!(
+            (layout.x, layout.y, layout.width, layout.height),
+            (0, 0, 4480, 1440)
+        );
         assert_eq!(layout.outputs.len(), 2);
         assert_eq!(
             screen_size_from_monitors(vec![left, right]).unwrap(),
@@ -1068,7 +1083,10 @@ mod tests {
 
         let monitors = vec![left, right];
         let layout = display_layout_from_monitors(monitors.clone()).unwrap();
-        assert_eq!((layout.x, layout.y, layout.width, layout.height), (-1920, 0, 4480, 1440));
+        assert_eq!(
+            (layout.x, layout.y, layout.width, layout.height),
+            (-1920, 0, 4480, 1440)
+        );
         assert!(screen_size_from_monitors(monitors).is_err());
     }
 
