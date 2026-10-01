@@ -1,0 +1,37 @@
+{
+ "captured_utc": "2026-10-01T22:10Z",
+ "experiment": "R2-06 trusted-input miss diagnosis",
+ "tested_source_sha": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+ "tested_source_note": "upstream trycua/cua main at setup (git upstream/main and gh api agreed at 2026-10-01T21:46Z); Driver code unmodified in this lane",
+ "live_upstream_main_at_packet_time": {
+  "sha": "effd9b298942d7e9808077adef4ef575d561141d",
+  "read_via": "gh api repos/trycua/cua/commits/main at 2026-10-01T22:10Z",
+  "delta_vs_tested": "1 commit ahead (fix(release): drop the first-release version pins (#4431)); only release-please-config.json changed; no Driver source change. This packet does not certify effd9b29."
+ },
+ "live_pr_head": "not applicable: R2-06 tests upstream main, not an open PR",
+ "lane_branch": "exp/r2-06-trusted-input-20261001 (local only, not pushed)",
+ "prereg": {"file": "PREREG.json", "sha256": "4f88adc786ae0ddc4f79bbdabda09850b34502d000f001e61d10e6a13c93f840", "commit": "138f091fbf929f76316648e20436508bb4e3a624", "committed_utc": "2026-10-01T22:03:53Z", "measured_run_lock_acquired_utc": "2026-10-01T22:04:05Z"},
+ "publication_sha": "recorded later by the orchestrator (this packet's commit on the lane branch is not a publication)",
+ "driver_binary": {
+  "name": "cua-driver-r2-main-229b65b28",
+  "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+  "version": "cua-driver 0.32.0 (MCP serverInfo.version 0.32.0 in all 8 blocks)",
+  "build": "flock <tmp>/locks/cargo-build.lock <lanes>/build-driver.sh <lanes>/r2-base r2-main-229b65b28 cua-release-r2-base; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; built by the R2 setup worker, not rebuilt here (no Driver change in this lane)"
+ },
+ "browser": "Google Chrome 151.0.7922.71 (Driver-selected first root-owned candidate, as recorded by the R2 setup smoke; not re-read per trial)",
+ "environment": {
+  "session": "cua-x11-session.sh (sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b): private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom xrender, private dbus-run-session, env -i scrubbed (no WAYLAND_DISPLAY/HYPRLAND_*/host XDG_RUNTIME_DIR); no AT-SPI bus",
+  "x_input_devices": "Virtual core pointer/keyboard, XTEST pointer/keyboard, Xvfb mouse/keyboard (raw/main/session-env.json)",
+  "driver_safety": "defaults: no CUA_DRIVER_PERMISSION_MODE override, no approval bypass, Chromium sandbox on; telemetry default and identical across arms",
+  "host": "Linux 7.2.2 x86_64, 10 CPUs (i9-10900KF), 23 GiB RAM; other agents active (1-min loadavg 3.1-11.9 during trials, recorded per trial)",
+  "python": "jev-use .venv (uv sync --frozen, Python 3.12) for the probe; stdlib python3 for analyze/verify",
+  "timing_lock": "entire measured session under flock <tmp>/locks/quiet-lane.lock"
+ },
+ "commands": {
+  "plan": "python3 make_plan.py main <tmp>/r2-06/plan-main.json",
+  "run": "cd <lanes>/r2-06 && flock <tmp>/locks/quiet-lane.lock <lanes>/cua-x11-session.sh <packet>/run_in_session.sh <lanes>/r2-06 <lanes>/bin/cua-driver-r2-main-229b65b28 <tmp>/r2-06/plan-main.json <lanes>/artifacts/r2/r2-06/main main",
+  "analyze": "python3 analyze.py --write",
+  "verify": "python3 verify_artifacts.py"
+ },
+ "raw_mirror": "<lanes>/artifacts/r2/r2-06/ (main/, pilot-1/, pilot-2/, unsanitised session logs stay there only)"
+}

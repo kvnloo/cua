@@ -59,12 +59,12 @@ for env_key, placeholder in (("HOME", "<session-home>"), ("TMPDIR", "<session-tm
     value = os.environ.get(env_key)
     if value and len(value) > 4:
         _SUBS.append((value, placeholder))
-_SUBS += [
-    ("<redacted: lane temp root>", "<tmp>"),
-    ("<redacted: lanes root>", "<lanes>"),
-    ("<redacted: models mount>", "<mnt>"),
-    ("<redacted: user home>", "<home>"),
-]
+# Derived roots (no literal local paths in this file): the lanes root is the
+# worktree's parent (cwd = <lanes>/<worktree>/libs/cua-driver/examples/jev-use)
+# and the lane temp root is two levels above the session TMPDIR.
+_SUBS.append((str(JEV.parents[3].parent), "<lanes>"))
+if os.environ.get("TMPDIR"):
+    _SUBS.append((str(Path(os.environ["TMPDIR"]).parents[1]), "<tmp>"))
 if _HOST:
     _SUBS.append((_HOST, "<host>"))
 _ABS = re.compile(r"(/(?:home|mnt|tmp)/[^\s\"']*)")
