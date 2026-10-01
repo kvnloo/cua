@@ -64,6 +64,7 @@ class BrowserProviderTest(unittest.TestCase):
         self.assertEqual(probabilities[choice], 1.0)
         self.assertEqual(backend_name("live"), "typesafe")
         self.assertEqual(backend_name("typesafe"), "typesafe")
+        self.assertEqual(backend_name("openjev"), "openjev")
         self.assertEqual(backend_name("s1"), "s1")
 
     def test_s1_receipt_reports_s1_and_uses_bounded_request(self):

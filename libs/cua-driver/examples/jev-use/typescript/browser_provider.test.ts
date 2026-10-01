@@ -51,6 +51,7 @@ test('mock keeps existing task policy and reports actual backend', async () => {
   assert.equal(result.probabilities[result.choice!], 1);
   assert.equal(backendName('live'), 'typesafe');
   assert.equal(backendName('typesafe'), 'typesafe');
+  assert.equal(backendName('openjev'), 'openjev');
   assert.equal(backendName('s1'), 's1');
 });
 

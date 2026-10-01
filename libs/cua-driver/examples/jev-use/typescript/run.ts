@@ -61,8 +61,8 @@ function parseArgs(argv: string[]): Arguments {
   if (!Number.isInteger(result.maxSteps) || result.maxSteps < 1) {
     throw new Error('--max-steps must be a positive integer');
   }
-  if (!['mock', 'live', 'typesafe', 's1'].includes(result.provider)) {
-    throw new Error('--provider must be mock, live, typesafe, or s1');
+  if (!['mock', 'live', 'typesafe', 'openjev', 's1'].includes(result.provider)) {
+    throw new Error('--provider must be mock, live, typesafe, openjev, or s1');
   }
   result.fixtureUrl = validateFixtureUrl(result.fixtureUrl);
   return result;
