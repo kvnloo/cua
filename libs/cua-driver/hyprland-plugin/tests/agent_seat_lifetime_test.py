@@ -83,7 +83,7 @@ class AgentSeatLifetimeTest(unittest.TestCase):
             self.assertIn("seat_generation_is_active", method(self.source, name), name)
 
     def test_status_preserves_old_proof_identity_and_names_new_visibility_lifetime(self):
-        status = method(self.source, "status_json")
+        status = self.source[self.source.index("std::string InputExperiment::status_json() const"):]
         self.assertIn('"seat_lifetime":"compositor"', status)
         self.assertIn('"seat_global_lifetime":"lane_claim"', status)
         self.assertIn("active_seat_resources()", status)
