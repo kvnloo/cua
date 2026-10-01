@@ -19,6 +19,7 @@ def active_experiment(status):
             or experiment.get("test_only") is not True
             or experiment.get("protocol") != 0
             or experiment.get("seat_lifetime") != "compositor"
+            or experiment.get("seat_global_lifetime") != "lane_claim"
             or experiment.get("upgrade") != "desktop_restart"):
         raise AssertionError("require the active, ABI-matched restart-required experiment")
     lanes = experiment.get("lanes", [])
