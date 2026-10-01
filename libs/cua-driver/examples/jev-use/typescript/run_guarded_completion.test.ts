@@ -217,6 +217,7 @@ if (process.argv[2] === '--fixture-run') {
     const steps = events.filter((event) => event.event === 'step');
     assert.equal(steps.length, 2);
     assert.equal(steps[0].decision_route, 'provider');
+    assert.equal(steps[0].backend, 'mock');
     assert.equal(Object.hasOwn(steps[0], 'guarded_completion'), false);
     assert.equal(steps[0].confidence, 1);
     assert.deepEqual(steps[0].probabilities, {
@@ -226,6 +227,7 @@ if (process.argv[2] === '--fixture-run') {
     });
     assert.equal(steps[1].candidate, 'submit-form');
     assert.equal(steps[1].decision_route, 'guarded-completion');
+    assert.equal(steps[1].backend, null);
     assert.equal(steps[1].confidence, null);
     assert.equal(steps[1].probabilities, null);
     assert.equal(steps[1].provider_decision_ms, 0);
@@ -283,6 +285,7 @@ if (process.argv[2] === '--fixture-run') {
       reason: 'submit_not_unique',
     });
     assert.equal(steps[1].decision_route, 'provider');
+    assert.equal(steps[1].backend, 'mock');
     assert.equal(steps[1].confidence, 1);
     assert.equal(steps[2].decision_route, 'provider');
     assert.equal(Object.hasOwn(steps[2], 'guarded_completion'), false);
@@ -297,6 +300,7 @@ if (process.argv[2] === '--fixture-run') {
       assert.equal(outcome.event, 'outcome');
       assert.equal(outcome.outcome, 'abstained');
       assert.equal(outcome.step, 2);
+      assert.equal(outcome.backend, 'mock');
       assert.deepEqual(outcome.guarded_completion, {
         status: 'declined',
         reason: 'submit_not_unique',
@@ -311,6 +315,7 @@ if (process.argv[2] === '--fixture-run') {
     assert.equal(status, 0);
     assert.deepEqual(events[1].guarded_completion, { status: 'declined', reason: 'ref_reused' });
     assert.equal(events[1].decision_route, 'provider');
+    assert.equal(events[1].backend, 'mock');
     assert.equal(events[1].confidence, 1);
     assert.deepEqual(events[1].probabilities, { 'submit-form': 1, reobserve: 0, abstain: 0 });
   });
@@ -385,6 +390,7 @@ if (process.argv[2] === '--fixture-run') {
         outcome: 'unknown',
         step: 2,
         phase: 'provider',
+        backend: providerError ? 'typesafe' : 'mock',
         decision_route: 'provider',
         error: 'Error',
         visual: { status: 'skipped', reason: 'disabled' },
@@ -407,12 +413,23 @@ if (process.argv[2] === '--fixture-run') {
     });
   }
 
-  test('runner preserves default-off provider failure behavior without guard telemetry', () => {
+  test('runner logs default-off provider failure without guard telemetry', () => {
     const { events, receipt, status, jsonl } = runScenario({ guarded: false, providerError: true });
     assert.equal(status, 1);
-    assert.equal(events.length, 1);
+    assert.equal(events.length, 2);
     assert.equal(events[0].event, 'step');
+    assert.equal(events[0].backend, 'typesafe');
     assert.equal(Object.hasOwn(events[0], 'guarded_completion'), false);
+    assert.deepEqual(events[1], {
+      event: 'outcome',
+      outcome: 'unknown',
+      step: 2,
+      phase: 'provider',
+      backend: 'typesafe',
+      decision_route: 'provider',
+      error: 'Error',
+      visual: { status: 'skipped', reason: 'disabled' },
+    });
     assert.equal(receipt.providerCalls, 2);
     assert.equal(jsonl.includes(TOKEN), false);
   });

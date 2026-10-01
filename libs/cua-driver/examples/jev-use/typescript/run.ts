@@ -24,13 +24,13 @@ import {
   type GuardedCompletionPlan,
   type GuardedCompletionTelemetry,
 } from './guarded_completion.js';
-import { chooseLiveForTask, chooseMockForTask } from './jev_adapter.js';
+import { backendName, chooseBrowserProvider, type BrowserProvider } from './browser_provider.js';
 import { FixtureFormTask, fixtureSources, type Task, type TaskSources } from './tasks.js';
 
 type VisualMode = 'auto' | 'always' | 'off';
 
 type Arguments = {
-  provider: 'mock' | 'live';
+  provider: BrowserProvider;
   visualObservation: VisualMode;
   fixtureUrl: string;
   token?: string;
@@ -68,6 +68,9 @@ function parseArgs(argv: string[]): Arguments {
   }
   if (!Number.isInteger(result.maxSteps) || result.maxSteps < 1) {
     throw new Error('--max-steps must be a positive integer');
+  }
+  if (!['mock', 'live', 'typesafe', 'openjev', 's1'].includes(result.provider)) {
+    throw new Error('--provider must be mock, live, typesafe, openjev, or s1');
   }
   result.fixtureUrl = validateFixtureUrl(result.fixtureUrl);
   return result;
@@ -506,33 +509,38 @@ async function run(args: Arguments): Promise<Outcome> {
 
       let candidate: Candidate;
       let confidence: number | null;
-      let probabilities: Record<string, number> | null;
+      let probabilities: Readonly<Record<string, number>> | null;
+      let backend: 'mock' | 'typesafe' | 'openjev' | 's1' | null = null;
       let decisionRoute: 'provider' | 'guarded-completion';
       let providerDecisionMs = 0;
       if (guardedCandidate) {
         candidate = guardedCandidate;
         confidence = null;
         probabilities = null;
+        backend = null;
         decisionRoute = 'guarded-completion';
       } else {
         const providerStarted = performance.now();
         try {
-          const answer =
-            args.provider === 'mock'
-              ? chooseMockForTask(task, sources, candidates, history)
-              : await chooseLiveForTask(task, sources, candidates, history);
+          const answer = await chooseBrowserProvider(
+            args.provider,
+            task,
+            sources,
+            candidates,
+            history
+          );
           providerDecisionMs = performance.now() - providerStarted;
+          backend = answer.backend;
           if (!answer.choice) {
-            if (guardedTelemetry) {
-              await writeEvent(args.log, {
-                event: 'outcome',
-                outcome: 'abstained',
-                decision_route: 'provider',
-                step,
-                visual: visualRecord,
-                ...guardedFields,
-              });
-            }
+            await writeEvent(args.log, {
+              event: 'outcome',
+              outcome: 'abstained',
+              backend,
+              decision_route: 'provider',
+              step,
+              visual: visualRecord,
+              ...guardedFields,
+            });
             return 'abstained';
           }
           candidate = validateChoice(answer.choice, candidates, visual?.captureId);
@@ -540,12 +548,12 @@ async function run(args: Arguments): Promise<Outcome> {
           probabilities = answer.probabilities;
           decisionRoute = 'provider';
         } catch (error: unknown) {
-          if (!guardedTelemetry) throw error;
           await writeEvent(args.log, {
             event: 'outcome',
             outcome: 'unknown',
             step,
             phase: 'provider',
+            backend: backendName(args.provider),
             decision_route: 'provider',
             error: error instanceof Error ? error.name : 'UnknownError',
             visual: visualRecord,
@@ -554,6 +562,7 @@ async function run(args: Arguments): Promise<Outcome> {
           return 'unknown';
         }
       }
+
       const nextCompletion =
         args.guardedCompletion && decisionRoute === 'provider'
           ? planGuardedCompletion(task, sources, candidate, driver.sessionLabel)
@@ -572,6 +581,7 @@ async function run(args: Arguments): Promise<Outcome> {
           event: 'step',
           step,
           candidate: candidate.id,
+          backend,
           confidence,
           probabilities,
           ...timing,
@@ -592,6 +602,7 @@ async function run(args: Arguments): Promise<Outcome> {
         await writeEvent(args.log, {
           event: 'outcome',
           outcome: 'abstained',
+          backend,
           decision_route: decisionRoute,
           step,
           confidence,
@@ -618,6 +629,7 @@ async function run(args: Arguments): Promise<Outcome> {
               event: 'step',
               step,
               candidate: candidate.id,
+              backend,
               confidence,
               probabilities,
               ...timing,
@@ -641,6 +653,7 @@ async function run(args: Arguments): Promise<Outcome> {
             outcome: 'unknown',
             step,
             phase: 'action',
+            backend,
             decision_route: decisionRoute,
             error: error instanceof Error ? error.name : 'UnknownError',
             tool: candidate.tool,
@@ -656,6 +669,7 @@ async function run(args: Arguments): Promise<Outcome> {
         event: 'step',
         step,
         candidate: candidate.id,
+        backend,
         confidence,
         probabilities,
         ...timing,
