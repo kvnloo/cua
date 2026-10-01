@@ -152,6 +152,8 @@ std::string refusal(std::string_view code, ForegroundFailure failure) {
     return std::format(R"({{"ok":false,"code":"{}","detail":"{}"}})", code, failure.detail());
 }
 constexpr auto kDelivered = R"({"ok":true,"effect":"unverifiable","route":"synthetic_events"})";
+constexpr auto kClientNotBoundAfterGrant =
+    R"({"ok":false,"code":"client_not_bound","detail":"client_not_bound","effect":"none","delivery":{"mode":"background","delivered_count":0}})";
 constexpr auto kForegroundDelivered = R"({"ok":true,"effect":"unverifiable","route":"primary_foreground"})";
 } // namespace
 
@@ -1356,7 +1358,7 @@ struct InputExperiment::Impl {
             // so Driver may bounded-wait and retry without replaying input.
             if (!keyboard_bound(c)) { send(c, refusal("client_not_bound")); return; }
             if (!consume_grant(c, cap)) return;
-            if (!keyboard_enter(c)) { send(c, refusal("client_not_bound")); return; }
+            if (!keyboard_enter(c)) { send(c, kClientNotBoundAfterGrant); return; }
             // Every key is released in this handler; sync_key_repeat relies on it.
             const std::array<std::uint32_t, 4> keys{42, 29, 56, 125};
             for (unsigned i = 0; i < 4; ++i) if ((mods & (1u << i)) && keys[i] != code) key(keys[i], true);
@@ -1370,14 +1372,14 @@ struct InputExperiment::Impl {
                 if (btn < 272 || btn > 274 || clicks < 1 || clicks > 2) { send(c, refusal("invalid_request")); return; }
                 if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
-                if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
+                if (!pointer_enter(c, x, y)) { send(c, kClientNotBoundAfterGrant); return; }
                 for (unsigned i = 0; i < clicks; ++i) { button(btn, true); button(btn, false); }
             } else if (command == "SCROLL") {
                 const auto axis = number(f[6]); const auto value = real(f[7]);
                 if (axis > 1 || value == 0 || std::abs(value) > 1000) { send(c, refusal("invalid_request")); return; }
                 if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
-                if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
+                if (!pointer_enter(c, x, y)) { send(c, kClientNotBoundAfterGrant); return; }
                 for (auto& p : pointers) {
                     if (p->dead || !seat_generation_is_active(p->generation) ||
                         !p->wl->resource() || !p->focus) continue;
@@ -1391,7 +1393,7 @@ struct InputExperiment::Impl {
                 if (Clock::now() + std::chrono::milliseconds(duration + 50) >= expires) { send(c, refusal("lease_expired")); return; }
                 if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
-                if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
+                if (!pointer_enter(c, x, y)) { send(c, kClientNotBoundAfterGrant); return; }
                 if (trace) trace->mark("agent_drag_start", lane + 1);
                 button(272, true);
                 drag.emplace(Drag{&c, x, y, x2, y2, Clock::now(), static_cast<unsigned>(duration), DragGeometry{c.revision}});
