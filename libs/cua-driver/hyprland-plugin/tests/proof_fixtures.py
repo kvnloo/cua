@@ -61,7 +61,7 @@ def lane_status(*lanes):
     """Complete ``cua:status`` for a production v3 build (two inert lanes by default)."""
     return {'state': 'input_v3_candidate', 'configured': True, 'transport': {'ready': True}, 'input': {
         'protocol': 3, 'test_only': False, 'seat_lifetime': 'compositor',
-        'upgrade': 'desktop_restart', 'transport_ready': True,
+        'seat_global_lifetime': 'lane_claim', 'upgrade': 'desktop_restart', 'transport_ready': True,
         'lanes': list(lanes) or [lane(0), lane(1)]}}
 
 

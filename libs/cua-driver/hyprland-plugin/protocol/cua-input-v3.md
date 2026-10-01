@@ -36,10 +36,26 @@ the same connection is idempotent. Driver may try the second endpoint only
 after an explicit `lane_busy` reply, before target selection or dispatch.
 Connection failures and unknown delivery results do not permit retries.
 
-The v3 seats are `Cua-Agent` and `Cua-Agent-2`. Driver excludes these from its
-foreground virtual-input routes. Seat ownership does not come from public
-session labels. The signed experiment uses separate sockets, protocol 0, and
-its original seat names.
+The v3 seats are `Cua-Agent` and `Cua-Agent-2`. A lane advertises its
+`wl_seat` global only while that lane is claimed. Before `CLAIM`, and after
+the claim ends through EOF, idle timeout, desktop/configuration transition,
+disable, or unload, ordinary clients see no global for that lane. Global removal
+first makes already-bound resources inert; those client-owned protocol objects
+may remain alive only for safe late release/destruction. A later claim creates
+a new seat generation, and old-generation resources can never receive input.
+On libwayland 1.26+ global destruction waits for registry withdrawal
+acknowledgements; older builds retain the removed global metadata for compositor
+lifetime rather than racing a pending bind. Client-owned resources that have
+completed release/destruction are pruned before new allocations; retired objects
+that are still live continue to count toward the fixed resource cap, so repeated
+claim cycles cannot turn safe retention into unbounded memory growth.
+
+Driver excludes agent seats from its foreground virtual-input routes. Seat
+ownership does not come from public session labels. The signed experiment uses
+separate sockets, protocol 0, and its original seat names. While a claim is
+active, a single-seat client may choose the agent seat and temporarily stop
+following the user's seat; ending the claim removes the agent global so clients
+started outside agent sessions see only the user's seat.
 
 ## Requests and responses
 
@@ -59,7 +75,16 @@ The request sequence for every Driver-admitted action is:
 4. Send the one matching bounded operation using that token and revision.
    A subsequent action requires fresh route-specific target selection, even on
    a cached connection. The binding fixes the route; an operation cannot turn
-   a background grant into a foreground grant.
+   a background grant into a foreground grant. Immediately after a fresh lane
+   claim, the target may not have bound the newly advertised agent seat yet.
+   `client_not_bound` is therefore checked before the one-action grant is
+   consumed. Driver may retry that exact zero-delivery refusal for at most
+   500 ms, with increasing sequence numbers and the same target token/revision.
+   If the resource disappears after that check but after the grant is consumed,
+   the same code carries `effect:"none"` and background
+   `delivered_count:0`; that final race outcome is not retried. Driver never
+   retries any refusal carrying delivery/effect metadata and never falls back
+   to the primary seat.
 
 `TARGET` binds the exact live native top-level surface, generates a fresh token,
 and grants at most five seconds of steady-clock technical lifetime. It first
@@ -111,11 +136,12 @@ after drag release; some clients coalesce motion and requeue the release.
 There is no fixed completion delay or trace-only timing behavior.
 
 Passive focus has no held input or authority, but still participates in
-primary-client and inter-lane conflicts. Owner cancellation, EOF, and the
-connection's idle timeout release held buttons and all keyboard state and
-revoke authority without requiring pointer leave. Passive target references
-are weak and independent of the transport owner; a disconnected owner retains
-no lane reservation. Fresh admission may reuse unchanged focus on the same
+primary-client and inter-lane conflicts. `STOP` and `CANCEL` preserve the
+lane claim and may preserve same-target passive pointer focus. EOF, idle timeout,
+desktop/configuration transition, disable, and unload end the lane claim,
+release held state, clear passive focus, and remove that lane's advertised seat
+global. A disconnected owner retains no lane reservation or seat visibility.
+Fresh admission within the same claim may reuse unchanged focus on the same
 live surface without inheriting old authority.
 
 Because Driver claims a free lane before selecting its target, fresh valid
@@ -240,12 +266,14 @@ active-keyboard keymap notifications. For background bindings, changing primary
 focus to a target client cancels that lane synchronously. Dispatch and timer checks supplement
 these listeners. None of these paths wake the display or unlock the session.
 
-Config disable closes input transports but preserves client-owned seats and
-resources. Re-enable opens fresh transports with new epochs. Each later
+Config disable closes input transports, ends both lane claims, removes any
+advertised agent-seat globals, and leaves previously bound client-owned
+resources inert for protocol-safe cleanup. Re-enable opens fresh transports
+with new epochs but advertises no agent seat until a new `CLAIM`. Each later
 action must pass fresh Driver admission and target checks. Plugin replacement
 requires a desktop restart. The shared seat-lifetime marker rejects loading
-replacement modules in the same compositor instance. Unload retires globals
-and retains inert callbacks for late client cleanup.
+replacement modules in the same compositor instance. Unload removes active
+globals and retains inert callbacks/resources for late client cleanup.
 
 Cancellation releases synthetic state; it does not undo application effects.
 Cleanup depends on a responsive compositor event loop. A stall is not evidence

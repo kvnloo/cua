@@ -27,6 +27,9 @@
 #include <linux/input-event-codes.h>
 #include <wayland.hpp>
 #include <wayland-server-core.h>
+#if __has_include(<wayland-version.h>)
+#include <wayland-version.h>
+#endif
 
 #ifdef CUA_HYPRLAND_TEST_INPUT
 #include <openssl/evp.h>
@@ -149,14 +152,22 @@ std::string refusal(std::string_view code, ForegroundFailure failure) {
     return std::format(R"({{"ok":false,"code":"{}","detail":"{}"}})", code, failure.detail());
 }
 constexpr auto kDelivered = R"({"ok":true,"effect":"unverifiable","route":"synthetic_events"})";
+constexpr auto kClientNotBoundAfterGrant =
+    R"({"ok":false,"code":"client_not_bound","detail":"client_not_bound","effect":"none","delivery":{"mode":"background","delivered_count":0}})";
 constexpr auto kForegroundDelivered = R"({"ok":true,"effect":"unverifiable","route":"primary_foreground"})";
 } // namespace
 
 struct InputExperiment::Impl {
-    struct Seat { SP<CWlSeat> wl; bool dead = false; };
-    struct Pointer { SP<CWlPointer> wl; bool dead = false; WP<CWLSurfaceResource> focus; };
-    struct Keyboard { SP<CWlKeyboard> wl; bool dead = false; WP<CWLSurfaceResource> focus; };
-    struct Touch { SP<CWlTouch> wl; bool dead = false; };
+    struct Seat { SP<CWlSeat> wl; bool dead = false; std::uint64_t generation = 0; };
+    struct Pointer { SP<CWlPointer> wl; bool dead = false; std::uint64_t generation = 0; WP<CWLSurfaceResource> focus; };
+    struct Keyboard { SP<CWlKeyboard> wl; bool dead = false; std::uint64_t generation = 0; WP<CWLSurfaceResource> focus; };
+    struct Touch { SP<CWlTouch> wl; bool dead = false; std::uint64_t generation = 0; };
+    struct GlobalEpoch {
+        Impl* owner = nullptr;
+        std::uint64_t generation = 0;
+        wl_global* global = nullptr;
+        bool removed = false;
+    };
     struct Client {
         Impl* owner = nullptr;
         int fd = -1;
@@ -189,7 +200,8 @@ struct InputExperiment::Impl {
     int listener = -1;
     wl_event_source* listen_source = nullptr;
     wl_event_source* timer = nullptr;
-    wl_global* global = nullptr;
+    std::unique_ptr<GlobalEpoch> active_global;
+    std::vector<std::unique_ptr<GlobalEpoch>> retired_globals;
     OwnedSocketPath socket_path;
     std::string_view socket_cleanup = "not_bound";
     std::string path, epoch = nonce(), keymap_text, physical_keymap_text;
@@ -206,6 +218,7 @@ struct InputExperiment::Impl {
     CHyprSignalListener pointer_unmap, pointer_destroy;
     Client* reservation = nullptr;
     std::uint64_t desktop_generation = 1;
+    std::uint64_t seat_generation = 0;
     std::uint64_t capabilities = 0, dispatches = 0;
     Clock::time_point expires{};
     InputGrant grant;
@@ -330,7 +343,9 @@ struct InputExperiment::Impl {
         if (rate == repeat_rate && delay == repeat_delay) return;
         repeat_rate = rate; repeat_delay = delay;
         for (auto& k : keyboards)
-            if (!k->dead && k->wl->resource() && k->wl->version() >= 4) k->wl->sendRepeatInfo(rate, delay);
+            if (!k->dead && k->generation == seat_generation_active() &&
+                k->wl->resource() && k->wl->version() >= 4)
+                k->wl->sendRepeatInfo(rate, delay);
     }
     void sync_keymap() {
         initialize_agent_keymap();
@@ -375,12 +390,91 @@ struct InputExperiment::Impl {
         typing_keymap = !kProduction || typing_keymap_equivalent(map, keymap);
         physical_keymap_text = keyboard->m_xkbKeymapV1String;
     }
+    std::uint64_t seat_generation_active() const {
+        return active_global && !active_global->removed ? active_global->generation : 0;
+    }
+    bool seat_generation_is_active(std::uint64_t generation) const {
+        return generation != 0 && generation == seat_generation_active();
+    }
+    std::size_t active_seat_resources() const {
+        return std::ranges::count_if(seats, [&](const auto& seat) {
+            return !seat->dead && seat_generation_is_active(seat->generation);
+        });
+    }
+    std::size_t active_pointer_resources() const {
+        return std::ranges::count_if(pointers, [&](const auto& pointer) {
+            return !pointer->dead && seat_generation_is_active(pointer->generation);
+        });
+    }
+    std::size_t active_keyboard_resources() const {
+        return std::ranges::count_if(keyboards, [&](const auto& keyboard) {
+            return !keyboard->dead && seat_generation_is_active(keyboard->generation);
+        });
+    }
+    std::uint64_t generation_for(CWlSeat* seat) const {
+        const auto found = std::ranges::find_if(seats, [&](const auto& entry) {
+            return entry->wl.get() == seat;
+        });
+        return found == seats.end() ? 0 : (*found)->generation;
+    }
+    void prune_dead_resources() {
+        // Release/onDestroy marks an entry dead before the wrapper can no longer
+        // receive protocol callbacks. Retired-but-still-live client objects stay
+        // retained and continue counting toward the hard resource cap.
+        std::erase_if(pointers, [](const auto& pointer) { return pointer->dead; });
+        std::erase_if(keyboards, [](const auto& keyboard) { return keyboard->dead; });
+        std::erase_if(touches, [](const auto& touch) { return touch->dead; });
+        std::erase_if(seats, [](const auto& seat) { return seat->dead; });
+    }
+#if defined(WAYLAND_VERSION_MAJOR) && \
+    (WAYLAND_VERSION_MAJOR > 1 || (WAYLAND_VERSION_MAJOR == 1 && WAYLAND_VERSION_MINOR >= 26))
+    static void global_withdrawn(wl_global* global) {
+        auto* epoch = static_cast<GlobalEpoch*>(wl_global_get_user_data(global));
+        if (epoch) epoch->global = nullptr;
+        wl_global_destroy(global);
+    }
+#endif
+    bool publish_seat_global() {
+        if (active_global) return true;
+        if (seat_generation == UINT64_MAX) return false;
+        auto epoch = std::make_unique<GlobalEpoch>();
+        epoch->owner = this;
+        epoch->generation = ++seat_generation;
+        epoch->global = wl_global_create(
+            g_pCompositor->m_wlDisplay, &wl_seat_interface, 9, epoch.get(), bind_seat);
+        if (!epoch->global) {
+            --seat_generation;
+            return false;
+        }
+#if defined(WAYLAND_VERSION_MAJOR) && \
+    (WAYLAND_VERSION_MAJOR > 1 || (WAYLAND_VERSION_MAJOR == 1 && WAYLAND_VERSION_MINOR >= 26))
+        wl_global_set_withdrawn_listener(epoch->global, global_withdrawn);
+#endif
+        active_global = std::move(epoch);
+        return true;
+    }
+    void withdraw_seat_global() {
+        if (!active_global) return;
+        leave_pointer();
+        leave_keyboard();
+        retire_grant();
+        const auto generation = active_global->generation;
+        for (auto& seat : seats)
+            if (!seat->dead && seat->generation == generation && seat->wl->resource())
+                seat->wl->sendCapabilities(static_cast<wl_seat_capability>(0));
+        active_global->removed = true;
+        auto* global = active_global->global;
+        retired_globals.push_back(std::move(active_global));
+        wl_global_remove(global);
+        // libwayland < 1.26 has no safe acknowledgement-based destruction API.
+        // In that build, retain only the removed wl_global metadata until the
+        // compositor exits. The plugin is NODELETE and Impl already has
+        // process-lifetime ownership, so late binds cannot call unmapped code.
+    }
     void start() {
         sync_keymap();
         timer = wl_event_loop_add_timer(g_pCompositor->m_wlEventLoop, tick, this);
         if (!timer) throw std::runtime_error("input timer registration failed");
-        global = wl_global_create(g_pCompositor->m_wlDisplay, &wl_seat_interface, 9, this, bind_seat);
-        if (!global) throw std::runtime_error("synthetic seat unavailable");
         wl_event_source_timer_update(timer, 16);
     }
     void resume() {
@@ -421,14 +515,16 @@ struct InputExperiment::Impl {
         suspended = true;
         revoke(reason, reason != "plugin_shutdown");
         reservation = nullptr;
+        withdraw_seat_global();
         if (listen_source) wl_event_source_remove(listen_source);
         listen_source = nullptr;
         clients.clear();
         if (listener >= 0) close(listener);
         listener = -1;
         cleanup_socket();
-        // Keep the globals, capabilities, and client resources stable. Removing
-        // and recreating them makes existing apps lose their agent input path.
+        // A disabled transport owns no lane claim, so no agent seat global
+        // remains advertised. Existing client-owned resources are inert and
+        // retained for protocol-safe late cleanup.
     }
     void retire() {
         // wl_global removal does not revoke existing protocol objects. Destroying
@@ -441,11 +537,11 @@ struct InputExperiment::Impl {
         for (auto& seat : seats)
             if (!seat->dead && seat->wl->resource())
                 seat->wl->sendCapabilities(static_cast<wl_seat_capability>(0));
-        if (global) wl_global_remove(global);
+        withdraw_seat_global();
     }
     ~Impl() {
         revoke("plugin_shutdown");
-        if (global) wl_global_destroy(global);
+        withdraw_seat_global();
         if (listen_source) wl_event_source_remove(listen_source);
         if (timer) wl_event_source_remove(timer);
         clients.clear();
@@ -467,10 +563,13 @@ struct InputExperiment::Impl {
             !g_pCompositor->m_isShuttingDown && !g_pSessionLockManager->isSessionLocked();
     }
     static void bind_seat(wl_client* client, void* data, std::uint32_t version, std::uint32_t id) {
-        auto& self = *static_cast<Impl*>(data);
+        auto& epoch = *static_cast<GlobalEpoch*>(data);
+        auto& self = *epoch.owner;
+        self.prune_dead_resources();
         if (self.seats.size() >= kMaxResources) { wl_client_post_no_memory(client); return; }
         auto seat = std::make_unique<Seat>();
         auto* entry = seat.get();
+        seat->generation = epoch.generation;
         seat->wl = makeShared<CWlSeat>(client, std::min(version, 9u), id);
         if (!seat->wl->resource()) { wl_client_post_no_memory(client); return; }
         // Stock resource lookup casts CWlSeat::data to CWLSeatResource. Null is
@@ -484,13 +583,18 @@ struct InputExperiment::Impl {
         if (version >= 2) seat->wl->sendName(kProduction ?
             (self.lane == 0 ? "Cua-Agent" : "Cua-Agent-2") :
             (self.lane == 0 ? "Cua-Test-Agent" : "Cua-Test-Agent-2"));
-        seat->wl->sendCapabilities(static_cast<wl_seat_capability>(self.retired ? 0 :
-            WL_SEAT_CAPABILITY_POINTER | (self.keyboard_state ? WL_SEAT_CAPABILITY_KEYBOARD : 0)));
+        const bool active = self.seat_generation_is_active(epoch.generation);
+        seat->wl->sendCapabilities(static_cast<wl_seat_capability>(
+            active && !self.retired ?
+                WL_SEAT_CAPABILITY_POINTER | (self.keyboard_state ? WL_SEAT_CAPABILITY_KEYBOARD : 0) :
+                0));
         self.seats.push_back(std::move(seat));
     }
     void add_pointer(CWlSeat* seat, std::uint32_t id) {
+        prune_dead_resources();
         if (pointers.size() >= kMaxResources) { seat->noMemory(); return; }
         auto p = std::make_unique<Pointer>(); auto* entry = p.get();
+        p->generation = generation_for(seat);
         p->wl = makeShared<CWlPointer>(seat->client(), seat->version(), id);
         if (!p->wl->resource()) { seat->noMemory(); return; }
         p->wl->setData(nullptr);
@@ -500,21 +604,26 @@ struct InputExperiment::Impl {
         pointers.push_back(std::move(p));
     }
     void add_keyboard(CWlSeat* seat, std::uint32_t id) {
+        prune_dead_resources();
         if (!keyboard_state || keyboards.size() >= kMaxResources) { seat->noMemory(); return; }
         auto k = std::make_unique<Keyboard>(); auto* entry = k.get();
+        k->generation = generation_for(seat);
         k->wl = makeShared<CWlKeyboard>(seat->client(), seat->version(), id);
         if (!k->wl->resource()) { seat->noMemory(); return; }
         k->wl->setData(nullptr);
         k->wl->setRelease([entry](CWlKeyboard*) { entry->dead = true; });
         k->wl->setOnDestroy([entry](CWlKeyboard*) { entry->dead = true; });
         k->wl->sendKeymap(WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, keymap_fd, keymap_text.size() + 1);
-        if (seat->version() >= 4) k->wl->sendRepeatInfo(repeat_rate, repeat_delay);
+        if (seat->version() >= 4 && seat_generation_is_active(k->generation))
+            k->wl->sendRepeatInfo(repeat_rate, repeat_delay);
         keyboards.push_back(std::move(k));
     }
     void add_touch(CWlSeat* seat, std::uint32_t id) {
         // Never advertised. A valid inert resource is safer than a dangling id.
+        prune_dead_resources();
         if (touches.size() >= kMaxResources) { seat->noMemory(); return; }
         auto t = std::make_unique<Touch>(); auto* entry = t.get();
+        t->generation = generation_for(seat);
         t->wl = makeShared<CWlTouch>(seat->client(), seat->version(), id);
         if (!t->wl->resource()) { seat->noMemory(); return; }
         t->wl->setData(nullptr);
@@ -696,6 +805,7 @@ struct InputExperiment::Impl {
             c->fd = -1;
         }
         reservation = nullptr;
+        withdraw_seat_global();
         if (desktop_generation == UINT64_MAX)
             suspended = true;
         else
@@ -755,7 +865,10 @@ struct InputExperiment::Impl {
         }
         if (c.dead) {
             if (self.lease == &c) self.revoke("disconnected", true);
-            if (self.reservation == &c) self.reservation = nullptr;
+            if (self.reservation == &c) {
+                self.reservation = nullptr;
+                self.withdraw_seat_global();
+            }
         }
         return 0;
     }
@@ -1018,6 +1131,22 @@ struct InputExperiment::Impl {
                 xkb_state_serialize_layout(physical_keyboard_state, XKB_STATE_LAYOUT_EFFECTIVE));
         }
     }
+    bool pointer_bound(const Client& c) const {
+        const auto root = c.surface.lock();
+        if (!root) return false;
+        return std::ranges::any_of(pointers, [&](const auto& p) {
+            return !p->dead && seat_generation_is_active(p->generation) &&
+                p->wl->resource() && p->wl->client() == root->client();
+        });
+    }
+    bool keyboard_bound(const Client& c) const {
+        const auto root = c.surface.lock();
+        if (!root) return false;
+        return std::ranges::any_of(keyboards, [&](const auto& k) {
+            return !k->dead && seat_generation_is_active(k->generation) &&
+                k->wl->resource() && k->wl->client() == root->client();
+        });
+    }
     bool pointer_enter(Client& c, double x, double y) {
         const auto root = c.surface.lock(); if (!root) return false;
         // Initial experiment refuses subsurface targets instead of misrouting.
@@ -1026,7 +1155,8 @@ struct InputExperiment::Impl {
         if (hit.first != root) return false;
         unsigned count = 0;
         for (auto& p : pointers) {
-            if (p->dead || !p->wl->resource() || p->wl->client() != root->client()) continue;
+            if (p->dead || !seat_generation_is_active(p->generation) ||
+                !p->wl->resource() || p->wl->client() != root->client()) continue;
             if (p->focus != root) {
                 if (const auto old = p->focus.lock(); old && old->good()) p->wl->sendLeave(serial(), old->getResource().get());
                 p->focus = root;
@@ -1048,7 +1178,8 @@ struct InputExperiment::Impl {
     }
     void button(std::uint32_t value, bool pressed) {
         for (auto& p : pointers) {
-            if (p->dead || !p->wl->resource() || !p->focus) continue;
+            if (p->dead || !seat_generation_is_active(p->generation) ||
+                !p->wl->resource() || !p->focus) continue;
             p->wl->sendButton(serial(), event_ms(), value, pressed ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED);
             if (p->wl->version() >= 5) p->wl->sendFrame();
         }
@@ -1059,7 +1190,8 @@ struct InputExperiment::Impl {
         if (!root || !keyboard_state) return false;
         unsigned count = 0;
         for (auto& k : keyboards) {
-            if (k->dead || !k->wl->resource() || k->wl->client() != root->client()) continue;
+            if (k->dead || !seat_generation_is_active(k->generation) ||
+                !k->wl->resource() || k->wl->client() != root->client()) continue;
             if (k->focus != root) {
                 if (const auto old = k->focus.lock(); old && old->good()) k->wl->sendLeave(serial(), old->getResource().get());
                 k->focus = root;
@@ -1075,7 +1207,8 @@ struct InputExperiment::Impl {
         xkb_state_update_key(keyboard_state, code + 8, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
         if (pressed) held_keys.push_back(code); else std::erase(held_keys, code);
         for (auto& k : keyboards) {
-            if (k->dead || !k->wl->resource() || !k->focus) continue;
+            if (k->dead || !seat_generation_is_active(k->generation) ||
+                !k->wl->resource() || !k->focus) continue;
             k->wl->sendKey(serial(), event_ms(), code, pressed ? WL_KEYBOARD_KEY_STATE_PRESSED : WL_KEYBOARD_KEY_STATE_RELEASED);
             k->wl->sendModifiers(serial(), xkb_state_serialize_mods(keyboard_state, XKB_STATE_MODS_DEPRESSED),
                 xkb_state_serialize_mods(keyboard_state, XKB_STATE_MODS_LATCHED),
@@ -1100,6 +1233,9 @@ struct InputExperiment::Impl {
         if (!c.hello) { send(c, refusal("invalid_request")); return; }
         if (command == "CLAIM" && f.size() == 1) {
             if (reservation && reservation != &c) { send(c, refusal("lane_busy")); return; }
+            if (!active_global && !publish_seat_global()) {
+                send(c, refusal("seat_unavailable")); return;
+            }
             reservation = &c;
             send(c, std::format(R"({{"ok":true,"lane":{}}})", lane)); return;
         }
@@ -1230,8 +1366,12 @@ struct InputExperiment::Impl {
         if (command == "KEY") {
             const auto code = number(f[4]); const auto mods = number(f[5]);
             if (code == 0 || code > 247 || mods > 15 || code == 58 || code == 69 || code == 70) { send(c, refusal("unsupported")); return; }
+            // A newly published agent seat may not have been bound by the
+            // target client yet. Refuse before consuming the one-action grant
+            // so Driver may bounded-wait and retry without replaying input.
+            if (!keyboard_bound(c)) { send(c, refusal("client_not_bound")); return; }
             if (!consume_grant(c, cap)) return;
-            if (!keyboard_enter(c)) { send(c, refusal("client_not_bound")); return; }
+            if (!keyboard_enter(c)) { send(c, kClientNotBoundAfterGrant); return; }
             // Every key is released in this handler; sync_key_repeat relies on it.
             const std::array<std::uint32_t, 4> keys{42, 29, 56, 125};
             for (unsigned i = 0; i < 4; ++i) if ((mods & (1u << i)) && keys[i] != code) key(keys[i], true);
@@ -1243,16 +1383,19 @@ struct InputExperiment::Impl {
             if (command == "CLICK") {
                 const auto btn = number(f[6]), clicks = number(f[7]);
                 if (btn < 272 || btn > 274 || clicks < 1 || clicks > 2) { send(c, refusal("invalid_request")); return; }
+                if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
-                if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
+                if (!pointer_enter(c, x, y)) { send(c, kClientNotBoundAfterGrant); return; }
                 for (unsigned i = 0; i < clicks; ++i) { button(btn, true); button(btn, false); }
             } else if (command == "SCROLL") {
                 const auto axis = number(f[6]); const auto value = real(f[7]);
                 if (axis > 1 || value == 0 || std::abs(value) > 1000) { send(c, refusal("invalid_request")); return; }
+                if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
-                if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
+                if (!pointer_enter(c, x, y)) { send(c, kClientNotBoundAfterGrant); return; }
                 for (auto& p : pointers) {
-                    if (p->dead || !p->wl->resource() || !p->focus) continue;
+                    if (p->dead || !seat_generation_is_active(p->generation) ||
+                        !p->wl->resource() || !p->focus) continue;
                     if (p->wl->version() >= 5) p->wl->sendAxisSource(WL_POINTER_AXIS_SOURCE_WHEEL);
                     p->wl->sendAxis(event_ms(), static_cast<wl_pointer_axis>(axis), wl_fixed_from_double(value));
                     if (p->wl->version() >= 5) p->wl->sendFrame();
@@ -1261,8 +1404,9 @@ struct InputExperiment::Impl {
                 const auto x2 = real(f[6]), y2 = real(f[7]); const auto duration = number(f[8]);
                 if (!point(c, x2, y2) || duration < 50 || duration > 2000) { send(c, refusal("invalid_request")); return; }
                 if (Clock::now() + std::chrono::milliseconds(duration + 50) >= expires) { send(c, refusal("lease_expired")); return; }
+                if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
-                if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
+                if (!pointer_enter(c, x, y)) { send(c, kClientNotBoundAfterGrant); return; }
                 if (trace) trace->mark("agent_drag_start", lane + 1);
                 button(272, true);
                 drag.emplace(Drag{&c, x, y, x2, y2, Clock::now(), static_cast<unsigned>(duration), DragGeometry{c.revision}});
@@ -1393,7 +1537,10 @@ struct InputExperiment::Impl {
             }
         }
         if (lease && lease->dead) revoke("disconnected", true);
-        if (reservation && reservation->dead) reservation = nullptr;
+        if (reservation && reservation->dead) {
+            reservation = nullptr;
+            withdraw_seat_global();
+        }
         std::erase_if(clients, [](auto& c) { return c->dead; });
         std::erase_if(pointers, [](auto& p) { return p->dead; });
         std::erase_if(keyboards, [](auto& k) { return k->dead; });
@@ -1515,16 +1662,23 @@ std::string InputExperiment::status_json() const {
     std::string states;
     for (const auto& lane : lanes_) {
         if (!states.empty()) states += ',';
-        const bool pointer_focus = std::ranges::any_of(lane->pointers, [](const auto& p) { return !p->dead && bool(p->focus); });
-        const bool keyboard_focus = std::ranges::any_of(lane->keyboards, [](const auto& k) { return !k->dead && bool(k->focus); });
+        const bool pointer_focus = std::ranges::any_of(lane->pointers, [&](const auto& p) {
+            return !p->dead && lane->seat_generation_is_active(p->generation) && bool(p->focus);
+        });
+        const bool keyboard_focus = std::ranges::any_of(lane->keyboards, [&](const auto& k) {
+            return !k->dead && lane->seat_generation_is_active(k->generation) && bool(k->focus);
+        });
         states += std::format(R"({{"lane":{},"epoch":"{}","desktop_generation":{},"reserved":{},"socket_cleanup":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"held_button":{},"held_keys":{},"drag_active":{},"pointer_focus":{},"keyboard_focus":{}}})",
-            lane->lane, lane->epoch, lane->desktop_generation, lane->reservation != nullptr, lane->socket_cleanup, lane->lease != nullptr, lane->seats.size(), lane->pointers.size(), lane->keyboards.size(), lane->dispatches,
+            lane->lane, lane->epoch, lane->desktop_generation, lane->reservation != nullptr, lane->socket_cleanup, lane->lease != nullptr,
+            lane->active_seat_resources(), lane->active_pointer_resources(), lane->active_keyboard_resources(), lane->dispatches,
             lane->held_button, lane->held_keys.size(), lane->drag.has_value(), pointer_focus, keyboard_focus);
     }
     // Aggregate legacy fields remain available to existing test probes.
-    return std::format(R"({{"protocol":{},"test_only":{},"seat_lifetime":"compositor","upgrade":"desktop_restart","transport_ready":{},"epoch":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"lanes":[{}]}})",
+    return std::format(R"({{"protocol":{},"test_only":{},"seat_lifetime":"compositor","seat_global_lifetime":"lane_claim","upgrade":"desktop_restart","transport_ready":{},"epoch":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"lanes":[{}]}})",
         kProduction ? 3 : 0, !kProduction, !lanes_[0]->suspended && !lanes_[1]->suspended, lanes_[0]->epoch, lanes_[0]->lease != nullptr || lanes_[1]->lease != nullptr,
-        lanes_[0]->seats.size() + lanes_[1]->seats.size(), lanes_[0]->pointers.size() + lanes_[1]->pointers.size(),
-        lanes_[0]->keyboards.size() + lanes_[1]->keyboards.size(), lanes_[0]->dispatches + lanes_[1]->dispatches, states);
+        lanes_[0]->active_seat_resources() + lanes_[1]->active_seat_resources(),
+        lanes_[0]->active_pointer_resources() + lanes_[1]->active_pointer_resources(),
+        lanes_[0]->active_keyboard_resources() + lanes_[1]->active_keyboard_resources(),
+        lanes_[0]->dispatches + lanes_[1]->dispatches, states);
 }
 } // namespace cua::hyprland

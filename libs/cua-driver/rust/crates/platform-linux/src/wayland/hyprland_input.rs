@@ -19,6 +19,8 @@ const TEXT_ACTION_GAP: Duration = Duration::from_millis(25);
 const MAX_PACKET: usize = 2048;
 const MAX_LANES: usize = 2;
 const MAX_STALE_GEOMETRY_RETRIES: usize = 1;
+const CLIENT_BIND_TIMEOUT: Duration = Duration::from_millis(500);
+const CLIENT_BIND_RETRY: Duration = Duration::from_millis(10);
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum DeliveryRoute {
@@ -312,6 +314,14 @@ fn hex_field(value: &Value, name: &str) -> Result<String> {
         "invalid {name}"
     );
     Ok(field.to_owned())
+}
+
+fn client_not_bound_refusal(value: &Value) -> bool {
+    value["ok"] == false
+        && value["code"] == "client_not_bound"
+        && value["detail"] == "client_not_bound"
+        && value.get("effect").is_none()
+        && value.get("delivery").is_none()
 }
 
 fn validate_reply(value: &Value) -> Result<()> {
@@ -609,10 +619,31 @@ impl Client {
                 width.is_finite() && height.is_finite() && width > 0.0 && height > 0.0,
                 "invalid target geometry"
             );
-            self.sequence = self.sequence.checked_add(1).context("sequence exhausted")?;
-            let packet = action.packet(self.sequence, &token, revision, width, height)?;
-            let mut reply =
-                self.dispatch_routed_with_started(&packet, is_drag, &mut started, route)?;
+            // CLAIM publishes a new synthetic seat global. Give the target a
+            // short bounded window to bind that seat before treating
+            // client_not_bound as final. The plugin returns that refusal before
+            // consuming the one-action grant, so these retries cannot replay
+            // input. Every retry still advances the wire sequence and repeats
+            // the plugin's target/revision/conflict checks.
+            let bind_deadline = Instant::now() + CLIENT_BIND_TIMEOUT;
+            let mut reply = loop {
+                self.sequence = self.sequence.checked_add(1).context("sequence exhausted")?;
+                let packet = action.packet(self.sequence, &token, revision, width, height)?;
+                let reply =
+                    self.dispatch_routed_with_started(&packet, is_drag, &mut started, route)?;
+                if self.protocol == InputProtocol::Production
+                    && route == DeliveryRoute::Background
+                    && client_not_bound_refusal(&reply)
+                    && Instant::now() < bind_deadline
+                {
+                    self.cancellation.check()?;
+                    std::thread::sleep(
+                        CLIENT_BIND_RETRY.min(bind_deadline.saturating_duration_since(Instant::now())),
+                    );
+                    continue;
+                }
+                break reply;
+            };
             if self.protocol == InputProtocol::Production
                 && reply["ok"] == false
                 && reply["code"] == "stale_geometry"
@@ -1581,6 +1612,96 @@ mod tests {
         assert_eq!(result["effect"], "partial");
         assert_eq!(result["delivery"]["delivered_count"], 1);
         assert!(slot.is_none());
+        server.join().unwrap();
+    }
+
+    #[test]
+    fn client_not_bound_is_retryable_only_before_delivery_metadata() {
+        assert!(client_not_bound_refusal(
+            &json!({"ok":false,"code":"client_not_bound","detail":"client_not_bound"})
+        ));
+        for value in [
+            json!({"ok":false,"code":"client_not_bound","detail":"other"}),
+            json!({"ok":false,"code":"client_not_bound","detail":"client_not_bound","effect":"none"}),
+            json!({"ok":false,"code":"client_not_bound","detail":"client_not_bound",
+                "delivery":{"mode":"background","delivered_count":0}}),
+            json!({"ok":false,"code":"stale_target","detail":"stale_target"}),
+        ] {
+            assert!(!client_not_bound_refusal(&value));
+        }
+    }
+
+    #[test]
+    fn production_background_bounded_wait_retries_same_target_without_rebinding() {
+        reset_test_attestations();
+        let (client, peer) = production_test_client();
+        let server = std::thread::spawn(move || {
+            assert_eq!(read_packet(&peer), "TARGET 1 1 2");
+            peer.send(
+                json!({"ok":true,"target":TOKEN,"revision":7,"width":100,"height":100})
+                    .to_string()
+                    .as_bytes(),
+            )
+            .unwrap();
+
+            for sequence in 1..=3 {
+                assert_eq!(
+                    read_packet(&peer),
+                    format!("KEY {sequence} {TOKEN} 7 30 0")
+                );
+                if sequence < 3 {
+                    peer.send(
+                        br#"{"ok":false,"code":"client_not_bound","detail":"client_not_bound"}"#,
+                    )
+                    .unwrap();
+                } else {
+                    peer.send(
+                        br#"{"ok":true,"effect":"unverifiable","route":"synthetic_events"}"#,
+                    )
+                    .unwrap();
+                }
+            }
+        });
+
+        let mut slot = Some(client);
+        let result = dispatch_production_key(&mut slot, DeliveryRoute::Background).unwrap();
+        assert_eq!(result["ok"], true);
+        assert_eq!(result["route"], "synthetic_events");
+        assert_eq!(test_attestations(), 1);
+        assert!(slot.is_some());
+        drop(slot);
+        server.join().unwrap();
+    }
+
+    #[test]
+    fn foreground_client_not_bound_is_never_retried() {
+        reset_test_attestations();
+        let (client, peer) = production_test_client();
+        let server = std::thread::spawn(move || {
+            assert_eq!(read_packet(&peer), "FOREGROUND_TARGET 1 1 2");
+            peer.send(
+                json!({"ok":true,"route":"primary_foreground","target":TOKEN,
+                    "revision":1,"width":100,"height":100})
+                .to_string()
+                .as_bytes(),
+            )
+            .unwrap();
+            assert_eq!(read_packet(&peer), format!("KEY 1 {TOKEN} 1 30 0"));
+            peer.send(
+                br#"{"ok":false,"code":"client_not_bound","detail":"client_not_bound"}"#,
+            )
+            .unwrap();
+            let mut byte = [0u8];
+            assert_eq!(
+                unsafe { libc::recv(peer.as_raw_fd(), byte.as_mut_ptr().cast(), 1, 0) },
+                0
+            );
+        });
+        let mut slot = Some(client);
+        let result = dispatch_production_key(&mut slot, DeliveryRoute::Foreground).unwrap();
+        assert_eq!(result["code"], "client_not_bound");
+        assert_eq!(test_attestations(), 1);
+        drop(slot);
         server.join().unwrap();
     }
 
