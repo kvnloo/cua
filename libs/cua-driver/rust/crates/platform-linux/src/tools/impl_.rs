@@ -6317,6 +6317,7 @@ impl Tool for ClickTool {
         }
 
         if let Some(idx) = elem_idx_resolved {
+            cua_driver_core::phase_trace::mark("click", "element_resolved");
             // The observed element: its proven AT-SPI identity and the frame
             // the snapshot recorded. Every route below acts on that identity
             // (or its cached frame); the live ordinal `idx` is only an
@@ -6355,6 +6356,7 @@ impl Tool for ClickTool {
             .ok()
             .and_then(Result::ok)
             .and_then(Result::ok);
+            cua_driver_core::phase_trace::mark("click", "placement_done");
             // X11 foreground element click: behave like a user — activate the
             // window and XTest-click the element's screen centre. No AT-SPI
             // action, no second tree walk. Element bounds come from the
@@ -6379,6 +6381,7 @@ impl Tool for ClickTool {
                 }
                 reveal_pointer_action_for(&self.state, &cursor_id, sx, sy, true).await;
             }
+            cua_driver_core::phase_trace::mark("click", "reveal_done");
 
             // Chromium can execute a genuine AT-SPI action without focus. Try
             // that route before applying its background synthetic-input gate.
@@ -6444,6 +6447,7 @@ impl Tool for ClickTool {
             {
                 let observed_for_ax = observed.clone();
                 let guard_pid = (!delivery.is_foreground()).then_some(pid);
+                cua_driver_core::phase_trace::mark("click", "ax_start");
                 let ax_result = match tokio::time::timeout(
                     ELEMENT_AX_BUDGET,
                     tokio::task::spawn_blocking(move || {
@@ -6473,6 +6477,7 @@ impl Tool for ClickTool {
                         }));
                     }
                 };
+                cua_driver_core::phase_trace::mark("click", "ax_joined");
                 if let Ok(Ok(((_action, suspected_noop, unacknowledged), guard))) = ax_result {
                     let mut structured = json!({
                         "path": "ax",
@@ -8925,13 +8930,16 @@ impl Tool for SetValueTool {
         let xid_opt = Some(xid);
         let delivery = crate::input::delivery::DeliveryMode::from_args(&args);
         let cursor_id = resolve_cursor_key(&args);
+        cua_driver_core::phase_trace::mark("set_value", "element_resolved");
         position_named_session_keyboard_cursor(&self.state, &args, pid, xid, Some(idx), None, true)
             .await;
+        cua_driver_core::phase_trace::mark("set_value", "cursor_done");
         // 1. Focus-free accessibility write on the exact snapshot object.
         let ax = spawn_blocking_bounded("set_value", foreground_budget(0), move || {
             crate::atspi::set_value_in(pid, xid_opt, idx, &value_for_task)
         })
         .await;
+        cua_driver_core::phase_trace::mark("set_value", "write_done");
         let ax_error = match ax {
             Ok(Ok(())) => {
                 let readback = tokio::task::spawn_blocking(move || {
@@ -8940,6 +8948,7 @@ impl Tool for SetValueTool {
                 .await
                 .ok()
                 .flatten();
+                cua_driver_core::phase_trace::mark("set_value", "readback_done");
                 return set_value_result(idx, &value, "ax", readback, None);
             }
             Ok(Err(error)) if crate::atspi::native::is_no_value_route(&error) => error,
