@@ -6,6 +6,7 @@ quiet-lane lock. Reuses the jev-use Driver client, fixture server, candidate
 builder and oracle; adds no service. Writes one JSONL receipt per trial.
 
   run_r2_02.py --driver <bin> --out <dir> [--pairs 24] [--controls 6] [--default-off 3]
+               [--groups C3_early,C3u_early_unguarded]   # extension: only these control groups
 """
 
 from __future__ import annotations
@@ -286,7 +287,7 @@ async def session(driver_bin: str, env_on: bool, server: ExpServer, base_url: st
     return seq
 
 
-def build_plan(pairs: int, controls: int) -> list[tuple]:
+def build_plan(pairs: int, controls: int, groups: list[str] | None = None) -> list[tuple]:
     plan: list[tuple] = [("warmup", "warmup", "poll", "normal", None), ("warmup", "warmup", "event", "normal", "none")]
     for i in range(pairs):
         order = ("poll", "event") if i % 2 == 0 else ("event", "poll")
@@ -294,6 +295,8 @@ def build_plan(pairs: int, controls: int) -> list[tuple]:
             plan.append(("pair", f"pair{i:02d}", arm, "normal", None if arm == "poll" else "none"))
     for _ in range(controls):
         for group, (arm, variant, control) in CONTROL_GROUPS.items():
+            if groups is not None and group not in groups:
+                continue
             plan.append(("control", group, arm, variant, control))
     return plan
 
@@ -311,14 +314,18 @@ async def main_async(args: argparse.Namespace) -> int:
     base_url = f"http://127.0.0.1:{server.server_port}/"
     receipts: list[dict[str, Any]] = []
     started = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    seq = await session(args.driver, True, server, base_url, build_plan(args.pairs, args.controls), out, receipts, 0)
+    groups = args.groups.split(",") if args.groups else None
+    assert groups is None or set(groups) <= set(CONTROL_GROUPS), groups
+    plan = build_plan(args.pairs, args.controls, groups)
+    seq = await session(args.driver, True, server, base_url, plan, out, receipts, 0)
     off_plan = [("control", "C0_default_off", "event", "normal", "none")] * args.default_off
-    await session(args.driver, False, server, base_url, off_plan, out, receipts, seq)
+    if off_plan:
+        await session(args.driver, False, server, base_url, off_plan, out, receipts, seq)
     server.shutdown()
     (out / "run-meta.json").write_text(json.dumps({
         "started_utc": started, "finished_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "trials": len(receipts), "pairs": args.pairs, "controls_per_group": args.controls,
-        "default_off": args.default_off, "deadline_ms": DEADLINE_MS, "poll_reads": POLL_READS,
+        "default_off": args.default_off, "groups": groups, "deadline_ms": DEADLINE_MS, "poll_reads": POLL_READS,
         "poll_sleep_s": POLL_SLEEP_S, "fixture_origin": "http://127.0.0.1:<ephemeral>/",
     }, indent=1, sort_keys=True) + "\n")
     return 0
@@ -331,6 +338,7 @@ def main() -> None:
     p.add_argument("--pairs", type=int, default=24)
     p.add_argument("--controls", type=int, default=6)
     p.add_argument("--default-off", type=int, default=3)
+    p.add_argument("--groups", default=None, help="comma-separated control groups (extension runs)")
     raise SystemExit(asyncio.run(main_async(p.parse_args())))
 
 

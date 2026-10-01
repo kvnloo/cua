@@ -145,7 +145,11 @@ struct Counts {
     stale_generation: u64,
     other_method: u64,
     suppressed: u64,
+    /// Drained before dispatch AND would have woken (main-frame commit
+    /// with a new loader id): real or injected.
     early_rejected: u64,
+    /// The injected early event, seen by the pre-dispatch drain.
+    early_injected_drained: u64,
     stale_rejected: u64,
 }
 
@@ -154,19 +158,25 @@ pub(crate) struct Armed {
     start: Instant,
     session: String,
     rx: mpsc::UnboundedReceiver<CdpEvent>,
+    /// Sender into `rx`'s own queue, held only for the early-event
+    /// controls and dropped in `before_dispatch`.
+    inject: Option<mpsc::UnboundedSender<CdpEvent>>,
     main_frame_id: Option<String>,
     pre_loader_id: Option<String>,
     page_enable_ok: bool,
     generation_ok: bool,
     marks: Map<String, Value>,
     counts: Counts,
-    queued_unguarded: Option<CdpEvent>,
     wake: Option<(&'static str, bool)>,
     end: &'static str,
 }
 
 fn ms(since: Instant) -> Value {
     json!((since.elapsed().as_secs_f64() * 1_000_000.0).round() / 1000.0)
+}
+
+fn is_injected_early(event: &CdpEvent) -> bool {
+    event.params["frame"]["loaderId"].as_str() == Some(INJECTED_EARLY_LOADER)
 }
 
 fn synthetic_commit(session: &str, frame_id: Option<&str>, loader: Option<&str>) -> CdpEvent {
@@ -183,7 +193,13 @@ impl Armed {
     pub(crate) async fn arm(conn: &CdpConnection, session: &str, cfg: Config) -> Self {
         let start = Instant::now();
         let mut marks = Map::new();
-        let rx = conn.subscribe();
+        let (inject, rx) = match cfg.control {
+            Control::InjectEarly | Control::InjectEarlyUnguarded => {
+                let (tx, rx) = conn.subscribe_with_sender();
+                (Some(tx), rx)
+            }
+            _ => (None, conn.subscribe()),
+        };
         marks.insert("subscribed_ms".into(), ms(start));
         let page_enable_ok = conn
             .call(Some(session), "Page.enable", json!({}))
@@ -205,39 +221,52 @@ impl Armed {
             start,
             session: session.to_owned(),
             rx,
+            inject,
             generation_ok: main_frame_id.is_some() && pre_loader_id.is_some(),
             main_frame_id,
             pre_loader_id,
             page_enable_ok,
             marks,
             counts: Counts::default(),
-            queued_unguarded: None,
             wake: None,
             end: "not_waited",
         }
     }
 
     /// Discard everything delivered before dispatch: none of it may wake.
+    /// The early-event controls first queue one synthetic matching commit
+    /// on the subscriber's own queue; C3 and C3u then differ only in
+    /// whether this drain runs.
     pub(crate) fn before_dispatch(&mut self) {
-        let early = synthetic_commit(
-            &self.session,
-            self.main_frame_id.as_deref(),
-            Some(INJECTED_EARLY_LOADER),
-        );
-        match self.cfg.control {
-            Control::InjectEarly => {
-                self.counts.pre_dispatch += 1;
-                self.counts.early_rejected += 1;
-            }
-            Control::InjectEarlyUnguarded => self.queued_unguarded = Some(early),
-            _ => {}
+        if let Some(tx) = self.inject.take() {
+            let _ = tx.send(synthetic_commit(
+                &self.session,
+                self.main_frame_id.as_deref(),
+                Some(INJECTED_EARLY_LOADER),
+            ));
         }
         if self.cfg.control != Control::InjectEarlyUnguarded {
-            while self.rx.try_recv().is_ok() {
+            while let Ok(event) = self.rx.try_recv() {
                 self.counts.pre_dispatch += 1;
+                if self.classify(&event, true) == EventClass::Wake {
+                    self.counts.early_rejected += 1;
+                }
+                if is_injected_early(&event) {
+                    self.counts.early_injected_drained += 1;
+                }
             }
         }
         self.marks.insert("dispatch_sent_ms".into(), ms(self.start));
+    }
+
+    fn classify(&self, event: &CdpEvent, check_generation: bool) -> EventClass {
+        classify(
+            event,
+            &self.session,
+            self.main_frame_id.as_deref(),
+            self.pre_loader_id.as_deref(),
+            check_generation,
+        )
     }
 
     pub(crate) fn dispatch_returned(&mut self) {
@@ -246,13 +275,7 @@ impl Armed {
     }
 
     fn take(&mut self, event: &CdpEvent, check_generation: bool, injected: bool) -> bool {
-        match classify(
-            event,
-            &self.session,
-            self.main_frame_id.as_deref(),
-            self.pre_loader_id.as_deref(),
-            check_generation,
-        ) {
+        match self.classify(event, check_generation) {
             EventClass::Wake if self.cfg.control == Control::Suppress => {
                 self.counts.suppressed += 1;
                 false
@@ -290,11 +313,6 @@ impl Armed {
             self.end = "no_generation";
             return;
         }
-        if let Some(event) = self.queued_unguarded.take() {
-            if self.take(&event, true, true) {
-                self.end = "wake";
-            }
-        }
         if matches!(
             self.cfg.control,
             Control::InjectStale | Control::InjectStaleUnguarded
@@ -314,7 +332,8 @@ impl Armed {
         while self.wake.is_none() {
             match tokio::time::timeout_at(deadline, self.rx.recv()).await {
                 Ok(Some(event)) => {
-                    if self.take(&event, true, false) {
+                    let injected = is_injected_early(&event);
+                    if self.take(&event, true, injected) {
                         self.end = "wake";
                     }
                 }
@@ -385,6 +404,7 @@ impl Armed {
                 "other_method": c.other_method,
                 "suppressed": c.suppressed,
                 "early_rejected": c.early_rejected,
+                "early_injected_drained": c.early_injected_drained,
                 "stale_rejected": c.stale_rejected,
             },
             "marks": Value::Object(self.marks),
@@ -518,16 +538,21 @@ mod tests {
 
     #[tokio::test]
     async fn guarded_injections_are_rejected_and_unguarded_ones_wake() {
+        // The injected early event goes through the subscriber's own queue:
+        // the drain must see it, and only the drain keeps it from waking.
         let early = run(Control::InjectEarly).await;
+        assert_eq!(early["counts"]["pre_dispatch"], 1);
         assert_eq!(early["counts"]["early_rejected"], 1);
+        assert_eq!(early["counts"]["early_injected_drained"], 1);
+        assert_eq!(early["end"], "wake");
         assert_eq!(early["wake_injected"], false);
+        let unguarded = run(Control::InjectEarlyUnguarded).await;
+        assert_eq!(unguarded["counts"]["pre_dispatch"], 0);
+        assert_eq!(unguarded["counts"]["early_injected_drained"], 0);
+        assert_eq!(unguarded["wake_injected"], true);
         let stale = run(Control::InjectStale).await;
         assert_eq!(stale["counts"]["stale_rejected"], 1);
         assert_eq!(stale["wake_injected"], false);
-        assert_eq!(
-            run(Control::InjectEarlyUnguarded).await["wake_injected"],
-            true
-        );
         assert_eq!(
             run(Control::InjectStaleUnguarded).await["wake_injected"],
             true

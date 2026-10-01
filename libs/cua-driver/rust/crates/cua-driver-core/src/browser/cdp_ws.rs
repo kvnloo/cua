@@ -310,6 +310,20 @@ impl CdpConnection {
         rx
     }
 
+    /// [`Self::subscribe`] plus a sender into the same queue. Used only by
+    /// the default-off R2-02 probe's early-event control, which drops the
+    /// sender before dispatch.
+    pub(crate) fn subscribe_with_sender(
+        &self,
+    ) -> (
+        mpsc::UnboundedSender<CdpEvent>,
+        mpsc::UnboundedReceiver<CdpEvent>,
+    ) {
+        let (tx, rx) = mpsc::unbounded_channel();
+        self.demux.subscribers.lock().unwrap().push(tx.clone());
+        (tx, rx)
+    }
+
     /// Associate the one Page-enabled dialog session with its exact target.
     /// Later calls may use fresh attachment sessions, but dialog events keep
     /// arriving on this bounded, persistent event session.
