@@ -349,6 +349,29 @@ def write_event(log_path: Path | None, event: dict[str, Any]) -> None:
             stream.write(line + "\n")
 
 
+def ambiguous_mutation_receipt(
+    *,
+    session: str,
+    step: int,
+    candidate_id: str,
+) -> dict[str, Any]:
+    """Content-free receipt for a dispatched mutation whose effect is unknown.
+
+    A tool exception does not prove that the external effect failed. The
+    transport may have lost the acknowledgement after the target mutated.
+    Therefore this state is observe/reconcile, never blind retry.
+    """
+    return {
+        "receiptKind": "mutation-outcome/v0",
+        "mutationKey": f"{step}:{candidate_id}",
+        "authorityScope": session,
+        "attempted": True,
+        "effect": "unknown",
+        "verification": "unverified",
+        "retryDisposition": "observe",
+    }
+
+
 def decision_timing_fields(
     *,
     decision_ms: float,
@@ -622,6 +645,11 @@ async def run(args: argparse.Namespace) -> str:
                                 **guarded_record,
                                 "error": type(error).__name__,
                                 "tool": candidate.tool,
+                                "mutation_outcome": ambiguous_mutation_receipt(
+                                    session=label,
+                                    step=step,
+                                    candidate_id=candidate.id,
+                                ),
                                 "visual": visual_record,
                             },
                         )
