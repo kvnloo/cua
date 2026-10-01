@@ -485,6 +485,7 @@ mod tests {
         let cfg = Config {
             deadline: Duration::from_millis(200),
             control,
+            nonce: Some(7),
         };
         let mut armed = Armed::arm(&conn, "tab", cfg).await;
         armed.before_dispatch();
