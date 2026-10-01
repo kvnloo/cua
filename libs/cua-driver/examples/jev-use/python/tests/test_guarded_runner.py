@@ -106,6 +106,7 @@ class GuardedRunnerTest(unittest.TestCase):
         no_choice=False,
         reobserve=False,
         action_failure=False,
+        ack_lost_after_effect=False,
         expected="verified",
     ):
         token = "private-field-canary-4316"
@@ -121,11 +122,16 @@ class GuardedRunnerTest(unittest.TestCase):
                 visual_observation="off",
                 dry_run=False,
             )
-            if action_failure:
+            if action_failure or ack_lost_after_effect:
                 original_call = session.call_tool
 
                 async def call(name, args):
                     if name == "browser_click":
+                        if ack_lost_after_effect:
+                            # The target mutates and answers successfully; only the
+                            # caller-side acknowledgement is lost.
+                            await original_call(name, args)
+                            raise RuntimeError("simulated acknowledgement loss")
                         raise RuntimeError(token)
                     return await original_call(name, args)
 
@@ -161,11 +167,16 @@ class GuardedRunnerTest(unittest.TestCase):
                 self.assertEqual(asyncio.run(run.run(args)), expected)
             text = Path(args.log).read_text()
             self.assertNotIn(token, text)
-            return (
+            result = (
                 [json.loads(line) for line in text.splitlines()],
                 provider.call_count,
                 session.mutations,
             )
+            if ack_lost_after_effect:
+                with urlopen(url + "state", timeout=2) as response:
+                    observed = json.load(response)
+                return (*result, observed)
+            return result
 
     def test_accepted_proof_is_emitted_without_model_calibration_or_field_value(self):
         events, calls, mutations = self.execute()
@@ -249,6 +260,37 @@ class GuardedRunnerTest(unittest.TestCase):
                 self.assertEqual(
                     events[-1]["guarded_completion"]["status"], "declined" if tamper else "accepted"
                 )
+
+    def test_ack_lost_after_effect_observes_instead_of_retrying(self):
+        events, calls, mutations, observed = self.execute(
+            ack_lost_after_effect=True,
+            expected="unknown",
+        )
+
+        # Independent target oracle proves the click landed even though the
+        # runner only saw an exception.
+        self.assertEqual(observed, {"submitted": "private-field-canary-4316"})
+        self.assertEqual(mutations, ["browser_type", "browser_click"])
+        # Provider chose only the first action; the guarded completion was
+        # dispatched exactly once and the run stopped on ambiguity.
+        self.assertEqual(calls, 1)
+
+        receipt = events[-1]["mutation_outcome"]
+        self.assertEqual(
+            {k: v for k, v in receipt.items() if k != "authorityScope"},
+            {
+                "receiptKind": "mutation-outcome/v0",
+                "mutationKey": "2:submit-form",
+                "attempted": True,
+                "effect": "unknown",
+                "verification": "unverified",
+                "retryDisposition": "observe",
+            },
+        )
+        self.assertTrue(receipt["authorityScope"].startswith("jev-python-"))
+        self.assertEqual(events[-1]["event"], "outcome")
+        self.assertEqual(events[-1]["outcome"], "unknown")
+        self.assertEqual(events[-1]["phase"], "action")
 
     def test_default_off_never_records_an_attempted_guard(self):
         events, calls, _ = self.execute(guarded=False)
