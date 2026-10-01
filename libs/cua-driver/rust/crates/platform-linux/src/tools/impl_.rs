@@ -12058,6 +12058,9 @@ impl Tool for GetDesktopStateTool {
             let mut windows = crate::wayland::list_windows_dispatch(None);
             windows
                 .retain(|w| w.is_on_screen && w.pid.map_or(false, crate::proc_fs::is_process_live));
+            // Optional Omarchy semantic freshness receipt. Native capture,
+            // window identity, and action authority remain owned by CUA.
+            let desktop_revision = crate::omarchy::desktop_revision_receipt();
             let capture_id = crate::capture_action_frame::publish_desktop(
                 &capture_service,
                 &capture_args,
@@ -12076,6 +12079,7 @@ impl Tool for GetDesktopStateTool {
                 windows,
                 capture_id,
                 overlay_capture,
+                desktop_revision,
             ))
         })
         .await;
@@ -12092,6 +12096,7 @@ impl Tool for GetDesktopStateTool {
                 windows,
                 capture_id,
                 overlay_capture,
+                desktop_revision,
             ))) => {
                 let frame_scale = if shot_w > 0 {
                     f64::from(screen_w) / f64::from(shot_w)
@@ -12113,6 +12118,9 @@ impl Tool for GetDesktopStateTool {
                     "capture_id": capture_id,
                     "agent_overlay_capture": overlay_capture,
                 });
+                if let Some(desktop_revision) = desktop_revision {
+                    structured["desktop_revision"] = desktop_revision;
+                }
                 if (frame_scale - 1.0).abs() > 0.001 {
                     // Capped: the uncapped capture is the action frame.
                     structured["screenshot_original_width"] = json!(screen_w);
