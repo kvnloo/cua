@@ -1196,7 +1196,8 @@ impl ToolRegistry {
         evidence: TrustedInvocationEvidence,
     ) -> ToolResult {
         let runtime_scope = context.runtime_scope_key();
-        DISPATCH_RUNTIME_SCOPE
+        crate::phase_trace::mark(name, "dispatch_enter");
+        let result = DISPATCH_RUNTIME_SCOPE
             .scope(runtime_scope, async {
                 DISPATCH_TRUSTED_INVOCATION_EVIDENCE
                     .scope(evidence.clone(), async {
@@ -1209,7 +1210,9 @@ impl ToolRegistry {
                     })
                     .await
             })
-            .await
+            .await;
+        crate::phase_trace::mark(name, "dispatch_exit");
+        result
     }
 
     async fn invoke_authorized(
@@ -1782,11 +1785,13 @@ impl ToolRegistry {
         // Desktop pixels read off a capped get_desktop_state image are mapped
         // back to the uncapped capture before any platform interprets them.
         crate::desktop_capture_scale::map_desktop_args(&mut args);
+        crate::phase_trace::mark(resolved_name, "invoke_start");
         let mut result = crate::recording::scope_dispatch_click_capture(
             pending_turn.as_ref(),
             tool.invoke(args.clone()),
         )
         .await;
+        crate::phase_trace::mark(resolved_name, "invoke_end");
         match resolved_name {
             "get_desktop_state" if result.is_error != Some(true) => {
                 crate::desktop_capture_scale::record_desktop_state(
