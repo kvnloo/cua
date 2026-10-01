@@ -1,0 +1,72 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "R2-04",
+  "title": "AT-SPI phase / D-Bus RPC profile of the locally built Driver on the canonical GTK3 fixture",
+  "owners": ["kvnloo/cua#93 (R2-04)", "kvnloo/cua#20 (invalidation, consumer only)", "original E2"],
+  "written_utc": "2026-10-01T22:10Z",
+  "tested_source": {
+    "base": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (upstream trycua/cua main, re-read 2026-10-01 ~21:46Z)",
+    "branch": "exp/r2-04-atspi-profile-20261001",
+    "instrumentation": "a later commit on this branch adds measurement-only phase marks (cua-driver-core::phase_trace, env CUA_DRIVER_PHASE_TRACE_FILE, default off); its SHA and the lane binary sha256 are recorded in provenance.json, not here"
+  },
+  "binaries": {
+    "M": "main Driver built from 229b65b28: sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3, cua-driver 0.32.0 (unmodified)",
+    "P": "lane Driver built from this branch's instrumentation commit with build-driver.sh into a lane-private target dir (cua-release-r2-04); run with CUA_DRIVER_PHASE_TRACE_FILE set"
+  },
+  "pilot_disclosure": "Two pilot sessions (pilot1: 2 rounds, pilot2: 1 round + 4 stale negatives) ran the M binary before this file was written, to check feasibility (dbus-monitor on the private AT-SPI bus, oracle, harness). They are excluded from all results and not copied into raw/. Pilot observation that shaped the design: AT-SPI RPCs inside a click took <1 ms while the click call took 300-1700 ms, so Driver-internal phase marks are needed to attribute the remainder.",
+  "hypotheses": {
+    "H_A_bulk_cache": "AT-SPI discovery/property D-Bus traffic dominates the native AT-SPI action cycle on this fixture, so existing bulk interfaces (Cache.GetItems / Collection) are the indicated next tactic.",
+    "H_B_localization": "Driver-internal named phases plus monitor-attributed RPC time explain >=90% of each action tool call's caller-observed time, without the instrumentation distorting it."
+  },
+  "fixture": {
+    "path": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py",
+    "mode": "opt-in task window (CUA_GTK3_TASK_STATE=<scratch>/gtk3-task-state.json), title 'CuaTestHarness GTK3 Tasks'",
+    "interpreter": "/usr/bin/python3 (system PyGObject, GTK 3.24.52)"
+  },
+  "environment": "cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" (private rootless Xvfb, private session dbus, private AT-SPI bus + registryd, openbox + picom). Driver defaults: no permission-mode override, no approval bypass, telemetry default, fresh HOME per session.",
+  "action_types": {
+    "checkbox": "get_window_state(tree+screenshot) -> lookup 'I agree' via jev-use eligible_controls -> click(pid, window_id, element_token, delivery_mode=background)",
+    "button": "same, target 'Increment'",
+    "text": "same observation -> lookup 'Note' and 'Save note' -> set_value(element_token, unique value) -> click(Save note token, background)"
+  },
+  "forced_path": "Background element_token AT-SPI route: click on a checkbox/push button (no real-click role) and set_value on an editable. Expected Driver route: structured route 'accessibility' / AT-SPI Action.DoAction and EditableText.SetTextContents on the app's bus name.",
+  "route_attribution": "Per call: Driver structured route/effect fields; per monitored trial: dbus-monitor shows the Driver connection calling Action.DoAction / EditableText.SetTextContents on the fixture's bus name inside the call window; Arm P marks show the atspi_action marks inside the click.",
+  "oracle": "Independent, target-owned: the fixture's own JSON state file (schema cua.gtk3_task_state_v1; seq increments on every published change). checkbox verified iff agreed flipped and seq+1; button iff counter+1 and seq+1; text iff note_saved == the unique value and seq+1. A fresh Driver observation after the action is recorded as a cross-layer agreement check only, never as the oracle. AT-SPI signals are wake/timing hints only.",
+  "arms": {
+    "M": "main binary, no phase marks; per-round dbus-monitor ABBA on/off",
+    "P": "lane binary with phase marks on; per-round dbus-monitor ABBA on/off",
+    "BULK_conditional": "Only if gate G_bulk fires: a measurement-only external Gio client on the same private AT-SPI bus times (a) the per-node property pattern the Driver used (counts from Arm M monitor) vs (b) one org.a11y.atspi.Cache.GetItems call (and Collection.GetMatches if exposed), >=20 AB/BA-interleaved pairs, same fixture. Never attributed to the Driver."
+  },
+  "n_and_interleaving": {
+    "sessions": "8 isolated sessions in order M,P,P,M,P,M,M,P (ABBA/BAAB at session level), 10 measured rounds each",
+    "per_round": "one trial of each action type; order rotates by round (checkbox,button,text / button,text,checkbox / text,checkbox,button); dbus-monitor on/off by round in pattern on,off,off,on",
+    "per_arm_per_type": "40 measured trials (20 monitored + 20 unmonitored); total 240 measured action trials",
+    "warmup": "per session 6 warm-up trials (each type, monitor off then on) kept in raw, reported separately, excluded from steady-state statistics",
+    "negative_controls": "per session 4 stale-token trials (2 after warm-up, 2 at end), always monitored",
+    "timing_lock": "each session runs under flock <tmp>/locks/quiet-lane.lock; loadavg recorded per trial; every trial kept"
+  },
+  "metrics": {
+    "caller_spans": "tree acquisition wrapper ms (+ Driver-reported walk_elapsed_ms), target lookup ms, each action call wrapper ms, mutation wait ms (first caller detection of new seq after the action returns), independent oracle read ms, fresh verification observation wrapper ms, whole trial ms",
+    "rpc": "per phase (tree acquisition, each action call, verification observation): Driver-originated method-call count by interface.member, summed reply latency, busy time (union of call->reply intervals), first-RPC offset and last-reply-to-return tail; app signals (StateChanged, TextChanged) timestamps",
+    "driver_internal_P": "click: mcp_in (dispatch_enter - caller send), admission (invoke_start - dispatch_enter), prologue (element_resolved - invoke_start), placement, reveal (cursor reveal await), pre_ax, guard_capture (focus_guard.captured - ax_start), live_check, metadata, do_action, post_sleep, guard_restore, join, result_shape (invoke_end - ax_joined), post_dispatch (dispatch_exit - invoke_end), mcp_out (caller receive - dispatch_exit). set_value: mcp_in, admission, prologue, cursor, write, readback, result_shape, post_dispatch, mcp_out.",
+    "mutation_landing": "Arm P/M monitored: app StateChanged/TextChanged signal time relative to DoAction reply and to the caller's receipt of the tool result (time the effect has landed while the caller still waits)",
+    "statistics": "medians and nearest-rank p95 per arm x type; arm differences as difference of medians with seeded bootstrap 95% CI (10000 resamples, seed 2004); no pooling across arms, binaries or sessions of different arms"
+  },
+  "gates": {
+    "G_bulk": "D_type = median over Arm M monitored measured trials of (busy ms of Driver-originated discovery/property RPCs, i.e. every method except Action.DoAction and EditableText.SetTextContents, within the tree acquisition and action calls) / (tree acquisition wrapper ms + action call wrapper ms). Run arm BULK iff max over types D_type >= 0.5.",
+    "G_distortion": "Arm P median action-call wrapper within +/-15% of Arm M (same type, same monitor state) and dbus-monitor on vs off within +/-15% (same arm, type); otherwise the affected spans are reported as distorted.",
+    "G_coverage": "For each action type, median over Arm P trials of (sum of named Driver spans + mcp_in + mcp_out) / caller wrapper >= 0.90, and the largest named span is identified.",
+    "G_validity": "All measured trials counted; a trial with an unverified oracle outcome or error stays in the denominator and is excluded only from latency medians (reported separately). Validity requires >= 95% verified per arm x type and 100% passing stale negatives (refused, no DoAction on the bus, no app mutation)."
+  },
+  "decision_rules": {
+    "H_A_bulk_cache": "KEEP if G_bulk fires and BULK shows >=30% lower median discovery time for an identical element set; REVISE if G_bulk fires but saving <30% or coverage differs; KILL (for this fixture and route) if G_bulk does not fire; BLOCKED if the monitor cannot observe the private bus.",
+    "H_B_localization": "KEEP if G_coverage and G_distortion hold for every action type and G_validity holds; REVISE if coverage < 0.90 or distortion > 15%; BLOCKED if marks or monitor data are missing.",
+    "overall": "Report both. If H_A is KILL and H_B is KEEP, the R2-04 disposition is REVISE: AT-SPI protocol traffic is not where native action time goes on this fixture; the next experiment targets the largest named Driver span with a causal A/B (not run here)."
+  },
+  "claim_boundary": "One GTK3 fixture (task window, 3 action types), one machine, private Xvfb/X11 + private AT-SPI bus, Driver main 229b65b28 (M) and its measurement-only instrumented build (P). No Wayland/Hyprland, no other toolkit, no Chromium/Electron, no cloud service, no provider. Phase spans localize time; they do not prove that removing a span saves that wall-clock (no intervention arm on cursor/sleep/settle). No speedup, no work deletion and no upstream contract change is claimed. #106's Mousepad service numbers are not compared or attributed.",
+  "invariants": "Instrumentation is measurement-only, env-gated, default off; no new service, store, verifier or batch API; events are hints; the state-file oracle owns success; no blind replay of possibly-landed effects (each trial reads the oracle before and after).",
+  "files_frozen_with_this_prereg": {
+    "profile_atspi.py": "03ad700bd666a45a2f6108d01ec94de55a9cd14109479bc001f39caa8feb2b80",
+    "run_in_session.sh": "5c541941090d03ddd042211a7050cecf6d0c84c6b436e3b48c0214391d331580"
+  }
+}
