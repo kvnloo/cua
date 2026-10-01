@@ -1011,6 +1011,10 @@ impl Tool for BrowserClickTool {
             Ok(f) => f,
             Err(e) => return ToolResult::error(e),
         };
+        // R2-01 measurement only (env-gated, default off).
+        crate::phase_trace::mark_detail("click.enter", &session, || {
+            json!({ "route": route.as_str() })
+        });
 
         // Resolve the ref BEFORE revalidation? No — revalidate first so a
         // stale binding refuses before we touch the page at all.
@@ -1022,6 +1026,7 @@ impl Tool for BrowserClickTool {
             Ok(guard) => guard,
             Err(refusal) => return refusal.to_tool_result(),
         };
+        crate::phase_trace::mark("click.lock_acquired", &session);
         let validated = match self
             .engine
             .revalidate_for_mutation(&session, &target_id, Some(&tab_id))
@@ -1030,6 +1035,7 @@ impl Tool for BrowserClickTool {
             Ok(v) => v,
             Err(refusal) => return refusal.to_tool_result(),
         };
+        crate::phase_trace::mark("click.revalidated", &session);
         if route == "trusted" && !foreground && validated.record.cdp_window_id.is_some() {
             if let Some(limitation) = self
                 .engine
@@ -1095,6 +1101,7 @@ impl Tool for BrowserClickTool {
             }
             None => (None, None, validated.cdp_session.clone()),
         };
+        crate::phase_trace::mark("click.ref_resolved", &session);
 
         let conn = &validated.conn;
         let cdp = cdp_session.as_str();
@@ -1133,6 +1140,7 @@ impl Tool for BrowserClickTool {
                     .to_tool_result()
                 }
             };
+            crate::phase_trace::mark("click.dom_resolved", &session);
             // Cursor feedback is best-effort and visual-only. A missing box
             // must not turn a valid DOM-event action into a refusal.
             let _ = conn
@@ -1142,6 +1150,7 @@ impl Tool for BrowserClickTool {
                     json!({ "backendNodeId": backend }),
                 )
                 .await;
+            crate::phase_trace::mark("click.scrolled", &session);
             if let Ok(box_model) = conn
                 .call(
                     Some(cdp),
@@ -1150,6 +1159,7 @@ impl Tool for BrowserClickTool {
                 )
                 .await
             {
+                crate::phase_trace::mark("click.box_model", &session);
                 if let Some((x, y)) = quad_center(&box_model) {
                     self.engine
                         .visualize_browser_action(
@@ -1163,7 +1173,8 @@ impl Tool for BrowserClickTool {
                         .await;
                 }
             }
-            return match conn
+            crate::phase_trace::mark("click.cdp_send", &session);
+            let dispatched = conn
                 .call(
                     Some(cdp),
                     "Runtime.callFunctionOn",
@@ -1172,8 +1183,11 @@ impl Tool for BrowserClickTool {
                         "functionDeclaration": "function() { this.click(); }",
                     }),
                 )
-                .await
-            {
+                .await;
+            crate::phase_trace::mark_detail("click.cdp_response", &session, || {
+                json!({ "ok": dispatched.is_ok() })
+            });
+            return match dispatched {
                 Ok(_) => ToolResult::text(format!(
                     "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
                      verified (trust-gated controls may ignore untrusted events). Refresh page \
@@ -1728,6 +1742,8 @@ impl Tool for BrowserTypeTool {
             .to_tool_result();
         }
 
+        // R2-01 measurement only (env-gated, default off).
+        crate::phase_trace::mark("type.pre_visual", &session);
         // Give the recording a visual target before text delivery. Keep this
         // best-effort: editability/input semantics never depend on the overlay.
         let _ = conn
@@ -1758,6 +1774,7 @@ impl Tool for BrowserTypeTool {
                     .await;
             }
         }
+        crate::phase_trace::mark("type.post_visual", &session);
 
         let requested_chars = text.chars().count();
         let mut replaced_chars = 0usize;

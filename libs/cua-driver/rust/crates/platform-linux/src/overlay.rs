@@ -653,6 +653,10 @@ pub async fn animate_cursor_to_for(key: CursorKey, x: f64, y: f64) {
             Some(rs) if rs.core.cfg.enabled && rs.core.visible && rs.core.pos.0 > -50.0
         )
     };
+    // R2-01 measurement only (env-gated, default off).
+    cua_driver_core::phase_trace::mark_detail("overlay.should_animate", &key, || {
+        serde_json::json!({ "should_animate": should_animate })
+    });
     if !should_animate {
         return;
     }
@@ -687,10 +691,16 @@ pub async fn animate_cursor_to_for(key: CursorKey, x: f64, y: f64) {
         // The renderer already failed to report one arrival. Keep the glide
         // fire-and-forget until it proves itself again rather than charging
         // every action the full cap.
+        cua_driver_core::phase_trace::mark("overlay.degraded_no_wait", &key);
         arrival_cancel(&key);
         return;
     }
-    match tokio::time::timeout(ARRIVAL_WAIT_CAP, rx).await {
+    cua_driver_core::phase_trace::mark("overlay.arrival_wait_start", &key);
+    let waited = tokio::time::timeout(ARRIVAL_WAIT_CAP, rx).await;
+    cua_driver_core::phase_trace::mark_detail("overlay.arrival_wait_end", &key, || {
+        serde_json::json!({ "arrived": matches!(waited, Ok(Ok(()))), "timed_out": waited.is_err() })
+    });
+    match waited {
         Ok(_) => {}
         Err(_elapsed) => {
             arrival_cancel(&key);

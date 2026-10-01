@@ -1215,6 +1215,36 @@ impl ToolRegistry {
     async fn invoke_authorized(
         &self,
         name: &str,
+        args: Value,
+        context: &crate::session_authorization::EffectiveAuthorizationContext,
+        evidence: &TrustedInvocationEvidence,
+    ) -> ToolResult {
+        // R2-01 measurement only: env-gated, default off, result unchanged.
+        if !crate::phase_trace::enabled() {
+            return self
+                .invoke_authorized_untraced(name, args, context, evidence)
+                .await;
+        }
+        let session = args
+            .get("session")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_owned();
+        crate::phase_trace::mark_detail("dispatch.enter", &session, || {
+            serde_json::json!({ "tool": name })
+        });
+        let result = self
+            .invoke_authorized_untraced(name, args, context, evidence)
+            .await;
+        crate::phase_trace::mark_detail("dispatch.exit", &session, || {
+            serde_json::json!({ "tool": name, "is_error": result.is_error.unwrap_or(false) })
+        });
+        result
+    }
+
+    async fn invoke_authorized_untraced(
+        &self,
+        name: &str,
         mut args: Value,
         context: &crate::session_authorization::EffectiveAuthorizationContext,
         evidence: &TrustedInvocationEvidence,
