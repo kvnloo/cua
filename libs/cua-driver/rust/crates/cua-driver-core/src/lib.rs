@@ -84,6 +84,7 @@ pub mod mcp_result;
 pub mod page;
 pub mod perception_client;
 pub mod perception_tools;
+pub mod phase_trace;
 pub mod pip_hook;
 pub mod pointer_shape;
 pub mod policy;

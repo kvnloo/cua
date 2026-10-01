@@ -783,8 +783,11 @@ pub fn guarded<T>(
     body: impl FnOnce() -> Result<T>,
 ) -> Result<(T, Option<FocusGuardReport>)> {
     let snapshot = FocusSnapshot::capture();
+    cua_driver_core::phase_trace::mark("focus_guard", "captured");
     let value = body()?;
+    cua_driver_core::phase_trace::mark("focus_guard", "body_done");
     let report = snapshot.map(|s| s.restore_if_changed(target_pid));
+    cua_driver_core::phase_trace::mark("focus_guard", "restored");
     Ok((value, report))
 }
 
