@@ -49,6 +49,9 @@ mod browser_consent_ui;
 pub mod installed_apps;
 
 #[cfg(target_os = "linux")]
+pub(crate) mod omarchy;
+
+#[cfg(target_os = "linux")]
 pub mod capture;
 mod capture_action_frame;
 #[cfg(target_os = "linux")]
