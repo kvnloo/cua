@@ -138,8 +138,16 @@ mod tests {
 
     #[test]
     fn snapshot_rejects_noncanonical_revision_and_provider_identity() {
-        for revision in ["", "ABCDEF", &"g".repeat(64), &"a".repeat(63)] {
-            assert!(parse_snapshot(&snapshot(Some("instance-a"), revision), "instance-a").is_err());
+        let invalid = [
+            String::new(),
+            "ABCDEF".to_owned(),
+            "g".repeat(64),
+            "a".repeat(63),
+        ];
+        for revision in invalid {
+            assert!(
+                parse_snapshot(&snapshot(Some("instance-a"), &revision), "instance-a").is_err()
+            );
         }
 
         let mut value: Value =
