@@ -12,17 +12,18 @@ import {
   type ValidatedRequest,
 } from './choose_action.js';
 import { chooseBoundedWithTypeSafe, chooseMockForTask } from './jev_adapter.js';
+import { OpenJevDecisionModel } from './openjev_model.js';
 import { chooseS1Service } from './s1_service.js';
 import type { Candidate } from './sources.js';
 import type { HistoryEntry, Task, TaskSources } from './tasks.js';
 
-export type BrowserProvider = 'mock' | 'live' | 'typesafe' | 's1';
+export type BrowserProvider = 'mock' | 'live' | 'typesafe' | 'openjev' | 's1';
 
 export type BrowserDecision = Readonly<{
   choice: string | null;
   confidence: number;
   probabilities: Readonly<Record<string, number>>;
-  backend: 'mock' | 'typesafe' | 's1';
+  backend: 'mock' | 'typesafe' | 'openjev' | 's1';
 }>;
 
 export function backendName(
@@ -87,6 +88,15 @@ export async function chooseBrowserProvider(
   const request = browserDecisionRequest(task, sources, candidates, history);
   if (provider === 's1') {
     return { ...(await chooseS1Service(request)), backend };
+  }
+  if (provider === 'openjev') {
+    const result = await new OpenJevDecisionModel().score(request);
+    return {
+      choice: result.selectedId,
+      confidence: result.confidence,
+      probabilities: result.probabilities,
+      backend,
+    };
   }
   const criteria = Object.fromEntries(
     request.candidates.map(({ id, description }) => [id, description])

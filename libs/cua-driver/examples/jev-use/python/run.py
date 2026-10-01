@@ -614,7 +614,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--provider",
-        choices=("mock", "live", "typesafe", "s1"),
+        choices=("mock", "live", "typesafe", "openjev", "s1"),
         default="mock",
         help="decision backend; live is a compatibility alias for typesafe",
     )
