@@ -1,0 +1,84 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "experiment": "R2-06 trusted-input miss diagnosis",
+ "owners": ["kvnloo/cua#93 (R2-06)", "original E1"],
+ "written_utc": "2026-10-01T22:10Z",
+ "status": "pre-registered before any measured run; not edited after runs start (deviations go to README 'Deviations')",
+ "prior_evidence": "kvnloo/cua#93 E1 probe (source a0bca7440, Driver 0.31.0): trusted pointer route accepted 5/5, independently verified 2/5. The E1 harness and its verification protocol were not retained/found; the exact E1 forced path cannot be replayed byte-for-byte.",
+ "pilot_disclosure": {
+  "what": "Two harness-check pilot sessions (pilot-1, pilot-2), 2 trials each (1 T + 1 D), run before this file to check plumbing (page journal, X recorder, oracle). Excluded from every measured denominator, retained under raw/pilot/.",
+  "observed": "All 4 pilot trials verified within the bound. pilot-1 T acceptance flag was mis-computed by the harness (fixed: acceptance = no isError and no refusal/effect=refused). In pilot-2 the T trial's first fresh /state read immediately after browser_click returned submitted=null and the token appeared 51.9 ms later; the page journal showed pointerdown->click->submit on Submit and the fixture POST. This observation motivates H (below); it is disclosed as pre-registration-adjacent knowledge, not evidence.",
+  "x_recorder_selftest": "xdotool XTest motions on the bare root produced RawMotion/Motion lines, so the XI2 recorder is live; zero XI2 button events were seen during either pilot click (both routes are CDP-level, not X input)."
+ },
+ "hypothesis": {
+  "id": "H",
+  "statement": "The E1 trusted-input 'accepted but not verified' misses are a verification-timing artifact: browser_click (trusted route) returns after Input.dispatchMouseEvent is acknowledged, but the form submission/POST lands asynchronously afterwards, so a single fresh read taken at tool return can miss an effect that does land. Input is neither lost nor mis-targeted.",
+  "secondary_questions": [
+   "Does the X server see any input during a trusted browser_click (expected no: CDP Input bypasses X)?",
+   "Is the browser window active/focused and does the page report document.hasFocus() at pointerdown?",
+   "Does the Driver click point fall inside the Submit rect (element rect vs DPR vs window offset)?"
+  ]
+ },
+ "source_and_binary": {
+  "tested_source": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (upstream main, unmodified Driver code)",
+  "driver_binary": "cua-driver-r2-main-229b65b28, sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3, cua-driver 0.32.0",
+  "driver_changes": "none; instrumentation lives in the caller-side probe and an instrumented copy of the fixture page (listener script appended); /state and /submit semantics unchanged"
+ },
+ "environment": "private rootless Xvfb 1920x1080x24 + openbox + picom + private dbus via cua-x11-session.sh; Chrome selected by Driver (root-owned candidate); default Driver safety settings (no permission override, no approval bypass, Chromium sandbox on); telemetry default (identical across arms).",
+ "fixture": "jev-use fixture_server.py PAGE served by a probe subclass that appends a capture-phase listener script (sendBeacon -> POST /events journal) and journals POST /submit server-side before delegating to the unmodified handler. Per-trial POST /reset and fresh browser_navigate.",
+ "arms": {
+  "T": "browser_click {ref: Submit, delivery_mode: 'foreground'} (default input_route=trusted). Forced path: trusted CDP Input.dispatchMouseEvent; foreground is required because the Linux platform refuses trusted background delivery by contract.",
+  "D": "browser_click {ref: Submit, input_route: 'dom_event'} (positive control on the same fixture/oracle).",
+  "common_steps": "reset -> browser_navigate fixture -> wait page 'load' beacon (<=6 s) -> get_browser_state semantic_v2 -> browser_type {ref: textbox 'verification value', text: per-trial token, replace: true} -> click arm -> fresh oracle reads"
+ },
+ "n_and_interleaving": {
+  "main": "6 blocks x 10 trials = 30 T + 30 D. Each block = fresh Driver MCP process + fresh isolated_new browser. Block order patterns alternate ABBAABBAAB / BAABBAABBA (A=T, B=D).",
+  "controls_block_7": "fresh Driver+browser; N_bg, N_blank, N_empty, N_stale interleaved, 3 each (12).",
+  "plain_block_8": "fresh Driver+browser; uninstrumented page; T_plain/D_plain ABBAABBAAB (5+5) to check that the listener does not change outcomes.",
+  "lock": "the whole measured session runs under flock quiet-lane.lock; loadavg recorded per trial; every trial kept."
+ },
+ "oracle": "Independent target-owned fixture /state (submitted == per-trial token), read over HTTP by the probe: one read immediately at tool return, then re-reads every 50 ms up to a 3000 ms bound. The Driver's result is never the success oracle. Fixture POST /submit journal is the target journal.",
+ "trace_layers_per_trial": [
+  "acceptance: MCP result isError / refusal / effect",
+  "X input delivery: xinput test-xi2 --root lines during the tool span (recorder positive control at session start)",
+  "page event: trusted pointerdown/mousedown/pointerup/mouseup/click with client/screen coords, target, elementFromPoint, Submit rect, DPR, viewport, window offset, document.hasFocus()",
+  "handler: page submit event (value length, checkValidity) and invalid events",
+  "target journal: fixture POST /submit receipt (value)",
+  "fresh verification: immediate + bounded /state reads",
+  "focus/activation: xdotool getactivewindow/getwindowfocus, _NET_ACTIVE_WINDOW and browser window geometry pre/post click"
+ ],
+ "controls": {
+  "N_bg": "trusted route, default background delivery -> expect refusal browser_input_trust_unavailable, no page pointer event, /state null",
+  "N_blank": "trusted click at viewport (8,8) -> expect accepted, page events on non-control target, no submit, /state null (accepted != effect)",
+  "N_empty": "trusted Submit click without typing -> expect invalid event, no POST, /state null",
+  "N_stale": "click with a ref taken before a re-navigation -> expect refusal browser_ref_stale, /state null",
+  "plain": "T_plain/D_plain on uninstrumented page -> outcomes comparable to T/D (oracle only)"
+ },
+ "classification": {
+  "verified_immediate": "accepted and first read == token",
+  "verified_late": "accepted, first read != token, token within 3000 ms bound",
+  "miss_*": "accepted, never verified within bound; first missing layer: no_page_pointer | wrong_target | no_click | click_no_submit (incl. invalid) | submit_no_post | post_no_state",
+  "refused": "not accepted (refusal/isError/transport error)",
+  "harness_error": "probe exception; kept in the denominator as not verified"
+ },
+ "metrics": [
+  "T and D: accepted N/30, verified_immediate N/30, verified_within_bound N/30, misses by class",
+  "per-layer counts (page pointerdown on Submit, click, submit, POST, POST count per trial)",
+  "X11 event counts during tool span",
+  "focus: active window == browser window pre/post; page has_focus at pointerdown",
+  "geometry: Driver click point inside Submit rect at load and at pointerdown; DPR; viewport; window offset",
+  "descriptive latency only: click tool elapsed, tool-return -> first verified read, pointerdown offset inside tool span (no cross-binary or cross-environment comparison)"
+ ],
+ "decision_gates": {
+  "KEEP_H": "T has >=1/30 trials that fail the single immediate read (E1 pattern reproduced under a single-read verifier) AND every accepted T trial shows trusted pointerdown->click on Submit->submit->exactly one POST and verifies within the 3000 ms bound AND controls behave as expected.",
+  "KILL_H": ">=1 accepted T trial is a genuine miss (no trusted pointerdown on Submit, chain break, or not verified within bound): those misses are classified by layer and H is rejected as the full explanation.",
+  "REVISE_H": "0/30 T trials fail even the immediate read (E1 pattern not reproduced on main in this environment) or evidence is ambiguous (e.g. harness errors that hide layers). Then run the conditional X4316 arm.",
+  "BLOCKED": "the session/browser/Driver cannot run; exact blocker recorded."
+ },
+ "conditional_arms": {
+  "fix_if_KEEP": "Smallest fix = caller-side bounded fresh re-read of the target-owned oracle after an accepted trusted click (no Driver change, no new service). Evaluated as a measurement-only verifier arm on the identical T receipts: single-read verifier vs bounded re-read verifier; gate 30/30 verified with exactly one POST per trial.",
+  "fix_if_KILL": "Smallest fix proposed for the identified layer, implemented env-gated and default-off if it touches Driver code (lane binary via cargo lock + lane target dir), run n>=30 interleaved with T in fresh blocks; reported as post-hoc/exploratory.",
+  "X4316_if_REVISE": "Same 6-block T/D plan with the #4316 binary (a0bca7440, 0.31.0, sha256 e57bb9ae...). Reported separately; never pooled with main and never latency-compared across binaries."
+ },
+ "claim_boundary": "Linux, private Xvfb/openbox X11 session, Chrome 151 selected by the Driver, jev-use fixture form only, main Driver 0.32.0 built from 229b65b28. A clean run is not universal certification of the trusted route; no claim about Hyprland/Wayland, macOS, Windows, other pages, other Chromium builds, or the E1 binary unless the conditional arm runs. Latency numbers are descriptive, not a speed claim."
+}
