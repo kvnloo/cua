@@ -1,0 +1,32 @@
+{
+  "schema": "cua.r2.provenance.v1",
+  "experiment": "R2-02",
+  "upstream_main_sha": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "upstream_main_live_at_execution": {
+    "sha": "effd9b298942d7e9808077adef4ef575d561141d",
+    "read_via": "gh api repos/trycua/cua/commits/main at 2026-10-01T22:08Z",
+    "delta_vs_tested_base": "1 commit, release-please-config.json only (gh compare); no Driver source change"
+  },
+  "live_pr_head": "none: R2-02 tests no open PR. Related heads read with gh at 2026-10-01T22:08Z: trycua/cua#4316 a0bca744067d04f05904319d3d919be30c336556 OPEN; kvnloo/cua#106 c45845797b714ccfd76a9569d3238a0724107a83 OPEN (packet format only)",
+  "branch": "exp/r2-02-cdp-wake-20261001 (local, not pushed)",
+  "prereg_commit_sha": "939d4c18c8b8bcb51fc0b8e0d312268554b1049f",
+  "prereg_sha256": "74429ec74c6987b34e5d7a3bc3b158299f6472547671c163a944cffc7b17d8db",
+  "tested_source_sha": "3e41eb1b1cb6931fa75d95b30cc3245528905c5e",
+  "tested_source_note": "worktree HEAD (clean) when the measured run started; harness run_r2_02.py at this commit",
+  "driver_source_sha": "4d092b16065f45ceb0b4266913f3aff225a880cf",
+  "driver_source_note": "the binary was built at this commit; 3e41eb1b1 differs from it only inside #[cfg(test)] in exp_cdp_wake.rs and the docs/ harness, which do not enter the release binary",
+  "driver_sha256": "7034a43b382ee886a84e01138b46936e2a31852642dd6a6df8dff435f89a84c1",
+  "driver_version": "cua-driver 0.32.0",
+  "driver_build": "flock <tmp>/locks/cargo-build.lock <lanes>/build-driver.sh <lanes>/r2-02 r2-02-cdp-wake-4d092b160 cua-release-r2-02; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1 (8bab26f4f 2026-07-14); 0 Fresh workspace units; 91 s; target-dir artifact sha256 equals the copied binary",
+  "superseded_binary": {
+    "sha256": "4ca5c0ff8e4277161d9a0bfe0a0c02e27d2e1bbaa2b17ea7613a3dcb8ec11595",
+    "source": "906377ca0bb52d130297b6006237c32aac8eff69",
+    "used_for": "first shakedown only (probe record was dropped by the public ActionResult projection); no measured trial"
+  },
+  "browser": "Google Chrome 151.0.7922.71 (google-chrome 151.0.7922.71-1), selected by the Driver's root-owned candidate list; Driver-owned isolated_new profile under the session state dir",
+  "driver_safety_settings": "defaults: no permission-mode override, no approval bypass, Chromium sandbox on; telemetry default (identical across arms: one Driver process for all arms and controls except C0)",
+  "session": "cua-x11-session.sh sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b: private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox + picom xrender, private dbus-run-session, scrubbed env (no WAYLAND_DISPLAY / HYPRLAND_* / host XDG_RUNTIME_DIR), no AT-SPI bus",
+  "environment": "Linux 7.2 x86_64, 10 logical CPUs (i9-10900KF), 23 GiB RAM, Python 3.12.13 (jev-use uv venv, uv sync --frozen), node v22.23.2",
+  "timing_lock": "flock <tmp>/locks/quiet-lane.lock held for the whole measured session: wait 2026-10-01T22:19:09Z, acquired 22:22:39Z, released 22:28:09Z",
+  "publication_sha": "set by the orchestrator at publication; not known to this packet"
+}

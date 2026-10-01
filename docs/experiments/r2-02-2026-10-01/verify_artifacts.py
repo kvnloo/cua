@@ -150,7 +150,7 @@ def compute(rows: list[dict]) -> dict:
             "outcomes": {o: sum(r["outcome"] == o for r in g) for o in sorted({r["outcome"] for r in g})},
             "first_read_after_call": {o: sum(r.get("first_read_after_call") == o for r in g)
                                       for o in sorted({str(r.get("first_read_after_call")) for r in g})},
-            "probe_end": {e: sum((r.get("probe") or {}).get("end") == e for r in g)
+            "probe_end": {e: sum(str((r.get("probe") or {}).get("end")) == e for r in g)
                           for e in sorted({str((r.get("probe") or {}).get("end")) for r in g})},
             "click_to_outcome_ms_median": median([r["click_to_outcome_ms"] for r in g if "click_to_outcome_ms" in r]),
             "failing_seqs": [r["seq"] for r in g if r["seq"] not in passed],
@@ -164,6 +164,12 @@ def compute(rows: list[dict]) -> dict:
     errors = [r["seq"] for r in rows if r["outcome"] == "error"]
     guarded_wrong_wake = [r["seq"] for r in rows if r["group"] in {"C3_early", "C4_unrelated", "C5_stale"}
                           and r.get("probe") and r["probe"]["wake_injected"] is True]
+
+    probe_log = [json.loads(x) for x in (RAW / "driver-probe.jsonl").read_text().splitlines() if x.strip()]
+    armed = [r for r in rows if r["arm"] == "event" and r["probe_env"]]
+    assert sorted(x["nonce"] for x in probe_log) == sorted(r["seq"] for r in armed), "probe log != armed calls"
+    assert not (RAW / "driver-probe-default-off.jsonl").exists(), "default-off Driver wrote a probe record"
+    public_leak = [r["seq"] for r in rows if r.get("probe_in_public_result")]
 
     med = median(diffs)
     ci = bootstrap_ci(diffs)
@@ -192,6 +198,13 @@ def compute(rows: list[dict]) -> dict:
                 "bootstrap95_ci_median": ci, "bootstrap": {"seed": SEED, "resamples": RESAMPLES},
                 "pairs_favouring_event": favour, "pairs_favouring_poll": sum(d > 0 for d in diffs),
                 "diffs": diffs,
+                "pairs_where_poll_slept": sum(pairs[n]["poll"]["fixed_sleeps"] > 0 for n in pairs),
+                "diffs_where_poll_slept": [round(pairs[n]["event"]["click_to_verified_ms"]
+                                                 - pairs[n]["poll"]["click_to_verified_ms"], 3)
+                                           for n in sorted(pairs) if pairs[n]["poll"]["fixed_sleeps"] > 0],
+                "median_diff_where_poll_did_not_sleep": median([
+                    pairs[n]["event"]["click_to_verified_ms"] - pairs[n]["poll"]["click_to_verified_ms"]
+                    for n in sorted(pairs) if pairs[n]["poll"]["fixed_sleeps"] == 0]),
             },
             "event_probe_phases": probe_phases(event),
             "event_probe_end": {e: sum(r["probe"]["end"] == e for r in event if r.get("probe"))
@@ -201,6 +214,9 @@ def compute(rows: list[dict]) -> dict:
         "false_success_seqs": false_success,
         "guarded_wrong_wake_seqs": guarded_wrong_wake,
         "error_seqs": errors,
+        "probe_log_records": len(probe_log),
+        "default_off_probe_log_absent": True,
+        "probe_in_public_result_seqs": public_leak,
         "gates": {"correctness": correctness, "timing_keep": timing_keep, "disposition": disposition},
     }
 
