@@ -182,17 +182,101 @@ for kind in KINDS:
         check(close(v, summary["driver_spans_P"]["text"]["actions"][0]["median_ms"]["cursor"], 0.005), "P/text cursor")
         headline["P/text/set_value_cursor"] = v
 
-# README must quote the recomputed headline numbers (rounded to 1 decimal / 3 for D)
-for key, val in headline.items():
-    if key.endswith("/D"):
-        continue
-    if key.endswith(("tree_rpc", "action_rpc")):
-        token = f"{val:g}"
-    else:
-        token = f"{val:.1f}"
-    check(token in readme, f"README lacks headline {key}={token}")
+# Per-action RPC counts (arm M monitored), effect landing -> return, and tree size (own parse)
+act_rpc_by_call: dict[str, list[float]] = {}
+landed: list[float] = []
+for kind in KINDS:
+    xs = [r for r in ok if r["_arm"] == "M" and r["kind"] == kind and r["monitored"]]
+    for i in range(len(xs[0]["actions"])):
+        vals = []
+        for r in xs:
+            d = drv(r["rpc"])
+            a = r["actions"][i]
+            vals.append(sum(1 for p in r["rpc"] if p["sender"] == d and a["w0"] <= p["t_ns"] <= a["w1"]))
+        act_rpc_by_call[f"{kind}/{i}"] = vals
+    for r in xs:
+        d = drv(r["rpc"])
+        a = r["actions"][-1]
+        ends = [p["end_ns"] for p in r["rpc"] if p["sender"] == d and a["w0"] <= p["t_ns"] <= a["w1"]
+                and p["member"] in ("DoAction", "SetTextContents") and p.get("end_ns")]
+        landed.append((a["w1"] - max(ends)) / 1e6)
+click_rpc = {med(act_rpc_by_call[k]) for k in ("checkbox/0", "button/0", "text/1")}
+check(len(click_rpc) == 1, f"click RPC count differs by target {click_rpc}")
+click_rpc = click_rpc.pop()
+set_value_rpc = med(act_rpc_by_call["text/0"])
+landed_med = med(landed)
+headline["M/landed_to_return"] = landed_med
+
+all_m = [r for r in ok if r["_arm"] == "M"]
+els = {r["tree"]["summary"]["element_count"] for r in ok} | {r["tree"]["summary"]["nodes_visited"] for r in ok}
+check(len(els) == 1, f"tree size varies across trials {els}")
+n_el = els.pop()
+mon_m = [r for r in all_m if r["monitored"]]
+objs = set()
+per_el_bus = []
+for r in mon_m:
+    d = drv(r["rpc"])
+    t = [p for p in r["rpc"] if p["sender"] == d and r["tree"]["w0"] <= p["t_ns"] <= r["tree"]["w1"]]
+    objs.add(len({(p["dest"], p["path"]) for p in t if (p.get("interface") or "").startswith("org.a11y.atspi.")
+                  and p["dest"] != "org.a11y.atspi.Registry"}))
+    per_el_bus.append(busy([p for p in t if p["member"] not in ("DoAction", "SetTextContents")]) / n_el)
+check(len(objs) == 1, f"app objects queried varies {objs}")
+n_obj = objs.pop()
+tree_rpc = headline["M/checkbox/tree_rpc"]
+ts = summary["supplementary_tree_size"]["M"]
+check(ts["element_count"]["median"] == n_el == ts["nodes_visited"]["median"], "summary tree size")
+check(ts["app_objects_queried"]["median"] == n_obj, "summary app objects queried")
+check(close(med(per_el_bus), ts["tree_discovery_bus_ms_per_element"]["median"], 0.01), "summary bus ms per element")
+check(close(tree_rpc / n_el, ts["tree_rpc_per_element"]["median"], 0.01), "summary rpc per element")
+check(f"({n_el:g}-element" in summary["dispositions"]["H_A_scope"], "H_A scope names the tree size")
+
+# README must quote the recomputed numbers in context (table rows / phrases, not bare substrings)
+f1 = lambda v: f"{v:.1f}"
+H = headline
+expect = {
+    "tree row": "| Tree acquisition (`get_window_state` wrapper) | " + " | ".join(
+        f"{f1(H[f'M/{k}/tree'])} / {f1(H[f'P/{k}/tree'])}" for k in KINDS) + " |",
+    "action row": "| Action tool call(s) | " + " | ".join(
+        f"{f1(H[f'M/{k}/action'])} / {f1(H[f'P/{k}/action'])}" for k in KINDS),
+    "tree rpc": f"**Tree acquisition: {tree_rpc:g} RPCs",
+    "click rpc": f"**Click (checkbox, button, Save note): {click_rpc:g} RPCs",
+    "set_value rpc": f"**set_value: {set_value_rpc:g} RPCs",
+    "gate D": "checkbox {:.3f}, button {:.3f}, text {:.3f}".format(*(H[f"M/{k}/D"] for k in KINDS)),
+    "landed": f"**{landed_med:.0f} ms before the click returns**",
+    "reveal row": "| **Agent-cursor reveal / keyboard-cursor positioning** | " + " | ".join(
+        f"**{f1(v)}**" for v in (H["P/checkbox/reveal"], H["P/button/reveal"], H["P/text/reveal"],
+                                 H["P/text/set_value_cursor"])) + " |",
+    "sleep row": "| **Fixed post-`DoAction` sleep** (`perform_action_ref`, 50 ms) | " + " | ".join(
+        f"**{f1(H[f'P/{k}/post_sleep'])}**" for k in KINDS) + " |",
+    "restore row": "| **Focus-guard restore** (220 ms settle watch + checks) | " + " | ".join(
+        f"**{f1(H[f'P/{k}/guard_restore'])}**" for k in KINDS) + " |",
+    "tree size": f"**{n_el:g} elements** (`nodes_visited` = `element_count` = {n_el:g} in all",
+    "objects": f"{n_obj:g} distinct app-side AT-SPI objects",
+    "per element": f"about **{tree_rpc / n_el:.1f} RPCs and {med(per_el_bus):.2f} ms of bus time per emitted element**",
+    "stale": f"{sum(summary['stale_negative'][a]['passed'] for a in ('M', 'P'))}/{len(negatives)} stale negatives refused",
+}
+for arm in ("M", "P"):
+    for kind in KINDS:
+        d = summary["denominators"][f"{arm}/{kind}"]
+        expect[f"denominator {arm}/{kind}"] = f"| {arm} / {kind} | {d['attempted']} | {d['verified']} | 20 | REAL |"
+for what, s in expect.items():
+    check(s in readme, f"README lacks {what}: {s!r}")
 check(summary["dispositions"]["H_A_bulk_cache"] in readme and summary["dispositions"]["H_B_localization"] in readme,
       "README dispositions")
+
+# --- unit evidence must be present in the packet ------------------------------
+unit = R / "raw" / "unit" / "in-session-tests.txt"
+check(unit.is_file(), "raw/unit/in-session-tests.txt missing")
+if unit.is_file():
+    u = unit.read_text()
+    for n in (77, 177):
+        check(f"ok. {n} passed; 0 failed" in u, f"in-session unit log lacks {n} passed")
+        check(f"{n} tests" in readme, f"README lacks unit count {n}")
+    check(len(re.findall(r"^rc=0$", u, re.M)) == 2 and not re.search(r"^rc=[1-9]", u, re.M), "in-session unit log rc")
+for name in ("host-shell-core-phase-trace", "host-shell-core-tool-phase",
+             "host-shell-platform-linux-focus-atspi", "host-shell-platform-linux-tools"):
+    check((R / "raw" / "unit" / f"{name}.txt").is_file(), f"raw/unit/{name}.txt missing")
+check(not list((R / "raw").rglob("*.log")), "a .log file in raw/ would be dropped by .gitignore")
 
 # --- privacy -------------------------------------------------------------------
 host = socket.gethostname()

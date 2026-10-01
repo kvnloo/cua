@@ -196,6 +196,7 @@ def trial_metrics(name: str, arm: str, r: dict[str, Any], prev_target: str | Non
     m["tree_ms"] = tree.get("wrapper_ms")
     m["walk_ms"] = (tree.get("summary") or {}).get("walk_elapsed_ms")
     m["element_count"] = (tree.get("summary") or {}).get("element_count")
+    m["nodes_visited"] = (tree.get("summary") or {}).get("nodes_visited")
     m["lookup_ms"] = (r.get("lookup") or {}).get("lookup_ms")
     acts = r.get("actions") or []
     m["routes"] = [((a.get("structured") or {}).get("route"), (a.get("structured") or {}).get("effect")) for a in acts]
@@ -219,6 +220,12 @@ def trial_metrics(name: str, arm: str, r: dict[str, Any], prev_target: str | Non
     if r.get("rpc") is not None and tree:
         drv = driver_name(r["rpc"])
         m["rpc_tree"] = window_rpc(r["rpc"], drv, tree["w0"], tree["w1"])
+        # Distinct app-side AT-SPI objects the Driver queried during the tree acquisition
+        # (supplementary: tree-size context for the per-node RPC cost).
+        m["rpc_tree_app_objects"] = len({(p["dest"], p["path"]) for p in r["rpc"]
+                                         if p["sender"] == drv and tree["w0"] <= p["t_ns"] <= tree["w1"]
+                                         and (p.get("interface") or "").startswith("org.a11y.atspi.")
+                                         and p.get("dest") != "org.a11y.atspi.Registry"})
         m["rpc_actions"] = [window_rpc(r["rpc"], drv, a["w0"], a["w1"]) for a in acts]
         if r.get("verify_tree"):
             m["rpc_verify"] = window_rpc(r["rpc"], drv, r["verify_tree"]["w0"], r["verify_tree"]["w1"])
@@ -424,6 +431,33 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 strat[f"monitor_on_vs_off/{arm}/{kind}/prev={t}"] = boot_diff(a, b)
     s["supplementary_stratified_distortion"] = strat
 
+    # Supplementary (not pre-registered, added after verification review): tree size and the
+    # per-node discovery cost. The GTK3 task window is small, so gate D cannot approach 0.5
+    # here; the H_A KILL is scoped to this fixture. The large-tree figure is a linear
+    # extrapolation, labelled as such, never a measurement.
+    tsize = {}
+    for arm in ("M", "P"):
+        allx = [m for m in ok if m["arm"] == arm]
+        mon = [m for m in allx if m.get("rpc_tree")]
+        per_el = [m["rpc_tree"]["count"] / m["element_count"] for m in mon if m.get("element_count")]
+        bus_el = [m["rpc_tree"]["discovery_busy_ms"] / m["element_count"] for m in mon if m.get("element_count")]
+        tsize[arm] = {
+            "nodes_visited": describe([m["nodes_visited"] for m in allx if m.get("nodes_visited") is not None]),
+            "element_count": describe([m["element_count"] for m in allx if m.get("element_count") is not None]),
+            "app_objects_queried": describe([m["rpc_tree_app_objects"] for m in mon]),
+            "tree_rpc_per_element": describe(per_el),
+            "tree_discovery_bus_ms_per_element": describe(bus_el),
+            "walk_ms": describe([m["walk_ms"] for m in allx if m.get("walk_ms") is not None]),
+        }
+    m_bus = tsize["M"]["tree_discovery_bus_ms_per_element"]["median"]
+    m_rpc = tsize["M"]["tree_rpc_per_element"]["median"]
+    tsize["linear_extrapolation_not_measured"] = {
+        "elements": 1000, "rpc": round(m_rpc * 1000) if m_rpc else None,
+        "discovery_bus_ms": round(m_bus * 1000, 1) if m_bus else None,
+        "note": "arm M per-element median x 1000; illustrative only, not a measurement",
+    }
+    s["supplementary_tree_size"] = tsize
+
     # gates
     d_by_kind = {kind: (rpc.get(f"M/{kind}") or {}).get("D", {}).get("median") for kind in KINDS}
     max_d = max((v for v in d_by_kind.values() if v is not None), default=None)
@@ -460,6 +494,9 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     h_a = "KILL" if not s["gate_bulk"]["fires"] else "PENDING_BULK_ARM"
     h_b = "KEEP" if (s["gate_coverage"]["holds"] and s["gate_distortion"]["holds"] and s["gate_validity"]["holds"]) else "REVISE"
     s["dispositions"] = {"H_A_bulk_cache": h_a, "H_B_localization": h_b,
+                         "H_A_scope": (f"this GTK3 fixture ({tsize['M']['element_count']['median']:g}-element task window) "
+                                       "and the background element-token route only; large-tree apps untested "
+                                       "(BULK arm NOT_RUN)"),
                          "overall": "REVISE" if h_a == "KILL" and h_b == "KEEP" else "SEE_README"}
     return s
 

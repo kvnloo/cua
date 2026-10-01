@@ -12,7 +12,10 @@
     "read_utc": "2026-10-01T22:20Z",
     "trycua_cua_main": "effd9b298942d7e9808077adef4ef575d561141d",
     "trycua_cua_main_vs_tested": "1 commit ahead of 229b65b28 (effd9b298 fix(release): drop the first-release version pins, #4431); only release-please-config.json changed (gh api compare). No Driver source difference, but this packet does not certify effd9b298.",
-    "r2_04_pull_request": "none (R2-04 has no PR; tested source is upstream main)"
+    "r2_04_pull_request": "none (R2-04 has no PR; tested source is upstream main)",
+    "revision_read_utc": "2026-10-01T23:00Z",
+    "trycua_cua_main_at_revision": "021b87ddf0faa0853ba7417303b05a283ca3b491",
+    "trycua_cua_main_at_revision_vs_tested": "3 commits ahead of 229b65b28 (gh api compare); release, docs and libs/cua-spacesd files only, no libs/cua-driver file. Not certified by this packet; the orchestrator re-reads at publication."
   },
   "publication_sha": null,
   "publication_note": "Filled by the orchestrator after publication; tested source, live head and publication SHA are kept separate.",
@@ -43,6 +46,23 @@
     "driver_settings": "defaults: no permission-mode override, no approval bypass, telemetry default (fresh HOME per session), no *-e2e wrapper",
     "timing_lock": "<tmp>/locks/quiet-lane.lock held per session; loadavg recorded per trial (1-min loadavg medians 0.76-0.95 across arm x type)"
   },
-  "unit_and_source_checks": "raw/unit/*.log (sanitized): cua-driver-core phase_trace + tool tests, platform-linux focus_guard + atspi tests",
-  "pilot_runs_excluded": ["pilot1 (M, 2 rounds)", "pilot2 (M, 1 round + 4 negatives)", "smokeP (P marks on, 1 round)", "smokePoff (P marks off, 1 round)"]
+  "unit_and_source_checks": "raw/unit/*.txt (sanitized; renamed from .log because the repository .gitignore ignores *.log): in-session-tests.txt is authoritative (cua-driver-core tool:: + phase_trace 77 passed, platform-linux input::focus_guard + atspi:: + tools:: 177 passed, inside cua-x11-session.sh); host-shell-*.txt is the disclosed earlier host-shell run",
+  "pilot_runs_excluded": [
+    "pilot1 (M, 2 rounds; before the PREREG commit, disclosed in PREREG)",
+    "pilot2 (M, 1 round + 4 negatives; before the PREREG commit, disclosed in PREREG)",
+    "smokeP (P marks on, 1 round; after the PREREG commit, ~22:15Z, before the first measured session; disclosed in README Deviations)",
+    "smokePoff (P marks off, 1 round; after the PREREG commit, ~22:17Z; packaged as raw/controls/smoke-P-marks-off)"
+  ],
+  "pilot_raw_mirror": "<lanes>/artifacts/r2/r2-04/pilots/ (not in this packet)",
+  "session_binary_attribution": "The raw meta row records the arm label, not the binary sha256, and run_batch.sh arguments were not saved. P sessions are attested by phase marks; M sessions rest on run_batch.sh's M->main mapping and the absence of marks. Both binaries re-hash to the recorded sha256 values.",
+  "revision": {
+    "reason": "fresh verification review",
+    "changes": [
+      "unit logs committed as .txt",
+      "supplementary_tree_size + dispositions.H_A_scope added to analyze.py (other summary keys unchanged)",
+      "H_A KILL and claim boundary scoped to the 9-element fixture",
+      "verify_artifacts.py checks README numbers in context, recomputes tree size and per-call RPCs, and checks unit evidence is present"
+    ],
+    "new_trials": 0
+  }
 }
