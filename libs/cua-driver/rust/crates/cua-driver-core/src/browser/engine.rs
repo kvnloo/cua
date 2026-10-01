@@ -1680,6 +1680,10 @@ impl BrowserEngine {
         viewport_y: f64,
         kind: BrowserVisualActionKind,
     ) {
+        // R2-01 measurement only (env-gated, default off).
+        crate::phase_trace::mark_detail("viz.enter", session, || {
+            json!({ "kind": format!("{kind:?}") })
+        });
         // `document.visibilityState` distinguishes the selected tab without
         // focusing its native window or invoking any CDP activation command.
         // Treat an unavailable or malformed proof as inactive: omitting
@@ -1699,6 +1703,9 @@ impl BrowserEngine {
             .ok()
             .and_then(|result| result.pointer("/result/value").and_then(Value::as_bool))
             .unwrap_or(false);
+        crate::phase_trace::mark_detail("viz.visibility_done", session, || {
+            json!({ "tab_is_active": tab_is_active })
+        });
 
         let screen_point = if cdp_session == validated.cdp_session {
             validated
@@ -1723,6 +1730,9 @@ impl BrowserEngine {
         let (screen_x, screen_y) = screen_point
             .map(|(x, y)| (Some(x), Some(y)))
             .unwrap_or((None, None));
+        crate::phase_trace::mark_detail("viz.layout_done", session, || {
+            json!({ "has_screen_point": screen_x.is_some() })
+        });
         self.platform
             .visualize_browser_action(BrowserVisualAction {
                 session: session.to_owned(),
@@ -1734,6 +1744,7 @@ impl BrowserEngine {
                 kind,
             })
             .await;
+        crate::phase_trace::mark("viz.exit", session);
     }
 
     /// Serialize the full revalidate-dispatch-verify interval by the real CDP
