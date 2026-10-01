@@ -47,12 +47,33 @@ struct Monitor {
 
 #[derive(Clone, Debug, Deserialize)]
 struct DisplayMonitor {
+    #[serde(default)]
+    name: String,
     width: u32,
     height: u32,
     scale: f64,
     x: i32,
     y: i32,
     transform: u32,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DisplayOutput {
+    pub name: String,
+    pub x: i32,
+    pub y: i32,
+    pub width: u32,
+    pub height: u32,
+    pub scale: f64,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DisplayLayout {
+    pub x: i32,
+    pub y: i32,
+    pub width: u32,
+    pub height: u32,
+    pub outputs: Vec<DisplayOutput>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -317,26 +338,24 @@ fn valid_dimensions(width: u32, height: u32) -> bool {
     width > 0 && height > 0 && u64::from(width) * u64::from(height) <= MAX_LOGICAL_PIXELS
 }
 
-/// Content-free logical geometry for a qualified single-output desktop: the
-/// output mode divided by its scale, rounded as Hyprland rounds its logical
-/// monitor size, plus that scale. Desktop capture, desktop action admission,
-/// and the virtual-pointer extent all use this frame, matching the logical
-/// window geometry and window captures. The common policy adapter uses it for
-/// display-scoped observation. Never substitute a screenshot, XWayland root,
-/// or guessed primary monitor here.
-pub fn screen_size() -> Result<(u32, u32, f64)> {
-    screen_size_from_monitors(query("j/monitors")?)
+/// Content-free logical output topology from Hyprland IPC. Output positions
+/// stay signed because Hyprland permits monitors to the left/above the layout
+/// origin. Each output carries its own logical frame and scale; callers that
+/// need the legacy width/height/scale tuple must use `screen_size`, which
+/// deliberately accepts only the subset representable by that contract.
+pub fn display_layout() -> Result<DisplayLayout> {
+    display_layout_from_monitors(query("j/monitors")?)
 }
 
-fn screen_size_from_monitors(monitors: Vec<DisplayMonitor>) -> Result<(u32, u32, f64)> {
-    let [monitor] = monitors.as_slice() else {
-        bail!("Hyprland display identity requires exactly one active output");
-    };
+fn logical_dimensions(monitor: &DisplayMonitor) -> Result<(u32, u32)> {
     if !monitor.scale.is_finite() || monitor.scale <= 0.0 {
         bail!("invalid Hyprland display scale");
     }
-    if monitor.transform != 0 || monitor.x != 0 || monitor.y != 0 {
-        bail!("Hyprland display identity requires an unrotated output at the origin");
+    // The current capture/action frame does not encode output rotation. Keep
+    // the layout truthful rather than silently swapping axes until transforms
+    // are represented in the public desktop contract.
+    if monitor.transform != 0 {
+        bail!("Hyprland rotated outputs are not representable yet");
     }
     if !valid_dimensions(monitor.width, monitor.height) {
         bail!("invalid Hyprland display dimensions");
@@ -353,11 +372,92 @@ fn screen_size_from_monitors(monitors: Vec<DisplayMonitor>) -> Result<(u32, u32,
     {
         bail!("invalid Hyprland logical display dimensions");
     }
-    let (logical_width, logical_height) = (logical_width as u32, logical_height as u32);
-    if !valid_dimensions(logical_width, logical_height) {
+    let dimensions = (logical_width as u32, logical_height as u32);
+    if !valid_dimensions(dimensions.0, dimensions.1) {
         bail!("invalid Hyprland logical display dimensions");
     }
-    Ok((logical_width, logical_height, monitor.scale))
+    Ok(dimensions)
+}
+
+fn display_layout_from_monitors(monitors: Vec<DisplayMonitor>) -> Result<DisplayLayout> {
+    if monitors.is_empty() {
+        bail!("Hyprland display identity requires at least one active output");
+    }
+
+    let mut outputs = Vec::with_capacity(monitors.len());
+    let mut min_x = i64::MAX;
+    let mut min_y = i64::MAX;
+    let mut max_x = i64::MIN;
+    let mut max_y = i64::MIN;
+
+    for monitor in monitors {
+        let (width, height) = logical_dimensions(&monitor)?;
+        let left = i64::from(monitor.x);
+        let top = i64::from(monitor.y);
+        let right = left
+            .checked_add(i64::from(width))
+            .context("Hyprland display X extent overflow")?;
+        let bottom = top
+            .checked_add(i64::from(height))
+            .context("Hyprland display Y extent overflow")?;
+        min_x = min_x.min(left);
+        min_y = min_y.min(top);
+        max_x = max_x.max(right);
+        max_y = max_y.max(bottom);
+        outputs.push(DisplayOutput {
+            name: monitor.name,
+            x: monitor.x,
+            y: monitor.y,
+            width,
+            height,
+            scale: monitor.scale,
+        });
+    }
+
+    let width = u32::try_from(max_x - min_x).context("Hyprland logical display width overflow")?;
+    let height =
+        u32::try_from(max_y - min_y).context("Hyprland logical display height overflow")?;
+    if !valid_dimensions(width, height) {
+        bail!("invalid Hyprland logical display layout dimensions");
+    }
+
+    Ok(DisplayLayout {
+        x: i32::try_from(min_x).context("Hyprland display X origin overflow")?,
+        y: i32::try_from(min_y).context("Hyprland display Y origin overflow")?,
+        width,
+        height,
+        outputs,
+    })
+}
+
+/// Logical desktop frame for the existing width/height/scale contract.
+///
+/// Multiple unrotated outputs are supported when their union begins at (0,0)
+/// and every output uses the same scale. Mixed-scale or negative-origin layouts
+/// remain explicit refusals because one global scale/zero-origin affine mapping
+/// cannot represent them without changing the public action contract.
+pub fn screen_size() -> Result<(u32, u32, f64)> {
+    screen_size_from_monitors(query("j/monitors")?)
+}
+
+fn screen_size_from_monitors(monitors: Vec<DisplayMonitor>) -> Result<(u32, u32, f64)> {
+    let layout = display_layout_from_monitors(monitors)?;
+    if layout.x != 0 || layout.y != 0 {
+        bail!("Hyprland desktop frame requires a zero-origin output layout");
+    }
+    let scale = layout
+        .outputs
+        .first()
+        .context("Hyprland display identity requires at least one active output")?
+        .scale;
+    if layout
+        .outputs
+        .iter()
+        .any(|output| output.scale.to_bits() != scale.to_bits())
+    {
+        bail!("Hyprland mixed-scale outputs require per-output desktop coordinates");
+    }
+    Ok((layout.width, layout.height, scale))
 }
 
 pub fn list_windows() -> Result<Vec<Window>> {
@@ -942,18 +1042,62 @@ mod tests {
     }
 
     #[test]
-    fn display_identity_rejects_ambiguous_outputs_and_unsupported_frames() {
+    fn display_identity_supports_zero_origin_uniform_scale_multi_output() {
+        let left = display_monitor();
+        let mut right = display_monitor();
+        right.width = 2560;
+        right.height = 1440;
+        right.x = 1920;
+
+        let layout = display_layout_from_monitors(vec![left.clone(), right.clone()]).unwrap();
+        assert_eq!((layout.x, layout.y, layout.width, layout.height), (0, 0, 4480, 1440));
+        assert_eq!(layout.outputs.len(), 2);
+        assert_eq!(
+            screen_size_from_monitors(vec![left, right]).unwrap(),
+            (4480, 1440, 1.0)
+        );
+    }
+
+    #[test]
+    fn display_layout_preserves_signed_origins_but_legacy_frame_refuses_them() {
+        let mut left = display_monitor();
+        left.x = -1920;
+        let mut right = display_monitor();
+        right.width = 2560;
+        right.height = 1440;
+
+        let monitors = vec![left, right];
+        let layout = display_layout_from_monitors(monitors.clone()).unwrap();
+        assert_eq!((layout.x, layout.y, layout.width, layout.height), (-1920, 0, 4480, 1440));
+        assert!(screen_size_from_monitors(monitors).is_err());
+    }
+
+    #[test]
+    fn display_layout_keeps_per_output_scale_but_legacy_frame_refuses_mixed_scale() {
+        let left = display_monitor();
+        let mut right = scaled_monitor(3840, 2160, 2.0);
+        right.x = 1920;
+
+        let monitors = vec![left, right];
+        let layout = display_layout_from_monitors(monitors.clone()).unwrap();
+        assert_eq!((layout.width, layout.height), (3840, 1080));
+        assert_eq!(layout.outputs[0].scale, 1.0);
+        assert_eq!(layout.outputs[1].scale, 2.0);
+        assert!(screen_size_from_monitors(monitors).is_err());
+    }
+
+    #[test]
+    fn display_identity_rejects_invalid_scale_and_rotation() {
         assert!(screen_size_from_monitors(vec![]).is_err());
-        assert!(screen_size_from_monitors(vec![display_monitor(), display_monitor()]).is_err());
         for scale in [0.0, f64::NAN, f64::INFINITY] {
             let mut monitor = display_monitor();
             monitor.scale = scale;
-            assert!(screen_size_from_monitors(vec![monitor]).is_err());
+            assert!(display_layout_from_monitors(vec![monitor]).is_err());
         }
-        for (x, y, transform) in [(100, 0, 0), (0, -100, 0), (0, 0, 1), (0, 0, 7)] {
+        for transform in [1, 7] {
             let mut monitor = display_monitor();
-            (monitor.x, monitor.y, monitor.transform) = (x, y, transform);
-            assert!(screen_size_from_monitors(vec![monitor]).is_err());
+            monitor.transform = transform;
+            assert!(display_layout_from_monitors(vec![monitor]).is_err());
         }
     }
 
