@@ -13,7 +13,6 @@ sys.path.insert(0, str(BASE / "python"))
 
 from portable_evidence import load_events, main, normalize_events
 
-
 SHA = "0123456789abcdef0123456789abcdef01234567"
 
 
@@ -49,6 +48,60 @@ class PortableEvidenceTest(unittest.TestCase):
             revision=SHA,
         )
         self.assertEqual(receipt["outcome"], "unknown")
+
+    def test_latest_invalid_outcome_does_not_reuse_success(self):
+        invalid_outcomes = [
+            {"event": "outcome"},
+            {"event": "outcome", "outcome": "interrupted"},
+            {"event": "outcome", "outcome": None},
+            {"event": "outcome", "outcome": {"state": "unknown"}},
+            {"event": "outcome", "outcome": []},
+            {"event": "outcome", "outcome": False},
+            {"event": "outcome", "outcome": 0},
+        ]
+        for final in invalid_outcomes:
+            with self.subTest(final=final):
+                receipt = normalize_events(
+                    [{"event": "outcome", "outcome": "verified"}, final],
+                    revision=SHA,
+                )
+                self.assertEqual(receipt["outcome"], "unknown")
+                self.assertEqual(receipt["evidence"][0]["result"], "unknown")
+                self.assertIsNone(receipt["evidence"][0]["details"]["native_outcome"])
+
+    def test_latest_known_outcome_remains_authoritative(self):
+        for first, last, expected in [
+            ("verified", "refuted", "fail"),
+            ("refuted", "verified", "pass"),
+            ("verified", "unknown", "unknown"),
+            ("refuted", "abstained", "abstain"),
+        ]:
+            with self.subTest(first=first, last=last):
+                receipt = normalize_events(
+                    [
+                        {"event": "outcome", "outcome": first},
+                        {"event": "outcome", "outcome": last},
+                    ],
+                    revision=SHA,
+                )
+                self.assertEqual(receipt["outcome"], expected)
+
+    def test_cli_emits_unknown_for_latest_invalid_outcome(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "events.jsonl"
+            path.write_text(
+                '{"event":"outcome","outcome":"verified"}\n'
+                '{"event":"outcome","outcome":{"state":"unknown"}}\n',
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+            with redirect_stdout(stdout):
+                code = main(["--log", str(path), "--revision", SHA])
+
+        receipt = json.loads(stdout.getvalue())
+        self.assertEqual(code, 0)
+        self.assertEqual(receipt["outcome"], "unknown")
+        self.assertEqual(receipt["evidence"][0]["result"], "unknown")
 
     def test_requires_exact_revision(self):
         with self.assertRaises(ValueError):

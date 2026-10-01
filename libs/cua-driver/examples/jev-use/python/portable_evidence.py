@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-
 _SCHEMA = "z0.evidence.v0"
 _SHA = re.compile(r"^[0-9a-fA-F]{40}$")
 _OUTCOME_MAP = {
@@ -42,16 +41,15 @@ def normalize_events(
 
     rows = list(events)
     final = next(
-        (
-            row
-            for row in reversed(rows)
-            if row.get("event") == "outcome"
-            and row.get("outcome") in _OUTCOME_MAP
-        ),
+        (row for row in reversed(rows) if row.get("event") == "outcome"),
         None,
     )
 
-    if final is None:
+    if (
+        final is None
+        or not isinstance(final.get("outcome"), str)
+        or final["outcome"] not in _OUTCOME_MAP
+    ):
         outcome = "unknown"
         final_native = None
         evidence_result = "unknown"
