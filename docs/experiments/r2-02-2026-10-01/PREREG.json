@@ -1,0 +1,79 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "R2-02 real CDP event -> wake -> fresh read",
+  "owners": ["kvnloo/cua#93 (R2-02)", "kvnloo/cua#10", "original E3"],
+  "written_utc": "2026-10-01T22:05Z",
+  "status_at_commit": "NOT_RUN: no measured trial has executed when this file is committed",
+  "tested_source_base": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (trycua/cua main), plus the measurement-only probe commit on exp/r2-02-cdp-wake-20261001 (sha recorded in the packet README and provenance.json)",
+  "hypothesis": {
+    "H1": "After the same DOM-route Submit click on the jev-use browser fixture, waking on the Driver's existing CdpConnection event demux (CdpConnection::subscribe, the path already used for downloads, OOPIF auto-attach and dialogs) for a Page.frameNavigated of the bound tab's main frame whose loaderId differs from the pre-dispatch document identity, followed by one fresh fixture /state read, reaches an oracle-verified outcome sooner than the current jev-use post-action completion loop (read /state, sleep 100 ms, up to 20 reads, python/run.py), with subscription, Page.enable, generation read and cleanup counted inside the timed span.",
+    "H0": "The event wake does not reduce click-to-verified latency once its setup and cleanup are counted, or it does so only by treating an event as success."
+  },
+  "invariants": [
+    "The event is a wake hint only. Success is decided only by the fixture-owned /state journal (submitted == trial token). The probe output never claims the application effect.",
+    "No new service: no event service, shadow state, second verifier, router, registry or batch API. The probe is a function-local subscriber on the existing per-endpoint CdpConnection, dropped at the end of the call.",
+    "Measurement-only and default-off: the probe runs only when the Driver process has CUA_DRIVER_EXP_R2_02_CDP_WAKE=1 AND the browser_click call carries the exp_r2_02_cdp_wake argument on input_route=dom_event. Otherwise the code path is the unmodified main path.",
+    "Event absence never authorises anything: a missing wake ends at a bounded deadline followed by a fresh read and the unchanged poll fallback.",
+    "No mutation is repeated: one Submit click per trial; no replay after an unknown outcome."
+  ],
+  "fixture": {
+    "server": "examples/jev-use/fixture_server.py FixtureServer/FixtureState/FixtureHandler reused unchanged; the experiment harness subclasses the handler only to (a) serve control pages under /v/<variant> and (b) journal the monotonic receipt time of each POST /submit. /state and /reset semantics are unchanged.",
+    "variants": {
+      "normal": "the unchanged fixture PAGE served at /",
+      "spurious": "Submit navigates the main frame to an interstitial page with no state change; the interstitial auto-POSTs the typed value to /submit after 300 ms",
+      "unrelated": "the normal form plus a same-origin iframe the page re-navigates every 25 ms (child-frame Page.frameNavigated events on the same session)",
+      "inert": "Submit is type=button with no handler; nothing is ever submitted",
+      "refuted": "the form's submit handler replaces the value with a different string before the POST, so /state records a value other than the token"
+    }
+  },
+  "forced_path": "browser_prepare (isolated_new profile) -> get_browser_state bind -> browser_navigate to the variant URL -> get_browser_state semantic_v2 -> browser_type (field ref, dom_event route as the jev-use page-structure candidate builds it) -> pre-dispatch /state read -> TIMED browser_click on the Submit ref with input_route=dom_event -> completion wait per arm. Candidates are built with the existing jev-use fixture_sources/FixtureFormTask code.",
+  "arms": {
+    "A_poll": "browser_click without the probe argument (unmodified code path). Then the run.py completion loop: read /state; stop on verified/refuted; else sleep 0.1 s; at most 20 reads, then one final read.",
+    "B_event": "browser_click with exp_r2_02_cdp_wake {deadline_ms: 1000, control: none}. Inside the call, immediately before Runtime.callFunctionOn: subscribe on the existing connection, Page.enable on the call's tab session, Page.getFrameTree for main frame id + loaderId (generation), drain and discard everything queued before dispatch; after dispatch wait for the first Page.frameNavigated on that session for the main frame with a different loaderId, or the deadline; then drop the subscriber and Page.disable. After the call returns: one fresh /state read; stop on verified/refuted; else the identical A_poll loop as fallback."
+  },
+  "binary": "one lane-built Driver from this branch for every arm and control (sha256 recorded in provenance.json). Default Driver safety settings: no permission-mode override, no approval bypass, Chromium sandbox on.",
+  "environment": "private rootless Xvfb + private dbus via cua-x11-session.sh; every measured phase under flock quiet-lane.lock; /proc/loadavg recorded per trial.",
+  "n_and_interleaving": {
+    "warmup": "1 A_poll + 1 B_event at session start; kept in raw/, excluded from the paired headline",
+    "pairs": 24,
+    "order": "pair i is A then B for even i and B then A for odd i (AB/BA alternation), all in one Driver + browser session",
+    "controls_per_group": 6,
+    "control_order": "round-robin over control groups after the pairs, 6 rounds",
+    "default_off_check": 3
+  },
+  "oracle": "GET /state on the loopback fixture: verified iff submitted == trial token; refuted iff submitted is another non-null value; otherwise unknown. Read by the harness process, independent of the Driver and of CDP.",
+  "controls": {
+    "C1_lost": "normal page, control=suppress: matching events are counted but not acted on. Expect no wake, deadline reached, first post-call read verified (the effect landed), outcome verified only through the oracle.",
+    "C2_spurious": "spurious page, control=none. Expect a wake on the interstitial commit, the first post-wake read NOT verified, verification later through the fallback loop. The event never counts as success.",
+    "C3_early": "normal page, control=inject_early: a synthetic main-frame Page.frameNavigated with a new loaderId is queued after subscription and before dispatch. Expect it discarded by the pre-dispatch drain (early_rejected=1) and the wake to come from the real commit.",
+    "C3u_early_unguarded": "ablation, control=inject_early_unguarded: same injection without the pre-dispatch drain. Expect an immediate wake on the injected event; the oracle read still decides (fallback if not yet submitted).",
+    "C4_unrelated": "unrelated page, control=none. Expect child-frame Page.frameNavigated events counted as unrelated and never waking; the wake comes from the main-frame commit.",
+    "C5_stale": "normal page, control=inject_stale: a synthetic main-frame Page.frameNavigated carrying the pre-dispatch loaderId is evaluated after dispatch. Expect stale_rejected=1 and the wake from the real commit.",
+    "C5u_stale_unguarded": "ablation, control=inject_stale_unguarded: the loaderId generation check is skipped for the injected event. Expect an immediate wake; the oracle read still decides.",
+    "C6_timeout_event": "inert page, B_event. Expect no wake, deadline, every read unknown, final outcome not verified (timeout).",
+    "C6p_timeout_poll": "inert page, A_poll. Same expected outcome; reference for the extra worst-case cost of the event deadline.",
+    "C7_refuted": "refuted page, B_event. Expect a wake on the commit and the first post-wake read refuted; outcome refuted, never verified.",
+    "C0_default_off": "separate Driver process WITHOUT CUA_DRIVER_EXP_R2_02_CDP_WAKE, normal page, probe argument present. Expect no probe output in the result (behaviour unchanged) and verification through the poll loop."
+  },
+  "synthetic_event_note": "C3/C3u/C5/C5u inject one synthetic event into the probe's own queue during a real browser run. Their evidence class is FIXTURE (synthetic event), not REAL. C1/C2/C4/C6/C7 use only real Chromium events.",
+  "metrics": {
+    "primary": "click_to_verified_ms: harness monotonic time from immediately before the browser_click MCP call to the return of the /state read that first classifies verified (includes all probe setup, wait and cleanup costs).",
+    "secondary": [
+      "tool_ms (browser_click call span)",
+      "post_return_ms (tool return -> verified read)",
+      "effect_to_verified_ms (fixture POST receipt -> verified read returned; same process, CLOCK_MONOTONIC)",
+      "oracle reads and fixed sleeps per trial",
+      "Driver probe phases: subscribe, Page.enable, generation read, dispatch, dispatch->wake, cleanup (intra-Driver Instant deltas)",
+      "event counts by class: wake, pre_dispatch, unrelated_session, unrelated_frame, stale_generation, other_method, suppressed"
+    ],
+    "statistics": "per-pair difference B_event - A_poll on click_to_verified_ms; median paired difference, count of pairs favouring B, 95% percentile bootstrap CI of the median paired difference (10000 resamples, seed 2026100102). Arm medians and nearest-rank p95 reported but not used for the gate."
+  },
+  "failure_accounting": "Every attempted trial stays in raw/ and in its denominator. A trial whose harness, tool or oracle step errors is a failure of that arm, never dropped and never encoded as zero latency.",
+  "decision_gates": {
+    "KEEP": "all of: A and B each verified in >= 23/24 pair trials with any failure explained by something other than the wake; every control group meets its expectation in 6/6 (C3u/C5u are ablations: they pass if the oracle, not the event, decides the outcome); zero trials anywhere where an event (or its absence) produced a verified record without the /state oracle; median paired difference <= -20 ms with the bootstrap CI upper bound < 0.",
+    "REVISE": "correctness conditions hold but the timing condition fails (CI includes 0 or median paired difference > -20 ms), or a control exposes a probe filter defect that never caused a false success.",
+    "KILL": "the event arm is slower (CI lower bound > 0), or a guarded control (C3/C4/C5) wakes on the early/unrelated/stale event, or any false success.",
+    "BLOCKED": "Page events cannot be observed on the existing connection from the call's tab session, or the isolated session/browser cannot run the forced path."
+  },
+  "claim_boundary": "One locally built Driver from main 229b65b28 plus a default-off probe, one Chromium (whatever the Driver selects, recorded), one loopback form fixture, one DOM-route Submit click, private Xvfb on one Linux host. A KEEP supports only: on this fixture/route, a function-local wake on the existing CDP demux shortens click-to-verified latency relative to the 100 ms poll loop while the oracle still decides. It does not certify trusted-input routes, AT-SPI/native events (R2-09), wait_for_window, other pages, other browsers, a public Driver contract, CPU savings, or composition with other treatments (R2-10)."
+}
