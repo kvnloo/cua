@@ -136,26 +136,26 @@ class GuardedRunnerTest(unittest.TestCase):
                 result = original(*values, **options)
                 return replace(result, session="foreign-session") if tamper and result else result
 
-            original_choose = run.choose_mock_for_task
+            original_choose = run.choose_browser_provider
             forced = False
 
-            def choose(*values):
+            def choose(provider_name, *values):
                 nonlocal forced
                 if session.value and not forced:
                     forced = True
                     if provider_failure:
                         raise RuntimeError(token)
                     if no_choice:
-                        return None, 0.0, {}
+                        return None, 0.0, {}, "mock"
                     if reobserve:
-                        return "reobserve", 1.0, {"reobserve": 1.0}
-                return original_choose(*values)
+                        return "reobserve", 1.0, {"reobserve": 1.0}, "mock"
+                return original_choose(provider_name, *values)
 
             with (
                 patch.object(run, "stdio_client", transport),
                 patch.object(run, "ClientSession", return_value=session),
                 patch.object(run, "plan_guarded_completion", side_effect=plan),
-                patch.object(run, "choose_mock_for_task", side_effect=choose) as provider,
+                patch.object(run, "choose_browser_provider", side_effect=choose) as provider,
                 contextlib.redirect_stdout(io.StringIO()),
             ):
                 self.assertEqual(asyncio.run(run.run(args)), expected)
@@ -190,6 +190,8 @@ class GuardedRunnerTest(unittest.TestCase):
             },
         )
         self.assertTrue(proof["session"].startswith("jev-python-"))
+        self.assertEqual(steps[0]["backend"], "mock")
+        self.assertIsNone(accepted["backend"])
         self.assertEqual(accepted["provider_decision_ms"], 0)
         self.assertIsNone(accepted["confidence"])
         self.assertIsNone(accepted["probabilities"])
@@ -202,6 +204,7 @@ class GuardedRunnerTest(unittest.TestCase):
         self.assertEqual(
             steps[1]["guarded_completion"], {"status": "declined", "reason": "session_mismatch"}
         )
+        self.assertEqual(steps[1]["backend"], "mock")
         self.assertIsInstance(steps[1]["confidence"], float)
         self.assertIsInstance(steps[1]["probabilities"], dict)
 
@@ -215,6 +218,7 @@ class GuardedRunnerTest(unittest.TestCase):
                 "outcome": "unknown",
                 "step": 2,
                 "phase": "provider",
+                "backend": "mock",
                 "decision_route": "provider",
                 "error": "RuntimeError",
                 "guarded_completion": {"status": "declined", "reason": "session_mismatch"},
