@@ -9,7 +9,9 @@
 //! for a main-frame `Page.frameNavigated` whose loader id differs from the
 //! pre-dispatch document identity, or a bounded deadline. The wake is a
 //! hint for the caller's next fresh read: the output never claims the
-//! application effect.
+//! application effect. The public ActionResult projection drops unknown
+//! structured keys, so the record is appended to the JSONL file named by
+//! `CUA_DRIVER_EXP_R2_02_CDP_WAKE_LOG` when that is set.
 
 use std::time::{Duration, Instant};
 
@@ -20,6 +22,7 @@ use super::cdp_ws::{CdpConnection, CdpEvent};
 
 pub(crate) const ENV: &str = "CUA_DRIVER_EXP_R2_02_CDP_WAKE";
 pub(crate) const ARG: &str = "exp_r2_02_cdp_wake";
+pub(crate) const LOG_ENV: &str = "CUA_DRIVER_EXP_R2_02_CDP_WAKE_LOG";
 const DEFAULT_DEADLINE_MS: u64 = 1000;
 const MAX_DEADLINE_MS: u64 = 10_000;
 const INJECTED_EARLY_LOADER: &str = "r2-02-injected-early";
@@ -63,6 +66,8 @@ impl Control {
 pub(crate) struct Config {
     pub deadline: Duration,
     pub control: Control,
+    /// Caller correlation id, echoed in the record.
+    pub nonce: Option<u64>,
 }
 
 impl Config {
@@ -88,6 +93,7 @@ impl Config {
         Some(Self {
             deadline: Duration::from_millis(deadline_ms),
             control,
+            nonce: cfg.get("nonce").and_then(Value::as_u64),
         })
     }
 }
@@ -326,8 +332,24 @@ impl Armed {
         self.marks.insert("wait_ms".into(), ms(waited));
     }
 
-    /// Drop the subscriber and disable Page events on the call's session.
-    pub(crate) async fn finish(mut self, conn: &CdpConnection) -> Value {
+    /// Drop the subscriber, disable Page events on the call's session, and
+    /// append the record to the env-named log (best effort).
+    pub(crate) async fn finish(self, conn: &CdpConnection) -> Value {
+        let record = self.finish_record(conn).await;
+        if let Some(path) = std::env::var_os(LOG_ENV) {
+            use std::io::Write;
+            if let Ok(mut file) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(path)
+            {
+                let _ = writeln!(file, "{record}");
+            }
+        }
+        record
+    }
+
+    async fn finish_record(mut self, conn: &CdpConnection) -> Value {
         let cleanup = Instant::now();
         self.rx.close();
         drop(self.rx);
@@ -345,6 +367,7 @@ impl Armed {
         let c = &self.counts;
         json!({
             "schema": "cua.r2_02.cdp_wake_probe.v1",
+            "nonce": self.cfg.nonce,
             "semantics": "wake_hint_only; application effect not verified",
             "control": self.cfg.control.as_str(),
             "deadline_ms": self.cfg.deadline.as_millis() as u64,
@@ -476,6 +499,7 @@ mod tests {
     #[tokio::test]
     async fn wakes_only_on_new_main_frame_generation() {
         let out = run(Control::None).await;
+        assert_eq!(out["nonce"], 7);
         assert_eq!(out["end"], "wake");
         assert_eq!(out["wake_injected"], false);
         assert_eq!(out["counts"]["unrelated_frame"], 1);

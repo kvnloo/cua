@@ -1184,42 +1184,33 @@ impl Tool for BrowserClickTool {
                     }),
                 )
                 .await;
-            let probe_record = match wake_probe {
-                Some(mut probe) => {
-                    probe.dispatch_returned();
-                    if dispatched.is_ok() {
-                        probe.wait().await;
-                    }
-                    Some(probe.finish(conn).await)
+            if let Some(mut probe) = wake_probe {
+                probe.dispatch_returned();
+                if dispatched.is_ok() {
+                    probe.wait().await;
                 }
-                None => None,
-            };
+                probe.finish(conn).await;
+            }
             return match dispatched {
-                Ok(_) => {
-                    let mut structured = json!({
-                        "status": "ok",
-                        "effect": "unverifiable",
-                        "route": "dom_event",
-                        "target_id": target_id,
-                        "tab_id": tab_id,
-                        "ref": ext_ref,
-                        "frame": frame_kind,
-                        "escalation": {
-                            "recommended": "page",
-                            "reason": "synthetic DOM dispatch cannot prove control activation; refresh page state and verify the expected postcondition",
-                        },
-                    });
-                    if let Some(record) = probe_record {
-                        structured[super::exp_cdp_wake::ARG] = record;
-                    }
-                    ToolResult::text(format!(
-                        "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
-                         verified (trust-gated controls may ignore untrusted events). Refresh page \
-                         state and verify the expected postcondition",
-                        ext_ref.as_deref().unwrap_or("?")
-                    ))
-                    .with_structured(structured)
-                }
+                Ok(_) => ToolResult::text(format!(
+                    "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
+                     verified (trust-gated controls may ignore untrusted events). Refresh page \
+                     state and verify the expected postcondition",
+                    ext_ref.as_deref().unwrap_or("?")
+                ))
+                .with_structured(json!({
+                    "status": "ok",
+                    "effect": "unverifiable",
+                    "route": "dom_event",
+                    "target_id": target_id,
+                    "tab_id": tab_id,
+                    "ref": ext_ref,
+                    "frame": frame_kind,
+                    "escalation": {
+                        "recommended": "page",
+                        "reason": "synthetic DOM dispatch cannot prove control activation; refresh page state and verify the expected postcondition",
+                    },
+                })),
                 Err(e) => ToolResult::error(format!("DOM click failed: {e}")),
             };
         }
