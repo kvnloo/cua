@@ -52,6 +52,7 @@
    "first_read_after_call": {
     "verified": 6
    },
+   "invalid": "cannot fail by construction: the run-1 binary counted the injected event without queueing it; excluded from totals; superseded by extension",
    "n": 6,
    "outcomes": {
     "verified": 6
@@ -167,8 +168,57 @@
    }
   }
  },
+ "controls_valid_met_total": 69,
+ "controls_valid_n_total": 69,
  "default_off_probe_log_absent": true,
  "error_seqs": [],
+ "extension_c3": {
+  "controls": {
+   "C3_early": {
+    "early_injected_drained_total": 6,
+    "early_rejected_total": 6,
+    "expectation_met": 6,
+    "failing_seqs": [],
+    "n": 6,
+    "outcomes": {
+     "verified": 6
+    },
+    "pre_dispatch_total": 6,
+    "wake_injected": {
+     "False": 6,
+     "True": 0
+    }
+   },
+   "C3u_early_unguarded": {
+    "early_injected_drained_total": 0,
+    "early_rejected_total": 0,
+    "expectation_met": 6,
+    "failing_seqs": [],
+    "n": 6,
+    "outcomes": {
+     "verified": 6
+    },
+    "pre_dispatch_total": 0,
+    "wake_injected": {
+     "False": 0,
+     "True": 6
+    }
+   }
+  },
+  "groups": [
+   "C3_early",
+   "C3u_early_unguarded"
+  ],
+  "probe_log_records": 13,
+  "trials_total": 14,
+  "warmup": {
+   "event": "verified",
+   "poll": "verified"
+  }
+ },
+ "extension_error_seqs": [],
+ "extension_false_success_seqs": [],
+ "extension_guarded_wrong_wake_seqs": [],
  "false_success_seqs": [],
  "gates": {
   "correctness": true,
@@ -222,6 +272,208 @@
    "setup_total_ms_median": 0.932,
    "subscribed_ms_median": 0.008
   },
+  "exploratory_not_preregistered": {
+   "diffs_where_poll_slept": [
+    -191.099,
+    -24.627,
+    -26.176
+   ],
+   "median_diff_where_poll_did_not_sleep": 44.691,
+   "pairs_where_poll_slept": 3,
+   "session_age_drift": {
+    "c1_unrelated_session_by_seq": [
+     [
+      50,
+      204
+     ],
+     [
+      60,
+      244
+     ],
+     [
+      70,
+      284
+     ],
+     [
+      80,
+      324
+     ],
+     [
+      90,
+      364
+     ],
+     [
+      100,
+      404
+     ]
+    ],
+    "c1_unrelated_session_equals_4x_seq_plus_1": true,
+    "control_cleanup_ms_by_round": {
+     "C2_spurious": [
+      14.191,
+      16.301,
+      20.856,
+      23.409,
+      29.489,
+      36.827
+     ],
+     "C5_stale": [
+      16.997,
+      20.381,
+      22.223,
+      29.767,
+      36.123,
+      41.51
+     ],
+     "C7_refuted": [
+      16.206,
+      17.284,
+      24.729,
+      30.153,
+      33.75,
+      40.679
+     ]
+    },
+    "control_wait_ms_by_round": {
+     "C2_spurious": [
+      50.922,
+      62.145,
+      84.195,
+      97.286,
+      116.952,
+      147.444
+     ],
+     "C3_early": [
+      52.723,
+      69.511,
+      86.381,
+      111.985,
+      125.773,
+      140.314
+     ],
+     "C4_unrelated": [
+      203.115,
+      219.381,
+      237.756,
+      256.763,
+      291.979,
+      302.587
+     ],
+     "C5_stale": [
+      59.726,
+      75.879,
+      88.136,
+      104.812,
+      126.064,
+      147.935
+     ],
+     "C7_refuted": [
+      59.271,
+      76.747,
+      103.039,
+      116.562,
+      144.004,
+      158.54
+     ]
+    },
+    "ext_c3_wait_ms_in_order": [
+     6.767,
+     7.562,
+     9.162,
+     10.314,
+     12.122,
+     13.131
+    ],
+    "label": "exploratory, not pre-registered",
+    "pair_event_cleanup_ms": [
+     5.036,
+     10.522,
+     14.816,
+     12.133,
+     13.591,
+     20.128,
+     22.815,
+     17.999,
+     17.524,
+     17.063,
+     7.247,
+     6.941,
+     9.428,
+     7.718,
+     7.261,
+     14.413,
+     9.857,
+     7.88,
+     8.198,
+     7.964,
+     9.179,
+     10.967,
+     12.519,
+     10.578
+    ],
+    "pair_event_loadavg1": [
+     2.03,
+     2.03,
+     2.6,
+     2.6,
+     4.06,
+     4.06,
+     4.97,
+     4.97,
+     5.74,
+     5.74,
+     7.51,
+     7.51,
+     6.59,
+     6.59,
+     5.88,
+     5.88,
+     5.36,
+     5.36,
+     4.92,
+     4.92,
+     4.31,
+     4.31,
+     4.13,
+     4.12
+    ],
+    "pair_event_wait_ms": [
+     6.804,
+     7.417,
+     18.64,
+     19.981,
+     32.535,
+     54.278,
+     45.64,
+     45.805,
+     52.265,
+     41.156,
+     26.084,
+     23.317,
+     25.613,
+     27.462,
+     30.196,
+     35.607,
+     31.248,
+     31.604,
+     36.171,
+     35.007,
+     39.027,
+     40.186,
+     47.904,
+     45.546
+    ],
+    "paired_diff_first6_median": 10.89,
+    "paired_diff_last6_median": 52.74,
+    "pairs10_23_pearson_event_loadavg1_vs_event_wait": -0.914,
+    "pairs10_23_pearson_index_vs_diff": 0.66,
+    "pairs10_23_pearson_index_vs_event_wait": 0.944,
+    "pearson_event_loadavg1_vs_event_wait": 0.28,
+    "pearson_pair_index_vs_diff": 0.41,
+    "pearson_pair_index_vs_event_loadavg1": 0.371,
+    "pearson_pair_index_vs_event_wait": 0.445
+   }
+  },
   "n": 24,
   "order_ab": 12,
   "order_ba": 12,
@@ -260,18 +512,11 @@
     59.684,
     57.394
    ],
-   "diffs_where_poll_slept": [
-    -191.099,
-    -24.627,
-    -26.176
-   ],
    "mean": 30.183,
-   "median": 42.126,
-   "median_diff_where_poll_did_not_sleep": 44.691,
+   "median": 42.125,
    "n": 24,
    "pairs_favouring_event": 3,
-   "pairs_favouring_poll": 21,
-   "pairs_where_poll_slept": 3
+   "pairs_favouring_poll": 21
   },
   "poll": {
    "click_to_effect_ms_median": 1542.58,
@@ -305,7 +550,7 @@
  },
  "probe_in_public_result_seqs": [],
  "probe_log_records": 79,
- "schema": "cua.r2_02.summary.v1",
+ "schema": "cua.r2_02.summary.v2",
  "trials_total": 113,
  "warmup": {
   "event": {

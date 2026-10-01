@@ -21,12 +21,25 @@
   "superseded_binary": {
     "sha256": "4ca5c0ff8e4277161d9a0bfe0a0c02e27d2e1bbaa2b17ea7613a3dcb8ec11595",
     "source": "906377ca0bb52d130297b6006237c32aac8eff69",
-    "used_for": "first shakedown only (probe record was dropped by the public ActionResult projection); no measured trial"
+    "used_for": "first shakedown only (probe record was dropped by the public ActionResult projection); no measured trial; no receipts from this shakedown were retained (only its build log)"
   },
   "browser": "Google Chrome 151.0.7922.71 (google-chrome 151.0.7922.71-1), selected by the Driver's root-owned candidate list; Driver-owned isolated_new profile under the session state dir",
   "driver_safety_settings": "defaults: no permission-mode override, no approval bypass, Chromium sandbox on; telemetry default (identical across arms: one Driver process for all arms and controls except C0)",
-  "session": "cua-x11-session.sh sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b: private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox + picom xrender, private dbus-run-session, scrubbed env (no WAYLAND_DISPLAY / HYPRLAND_* / host XDG_RUNTIME_DIR), no AT-SPI bus",
+  "session": "cua-x11-session.sh sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b: private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox + picom xrender, private dbus-run-session, scrubbed env (no WAYLAND_DISPLAY / HYPRLAND_* / host XDG_RUNTIME_DIR), no AT-SPI bus started by the session script (CUA_SESSION_ATSPI unset); the private dbus activated org.a11y.Bus on demand when the Driver asked, but org.a11y.atspi.Registry failed to activate, so the Driver's AT-SPI listener did not connect (same in every arm)",
   "environment": "Linux 7.2 x86_64, 10 logical CPUs (i9-10900KF), 23 GiB RAM, Python 3.12.13 (jev-use uv venv, uv sync --frozen), node v22.23.2",
   "timing_lock": "flock <tmp>/locks/quiet-lane.lock held for the whole measured session: wait 2026-10-01T22:19:09Z, acquired 22:22:39Z, released 22:28:09Z",
-  "publication_sha": "set by the orchestrator at publication; not known to this packet"
+  "publication_sha": "set by the orchestrator at publication; not known to this packet",
+  "extension_c3": {
+    "why": "run-1 C3_early could not fail (the injected event was counted, never queued); fixed and rerun as a disclosed extension (README deviation 6)",
+    "tested_source_sha": "55846dc660a05b6644b58fb915426421ec4e6e2b",
+    "tested_source_note": "worktree HEAD (clean) at the extension run; the Driver binary was built at this same commit",
+    "driver_sha256": "38f8c11db80e23480d8ea8d9a7bdad5169ddbf47e499fb67625e9e068463553b",
+    "driver_version": "cua-driver 0.32.0",
+    "driver_build": "flock <tmp>/locks/cargo-build.lock <lanes>/build-driver.sh <lanes>/r2-02 r2-02-cdp-wake-55846dc66 cua-release-r2-02; rustc 1.97.1; 0 Fresh workspace units; 79 s; target-dir artifact sha256 equals the copied binary",
+    "run": "same harness procedure (run_r2_02.py --pairs 0 --controls 6 --default-off 0 --groups C3_early,C3u_early_unguarded): 1+1 warm-up, then C3/C3u round-robin x6, one Driver process, same isolated session script, default safety settings",
+    "timing_lock": "flock <tmp>/locks/quiet-lane.lock: acquired 2026-10-01T22:48:17Z, released 22:48:58Z",
+    "upstream_main_live": "021b87ddf0faa0853ba7417303b05a283ca3b491 read with gh at 2026-10-01T22:50Z; 3 commits ahead of the tested base, none under libs/cua-driver",
+    "unit": "cargo test --locked -p cua-driver-core --lib browser:: at 55846dc66: 184 passed, 0 failed; a no-drain mutation of before_dispatch makes guarded_injections_are_rejected_and_unguarded_ones_wake fail (pre_dispatch 0 != 1)",
+    "comparability": "correctness only; no timing from this binary is compared with the run-1 pairs"
+  }
 }

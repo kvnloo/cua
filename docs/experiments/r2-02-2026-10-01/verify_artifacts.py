@@ -18,6 +18,7 @@ import sys
 
 R = pathlib.Path(__file__).resolve().parent
 RAW = R / "raw"
+EXT = RAW / "ext-c3"  # disclosed extension (README deviation 6): C3/C3u rerun after the C3 fix
 SUMMARY = R / "r2-02-summary.json"
 SEED = 2026100102
 RESAMPLES = 10000
@@ -25,9 +26,9 @@ PAIRS = 24
 CONTROLS = 6
 
 
-def load() -> list[dict]:
+def load(raw: pathlib.Path = RAW) -> list[dict]:
     rows = []
-    for path in sorted(RAW.glob("[0-9][0-9][0-9]-*.jsonl")):
+    for path in sorted(raw.glob("[0-9][0-9][0-9]-*.jsonl")):
         lines = [line for line in path.read_text().splitlines() if line.strip()]
         assert len(lines) == 1, path.name
         rows.append(json.loads(lines[0]))
@@ -104,6 +105,8 @@ EXPECT = {
     and p["wake_method"] is None and r["outcome"] == "verified",
     "C2_spurious": lambda r, p: p and p["end"] == "wake" and p["wake_injected"] is False
     and r["first_read_after_call"] != "verified" and r["outcome"] == "verified",
+    # Run-1 C3 cannot fail: that binary counted the injection without queueing it (README
+    # deviation 6). Reported, but excluded from every met-expectation total and gate.
     "C3_early": lambda r, p: p and p["counts"]["early_rejected"] == 1 and p["end"] == "wake"
     and p["wake_injected"] is False and r["outcome"] == "verified",
     "C3u_early_unguarded": lambda r, p: p and p["wake_injected"] is True and r["outcome"] == "verified"
@@ -123,7 +126,90 @@ EXPECT = {
 }
 
 
-def compute(rows: list[dict]) -> dict:
+INVALID_RUN1 = {"C3_early"}
+
+# Extension binary: the injected early event goes through the probe's own queue, so
+# C3 and C3u differ only in whether the pre-dispatch drain runs.
+EXPECT_EXT = {
+    "C3_early": lambda r, p: p and p["counts"]["pre_dispatch"] >= 1 and p["counts"]["early_injected_drained"] == 1
+    and p["counts"]["early_rejected"] >= 1 and p["end"] == "wake" and p["wake_injected"] is False
+    and r["outcome"] == "verified",
+    "C3u_early_unguarded": lambda r, p: p and p["counts"]["pre_dispatch"] == 0
+    and p["counts"]["early_injected_drained"] == 0 and p["wake_injected"] is True
+    and r["outcome"] == "verified" and r["submit_posts"] == 1,
+}
+
+
+def pearson(xs: list[float], ys: list[float]) -> float:
+    mx, my = statistics.fmean(xs), statistics.fmean(ys)
+    sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    sxx = sum((x - mx) ** 2 for x in xs)
+    syy = sum((y - my) ** 2 for y in ys)
+    return round(sxy / (sxx * syy) ** 0.5, 3)
+
+
+def drift(pairs: dict, rows: list[dict], ext: list[dict]) -> dict:
+    """Exploratory, not pre-registered: within-session trend of the event arm (README 'Session-age drift')."""
+    names = sorted(pairs)
+    idx = list(range(len(names)))
+    diff = [pairs[n]["event"]["click_to_verified_ms"] - pairs[n]["poll"]["click_to_verified_ms"] for n in names]
+    marks = [pairs[n]["event"]["probe"]["marks"] for n in names]
+    wait = [m["wait_ms"] for m in marks]
+    cleanup = [m["cleanup_ms"] for m in marks]
+    load_ev = [pairs[n]["event"]["loadavg_before"][0] for n in names]
+    def ctl_series(group: str, key: str) -> list[float]:
+        return [r["probe"]["marks"][key] for r in rows if r["group"] == group and r.get("probe")]
+    c1 = [[r["seq"], r["probe"]["counts"]["unrelated_session"]] for r in rows if r["group"] == "C1_lost" and r.get("probe")]
+    ext_c3 = [r["probe"]["marks"]["wait_ms"] for r in ext if r["group"] == "C3_early"]
+    return {
+        "label": "exploratory, not pre-registered",
+        "paired_diff_first6_median": median(diff[:6]),
+        "paired_diff_last6_median": median(diff[-6:]),
+        "pearson_pair_index_vs_diff": pearson(idx, diff),
+        "pearson_pair_index_vs_event_wait": pearson(idx, wait),
+        "pearson_pair_index_vs_event_loadavg1": pearson(idx, load_ev),
+        "pearson_event_loadavg1_vs_event_wait": pearson(load_ev, wait),
+        # pair10 onward: load falls monotonically while the event wait rises
+        "pairs10_23_pearson_index_vs_event_wait": pearson(idx[10:], wait[10:]),
+        "pairs10_23_pearson_event_loadavg1_vs_event_wait": pearson(load_ev[10:], wait[10:]),
+        "pairs10_23_pearson_index_vs_diff": pearson(idx[10:], diff[10:]),
+        "pair_event_wait_ms": [round(x, 3) for x in wait],
+        "pair_event_cleanup_ms": [round(x, 3) for x in cleanup],
+        "pair_event_loadavg1": load_ev,
+        "control_wait_ms_by_round": {g: ctl_series(g, "wait_ms") for g in
+                                     ("C2_spurious", "C3_early", "C4_unrelated", "C5_stale", "C7_refuted")},
+        "control_cleanup_ms_by_round": {g: ctl_series(g, "cleanup_ms") for g in ("C2_spurious", "C5_stale", "C7_refuted")},
+        "c1_unrelated_session_by_seq": c1,
+        "c1_unrelated_session_equals_4x_seq_plus_1": all(u == 4 * (s + 1) for s, u in c1),
+        "ext_c3_wait_ms_in_order": ext_c3,
+    }
+
+
+def extension(ext: list[dict]) -> dict:
+    assert ext, "extension receipts missing"
+    probe_log = [json.loads(x) for x in (EXT / "driver-probe.jsonl").read_text().splitlines() if x.strip()]
+    armed = [r for r in ext if r["arm"] == "event" and r["probe_env"]]
+    assert sorted(x["nonce"] for x in probe_log) == sorted(r["seq"] for r in armed), "ext probe log != armed calls"
+    meta = json.loads((EXT / "run-meta.json").read_text())
+    out = {"trials_total": len(ext), "groups": meta["groups"], "probe_log_records": len(probe_log),
+           "warmup": {r["arm"]: r["outcome"] for r in ext if r["kind"] == "warmup"}, "controls": {}}
+    for group, check in EXPECT_EXT.items():
+        g = [r for r in ext if r["group"] == group]
+        passed = [r["seq"] for r in g if check(r, r.get("probe"))]
+        out["controls"][group] = {
+            "n": len(g), "expectation_met": len(passed),
+            "outcomes": {o: sum(r["outcome"] == o for r in g) for o in sorted({r["outcome"] for r in g})},
+            "wake_injected": {str(v): sum((r.get("probe") or {}).get("wake_injected") is v for r in g)
+                              for v in (True, False)},
+            "pre_dispatch_total": sum(r["probe"]["counts"]["pre_dispatch"] for r in g if r.get("probe")),
+            "early_injected_drained_total": sum(r["probe"]["counts"]["early_injected_drained"] for r in g if r.get("probe")),
+            "early_rejected_total": sum(r["probe"]["counts"]["early_rejected"] for r in g if r.get("probe")),
+            "failing_seqs": [r["seq"] for r in g if r["seq"] not in passed],
+        }
+    return out
+
+
+def compute(rows: list[dict], ext: list[dict]) -> dict:
     pairs = {}
     for r in rows:
         if r["kind"] == "pair":
@@ -136,7 +222,7 @@ def compute(rows: list[dict]) -> dict:
         a, b = pairs[name]["poll"], pairs[name]["event"]
         if a["outcome"] == "verified" and b["outcome"] == "verified":
             both += 1
-            diffs.append(round(b["click_to_verified_ms"] - a["click_to_verified_ms"], 3))
+            diffs.append(b["click_to_verified_ms"] - a["click_to_verified_ms"])  # unrounded
     order = {name: [r["arm"] for r in sorted(v.values(), key=lambda r: r["seq"])] for name, v in pairs.items()}
     ab = sum(o == ["poll", "event"] for o in order.values())
 
@@ -155,15 +241,25 @@ def compute(rows: list[dict]) -> dict:
             "click_to_outcome_ms_median": median([r["click_to_outcome_ms"] for r in g if "click_to_outcome_ms" in r]),
             "failing_seqs": [r["seq"] for r in g if r["seq"] not in passed],
         }
+        if group in INVALID_RUN1:
+            controls[group]["invalid"] = ("cannot fail by construction: the run-1 binary counted the injected "
+                                          "event without queueing it; excluded from totals; superseded by extension")
         if group == "C4_unrelated":
             controls[group]["unrelated_frame_events_total"] = sum(r["probe"]["counts"]["unrelated_frame"] for r in g if r.get("probe"))
 
     # A verified record must rest on the oracle: last read verified and a journaled POST.
-    false_success = [r["seq"] for r in rows if r["outcome"] == "verified"
-                     and (r["reads"][-1]["outcome"] != "verified" or r["submit_posts"] < 1)]
+    def fs(rs):
+        return [r["seq"] for r in rs if r["outcome"] == "verified"
+                and (r["reads"][-1]["outcome"] != "verified" or r["submit_posts"] < 1)]
+    def wrong(rs):
+        return [r["seq"] for r in rs if r["group"] in {"C3_early", "C4_unrelated", "C5_stale"}
+                and r.get("probe") and r["probe"]["wake_injected"] is True]
+    false_success = fs(rows)
     errors = [r["seq"] for r in rows if r["outcome"] == "error"]
-    guarded_wrong_wake = [r["seq"] for r in rows if r["group"] in {"C3_early", "C4_unrelated", "C5_stale"}
-                          and r.get("probe") and r["probe"]["wake_injected"] is True]
+    guarded_wrong_wake = wrong(rows)
+    ext_summary = extension(ext)
+    ext_false_success, ext_wrong = fs(ext), wrong(ext)
+    ext_errors = [r["seq"] for r in ext if r["outcome"] == "error"]
 
     probe_log = [json.loads(x) for x in (RAW / "driver-probe.jsonl").read_text().splitlines() if x.strip()]
     armed = [r for r in rows if r["arm"] == "event" and r["probe_env"]]
@@ -173,20 +269,27 @@ def compute(rows: list[dict]) -> dict:
 
     med = median(diffs)
     ci = bootstrap_ci(diffs)
+    valid = {g: c for g, c in controls.items() if g not in INVALID_RUN1}
+    met_total = (sum(c["expectation_met"] for c in valid.values())
+                 + sum(c["expectation_met"] for c in ext_summary["controls"].values()))
+    n_total = sum(c["n"] for c in valid.values()) + sum(c["n"] for c in ext_summary["controls"].values())
     favour = sum(d < 0 for d in diffs)
     ps, es = arm_stats(poll), arm_stats(event)
     correctness = (ps["verified"] >= 23 and es["verified"] >= 23 and not false_success and not guarded_wrong_wake
+                   and not ext_false_success and not ext_wrong
                    and all(c["n"] == (3 if g == "C0_default_off" else CONTROLS) and c["expectation_met"] == c["n"]
-                           for g, c in controls.items()))
+                           for g, c in valid.items())
+                   and all(c["n"] == CONTROLS and c["expectation_met"] == c["n"]
+                           for c in ext_summary["controls"].values()))
     timing_keep = med is not None and med <= -20 and ci[1] < 0
-    if false_success or guarded_wrong_wake or (ci and ci[0] > 0):
+    if false_success or guarded_wrong_wake or ext_false_success or ext_wrong or (ci and ci[0] > 0):
         disposition = "KILL"
     elif correctness and timing_keep:
         disposition = "KEEP"
     else:
         disposition = "REVISE"
     return {
-        "schema": "cua.r2_02.summary.v1",
+        "schema": "cua.r2_02.summary.v2",
         "trials_total": len(rows),
         "warmup": {r["arm"]: {"outcome": r["outcome"], "click_to_outcome_ms": r.get("click_to_outcome_ms")}
                    for r in rows if r["kind"] == "warmup"},
@@ -197,7 +300,9 @@ def compute(rows: list[dict]) -> dict:
                 "n": len(diffs), "median": med, "mean": round(statistics.fmean(diffs), 3) if diffs else None,
                 "bootstrap95_ci_median": ci, "bootstrap": {"seed": SEED, "resamples": RESAMPLES},
                 "pairs_favouring_event": favour, "pairs_favouring_poll": sum(d > 0 for d in diffs),
-                "diffs": diffs,
+                "diffs": [round(d, 3) for d in diffs],
+            },
+            "exploratory_not_preregistered": {
                 "pairs_where_poll_slept": sum(pairs[n]["poll"]["fixed_sleeps"] > 0 for n in pairs),
                 "diffs_where_poll_slept": [round(pairs[n]["event"]["click_to_verified_ms"]
                                                  - pairs[n]["poll"]["click_to_verified_ms"], 3)
@@ -205,12 +310,19 @@ def compute(rows: list[dict]) -> dict:
                 "median_diff_where_poll_did_not_sleep": median([
                     pairs[n]["event"]["click_to_verified_ms"] - pairs[n]["poll"]["click_to_verified_ms"]
                     for n in sorted(pairs) if pairs[n]["poll"]["fixed_sleeps"] == 0]),
+                "session_age_drift": drift(pairs, rows, ext),
             },
             "event_probe_phases": probe_phases(event),
             "event_probe_end": {e: sum(r["probe"]["end"] == e for r in event if r.get("probe"))
                                 for e in sorted({r["probe"]["end"] for r in event if r.get("probe")})},
         },
         "controls": controls,
+        "extension_c3": ext_summary,
+        "controls_valid_met_total": met_total,
+        "controls_valid_n_total": n_total,
+        "extension_false_success_seqs": ext_false_success,
+        "extension_guarded_wrong_wake_seqs": ext_wrong,
+        "extension_error_seqs": ext_errors,
         "false_success_seqs": false_success,
         "guarded_wrong_wake_seqs": guarded_wrong_wake,
         "error_seqs": errors,
@@ -228,6 +340,8 @@ PRIVATE = [re.compile(p) for p in (r"/home/", r"/mnt/", r"/tmp/", r"/root/", r"\
 def packet_checks(summary: dict) -> None:
     prov = json.loads((R / "provenance.json").read_text())
     for key in ("tested_source_sha", "upstream_main_sha", "prereg_commit_sha"):
+        assert re.fullmatch("[0-9a-f]{40}", prov["extension_c3"]["tested_source_sha"])
+        assert re.fullmatch("[0-9a-f]{64}", prov["extension_c3"]["driver_sha256"])
         assert re.fullmatch("[0-9a-f]{40}", prov[key]), key
     assert re.fullmatch("[0-9a-f]{64}", prov["driver_sha256"])
     assert re.fullmatch("[0-9a-f]{64}", prov["prereg_sha256"])
@@ -246,7 +360,7 @@ def packet_checks(summary: dict) -> None:
 
 
 def main() -> None:
-    summary = compute(load())
+    summary = compute(load(), load(EXT))
     if "--write" in sys.argv:
         SUMMARY.write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")
         print(f"wrote {SUMMARY.name}")
@@ -262,7 +376,14 @@ def main() -> None:
     print(f"paired diff median {d['median']} ms, 95% CI {d['bootstrap95_ci_median']}, "
           f"{d['pairs_favouring_event']}/{d['n']} favour event")
     for g, c in summary["controls"].items():
-        print(f"{g}: {c['expectation_met']}/{c['n']} expectation met, outcomes {c['outcomes']}")
+        tag = " [INVALID, excluded]" if "invalid" in c else ""
+        print(f"{g}: {c['expectation_met']}/{c['n']} expectation met, outcomes {c['outcomes']}{tag}")
+    for g, c in summary["extension_c3"]["controls"].items():
+        print(f"ext {g}: {c['expectation_met']}/{c['n']} expectation met, outcomes {c['outcomes']}")
+    print(f"valid controls met: {summary['controls_valid_met_total']}/{summary['controls_valid_n_total']}")
+    dr = p["exploratory_not_preregistered"]["session_age_drift"]
+    print(f"drift (exploratory): diff first6 {dr['paired_diff_first6_median']} last6 {dr['paired_diff_last6_median']}, "
+          f"r(index,diff) {dr['pearson_pair_index_vs_diff']}")
     print(f"false success {len(summary['false_success_seqs'])}, errors {len(summary['error_seqs'])}, "
           f"disposition {summary['gates']['disposition']}")
     print("All R2-02 headline numbers recomputed from raw/ and match; packet checks passed")
