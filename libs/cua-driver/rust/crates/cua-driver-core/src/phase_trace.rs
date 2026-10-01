@@ -1,18 +1,30 @@
-//! Measurement-only phase trace for the R2-01 browser feedback A/B.
+//! Measurement-only phase trace (research experiments R2-01 and R2-04; this
+//! file is the union of both mark sets).
 //!
 //! EXPERIMENT ONLY, not for promotion and not a public contract.
 //!
 //! Default off. It is enabled only when `CUA_DRIVER_PHASE_TRACE_FILE` names a
-//! file when the first mark is attempted. Each [`mark`] then appends one JSON
-//! line carrying the host `CLOCK_MONOTONIC` time in nanoseconds, so a caller
-//! and a fixture on the same host can align these marks with their own
-//! `time.monotonic_ns()` readings. A mark never changes control flow, a tool
-//! result or an authorization decision; when disabled it costs one
-//! initialized-`OnceLock` read.
+//! writable file when the first mark is attempted. When off, [`mark`] and
+//! [`mark_detail`] are one initialized-`OnceLock` read and return: no file is
+//! opened, no detail is built and no behaviour changes. When on, each mark
+//! appends one JSON line:
+//!
+//! `{"t_mono_ns", "wall_ns", "seq", "phase", "session", "detail"}`
+//!
+//! `t_mono_ns` is host `CLOCK_MONOTONIC` (the clock behind Python's
+//! `time.monotonic_ns()` on Linux), so a caller and a fixture on the same host
+//! can align marks with their own readings; `wall_ns` is `CLOCK_REALTIME`.
+//! Both mark functions take two identifiers. The R2-01 call sites pass
+//! `(phase, browser session)`; the R2-04 call sites pass `(scope, mark)` in
+//! the same two slots, so for those a consumer keys a mark as
+//! `phase + "/" + session` (for example `atspi_action/do_action_replied`).
+//! Marks are hints for a timing profile only: nothing reads them back, and
+//! they never gate, verify, or authorize anything.
 
 use std::io::Write;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 
@@ -43,8 +55,7 @@ pub fn enabled() -> bool {
     sink().is_some()
 }
 
-/// Host monotonic time in nanoseconds (`CLOCK_MONOTONIC` on Unix, which is
-/// the clock behind Python's `time.monotonic_ns()` on Linux).
+/// Host monotonic time in nanoseconds (`CLOCK_MONOTONIC` on Unix).
 #[cfg(unix)]
 pub fn monotonic_ns() -> u64 {
     let mut ts = libc::timespec {
@@ -60,7 +71,7 @@ pub fn monotonic_ns() -> u64 {
 }
 
 /// Non-Unix fallback: process-relative monotonic nanoseconds (not alignable
-/// with another process; the R2-01 experiment runs on Linux only).
+/// with another process; the experiments run on Linux only).
 #[cfg(not(unix))]
 pub fn monotonic_ns() -> u64 {
     static START: OnceLock<std::time::Instant> = OnceLock::new();
@@ -68,6 +79,17 @@ pub fn monotonic_ns() -> u64 {
         .get_or_init(std::time::Instant::now)
         .elapsed()
         .as_nanos() as u64
+}
+
+fn line(t_mono_ns: u64, wall_ns: u128, seq: u64, phase: &str, session: &str, detail: Value) -> Value {
+    serde_json::json!({
+        "t_mono_ns": t_mono_ns,
+        "wall_ns": wall_ns,
+        "seq": seq,
+        "phase": phase,
+        "session": session,
+        "detail": detail,
+    })
 }
 
 /// Record one phase boundary. No-op when the trace is disabled.
@@ -81,16 +103,14 @@ pub fn mark_detail(phase: &str, session: &str, detail: impl FnOnce() -> Value) {
         return;
     };
     let t_mono_ns = monotonic_ns();
+    let wall_ns = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
     let seq = SEQ.fetch_add(1, Ordering::Relaxed);
-    let line = serde_json::json!({
-        "t_mono_ns": t_mono_ns,
-        "seq": seq,
-        "phase": phase,
-        "session": session,
-        "detail": detail(),
-    });
+    let value = line(t_mono_ns, wall_ns, seq, phase, session, detail());
     if let Ok(mut file) = sink.lock() {
-        let _ = writeln!(file, "{line}");
+        let _ = writeln!(file, "{value}");
     }
 }
 
@@ -102,6 +122,11 @@ mod tests {
     fn unset_or_empty_env_opens_no_sink() {
         assert!(open_sink(None).is_none());
         assert!(open_sink(Some(std::ffi::OsString::new())).is_none());
+    }
+
+    #[test]
+    fn unwritable_path_opens_no_sink() {
+        assert!(open_sink(Some("/nonexistent-dir-r2-04/phase.jsonl".into())).is_none());
     }
 
     #[test]
@@ -122,6 +147,22 @@ mod tests {
         let sink = open_sink(Some(path.clone().into_os_string())).unwrap();
         writeln!(sink.lock().unwrap(), "{{}}").unwrap();
         assert_eq!(std::fs::read_to_string(path).unwrap(), "{}\n");
+    }
+
+    #[test]
+    fn line_is_one_valid_json_object() {
+        let text = line(34, 12, 7, "click", "reveal_done", Value::Null).to_string();
+        assert!(!text.contains('\n'));
+        let parsed: Value = serde_json::from_str(&text).unwrap();
+        assert_eq!(parsed["phase"], "click");
+        assert_eq!(parsed["session"], "reveal_done");
+        assert_eq!(parsed["wall_ns"], 12);
+        assert_eq!(parsed["t_mono_ns"], 34);
+        assert_eq!(parsed["seq"], 7);
+        let quoted = line(1, 2, 3, "a\"b", "c\\d", Value::Null).to_string();
+        let parsed: Value = serde_json::from_str(&quoted).unwrap();
+        assert_eq!(parsed["phase"], "a\"b");
+        assert_eq!(parsed["session"], "c\\d");
     }
 
     #[test]
