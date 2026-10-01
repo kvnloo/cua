@@ -77,8 +77,11 @@ The request sequence for every Driver-admitted action is:
    `client_not_bound` is therefore checked before the one-action grant is
    consumed. Driver may retry that exact zero-delivery refusal for at most
    500 ms, with increasing sequence numbers and the same target token/revision.
-   It never retries any refusal carrying delivery/effect metadata and never
-   falls back to the primary seat.
+   If the resource disappears after that check but after the grant is consumed,
+   the same code carries `effect:"none"` and background
+   `delivered_count:0`; that final race outcome is not retried. Driver never
+   retries any refusal carrying delivery/effect metadata and never falls back
+   to the primary seat.
 
 `TARGET` binds the exact live native top-level surface, generates a fresh token,
 and grants at most five seconds of steady-clock technical lifetime. It first
