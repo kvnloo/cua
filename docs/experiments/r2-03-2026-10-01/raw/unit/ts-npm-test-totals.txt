@@ -1,0 +1,163 @@
+# Subtest: bounded chooser mock emits only the fixed response
+# Subtest: bounded chooser uses the SDK and preserves provider model identity
+# Subtest: bounded chooser rejects unsafe history and missing reserved IDs
+# Subtest: bounded chooser rejects a provider ID outside the request
+# Subtest: mock types before submitting
+# Subtest: mock submits once the value matches
+# Subtest: unknown or stale choices fail closed
+# Subtest: selected id resolves to the original immutable candidate arguments
+# Subtest: reserved candidates are always available
+# Subtest: visual fixture builds a candidate without claiming interactivity
+# Subtest: Retina affine mapping keeps the original screenshot point (\#4289)
+# Subtest: identity screenshot_pixels mapping
+# Subtest: unrepresentable coordinate mappings fail closed
+# Subtest: submit path depends on the DOM button ref
+# Subtest: visual input does not change a semantic executable candidate set
+# Subtest: foreground escalation is a distinct visual candidate
+# Subtest: ambiguous visual regions offer only reobserve and abstain
+# Subtest: non-Submit visual observation offers only reobserve and abstain
+# Subtest: visual candidate requires the capture-bound click contract
+# Subtest: null optionals and ASCII case rules match Python
+# Subtest: stale, malformed, and duplicate visual selections fail closed
+# Subtest: capture-bound selection rejects a newer capture
+# Subtest: only the external oracle can verify completion
+# Subtest: live adapter sends one Choice keyed by executable candidate id
+# Subtest: live adapter rejects an id outside the supplied table
+# Subtest: driver repeats the explicit session label
+# Subtest: visual tool is optional and uses the public contract when advertised
+# Subtest: visual status is logged for ok, not_installed, and error
+# Subtest: driver errors carry the structured error code
+# Subtest: visual parse runs only when it can contribute a candidate
+# Subtest: structured background refusal escalates but other errors do not
+# Subtest: capture-bound click requires capture_id in the advertised schema
+# Subtest: provider delay then capture change refuses without an unbound retry
+# Subtest: fixture URL is confined to loopback HTTP
+# Subtest: tab selection accepts unknown active state
+# Subtest: form state reports field status without the value
+# Subtest: redaction is nested and deterministic
+# Subtest: pre-fix submit state hid readiness and leaked the token
+# Subtest: after typing the observation states the filled form
+# Subtest: visual text is redacted too
+# Subtest: background refusal history is compact
+# Subtest: mock provider types then submits over recorded snapshots
+# Subtest: recorded live choices replay through the new state
+# Subtest: forwards desktop session variables when set
+# Subtest: omits desktop session variables when unset
+# Subtest: forwards Cua Driver variables
+# Subtest: does not forward provider credentials
+# Subtest: guarded completion returns the fresh candidate and exact redacted accepted telemetry
+# Subtest: guarded completion declines session "" before other checks
+# Subtest: guarded completion declines session "session-b" before other checks
+# Subtest: guarded completion declines a different task before checking page presence
+# Subtest: guarded completion declines a missing page without reading task state
+# Subtest: guarded completion declines unproven field "" before targets
+# Subtest: guarded completion declines unproven field "other" before targets
+# Subtest: guarded completion declines unproven field undefined before targets
+# Subtest: guarded completion declines non-unique submit refs [] before reuse
+# Subtest: guarded completion declines non-unique submit refs ["p2:1","p2:2"] before reuse
+# Subtest: guarded completion declines non-unique submit refs ["p1:1","p1:1"] before reuse
+# Subtest: guarded completion declines non-unique submit refs [""] before reuse
+# Subtest: guarded completion declines old-ref reuse before checking executable candidates
+# Subtest: guarded completion declines a candidate with wrong ID
+# Subtest: guarded completion declines a candidate with wrong tool
+# Subtest: guarded completion declines a candidate with visual tool
+# Subtest: guarded completion declines a candidate with missing tool
+# Subtest: guarded completion declines a candidate with visual source
+# Subtest: guarded completion declines a candidate with native source
+# Subtest: guarded completion declines a candidate with missing source
+# Subtest: guarded completion declines 0 executable candidates before ref matching
+# Subtest: guarded completion declines 2 executable candidates before ref matching
+# Subtest: guarded completion declines mismatched or malformed candidate ref "p1:1"
+# Subtest: guarded completion declines mismatched or malformed candidate ref "p2:2"
+# Subtest: guarded completion declines mismatched or malformed candidate ref ""
+# Subtest: guarded completion declines mismatched or malformed candidate ref undefined
+# Subtest: guarded completion declines mismatched or malformed candidate ref null
+# Subtest: guarded completion declines mismatched or malformed candidate ref 2
+# Subtest: guarded completion declines mismatched or malformed candidate ref {"ref":"p2:1"}
+# Subtest: guarded completion still requires a unique initial target
+# Subtest: recorded canvas trees have no application elements
+# Subtest: canvas trees fall back to visual regions; partial, truncated, and form cases do not
+# Subtest: the canvas task is registered and bound to its state file
+# Subtest: only the Cancel region is executable, through a capture-bound click
+# Subtest: a background refusal offers an explicit foreground variant only when allowed
+# Subtest: the canvas oracle
+# Subtest: normalizedRole matches the Driver normalizer cases
+# Subtest: each platform maps its raw roles and excludes the rest
+# Subtest: role tables are keyed by the Driver normalization
+# Subtest: v2 requests validate with sources and elements
+# Subtest: v1 rejects v2 fields and v2 rejects malformed fields
+# Subtest: mock chooser answers v2 with the unchanged response schema
+# Subtest: compose keeps relevant candidates over the cap in element order
+# Subtest: density fixtures reproduce the golden candidate sets
+# Subtest: expectedNext follows the declared steps
+# Subtest: every harness has the same three tasks
+# Subtest: recorded task controls map to the same candidate IDs
+# Subtest: a text entry value is never a label
+# Subtest: the Windows title bar is window chrome and GTK3 roles map
+# Subtest: WinUI3 roles map through the Windows table with no WinUI3-specific row
+# Subtest: v2 accepts progress and the observation carries it
+# Subtest: v2 without progress keeps its observation, and v1 rejects progress
+# Subtest: v2 rejects malformed progress
+# Subtest: only performed actions count
+# Subtest: save is described as waiting for the note until the note is set
+# Subtest: a completed step says so and unordered steps have no precondition
+# Subtest: a task without steps sends no progress
+# Subtest: recorded Python requests are reproduced exactly
+# Subtest: shared ID, slug, and risk fixture matches Python
+# Subtest: AppKit fixture controls, exclusions, and ID stability
+# Subtest: each element rule excludes
+# Subtest: compose orders by source, dedups, filters risk, and caps
+# Subtest: save-note task candidates, arguments, and redacted v2 request
+# Subtest: satisfied controls leave the set and foreground needs permission
+# Subtest: mock provider follows task preferences
+# Subtest: app-state oracle and classification
+# Subtest: core entry points send byte-identical provider requests
+# Subtest: task spec and sources send byte-identical provider requests
+# Subtest: runner dispatches the accepted fresh candidate with proof telemetry, not model scores
+# Subtest: runner accepted outcomes omit the verification token (guarded=false)
+# Subtest: runner accepted outcomes omit the verification token (guarded=true)
+# Subtest: runner already-verified outcomes omit the verification token (guarded=false)
+# Subtest: runner already-verified outcomes omit the verification token (guarded=true)
+# Subtest: runner budget outcomes omit the verification token (guarded=false)
+# Subtest: runner budget outcomes omit the verification token (guarded=true)
+# Subtest: runner keeps the default-off provider path and scores unchanged
+# Subtest: runner logs a declined reobserve step and consumes the pending proof once
+# Subtest: runner logs a declined abstain outcome
+# Subtest: runner logs a declined no-choice outcome
+# Subtest: runner retains declined telemetry on a normal provider action
+# Subtest: runner logs action failure telemetry for accepted (guarded=false)
+# Subtest: runner logs action failure telemetry for accepted (guarded=true)
+# Subtest: runner logs action failure telemetry for ref-reused (guarded=false)
+# Subtest: runner logs action failure telemetry for ref-reused (guarded=true)
+# Subtest: runner logs declined telemetry on background refusal without carrying it to foreground
+# Subtest: runner logs declined telemetry on provider validation failure
+# Subtest: runner logs declined telemetry on provider request failure
+# Subtest: runner preserves default-off provider failure behavior without guard telemetry
+# Subtest: step timing field names and values are stable
+# Subtest: s1ServiceUrl accepts only loopback http
+# Subtest: validateDecision accepts selected, reobserve, and abstain
+# Subtest: validateDecision rejects malformed decisions
+# Subtest: chooseS1Service posts the request and returns the choice
+# Subtest: chooseS1Service rejects HTTP errors, invalid JSON, and an unreachable service
+# Subtest: the native runner accepts the s1 provider
+# Subtest: sources implement one interface with distinct kinds
+# Subtest: page source addresses refs with exact browser arguments
+# Subtest: visual source clicks only capture-bound and never types
+# Subtest: built-in task declares its spec
+# Subtest: oracle classification uses the task budget
+# Subtest: candidates outside the allowed action kinds are refused
+# Subtest: state summary reads the step sources
+# Subtest: visual fixture exposes Submit only as text and as one visual region
+# Subtest: submit state names the visual path instead of a missing button
+# Subtest: pre-fix step-one state contradicted the outline
+# Subtest: page-structure fixture types then submits with browser_click
+# Subtest: visual fixture types then submits with a capture-bound click
+# Subtest: recorded visual-run choices replay through the new state
+# tests 155
+# suites 0
+# pass 155
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7194.766295

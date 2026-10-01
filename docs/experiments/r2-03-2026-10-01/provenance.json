@@ -1,0 +1,58 @@
+{
+  "schema": "cua.r2.provenance.v1",
+  "experiment": "R2-03 real-provider guarded completion",
+  "captured_utc": "2026-10-01T22:25Z",
+  "shas_kept_separate": {
+    "tested_source": "a0bca744067d04f05904319d3d919be30c336556",
+    "tested_source_parent": "345ff6d9db458a9d37b0f420dc4555553f4a4ce5",
+    "live_pr_head_trycua_cua_4316_gh_read": {"sha": "a0bca744067d04f05904319d3d919be30c336556", "read_utc": "2026-10-01T22:00:36Z", "state": "OPEN", "draft": false, "equals_tested_source": true},
+    "trycua_cua_4394_live_head_not_tested": {"sha": "039257811e0bbb2348c616c52562409923d2856f", "read_utc": "2026-10-01T22:00:36Z", "note": "PR body names 7a1f90fbc212ccf1976fa74095f7b6456116b2a0 as exact head; live head differs; neither is part of the tested source"},
+    "upstream_main_at_execution_gh_read": {"sha": "effd9b298942d7e9808077adef4ef575d561141d", "read_utc": "2026-10-01T22:00:36Z", "note": "setup pin was 229b65b2849c3a595ddbc85200d7181b18bd2e47; neither is the tested source"},
+    "lane_branch": "exp/r2-03-guarded-live-20261001",
+    "prereg_commit": "70e9d6b79a8726dcc34bbb5174363200ce47dd10",
+    "prereg_sha256": "a900540933efb68fc0f273543e862f6b38ce9ad2f8337d34e59913a91c89f82e",
+    "harness_commit_used_for_controls_and_main": "3062ebcf7ebbd6e8574b25348d05a6cca23a06e1",
+    "publication_sha": "assigned later by the orchestrator; not known to this packet"
+  },
+  "runner_source_identity": {
+    "examples_dir_identical_to_tested_source_in_every_phase": true,
+    "run_py_sha256": "b088056874dbd126de2cb7d5bb057a7f44d2ae1a18bec5c4cd4d2348ac9896e6",
+    "fixture_server_sha256": "0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf",
+    "harness_sha256": "b4e38c353bf38e2962cfbd4d523231103fa7d838090043884e86310406560c03",
+    "launcher_sha256_controls_and_main": "67ea2d0f509d94eca6b35ed8dbc4641900cd288f407646738fa71bce76ac0976",
+    "launcher_sha256_smoke_1_only": "027e1cc0c6716e9f6e1df7e52f7865eb1ad005249d8b66cb9c068e818f4e69b8"
+  },
+  "driver": {
+    "binary": "cua-driver-4316-a0bca7440 (plain binary, no wrapper)",
+    "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95",
+    "version": "cua-driver 0.31.0",
+    "rebuilt_in_this_lane": false,
+    "build_provenance": "built earlier from a clean worktree at a0bca7440 with build-driver.sh (cargo build --locked --release -p cua-driver --features portal-input); sha equals the target-dir artifact and the sha recorded on kvnloo/cua#93; gap: that build's head= stdout line was not saved (see lane SETUP)",
+    "safety_settings": "defaults: no CUA_DRIVER_PERMISSION_MODE, no approval bypass, Chromium sandbox on, telemetry default (identical across arms)"
+  },
+  "browser": "Google Chrome 151.0.7922.71 (the Driver's first root-owned candidate), Driver-owned isolated_new profile per trial",
+  "provider": {
+    "backend": "TypeSafe Jev via typesafe-sdk 0.6.0 (uv.lock), runner --provider live",
+    "responder_host": "api.typesafe.ai",
+    "model_reported_by_responder": "jev-1.13.0",
+    "key": "TYPESAFE_API_KEY forwarded into the session by name only; never printed or logged",
+    "provider_http_attempts": {"total_counted_by_budget": 132, "reached_provider": 126, "loopback_refused_C2": 6, "cap": 300},
+    "cost": "receipts expose token usage only (input/output tokens); no price or cost field is returned"
+  },
+  "environment": {
+    "os": "Linux 7.2.2 x86-64 (CachyOS kernel), 10 logical CPUs, Intel Core i9-10900KF, 23 GiB RAM",
+    "display": "private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom xrender, private dbus-run-session; host Wayland/Hyprland variables scrubbed (env -i); no AT-SPI bus",
+    "python": "3.12.13 (uv-managed .venv from uv.lock)",
+    "node": "v22.23.2 (unit suites only)",
+    "clock": "CLOCK_MONOTONIC (time.monotonic_ns) in harness and runner",
+    "quiet_lane_lock": "main phase acquired 2026-10-01T22:09:01Z, released 22:18:41Z; other agents' correctness work still ran (loadavg1 at spawn median 10.19, range 3.12-17.21)"
+  },
+  "commands": {
+    "regression_suites": "run-unit.sh <lanes>/r2-03 <artifacts>/unit",
+    "smoke": "cua-x11-session.sh <packet>/harness/run_phase.sh smoke 1 <lanes>/r2-03 <bin>/cua-driver-4316-a0bca7440 e57bb9ae... <artifacts>/smoke-N <artifacts>/budget.json",
+    "C2": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY cua-x11-session.sh <packet>/harness/run_phase.sh unreachable 1 ...",
+    "C1": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY cua-x11-session.sh <packet>/harness/run_phase.sh decline 3 ...",
+    "main": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY flock <tmp>/locks/quiet-lane.lock cua-x11-session.sh <packet>/harness/run_phase.sh main 40 ...",
+    "package_and_verify": "python3 harness/package_raw.py <artifacts> . && python3 verify_artifacts.py --write && python3 verify_artifacts.py"
+  }
+}
