@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import random
 import re
+import socket
 import sys
 from pathlib import Path
 
@@ -280,6 +281,46 @@ def compute() -> dict:
     return out
 
 
+def check_receipts(result: dict, readme: str) -> None:
+    """Check the log receipts the README cites: quiet-lane lock window, UNIT rows, default-off check."""
+    # Quiet-lane lock: every locked trial's summary line sits between lock_acquired and released.
+    log = (RAW / "session-measured.log").read_text().splitlines()
+    acq = [i for i, line in enumerate(log) if line.startswith("lock_acquired ")]
+    rel = [i for i, line in enumerate(log) if " released " in line and line.startswith("session_rc=")]
+    assert len(acq) == 1 and len(rel) == 1 and acq[0] < rel[0], "lock_acquired/released lines missing"
+    t_acq = log[acq[0]].split()[1]
+    t_rel = log[rel[0]].split()[-1]
+    assert log[rel[0]].startswith("session_rc=0 "), "measured session rc != 0"
+    locked = {json.loads(line)["trial"] for line in log[acq[0]:rel[0]] if line.startswith('{"trial"')}
+    on_disk = {p.name.removesuffix(".jsonl") for p in (RAW / "trials").glob("*.jsonl")
+               if not p.name.endswith(".driver-trace.jsonl")}
+    assert locked == on_disk and len(locked) == 56, f"locked trials {len(locked)} != raw trials {len(on_disk)}"
+    window_txt = f"{t_acq[11:19]}Z to {t_rel[11:19]}Z"
+    assert window_txt in readme, f"README lacks lock window {window_txt}"
+    # UNIT rows: cargo test result lines.
+    unit = {}
+    for name in ("cargo-test-phase-trace", "cargo-test-core-lib", "cargo-test-platform-linux-lib"):
+        text = (RAW / "unit" / f"{name}.log").read_text()
+        m = re.findall(r"^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored", text, re.M)
+        assert len(m) == 1, f"{name}: expected one ok test-result line"
+        unit[name] = tuple(int(x) for x in m[0])
+    assert unit["cargo-test-phase-trace"] == (4, 0, 0) and unit["cargo-test-core-lib"] == (815, 0, 0)
+    assert unit["cargo-test-platform-linux-lib"] == (599, 0, 10)
+    assert "4/4 and 815/815 pass" in readme and "599 passed, 0 failed, 10 ignored" in readme
+    # Default-off check: both stock verifiers rc 0, verified token, and no trace file in the session dir.
+    smoke = (RAW / "default-off-smoke.log").read_text()
+    assert "rc_mcp_tools=0" in smoke and "rc_verify_setup=0" in smoke and "[session] exit rc=0" in smoke
+    s = json.loads((RAW / "default-off-smoke-summary.json").read_text())
+    assert s["complete"] and [c["outcome"] for c in s["checks"]] == ["verified"]
+    assert s["checks"][0]["observed"]["submitted"] == "jev-guide-mock"
+    receipt = dict(line.split("=", 1) for line in (RAW / "default-off-trace-check.txt").read_text().splitlines()
+                   if "=" in line and not line.startswith(("#", ".")))
+    assert receipt["files_named_like_trace_or_phase"] == "0"
+    assert receipt["files_containing_phase_trace_fields(dispatch.enter|viz.enter|t_mono_ns)"] == "0"
+    assert receipt["PHASE_TRACE_mentions_in_cmd.sh_inner.sh"] == "cmd.sh:0 inner.sh:0"
+    print(f"receipts: lock {t_acq}..{t_rel} holds {len(locked)} trials; unit {unit}; default-off rc 0/0, no trace file")
+
+
 def main() -> None:
     result = compute()
     text = json.dumps(result, indent=1, sort_keys=True) + "\n"
@@ -298,12 +339,22 @@ def main() -> None:
     for a in ("ON", "OFF"):
         s = result["arms"][a]
         assert f"{s['verified']}/{s['n']}" in readme, f"README lacks {a} verified N of M"
-    # privacy: no absolute local paths or host name in the packet
+    check_receipts(result, readme)
+    # privacy: no absolute local or temp paths, user dirs or host name in the packet. The host name is
+    # read at run time (never written into the packet) and is only checked when it is distinctive.
+    host = socket.gethostname().split(".")[0]
+    forbidden = ["/" + "home/", "/" + "mnt/", "/" + "tmp/", "/" + "var/" + "tmp/", "/" + "run/user/", "/" + "root/",
+                 "/" + "Users/", "C:" + "\\Users"]
+    host_pat = re.compile(r"(?<![A-Za-z0-9])" + re.escape(host) + r"(?![A-Za-z0-9])", re.I) if len(host) >= 4 else None
+    scanned = 0
     for path in ROOT.rglob("*"):
-        if path.is_file() and path.suffix in {".json", ".jsonl", ".md", ".txt", ".log", ".py"}:
+        if path.is_file() and "__pycache__" not in path.parts:
             body = path.read_text(errors="replace")
-            for root in ("/" + "home/", "/" + "mnt/", "/" + "tmp/claude"):
-                assert root not in body, f"absolute local path in {path.relative_to(ROOT)}"
+            scanned += 1
+            for root in forbidden:
+                assert root not in body, f"absolute local path {root!r} in {path.relative_to(ROOT)}"
+            assert host_pat is None or not host_pat.search(body), f"host name in {path.relative_to(ROOT)}"
+    print(f"privacy scan: {scanned} files, no absolute local/temp paths, host name checked: {host_pat is not None}")
     print(f"R2-01 checks passed: disposition {g['disposition']}; ON {h['on_median_click_span_ms']:.1f} ms vs "
           f"OFF {h['off_median_click_span_ms']:.1f} ms; median paired diff {p['median_diff_on_minus_off_ms']:.1f} ms "
           f"CI {p['bootstrap95_ci_ms']}")

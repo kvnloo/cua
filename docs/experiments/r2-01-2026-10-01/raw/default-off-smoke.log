@@ -1,0 +1,78 @@
+[session] DISPLAY=:101 openbox=2086672 picom=2086673 dbus=unix:path=<tmp>/dbus-8jrbOvJnRr,guid=fe4b98647827508cc071effe6abedd0d
+== env DISPLAY=:101 HOME=<tmp>/x11-session.WsCFTr/home XDG_STATE_HOME=<session-HOME>/.local/state
+== verify_mcp_tools
+Cua Driver sends content-free product telemetry by default. Run `cua-driver telemetry disable` to stop it; `cua-driver telemetry status` shows the current setting.
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.a11y.Bus' requested by ':1.0' (uid=1000 pid=2087066 comm="<lanes>/bin/cua-driver-r2")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='ca.desrt.dconf' requested by ':1.1' (uid=1000 pid=2087077 comm="/usr/lib/at-spi-bus-launcher")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'ca.desrt.dconf'
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2087106 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[2m2026-10-01T22:22:07.923411Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+MCP initialize and tools/list verified 6 required tools; capture-bound visual adapter available: True
+rc_mcp_tools=0
+== verify_setup (mock, python)
+{"event": "fixture_ready", "url": "http://127.0.0.1:36805/"}
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2087106 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[2m2026-10-01T22:22:08.869133Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.gtk.vfs.Daemon' requested by ':1.7' (uid=1000 pid=2087261 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.gtk.vfs.Daemon'
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2087106 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2087106 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.Notifications' requested by ':1.10' (uid=1000 pid=2087261 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.10' (uid=1000 pid=2087261 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.11' (uid=1000 pid=2087406 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.portal.Documents' requested by ':1.11' (uid=1000 pid=2087406 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.freedesktop.portal.Documents'
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.252: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.11' (uid=1000 pid=2087406 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.freedesktop.Notifications'
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2087106 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+
+** (xdg-desktop-portal-gtk:2087479): WARNING **: 17:22:09.274: AT-SPI: Could not obtain desktop path or name
+
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2087106 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.274: Choosing gtk.portal for org.freedesktop.impl.portal.Access as a last-resort fallback
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+
+** (xdg-desktop-portal-gtk:2087479): WARNING **: 17:22:09.275: atk-bridge: GetRegisteredEvents returned message with unknown signature
+
+** (xdg-desktop-portal-gtk:2087479): WARNING **: 17:22:09.275: atk-bridge: get_device_events_reply: unknown signature
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.281: Choosing gtk.portal for org.freedesktop.impl.portal.Settings as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.281: Choosing gtk.portal for org.freedesktop.impl.portal.FileChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.282: Choosing gtk.portal for org.freedesktop.impl.portal.AppChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.282: Choosing gtk.portal for org.freedesktop.impl.portal.Print as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.282: Choosing gtk.portal for org.freedesktop.impl.portal.Notification as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.283: Choosing gtk.portal for org.freedesktop.impl.portal.Inhibit as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.284: Failed to connect to PipeWire: Couldn't connect to PipeWire
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.284: Choosing gtk.portal for org.freedesktop.impl.portal.Account as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.285: Choosing gtk.portal for org.freedesktop.impl.portal.Email as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2087406): xdg-desktop-portal-WARNING **: 17:22:09.285: Choosing gtk.portal for org.freedesktop.impl.portal.DynamicLauncher as a last-resort fallback
+dbus-daemon[2086670]: [session uid=1000 pid=2086670 pidfd=5] Successfully activated service 'org.freedesktop.portal.Desktop'
+{"action_ms": 1603.94, "candidate": "type-verification-value", "candidate_build_ms": 0.05, "confidence": 1.0, "decision_ms": 18.52, "delivery_mode": null, "dry_run": false, "event": "step", "probabilities": {"abstain": 0.0, "reobserve": 0.0, "type-verification-value": 1.0}, "provider_decision_ms": 0.01, "semantic_observe_ms": 18.44, "step": 1, "tool": "browser_type", "total_step_ms": 1622.46, "visual": {"reason": "page_structure_candidate", "status": "skipped"}, "visual_observe_ms": 0.0}
+{"action_ms": 1541.46, "candidate": "submit-form", "candidate_build_ms": 0.05, "confidence": 1.0, "decision_ms": 5.91, "delivery_mode": null, "dry_run": false, "event": "step", "probabilities": {"abstain": 0.0, "reobserve": 0.0, "submit-form": 1.0}, "provider_decision_ms": 0.01, "semantic_observe_ms": 5.81, "step": 2, "tool": "browser_click", "total_step_ms": 1547.38, "visual": {"reason": "page_structure_candidate", "status": "skipped"}, "visual_observe_ms": 0.0}
+{"event": "outcome", "outcome": "verified", "token": "jev-guide-mock"}
+{"event": "independently_verified", "language": "python", "provider": "mock", "outcome": "verified", "token": "jev-guide-mock", "observed": {"submitted": "jev-guide-mock"}, "submit_tool": "browser_click", "acted_path": "page_structure", "submit_delivery_mode": null, "visual_statuses": ["skipped", "skipped"], "escalations": []}
+{"event": "setup_complete", "checks": 1, "fixture_closed": true}
+rc_verify_setup=0
+X connection to :101 broken (explicit kill or server shutdown).
+A connection to the bus can't be made
+[session] exit rc=0 run_dir=<tmp>/x11-session.WsCFTr
