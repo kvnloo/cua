@@ -1616,6 +1616,96 @@ mod tests {
     }
 
     #[test]
+    fn client_not_bound_is_retryable_only_before_delivery_metadata() {
+        assert!(client_not_bound_refusal(
+            &json!({"ok":false,"code":"client_not_bound","detail":"client_not_bound"})
+        ));
+        for value in [
+            json!({"ok":false,"code":"client_not_bound","detail":"other"}),
+            json!({"ok":false,"code":"client_not_bound","detail":"client_not_bound","effect":"none"}),
+            json!({"ok":false,"code":"client_not_bound","detail":"client_not_bound",
+                "delivery":{"mode":"background","delivered_count":0}}),
+            json!({"ok":false,"code":"stale_target","detail":"stale_target"}),
+        ] {
+            assert!(!client_not_bound_refusal(&value));
+        }
+    }
+
+    #[test]
+    fn production_background_bounded_wait_retries_same_target_without_rebinding() {
+        reset_test_attestations();
+        let (client, peer) = production_test_client();
+        let server = std::thread::spawn(move || {
+            assert_eq!(read_packet(&peer), "TARGET 1 1 2");
+            peer.send(
+                json!({"ok":true,"target":TOKEN,"revision":7,"width":100,"height":100})
+                    .to_string()
+                    .as_bytes(),
+            )
+            .unwrap();
+
+            for sequence in 1..=3 {
+                assert_eq!(
+                    read_packet(&peer),
+                    format!("KEY {sequence} {TOKEN} 7 30 0")
+                );
+                if sequence < 3 {
+                    peer.send(
+                        br#"{"ok":false,"code":"client_not_bound","detail":"client_not_bound"}"#,
+                    )
+                    .unwrap();
+                } else {
+                    peer.send(
+                        br#"{"ok":true,"effect":"unverifiable","route":"synthetic_events"}"#,
+                    )
+                    .unwrap();
+                }
+            }
+        });
+
+        let mut slot = Some(client);
+        let result = dispatch_production_key(&mut slot, DeliveryRoute::Background).unwrap();
+        assert_eq!(result["ok"], true);
+        assert_eq!(result["route"], "synthetic_events");
+        assert_eq!(test_attestations(), 1);
+        assert!(slot.is_some());
+        drop(slot);
+        server.join().unwrap();
+    }
+
+    #[test]
+    fn foreground_client_not_bound_is_never_retried() {
+        reset_test_attestations();
+        let (client, peer) = production_test_client();
+        let server = std::thread::spawn(move || {
+            assert_eq!(read_packet(&peer), "FOREGROUND_TARGET 1 1 2");
+            peer.send(
+                json!({"ok":true,"route":"primary_foreground","target":TOKEN,
+                    "revision":1,"width":100,"height":100})
+                .to_string()
+                .as_bytes(),
+            )
+            .unwrap();
+            assert_eq!(read_packet(&peer), format!("KEY 1 {TOKEN} 1 30 0"));
+            peer.send(
+                br#"{"ok":false,"code":"client_not_bound","detail":"client_not_bound"}"#,
+            )
+            .unwrap();
+            let mut byte = [0u8];
+            assert_eq!(
+                unsafe { libc::recv(peer.as_raw_fd(), byte.as_mut_ptr().cast(), 1, 0) },
+                0
+            );
+        });
+        let mut slot = Some(client);
+        let result = dispatch_production_key(&mut slot, DeliveryRoute::Foreground).unwrap();
+        assert_eq!(result["code"], "client_not_bound");
+        assert_eq!(test_attestations(), 1);
+        drop(slot);
+        server.join().unwrap();
+    }
+
+    #[test]
     fn background_action_still_requires_live_compositor_attestation() {
         let (mut client, peer) = test_connection();
         client.lane = Some(0);
