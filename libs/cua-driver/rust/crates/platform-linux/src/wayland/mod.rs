@@ -726,6 +726,19 @@ pub fn list_windows() -> anyhow::Result<Vec<WindowInfo>> {
 /// screencopy manager or `wl_shm` is unavailable so users on lighter wlroots
 /// builds stay supported.
 pub fn screenshot_bytes() -> anyhow::Result<Vec<u8>> {
+    // Native screencopy below binds the first advertised wl_output. On a
+    // multi-output Hyprland desktop that would publish a partial screenshot
+    // against a whole-desktop action frame. Grim is already the wlroots
+    // full-layout capture path, so use it directly and fail closed if it is
+    // unavailable instead of silently returning output #1.
+    if hyprland::is_session()
+        && hyprland::display_layout()
+            .is_ok_and(|layout| layout.outputs.len() > 1)
+    {
+        return capture_via_grim().map_err(|error| {
+            anyhow::anyhow!("multi-output Hyprland capture requires full-layout grim capture: {error:#}")
+        });
+    }
     match capture_via_screencopy() {
         Ok(bytes) => return Ok(bytes),
         Err(e) => tracing::warn!("native screencopy failed, falling back to grim: {e}"),
@@ -1139,6 +1152,19 @@ fn crop_png_to_rect(
 /// 5. X11: existing root-window path.
 pub fn screenshot_display_dispatch() -> anyhow::Result<Vec<u8>> {
     if is_wayland() {
+        // Do not allow a failed full-layout capture to cascade into the
+        // first-output native/ext fallbacks below. A partial image paired with
+        // union desktop coordinates is worse than an explicit refusal.
+        if hyprland::is_session()
+            && hyprland::display_layout()
+                .is_ok_and(|layout| layout.outputs.len() > 1)
+        {
+            return capture_via_grim().map_err(|error| {
+                anyhow::anyhow!(
+                    "multi-output Hyprland display capture requires full-layout grim capture: {error:#}"
+                )
+            });
+        }
         // Tier 1: the opt-in GNOME compositor helper. It avoids probing
         // wlroots-only protocols and captures the Shell stage without consent.
         // If the helper is present but capture fails, do not fall through to
