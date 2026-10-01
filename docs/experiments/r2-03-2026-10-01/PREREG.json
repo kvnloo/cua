@@ -1,0 +1,95 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "R2-03 real-provider guarded completion",
+  "owners": ["kvnloo/cua#10", "kvnloo/cua#78", "trycua/cua#4316", "trycua/cua#4394"],
+  "spec_source": "kvnloo/cua#93 P0 table row R2-03; kvnloo/cua#73 worker queue; kvnloo/cua#10 P0 item 3 and measurement contract",
+  "written_utc": "2026-10-01T22:05Z",
+  "status_at_commit": "no measured run has started; this file is frozen once committed and deviations go to README 'Deviations'",
+
+  "hypothesis": {
+    "H1_structural": "On the real #4316 Driver, a real Chromium browser and a live provider, the opt-in --guarded-completion caller deletes exactly one provider decision per verified fill->submit task (baseline 2 provider responses, guarded 1), confirmed by responder receipts rather than configured intent.",
+    "H2_safety": "Every guarded completion dispatches browser_click with the fresh post-mutation Submit ref (never the pre-mutation ref), and guarded completion never produces an unverified or duplicate submission.",
+    "H3_wall_clock": "Deleting the second provider decision reduces paired task_verified_ms (guarded minus baseline < 0) with a 95% bootstrap CI of the paired median that excludes 0."
+  },
+
+  "provider_selection": {
+    "rule": "prefer a free/local backend the jev-use browser runner already supports; otherwise the provider used for downstream live evidence (TypeSafe, #10 six-pair run) only if its key is already present in the environment, forwarded by name; hard cap 300 provider HTTP requests in total",
+    "tested_browser_runner_options": "python/run.py at a0bca7440 accepts --provider mock|live only; live = TypeSafe Jev through typesafe_sdk",
+    "free_local_candidates_considered": {
+      "mock": "not a real provider (deterministic in-process), so it cannot satisfy the live-provider requirement; used only for the harness smoke and as an attribution negative",
+      "cua-s1-4b (local)": "not supported by the tested browser runner at a0bca7440 (S1 browser support exists only in trycua/cua#4394, a different source); using it would require porting non-measurement caller code into the tested source, which the lane rules forbid. Its adapter is also not present locally."
+    },
+    "selected": "TypeSafe Jev via --provider live (the only real provider the tested browser runner supports)",
+    "key_handling": "TYPESAFE_API_KEY presence checked by name only; forwarded into the isolated session only by name via CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY; never printed, logged, copied or passed to the Driver (driver_environment forwards only CUA_DRIVER_* and desktop variables)",
+    "request_cap": 300,
+    "budget_guard": "harness counts provider HTTP attempts from receipts and refuses to start a cell if the running total plus 12 (4 steps x 3 SDK attempts) would exceed 300"
+  },
+
+  "tested_source": {
+    "sha": "a0bca744067d04f05904319d3d919be30c336556",
+    "pr": "trycua/cua#4316 (live head re-read with gh at 2026-10-01T22:00:36Z: a0bca744067d04f05904319d3d919be30c336556, OPEN, not draft)",
+    "runner_source_rule": "libs/cua-driver/examples/jev-use must be byte-identical to a0bca7440 for every measured cell (harness asserts git diff is empty); instrumentation lives only in this packet's harness/ directory and is activated only by the launcher",
+    "driver_binary": {"name": "cua-driver-4316-a0bca7440", "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95", "version": "cua-driver 0.31.0", "rebuilt": false},
+    "not_tested": "trycua/cua#4394 head 039257811e0bbb2348c616c52562409923d2856f is not part of the tested source; its content-free backend field is replaced here by an equivalent attributed responder receipt (see receipts)"
+  },
+
+  "arms": {
+    "baseline": "python/run.py --provider live (default, no guarded flag)",
+    "guarded": "python/run.py --provider live --guarded-completion",
+    "identical_across_arms": "same source tree, same Driver binary, same isolated session, same fixture_server.py, same launcher instrumentation, same Driver env (default safety settings: no permission-mode override, no approval bypass, Chromium sandbox on; no *-e2e wrapper), same telemetry defaults, same visual-observation mode (default auto), same max_steps 4",
+    "language": "Python runner only; TypeScript runner not run (claim boundary)"
+  },
+
+  "forced_path": "built-in jev-use browser fixture form: empty field, provider chooses browser_type into the page ref for the verification field (step 1), then Submit via browser_click on a page_structure ref (step 2: provider in baseline, guarded-completion in guarded). Visual observation stays on default auto and is expected to be skipped because the page structure offers executable candidates.",
+
+  "design": {
+    "n_pairs_planned": 40,
+    "n_pairs_minimum_valid": 30,
+    "interleaving": "strict AB/BA alternation: odd pair index runs baseline then guarded, even pair index runs guarded then baseline",
+    "trial_unit": "one runner process (fresh Driver MCP process, fresh Driver-launched isolated_new Chromium profile, fresh harness-owned loopback fixture server, unique token per trial)",
+    "timing_lock": "the whole measured phase runs inside flock <tmp>/locks/quiet-lane.lock; loadavg recorded at spawn and exit of every trial",
+    "clock": "CLOCK_MONOTONIC (time.monotonic_ns) in both the harness and the runner process (same host, same clock), so cross-process timestamps are directly comparable",
+    "inter_trial_gap_s": 0.3,
+    "keep_every_trial": true
+  },
+
+  "oracle": {
+    "independent": "harness-owned fixture server /state (submitted == trial token) polled every 4 ms by the harness, plus the server-side submit instant and a submit counter; the runner's own outcome event is recorded but is not the oracle",
+    "verified_definition": "final /state equals {submitted: token} AND exactly one submit was received"
+  },
+
+  "receipts": {
+    "provider_responder_receipt": "per HTTP attempt from the runner process: method, host, path, status, x-typesafe-request-id presence and sha256 prefix (raw ID not stored), monotonic start/end, error class; per provider response: backend name derived from the responding host, response.model, usage input/output tokens, selected candidate id. No headers, no bodies, no key.",
+    "configured_vs_actual": "runner --provider value (configured intent) is recorded separately from the responder receipt (actual handler)",
+    "driver_receipts": "per Driver MCP call: tool, monotonic start/end, error code, ref argument only (never typed text), Submit refs present in each semantic_v2 snapshot, whitelisted scalar result fields (route/effect/status) with absolute paths sanitized",
+    "fresh_ref_proof": "for every step-2 browser_click: dispatched ref equals the Submit ref in the latest post-mutation snapshot and differs from the Submit ref in the pre-mutation snapshot; for guarded steps additionally guarded_completion.fresh_ref == dispatched ref and prior_ref != fresh_ref"
+  },
+
+  "controls": {
+    "C0_mock_smoke": "1 AB pair with --provider mock, untimed, outside the quiet lock, excluded from analysis: validates harness; receipts must show backend=mock and 0 provider HTTP attempts",
+    "C1_guard_decline_fallback": "3 runs of the guarded arm on the existing verify_setup DUPLICATE_SUBMIT_ON_INPUT fixture variant with the live provider, untimed: guard must decline (submit_not_unique), route [provider, provider], fixture verified once, 2 provider responses, no stale ref",
+    "C2_provider_unreachable": "1 run per arm with TYPESAFE_BASE_URL pointing at a closed loopback port, untimed: 0 successful provider responses, receipts show connection errors only, 0 Driver mutations, fixture submitted stays null, outcome not verified. Shows configured intent alone is not counted as a provider decision.",
+    "controls_count_toward_request_cap": true
+  },
+
+  "metrics": {
+    "primary_structural": "provider responses (HTTP 200 receipts with a model) per verified trial, by arm; cross-checked against runner JSONL decision_routes",
+    "primary_timing": "task_verified_ms = first oracle observation of the trial token minus the start of the runner's first semantic_v2 get_browser_state call (excludes Driver spawn, browser launch and navigation)",
+    "secondary_timing": ["spawn_verified_ms (runner spawn -> first oracle observation; the #10 harness verified_outcome_ms definition)", "task_mutation_ms (first semantic observation -> server-side submit instant)", "cold_setup_ms (spawn -> first semantic observation)", "runner_lifetime_ms", "cleanup_after_outcome_ms", "provider_decision_ms per decision"],
+    "work_deleted": "provider HTTP requests, provider decisions, provider input/output tokens and summed provider_decision_ms deleted per verified pair; reported separately from wall-clock saved",
+    "statistics": "paired difference guarded minus baseline within each pair where both cells verified; median and mean with seeded percentile bootstrap 95% CI (10000 resamples, seed 20261001); count of pairs where guarded faster; all excluded pairs listed with reason",
+    "outcomes": "verified / refuted / abstained / unknown / timed_out / harness_error per arm, N of M"
+  },
+
+  "decision_gates": {
+    "BLOCKED": "fewer than 30 pairs in which both cells ran to a terminal state with receipts, provider unavailable, request cap reached before 30 pairs, or any validity check fails (tested source not byte-identical, Driver sha mismatch, forbidden env present, measured phase not under the quiet lock)",
+    "KILL": "any of: a guarded-route click dispatched with a ref equal to the pre-mutation ref or different from the latest snapshot's Submit ref; a guarded-route completion that the oracle does not verify; any duplicate submission; the guard accepting in C1; structural deletion absent (median provider responses per verified guarded trial not lower than baseline, or guarded verified trials with route [provider, guarded-completion] not showing exactly 1 provider response)",
+    "KEEP": "no KILL condition, structural deletion holds, and the paired median task_verified_ms delta is below 0 with the bootstrap 95% CI upper bound below 0",
+    "REVISE": "no KILL condition and structural deletion holds, but the paired CI includes or exceeds 0: keep the structural work-deletion claim and drop any wall-clock claim",
+    "reliability_note": "provider-caused non-verified outcomes (abstain, reobserve to budget, provider error) stay in both denominators and are reported; if the guarded arm verifies at least 3 fewer trials than baseline for reasons not attributable to the provider, the disposition is at most REVISE"
+  },
+
+  "regression_suites": "run-unit.sh on the lane worktree (Python unittest discover, guarded-focused Python and TypeScript tests, CLI verifiers, npm test, typecheck); correctness only, not timed",
+
+  "claim_boundary": "One fixture (jev-use built-in fill->submit form), Python runner only, one Driver binary (#4316 build e57bb9ae, 0.31.0), Google Chrome as selected by the Driver, private rootless Xvfb session on one Linux x86-64 host, TypeSafe Jev as the only live provider with its server-side model as reported in receipts. Results do not transfer to other tasks, providers, platforms, the TypeScript runner, upstream main, or any other #4316 head. No Driver-internal profile is claimed. No new service, verifier, router or API is proposed."
+}
