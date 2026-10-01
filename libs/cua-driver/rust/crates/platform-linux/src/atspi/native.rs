@@ -3620,7 +3620,9 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
         REF_ACTION_BUDGET,
         async {
             let conn = shared_connection().await?;
+            cua_driver_core::phase_trace::mark("atspi_action", "connected");
             let (acc, role) = live_accessible(conn, object_ref).await?;
+            cua_driver_core::phase_trace::mark("atspi_action", "live_checked");
             let proxies = acc
                 .proxies()
                 .await
@@ -3630,6 +3632,7 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
                 .await
                 .map_err(|e| anyhow!("Action unavailable: {e}"))?;
             let actions = action_names(&ap).await;
+            cua_driver_core::phase_trace::mark("atspi_action", "metadata_done");
             let suspected_noop = actions.is_empty() || is_passive_role(&role);
             let chosen = activation_index(&role, &actions)
                 .ok_or_else(|| anyhow!("element does not advertise a safe activation action"))?;
@@ -3651,7 +3654,9 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
                     false
                 }
             };
+            cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
             tokio::time::sleep(Duration::from_millis(50)).await;
+            cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
             Ok((
                 actions.get(chosen).cloned().unwrap_or_default(),
                 suspected_noop || rejected,
