@@ -1,0 +1,56 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "R2-01",
+  "title": "Causal browser feedback/cursor A/B on the jev-use DOM route",
+  "owners": ["kvnloo/cua#93 (R2-01)", "kvnloo/cua#10", "original E1"],
+  "written_utc": "2026-10-01",
+  "status_at_commit": "written before any measured run; must not be edited after runs start (deviations go to README 'Deviations')",
+  "motivation": "The prior real-browser probe (#93 E0/E1 comment; source a0bca744, Driver 0.31.0) saw about 1.5 s inside the browser_click action span for the DOM route (5/5 verified, p50 1550.78 ms). Source inspection shows dom_event awaits engine.visualize_browser_action, which on Linux X11 awaits the agent-cursor glide arrival (overlay::animate_cursor_to_for, cap 5.5 s) before Runtime.callFunctionOn. That is a hypothesis, not a diagnosis. Those prior numbers are a different source/binary and are not compared numerically with this run.",
+  "hypothesis": {
+    "H1_cursor": "On upstream main 229b65b2 with feedback ENABLED, most of the browser_click (input_route=dom_event) action span is the awaited agent-cursor visualization; disabling feedback (set_agent_cursor_enabled false) removes that interval without changing the action route, authorization or verified outcome.",
+    "H0": "The action-span delay lies outside visualization (target resolution, CDP dispatch, post-dispatch wait, MCP transport or platform scheduling); disabling feedback does not materially shorten it."
+  },
+  "source_and_binary": {
+    "tested_source_base": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (upstream main, pinned in SETUP.json)",
+    "branch": "exp/r2-01-feedback-ab-20261001",
+    "instrumentation": "measurement-only, env-gated, default-off phase trace (cua-driver-core::phase_trace; enabled only by CUA_DRIVER_PHASE_TRACE_FILE). Marks: dispatch.enter/exit (registry dispatch boundary), click.enter/lock_acquired/revalidated/ref_resolved/dom_resolved/scrolled/box_model/cdp_send/cdp_response, type.pre_visual/post_visual, viz.enter/visibility_done/layout_done/exit (engine), platform.gate/animate_start/animate_end (Linux), overlay.should_animate/arrival_wait_start/arrival_wait_end/degraded_no_wait. CLOCK_MONOTONIC ns, same clock as Python time.monotonic_ns().",
+    "binary": "lane binary built from the instrumentation commit with build-driver.sh into target dir cua-release-r2-01; sha256 and version recorded in provenance.json. Both arms use the same binary with the trace enabled.",
+    "browser": "Driver-selected Chrome (/opt/google/chrome/chrome, as recorded in SETUP.json), isolated_new profile, default sandbox and safety settings (no permission-mode override, no approval bypass, no *-e2e wrapper)"
+  },
+  "arms": {
+    "ON": "set_agent_cursor_enabled {enabled: true} immediately after MCP initialize, before browser_prepare (the Driver default value, made explicit so both arms issue identical RPCs)",
+    "OFF": "set_agent_cursor_enabled {enabled: false} at the same point (the existing toggle from exp/agent-cursor-off-runner-20260929-local commit e1706ee4d, JEV_USE_AGENT_CURSOR=off)",
+    "identical_across_arms": ["binary", "trace enabled", "fixture and page", "task token format", "tool sequence and arguments", "authorization/session settings", "oracle", "telemetry defaults", "isolated X11 session"]
+  },
+  "forced_path": "Each trial mirrors libs/cua-driver/examples/jev-use/python/run.py with the mock provider: fresh `cua-driver mcp` stdio process; browser_prepare {allow_launch, profile isolated_new}; wait_for_window; get_browser_state bind; browser_navigate to the loopback fixture; step 1: oracle read, get_browser_state semantic_v2, FixtureFormTask candidates, choose_mock_for_task -> browser_type (replace=true); step 2: oracle read, get_browser_state semantic_v2, candidates, choose_mock_for_task -> browser_click {ref, input_route: dom_event} (candidate submit-form); then the runner's completion loop (oracle read, sleep 0.1 s, at most 20 reads). A trial whose chosen step-2 tool is not browser_click with input_route dom_event is retained and reported as a forced-path violation.",
+  "n_and_interleaving": {
+    "pairs": 24,
+    "order": "pair k (0-based): k even -> ON then OFF; k odd -> OFF then ON (AB/BA)",
+    "trial_isolation": "fresh Driver process and fresh isolated browser per trial; one fixture server per run, reset before every trial",
+    "shakedown": "before measurement, one ON and one OFF trial check the harness and trace; retained under raw/shakedown and excluded from every headline number",
+    "lock": "all measured trials run inside one isolated session wrapped in flock quiet-lane.lock",
+    "loadavg": "/proc/loadavg recorded before every trial"
+  },
+  "oracle": "Independent target-owned oracle: the fixture's /state endpoint (submitted == trial token) read over HTTP by the trial script, plus a measurement-only fixture journal (FixtureState subclass in the trial script) that records CLOCK_MONOTONIC ns when POST /submit mutates state. The Driver's own result (effect=unverifiable for dom_event) is never the success oracle.",
+  "controls": {
+    "forced_path_positive": "ON trials must show platform.gate cursor_enabled=true and an overlay arrival wait; OFF trials must show platform.gate cursor_enabled=false and no animate marks.",
+    "negative_no_submit": "per arm, 2 trials that type but never click; after 1.0 s the oracle must show submitted=None and the journal no submit.",
+    "negative_stale_ref": "per arm, 2 trials that take a semantic snapshot, re-navigate the tab to the fixture, then browser_click the old Submit ref with input_route dom_event; expected refusal (browser_ref_stale or equivalent refused envelope, checked on structuredContent, not only isError) and no journal submit.",
+    "fallback": "the DOM route has no fallback route; any refusal or error in a measured trial is kept as a failure in the denominator."
+  },
+  "metrics": {
+    "primary": "click_span_ms: caller-side monotonic duration of the browser_click call (step 2).",
+    "decomposition_from_trace": ["transport_in = dispatch.enter - caller send", "dispatch_pre = click.enter - dispatch.enter", "lock = lock_acquired - click.enter", "revalidate = revalidated - lock_acquired", "ref_resolve = ref_resolved - revalidated", "dom_resolve = dom_resolved - ref_resolved", "scroll = scrolled - dom_resolved", "box_model = box_model - scrolled", "visualization = viz.exit - viz.enter (sub: visibility, layout, platform incl. animate/arrival wait)", "pre_cdp_gap = cdp_send - (viz.exit or box_model)", "cdp = cdp_response - cdp_send", "post_cdp = dispatch.exit - cdp_response", "transport_out = caller return - dispatch.exit", "mutation_after_cdp_send = journal submit - cdp_send", "verify_after_return = end of first verified oracle read - caller return"],
+    "secondary": ["type_span_ms (browser_type call) and its visualization interval", "verified_outcome_ms = click send -> end of first verified oracle read", "trial_wall_ms", "span coverage = named phases / click_span (gate: >90% for a latency claim, per #10)"],
+    "statistics": "per-arm median and nearest-rank p95; paired within-pair difference D = ON - OFF; median D with percentile bootstrap 95% CI (10000 resamples, seed 20261001); every trial retained including failures"
+  },
+  "decision_gates": {
+    "BLOCKED": "the harness cannot execute in the isolated session, or fewer than 80% of ON trials show the feedback (arrival-wait) path, so the intervention was not exercised.",
+    "KEEP_H1": "all of: (a) >= 90% of trials verified in each arm; (b) median D >= 50% of ON median click_span; (c) bootstrap 95% CI of median D excludes 0; (d) median ON visualization interval >= 50% of ON median click_span.",
+    "KILL_H1": "median D < 20% of ON median click_span, or its 95% CI includes 0: the delay is outside visualization. Then localize the delay with the trace to resolution, post-dispatch wait, transport or platform scheduling (largest non-visualization phase reported). Feedback is not turned off globally.",
+    "REVISE": "any other outcome (feedback is a partial cause, or verification < 90% in an arm); report the explained and residual intervals.",
+    "not_reproduced_rule": "If the ON median click_span is below 500 ms, the earlier ~1.5 s span is reported as not reproduced on this source/binary/environment; the gates above still apply to what was observed and no cross-source comparison is made."
+  },
+  "claim_boundary": "One fixture (jev-use loopback form), one route (browser_click dom_event after browser_type), one Linux private rootless Xvfb + openbox + picom session, one lane binary built from upstream main 229b65b2 plus default-off trace marks, Chrome 151. No claim about trusted input, Wayland/Hyprland (#94), macOS/Windows, other fixtures, live providers or default-behaviour changes. Feedback-off is a measurement intervention, not a recommendation to disable feedback.",
+  "invariants": "No new service, no shadow state, no second verifier, no router/decision service, no batch API. Instrumentation is measurement-only and default-off. The trace never decides success; the fixture oracle does."
+}
