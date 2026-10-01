@@ -78,6 +78,12 @@ class AgentSeatLifetimeTest(unittest.TestCase):
         drag_consume = request.index("consume_grant(c, cap)", scroll_consume + 1)
         self.assertLess(drag_bound, drag_consume)
 
+    def test_post_grant_binding_loss_is_not_retryable(self):
+        request = method(self.source, "request")
+        self.assertIn("kClientNotBoundAfterGrant", self.source)
+        self.assertGreaterEqual(request.count("send(c, kClientNotBoundAfterGrant)"), 4)
+        self.assertIn('"delivery":{"mode":"background","delivered_count":0}', self.source)
+
     def test_old_generations_cannot_receive_input(self):
         for name in ("pointer_enter", "button", "keyboard_enter", "key"):
             self.assertIn("seat_generation_is_active", method(self.source, name), name)
