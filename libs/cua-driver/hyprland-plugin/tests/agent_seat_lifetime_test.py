@@ -84,6 +84,30 @@ class AgentSeatLifetimeTest(unittest.TestCase):
         self.assertGreaterEqual(request.count("send(c, kClientNotBoundAfterGrant)"), 4)
         self.assertIn('"delivery":{"mode":"background","delivered_count":0}', self.source)
 
+    def test_released_resources_are_pruned_without_dropping_live_retired_objects(self):
+        prune = method(self.source, "prune_dead_resources")
+        for collection in ("pointers", "keyboards", "touches", "seats"):
+            self.assertIn(f"std::erase_if({collection}", prune)
+
+        bind = method(self.source, "bind_seat")
+        self.assertLess(bind.index("prune_dead_resources()"), bind.index("seats.size() >= kMaxResources"))
+        for name, collection in (
+            ("add_pointer", "pointers"),
+            ("add_keyboard", "keyboards"),
+            ("add_touch", "touches"),
+        ):
+            body = method(self.source, name)
+            self.assertLess(
+                body.index("prune_dead_resources()"),
+                body.index(f"{collection}.size() >= kMaxResources"),
+            )
+
+        # Never turn the cap into an active-generation-only cap: retired live
+        # protocol objects must remain bounded until their clients release them.
+        self.assertNotIn("active_seat_resources() >= kMaxResources", self.source)
+        self.assertNotIn("active_pointer_resources() >= kMaxResources", self.source)
+        self.assertNotIn("active_keyboard_resources() >= kMaxResources", self.source)
+
     def test_old_generations_cannot_receive_input(self):
         for name in ("pointer_enter", "button", "keyboard_enter", "key"):
             self.assertIn("seat_generation_is_active", method(self.source, name), name)
