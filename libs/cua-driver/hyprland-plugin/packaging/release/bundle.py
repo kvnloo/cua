@@ -42,6 +42,7 @@ src/seat_lifetime.hpp
 src/session.cpp
 src/status.cpp
 tests/agent_key_repeat_test.py
+tests/agent_seat_lifetime_test.py
 tests/cmake-api/CMakeLists.txt
 tests/cmake-api/include/src/plugins/PluginAPI.hpp
 tests/desktop_fault_policy_fixture.cpp
