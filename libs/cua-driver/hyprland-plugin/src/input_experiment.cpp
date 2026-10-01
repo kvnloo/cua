@@ -417,6 +417,15 @@ struct InputExperiment::Impl {
         });
         return found == seats.end() ? 0 : (*found)->generation;
     }
+    void prune_dead_resources() {
+        // Release/onDestroy marks an entry dead before the wrapper can no longer
+        // receive protocol callbacks. Retired-but-still-live client objects stay
+        // retained and continue counting toward the hard resource cap.
+        std::erase_if(pointers, [](const auto& pointer) { return pointer->dead; });
+        std::erase_if(keyboards, [](const auto& keyboard) { return keyboard->dead; });
+        std::erase_if(touches, [](const auto& touch) { return touch->dead; });
+        std::erase_if(seats, [](const auto& seat) { return seat->dead; });
+    }
 #if defined(WAYLAND_VERSION_MAJOR) && \
     (WAYLAND_VERSION_MAJOR > 1 || (WAYLAND_VERSION_MAJOR == 1 && WAYLAND_VERSION_MINOR >= 26))
     static void global_withdrawn(wl_global* global) {
@@ -556,6 +565,7 @@ struct InputExperiment::Impl {
     static void bind_seat(wl_client* client, void* data, std::uint32_t version, std::uint32_t id) {
         auto& epoch = *static_cast<GlobalEpoch*>(data);
         auto& self = *epoch.owner;
+        self.prune_dead_resources();
         if (self.seats.size() >= kMaxResources) { wl_client_post_no_memory(client); return; }
         auto seat = std::make_unique<Seat>();
         auto* entry = seat.get();
@@ -581,6 +591,7 @@ struct InputExperiment::Impl {
         self.seats.push_back(std::move(seat));
     }
     void add_pointer(CWlSeat* seat, std::uint32_t id) {
+        prune_dead_resources();
         if (pointers.size() >= kMaxResources) { seat->noMemory(); return; }
         auto p = std::make_unique<Pointer>(); auto* entry = p.get();
         p->generation = generation_for(seat);
@@ -593,6 +604,7 @@ struct InputExperiment::Impl {
         pointers.push_back(std::move(p));
     }
     void add_keyboard(CWlSeat* seat, std::uint32_t id) {
+        prune_dead_resources();
         if (!keyboard_state || keyboards.size() >= kMaxResources) { seat->noMemory(); return; }
         auto k = std::make_unique<Keyboard>(); auto* entry = k.get();
         k->generation = generation_for(seat);
@@ -608,6 +620,7 @@ struct InputExperiment::Impl {
     }
     void add_touch(CWlSeat* seat, std::uint32_t id) {
         // Never advertised. A valid inert resource is safer than a dangling id.
+        prune_dead_resources();
         if (touches.size() >= kMaxResources) { seat->noMemory(); return; }
         auto t = std::make_unique<Touch>(); auto* entry = t.get();
         t->generation = generation_for(seat);
