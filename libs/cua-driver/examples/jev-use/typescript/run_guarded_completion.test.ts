@@ -24,6 +24,7 @@ type Scenario = {
     | 'ref-reused'
     | 'visual-refusal';
   actionError?: boolean;
+  ackLostAfterEffect?: boolean;
   providerError?: boolean;
   duplicateCandidate?: boolean;
 };
@@ -86,7 +87,7 @@ async function runFixture(scenario: Scenario, log: string) {
     ],
   }));
   mock.method(Client.prototype, 'close', async () => {
-    console.error(JSON.stringify({ closed: true, actions, providerCalls }));
+    console.error(JSON.stringify({ closed: true, actions, providerCalls, submitted }));
   });
   mock.method(
     Client.prototype,
@@ -132,6 +133,16 @@ async function runFixture(scenario: Scenario, log: string) {
           session: args.session,
           ...(name === 'click' ? { delivery_mode: args.delivery_mode } : {}),
         });
+        if (scenario.ackLostAfterEffect && name === 'browser_click') {
+          // Target-side mutation lands before the caller sees a failed
+          // acknowledgement. This is the dangerous maybe-landed boundary.
+          submitted = value;
+          return {
+            isError: true,
+            content: [{ type: 'text', text: 'simulated acknowledgement loss' }],
+            structuredContent: { code: 'action_failed' },
+          };
+        }
         if (
           (scenario.actionError && name === 'browser_click') ||
           (name === 'click' && args.delivery_mode === 'background')
@@ -351,6 +362,37 @@ if (process.argv[2] === '--fixture-run') {
       });
     }
   }
+
+  test('runner observes instead of retrying when acknowledgement is lost after effect', () => {
+    const { events, receipt, status, jsonl } = runScenario({ ackLostAfterEffect: true });
+    assert.equal(status, 1);
+    assert.equal(receipt.submitted, TOKEN);
+    assert.deepEqual(
+      receipt.actions.map((action: Record<string, unknown>) => action.tool),
+      ['browser_type', 'browser_click']
+    );
+
+    const outcome = events.at(-1)!;
+    assert.equal(outcome.event, 'outcome');
+    assert.equal(outcome.outcome, 'unknown');
+    assert.equal(outcome.phase, 'action');
+    assert.deepEqual(
+      { ...outcome.mutation_outcome, authorityScope: '<scope>' },
+      {
+        receiptKind: 'mutation-outcome/v0',
+        mutationKey: '2:submit-form',
+        authorityScope: '<scope>',
+        attempted: true,
+        effect: 'unknown',
+        verification: 'unverified',
+        retryDisposition: 'observe',
+      }
+    );
+    assert.match(outcome.mutation_outcome.authorityScope, /^jev-typescript-/);
+    // The independent fixture oracle says the effect landed, while the runner
+    // conservatively records unknown and stops after one click.
+    assert.equal(jsonl.includes(TOKEN), false);
+  });
 
   test('runner logs declined telemetry on background refusal without carrying it to foreground', () => {
     const { events, receipt, status } = runScenario({ mode: 'visual-refusal' });
