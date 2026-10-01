@@ -12,7 +12,7 @@ def active():
     return {"name": "cua-hyprland-plugin", "state": "input_experiment", "configured": True, "abi": {"match": True},
             "transport": {"ready": True}, "experiment": {"transport_ready": True,
             "test_only": True, "protocol": 0,
-            "seat_lifetime": "compositor", "upgrade": "desktop_restart", "lanes": [
+            "seat_lifetime": "compositor", "seat_global_lifetime": "lane_claim", "upgrade": "desktop_restart", "lanes": [
                 {"lane": lane, "held_button": 0, "held_keys": 0, "lease_active": False,
                  "drag_active": False, "reserved": False} for lane in (0, 1)]}}
 
@@ -50,7 +50,7 @@ class RetirementEvidenceTest(unittest.TestCase):
 
     def test_missing_duplicate_and_wrong_contract_lanes_fail(self):
         for change in ({"lanes": []}, {"lanes": [active()["experiment"]["lanes"][0]] * 2},
-                       {"upgrade": "hot_reload"}, {"seat_lifetime": "plugin"}, {"transport_ready": False}):
+                       {"upgrade": "hot_reload"}, {"seat_lifetime": "plugin"}, {"seat_global_lifetime": "compositor"}, {"transport_ready": False}):
             candidate = active()
             candidate["experiment"].update(change)
             with self.subTest(change=change), self.assertRaises(AssertionError):
