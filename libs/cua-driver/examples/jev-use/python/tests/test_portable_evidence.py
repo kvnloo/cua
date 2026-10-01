@@ -104,8 +104,29 @@ class PortableEvidenceTest(unittest.TestCase):
         self.assertEqual(receipt["evidence"][0]["result"], "unknown")
 
     def test_requires_exact_revision(self):
-        with self.assertRaises(ValueError):
-            normalize_events([], revision="main")
+        for revision in [
+            "main",
+            "",
+            SHA[:-1],
+            SHA + "0",
+            " " + SHA,
+            SHA + " ",
+            SHA + "\n",
+            SHA + "\r\n",
+            SHA[:-1] + "g",
+            None,
+            1,
+            b"0" * 40,
+        ]:
+            with self.subTest(revision=revision):
+                with self.assertRaisesRegex(ValueError, "full 40-character Git SHA"):
+                    normalize_events([], revision=revision)
+
+    def test_preserves_full_revision_case(self):
+        for revision in [SHA, SHA.upper(), "0" * 40, "f" * 40]:
+            with self.subTest(revision=revision):
+                receipt = normalize_events([], revision=revision)
+                self.assertEqual(receipt["producer"]["revision"], revision)
 
     def test_load_events_ignores_malformed_lines(self):
         with tempfile.TemporaryDirectory() as tmpdir:

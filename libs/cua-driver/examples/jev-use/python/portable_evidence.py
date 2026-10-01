@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 _SCHEMA = "z0.evidence.v0"
-_SHA = re.compile(r"^[0-9a-fA-F]{40}$")
+_SHA = re.compile(r"[0-9a-fA-F]{40}")
 _OUTCOME_MAP = {
     "verified": "pass",
     "refuted": "fail",
@@ -36,7 +36,7 @@ def normalize_events(
     revision: str,
     subject_id: str = "jev-use",
 ) -> dict[str, Any]:
-    if not _SHA.match(revision):
+    if not isinstance(revision, str) or not _SHA.fullmatch(revision):
         raise ValueError("revision must be a full 40-character Git SHA")
 
     rows = list(events)
