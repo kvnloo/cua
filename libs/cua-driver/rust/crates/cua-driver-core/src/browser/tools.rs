@@ -1163,7 +1163,18 @@ impl Tool for BrowserClickTool {
                         .await;
                 }
             }
-            return match conn
+            // R2-02 measurement-only wake probe: None unless env-gated AND
+            // requested by this call, in which case the main path is unchanged.
+            let mut wake_probe = match super::exp_cdp_wake::Config::from_call(&args) {
+                Some(cfg) => {
+                    Some(super::exp_cdp_wake::Armed::arm(conn, &validated.cdp_session, cfg).await)
+                }
+                None => None,
+            };
+            if let Some(probe) = wake_probe.as_mut() {
+                probe.before_dispatch();
+            }
+            let dispatched = conn
                 .call(
                     Some(cdp),
                     "Runtime.callFunctionOn",
@@ -1172,27 +1183,43 @@ impl Tool for BrowserClickTool {
                         "functionDeclaration": "function() { this.click(); }",
                     }),
                 )
-                .await
-            {
-                Ok(_) => ToolResult::text(format!(
-                    "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
-                     verified (trust-gated controls may ignore untrusted events). Refresh page \
-                     state and verify the expected postcondition",
-                    ext_ref.as_deref().unwrap_or("?")
-                ))
-                .with_structured(json!({
-                    "status": "ok",
-                    "effect": "unverifiable",
-                    "route": "dom_event",
-                    "target_id": target_id,
-                    "tab_id": tab_id,
-                    "ref": ext_ref,
-                    "frame": frame_kind,
-                    "escalation": {
-                        "recommended": "page",
-                        "reason": "synthetic DOM dispatch cannot prove control activation; refresh page state and verify the expected postcondition",
-                    },
-                })),
+                .await;
+            let probe_record = match wake_probe {
+                Some(mut probe) => {
+                    probe.dispatch_returned();
+                    if dispatched.is_ok() {
+                        probe.wait().await;
+                    }
+                    Some(probe.finish(conn).await)
+                }
+                None => None,
+            };
+            return match dispatched {
+                Ok(_) => {
+                    let mut structured = json!({
+                        "status": "ok",
+                        "effect": "unverifiable",
+                        "route": "dom_event",
+                        "target_id": target_id,
+                        "tab_id": tab_id,
+                        "ref": ext_ref,
+                        "frame": frame_kind,
+                        "escalation": {
+                            "recommended": "page",
+                            "reason": "synthetic DOM dispatch cannot prove control activation; refresh page state and verify the expected postcondition",
+                        },
+                    });
+                    if let Some(record) = probe_record {
+                        structured[super::exp_cdp_wake::ARG] = record;
+                    }
+                    ToolResult::text(format!(
+                        "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
+                         verified (trust-gated controls may ignore untrusted events). Refresh page \
+                         state and verify the expected postcondition",
+                        ext_ref.as_deref().unwrap_or("?")
+                    ))
+                    .with_structured(structured)
+                }
                 Err(e) => ToolResult::error(format!("DOM click failed: {e}")),
             };
         }

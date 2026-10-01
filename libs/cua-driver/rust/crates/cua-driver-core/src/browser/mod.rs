@@ -40,6 +40,7 @@ pub mod binding;
 pub mod cdp_ws;
 pub mod download;
 pub mod engine;
+mod exp_cdp_wake;
 mod grant;
 mod keyed_gates;
 #[cfg(test)]
