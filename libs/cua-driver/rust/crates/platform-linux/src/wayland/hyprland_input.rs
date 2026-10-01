@@ -19,6 +19,8 @@ const TEXT_ACTION_GAP: Duration = Duration::from_millis(25);
 const MAX_PACKET: usize = 2048;
 const MAX_LANES: usize = 2;
 const MAX_STALE_GEOMETRY_RETRIES: usize = 1;
+const CLIENT_BIND_TIMEOUT: Duration = Duration::from_millis(500);
+const CLIENT_BIND_RETRY: Duration = Duration::from_millis(10);
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum DeliveryRoute {
@@ -312,6 +314,14 @@ fn hex_field(value: &Value, name: &str) -> Result<String> {
         "invalid {name}"
     );
     Ok(field.to_owned())
+}
+
+fn client_not_bound_refusal(value: &Value) -> bool {
+    value["ok"] == false
+        && value["code"] == "client_not_bound"
+        && value["detail"] == "client_not_bound"
+        && value.get("effect").is_none()
+        && value.get("delivery").is_none()
 }
 
 fn validate_reply(value: &Value) -> Result<()> {
@@ -609,10 +619,31 @@ impl Client {
                 width.is_finite() && height.is_finite() && width > 0.0 && height > 0.0,
                 "invalid target geometry"
             );
-            self.sequence = self.sequence.checked_add(1).context("sequence exhausted")?;
-            let packet = action.packet(self.sequence, &token, revision, width, height)?;
-            let mut reply =
-                self.dispatch_routed_with_started(&packet, is_drag, &mut started, route)?;
+            // CLAIM publishes a new synthetic seat global. Give the target a
+            // short bounded window to bind that seat before treating
+            // client_not_bound as final. The plugin returns that refusal before
+            // consuming the one-action grant, so these retries cannot replay
+            // input. Every retry still advances the wire sequence and repeats
+            // the plugin's target/revision/conflict checks.
+            let bind_deadline = Instant::now() + CLIENT_BIND_TIMEOUT;
+            let mut reply = loop {
+                self.sequence = self.sequence.checked_add(1).context("sequence exhausted")?;
+                let packet = action.packet(self.sequence, &token, revision, width, height)?;
+                let reply =
+                    self.dispatch_routed_with_started(&packet, is_drag, &mut started, route)?;
+                if self.protocol == InputProtocol::Production
+                    && route == DeliveryRoute::Background
+                    && client_not_bound_refusal(&reply)
+                    && Instant::now() < bind_deadline
+                {
+                    self.cancellation.check()?;
+                    std::thread::sleep(
+                        CLIENT_BIND_RETRY.min(bind_deadline.saturating_duration_since(Instant::now())),
+                    );
+                    continue;
+                }
+                break reply;
+            };
             if self.protocol == InputProtocol::Production
                 && reply["ok"] == false
                 && reply["code"] == "stale_geometry"
