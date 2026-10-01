@@ -1,0 +1,29 @@
+{"arm": "OFF", "event": "trial_start", "kind": "measured", "t_mono_ns": 197563182428567}
+{"event": "call_send", "label": "arm_toggle", "t_mono_ns": 197563337077223, "tool": "set_agent_cursor_enabled"}
+{"effect": null, "event": "call_return", "label": "arm_toggle", "ok": true, "route": null, "status": null, "t_mono_ns": 197563343817362, "tool": "set_agent_cursor_enabled"}
+{"event": "call_send", "label": "prepare", "t_mono_ns": 197563343819891, "tool": "browser_prepare"}
+{"effect": null, "event": "call_return", "label": "prepare", "ok": true, "route": null, "status": "ok", "t_mono_ns": 197563577801642, "tool": "browser_prepare"}
+{"event": "wait_window_start", "t_mono_ns": 197563577804857}
+{"event": "wait_window_end", "t_mono_ns": 197563588907942}
+{"event": "call_send", "label": "bind", "t_mono_ns": 197563588910392, "tool": "get_browser_state"}
+{"effect": null, "event": "call_return", "label": "bind", "ok": true, "route": null, "status": "ok", "t_mono_ns": 197563616895525, "tool": "get_browser_state"}
+{"event": "call_send", "label": "navigate", "t_mono_ns": 197563616902192, "tool": "browser_navigate"}
+{"effect": null, "event": "call_return", "label": "navigate", "ok": true, "route": null, "status": "ok", "t_mono_ns": 197563634032101, "tool": "browser_navigate"}
+{"event": "oracle_send", "label": "pre_step1", "t_mono_ns": 197563634036823}
+{"event": "oracle_return", "label": "pre_step1", "submitted_sha16": null, "t_mono_ns": 197563634623644}
+{"event": "call_send", "label": "snapshot1", "t_mono_ns": 197563634626999, "tool": "get_browser_state"}
+{"effect": null, "event": "call_return", "label": "snapshot1", "ok": true, "route": null, "status": "ok", "t_mono_ns": 197563655290527, "tool": "get_browser_state"}
+{"candidate": "type-verification-value", "event": "decided", "input_route": null, "step": 1, "t_mono_ns": 197563655339179, "tool": "browser_type"}
+{"event": "call_send", "label": "type", "t_mono_ns": 197563655342042, "tool": "browser_type"}
+{"effect": "unverifiable", "event": "call_return", "label": "type", "ok": true, "route": "trusted_input", "status": null, "t_mono_ns": 197563784122734, "tool": "browser_type"}
+{"event": "oracle_send", "label": "pre_step2", "t_mono_ns": 197563784127234}
+{"event": "oracle_return", "label": "pre_step2", "submitted_sha16": null, "t_mono_ns": 197563784713591}
+{"event": "call_send", "label": "snapshot2", "t_mono_ns": 197563784716862, "tool": "get_browser_state"}
+{"effect": null, "event": "call_return", "label": "snapshot2", "ok": true, "route": null, "status": "ok", "t_mono_ns": 197563790326395, "tool": "get_browser_state"}
+{"candidate": "submit-form", "event": "decided", "input_route": "dom_event", "step": 2, "t_mono_ns": 197563790368553, "tool": "browser_click"}
+{"event": "call_send", "label": "click", "t_mono_ns": 197563790371544, "tool": "browser_click"}
+{"effect": "unverifiable", "event": "call_return", "label": "click", "ok": true, "route": "dom", "status": null, "t_mono_ns": 197563813242383, "tool": "browser_click"}
+{"event": "oracle_send", "label": "verify0", "t_mono_ns": 197563813245710}
+{"event": "oracle_return", "label": "verify0", "submitted_sha16": "6b00e4369f0702ae", "t_mono_ns": 197563814065739}
+{"event": "driver_closed", "t_mono_ns": 197564229905665}
+{"arm": "OFF", "browser_alive_after_close": false, "driver_trace": "trials/p09a-measured-OFF.driver-trace.jsonl", "event": "summary", "forced_path_ok": true, "journal": [{"event": "reset", "t_mono_ns": 197563182251022}, {"event": "submit", "t_mono_ns": 197563813549818, "value_sha16": "6b00e4369f0702ae"}], "kind": "measured", "loadavg_after": "2.10 6.65 6.70 2/2155 2065182", "loadavg_before": "2.10 6.65 6.70 4/2179 2064875", "outcome": "verified", "session_label": "jev-r201-c7a98a78", "token_sha16": "6b00e4369f0702ae", "trial": "p09a-measured-OFF", "trial_wall_ns": 1048347035}

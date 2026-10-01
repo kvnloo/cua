@@ -1,0 +1,29 @@
+{
+ "experiment": "R2-01",
+ "captured_utc": "2026-10-01T22:11:52Z",
+ "prereg": {"commit": "ea317065b", "file": "PREREG.json", "sha256": "3710ed7b8e79c02809b611d88ee336bf718fa21639b0ed4c2e3420ec15e19cda"},
+ "tested_source": {
+  "base_upstream_main": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "instrumentation_commit": "7d3a28b663a041b072b4be8aadb187a1eab5fd28",
+  "branch": "exp/r2-01-feedback-ab-20261001 (local, kvnloo/cua fork worktree; not pushed by this worker)",
+  "diff_vs_base": "measurement-only env-gated phase trace: new cua-driver-core/src/phase_trace.rs plus marks in tool.rs (dispatch boundary), browser/tools.rs, browser/engine.rs, platform-linux browser_platform.rs and overlay.rs; default-off"
+ },
+ "live_heads_read_via_gh": {
+  "read_utc": "2026-10-01T22:11:52Z",
+  "trycua_cua_main": "effd9b298942d7e9808077adef4ef575d561141d (1 commit ahead of the tested base: release-please-config.json only, no Driver code)",
+  "live_pr_head": "none: R2-01 has no PR; upstream main is the source under test",
+  "publication_sha": "set by the orchestrator at publication; not this worker"
+ },
+ "binary": {
+  "name": "cua-driver-r2-01-trace-7d3a28b66",
+  "sha256": "41338733a0b39d5b96bd98965f3b8adc3a18e4e28be00cb23077a4c9e964c346",
+  "version": "cua-driver 0.32.0",
+  "build": "flock <tmp>/locks/cargo-build.lock <lanes>/build-driver.sh <lanes>/r2-01 r2-01-trace-7d3a28b66 cua-release-r2-01 (cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; 0 Fresh workspace units; 196 s); target-dir artifact sha256 equal",
+  "used_in_both_arms": true,
+  "reference_main_binary_not_used_for_timing": {"sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "note": "uninstrumented main build from SETUP.json; not used in this packet"}
+ },
+ "browser": "Google Chrome 151.0.7922.71 (Driver-selected root-owned candidate), isolated_new profile, default sandbox",
+ "environment": "Linux 7.2.2 x86_64, 10 CPUs (i9-10900KF), 23 GiB; private rootless Xvfb 1920x1080x24 + openbox + picom xrender + private dbus (cua-x11-session.sh sha256 de01a439...); no AT-SPI bus; host Wayland/Hyprland variables scrubbed; Python 3.12 (jev-use uv.lock), mcp SDK from uv.lock",
+ "harness": "run_feedback_ab.py (this packet) reusing jev-use python/run.py functions (Driver, wait_for_window, select_tab_id, task_candidates_for_step), tasks.FixtureFormTask, jev_adapter.choose_mock_for_task, fixture_server.FixtureServer with a journaling FixtureState subclass",
+ "reused_toggle": "set_agent_cursor_enabled, as in exp/agent-cursor-off-runner-20260929-local commit e1706ee4d (JEV_USE_AGENT_CURSOR=off)"
+}
