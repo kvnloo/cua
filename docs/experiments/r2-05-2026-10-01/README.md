@@ -2,7 +2,7 @@
 
 ## Result in one paragraph
 
-The test ran on the **real MCP stdio transport**, a real Driver (0.31.0, sha256 `e57bb9ae…`), real Chrome 151 and an owned fixture whose target journal is the oracle. A caller that follows the #105 `mutation_outcome` receipt made **0 duplicate target mutations**: typed duplicates 0 in 60 typed trials, and typed predicate held 60/60 across six rows of 10. The rows were a positive control, a proven pre-dispatch failure, a request lost after the write call, an applied effect whose acknowledgement was lost, a delayed effect that landed after an initially unchanged read, and a delayed effect that landed only after the reconciliation deadline. The naive restart-from-step-one counterexample produced RD naive duplicate in 10/10 (naive duplicates 10 in 50 naive trials). That shows the rows discriminate: one negative read while the original operation is still in flight is not authority to replay. The pre-registered gates give **KEEP** for the recovery invariant. Two boundaries matter. First, the recovery consumer is experiment code: the #105 runner itself stops at `unknown` and does not reconcile. Second, the #105 receipt cannot tell a proven pre-write failure from an ambiguous one (RA receipt attempted=true effect=unknown 20/20).
+The test ran on the **real MCP stdio transport**, a real Driver (0.31.0, sha256 `e57bb9ae…`), real Chrome 151 and an owned fixture whose target journal is the oracle. A caller that follows the #105 `mutation_outcome` receipt made **0 duplicate target mutations**: typed duplicates 0 in 60 typed trials, and typed predicate held 60/60 across six rows of 10. The rows were a positive control, a proven pre-dispatch failure, a request lost after the write call, an applied effect whose acknowledgement was lost, a delayed effect that landed after an initially unchanged read, and a delayed effect that landed only after the reconciliation deadline. The naive restart-from-step-one counterexample produced RD naive duplicate in 10/10 (naive duplicates 10 in 50 naive trials). That shows the rows discriminate: one negative read while the original operation is still in flight is not authority to replay. The pre-registered gates give **KEEP** for the recovery invariant. Uncertainty (exact 95% Clopper-Pearson): typed duplicate-trial rate 95% CI 0.000-0.060 (0/10 per cell allows up to about 31%); RD naive duplicate rate 95% CI 0.692-1.000. Three boundaries matter. First, the recovery consumer is experiment code: the #105 runner itself stops at `unknown` and does not reconcile. Second, the typed consumer's zero duplicates after an `unknown_effect` classification hold **by construction** (it has no dispatch path there); the empirical content is listed under "What the data shows". Third, the pre-write signal is narrow: in mcp 1.30.0 an SDK error class such as `ClosedResourceError` is **not** by itself proof that a request was never written, because `call_tool` can raise it after the effect has landed (extension UNIT, case A). RA's classification is valid only because RA is the scoped case (RA pre-write scope held 20/20). The #105 receipt reports both cases as unknown (RA receipt attempted=true effect=unknown 20/20), which is the safe choice.
 
 ## Scope and owners
 
@@ -44,7 +44,7 @@ Linux 7.2.2 x86_64 (i9-10900KF, 10 cores, 23 GiB). Private rootless Xvfb 1920x10
 
 **Arms.**
 - `typed`: an experiment-side consumer of the runner outcome and #105 receipt.
-  - `ClosedResourceError`/`BrokenResourceError` means the SDK raised from its write call before handing the message to the transport. The consumer classifies `not_dispatched_proven` and reconsiders once with a fresh run.
+  - As registered, it classifies `ClosedResourceError`/`BrokenResourceError` as `not_dispatched_proven` and reconsiders once with a fresh run. **Scope (post-verification correction):** that rule is sound only when the exception came from the mutation request's **own** write. In mcp 1.30.0 that holds when the tool name is already in the session's output-schema cache, so `call_tool` has no other write after the request. Otherwise `call_tool` calls `list_tools()` from `_validate_tool_result` after a successful write and response, and that refresh can raise `ClosedResourceError` after the effect has landed. The error class name recorded by the runner (`type(error).__name__`) is not a pre-write proof on its own. In RA the scope condition held 20/20, checked from raw/ (see Finding 3). The registered rule text in `PREREG.json` and the `harness/run_trials.py` docstring is frozen and is superseded by this scoped statement.
   - Any other ambiguous error is classified `unknown_effect`. The consumer reads the oracle every 0.1 s up to 3 s and never dispatches.
 - `naive`: on `unknown`, restart the runner from step one at once; its only check is the runner's own step-start oracle read.
 - `runner`: no recovery.
@@ -53,9 +53,9 @@ No arm resets the target before a retry.
 
 **Oracle.** The target owns the fixture journal (`harness/ackloss_fixture.py`): `received` and `applied` per `POST /submit`, the release reason, whether the value equals the trial token, the Chrome user agent, and every `/state` read with whether the effect was visible. The caller reads only `/state`, through the runner's own `fixture_state`, and never the journal. The harness reads the journal after the caller finishes, once every held operation has been released and the journal is quiescent.
 
-**Design.** n = 10 per cell, 12 cells, 120 trials. Blocks were interleaved: each block contains every cell once, rotated per block, with odd blocks reversed (AB/BA). One session ran trials sequentially, and every trial is kept.
+**Design.** n = 10 per cell, 12 cells, 120 trials. Blocks were interleaved: each block contains every cell once, rotated per block, with odd blocks reversed. This is block rotation, not a strict AB/BA pairing: typed ran before naive in 4/10 blocks for RA, RA2, RB and RC, and in 5/10 for RD (`typed_first_blocks_by_row`). The imbalance is harmless here because every trial starts a fresh Driver, browser and target reset, and no timing is claimed. One session ran trials sequentially, and every trial is kept.
 
-## Results (measured run, `raw/measured/`, 120 trials, placement ok 120/120)
+## Results (measured run, `raw/measured/`, 120 trials; fault placement ok 100/100 fault trials (ack_lost barrier 60/60))
 
 | Row : arm | Class | N held / N | First error | Classification → resolution | Journal applied | Duplicates |
 |---|---|---|---|---|---|---|
@@ -78,9 +78,21 @@ Totals, all recomputed by `verify_artifacts.py`:
 - RD naive duplicate in 10/10
 - naive duplicates 10 in 50 naive trials
 - RA receipt attempted=true effect=unknown 20/20
-- placement ok 120/120
+- fault placement ok 100/100 fault trials (ack_lost barrier 60/60). The 20 `fault=none` trials (R0, RE) have no placement to check and are not counted. RE's withheld placement also held in the journal 10/10 (applied 0 before the caller finished; released by the harness).
+- RA pre-write scope held 20/20
+- typed duplicate-trial rate 95% CI 0.000-0.060
+- RD naive duplicate rate 95% CI 0.692-1.000
 - RE runner-loop duplicates 0/10
 - No typed kill events.
+
+**Uncertainty.** Exact two-sided 95% Clopper-Pearson intervals (`uncertainty_95_clopper_pearson`): 0/60 typed trials with a duplicate gives 0.000–0.060; 0/10 in a single typed cell gives 0.000–0.309; RD naive 10/10 gives 0.692–1.000. These bound the rate under this exact setup only. No paired timing deltas apply, because this is a correctness lane.
+
+**What the data shows, and what holds by construction.** The typed consumer has no dispatch path after an `unknown_effect` classification (`harness/run_trials.py`). Its 0 duplicates in RA2, RB, RC and RD (40 trials) therefore follow from its code, not from measurement. RC's "first read unchanged 10/10" is forced by the `after_unchanged:1` fixture placement. The empirical content is:
+1. the unmodified #105 runner returned `unknown` with a `mutation_outcome` receipt in every fault trial and never re-dispatched by itself;
+2. on the real path the error classes separated by row: `ClosedResourceError` 20/20 in RA only, `McpError` 80/80 in RA2, RB, RC and RD;
+3. reconciliation reads saw the late landing in RC and stayed unresolved in RD, and the journal confirmed both;
+4. the naive restart duplicated in RD 10/10;
+5. RA's `ClosedResourceError` was the Submit request's own write failing (scope check below), so the one reconsideration in RA was legal.
 
 **Producer attribution.** For RB, RC and RD, the Driver's (dropped) click result reported `route=dom` in every trial; R0 did the same. Every `received` POST carried a Chrome user agent. In RA the seam journal shows the session write stream closed before the next request and **no `browser_click` forwarded** in 20/20 attempts. In RA2 the request was taken by the seam and never forwarded, and the journal received 0 (10/10 typed).
 
@@ -88,13 +100,16 @@ Totals, all recomputed by `verify_artifacts.py`:
 
 ## Findings
 
-1. **The recovery invariant holds on a real transport (REAL, KEEP).** Under every pre-registered fault, a caller that treats an ambiguous transport failure as `effect=unknown` and reconciles through fresh target reads never duplicated the mutation. The decisive rows are RC and RD: the first reconciliation read was negative in 20/20 trials while the original operation was still in flight, and the typed consumer did not treat it as authority.
+1. **The recovery invariant holds on a real transport (REAL, KEEP).** Under every pre-registered fault, a caller that treats an ambiguous transport failure as `effect=unknown` and reconciles through fresh target reads never duplicated the mutation. For the typed consumer this zero follows from its code (no dispatch after `unknown_effect`). What RC and RD add is real-path evidence that the situation arises: the first reconciliation read was negative in 20/20 trials while the original operation was still in flight (forced by placement), and the journal shows the original then landed (RC during reconciliation, RD after the deadline). The naive arm shows what acting on that negative read costs (Finding 2).
 2. **The counterexample discriminates (REAL).** A restart-from-step-one policy is safe in RB and RC only because of where its own reads happen to fall. In RC its step-1 read is the read that releases the held op. When the original stays in flight longer (RD), it duplicates in 10/10.
-3. **A typed pre-dispatch proof exists at the SDK boundary, but the #105 receipt does not carry it (REAL + SOURCE).** In mcp 1.30.0 the error class tells the two cases apart:
-   - After EOF, the session write stream is closed. A later request fails inside `_write_stream.send` with `ClosedResourceError`, which is a pre-write failure.
+3. **A narrow pre-write proof exists at the SDK boundary; the error class alone is not one (REAL + UNIT + SOURCE; corrected after verification).** In mcp 1.30.0 (`client/session.py`, `call_tool` and `_validate_tool_result`):
+   - After EOF, the session write stream is closed. A request that has not been handed over yet fails inside `_write_stream.send` with `ClosedResourceError`. **If that write is the mutation request's own write, nothing was sent.**
+   - But `call_tool` can write a second time. After the `tools/call` write succeeds and its response arrives, `_validate_tool_result` calls `list_tools()` whenever the tool name is not in `_tool_output_schemas`. That refresh can raise the same `ClosedResourceError` **after the effect has landed**. The extension UNIT test (`extension/test_pre_write_scope.py`, `raw/unit/extension-pre-write-scope.txt`, run inside the isolated session with the jev-use venv) shows all three cases: (A) cache miss, write stream closed after the write: `ClosedResourceError`, effect applied 1; (B) cache hit, same fault: no error, effect applied 1; (C) cache hit, write stream closed before the request (the RA shape): `ClosedResourceError`, effect applied 0.
    - A request already handed to the transport fails with `McpError(CONNECTION_CLOSED)`, which is ambiguous.
 
-   The #105 receipt reports `attempted=true, effect=unknown, retryDisposition=observe` for both (RA 20/20). That is safe but loses legal reconsideration. Any receipt or contract change is for #38 / upstream #4009 to decide; this packet does not propose a public field.
+   So `type(error).__name__ in {ClosedResourceError, BrokenResourceError}`, which is what the runner records, is **not** a pre-write proof at the `call_tool` level. A caller or receipt that adopted it unscoped could blind-replay a landed effect, which is exactly what this lane's invariant forbids. RA is the scoped case, checked from raw/ per trial (`ra_pre_write_scope`, RA pre-write scope held 20/20): the startup `tools/list` completed before the fault in the same session; no `tools/list` other than the startup one was forwarded in any of the 180 attempts, so every tool the runner called was already in the cache (`browser_click` included, since no refresh followed any of its delivered responses); the seam recorded the write stream closed before the next request and no `browser_click` reaching the transport; the error surfaced in the action phase of the guarded-completion click; and the journal received 0.
+
+   The #105 receipt reports `attempted=true, effect=unknown, retryDisposition=observe` in both the scoped pre-write case and the ambiguous case (RA 20/20). That is safe; it gives up a legal reconsideration only in the scoped case. Any receipt or contract change is for #38 / upstream #4009 to decide, and the scope condition is part of the input: a `not_written` value would need evidence that the mutation request's own write raised, for example a cache-resident tool or a caller-side marker around the write, not the exception class name. This packet does not propose a public field.
 4. **Reconciliation is not in the tested runner (SOURCE).** On an action error, `run.py` writes `unknown` and returns. The bounded reconciliation and reconsideration measured here live in `harness/run_trials.py`, not in #105.
 5. **The runner's own loop is unguarded by design but was not observed to replay (REAL probe + SOURCE).** After a completion click whose effect is not visible within its 20×0.1 s window, `run.py` continues to the next step. A fresh snapshot that still offered Submit would let the provider pick it again; nothing in the loop marks the earlier completion as unresolved. RE shows no duplicate only because Chrome's pending navigation made the next snapshot fail. That result depends on the fixture's held-response model and is not a safety proof. The uncaught read error also leaves no receipt for a dispatched-but-unverified completion.
 
@@ -108,7 +123,8 @@ Totals, all recomputed by `verify_artifacts.py`:
 - R0, a plain relay through the seam: 10/10 verified with 1 applied. The seam alone does not change outcomes.
 - RA2, a request lost after the write call: the typed consumer did **not** infer pre-dispatch (10/10 `unknown_effect`) and stayed unresolved with 0 dispatches, even though nothing had landed. The conservative result is the correct one.
 - RD naive: the validity gate for the counterexample (≥1 duplicate) was met in 10/10.
-- Placement validity: the fault fired and its barrier was reached in 120/120 trials.
+- Placement validity: the fault fired in 100/100 fault trials, and the `ack_lost` barrier was reached in 60/60. The 20 `fault=none` trials are not counted as placement passes.
+- Scope control for the pre-write rule (UNIT, extension case A): with the tool not in the output-schema cache, `call_tool` raised `ClosedResourceError` after the effect landed. The rule is therefore stated only for the scoped case.
 - Harness self-tests (UNIT, `raw/unit/harness-selftest.txt`): 8/8. They cover fixture placements over HTTP, the seam's error surfaces through a real `ClientSession` against an in-memory FastMCP server, and the schedule.
 - jev-use suites at the tested source (UNIT, `raw/unit/`): Python 249 run, 1 skipped, OK; TypeScript 156/156; typecheck rc 0; all four CLI verifiers and both guarded-focused steps rc 0.
 
@@ -119,6 +135,8 @@ Totals, all recomputed by `verify_artifacts.py`:
 | Driver-source identity a0bca7440 = 98a45e6c5 outside the examples | SOURCE |
 | Findings 3–5, code-path statements | SOURCE |
 | Harness self-tests, jev-use unit suites | UNIT |
+| Pre-write scope cases A/B/C (`extension/test_pre_write_scope.py`, in-memory FastMCP, mcp 1.30.0) | UNIT |
+| RA pre-write scope check from seam events (`ra_pre_write_scope`, 20/20) | REAL (recomputed from raw/) |
 | TypeScript runner on a real transport (`run.ts`; its SDK has a different pre-write surface) | NOT_RUN |
 | Latency or benchmark of recovery | NOT_RUN |
 | Live provider | NOT_RUN (mock provider; not needed for this correctness question) |
@@ -132,10 +150,13 @@ Totals, all recomputed by `verify_artifacts.py`:
 - The measured run set `CUA_SESSION_EXTRA_ENV="R205_DEBUG=1"`, which the registered command did not mention. It only prints exception tracebacks to the session log and changes no trial logic. The harness file hashes in `PREREG.json` still match (checked by `verify_artifacts.py`).
 - Pilots: three plumbing pilots ran before registration. pilot1 (2 trials) and pilot2 (1 trial) hit a harness keyword bug in the `ack_lost` path, which is now fixed. pilot3 ran one trial per cell, 12 trials. They are kept in `raw/pilot/`, excluded from the denominators, and agree with the measured run.
 - The session console log is mirrored only to the lane artifacts directory, not this packet, because it contains local paths.
+- The KEEP gates and predictions were registered after pilot3 (one trial per cell), which had already shown the outcomes. The gates are not blind to the result.
+- The Chrome version is not captured per run in raw/. It comes from the lane setup; the installed package (google-chrome 151.0.7922.71-1) is consistent with it. Every `received` POST carried a Chrome user agent.
+- **Post-verification revision (no new trials).** A blind verifier found that the pre-write rule overstated what the SDK proves (see the scoped `typed` rule and Finding 3). Changes: README wording for the rule, Findings 1 and 3, the claim boundary and the #38 follow-up; `verify_artifacts.py` (summary schema v2) gains the per-trial RA scope check, fault-only placement counts, exact 95% Clopper-Pearson intervals and the typed-first block counts, and the placement headline changes from 120/120 to 100/100 fault trials. One new UNIT file, `extension/test_pre_write_scope.py`, sits outside the hashed `harness/`; its output is `raw/unit/extension-pre-write-scope.txt` with local paths replaced by `<worktree>`. `PREREG.json`, `harness/` and `raw/measured/` are unchanged, and the measured denominators are unchanged. The frozen `PREREG.json` hypothesis and typed rule ("the SDK write call proves the request was never written") are superseded by the scoped statement here.
 
 ## Limits and claim boundary
 
-This packet establishes, for **Linux, a private Xvfb session, Driver 0.31.0 (`e57bb9ae…`), Chrome 151, MCP Python SDK 1.30.0 / anyio 4.15.1, the jev-use Python runner at `98a45e6c5`, the mock provider, and one guarded `dom_event` Submit mutation on an owned loopback fixture**, the following: a caller that follows the #105 receipt (observe and reconcile on unknown; reconsider only on SDK-proven pre-write failure) makes zero duplicate target mutations under the six injected fault placements, and a naive restart duplicates when the original stays in flight.
+This packet establishes, for **Linux, a private Xvfb session, Driver 0.31.0 (`e57bb9ae…`), Chrome 151, MCP Python SDK 1.30.0 / anyio 4.15.1, the jev-use Python runner at `98a45e6c5`, the mock provider, and one guarded `dom_event` Submit mutation on an owned loopback fixture**, the following: a caller that follows the #105 receipt (observe and reconcile on unknown; reconsider only when the mutation request's own SDK write raised, which here was established by a cache-resident tool plus seam evidence, not by the exception class name) makes zero duplicate target mutations under the six injected fault placements, and a naive restart duplicates when the original stays in flight.
 
 It does **not** establish any of the following:
 - exactly-once delivery or an idempotency guarantee;
@@ -144,7 +165,8 @@ It does **not** establish any of the following:
 - that the runner's own loop cannot replay;
 - any timing or speed result;
 - cancellation or native-lifetime behaviour (#9);
-- any other workflow, platform or provider.
+- any other workflow, platform or provider;
+- that an SDK exception class (`ClosedResourceError`/`BrokenResourceError`) from `call_tool` proves a request was not written; it does not in general (extension case A).
 
 The typed and naive policies are experiment consumers, not product code. Events and transport errors were never used as the success oracle; the target journal was.
 
@@ -152,7 +174,7 @@ The typed and naive policies are experiment consumers, not product code. Events 
 
 **KEEP** (`disposition_by_gates` in `r2-05-summary.json`): no kill event, every typed cell 10/10, RD naive duplicates 10/10, RE runner-loop duplicates 0/10. Follow-ups go to their existing owners; none adds a new service.
 - **#105:** move bounded reconciliation into the runner, or document that callers must do it. Catch read failures after an unverified completion so they emit a receipt instead of escaping.
-- **#38 / #4009:** decide whether a pre-write `not_written` distinction belongs in the outcome vocabulary.
+- **#38 / #4009:** decide whether a pre-write `not_written` distinction belongs in the outcome vocabulary. If it does, it must be scoped to evidence that the mutation request's own write raised (for example a cache-resident tool, or a marker set around the write). An exception class name from `call_tool` is not enough: mcp 1.30.0 can raise `ClosedResourceError` from the post-response `list_tools()` refresh after the effect landed.
 - **Runner loop:** an explicit guard that blocks a second completion while the first is unresolved is worth a targeted test with a fixture that keeps Submit observable.
 
 ## Reproduction
@@ -164,5 +186,7 @@ cd <worktree>
   <worktree> <lanes>/bin/cua-driver-4316-a0bca7440 <artifacts>/r2-05/measured <tmp>/r2-05/measured --blocks 10
 cd docs/experiments/r2-05-2026-10-01
 (cd harness && <jev-use>/.venv/bin/python -m unittest test_harness)
+# post-verification extension (run inside <lanes>/cua-x11-session.sh like the harness tests)
+(cd extension && <jev-use>/.venv/bin/python -m unittest -v test_pre_write_scope)
 python3 verify_artifacts.py
 ```

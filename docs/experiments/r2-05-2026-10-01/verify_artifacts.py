@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import statistics
 import sys
@@ -65,6 +66,83 @@ def placement_ok(t: dict) -> bool:
     if t["fault"] == "ack_lost":
         return barrier_reached(t) is True
     return True
+
+
+def tools_list_requests(t: dict, n: int) -> list[dict]:
+    return [e for e in seam(t, n) if e["kind"] == "forwarded_request" and e.get("method") == "tools/list"]
+
+
+def ra_pre_write_scope(t: dict) -> tuple[bool, list[str]]:
+    """Is RA's ClosedResourceError the Submit request's OWN write failing (the only scoped proof)?
+
+    In mcp 1.30.0 call_tool can also raise ClosedResourceError after a successful write and
+    response, from the list_tools() refresh inside _validate_tool_result when the tool name is
+    not in the session's output-schema cache (extension/test_pre_write_scope.py, case A). The
+    class name alone is therefore not a pre-write proof. Here we check from raw/ that RA is the
+    scoped case: the startup tools/list completed before the fault, the write stream was closed
+    before the next request, no browser_click reached the transport, and the error surfaced in
+    the action phase of the guarded-completion click.
+    """
+    misses: list[str] = []
+    events = seam(t, 0)
+    kinds = [e["kind"] for e in events]
+    lists = tools_list_requests(t, 0)
+    closed = [i for i, k in enumerate(kinds) if k == "session_write_stream_closed_before_next_request"]
+    list_ok = (len(lists) == 1 and closed and events.index(lists[0]) < closed[0]
+               and any(e["kind"] == "delivered_response" and e.get("for_tool") == "tools/list"
+                       for e in events[:closed[0]]))
+    if not list_ok:
+        misses.append("startup_tools_list_before_close")
+    if not closed:
+        misses.append("write_stream_closed_before_next_request")
+    if "browser_click" in forwarded_tools(t, 0):
+        misses.append("no_click_forwarded")
+    if t["first_phase"] != "action" or t["first_decision_route"] != "guarded-completion":
+        misses.append("action_phase_guarded_completion")
+    if t["first_error_class"] not in PRE_WRITE:
+        misses.append("pre_write_error_class")
+    if t["journal_before_recovery"]["received"] != 0:
+        misses.append("received0")
+    return (not misses), misses
+
+
+def clopper_pearson(x: int, n: int, alpha: float = 0.05) -> list[float]:
+    """Exact two-sided (1-alpha) binomial interval, by bisection on the binomial CDF."""
+    def cdf(k: int, p: float) -> float:
+        return sum(math.comb(n, i) * p ** i * (1 - p) ** (n - i) for i in range(k + 1))
+
+    def solve(f) -> float:
+        lo, hi = 0.0, 1.0
+        for _ in range(100):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if f(mid) else (lo, mid)
+        return (lo + hi) / 2
+
+    lower = 0.0 if x == 0 else solve(lambda p: 1 - cdf(x - 1, p) < alpha / 2)
+    upper = 1.0 if x == n else solve(lambda p: cdf(x, p) > alpha / 2)
+    return [round(lower, 4), round(upper, 4)]
+
+
+def typed_first_blocks(order: list) -> dict:
+    out: dict[str, int] = {}
+    for row in sorted({r for _, r, a in order if a == "naive"}):
+        blocks = sorted({b for b, r, _ in order if r == row})
+        count = 0
+        for b in blocks:
+            arms = [a for bb, r, a in order if bb == b and r == row]
+            count += arms.index("typed") < arms.index("naive")
+        out[row] = count
+    return out
+
+
+def extension_unit() -> dict:
+    path = ROOT / "raw" / "unit" / "extension-pre-write-scope.txt"
+    text = path.read_text()
+    cases = dict(re.findall(r"^([ABC]) \S+ \S+: (error=\S+ effects_applied=\d+)$", text, re.M))
+    return {"cases": cases, "rc": re.search(r"^rc=(\d+)$", text, re.M).group(1),
+            "ok": cases == {"A": "error=ClosedResourceError effects_applied=1",
+                            "B": "error=none effects_applied=1",
+                            "C": "error=ClosedResourceError effects_applied=0"}}
 
 
 def typed_predicate(t: dict) -> tuple[bool, list[str]]:
@@ -170,7 +248,7 @@ def cell_summary(rows: list[dict]) -> dict:
     }
 
 
-def build(trials: list[dict]) -> dict:
+def build(trials: list[dict], order: list) -> dict:
     cells: dict[str, dict] = {}
     for key in sorted({(t["row"], t["arm"]) for t in trials}):
         rows = [t for t in trials if (t["row"], t["arm"]) == key]
@@ -195,6 +273,11 @@ def build(trials: list[dict]) -> dict:
         disposition = "KEEP"
     else:
         disposition = "REVISE"
+    fault_trials = [t for t in trials if t["fault"] != "none"]
+    ack_lost = [t for t in trials if t["fault"] == "ack_lost"]
+    ra = [t for t in trials if t["row"] == "RA_pre_dispatch"]
+    ra_scope = {t["trial"]: ra_pre_write_scope(t)[1] for t in ra if not ra_pre_write_scope(t)[0]}
+    all_attempts = [(t, n) for t in trials for n in range(len(t["_attempts"]))]
     totals = {
         "trials": len(trials),
         "typed_trials": len(typed),
@@ -210,6 +293,17 @@ def build(trials: list[dict]) -> dict:
         "rd_naive_trials_with_duplicate": rd_naive_dup,
         "runner_re_trials_with_duplicate": re_cell.get("trials_with_duplicate"),
         "placement_ok": sum(placement_ok(t) for t in trials),
+        "fault_trials": len(fault_trials),
+        "fault_placement_ok": sum(placement_ok(t) for t in fault_trials),
+        "ack_lost_trials": len(ack_lost),
+        "ack_lost_barrier_reached": sum(barrier_reached(t) is True for t in ack_lost),
+        "ra_pre_write_scope_ok": len(ra) - len(ra_scope),
+        "ra_pre_write_scope_misses": ra_scope,
+        "attempts_total": len(all_attempts),
+        "attempts_with_exactly_one_startup_tools_list": sum(len(tools_list_requests(t, n)) == 1
+                                                            for t, n in all_attempts),
+        "typed_first_blocks_by_row": typed_first_blocks(order),
+        "extension_unit_pre_write_scope": extension_unit(),
         "receipts_ra_attempted_true_effect_unknown": sum(
             1 for t in trials if t["row"] == "RA_pre_dispatch"
             and (t["mutation_outcome_receipt"] or {}).get("attempted") is True
@@ -219,16 +313,30 @@ def build(trials: list[dict]) -> dict:
                                  max(t["loadavg_start"][0] for t in trials)],
         "driver_sha256": sorted({t["driver_sha256"] for t in trials}),
     }
+    typed_dup = totals["typed_trials_with_duplicate"]
+    rd_n = cells.get("RD_delayed_withheld:naive", {}).get("n", 0)
+    totals["uncertainty_95_clopper_pearson"] = {
+        "typed_trials_with_duplicate": clopper_pearson(typed_dup, len(typed)),
+        "per_typed_cell_0_of_10": clopper_pearson(0, 10),
+        "rd_naive_trials_with_duplicate": clopper_pearson(rd_naive_dup, rd_n),
+    }
+    cp = totals["uncertainty_95_clopper_pearson"]
     headlines = [
         f"typed duplicates {totals['typed_duplicate_mutations']} in {totals['typed_trials']} typed trials",
         f"typed predicate held {totals['typed_predicate_held']}/{totals['typed_predicate_n']}",
         f"RD naive duplicate in {rd_naive_dup}/{cells.get('RD_delayed_withheld:naive', {}).get('n', 0)}",
         f"naive duplicates {totals['naive_duplicate_mutations']} in {totals['naive_trials']} naive trials",
         f"RA receipt attempted=true effect=unknown {totals['receipts_ra_attempted_true_effect_unknown']}/{totals['receipts_ra_n']}",
-        f"placement ok {totals['placement_ok']}/{totals['trials']}",
+        f"fault placement ok {totals['fault_placement_ok']}/{totals['fault_trials']} fault trials "
+        f"(ack_lost barrier {totals['ack_lost_barrier_reached']}/{totals['ack_lost_trials']})",
+        f"RA pre-write scope held {totals['ra_pre_write_scope_ok']}/{len(ra)}",
+        f"typed duplicate-trial rate 95% CI {cp['typed_trials_with_duplicate'][0]:.3f}-"
+        f"{cp['typed_trials_with_duplicate'][1]:.3f}",
+        f"RD naive duplicate rate 95% CI {cp['rd_naive_trials_with_duplicate'][0]:.3f}-"
+        f"{cp['rd_naive_trials_with_duplicate'][1]:.3f}",
         f"RE runner-loop duplicates {re_cell.get('trials_with_duplicate')}/{re_cell.get('n')}",
     ]
-    return {"schema": "cua.r2-05.summary.v1", "disposition_by_gates": disposition, "totals": totals,
+    return {"schema": "cua.r2-05.summary.v2", "disposition_by_gates": disposition, "totals": totals,
             "cells": cells, "headlines": headlines}
 
 
@@ -238,7 +346,7 @@ def main() -> None:
     assert len(trials) == len(schedule["order"]) == 120, (len(trials), len(schedule["order"]))
     for t, (block, row, arm) in zip(trials, schedule["order"]):
         assert (t["block"], t["row"], t["arm"]) == (block, row, arm), t["_file"]
-    summary = build(trials)
+    summary = build(trials, schedule["order"])
     pilots = {p.name: len(load_trials(p)) for p in sorted((ROOT / "raw" / "pilot").iterdir()) if p.is_dir()}
     summary["pilot_trials_excluded"] = pilots
     out = ROOT / "r2-05-summary.json"
@@ -255,6 +363,8 @@ def main() -> None:
         for line in summary["headlines"]:
             assert line in readme, f"README missing headline: {line}"
         assert summary["disposition_by_gates"] in readme
+        assert summary["totals"]["extension_unit_pre_write_scope"]["ok"], "extension unit result changed"
+        assert summary["totals"]["ra_pre_write_scope_ok"] == summary["totals"]["receipts_ra_n"], "RA scope"
         for path in ROOT.rglob("*"):
             if path.is_file() and path.suffix in {".json", ".jsonl", ".md", ".txt", ".py", ".sh"}:
                 text = path.read_text(errors="ignore")

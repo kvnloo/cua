@@ -1,0 +1,28 @@
+python: Python 3.12.13
+mcp: 1.30.0
+anyio: 4.15.1
+test_a_cache_miss_closed_after_write_is_not_pre_write (test_pre_write_scope.PreWriteScope.test_a_cache_miss_closed_after_write_is_not_pre_write) ... Processing request of type CallToolRequest
+<worktree>/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f0720177320>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_b_cache_hit_closed_after_write_has_no_error (test_pre_write_scope.PreWriteScope.test_b_cache_hit_closed_after_write_has_no_error) ... Processing request of type ListToolsRequest
+Processing request of type CallToolRequest
+<worktree>/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f071fff5af0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_c_cache_hit_closed_before_request_is_pre_write (test_pre_write_scope.PreWriteScope.test_c_cache_hit_closed_before_request_is_pre_write) ... Processing request of type ListToolsRequest
+<worktree>/libs/cua-driver/examples/jev-use/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f071fff5dc0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.018s
+
+OK
+A cache_miss close_after_write: error=ClosedResourceError effects_applied=1
+B cache_hit close_after_write: error=none effects_applied=1
+C cache_hit close_before_request: error=ClosedResourceError effects_applied=0
+rc=0

@@ -700,7 +700,10 @@
   "RD naive duplicate in 10/10",
   "naive duplicates 10 in 50 naive trials",
   "RA receipt attempted=true effect=unknown 20/20",
-  "placement ok 120/120",
+  "fault placement ok 100/100 fault trials (ack_lost barrier 60/60)",
+  "RA pre-write scope held 20/20",
+  "typed duplicate-trial rate 95% CI 0.000-0.060",
+  "RD naive duplicate rate 95% CI 0.692-1.000",
   "RE runner-loop duplicates 0/10"
  ],
  "pilot_trials_excluded": {
@@ -708,11 +711,26 @@
   "pilot2": 1,
   "pilot3": 12
  },
- "schema": "cua.r2-05.summary.v1",
+ "schema": "cua.r2-05.summary.v2",
  "totals": {
+  "ack_lost_barrier_reached": 60,
+  "ack_lost_trials": 60,
+  "attempts_total": 180,
+  "attempts_with_exactly_one_startup_tools_list": 180,
   "driver_sha256": [
    "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95"
   ],
+  "extension_unit_pre_write_scope": {
+   "cases": {
+    "A": "error=ClosedResourceError effects_applied=1",
+    "B": "error=none effects_applied=1",
+    "C": "error=ClosedResourceError effects_applied=0"
+   },
+   "ok": true,
+   "rc": "0"
+  },
+  "fault_placement_ok": 100,
+  "fault_trials": 100,
   "loadavg1_start_range": [
    0.44,
    10.82
@@ -721,6 +739,8 @@
   "naive_trials": 50,
   "naive_trials_with_duplicate": 10,
   "placement_ok": 120,
+  "ra_pre_write_scope_misses": {},
+  "ra_pre_write_scope_ok": 20,
   "rd_naive_trials_with_duplicate": 10,
   "receipts_ra_attempted_true_effect_unknown": 20,
   "receipts_ra_n": 20,
@@ -728,10 +748,31 @@
   "trials": 120,
   "typed_duplicate_mutations": 0,
   "typed_fault_trials": 50,
+  "typed_first_blocks_by_row": {
+   "RA2_request_lost": 4,
+   "RA_pre_dispatch": 4,
+   "RB_ack_lost_applied": 4,
+   "RC_delayed_after_unchanged": 4,
+   "RD_delayed_withheld": 5
+  },
   "typed_kill_events": {},
   "typed_predicate_held": 60,
   "typed_predicate_n": 60,
   "typed_trials": 60,
-  "typed_trials_with_duplicate": 0
+  "typed_trials_with_duplicate": 0,
+  "uncertainty_95_clopper_pearson": {
+   "per_typed_cell_0_of_10": [
+    0.0,
+    0.3085
+   ],
+   "rd_naive_trials_with_duplicate": [
+    0.6915,
+    1.0
+   ],
+   "typed_trials_with_duplicate": [
+    0.0,
+    0.0596
+   ]
+  }
  }
 }
