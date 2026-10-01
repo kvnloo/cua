@@ -496,8 +496,9 @@ struct InputExperiment::Impl {
         if (listener >= 0) close(listener);
         listener = -1;
         cleanup_socket();
-        // Keep the globals, capabilities, and client resources stable. Removing
-        // and recreating them makes existing apps lose their agent input path.
+        // A disabled transport owns no lane claim, so no agent seat global
+        // remains advertised. Existing client-owned resources are inert and
+        // retained for protocol-safe late cleanup.
     }
     void retire() {
         // wl_global removal does not revoke existing protocol objects. Destroying
@@ -1100,6 +1101,22 @@ struct InputExperiment::Impl {
                 xkb_state_serialize_layout(physical_keyboard_state, XKB_STATE_LAYOUT_EFFECTIVE));
         }
     }
+    bool pointer_bound(const Client& c) const {
+        const auto root = c.surface.lock();
+        if (!root) return false;
+        return std::ranges::any_of(pointers, [&](const auto& p) {
+            return !p->dead && seat_generation_is_active(p->generation) &&
+                p->wl->resource() && p->wl->client() == root->client();
+        });
+    }
+    bool keyboard_bound(const Client& c) const {
+        const auto root = c.surface.lock();
+        if (!root) return false;
+        return std::ranges::any_of(keyboards, [&](const auto& k) {
+            return !k->dead && seat_generation_is_active(k->generation) &&
+                k->wl->resource() && k->wl->client() == root->client();
+        });
+    }
     bool pointer_enter(Client& c, double x, double y) {
         const auto root = c.surface.lock(); if (!root) return false;
         // Initial experiment refuses subsurface targets instead of misrouting.
@@ -1319,6 +1336,10 @@ struct InputExperiment::Impl {
         if (command == "KEY") {
             const auto code = number(f[4]); const auto mods = number(f[5]);
             if (code == 0 || code > 247 || mods > 15 || code == 58 || code == 69 || code == 70) { send(c, refusal("unsupported")); return; }
+            // A newly published agent seat may not have been bound by the
+            // target client yet. Refuse before consuming the one-action grant
+            // so Driver may bounded-wait and retry without replaying input.
+            if (!keyboard_bound(c)) { send(c, refusal("client_not_bound")); return; }
             if (!consume_grant(c, cap)) return;
             if (!keyboard_enter(c)) { send(c, refusal("client_not_bound")); return; }
             // Every key is released in this handler; sync_key_repeat relies on it.
@@ -1332,16 +1353,19 @@ struct InputExperiment::Impl {
             if (command == "CLICK") {
                 const auto btn = number(f[6]), clicks = number(f[7]);
                 if (btn < 272 || btn > 274 || clicks < 1 || clicks > 2) { send(c, refusal("invalid_request")); return; }
+                if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
                 if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
                 for (unsigned i = 0; i < clicks; ++i) { button(btn, true); button(btn, false); }
             } else if (command == "SCROLL") {
                 const auto axis = number(f[6]); const auto value = real(f[7]);
                 if (axis > 1 || value == 0 || std::abs(value) > 1000) { send(c, refusal("invalid_request")); return; }
+                if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
                 if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
                 for (auto& p : pointers) {
-                    if (p->dead || !p->wl->resource() || !p->focus) continue;
+                    if (p->dead || !seat_generation_is_active(p->generation) ||
+                        !p->wl->resource() || !p->focus) continue;
                     if (p->wl->version() >= 5) p->wl->sendAxisSource(WL_POINTER_AXIS_SOURCE_WHEEL);
                     p->wl->sendAxis(event_ms(), static_cast<wl_pointer_axis>(axis), wl_fixed_from_double(value));
                     if (p->wl->version() >= 5) p->wl->sendFrame();
@@ -1350,6 +1374,7 @@ struct InputExperiment::Impl {
                 const auto x2 = real(f[6]), y2 = real(f[7]); const auto duration = number(f[8]);
                 if (!point(c, x2, y2) || duration < 50 || duration > 2000) { send(c, refusal("invalid_request")); return; }
                 if (Clock::now() + std::chrono::milliseconds(duration + 50) >= expires) { send(c, refusal("lease_expired")); return; }
+                if (!pointer_bound(c)) { send(c, refusal("client_not_bound")); return; }
                 if (!consume_grant(c, cap)) return;
                 if (!pointer_enter(c, x, y)) { send(c, refusal("client_not_bound")); return; }
                 if (trace) trace->mark("agent_drag_start", lane + 1);
@@ -1614,7 +1639,7 @@ std::string InputExperiment::status_json() const {
             lane->held_button, lane->held_keys.size(), lane->drag.has_value(), pointer_focus, keyboard_focus);
     }
     // Aggregate legacy fields remain available to existing test probes.
-    return std::format(R"({{"protocol":{},"test_only":{},"seat_lifetime":"lane_claim","upgrade":"desktop_restart","transport_ready":{},"epoch":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"lanes":[{}]}})",
+    return std::format(R"({{"protocol":{},"test_only":{},"seat_lifetime":"compositor","seat_global_lifetime":"lane_claim","upgrade":"desktop_restart","transport_ready":{},"epoch":"{}","lease_active":{},"seat_resources":{},"pointer_resources":{},"keyboard_resources":{},"dispatches":{},"lanes":[{}]}})",
         kProduction ? 3 : 0, !kProduction, !lanes_[0]->suspended && !lanes_[1]->suspended, lanes_[0]->epoch, lanes_[0]->lease != nullptr || lanes_[1]->lease != nullptr,
         lanes_[0]->seats.size() + lanes_[1]->seats.size(), lanes_[0]->pointers.size() + lanes_[1]->pointers.size(),
         lanes_[0]->keyboards.size() + lanes_[1]->keyboards.size(), lanes_[0]->dispatches + lanes_[1]->dispatches, states);
