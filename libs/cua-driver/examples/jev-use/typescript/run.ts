@@ -388,6 +388,24 @@ async function writeEvent(path: string | undefined, event: Record<string, unknow
   if (path) await appendFile(path, `${line}\n`, 'utf8');
 }
 
+export function ambiguousMutationReceipt(args: {
+  session: string;
+  step: number;
+  candidateId: string;
+}): Record<string, unknown> {
+  // A tool error after dispatch does not prove the target stayed unchanged.
+  // The acknowledgement may have been lost after the mutation landed.
+  return {
+    receiptKind: 'mutation-outcome/v0',
+    mutationKey: `${args.step}:${args.candidateId}`,
+    authorityScope: args.session,
+    attempted: true,
+    effect: 'unknown',
+    verification: 'unverified',
+    retryDisposition: 'observe',
+  };
+}
+
 export function decisionTimingFields(args: {
   decisionMs: number;
   semanticObserveMs: number;
@@ -644,6 +662,11 @@ async function run(args: Arguments): Promise<Outcome> {
             decision_route: decisionRoute,
             error: error instanceof Error ? error.name : 'UnknownError',
             tool: candidate.tool,
+            mutation_outcome: ambiguousMutationReceipt({
+              session: driver.sessionLabel,
+              step,
+              candidateId: candidate.id,
+            }),
             visual: visualRecord,
             ...guardedFields,
           });
