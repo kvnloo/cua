@@ -131,6 +131,31 @@ class G2(unittest.TestCase):
         self.check(lambda rows: first(rows, arm="candidate", kind="task").update(route="xtest"),
                    "provenance_route_mismatch")
 
+    def test_browser_tree_never_masks_a_gtk_process(self):
+        # A champion browser row with a Chromium tree (12 procs) must not widen the GTK envelope.
+        def mutate(rows):
+            first(rows, arm="champion", kind="spot_browser_fill_submit")["footprint"].update(procs=12)
+            first(rows, arm="candidate", kind="task")["footprint"].update(procs=3)
+        self.check(mutate, "new_process:gtk")
+
+    def test_browser_envelope_is_its_own(self):
+        rows = synth.rows()
+        for r in rows:
+            if r.get("kind") == "spot_browser_fill_submit":
+                r["footprint"].update(procs=12)
+        self.assertTrue(gates.g2(rows, synth.prereg())["pass"])
+
+    def test_browser_profile_contents_are_one_entry(self):
+        p = "/home/trial/.local/state/cua-driver/browser-profiles/isolated-1b2c3d4e-0f1a-4b2c-a1ee-0123456789ab"
+        self.assertEqual(gates._norm_file(p + "/VariationsSeedV2"), gates._norm_file(
+            p.replace("1b2c3d4e", "deadbeef") + "/Default/LOCK"))
+        self.assertNotEqual(gates._norm_file("/home/trial/.cua-driver/settle.cache"),
+                            gates._norm_file("/home/trial/.cua-driver/version_check.json"))
+
+    def test_fail_process_outlived_driver(self):
+        self.check(lambda rows: first(rows, arm="candidate", kind="spot_browser_fill_submit").update(
+            leftover_procs=2), "process_outlived_driver")
+
     def test_fail_journal_after_done(self):
         self.check(lambda rows: first(rows, arm="candidate", kind="task").update(journal_before_done=False),
                    "journal_after_done")

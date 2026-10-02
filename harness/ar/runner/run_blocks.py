@@ -9,8 +9,9 @@ For every session k this runs, and records a receipt for:
         CUA_SESSION_EXTRA_ENV=CUA_SESSION_ATSPI=1 \
         $AR_LANES/cua-x11-session.sh <jev-use venv python> runner/session.py --chunk ... --out DIR/raw/s<k>.jsonl
 
-quiet-timed holds the exclusive quiet-lane lock for the session only (<= 48 trials, hard cap
-10 minutes), so other tracks interleave between blocks. Every session is a fresh private
+quiet-timed holds the exclusive quiet-lane lock for the session only (<= 48 paired trials plus
+2 warm-ups and 4 controls, hard cap 10 minutes), so other tracks interleave between blocks.
+Sessions with "pidns": false (browser spot sessions) omit session-pidns.sh. Every session is a fresh private
 X11 + AT-SPI session (the "restart every 48 trials"). Raw rows are never filtered here.
 """
 
@@ -26,6 +27,9 @@ import time
 from pathlib import Path
 
 BLOCK_CAP_S = 600
+PAIRED_CAP = 48  # paired or soak trials per session
+EXTRA_CAP = 6    # 2 warm-ups + 4 controls
+LOCK_WAIT_S = 7200  # the shared quiet lane can be held by other tracks for a long time
 
 
 def main() -> int:
@@ -52,12 +56,15 @@ def main() -> int:
         k = chunk["session"]
         if wanted is not None and k not in wanted:
             continue
-        if len(chunk["trials"]) > 48:
-            raise SystemExit(f"session {k} has more than 48 trials")
+        paired = sum(1 for t in chunk["trials"] if t.get("pair_id") is not None or t["kind"] == "soak")
+        if paired > PAIRED_CAP or len(chunk["trials"]) > PAIRED_CAP + EXTRA_CAP:
+            raise SystemExit(f"session {k} exceeds {PAIRED_CAP} paired trials + {EXTRA_CAP} warm-ups/controls")
         chunk_path = out / "chunks" / f"s{k:03d}.json"
         chunk_path.write_text(json.dumps(chunk))
-        cmd = [str(lanes / "bin/quiet-timed"), f"{label}-s{k:03d}",
-               str(wt / "harness/ar/sandbox/session-pidns.sh"), "env", "CUA_SESSION_ATSPI=1",
+        # GTK sessions run in their own pid namespace (the Driver sandbox shares it); browser spot
+        # sessions cannot (user namespace hides root ownership of Chromium), see plan.py.
+        pidns = [str(wt / "harness/ar/sandbox/session-pidns.sh")] if chunk.get("pidns", True) else []
+        cmd = [str(lanes / "bin/quiet-timed"), f"{label}-s{k:03d}", *pidns, "env", "CUA_SESSION_ATSPI=1",
                "CUA_SESSION_EXTRA_ENV=CUA_SESSION_ATSPI=1", str(lanes / "cua-x11-session.sh"), str(python),
                str(wt / "harness/ar/runner/session.py"), "--wt", str(wt), "--chunk", str(chunk_path),
                "--out", str(out / "raw" / f"s{k:03d}.jsonl"), "--work", str(out / "work" / f"s{k:03d}")]
@@ -65,7 +72,7 @@ def main() -> int:
         with open(out / "logs" / f"s{k:03d}.log", "w") as log:
             proc = subprocess.Popen(cmd, cwd=out, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
             try:
-                rc = proc.wait(timeout=BLOCK_CAP_S + 300)  # + time spent waiting for the lock
+                rc = proc.wait(timeout=BLOCK_CAP_S + LOCK_WAIT_S)  # + time spent waiting for the lock
             except subprocess.TimeoutExpired:
                 os.killpg(proc.pid, signal.SIGTERM)
                 rc = proc.wait()

@@ -4,6 +4,7 @@
   selfcheck  verify the harness files against the manifest
   g0         collect G0 inputs for a candidate branch and print the G0 verdict
   tau        AA calibration -> tau (from AA raw rows)
+  aa         full A/A summary (sigma, Delta_AA CI, tau, n by power, T_act fallback, PSI threshold)
   prereg     write a pre-registration for one request (validated against the schema)
   evaluate   run G0..GS on raw rows and append one line to results.jsonl
   verify     check the results.jsonl hash chain and replay LORD++
@@ -81,6 +82,24 @@ def cmd_tau(a: argparse.Namespace) -> int:
     out["aa_rows_sha256"] = rows_sha(a.aa_rows)
     Path(a.out).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
     print(json.dumps(out))
+    return 0
+
+
+def cmd_aa(a: argparse.Namespace) -> int:
+    from . import aa
+    rows = read_jsonl(a.aa_rows)
+    out = aa.summarize(rows, seed=a.seed)
+    out["aa_rows_sha256"] = rows_sha(a.aa_rows)
+    Path(a.out).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
+    if a.tau_out:
+        key = "whole_task_T" if out["decision_metric"] == "whole_task_T" else "T_act"
+        m = out[key]
+        tau = {"metric": key, "tau": m["tau"], "q975_abs_delta_aa_ln": m["abs_delta_aa_q975_ln"],
+               "sigma_ln": m["sigma_ln"], "aa_pairs": m["pairs"], "batch": m["pairs"],
+               "n_pairs_required": m["n_pairs_required"], "floor": stats.TAU_FLOOR,
+               "psi_discard_threshold": out["psi"].get("threshold"), "aa_rows_sha256": out["aa_rows_sha256"]}
+        Path(a.tau_out).write_text(json.dumps(tau, indent=1, sort_keys=True) + "\n")
+    print(json.dumps(out["chosen"]))
     return 0
 
 
@@ -183,6 +202,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--manifest", default=str(MANIFEST)); s.add_argument("--out", required=True); s.set_defaults(fn=cmd_g0)
     s = sub.add_parser("tau"); s.add_argument("--aa-rows", nargs="+", required=True); s.add_argument("--batch", type=int, required=True)
     s.add_argument("--out", required=True); s.set_defaults(fn=cmd_tau)
+    s = sub.add_parser("aa"); s.add_argument("--aa-rows", nargs="+", required=True); s.add_argument("--out", required=True)
+    s.add_argument("--tau-out", default=None); s.add_argument("--seed", type=int, default=20261002); s.set_defaults(fn=cmd_aa)
     s = sub.add_parser("prereg")
     for name in ("request", "eval-id", "champion-commit", "candidate-commit", "champion-bin", "candidate-bin",
                  "tau", "harness-commit", "out"):

@@ -80,7 +80,8 @@ class Plan(unittest.TestCase):
             p = plan.build("ar-20261002-t", {"champion": str(a), "candidate": str(b)}, 50, seed=3,
                            spot_pairs=10, soak=100)
             sessions = p["sessions"]
-            self.assertTrue(all(len(s["trials"]) <= 48 for s in sessions))
+            self.assertTrue(all(sum(1 for t in s["trials"] if t["pair_id"] is not None or t["kind"] == "soak") <= 48
+                                and len(s["trials"]) <= 54 for s in sessions))
             task = [t for s in sessions for t in s["trials"] if t["kind"] == "task" and not t["warmup"]]
             pairs = {}
             for t in task:
@@ -102,6 +103,30 @@ class Plan(unittest.TestCase):
                     self.assertEqual(kinds.count("impossible_canary"), 2)
             ids = [t["trial_id"] for s in sessions for t in s["trials"]]
             self.assertEqual(ids, list(range(len(ids))))
+            for ts in pairs.values():
+                self.assertEqual(ts[0]["seed"], ts[1]["seed"], "both arms of a pair share the layout seed")
+
+    def test_aa_shape_and_browser_sessions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = Path(tmp) / "a", Path(tmp) / "b"
+            a.write_bytes(b"A")
+            b.write_bytes(b"B")
+            p = plan.build("ar-aa", {"champion": str(a), "candidate": str(b)}, 72, seed=7,
+                           spot_browser_pairs=5, pairs_per_session=24)
+            gtk = [s for s in p["sessions"] if s["pidns"]]
+            web = [s for s in p["sessions"] if not s["pidns"]]
+            self.assertEqual(len(gtk), 3)
+            for s in gtk:
+                kinds = [t["kind"] for t in s["trials"]]
+                self.assertEqual(sum(1 for t in s["trials"] if t["pair_id"] is not None), 48)
+                self.assertEqual(len(kinds), 54)
+                self.assertNotIn("spot_browser_fill_submit", kinds)
+            self.assertEqual(len(web), 1)
+            self.assertEqual({t["kind"] for t in web[0]["trials"]}, {"spot_browser_fill_submit"})
+            self.assertEqual(sum(1 for t in web[0]["trials"] if t["warmup"]), 2)
+            self.assertEqual(sum(1 for t in web[0]["trials"] if t["pair_id"] is not None), 10)
+            with self.assertRaises(ValueError):
+                plan.build("x", {"champion": str(a), "candidate": str(b)}, 2, seed=1, pairs_per_session=25)
 
 
 class Submit(unittest.TestCase):

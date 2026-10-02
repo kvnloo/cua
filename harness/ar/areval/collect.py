@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 HARNESS_REL = "harness/ar"
+FIXTURES_REL = "docs/experiments/ar-harness-2026-10-02/fixtures"
 CANDIDATE_FROZEN_GLOBS = (
     "libs/cua-driver/rust/Cargo.toml",
     "libs/cua-driver/rust/Cargo.lock",
@@ -102,10 +103,14 @@ def collect_g0_inputs(repo: Path, champion: str, candidate: str, itemcheck: Path
 
 
 def harness_files(wt: Path) -> list[Path]:
-    root = wt / HARNESS_REL
+    """Evaluator-owned files: harness/ar plus the fixtures package the runner imports."""
     skip = {"manifest.json"}
-    return sorted(p for p in root.rglob("*") if p.is_file() and p.name not in skip
-                  and "__pycache__" not in p.parts and "target" not in p.parts)
+    out = []
+    for rel in (HARNESS_REL, FIXTURES_REL):
+        root = wt / rel
+        out += [p for p in root.rglob("*") if p.is_file() and p.name not in skip
+                and "__pycache__" not in p.parts and "target" not in p.parts]
+    return sorted(out)
 
 
 def build_manifest(wt: Path, champion: str, itemcheck: Path, allowlist: dict[str, Any]) -> dict[str, Any]:

@@ -20,6 +20,19 @@ Kinds:
                      claimed success, no mutation
   spot_gtk3_text     observe -> lookup "Note" + "Save note" -> set_value(unique) -> click(Save) ->
                      verify note_saved
+  spot_browser_fill_submit
+                     the jev-use fill->submit path against the evaluator's browser fixture
+                     (docs/experiments/ar-harness-2026-10-02/fixtures): browser_prepare
+                     isolated_new -> list_windows -> get_browser_state -> browser_navigate ->
+                     semantic_v2 refs -> browser_type(token) -> trusted browser_click
+                     (foreground) -> poll the fixture's /state; the fixture oracle
+                     (ar_oracle.evaluate_browser) must then confirm exactly one POST with the
+                     token, stamped <= done, after a trusted pointer sequence on Submit.
+                     This Driver is NOT run inside sandbox-driver.sh: any unprivileged bwrap is
+                     a user namespace, where root-owned Chromium shows as the overflow uid and
+                     the Driver's isolated launch refuses it (browser_route_unavailable). It
+                     runs directly in the private session (no session-pidns.sh either, for the
+                     same reason) with HOME/TMPDIR moved to a fresh per-trial home.
 
 Nothing here changes Driver behaviour. The Driver sees only what ``driver_environment()``
 forwards, minus whatever the sandbox drops.
@@ -89,11 +102,12 @@ def _comm(pid: int) -> str:
         return ""
 
 
-def footprint(exclude: set[int]) -> dict[str, Any]:
+def footprint(exclude: set[int], home: Path | None = None) -> dict[str, Any]:
     """Processes, sockets and trial-HOME files of the sandboxed Driver, read from outside.
 
     Every descendant of this caller except ``exclude`` (the fixture) belongs to the Driver's
-    sandbox: the two bwrap processes, the Driver and anything it spawned.
+    sandbox: the two bwrap processes, the Driver and anything it spawned. ``home`` is the
+    trial home of an unsandboxed Driver (browser spot check); its files are listed directly.
     """
     children = _children_map()
     me = os.getpid()
@@ -116,7 +130,9 @@ def footprint(exclude: set[int]) -> dict[str, Any]:
         except OSError:
             pass
     files: list[str] = []
-    if driver:
+    if home is not None:
+        files = [f"/home/trial/{p.relative_to(home)}" for p in sorted(home.rglob("*"))]
+    elif driver:
         root = f"/proc/{min(driver)}/root"
         for base in ("home/trial", "run/user/trial", "tmp"):
             top = Path(root) / base
@@ -135,9 +151,190 @@ def footprint(exclude: set[int]) -> dict[str, Any]:
     }
 
 
+# ----------------------------------------------------------------------------- browser spot
+BROWSER_KIND = "spot_browser_fill_submit"
+BROWSER_SETTLE_S = 1.0  # page beacons (pointer sequence) land asynchronously; outside T
+XDG_DIRS = ("XDG_STATE_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME")
+
+
+def _alive(pid: int, comm: str) -> bool:
+    return os.path.exists(f"/proc/{pid}") and _comm(pid) == comm
+
+
+async def run_browser_trial(spec: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
+    """One browser fill->submit spot trial (see the module docstring). Same row schema."""
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    import ar_oracle
+    from driver_env import driver_environment
+    from run import Driver, DriverToolError
+
+    server = ctx["browser_server"]
+    trial_dir = Path(ctx["work"]) / f"t{spec['trial_id']:05d}"
+    home = trial_dir / "home"
+    home.mkdir(parents=True, exist_ok=False)
+    home.chmod(0o700)
+    # Chromium binds <TMPDIR>/com.google.Chrome.XXXXXX/SingletonSocket and aborts (FATAL "Socket
+    # path too long", SIGTRAP) when that exceeds the 107-byte sun_path. A TMPDIR under the deep
+    # trial dir does exactly that, so the trial TMPDIR is a short per-trial dir in the session's
+    # own TMPDIR (private to this session) instead.
+    tmp = Path(os.environ.get("TMPDIR", "/tmp")) / f"b{spec['trial_id']}"
+    tmp.mkdir(mode=0o700, exist_ok=False)
+    if len(f"{tmp}/com.google.Chrome.XXXXXX/SingletonSocket") > 107:
+        raise RuntimeError(f"session TMPDIR too deep for Chromium's singleton socket: {len(str(tmp))}")
+    trace_file = trial_dir / "trace" / "phase.jsonl"
+    tag = f"t{spec['trial_id']:05d}"
+    server.trial = tag
+    server.pad_px = (int(spec.get("seed") or spec["trial_id"]) * 37) % 240  # same for both arms of a pair
+    server.js_token = ""
+    server.state.reset()
+    token = f"ar-{spec['trial_id']:05d}-{uuid.uuid4().hex[:8]}"
+    url = f"http://127.0.0.1:{server.server_port}/?t={tag}"
+
+    env = driver_environment()
+    env.pop(TRACE_ENV, None)
+    for key in XDG_DIRS:
+        env.pop(key, None)
+    env["HOME"] = str(home)
+    env["TMPDIR"] = str(tmp)
+    if spec["trace"]:
+        trace_file.parent.mkdir(parents=True, exist_ok=True)
+        trace_file.write_text("", encoding="utf-8")
+        env[TRACE_ENV] = str(trace_file)
+    params = StdioServerParameters(command=spec["binary"], args=["mcp"], env=env)
+
+    row: dict[str, Any] = {
+        "schema": "ar.trial.v1",
+        **{k: spec[k] for k in ("trial_id", "session", "pair_id", "order", "position", "arm",
+                                "kind", "trace", "warmup", "binary_sha256")},
+        "seed": spec.get("seed"), "sandbox": "none: private session + trial HOME (root-owned Chromium check)",
+        "loadavg_start": loadavg(),
+    }
+    row["before"] = {"submitted": server.state.snapshot().get("submitted")}
+    calls: list[dict[str, Any]] = []
+    result: dict[str, Any] = {"verified": False, "claimed_success": None, "failure": None}
+    seen: dict[int, str] = {}
+
+    def note(tool: str, m0: int, m1: int, error: Any, payload: dict[str, Any]) -> None:
+        calls.append({"tool": tool, "m0": m0, "m1": m1, "ms": (m1 - m0) / 1e6, "error": error,
+                      "structured": {k: payload.get(k) for k in ("path", "route", "effect", "verified", "code")
+                                     if k in payload}})
+
+    t_spawn = time.monotonic_ns()
+    row["t_spawn_ns"] = t_spawn
+    t_done = None
+    try:
+        async with stdio_client(params) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                row["t_init_ns"] = time.monotonic_ns()
+                driver = Driver(session, f"ar-{uuid.uuid4().hex[:8]}")
+
+                async def call(tool: str, args: dict[str, Any]) -> dict[str, Any]:
+                    m0 = time.monotonic_ns()
+                    try:
+                        payload = await driver.call(tool, args)
+                    except DriverToolError as exc:
+                        note(tool, m0, time.monotonic_ns(), {"code": exc.code, "message": str(exc)[:300]}, {})
+                        raise
+                    note(tool, m0, time.monotonic_ns(), None, payload)
+                    return payload
+
+                try:
+                    prep = await call("browser_prepare", {"allow_launch": True, "profile": {"mode": "isolated_new"}})
+                    pid = int(prep["prepared_pid"])
+                    window = None
+                    for _ in range(200):
+                        wins = (await call("list_windows", {"pid": pid})).get("windows", [])
+                        vis = [w for w in wins if w.get("is_on_screen")]
+                        if vis:
+                            window = max(vis, key=lambda w: w["bounds"]["width"] * w["bounds"]["height"])
+                            break
+                        await asyncio.sleep(0.05)
+                    if window is None:
+                        raise RuntimeError("browser window did not appear")
+                    bound = await call("get_browser_state", {"pid": pid, "window_id": window["window_id"]})
+                    tabs = bound.get("tabs") or []
+                    tab = next((t for t in tabs if t.get("active")), tabs[0])
+                    ids = {"target_id": bound["target_id"], "tab_id": str(tab["tab_id"])}
+                    await call("browser_navigate", {**ids, "url": url})
+                    field_ref = submit_ref = None
+                    for _ in range(60):
+                        snap = await call("get_browser_state", {**ids, "snapshot_format": "semantic_v2"})
+                        for item in snap.get("refs") or []:
+                            if item.get("role") == "textbox" and item.get("name") == "verification value":
+                                field_ref = item.get("ref")
+                            if item.get("role") == "button" and item.get("name") == "Submit":
+                                submit_ref = item.get("ref")
+                        if field_ref and submit_ref:
+                            break
+                        await asyncio.sleep(0.05)
+                    if not (field_ref and submit_ref):
+                        raise RuntimeError("fixture refs not found")
+                    await call("browser_type", {**ids, "ref": field_ref, "text": token, "replace": True})
+                    await call("browser_click", {**ids, "ref": submit_ref, "delivery_mode": "foreground"})
+                    result["claimed_success"] = True
+                    deadline = time.monotonic() + VERIFY_DEADLINE_S
+                    while time.monotonic() < deadline:
+                        if server.state.snapshot().get("submitted") == token:
+                            t_done = time.monotonic_ns()
+                            break
+                        time.sleep(POLL_S)
+                    if t_done is None:
+                        result["failure"] = "verify_timeout"
+                except DriverToolError as exc:
+                    result["claimed_success"] = False
+                    result["failure"] = f"refused:{exc.code}"
+                fp = footprint(set(), home=home)
+                seen = {p: _comm(p) for p in fp["driver_pids"]}
+                row["footprint"] = fp
+    except Exception as exc:  # retained in the denominator
+        result["failure"] = result["failure"] or f"{type(exc).__name__}: {str(exc)[:300]}"
+    row["t_exit_ns"] = time.monotonic_ns()
+    time.sleep(BROWSER_SETTLE_S)
+    # A browser the Driver launched must not outlive it; any survivor is recorded (G2), then
+    # stopped by the harness so it cannot perturb the next trial.
+    leftover = [p for p, c in seen.items() if _alive(p, c)]
+    row["leftover_procs"] = len(leftover)
+    for p in leftover:
+        try:
+            os.kill(p, 15)
+        except OSError:
+            pass
+    journal = server.journal_for(tag)
+    oracle = ar_oracle.evaluate_browser(journal, server.state.snapshot(), token=token, t_spawn_ns=t_spawn,
+                                        t_done_ns=t_done)
+    row["oracle"] = oracle
+    row["journal"] = [r for r in journal if r.get("source") == "target"]
+    row["after"] = {"submitted": server.state.snapshot().get("submitted") == token}
+    row["seq_delta"] = oracle["posts"]
+    result["verified"] = bool(t_done is not None and oracle["verified"])
+    if t_done is not None:
+        row["t_done_ns"] = t_done
+        row["mutation_mono_est_ns"] = oracle["t_post_ns"]
+        row["journal_before_done"] = bool(oracle["ts_ok"])
+        if result["verified"]:
+            row["T_ns"] = t_done - t_spawn
+        elif not result["failure"]:
+            result["failure"] = "oracle_rejected"
+    row["calls"] = calls
+    clicks = [c for c in calls if c["tool"] == "browser_click"]
+    row["route"] = clicks[-1]["structured"].get("route") if clicks else None
+    row["path"] = clicks[-1]["structured"].get("path") if clicks else None
+    row["dispatch_calls"] = len(clicks)
+    row.update(result)
+    if spec["trace"] and trace_file.exists():
+        row["marks"] = [json.loads(x) for x in trace_file.read_text(encoding="utf-8").splitlines() if x.strip()]
+    row["loadavg_end"] = loadavg()
+    return row
+
+
 # ----------------------------------------------------------------------------- trial
 async def run_trial(spec: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
     """Run one trial. ``spec`` comes from the schedule, ``ctx`` from the session runner."""
+    if spec["kind"] == BROWSER_KIND:
+        return await run_browser_trial(spec, ctx)
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
 

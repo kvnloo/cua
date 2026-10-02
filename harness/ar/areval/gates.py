@@ -79,8 +79,20 @@ def g1(build_rows: list[dict], required_suites: list[str]) -> dict[str, Any]:
 _RANDOM_RUN = re.compile(r"[0-9a-fA-F]{6,}|\d+")
 
 
+_UUID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+
+
 def _norm_file(path: str) -> str:
+    # UUIDs first (the Driver names its isolated browser profile isolated-<uuid>), whose 4-digit
+    # hex groups the generic run rule would leave partly letters. The contents of that profile are
+    # written by Chromium, not the Driver, and vary run to run (e.g. VariationsSeedV#), so the
+    # profile counts as one entry, as does Mesa's hash-named shader cache; every other path is
+    # still compared one by one.
+    path = _PROFILE_CONTENT.sub(r"\1/...", _UUID.sub("<uuid>", path))
     return _RANDOM_RUN.sub("#", path)
+
+
+_PROFILE_CONTENT = re.compile(r"(browser-profiles/isolated-<uuid>|\.cache/mesa_shader_cache)/.*")
 
 
 def _do_action_marks(row: dict) -> int:
@@ -118,25 +130,38 @@ def g2(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
                 reasons.append(f"stale_dispatch_accepted:{tid}")
         if "footprint" not in r and not r.get("failure"):
             reasons.append(f"footprint_missing:{tid}")
-    champ = [r["footprint"] for r in every if r.get("arm") == "champion" and "footprint" in r]
-    cand = [r["footprint"] for r in every if r.get("arm") == "candidate" and "footprint" in r]
-    env: dict[str, Any] = {}
-    if champ and cand:
-        env = {"procs": max(f["procs"] for f in champ), "sockets": max(f["sockets"] for f in champ),
-               "files": sorted({_norm_file(x) for f in champ for x in f["home_files"]})}
-        files = set(env["files"])
-        for f in cand:
-            if f["procs"] > env["procs"]:
-                reasons.append(f"new_process:{f['procs']}>{env['procs']}")
-            if f["sockets"] > env["sockets"]:
-                reasons.append(f"new_socket:{f['sockets']}>{env['sockets']}")
-            extra = sorted({_norm_file(x) for x in f["home_files"]} - files)
-            if extra:
-                reasons.append(f"new_file:{extra[0]}")
-    elif every:
-        reasons.append("footprint_absent_in_an_arm")
+        if r.get("leftover_procs"):
+            reasons.append(f"process_outlived_driver:{tid}:{r.get('leftover_procs')}")
+    # The envelope is per footprint class: the sandboxed GTK Driver and the unsandboxed browser
+    # Driver (which launches Chromium) are compared only with their own champion rows, so a
+    # browser process tree can never mask a new process in a GTK trial.
+    envelopes: dict[str, Any] = {}
+    for cls in sorted({_footprint_class(r) for r in every}):
+        champ = [r["footprint"] for r in every if r.get("arm") == "champion" and "footprint" in r
+                 and _footprint_class(r) == cls]
+        cand = [r["footprint"] for r in every if r.get("arm") == "candidate" and "footprint" in r
+                and _footprint_class(r) == cls]
+        if champ and cand:
+            env = {"procs": max(f["procs"] for f in champ), "sockets": max(f["sockets"] for f in champ),
+                   "files": sorted({_norm_file(x) for f in champ for x in f["home_files"]})}
+            envelopes[cls] = env
+            files = set(env["files"])
+            for f in cand:
+                if f["procs"] > env["procs"]:
+                    reasons.append(f"new_process:{cls}:{f['procs']}>{env['procs']}")
+                if f["sockets"] > env["sockets"]:
+                    reasons.append(f"new_socket:{cls}:{f['sockets']}>{env['sockets']}")
+                extra = sorted({_norm_file(x) for x in f["home_files"]} - files)
+                if extra:
+                    reasons.append(f"new_file:{cls}:{extra[0]}")
+        else:
+            reasons.append(f"footprint_absent_in_an_arm:{cls}")
     reasons = sorted(set(reasons))
-    return result("G2", not reasons, reasons, rows=len(every), champion_envelope=env)
+    return result("G2", not reasons, reasons, rows=len(every), champion_envelope=envelopes)
+
+
+def _footprint_class(row: dict) -> str:
+    return "browser" if row.get("kind") == "spot_browser_fill_submit" else "gtk"
 
 
 # --------------------------------------------------------------------------- G3

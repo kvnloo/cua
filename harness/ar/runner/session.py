@@ -27,6 +27,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 FIXTURE_REL = "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py"
 JEV_REL = "libs/cua-driver/examples/jev-use/python"
+FIXTURES_REL = "docs/experiments/ar-harness-2026-10-02/fixtures"
+BROWSER_KIND = "spot_browser_fill_submit"
 PSI_HZ = 10.0
 TRIAL_START_CUTOFF_S = 540.0  # no new trial after 9 min: a block stays under the 10 min cap
 
@@ -78,6 +80,15 @@ class PsiSampler(threading.Thread):
         return summary
 
 
+def session_pidns() -> str:
+    """'session' when pid 1 is session-pidns.sh's bwrap (the same test sandbox-driver.sh makes)."""
+    try:
+        with open("/proc/1/cmdline", "rb") as stream:
+            return "session" if b"AR_SESSION_PIDNS" in stream.read() else "none"
+    except OSError:
+        return "unknown"
+
+
 def a11y_address() -> str:
     out = subprocess.run(
         ["gdbus", "call", "--session", "--dest", "org.a11y.Bus", "--object-path", "/org/a11y/bus",
@@ -99,30 +110,45 @@ async def main_async(args: argparse.Namespace) -> int:
     chunk = json.loads(Path(args.chunk).read_text(encoding="utf-8"))
     work = Path(args.work).resolve()
     work.mkdir(parents=True, exist_ok=True)
-    state_dir = work / "fixture-state"
-    state_dir.mkdir(exist_ok=True)
-    state_path = state_dir / "gtk3-task-state.json"
-    state_path.unlink(missing_ok=True)
-    env = dict(os.environ, CUA_GTK3_TASK_STATE=str(state_path))
-    fixture = subprocess.Popen(["/usr/bin/python3", str(wt / FIXTURE_REL)], env=env,
-                               stdout=open(work / "fixture.log", "w"), stderr=subprocess.STDOUT)
-    deadline = time.monotonic() + 15
-    while read_state(state_path)[0] is None:
-        if time.monotonic() > deadline or fixture.poll() is not None:
-            raise RuntimeError("fixture did not publish its state file")
-        time.sleep(0.05)
-    time.sleep(1.0)
+    kinds = {t["kind"] for t in chunk["trials"]}
+    ctx: dict[str, object] = {"work": work, "fixture_pid": None, "state_path": None,
+                              "sandbox": str(HERE.parent / "sandbox" / "sandbox-driver.sh")}
+    fixture = None
+    if kinds - {BROWSER_KIND}:
+        state_dir = work / "fixture-state"
+        state_dir.mkdir(exist_ok=True)
+        state_path = state_dir / "gtk3-task-state.json"
+        state_path.unlink(missing_ok=True)
+        env = dict(os.environ, CUA_GTK3_TASK_STATE=str(state_path))
+        fixture = subprocess.Popen(["/usr/bin/python3", str(wt / FIXTURE_REL)], env=env,
+                                   stdout=open(work / "fixture.log", "w"), stderr=subprocess.STDOUT)
+        deadline = time.monotonic() + 15
+        while read_state(state_path)[0] is None:
+            if time.monotonic() > deadline or fixture.poll() is not None:
+                raise RuntimeError("fixture did not publish its state file")
+            time.sleep(0.05)
+        time.sleep(1.0)
+        ctx.update(state_path=state_path, fixture_pid=fixture.pid, a11y_address=a11y_address())
+    server = None
+    if BROWSER_KIND in kinds:
+        # The evaluator's browser fixture (frozen with the fixtures package): jev-use PAGE plus a
+        # capture-phase listener journal, served in-process on 127.0.0.1 for this session only.
+        sys.path.insert(0, str(wt / FIXTURES_REL))
+        from ar_trial import make_browser_server
+        server = make_browser_server(wt)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        ctx["browser_server"] = server
     psi = PsiSampler()
     psi.start()
-    ctx = {"state_path": state_path, "fixture_pid": fixture.pid, "work": work,
-           "a11y_address": a11y_address(), "sandbox": str(HERE.parent / "sandbox" / "sandbox-driver.sh")}
     failures = 0
     out = Path(args.out)
     with open(out, "a", encoding="utf-8") as ledger:
         ledger.write(json.dumps({"schema": "ar.session.v1", "event": "start", "session": chunk["session"],
                                  "eval_id": chunk["eval_id"], "trials": len(chunk["trials"]),
-                                 "loadavg": loadavg(), "fixture_pid": fixture.pid,
-                                 "a11y_private": ctx["a11y_address"].startswith("unix:path=")}) + "\n")
+                                 "loadavg": loadavg(), "fixture_pid": ctx["fixture_pid"],
+                                 "pid_namespace": session_pidns(),
+                                 "browser_fixture": server is not None,
+                                 "a11y_private": str(ctx.get("a11y_address", "")).startswith("unix:path=")}) + "\n")
         try:
             for spec in chunk["trials"]:
                 if time.monotonic() - session_start > TRIAL_START_CUTOFF_S:
@@ -139,11 +165,15 @@ async def main_async(args: argparse.Namespace) -> int:
                     failures += 1
         finally:
             psi.stop_event.set()
-            fixture.terminate()
-            try:
-                fixture.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                fixture.kill()
+            if server is not None:
+                server.shutdown()
+                server.server_close()
+            if fixture is not None:
+                fixture.terminate()
+                try:
+                    fixture.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    fixture.kill()
             ledger.write(json.dumps({"schema": "ar.session.v1", "event": "end", "session": chunk["session"],
                                      "failures": failures, "loadavg": loadavg()}) + "\n")
     print(f"session {chunk['session']} done failures={failures}")
