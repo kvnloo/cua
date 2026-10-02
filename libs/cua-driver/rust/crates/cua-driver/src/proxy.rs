@@ -63,6 +63,8 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
     let mut session_observed = false;
     let mut protocol_session = ProtocolSession::default();
     let transport_session = format!("mcp-{}", uuid::Uuid::new_v4());
+    // B-02 measurement knob (default off): read once per process.
+    let admission_tools_cache = cua_driver_core::server::exp_admission_tools_cache();
     struct DirectTransportCleanup {
         sdk: Arc<crate::sdk_adapter::SdkAdapter>,
         transport_session: String,
@@ -95,27 +97,46 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
             }
             Ok(request) if request.is_notification() => continue,
             Ok(mut request) => {
+                // B-02 measurement only (env-gated, default off): admission sub-spans.
+                cua_driver_core::phase_trace::mark("mcp.parsed", "");
                 let admission = protocol_session.validate(&request).and_then(|era| {
+                    cua_driver_core::phase_trace::mark("mcp.session_validated", "");
                     if request.method == "tools/call" {
-                        mcp_wire::validate_tool_call(
-                            &request,
-                            request.id.clone().unwrap_or_default(),
-                            era,
-                            &sdk.tools_list(),
-                        )?;
+                        let id = request.id.clone().unwrap_or_default();
+                        if admission_tools_cache {
+                            // B-02 knob: borrow the adapter's immutable,
+                            // process-lifetime inventory instead of cloning it.
+                            let inventory = sdk.tools_list_ref();
+                            cua_driver_core::phase_trace::mark("mcp.tools_list_built", "");
+                            mcp_wire::validate_tool_call(&request, id, era, inventory)?;
+                        } else {
+                            let inventory = sdk.tools_list();
+                            cua_driver_core::phase_trace::mark("mcp.tools_list_built", "");
+                            mcp_wire::validate_tool_call(&request, id, era, &inventory)?;
+                        }
+                        cua_driver_core::phase_trace::mark("mcp.admission_validated", "");
                     }
                     Ok(era)
                 });
-                if let Err(response) = admission {
-                    writer
-                        .write_all(serde_json::to_string(&response)?.as_bytes())
-                        .await?;
-                    writer.write_all(b"\n").await?;
-                    writer.flush().await?;
-                    continue;
-                }
+                let era = match admission {
+                    Ok(era) => era,
+                    Err(response) => {
+                        writer
+                            .write_all(serde_json::to_string(&response)?.as_bytes())
+                            .await?;
+                        writer.write_all(b"\n").await?;
+                        writer.flush().await?;
+                        continue;
+                    }
+                };
+                // B-02 knob only: this exact request already passed
+                // validate_tool_call above under `era`, against the same
+                // inventory the adapter serves to the inner boundary.
+                let prevalidated_era = (admission_tools_cache && request.method == "tools/call")
+                    .then_some(era);
                 cua_driver_core::phase_trace::mark("mcp.admitted", "");
                 apply_direct_session_identity(&mut request, &transport_session);
+                cua_driver_core::phase_trace::mark("mcp.identity_applied", "");
                 let initialize_metadata = (!session_observed)
                     .then(|| request.initialize_metadata())
                     .flatten();
@@ -127,19 +148,23 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                         cua_driver_core::session::SessionClientKind::Mcp,
                     )
                 });
+                cua_driver_core::phase_trace::mark("mcp.session_begun", "");
                 let timer = tool_observation_timer(
                     &request,
                     |name| sdk.is_known_tool(name),
                     StdioExecutionPath::DirectDaemon,
                 );
+                cua_driver_core::phase_trace::mark("mcp.timer_started", "");
                 let id = request.id.clone().unwrap_or(serde_json::Value::Null);
-                let response = cua_driver_core::server::handle_request_with_transport_session(
-                    request,
-                    id,
-                    sdk.as_ref(),
-                    &transport_session,
-                )
-                .await;
+                let response =
+                    cua_driver_core::server::handle_request_with_transport_session_prevalidated(
+                        request,
+                        id,
+                        sdk.as_ref(),
+                        &transport_session,
+                        prevalidated_era,
+                    )
+                    .await;
                 cua_driver_core::phase_trace::mark("mcp.handled", "");
                 if let Some(metadata) = initialize_metadata {
                     observe_proxy_session_started(metadata);
@@ -1023,6 +1048,45 @@ fn daemon_response_to_tool_result(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// B-02: the identity stamping between the proxy admission and the inner
+    /// boundary never changes what `validate_tool_call` or the era decide, so
+    /// the inner repeat can be skipped only for an already-admitted request.
+    #[test]
+    fn b02_identity_stamping_preserves_admission_outcome() {
+        use serde_json::json;
+        let inventory = json!({"tools": [{"name": "get_config"}]});
+        let modern = json!({
+            mcp_wire::PROTOCOL_VERSION_KEY: mcp_wire::MODERN_PROTOCOL_VERSION,
+            mcp_wire::CLIENT_CAPABILITIES_KEY: {}
+        });
+        for params in [
+            json!({"name": "get_config", "arguments": {}, "_meta": modern.clone()}),
+            json!({"name": "get_config", "arguments": {"session": "s"}, "_meta": modern.clone()}),
+            json!({"name": "unknown", "arguments": {}, "_meta": modern.clone()}),
+            json!({"name": "get_config", "arguments": [], "_meta": modern.clone()}),
+            json!({"name": "get_config", "arguments": {}}),
+            json!({"name": "unknown", "arguments": {"session": ""}}),
+            json!({"name": "get_config"}),
+        ] {
+            let mut request: Request = serde_json::from_value(json!({
+                "jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": params
+            }))
+            .unwrap();
+            let decide = |request: &Request| {
+                let era = mcp_wire::classify_request(request)
+                    .map_err(|e| serde_json::to_string(&e).unwrap());
+                let validated = era.as_ref().ok().map(|era| {
+                    mcp_wire::validate_tool_call(request, json!(3), *era, &inventory)
+                        .map_err(|e| serde_json::to_string(&e).unwrap())
+                });
+                (era, validated)
+            };
+            let before = decide(&request);
+            apply_direct_session_identity(&mut request, "mcp-transport");
+            assert_eq!(before, decide(&request));
+        }
+    }
 
     #[tokio::test]
     async fn modern_proxy_metadata_and_rejections_need_no_daemon_call() {
