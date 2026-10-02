@@ -1,7 +1,8 @@
 //! Extended browser pointer actions.
 //!
 //! This module deliberately shares the exact-or-refused posture of the
-//! original browser click tool. Every mutation is serialized by the real CDP
+//! original browser click tool before dispatch; lost delivery replies stay
+//! explicitly unverifiable. Every mutation is serialized by the real CDP
 //! tab, then revalidates the native window, endpoint, tab, and (for refs) frame
 //! identity before dispatch. It never activates a target or brings a page to
 //! the foreground.
@@ -12,6 +13,9 @@ use std::time::Duration;
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
+use crate::action_record::{
+    ActionEffect, ActionExecutionRecord, ActionTransport, ActualDelivery, RequestedDelivery,
+};
 use crate::protocol::ToolResult;
 use crate::tool::{ProtectedResourceOwnership, Tool, ToolDef};
 use crate::tool_args::ArgsExt;
@@ -23,6 +27,29 @@ use super::refusal::{BrowserRefusal, BrowserRefusalCode};
 use super::required_session_schema;
 use super::store::{BrowserActionKind, FrameKind, FrameRef};
 use super::tools::{browser_protected_resource_scope, browser_resource_ownership};
+
+/// A dispatched mouse command can take effect before its reply is lost.
+fn uncertain_trusted_pointer(message: String, foreground: bool) -> ToolResult {
+    let mut record = ActionExecutionRecord::new(
+        ActionEffect::Unverifiable,
+        ActionTransport::BrowserCdpInputMouse,
+        if foreground {
+            RequestedDelivery::Foreground
+        } else {
+            RequestedDelivery::Background
+        },
+    );
+    record.actual_delivery = Some(ActualDelivery::Unknown);
+    let refusal = BrowserRefusal::new(BrowserRefusalCode::BrowserInputTrustUnavailable, message)
+        .with_detail(json!({ "delivery": "unknown", "retryable": false }));
+    ToolResult::text(format!(
+        "unverifiable ({}): {}",
+        refusal.code.as_str(),
+        refusal.message
+    ))
+    .with_structured(json!({ "status": "refused", "refusal": refusal }))
+    .with_action_record(record)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PointerAction {
@@ -635,25 +662,22 @@ impl BrowserPointerTool {
             )
             .await;
         if let Err(error) = delivery {
-            return BrowserRefusal::new(
-                BrowserRefusalCode::BrowserInputTrustUnavailable,
+            return uncertain_trusted_pointer(
                 format!(
-                    "trusted {} failed ({error}); no synthetic fallback was attempted",
+                    "trusted {} did not confirm completion ({error}); delivery is unknown and must not be retried automatically",
                     request.action.as_str()
                 ),
-            )
-            .to_tool_result();
+                request.foreground,
+            );
         }
         if let Err(error) = cleanup {
-            return BrowserRefusal::new(
-                BrowserRefusalCode::BrowserInputTrustUnavailable,
+            return uncertain_trusted_pointer(
                 format!(
                     "trusted {} was acknowledged but focus emulation could not be restored ({error}); delivery is unknown and must not be retried automatically",
                     request.action.as_str()
                 ),
-            )
-            .with_detail(json!({ "delivery": "unknown", "retryable": false }))
-            .to_tool_result();
+                request.foreground,
+            );
         }
 
         let synthetic_origin = ResolvedRef {

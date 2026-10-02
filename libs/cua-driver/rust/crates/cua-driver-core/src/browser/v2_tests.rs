@@ -2754,3 +2754,89 @@ async fn trusted_click_lost_reply_is_unknown_and_not_retryable() {
         );
     }
 }
+
+#[tokio::test]
+async fn trusted_pointer_lost_release_is_unknown_while_setup_refusal_is_proven() {
+    for (reject_before_dispatch, fail_cleanup, foreground) in [
+        (true, false, false),
+        (false, false, false),
+        (false, true, false),
+        (false, false, true),
+        (false, true, true),
+    ] {
+        let f = fixture_with(|state| {
+            state.reject_focus_emulation = reject_before_dispatch;
+            state.drop_mouse_release_reply = !reject_before_dispatch && !fail_cleanup;
+            state.drop_focus_cleanup_reply = fail_cleanup;
+        })
+        .await;
+        let (target, tab) = bind(&f).await;
+        let state = snapshot(&f, &target, &tab).await;
+        let main_ref = ref_of(&state, "main", "main-btn");
+        let args = json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref,
+            "action": "right_click", "input_route": "trusted", "session": SESSION,
+            "delivery_mode": if foreground { "foreground" } else { "background" }
+        });
+        let result = BrowserPointerTool::new(f.engine.clone())
+            .invoke(args.clone())
+            .await;
+        let raw = structured(&result);
+        let public = result
+            .action_record
+            .clone()
+            .or_else(|| ActionExecutionRecord::from_legacy("browser_pointer", &args, raw))
+            .unwrap()
+            .public_result()
+            .unwrap();
+        let mouse = recorded_calls(&f, "Input.dispatchMouseEvent");
+        assert!(recorded_calls(&f, "Runtime.callFunctionOn").is_empty());
+        if reject_before_dispatch {
+            assert!(mouse.is_empty());
+            assert_eq!(f.state.lock().unwrap().completed_clicks, 0);
+            assert_eq!(raw["refusal"]["code"], "browser_input_trust_unavailable");
+            assert_eq!(public.effect, cua_driver_contract::ActionEffect::Refused);
+            assert!(public.delivery.is_none());
+        } else {
+            assert_eq!(mouse.len(), 2, "one press/release pair, without replay");
+            assert_eq!(mouse[0].1["type"], "mousePressed");
+            assert_eq!(mouse[1].1["type"], "mouseReleased");
+            assert_eq!(mouse[1].1["button"], "right");
+            assert_eq!(f.state.lock().unwrap().completed_clicks, 1);
+            eprintln!(
+                "pointer-lost-release-evidence: {}",
+                json!({"raw": raw, "public": public, "mouse_calls": mouse.len(),
+                    "completed_clicks": f.state.lock().unwrap().completed_clicks,
+                    "synthetic_calls": 0})
+            );
+            assert_eq!(
+                public.effect,
+                cua_driver_contract::ActionEffect::Unverifiable,
+                "a lost reply after target-owned delivery is not proven refusal"
+            );
+            assert_eq!(
+                public.delivery.as_ref().unwrap().mode,
+                cua_driver_contract::ActionDeliveryMode::Unknown
+            );
+            assert_eq!(
+                result.action_record.as_ref().unwrap().requested_delivery,
+                if foreground {
+                    crate::action_record::RequestedDelivery::Foreground
+                } else {
+                    crate::action_record::RequestedDelivery::Background
+                }
+            );
+            assert!(public.delivery.as_ref().unwrap().delivered_count.is_none());
+            assert!(public.error.is_none());
+            assert!(public.escalation.is_none());
+            assert_eq!(raw["refusal"]["detail"]["retryable"], false);
+            assert!(result.content.iter().all(|content| !matches!(content,
+                Content::Text { text, .. } if text.starts_with("refused ("))));
+            cua_driver_contract::validate_success_output(
+                "browser_pointer",
+                serde_json::to_value(public).unwrap(),
+            )
+            .unwrap();
+        }
+    }
+}
