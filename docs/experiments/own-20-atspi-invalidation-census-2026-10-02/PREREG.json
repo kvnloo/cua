@@ -1,0 +1,111 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "experiment": "OWN-20",
+ "title": "AT-SPI invalidation-signal fidelity census on the canonical GTK3 fixture",
+ "owners": {"primary": "kvnloo/cua#20", "input_to": "kvnloo/cua#93 (R2-09 event-fidelity input)", "consumer_only": "kvnloo/cua#107 (not touched)"},
+ "branch": "exp/own-20-atspi-invalidation-census-20261002",
+ "question": "For each GTK3 semantic scope, does an AT-SPI event conservatively signal every relevant semantic change (no false negatives), so that event presence can invalidate known state? Or is it only a wake hint, or unusable? The fresh CUA observation (get_window_state / list_windows through the Driver) is the ground truth; the fixture's own state file is the cross-check oracle; events are only candidate invalidators.",
+ "base": {"upstream_main": "352507b6c03162ab286b21d5ed509125cc3daece", "libs_cua_driver_tree_equals": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (git diff --quiet exit 0)"},
+ "driver": {"label": "r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version": "cua-driver 0.32.0 (re-read inside every session: raw/<block>/session-env.txt)", "driver_change": "none"},
+ "fixture_change": {
+  "file": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py",
+  "kind": "test-fixture-only, env-gated, default-off",
+  "gate": "CUA_GTK3_CONTROL_FIFO (task mode only); acks in CUA_GTK3_CONTROL_ACK",
+  "adds_when_on": "a single-selection list (Choice Alpha/Beta/Gamma), a 'Dynamic area' container, a 'Recreatable' button below the task controls; window default height 460; JSON command channel (noop, set_text, focus, select, toggle_check, add_child[order], remove_child, recreate, window_open, window_close) applied on the GTK main loop with CLOCK_MONOTONIC start/end acks; a 'control' object in the task state file",
+  "default_off_check": "default_off_smoke.py: base vs modified fixture without the env, task and harness modes, Driver element digest / count / window size / tree_markdown / state keys identical (control D1)"
+ },
+ "environment": {
+  "isolation": "every command that executes code runs under bin/hostless; every GUI/Driver/gi command additionally inside cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" (private Xvfb, private session bus, private at-spi-bus-launcher + at-spi2-registryd)",
+  "one_session_per_block": true,
+  "listener": "atspi_listener.py: system python3 + Gio only (no Gtk/Atk); connects to the private AT-SPI bus, subscribes to every broadcast signal (signal_subscribe with no filter) BEFORE registering object:, window:, focus:, document: with org.a11y.atspi.Registry.RegisterEvent; writes CLOCK_MONOTONIC arrival, sender bus name, object path, interface, member, detail/detail1/detail2/any_data; resolves sender -> pid asynchronously (GetConnectionUnixProcessID)",
+  "listener_lifecycle": "retained per block: spawned and ready BEFORE the target fixture starts, so it is registered before every mutation of the block; its subscription latency (internal + spawn-to-ready) and cleanup cost (DeregisterEvent + unsubscribe + close, and SIGTERM-to-exit) are recorded per block",
+  "note_on_registration_masking": "the Driver itself registers object events with the registry (shared AT-SPI connection), so in every block applications already emit object events for the Driver; the listener's own registration is therefore not the only reason apps emit. Window:/Focus:/Document: interest is the listener's own."
+ },
+ "loop_per_mutation": {
+  "steps": ["fresh observation through the Driver (get_window_state include_screenshot:false on the target window; plus list_windows for window/process blocks) + read of the fixture state file", "guard 100 ms", "ONE known mutation (variant 1 = fixture control channel, the Driver is not the producer; variant 2 = the Driver acts)", "collect events until mutation end + 1000 ms (QUIESCE, bounded, fixed)", "fresh observation again + state file read"],
+  "guard_ms": 100,
+  "quiesce_ms": 1000,
+  "event_window": "[harness mutation start, mutation end + 1000 ms] on CLOCK_MONOTONIC; events before (incl. those caused by the before-observation's walk) and after (incl. the after-observation's walk) are excluded",
+  "latency_reference": "variant 1: the fixture's ack m_start (when the app began applying the command); harness-produced mutations: harness m_start; Driver actions: the harness clock just before call_tool (also reported relative to tool return)"
+ },
+ "rows": {
+  "text_v1": {"scope": "text", "producer": "fixture set_text on the 'Note' entry (unique value)", "delta": "obs: Note (label,value) digest; oracle: control.note_text", "L2": "Object:TextChanged (any detail) or Object:PropertyChange accessible-value from the target bus name"},
+  "text_v2": {"scope": "text", "producer": "Driver set_value on the Note element_token from the before-observation (unique value)", "delta": "as text_v1", "L2": "as text_v1"},
+  "focus_v1": {"scope": "focus", "producer": "fixture grab_focus alternating 'Note' / 'I agree'", "delta": "obs: none available (get_window_state exposes no focus field on Linux; recorded as unobservable); oracle: control.focus", "L2": "Object:StateChanged:focused or Event.Focus:* from the target"},
+  "focus_v2": {"scope": "focus", "producer": "Driver press_key Tab, delivery_mode foreground (background Tab is refused: background_unavailable)", "delta": "as focus_v1", "L2": "as focus_v1"},
+  "selection_v1": {"scope": "selection", "producer": "fixture select_row rotating Alpha->Beta->Gamma (always a change)", "delta": "obs: Choice rows (label,selected); oracle: control.selection", "L2": "Object:SelectionChanged, Object:ActiveDescendantChanged or Object:StateChanged:selected from the target"},
+  "selection_v2": {"scope": "selection", "producer": "Driver click foreground on the next Choice row's element_token (a background click on a list row does not select: pilot)", "delta": "as selection_v1", "L2": "as selection_v1"},
+  "checkbox_v1": {"scope": "checkbox", "producer": "fixture toggles 'I agree'", "delta": "obs: I agree (label,selected); oracle: agreed", "L2": "Object:StateChanged:checked from the target"},
+  "checkbox_v2": {"scope": "checkbox", "producer": "Driver click background on the I agree element_token (AT-SPI route)", "delta": "as checkbox_v1", "L2": "as checkbox_v1"},
+  "child_add_pts": {"scope": "child_add", "producer": "fixture adds a 'Dynamic item N' button: pack, then show (the common GTK3 order)", "delta": "obs: sorted (role,label) of all elements; oracle: control.dynamic", "L2": "Object:ChildrenChanged:add from the target"},
+  "child_add_stp": {"scope": "child_add", "producer": "fixture adds an already shown button: show, then pack", "delta": "as child_add_pts", "L2": "as child_add_pts"},
+  "child_remove_pts": {"scope": "child_remove", "producer": "fixture destroys the last dynamic item (added pack-then-show in the same rep)", "delta": "as child_add_pts", "L2": "Object:ChildrenChanged:remove or Object:StateChanged:defunct with detail1=1 from the target"},
+  "child_remove_stp": {"scope": "child_remove", "producer": "fixture destroys the last dynamic item (added show-then-pack in the same rep)", "delta": "as child_add_pts", "L2": "as child_remove_pts"},
+  "recreate": {"scope": "node_recreate", "producer": "fixture destroys 'Recreatable' and packs a new button with the same accessible name in the same slot", "delta": "obs: (role,label,frame) of Recreatable (expected UNCHANGED: label similarity is never identity proof); oracle: control.recreatable_generation (the identity change)", "L2": "removal of the old node: Object:ChildrenChanged:remove or Object:StateChanged:defunct=1 from the target; add-side naming (ChildrenChanged:add) reported separately"},
+  "window_create": {"scope": "window", "producer": "fixture opens a second toplevel 'CuaTestHarness GTK3 Aux'", "delta": "obs: titles of the target pid in list_windows; oracle: control.aux_window", "L2": "Event.Window:Create or Object:ChildrenChanged:add on the app root from the target"},
+  "window_destroy": {"scope": "window", "producer": "fixture destroys the Aux window", "delta": "as window_create", "L2": "Event.Window:Destroy or Object:ChildrenChanged:remove on the app root from the target"},
+  "exit_v1": {"scope": "process_lifecycle", "producer": "harness SIGTERM to the fixture it started, waitpid", "delta": "obs: get_window_state on the old pid/window errors (or 0 elements) and the task-window list changes; oracle: process reaped (exit rc)", "L2": "registry Object:ChildrenChanged:remove on /org/a11y/atspi/accessible/root naming the old target bus name, or bus NameOwnerChanged(old name -> '') (each also reported separately)"},
+  "exit_v2": {"scope": "process_lifecycle", "producer": "Driver click background on the 'Exit' element_token", "delta": "as exit_v1", "L2": "as exit_v1"},
+  "process_start": {"scope": "process_lifecycle", "producer": "harness spawns a new fixture (same env), done when the new pid publishes its state file", "delta": "obs: task-window list changes and the new window observes > 0 elements; oracle: state file published by the new pid", "L2": "registry Object:ChildrenChanged:add on the root naming the new target bus name, or NameOwnerChanged('' -> new name)"},
+  "post_restart_probe": {"scope": "restart_pipeline", "producer": "fixture toggles 'I agree' in the restarted process", "delta": "as checkbox_v1", "L2": "as checkbox_v1"},
+  "registry_restart": {"scope": "registry_restart", "producer": "harness SIGTERMs this session's at-spi2-registryd (started by this lane's own session script or by this harness) and relaunches /usr/lib/at-spi2-registryd --use-gnome-session (killing alone is not deterministic: the registry is not re-activated, and the Driver's observation then comes back empty; pilot)", "delta": "none expected (obs full digest + state seq); any event is a false-positive cost"},
+  "post_registry_probe": {"scope": "registry_restart", "producer": "fixture toggles 'I agree' after the registry restart; evaluated with the RETAINED listener whose registration was held by the killed registry", "delta": "as checkbox_v1", "L2": "as checkbox_v1"},
+  "noop": {"scope": "control_noop", "producer": "fixture noop command (acked, no state change)", "delta": "none expected (obs full digest + state seq)"},
+  "decoy": {"scope": "control_decoy", "producer": "a lane-started second fixture process mutates itself (alternating toggle_check / set_text); the target is untouched", "delta": "none expected in the target", "fp_split": "unfiltered (any AT-SPI event) vs source-filtered (target bus name only)"},
+  "listener_cycle": {"scope": "listener_subscription", "producer": "a FRESH listener is spawned and becomes ready, then the fixture toggles 'I agree' immediately; evaluated with the fresh listener's events (the retained listener is the reference)", "delta": "as checkbox_v1", "L2": "as checkbox_v1", "timings": "fresh listener subscription_ms, spawn_to_ready_ms, cleanup_ms, stop_to_exit_ms per rep"}
+ },
+ "definitions": {
+  "L1": "any org.a11y.atspi.Event.* signal from the target's bus name in the window (process rows: any L2 lifecycle signal or target event)",
+  "L2": "a scope-typed event that names the change type (per row above); sender identity = bus unique name resolved to the target pid, never a label",
+  "relevant_delta": "observation delta OR oracle delta for the row's selected fields (focus: oracle only, because the observation has no focus field); both are recorded with their agreement",
+  "false_negative": "a rep with a relevant delta and no L2 event in the window (FN_L2); FN_L1 = no target event at all",
+  "false_positive": "a rep without a relevant delta that has an L1 target event (source-filtered) or any AT-SPI event (unfiltered); false positives are a performance cost only",
+  "spurious": "per rep, target events in the window that are not L2 (e.g. BoundsChanged animation frames)"
+ },
+ "classification": {
+  "scopes": {
+   "text": {"own": ["text_v1", "text_v2"], "inherited": ["recreate", "exit_v1", "exit_v2", "process_start", "post_restart_probe", "post_registry_probe"]},
+   "focus": {"own": ["focus_v1", "focus_v2"], "inherited": "same as text"},
+   "selection": {"own": ["selection_v1", "selection_v2"], "inherited": "same as text"},
+   "checkbox": {"own": ["checkbox_v1", "checkbox_v2"], "inherited": "same as text"},
+   "child_add": {"own": ["child_add_pts", "child_add_stp"], "inherited": "same as text"},
+   "child_remove": {"own": ["child_remove_pts", "child_remove_stp"], "inherited": "same as text"},
+   "node_recreate": {"own": ["recreate"], "inherited": ["exit_v1", "exit_v2", "process_start", "post_restart_probe", "post_registry_probe"]},
+   "window": {"own": ["window_create", "window_destroy"], "inherited": "same as text"},
+   "process_lifecycle": {"own": ["exit_v1", "exit_v2", "process_start"], "inherited": []},
+   "restart_pipeline": {"own": ["post_restart_probe"], "inherited": []},
+   "registry_restart": {"own": ["post_registry_probe"], "inherited": []},
+   "listener_subscription": {"own": ["listener_cycle"], "inherited": [], "listener": "fresh"}
+  },
+  "inherited_meaning": "the destroy/recreate and restart rows for an in-app scope: a known state is only safely invalidated by events if the node-destroy, process exit/start and post-restart/post-registry-restart cases also produce their invalidator",
+  "rule": "n = own reps with a relevant delta; fn2 = own FN_L2; fn1 = own FN_L1; inh = sum of FN_L2 over the inherited rows. n == 0 -> NO_DELTA_OBSERVED; fn2 == 0 and inh == 0 -> SAFE_INVALIDATOR (suffix _UNDERPOWERED if any own or inherited row has < 20 delta reps); else fn1/n < 0.25 -> NOISY_HINT (wakes a re-observation in >= 75% of own delta reps, but has a false negative or does not name the change); else UNUSABLE_ALWAYS_OBSERVE",
+  "single_fn": "a single relevant false negative (own or inherited) means event absence cannot authorize reuse for that scope",
+  "finite_zero": "SAFE_INVALIDATOR is a finite zero over n reps on this fixture/binary/session, not a universal guarantee",
+  "recommendation": "'always observe' for every scope with any false negative; no observation-skipping policy is proposed for any scope (product invariant: no production observation skipping; events are wake hints, never the oracle, never authority)",
+  "disposition_rule": "#20 KEEP when the census is complete (every row attempted with >= 20 reps, every failure in the denominator) with the classification table and the recommendation; otherwise REVISE with what is missing"
+ },
+ "controls": {
+  "noop": "row noop (no semantic delta expected; target events = FP)",
+  "decoy": "row decoy (foreign events; FP unfiltered vs source-filtered)",
+  "registry_restart_no_delta": "row registry_restart (lifecycle signals without semantic delta)",
+  "default_off": "D1 default_off_smoke.py (fixture change inert without the env)",
+  "obs_vs_oracle": "every rep records observation delta and state-file delta; disagreement counted per row"
+ },
+ "not_run": {
+  "chromium_electron": "NOT_RUN. Gate recorded by chrome_atspi_probe.py (control G1): under the mandated bin/hostless (bwrap user namespace) root-owned files appear as uid 65534, so the Driver refuses to launch any system Chromium ('browser_route_unavailable: no root-owned, non-writable system Chromium executable is available for isolated launch'); no forbidden flag was used or is permitted, so Chrome's AT-SPI exposure in the private session cannot be tested here"
+ },
+ "timing_and_locks": {
+  "per_block": "each block runs as: hostless run_batch.sh -> bin/quiet-timed own20-<block_id> cua-x11-session.sh run_in_session.sh ... (EXCLUSIVE quiet-lane lock + ledger receipt); <= 10 measured mutations per acquisition",
+  "reported_timings": "event-arrival latency (first L2, first L1, last target event) per row; fixture op duration; Driver call duration; listener subscription and cleanup (retained per block; fresh per listener_cycle rep); median, nearest-rank p95, min, max; every rep kept",
+  "loadavg": "recorded per block (start/end) and per mutation; DISPLAY recorded per block",
+  "counts_only_blocks": "D1 default-off smoke and G1 Chromium gate run under flock -s on the same lock with a receipt in raw/lock-ledger.jsonl"
+ },
+ "schedule": {"generator": "schedule.py (round-robin over block types, order reversed on odd rounds)", "blocks": 54, "block_counts": {"text_v1": 2, "text_v2": 2, "focus_v1": 2, "focus_v2": 2, "selection_v1": 2, "selection_v2": 2, "checkbox_v1": 2, "checkbox_v2": 2, "child_pts": 4, "child_stp": 4, "recreate": 2, "window": 4, "process_v1": 7, "process_v2": 7, "registry": 4, "noop": 2, "decoy": 2, "listener_cycle": 2}, "reps": {"each_v1_v2_value_row": 20, "child_add/remove rows": 20, "recreate": 20, "window rows": 20, "exit_v1/exit_v2": 21, "process_start/post_restart_probe": 42, "registry_restart/post_registry_probe": 20, "noop": 20, "decoy": 20, "listener_cycle": 20}},
+ "pilots_uncounted": {
+  "what": "three exploratory probes and nine 1-2-rep pilot blocks of census.py, a default-off smoke pilot and two Chromium-gate pilots, all under hostless + the isolated session, before this file; none is counted",
+  "informed": ["element fields exposed by get_window_state on Linux (label, role, value, selected, enabled, frame, snapshot-scoped element_token; no focus field)", "Driver variant-2 actions that land (background click on a check box via AT-SPI; set_value; foreground click selects a list row; foreground Tab moves focus); background click on a list row and background Tab do not", "registry kill alone is not re-activated; kill + relaunch is deterministic", "the add-order variants (pilots showed no ChildrenChanged:add for a pack-then-show child)", "the session label required for browser_prepare"],
+  "expectations_from_pilots": "child_add: no ChildrenChanged:add (L1 only via ancestor BoundsChanged); child_remove: defunct=1 on the removed node, no ChildrenChanged:remove for a child the container accessible never cached; other rows: typed events present. These are pilot observations (n <= 2), not results"
+ },
+ "claim_boundary": "GTK3 fixture (task window + test-only control channel) on X11 Xvfb with a private AT-SPI bus and registry, at the tested source SHA and the r2-main-229b65b28 binary, Linux only. No other toolkit, no Chromium/Electron, no Wayland, no real desktop, no observation-skipping policy.",
+ "provider": {"name": "TypeSafe", "cap": 0, "attempts": 0, "reached": 0}
+}
