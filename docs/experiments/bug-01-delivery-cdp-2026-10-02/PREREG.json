@@ -1,0 +1,93 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "experiment": "BUG-01: (A) foreground trusted browser receipts report delivery=background; (B) per-call CDP session accumulation",
+ "lane": "BUG-01 (wave 1, CUA RFC loop)",
+ "owners": ["kvnloo/cua#38 (outcome vocabulary; upstream trycua/cua 4009)", "kvnloo/cua#93 (R2-06 and R2-02 side findings)", "kvnloo/cua#10 (whole-task accounting)", "browser-timing owner upstream trycua/cua 4052"],
+ "written_utc": "2026-10-02T02:05Z",
+ "status": "pre-registered before any measured trial of part A or part B; not edited after measured runs start (deviations go to README 'Deviations')",
+ "knowledge_before_registration": {
+  "source_reading": "Part A: libs/cua-driver/rust/crates/cua-driver-core/src/action_record.rs actual_delivery_from_legacy returns ActualDelivery::Background for browser_click/browser_pointer/browser_type before any producer or request field is consulted; browser/tools.rs BrowserClickTool emits delivery_mode=foreground on its foreground trusted branch; browser/pointer.rs success_json emits no delivery_mode. Part B: browser/engine.rs attach() sends Target.attachToTarget on every revalidate_for_mutation, snapshot_tab, snapshot_tab_semantic, capture and ref-resolution path; the only Target.detachFromTarget calls detach OOPIF child sessions, never the per-call tab session.",
+  "unit_red_run": "The new test foreground_trusted_browser_input_receipt_does_not_claim_background_delivery was compiled and run once at main + test (before this file was committed) to check it fails for the stated reason: it failed with public receipt {route: trusted_input, delivery.mode: background}. The guard test background_browser_receipts_keep_background_delivery passed. This is UNIT evidence, re-recorded after the test commit.",
+  "no_real_trials_yet": "No REAL or BENCHMARK trial of this lane has run. Wave-0 numbers (R2-02 session-age drift, R2-06 receipts) motivate the hypotheses and are never compared with this lane's numbers."
+ },
+ "governing_contract_text": {
+  "action_result_contract_md": "libs/cua-driver/docs/action-result-contract.md: '`ActionResult` says what route the driver used and how strongly it can account for the action itself.' and the field table row '`delivery.mode` | `background`, `foreground`, `not_applicable`, `unknown`'.",
+  "macos_background_input_v1_plan_md": "libs/cua-driver/docs/macos-background-input-v1-plan.md: 'Keep successful action outputs on the current `ActionResult` contract: ... `delivery.mode` reports what actually occurred;'",
+  "action_record_rs_doc": "ActualDelivery: 'The delivery mode actually used by the actuator. `Unknown` means an attempt was made but the actuator could not determine whether it delivered in the requested mode.' from_legacy: 'it reports `Unknown` rather than copying a requested delivery mode when the old payload did not prove what actually happened.' structured_delivery_mode: 'Prefer an explicit producer-emitted mode when one exists.'",
+  "browser_delivery_mode_schema": "browser/tools.rs schema_delivery_mode: 'background (default) refuses trusted input where it would activate the browser window (Linux Chromium). foreground accepts that activation, for a browser whose window nobody else is using (for example inside a sandbox).'",
+  "browser_plan_cdp_sessions": "libs/cua-driver/docs/browser-tool-implementation-plan.md: 'Session cleanup detaches its CDP sessions without closing a socket still used by another Cua session.' and risk table: 'Cross-session CDP delivery | Flat mode and one CDP session ID per Cua session/tab'."
+ },
+ "source_and_binaries": {
+  "tested_source_main": "c4d0c6625b5c93849aa8bec610782410e9d45f69 (upstream main); libs/cua-driver/rust tree-equal to 229b65b2849c3a595ddbc85200d7181b18bd2e47 (git diff --quiet 229b65b28 c4d0c6625 -- libs/cua-driver/rust exits 0)",
+  "baseline_binary": "<lanes>/bin/cua-driver-r2-main-229b65b28, sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3, cua-driver 0.32.0 (version re-recorded inside the isolated session)",
+  "branch": "exp/bug-01-delivery-cdp-sessions-20261002 (local; commit order: PREREG -> failing test -> part B instrumentation -> part A fix)",
+  "instrumented_binary": "built from the instrumentation commit: flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> bug01-instr-<sha9> cua-release-r2-02",
+  "fix_binary": "built from the fix commit (includes the default-off instrumentation, env unset in every part A run): label bug01-fix-<sha9>, same target dir",
+  "build_disclosure": "build-driver.sh runs '<bin> --version' outside the isolated session; versions are re-recorded inside the session"
+ },
+ "environment": "private rootless Xvfb 1920x1080x24 + openbox + picom + private dbus via cua-x11-session.sh; scrubbed env; Chrome selected by the Driver (root-owned candidate list), isolated_new profile only; default Driver safety settings (no permission-mode override, no approval bypass, Chromium sandbox on); no provider (cap 0).",
+ "part_A": {
+  "hypothesis": "HA: successful foreground trusted browser_click receipts report delivery.mode=background on the baseline because actual_delivery_from_legacy hard-codes Background for browser tools, although the executed branch is the foreground one (trusted background is refused before dispatch on Linux Chromium).",
+  "unit": {
+   "failing_test": "cua-driver-core browser::v2_tests::foreground_trusted_browser_input_receipt_does_not_claim_background_delivery (mock CDP, platform with the Linux trusted-background limitation): drives BrowserClickTool {ref, delivery_mode: foreground} and BrowserPointerTool {action: double_click, delivery_mode: foreground}, builds the receipt exactly as the dispatch seam does (from_legacy -> public_result) and asserts route trusted_input and delivery.mode != background (expected foreground). Expected: FAIL at main+test, PASS at fix.",
+   "guard_test": "browser::v2_tests::background_browser_receipts_keep_background_delivery: dom_event click and dom_event pointer with a stray delivery_mode=foreground request stay background; trusted background click is refused with no delivery; browser_type with a stray delivery_mode=foreground stays background. Expected: PASS at main+test and at fix.",
+   "suites": "At main+test and at fix, inside the isolated session: cargo test -p cua-driver-core (lib + integration tests), cargo test -p cua-driver-contract, cargo test -p cua-driver --test compatibility_contract_test --test protocol_tools_call_test --test schema_consistency_test. Gate: the pass/fail sets differ only by the new failing test (red -> green); no existing test expectation is edited."
+  },
+  "real": {
+   "fixture": "jev-use fixture_server.py PAGE served by a probe subclass that appends a capture-phase listener (sendBeacon -> POST /events journal: pointer/mouse/click/focus/input/submit with isTrusted, document.hasFocus(), visibilityState) and journals POST /submit server-side before delegating to the unmodified handler (as R2-06). Per-trial POST /reset and fresh browser_navigate. Agent-cursor feedback at the Driver default (as R2-06).",
+   "arms": {
+    "T": "browser_type {ref: textbox 'verification value', text: per-trial token, replace: true} then browser_click {ref: Submit, delivery_mode: 'foreground'} (default input_route=trusted). Forced path = R2-06 arm T: CDP Input.dispatchMouseEvent on the foreground branch. n=20.",
+    "D": "browser_type as in T, then browser_click {ref: Submit, input_route: 'dom_event'} (no delivery_mode). n=20.",
+    "Y": "browser_type {ref: textbox, text: per-trial token, replace: true} only; no click. n=20.",
+    "N_bg": "control: browser_type then browser_click {ref: Submit} with default background delivery (trusted) -> expected refused (browser_input_trust_unavailable), no delivery field, no page pointer events, /state null. n=5.",
+    "N_domfg": "control: browser_type then browser_click {ref: Submit, input_route: 'dom_event', delivery_mode: 'foreground'} -> expected route dom and delivery background on BOTH binaries (the request alone is not proof; a synthetic DOM click is full-background). n=5."
+   },
+   "blocks": "Per binary: 7 blocks x 10 trials, each block a fresh Driver MCP process + fresh isolated_new browser. Blocks 1-6 hold the 60 T/D/Y trials in the rotating patterns TDYYDTDYTY / DYTTYDYTDT / YTDDTYTDYD (each pattern twice; 20 per arm). Block 7 holds N_bg/N_domfg alternating (5+5). Baseline run first (after this file is committed), fix run after the fix commit; same harness, plan and environment. Both runs hold quiet-lane.lock SHARED.",
+   "per_trial_records": "full MCP structuredContent receipts for browser_type and browser_click; page journal; X11 focus pre/post (xdotool getactivewindow, _NET_ACTIVE_WINDOW) and browser window id; fixture /state immediate read and bounded re-reads every 50 ms up to 3000 ms; loadavg.",
+   "oracles": {
+    "page_trusted_foreground": "T trial: page journal shows pointerdown and click on button{Submit} with isTrusted=true, document.hasFocus()=true and visibilityState=visible at pointerdown, and X11 active window == the browser window before and after the click.",
+    "target_effect": "fixture /state submitted == per-trial token (T, D, N_domfg) or stays null (Y, N_bg); fixture POST /submit journal count.",
+    "type_effect": "page journal input event(s) with value_len == len(token) (Y and every T/D/N trial)."
+   },
+   "receipt_fields_compared": "effect, route, delivery.mode, delivery.delivered_count, evidence, escalation, error per tool call. summary is prose and is compared only after replacing numbers with '#'."
+  },
+  "gates": {
+   "CONFIRMED_BUG": "ALL of: (1) baseline reports delivery.mode=background on >=1 accepted T trial whose page oracle shows trusted foreground; (2) the failing test fails at main+test and passes at the fix; (3) with the fix, T reports foreground on every accepted T trial and D, Y, N_domfg report background, N_bg has no delivery; (4) no other compared receipt field changes between baseline and fix in any arm, and no contract/golden test changes outcome or expectation.",
+   "NOT_A_BUG": "otherwise; the README quotes the governing contract text and states which condition failed.",
+   "routing": "Result routed in the README to kvnloo/cua#38 / upstream trycua/cua 4009 (plain text). Nothing is posted by this lane."
+  }
+ },
+ "part_B": {
+  "hypothesis": "HB: each browser tool call attaches a CDP session (Target.attachToTarget) without a matching detach, so live sessions and per-call CDP event volume grow linearly with calls in one Driver session.",
+  "instrumentation": "Measurement-only, env-gated, default-off: CUA_DRIVER_EXP_CDP_COUNTER_FILE (unset = no file, no work). New cua-driver-core/src/browser/cdp_counters.rs; hooks in cdp_ws.rs (command sent/acknowledged, every parsed frame) and one call at the end of the tool dispatch seam. One JSONL line per completed tool call: attach/detach commands sent and acknowledged, attachedToTarget/detachedFromTarget events, live session set size, sessions seen, replies/events cumulative and per-call delta, frames and events per session id since the previous line. Unit tests in the module; default-off smoke = stock browser-smoke.sh with the instrumented binary and the variable unset (rc 0, no counter file anywhere in the retained session dir).",
+  "page": "jev-use PAGE with one injected <button type=\"button\" id=\"bug01-noop\">No-op</button> (no handler, no form) inside <main>; served by the jev-use fixture server subclass.",
+  "session_setup": "MCP initialize -> set_agent_cursor_enabled {enabled: false} (both arms; removes the ~1.5 s awaited glide so a ms-scale slope is measurable) -> browser_prepare {allow_launch, isolated_new} -> list_windows poll -> get_browser_state {pid, window_id} -> browser_navigate fixture. Setup calls are not in the measured series.",
+  "call_sequence": "call k (0-based): even k -> get_browser_state {snapshot_format: semantic_v2}; odd k -> browser_click {ref: the No-op ref from the latest snapshot, input_route: dom_event}.",
+  "arms": {
+   "L": "long session: one Driver + browser, calls k=0..299 (300 calls).",
+   "C": "fresh-session control: 30 blocks x 10 calls (k=0..9), each block a fresh Driver + browser; series index s = 10*block + k (0..299)."
+  },
+  "navigation_probe": "secondary, pre-registered: in each L session a browser_navigate reload of the fixture before k=0, before k=100, before k=200 and after k=299 (4 probes, not in the series; the next call after a probe is always a snapshot). In C, each block's setup browser_navigate is the fresh-session probe (30 per C series). Metric: events received during the navigate call vs live sessions at that moment.",
+  "rss": "Every 25 calls in L (k=0,25,...,300) and at the start and end of each C block: VmRSS and Pss (smaps_rollup) summed over the Chrome process tree rooted at this lane's browser_prepare pid, plus the renderer processes separately (read-only /proc).",
+  "order_and_lock": "One isolated-session invocation: L1 C1 C2 L2 L3 C3 (ABBA at series level), holding quiet-lane.lock EXCLUSIVE for the whole run. loadavg recorded per call and per block. Every call kept; failures stay in the denominator.",
+  "pilot": "Up to 2 short plumbing pilots before the measured run (<=1 long session of <=20 calls and <=1 control block), excluded from every number and retained under raw/pilot/.",
+  "metrics": {
+   "M1": "cumulative attach_sent - detach_sent and live_sessions vs k (L) and vs s (C).",
+   "M2": "per-call events_delta (CDP events received during the call) vs k, excluding navigation probes.",
+   "M3": "per-call latency (client-side MCP call_tool elapsed ms) vs k, with a call-type intercept (snapshot vs click).",
+   "M4": "Chrome tree RSS/Pss vs k.",
+   "M5": "navigation probe events_delta vs live_sessions."
+  },
+  "statistics": "OLS slope per session (M3 with a call-type dummy); pooled slope = mean of the 3 per-session slopes; 95% CI by seeded moving-block bootstrap within each session (block 25 calls, 10000 resamples, seed 20261002). C slopes the same way over s and over within-block k. Effect size = L latency slope in ms per 100 calls with CI, and L minus C (series index) with CI from independent resampling of both arms.",
+  "gates": {
+   "CONFIRMED": "M1 pooled slope (attach-minus-detach or live_sessions) > 0 with CI excluding 0 AND M2 pooled slope > 0 with CI excluding 0. Effect size = M3 latency slope (ms/100 calls) with CI.",
+   "REFUTED": "M1 and M2 both flat (CI includes 0).",
+   "ACCUMULATION_ONLY": "pre-registered intermediate: M1 slope > 0 (CI excludes 0) but M2 flat on this no-op workload; reported with M3, M4 and the navigation probe M5, which decides whether accumulated sessions amplify events when the page changes.",
+   "if_confirmed_or_accumulation": "add a minimal failing repro (ignored unit test over mock CDP asserting attach - detach <= 1 per Cua session/tab, or a repro script); the fix is out of scope and is routed to the upstream browser-timing owner trycua/cua 4052 (plain text).",
+   "drift_statement": "State whether R2-01/R2-02-style single-session runs (navigation per trial) carry a drift term, from M3 and M5."
+  }
+ },
+ "evidence_classes": ["SOURCE", "UNIT", "FIXTURE", "REAL", "BENCHMARK", "LIVE_PROVIDER", "BLOCKED", "NOT_RUN"],
+ "provider": "none; cap 0 requests reaching TypeSafe; attempts 0 expected",
+ "claim_boundary": "Driver 0.32.0 tree at 229b65b28 == c4d0c6625, Chrome 151, X11 Xvfb, jev-use fixture. Part A's fix is a candidate for review, not a published or upstream change."
+}
