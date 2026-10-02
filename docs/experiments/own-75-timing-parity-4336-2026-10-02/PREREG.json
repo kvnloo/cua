@@ -1,0 +1,74 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "OWN-75",
+  "title": "Exact-head validation of trycua/cua PR 4336 (native jev-use timing-field parity with the browser phases)",
+  "owners": ["kvnloo/cua#75 (WAIT / promotion-only directive of 2026-10-01)", "kvnloo/cua#10 (accounting, consumer only)"],
+  "advances": "E1: terminal disposition for #75",
+  "written_utc": "2026-10-02T04:50Z",
+  "hypothesis": "trycua/cua PR 4336 at its live head adds the common timing fields (semantic_observe_ms, visual_observe_ms, candidate_build_ms, provider_decision_ms, decision_ms, action_ms, total_step_ms) to the native jev-use runners in Python and TypeScript with identical boundaries, keeps every old native field (observation.observe_ms, visual.parse_ms, decide_ms, act_ms) and visual_observe_scope=\"parse_only\", and changes no provider, routing or action behaviour.",
+  "sources": {
+    "pr_head": "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939 (live head read with gh at lane start 2026-10-02T04:30Z; the kvnloo/cua#75 body still cites the older head d301a076c)",
+    "m0": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4 = git merge-base 8391cf802 upstream/main (upstream/main = 352507b6c03162ab286b21d5ed509125cc3daece)",
+    "mergeability": "git merge-tree --write-tree upstream/main(352507b6c) 8391cf802 -> rc 0, tree ba49d279695d440353c96d8993134bf56ee047ca, no conflicts (object-level only)",
+    "pr_files": "git diff --name-only 2ca90d338 8391cf802: exactly the 7 libs/cua-driver/examples/jev-use files (README.md, fake_native_driver.py, fixtures/native/timing-contract-v1.json, python/run_native.py, python/tests/test_native_timing.py, typescript/native_timing.test.ts, typescript/run_native.ts); 0 .rs files; libs/cua-driver/tests and libs/cua-driver/rust identical between M0 and head",
+    "worktrees": "head: branch exp/own-75-timing-parity-4336-20261002 at 8391cf802 (packet commits add only docs/experiments/own-75-timing-parity-4336-2026-10-02/); m0: detached worktree at 2ca90d338 (removed at the end)",
+    "head_recheck": "gh pr view 4336 -R trycua/cua --json headRefOid at the start and at the end; if it changed, stop and report"
+  },
+  "driver": {
+    "binary": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+    "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3 (re-hashed at lane start; re-hashed again at the end)",
+    "version": "read in every REAL block with cua-driver --version inside the session; MCP initialize serverInfo recorded by the tee",
+    "source_note": "built from upstream main 229b65b28; M0 (2ca90d338) is an ancestor of 229b65b28 and examples/jev-use is identical between them; the same binary serves both arms, so no cross-binary comparison is made"
+  },
+  "steps": {
+    "S1_unit": {
+      "class": "UNIT",
+      "what": "per arm (head, m0), under hostless with env -i (no provider credentials, no desktop): python -m unittest discover -s python/tests -v (the CI runner; pytest is not in the locked environment), verify_choice_cli.py, verify_decision_cli.py --model mock, verify_choice_cli.py --request-version v2, verify_decision_cli.py --model mock --fixture native, node --import tsx --test typescript/*.test.ts (npm test), tsc --noEmit (npm run typecheck)",
+      "pass": "every command rc 0 at head; or every head failure exists at m0 with an identical test identity. Skips are listed (provider- or package-dependent skips are never failures). The head must run test_native_timing.py (2 tests) and native_timing.test.ts (2 tests).",
+      "pre_run_disclosure": "the same script ran once before this file was written (2026-10-02T04:35Z, all rc 0, head 231 py tests / 1 skipped, 107 ts; m0 229 / 1 skipped, 105). That pre-run is kept in the artifact mirror only; the reported S1 run is the one after this file is committed."
+    },
+    "S2_field_contract": {
+      "class": "SOURCE+UNIT+REAL",
+      "what": "SOURCE: line review of both runners. UNIT: the PR's parity tests against fake_native_driver.py. REAL: every head step event carries all 7 common fields + visual_observe_scope, every head and m0 step carries decide_ms, act_ms and observation.observe_ms, visual_observe_scope is \"parse_only\" on every head step, alias equalities provider_decision_ms==decide_ms and action_ms==act_ms on every head step, and parse_ms (when present) == visual_observe_ms.",
+      "mismatch_rule": "REVISE trigger = a common field whose spanned code differs between Python and TypeScript in a way the PR introduced. An asymmetry that exists at M0 in a legacy field the contract declares as the alias of a common field (aliases: provider_decision_ms=decide_ms, action_ms=act_ms), or in pre-existing control flow that only changes how much work falls inside an identically defined phase, is reported by name as INHERITED and does not trigger REVISE (removing it would change an old field's semantics, which the 2026-10-01 directive forbids). Disclosure: the SOURCE review ran before this rule was written; it found (a) TypeScript decide_ms (hence provider_decision_ms) also spans task.expectedNext(history) and the offered-set build, while Python stops the decide timer right after the choice (present at M0), and (b) Python always runs one task.plan after the first observation while TypeScript runs it only when the tree is neither truncated nor complete (documented in the PR README). Both are reported in the packet."
+    },
+    "S3_behaviour_identity": {
+      "class": "REAL",
+      "fixture": "canonical GTK3 fixture libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py in task mode (CUA_GTK3_TASK_STATE=<fresh state file per trial>), system /usr/bin/python3 + PyGObject; blob fa4b5ad3 identical at head and m0; a fresh fixture process per trial",
+      "tasks": ["gtk3-choose-size (radio select + checkbox toggle)", "gtk3-save-note (text entry + button)"],
+      "runners": ["python/run_native.py", "typescript/run_native.ts (node --import tsx)"],
+      "chooser": "--provider mock (the runners' existing deterministic chooser, task.mock_preferences); no live or recorded-provider chooser; TypeSafe cap 0",
+      "environment": "bin/hostless + cua-x11-session.sh (private rootless Xvfb 1920x1080x24, private dbus, openbox + picom), CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\"; no permission-mode override, no approval bypass, Driver telemetry left at its default in both arms (fresh session HOME)",
+      "route": "runner -> harness/mcp_tee.py (CUA_DRIVER_BIN; transparent stdio tee, forwards bytes unchanged, logs JSON-RPC) -> the real Driver binary above",
+      "network_guard": "harness/netguard (Python sitecustomize via PYTHONPATH; Node --import netguard.mjs) refuses and counts every non-loopback TCP/UDP connect from the runner process; an 'armed' record per runner process is required in every trial; each block first runs a self-test where a deliberate TEST-NET connect from each runtime must be refused (negative control)",
+      "plan": "harness/make_plan.py: for rep i in 0..19 and each cell (python|typescript) x (choose-size|save-note) a pair (head, m0); order AB for even i, BA for odd i (10 AB + 10 BA per cell); 160 trials in 16 blocks of 10; one shared quiet-lane lock acquisition (flock -s, <= 10 trials) and one private session per block; receipts in raw/real/lock-ledger.jsonl; loadavg per trial; every trial kept",
+      "oracle": "the fixture's own state file (schema cua.gtk3_task_state_v1, pid == launched fixture): choose-size verified iff size == large and agreed == true; save-note verified iff note_saved == the note text. Runner outcome events are not the oracle.",
+      "normalization": {
+        "timing_strip": "remove, at any depth, every key ending in _ms and the keys semantic_observe_ms, visual_observe_ms, candidate_build_ms, provider_decision_ms, decision_ms, action_ms, total_step_ms, visual_observe_scope; in Driver text content replace walk_ms=N / elapsed_ms=N / took=N with <ms>",
+        "ids": "per trial: the fixture pid and the window_id from the runner start event become <pid> / <window_id> (as values of keys pid / window_id and inside strings); capture_<32 hex>_<seq> -> capture_<id>_<seq> (sequence kept); jev-native-<language>-<hex> session labels -> jev-native-<language>-<id>; long strings (> 2048 chars, i.e. screenshot data) and the tools/list body are reduced to digests by the tee and compared as <blob> / name list",
+        "kept_verbatim": "snapshot ids (s0000000N), element tokens (s0000000N:k), candidate ids, probabilities, confidence, compose stats, tool names, all other arguments, delivery modes, receipts (route, effect, delivery, summary), runner outcome, oracle final state including seq",
+        "primary_trace": "runner events + every client->Driver request (method, id, tool, arguments, initialize params) + every non-observation tool result (action receipts: isError, structuredContent, content) + runner rc/outcome + oracle verified/final state",
+        "secondary_trace": "normalized get_window_state and list_windows results (reported, not gated)"
+      },
+      "pilot_disclosure": "two pilot blocks ran before this file: p01 (4 trials: head py choose-size, m0 ts choose-size, m0 py save-note, head ts save-note; all verified) to prove the route, and p02 (6 trials, m0 only: two repeats of py choose-size and of ts save-note, plus py save-note and ts choose-size; all verified) to check run-to-run determinism within one arm (one primary and one secondary digest per repeated cell). No head-vs-m0 comparison was computed on pilot data. Pilot data are excluded from results and kept in the artifact mirror only. Changes after pilot p01: the guard self-test now expects Node's lowercase 'true', and the tee reduces the tools/list body to names + digest."
+    },
+    "S4_mutation": {
+      "class": "UNIT",
+      "what": "harness/mutate.py: scratch copies of the head jev-use sources (worktree untouched), one textual edit per row (must match exactly once), then that language's parity test only. Rows per language: none (unmutated positive control, must pass); M1 decision_ms starts after observation; M2 act_ms dropped from the action step; M3 visual_observe_ms includes the semantic observation; M4 visual_observe_scope dropped; M5 total_step_ms ends before the action; M6 the reobservation left out of semantic_observe_ms; M7 parse_ms includes the semantic observation; M8 one extra get_window_state per step (behaviour, not timing).",
+      "gate": "M1 and M2 detected (the parity test fails) in BOTH languages, and both none rows pass. M3-M8 are reported row by row; an undetected row is listed as a test-strength limitation, not as a PR behaviour defect."
+    },
+    "S5_fake_driver": {
+      "class": "UNIT",
+      "what": "fake_native_driver.py paths (counter scenario with no visual parse, canvas scenario with reobservation + parse_visual_regions) are exercised by the PR's parity tests in S1 and S4; their Driver-call sequences are asserted by those tests."
+    }
+  },
+  "gates": {
+    "KEEP": "S1 passes (or every failure pre-existing at m0 with identical identity) AND for every cell the primary trace is identical for 20/20 head and 20/20 m0 trials after normalization (one primary digest per cell) AND the oracle verifies 40/40 per cell AND S2 field checks hold on every head step AND S4 gate holds",
+    "REVISE": "any Python-vs-TypeScript field-semantics mismatch the PR introduced (S2 mismatch_rule), named",
+    "KILL": "any primary-trace difference between head and m0 after normalization, or any oracle-outcome difference between arms",
+    "INCONCLUSIVE_rule": "if m0 itself shows more than one primary digest in a cell (environmental nondeterminism), the cell gate becomes: head and m0 digest sets equal and every difference explained by the Driver/fixture (named), reported as such, never silently passed",
+    "directive": "add no features and widen no timing semantics; timing field VALUES are never reported as results, so no quiet-lane timing claim is made"
+  },
+  "provider": {"name": "TypeSafe", "lane_cap_reaching": 0, "expected_attempts": 0, "expected_reached": 0},
+  "claim_boundary": "jev-use native runners at 8391cf802 vs M0 2ca90d338 on Linux X11/GTK3 (canonical fixture, two tasks) with the deterministic mock chooser and Driver 0.32.0 (8b037961...). No live-provider, S1, macOS, Windows, Wayland or canvas/visual-parse REAL claims (the visual parse path is covered only by the fake-driver UNIT tests). Staged downstream only; nothing is posted upstream."
+}
