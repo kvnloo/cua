@@ -1,0 +1,121 @@
+{
+ "schema": "n01r.prereg.v1",
+ "lane": "N-01R",
+ "title": "Native causal wait A/B on the canonical GTK3 checkbox and text-entry tasks (re-plan of N-01)",
+ "written_utc": "2026-10-02T05:37:45Z",
+ "status_note": "Committed before the first measured trial. Pilot trials (listed under pilots) ran before this commit and are excluded from every number.",
+ "owners": ["kvnloo/cua#93 (R2-04 follow-up; R2-09 gate)", "kvnloo/cua#20 (focus/event input)", "kvnloo/cua#10 (accounting)", "kvnloo/cua#73 (canonical state)"],
+ "hypotheses": {
+  "H_C": "On the canonical GTK3 fixture, set_agent_cursor_motion {glide_duration_ms: 1, dwell_after_click_ms: 0} (cursor stays enabled) deletes most of the native cursor-reveal time.",
+  "H_S": "The fixed 50 ms post-DoAction sleep can be removed without degrading receipt truth.",
+  "H_F": "The ~220 ms focus-guard SETTLE_WATCH can be removed only by weakening the background non-invasiveness safety net.",
+  "composition": "X = C+S0 (and X2 = C+S0+F0) gives the best native T."
+ },
+ "source": {
+  "base_commit": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49",
+  "base_note": "R2-04 measurement-only phase marks (parent 1280a9e5e) on upstream main 229b65b28",
+  "tree_equality_check": {"command": "git diff --quiet 229b65b28 352507b6c -- libs/cua-driver", "rc": 0, "meaning": "libs/cua-driver at 229b65b28 equals current upstream main 352507b6c03162ab286b21d5ed509125cc3daece; base differs from it only by the R2-04 marks"},
+  "measurement_commit": "b9b357bc72fe0627b841f66a2d0812fafca8711f",
+  "measurement_commit_scope": "exactly one commit, measurement-only, env-gated, default-off: CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS (perform_action_ref post-DoAction sleep; unset = 50 ms, 0 = skipped) and CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS (focus_guard SETTLE_WATCH; unset = 220 ms, 0 = no watch, capture + immediate restore check still run). Each read once per process (OnceLock) and written into the phase trace as an exp_knob mark when set. Unparsable values = unset.",
+  "driver": {"file": "cua-driver-n01r-b9b357bc7", "sha256": "c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95", "version": "cua-driver 0.32.0 (read inside cua-x11-session.sh)", "build": "hostless flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> n01r-b9b357bc7 cua-release-n01r; head=b9b357bc7; 0 Fresh workspace units; 215 s"},
+  "unit": "platform-linux lib: 4 knob tests + touched suites input::focus_guard atspi:: tools:: = 181 passed; cua-driver-core phase_trace 3 passed; inside cua-x11-session.sh under flock -s quiet + cargo-build lock",
+  "harness_origin": {"branch": "exp/r2-04-atspi-profile-20261001", "commit": "9bfd437390571985870a66d941f43dbe417f31c0", "dir": "docs/experiments/r2-04-2026-10-01/", "copied_to": "r2-04-harness/", "blobs": {"profile_atspi.py": "b3cfae3b9e6258c43464185ce898134c92c1a1a4", "run_in_session.sh": "79683b6169420297ae3fe485ce1e33b105564e1c", "run_batch.sh": "b554d43c6f34ce9dce908b2e93973a8833061843", "analyze.py": "57d834e67e126ceb6aa6f4f57f6d96634195d2fa", "verify_artifacts.py": "7111bb10780c3762fcbfe4eb35d7c1de73826a46"}}
+ },
+ "step0_source_at_base": {
+  "reveal_path": [
+   "platform-linux/src/tools/impl_.rs:6364 ClickTool element route calls reveal_pointer_action_for(..., click_pulse=true) between the R2-04 marks placement_done and reveal_done",
+   "platform-linux/src/tools/impl_.rs:8916 SetValueTool calls position_named_session_keyboard_cursor(..., Some(idx), None, true) between set_value element_resolved and cursor_done",
+   "platform-linux/src/tools/impl_.rs:5429 position_named_session_keyboard_cursor -> reveal_pointer_action_for(click_pulse=false) for a named session (every jev-use call carries session)",
+   "platform-linux/src/tools/impl_.rs:5300/5310 reveal_pointer_action_for: cursor_registry.set_enabled(cursor_id, true), then overlay_glide_to_for",
+   "platform-linux/src/tools/impl_.rs:5272/5277/5287 overlay_glide_to_for: sends SetEnabled(true); if the cursor has no prior position (sentinel < 0) sends ClickPulse and returns without waiting; else awaits overlay::animate_cursor_to_for",
+   "platform-linux/src/overlay.rs:644/653 animate_cursor_to_for waits for the renderer's arrival (cap ARRIVAL_WAIT_CAP 5500 ms, overlay.rs:714) only if the render state is enabled+visible at that instant",
+   "glide_duration_ms governs both spans: cursor-overlay/src/motion.rs default 0 (speed-based) and clamp [0, 5000] (motion.rs:84-87); set through set_agent_cursor_motion (impl_.rs SetAgentCursorMotionV2Tool, cursor_number(args.get(\"glide_duration_ms\")))"
+  ],
+  "post_doaction_sleep_sites": [
+   "platform-linux/src/atspi/native.rs:3658 perform_action_ref (cached snapshot ref) tokio sleep 50 ms between the R2-04 marks atspi_action do_action_replied and post_sleep_done. This is the site that executes on both the checkbox click and the Save note click (R2-04 marks; confirmed again in the N-01R pilot).",
+   "native.rs:3535 perform_action (index re-walk fallback) has the same 50 ms sleep; it runs only when the cached ref fails, which the route check marks invalid. Not changed.",
+   "set_value path (atspi/mod.rs:491 set_value_in -> native.rs:5311 set_value_ref -> 5234 set_value_on -> 5217 commit_editable_write) has NO post-action sleep.",
+   "native.rs:4212 (actuate_chain, point route) and native.rs:4324 (select_item_in_chain) are other routes; not on these tasks."
+  ],
+  "focus_guard": [
+   "platform-linux/src/input/focus_guard.rs:40 SETTLE_WATCH 220 ms; :47 SETTLE_POLL 30 ms (so the quiet watch ends after ceil(220/30) = 8 polls, about 240 ms); :52 RESTORE_BUDGET 600 ms; :53 RESTORE_POLL 50 ms; :55 STABLE_POLLS 3",
+   "focus_guard.rs:597 watch_until = started + SETTLE_WATCH inside restore_if_changed_opts(settle_watch=true); a change ends the watch early and enters the restore loop (reassert, then RESTORE_POLL x STABLE_POLLS)",
+   "focus_guard.rs:781 guarded(): capture -> body (perform_action) -> restore_if_changed",
+   "the guard runs only for background delivery: impl_.rs:6431 guard_pid = (!delivery.is_foreground()).then_some(pid); impl_.rs:6440 guarded(Some(pid), perform_action_observed); set_value is not guarded"
+  ],
+  "dwell_after_click_ms": "no Linux runtime reader: it is clamped and stored (motion.rs:89-90), set by set_agent_cursor_motion (impl_.rs:12476) or the overlay CLI flag (cursor-overlay/src/lib.rs:146) and echoed in tool output (impl_.rs:12495, 12638); nothing in platform-linux or cursor-overlay render code reads it to wait. Inert on Linux.",
+  "c_off_excluded": "set_agent_cursor_enabled(false) is race-only: every reveal re-enables the cursor (impl_.rs:5310 registry set_enabled(true); impl_.rs:5277 overlay SetEnabled(true) before the glide), and animate_cursor_to_for only skips the wait if the render thread has not yet processed SetEnabled(true) when it checks (overlay.rs:653). C_off is therefore excluded.",
+  "read_once_per_process": ["CUA_DRIVER_PHASE_TRACE_FILE (cua-driver-core/src/phase_trace.rs:25 OnceLock)", "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS (OnceLock, measurement commit)", "CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS (OnceLock, measurement commit)", "ARRIVAL_DEGRADED latches per process (overlay.rs:697/717)", "cursor motion is per session at runtime (set_agent_cursor_motion), not env"],
+  "fresh_process_consequence": "In a fresh Driver process the session cursor has no prior position, so the first reveal of the process is a ClickPulse with no glide wait (impl_.rs:5287). With one fresh process per trial (required: knobs are read once), the checkbox task's only click is that first reveal; the text task's set_value pulses and its Save click glides from the Note field. The supplementary block W adds a pre-T warm-up so the checkbox click glides from a prior position."
+ },
+ "fixture_and_oracle": {
+  "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py, task window (CUA_GTK3_TASK_STATE), 'CuaTestHarness GTK3 Tasks'",
+  "tasks": {"checkbox": "get_window_state (tree + screenshot) -> jev-use eligible_controls lookup of 'I agree' -> click(element_token, delivery_mode=background). Expected: agreed flipped and seq = before + 1.", "text": "get_window_state -> lookup 'Note' and 'Save note' -> set_value(Note token, unique value) -> click(Save note token, background). Expected: note_saved = value and seq = before + 1."},
+  "oracle": "The app's own state file, read by an independent harness thread every 2 ms (StateSampler). Each sample stores read-start t0 and read-end t1 (monotonic ns). Driver receipts are logged, never the oracle.",
+  "forced_path": "the R2-04 background element-token AT-SPI route (AT-SPI DoAction via perform_action_ref; EditableText SetTextContents via set_value_ref)",
+  "producer_verification": "per trial and per action: structured route == 'accessibility'; for each click the marks click{element_resolved, placement_done, reveal_done, ax_start, ax_joined}, focus_guard{captured, body_done, restored} and atspi_action{connected, live_checked, metadata_done, do_action_replied, post_sleep_done} are present in order; for set_value the marks set_value{element_resolved, cursor_done, write_done, readback_done}; exp_knob marks are present exactly for the knobs the arm sets (post_action_sleep_ms=0 for S0/X/X2, focus_guard_settle_ms=0 for F0/X2) and absent otherwise. A trial whose route differs is invalid and stays in the denominator."
+ },
+ "arms": {
+  "B": "defaults (set_agent_cursor_motion {} sent pre-T so every arm touches the overlay identically)",
+  "C": "set_agent_cursor_motion {glide_duration_ms: 1, dwell_after_click_ms: 0}, cursor enabled",
+  "S0": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0",
+  "F0": "CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS=0",
+  "X": "C + S0",
+  "X2": "C + S0 + F0",
+  "pre_T_per_trial": "fresh fixture process (state file published, then 1.0 s AT-SPI settle as R2-04), fresh Driver process (MCP initialize, list_windows), set_agent_cursor_motion (arm-specific args), get_agent_cursor_state (recorded), phase trace on (CUA_DRIVER_PHASE_TRACE_FILE per trial), 1-min loadavg recorded"
+ },
+ "design": {
+  "plan_file": "plan.json (make_plan.py measured)",
+  "acquisitions": "Measured trials run in 4 EXCLUSIVE acquisitions e01..e04, one isolated X11 session each; each = 5 main rounds (sub-blocks m01-m05, ...) + 1 warm block (w01..w04) + 1 observation block (o01..o04), 90 trials. Grouping keeps the number of exclusive-lock acquisitions small on a shared machine; trial ids keep their sub-block names.",
+  "main": "20 rounds (sub-blocks m01..m20). Each round runs both tasks; the first task alternates by round; each task runs the 6 arms in Williams row (round mod 6) of the 6x6 Williams square [[0,1,5,2,4,3], ...] over arms [B, C, S0, F0, X, X2]. n = 20 per arm per task, paired within the round.",
+  "fresh_processes": "fresh cua-driver process and fresh fixture app per trial",
+  "locks": "every main/supplementary block runs under bin/quiet-timed <label> (EXCLUSIVE quiet-lane lock, receipt in the shared ledger) taken before the isolated session and so before any Driver MCP session opens; control blocks (<= 10 trials) under flock -s quiet-lane.lock with receipts in raw/lock-ledger.jsonl",
+  "isolation": "every code-executing command runs as: bin/hostless bin/hostless-strict <cmd> (hostless v2 env scrub + Landlock scope; hostless-strict = the v1 bwrap mount mask of the host runtime/X11 socket dirs, the variant the pilots ran under); GUI/Driver/AT-SPI inside cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=CUA_SESSION_ATSPI=1; DISPLAY recorded per block; a block whose display already has X clients at start is kept as failures and re-run under a new label",
+  "order": "d01 (default-off smoke, shared lock), then e01 (m01-m05, w01, o01), e02 (m06-m10, w02, o02), e03 (m11-m15, w03, o03), e04 (m16-m20, w04, o04), then controls a01,l01,a02,l02,a03,l03,s01,a04,l04,a05,l05,a06,l06,s02,a07,l07,a08,l08,s03 (shared lock, 10 trials each)",
+  "keep_every_trial": true
+ },
+ "metrics": {
+  "T0": "caller monotonic stamp immediately before sending the task's first observation call (get_window_state)",
+  "T": "spec T: T_end - T0 where T_end is the read-end (t1) of the first oracle sample whose read started (t0) at or after the last action's tool-return stamp and whose parsed state shows the expected state",
+  "T_land": "read-end of the first oracle sample (any time) showing the expected state, minus T0",
+  "T_return": "last action's tool-return stamp minus T0",
+  "decomposition": "Contiguous boundaries from T0 to T_end. Caller stamps are monotonic; Driver marks (wall ns) are mapped to caller monotonic with the trial's median (wall - mono) offset over its caller stamps. Components: mcp_transport_obs (caller send -> dispatch_enter and dispatch_exit -> caller return of the observation call, plus T0 -> observation send), mcp_transport_act (the same for the action calls), observation (get_window_state dispatch_enter -> dispatch_exit), runner (caller return -> next caller send), resolution (dispatch_enter -> invoke_start registry admission, plus invoke_start -> placement_done for clicks and invoke_start -> element_resolved for set_value), reveal (click placement_done -> reveal_done; set_value element_resolved -> cursor_done), dispatch (click reveal_done -> do_action_replied; set_value cursor_done -> readback_done), post_action_sleep (do_action_replied -> post_sleep_done), settle (post_sleep_done -> focus_guard restored), result (click restored -> dispatch_exit; set_value readback_done -> dispatch_exit), effect_lag (max(0, T_land - T_return)), verification_read (T - T_return - effect_lag).",
+  "coverage": "per trial: sum of spans whose two boundaries exist / T. Gate: median coverage >= 0.98 per arm and task. Unattributed time counts as untested.",
+  "statistics": "medians; nearest-rank p95; paired within-round differences (arm - B per round and task, rounds where both trials are valid and verified); seeded percentile bootstrap over rounds: 10000 resamples, random.Random(9101), CI95 = sorted resampled medians at indices int(0.025*R) and int(0.975*R)-1. Speedup S = median T_B / median T_arm over paired rounds with the same round bootstrap."
+ },
+ "controls": {
+  "a_decoy_focus_steal": "REAL. A pre-mapped decoy X toplevel created by the harness (xprobe.Decoy, _NET_WM_PID = harness pid) before the block's fixtures. Pre-T the fixture window is activated (EWMH request) and the focus verified. The decoy watches the trial's state file (1 ms poll) and, delay_ms after seq changes, activates itself (EWMH _NET_ACTIVE_WINDOW request source 2 + XRaiseWindow + XSetInputFocus). Variants 100 ms and 20 ms. Arms B vs F0, 10 trials per arm per variant per task (80), AB/BA pairs. Oracle: an independent X client (xprobe.FocusSampler) sampling XGetInputFocus and _NET_ACTIVE_WINDOW every 2 ms from before T0 until 0.7 s after the last action returns; restored = final (focus, active) equal to the pre-T values; missed = final focus or active is the decoy. Driver receipt: focus_outcome as reported in the click result text (the flat focus_* fields are reduced away by the public action contract). Receipt disagreement = oracle missed while the receipt reports no change or restored.",
+  "b_late_effect": "REAL+FIXTURE. fixture_late.py (test-fixture code only; Driver unchanged) delays the app model update and state publish by 30 ms or 80 ms after GTK delivers the toggle / Save signal (CUA_N01R_FIXTURE_APPLY_DELAY_MS). Arms B vs S0, 10 per arm per variant per task (80). Counted on the action the oracle observes (the click): success claims before the oracle changes (receipt verified == true or effect in {confirmed, verified} while the oracle at tool return does not show the expected state) and false failures (error/refusal or effect == suspected_noop while the oracle shows the expected state). Also reported: effect not visible at return (the first oracle sample at/after return does not yet show the expected state).",
+  "c_stale_token": "REAL. Observe fixture A, terminate it, start fresh fixture B, click(pid=B, window_id=B, element_token=A's token, background). Pass = refused (tool error or status 'refused', code stale_element_token or another stale/binding refusal), 0 mutations of B (seq unchanged), 0 atspi_action do_action_replied marks after the restart. The Driver expresses 'effect=refused' as status 'refused' with no effect field; that mapping is accepted. 5 per arm, 6 arms (30).",
+  "d_default_off_smoke": "REAL. Knobs unset (arm B), 5 trials (checkbox, text, checkbox, text, checkbox), before the first main block. Pass = no CUA_DRIVER_EXP_* in the Driver env, no exp_knob marks, every click post-action-sleep span in [50, 60) ms, every click settle span >= 220 ms, every trial verified."
+ },
+ "supplementary": {
+  "W_warm_cursor_checkbox": "Blocks w01-w04: 20 rounds of {B, C} on the checkbox task, AB/BA by round. Pre-T warm-up in both arms: a get_window_state plus set_value(Note, '') (no app-state change: the task window publishes on toggle/Save only) leaves the session cursor at the Note field, so the I agree click glides from a prior position as in a long-lived Driver. Same T, oracle and route rules. Gate H_C_warm as H_C.",
+  "O_observation_modality": "Blocks o01-o04: 20 rounds per task of {X2, X2o}; X2o = X2 with include_screenshot false on the task observation (accessibility tree only). Same T, oracle and route rules. Gives the observation component of the composed arm a causal verdict: if X2o - X2 paired CI excludes 0 (saving), the screenshot share is OWNER_DECISION (caller observation-modality policy; consistent with OWN-16 KEEP); the remaining observation (AT-SPI walk binding a fresh token) is IRREDUCIBLE by invariant (#73/#93: act on a fresh observation; 0 stale-ref dispatches). If the CI includes 0, the screenshot is not material.",
+  "why_added": "Both supplementary blocks were added after the pilot showed that the fresh-process checkbox reveal is a pulse (no glide) and that observation/MCP become large shares once the waits are removed. The six-arm primary design, gates and controls are the spec's, unchanged."
+ },
+ "gates": {
+  "validity": "per arm per task: at least 19/20 trials valid (route) and verified (T_end exists and the final sampled state equals the expected state, seq exactly before + 1); identical verified outcomes across arms; every failure kept in the denominator.",
+  "H_C": "per task: C - B paired median diff has CI95 upper < 0 AND saving (= -median diff) >= 0.5 x median B reveal component -> OWNER_DECISION (a feedback default change, consistent with browser H_V). If the B reveal component is < 5% of median T_B and < 50 ms -> not material. Otherwise -> IRREDUCIBLE.",
+  "H_S": "per task: S0 - B paired CI95 upper < 0 AND saving >= 25 ms AND control (b) S0 adds 0 receipt-vs-oracle disagreements over B -> DELETED (KEEP; a default change is routed as a reviewed fix candidate). Saving holds but receipts degrade -> IRREDUCIBLE for receipt truth and the wait is named for R2-09. CI includes 0 -> not material.",
+  "H_F": "per task: F0 - B paired CI95 upper < 0 (saving). If B restores in >= 9/10 decoy trials in each variant and F0 misses >= 1 late steal (either variant) -> IRREDUCIBLE (background non-invasiveness contract). If F0 misses 0 in both variants -> OWNER_DECISION (the safety-net window is policy).",
+  "composition": "per task: S_X = median T_B / median T_X and S_X2 = median T_B / median T_X2 with round-bootstrap CIs. Best composed arm = lowest median T among valid arms whose gates held; arms containing F0 are excluded if H_F is IRREDUCIBLE; arms containing S0 are excluded if H_S is IRREDUCIBLE.",
+  "E2": "Decompose the best composed arm per task (median per-trial component shares). Every component with median share >= 5% of T or median >= 50 ms gets a verdict (DELETED / IRREDUCIBLE / OWNER_DECISION) from this packet's gates (reveal: H_C / H_C_warm; post_action_sleep: H_S; settle: H_F; observation + mcp_transport_obs: block O (screenshot delta OWNER_DECISION if the O saving CI excludes 0) and IRREDUCIBLE by invariant for the remainder (a fresh observation binds the token; 0 stale-ref dispatches); dispatch: IRREDUCIBLE (the effect-producing AT-SPI write/DoAction itself, the liveness check the stale-ref invariant requires, name-based activation safety, and the set_value read-back that backs its 'confirmed' receipt), source-cited, sub-ms in R2-04; verification_read: IRREDUCIBLE by invariant (an independent confirmation read is required, E4: 0 unverified successes; its cost is the 2 ms sampling granularity); effect_lag: reported (0 when the effect lands before return)). Components without a test in this packet (mcp_transport_act, runner, resolution, result) get no verdict here. Untested share = median over trials of (sum of components without a verdict + unattributed) / T, reported per task; components below both thresholds without a verdict still count toward it.",
+  "R2_09": "If H_S is DELETED with no receipt degradation and no other fixed native wait of >= 5% of T remains in the best composed arm, record 'R2-09 precondition unmet: no native wait worth an event wake' as the input for an R2-09 KILL. Otherwise name the exact wait for R2-09."
+ },
+ "provider": {"provider": "TypeSafe", "cap_requests": 0, "use": "none; scripted task steps (no provider). The harness refuses and counts any non-loopback TCP connect from its process."},
+ "claim_boundary": "Canonical GTK3 fixture task window, X11 Xvfb/openbox/picom, private AT-SPI bus, Driver 0.32.0 at base 28b915ae9 + measurement knobs b9b357bc7, scripted task steps (no provider). Fresh Driver per trial. Not Wayland, macOS or Windows. No default change.",
+ "pilots": {
+  "note": "All after the measurement commit and build, before this PREREG commit, excluded from every number; raw kept in the lane artifacts (pilots/), not in the packet.",
+  "runs": [
+   "n01r-pilot1-p01 (12 main trials, 6 arms x 2 tasks, round 0; exclusive lock; hostless v1)",
+   "n01r-pilot1-p02 (2 warm trials B/C; hostless v1)",
+   "n01r-pilot1-p03/p04/p05 attempt 1: refused by the harness isolation guard before any fixture or Driver started (guard too strict for files our own processes create inside the masked runtime dir); kept",
+   "n01r-pilot1-p03-r1 (4 decoy trials, 100 ms), p04-r1 (4 late trials, 80 ms), p05-r1 (2 stale trials); shared lock; hostless v1",
+   "n01r-pilot2-p06 attempt 1: ran under hostless v2 (shared script replaced at 05:06:31Z: env scrub + Landlock, no mount mask); the harness refused on visible host sockets before any fixture or Driver started; the private Xvfb created its socket in the host /tmp/.X11-unix dir; no host display contact",
+   "n01r-pilot2-p06-r1: queued for the exclusive lock (three lanes contending) and stopped by this lane before it acquired the lock; no trial ran",
+   "n01r-pilot3-p06 (4 observation trials X2/X2o; shared lock) under hostless + hostless-strict"
+  ],
+  "seen_before_registration": "pilot medians per cell (n = 1-2), the fresh-process pulse reveal, the warm glide (~1258 ms), the Save-note glide (~1415 ms), decoy restore/miss behaviour, the late-effect delay, stale refusal, and the accessibility-only payload. The plan was regrouped into 4 exclusive acquisitions after the pilot waited for the contended exclusive lock."
+ }
+}
