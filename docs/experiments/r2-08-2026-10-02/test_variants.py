@@ -10,6 +10,7 @@ import json
 import os
 import sys
 import threading
+import time
 import unittest
 from pathlib import Path
 from urllib.error import HTTPError
@@ -57,6 +58,21 @@ class Base(unittest.TestCase):
     def kinds(self, kind: str) -> list[dict]:
         return [e for e in self.server.state.entries() if e["kind"] == kind]
 
+    def wait_kinds(self, kind: str, n: int, timeout: float = 2.0) -> list[dict]:
+        """Bounded poll until the journal holds >= n entries of ``kind``.
+
+        The handler journals a ``submit`` receipt after it has sent the HTTP
+        response, so the client can see the response before the server thread
+        has written the receipt. Absence checks are made only after the
+        receipt that closes the same request has been observed.
+        """
+        deadline = time.monotonic() + timeout
+        while True:
+            got = self.kinds(kind)
+            if len(got) >= n or time.monotonic() >= deadline:
+                return got
+            time.sleep(0.002)
+
 
 class BaseVariantTest(Base):
     def test_base_page_is_the_shipped_page_and_contract_holds(self) -> None:
@@ -73,7 +89,7 @@ class BaseVariantTest(Base):
     def test_base_submit_journal_and_state(self) -> None:
         self.assertEqual(self.post("/submit", {"value": "tok"}), 200)
         self.assertEqual(self.state(), {"submitted": "tok"})
-        [s] = self.kinds("submit")
+        [s] = self.wait_kinds("submit", 1)
         self.assertEqual((s["fields"], s["status"], s["effect"], s["value_sha16"], s["content_type"]),
                          (["value"], 200, "accepted", sha16("tok"), "application/x-www-form-urlencoded"))
         [m] = self.kinds("mutation")
@@ -82,7 +98,7 @@ class BaseVariantTest(Base):
     def test_base_empty_value_rejected_without_mutation(self) -> None:
         self.assertEqual(self.post("/submit", {"value": ""}), 400)
         self.assertEqual(self.state(), {"submitted": None})
-        self.assertEqual(self.kinds("submit")[0]["effect"], "rejected")
+        self.assertEqual(self.wait_kinds("submit", 1)[0]["effect"], "rejected")
         self.assertEqual(self.kinds("mutation"), [])
 
 
@@ -96,14 +112,19 @@ class N1Test(Base):
         self.assertEqual(e["extra_fields"], ["nonce:hidden"])
         self.assertEqual(self.post("/submit", {"value": "tok"}), 403)
         self.assertEqual(self.state(), {"submitted": None})
-        self.assertEqual(self.kinds("submit")[0]["reason"], "missing_nonce")
+        self.assertEqual(self.wait_kinds("submit", 1)[0]["reason"], "missing_nonce")
         nonce = page.split('name="nonce" value="')[1].split('"')[0]
         self.assertEqual(self.post("/submit", {"nonce": "0" * 16, "value": "tok"}), 403)
-        self.assertEqual(self.kinds("submit")[1]["reason"], "stale_nonce")
+        self.assertEqual(self.wait_kinds("submit", 2)[1]["reason"], "stale_nonce")
         self.assertEqual(self.post("/submit", {"nonce": nonce, "value": "tok"}), 200)
         self.assertEqual(self.state(), {"submitted": "tok"})
         self.assertEqual(self.post("/submit", {"nonce": nonce, "value": "tok2"}), 403)  # single use
         self.assertEqual(self.state(), {"submitted": "tok"})
+        subs = self.wait_kinds("submit", 4)
+        self.assertEqual([(e["status"], e["effect"], e["reason"]) for e in subs],
+                         [(403, "refused", "missing_nonce"), (403, "refused", "stale_nonce"),
+                          (200, "accepted", None), (403, "refused", "stale_nonce")])
+        self.assertEqual(len(self.kinds("mutation")), 1)
 
 
 class N2Test(Base):
@@ -122,7 +143,7 @@ class N2Test(Base):
 
     def test_probe_is_instrumentation(self) -> None:
         self.assertEqual(self.post("/probe", {"kind": "invalid", "name": "value"}), 204)
-        self.assertEqual(self.kinds("probe")[0]["event"], "invalid")
+        self.assertEqual(self.wait_kinds("probe", 1)[0]["event"], "invalid")
         self.assertEqual(self.kinds("mutation"), [])
 
 
@@ -134,7 +155,7 @@ class N3Test(Base):
         self.assertIn("/validate", page)
         self.assertEqual(eligibility(page, "tok")["scripts"], 1)
         self.assertEqual(self.post("/validate", {"value": "tok"}), 204)
-        [v] = self.kinds("validate")
+        [v] = self.wait_kinds("validate", 1)
         self.assertEqual(v["value_sha16"], sha16("tok"))
         self.assertEqual(self.state(), {"submitted": None})
         self.assertEqual(self.post("/submit", {"value": "tok"}), 200)

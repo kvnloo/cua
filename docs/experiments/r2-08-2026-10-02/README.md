@@ -37,7 +37,7 @@ Receipts: the Driver sha256, version and Chrome version were printed inside ever
 ## Environment
 
 - Host: Linux 7.2.2 x86_64, 10 CPUs.
-- Session: `cua-x11-session.sh`, i.e. private rootless Xvfb 1920x1080x24, openbox, picom (xrender) and private dbus. Host Wayland/Hyprland variables were scrubbed, and there was no AT-SPI bus.
+- Session: `cua-x11-session.sh`, i.e. private rootless Xvfb 1920x1080x24, openbox, picom (xrender) and private dbus. Host Wayland/Hyprland variables were scrubbed. At the Driver's request the private session bus auto-activated `org.a11y.Bus`, but `org.a11y.atspi.Registry` failed to activate, so the Driver's persistent AT-SPI listener did not start (a WARN line in each session log). Both buses were session-private; no host bus was reachable, and no arm used AT-SPI.
 - Driver defaults: no permission-mode override, no approval bypass, Chromium sandbox on, no `*-e2e` wrapper.
 - Locks:
   - Base: all 60 base trials ran in one session inside an EXCLUSIVE `quiet-lane.lock` window, acquired 02:01:56Z and released 02:04:26Z (`raw/logs/base-run1.lockinfo`).
@@ -48,7 +48,7 @@ Receipts: the Driver sha256, version and Chrome version were printed inside ever
 
 **Fixture and oracle.** The jev-use `fixture_server.py` serves a loopback form (`<form method=post action=/submit>`, `<input name=value required>`) and an independent `GET /state` oracle. `variants.py` subclasses the unmodified `FixtureServer`/`FixtureHandler`/`FixtureState`:
 - The base variant serves the exact shipped `PAGE` bytes (UNIT-tested), and the unmodified jev-use handler decides and mutates.
-- The subclass adds only a target-side journal: request receipts (method, path, content type, field names, value hash, HTTP status, effect) and state mutations, stamped with `time.monotonic_ns()`.
+- The subclass adds only a target-side journal: request receipts (method, path, content type, field names, value hash, HTTP status, effect) and state mutations, stamped with `time.monotonic_ns()`. Stamp order: a state mutation is stamped inside the handler before the HTTP response is sent; a `submit` receipt (base and N1 refusal paths) is stamped after the response is sent; `validate`, `probe` and `render` entries are stamped before the response. No REAL predicate depends on receipt timing: journals are read after a 300 ms settle, and although the late receipt stamp would favour the N3 ordering predicate (`validate` before the `submit` receipt), in every N3 GUI trial the matching `validate` also precedes the submit *mutation* stamp, which is taken before the response, by 40.3 to 64.6 ms (10/10).
 - **Success oracle:** fixture `GET /state` only. Driver results are never the success signal.
 
 **Arms and forced path** (`run_cross_surface.py`):
@@ -70,7 +70,7 @@ Receipts: the Driver sha256, version and Chrome version were printed inside ever
 - **T** starts at the send of the first observation (GUI) or of the first eligibility read (API). It ends at the return of the first `/state` read that shows the trial's value.
 - After the final action returns, `/state` is polled every 2 ms up to 2000 ms. All arms use the same oracle and the same bounded re-read.
 
-**Order.** 20 rounds, each running the 3 arms in rotation r mod 3: (G_on, G_off, API), (G_off, API, G_on), (API, G_on, G_off), …
+**Order.** 20 rounds, each running the 3 arms in rotation r mod 3: (G_on, G_off, API), (G_off, API, G_on), (API, G_on, G_off), … The 3-cycle balances positions, but not the order of the primary pair: G_off ran before API in 14 rounds and API first in 6 (`timing.order_API_vs_G_off`). With fresh processes per trial and an effect of about 174 ms against a paired spread of about 19 ms (all 20 pairs within −190.6 to −171.2 ms), this imbalance cannot change the gate, but the design is not strictly AB/BA-balanced for that pair.
 
 **Equivalence signature** (pre-registered; compared per round across all three arms):
 - the initial `/state` and the final `/state` (value normalised);
@@ -94,26 +94,27 @@ GET reads and transport headers are excluded by pre-registration and reported be
 | Row | Result | Evidence class |
 |---|---|---|
 | Base: rounds equivalent (signature(API) = signature(G_off) = signature(G_on), all oracle-confirmed, constraints check) | **20/20** (differs 0, not established 0) | REAL (owned fixture) |
-| Base: oracle-confirmed G_on / G_off / API | 20/20 / 20/20 / 20/20 | REAL |
-| Base: forced path as assigned G_on / G_off / API | 20/20 / 20/20 / 20/20 | REAL |
-| Base: journal shape, every trial | exactly 1 `POST /submit`, urlencoded, fields `[value]`, exact value, 200 accepted; 1 mutation; side effects `[POST /submit]` only; 0 `/validate` | REAL |
-| Base: form constraints enumerated from the page (API eligibility read) | `{type text, required true, pattern null, maxlength null, minlength null}`, no extra fields, value satisfies → irrelevant for valid values, 20/20 | REAL |
-| Base: differences outside the signature (descriptive) | API makes 1 extra GET read (the eligibility read); browser POST carries Origin + Referer + browser UA, caller POST none; no cookies either way | REAL |
+| Base: oracle-confirmed G_on / G_off / API | 20/20 / 20/20 / 20/20 | REAL (owned fixture) |
+| Base: forced path as assigned G_on / G_off / API | 20/20 / 20/20 / 20/20 | REAL (owned fixture) |
+| Base: journal shape, every trial | exactly 1 `POST /submit`, urlencoded, fields `[value]`, exact value, 200 accepted; 1 mutation; side effects `[POST /submit]` only; 0 `/validate` | REAL (owned fixture) |
+| Base: form constraints enumerated from the page (API eligibility read) | `{type text, required true, pattern null, maxlength null, minlength null}`, no extra fields, value satisfies → irrelevant for valid values, 20/20 | REAL (owned fixture) |
+| Base: differences outside the signature (descriptive) | API makes 1 extra GET read (the eligibility read); browser POST carries Origin + Referer + browser UA, caller POST none; no cookies either way | REAL (owned fixture) |
 | T median (p95), G_on / G_off / API | 3171.8 (3179.7) / 176.0 (180.2) / 1.56 (1.74) ms | BENCHMARK |
 | Paired T(API) − T(G_off), median [95% CI] | **−174.4 ms [−175.7, −172.9]**, 20/20 pairs API faster | BENCHMARK |
 | Paired T(API) − T(G_on), median [95% CI] | −3170.3 ms [−3171.6, −3169.1], 20/20 | BENCHMARK |
-| N1: GUI predicted (confirmed, 1 accepted submit, fields `[nonce, value]`) | **10/10** | REAL |
-| N1: API predicted (not confirmed, `/state` null, 1 submit fields `[value]`, 403, `effect=refused`, `missing_nonce`, 0 mutations) | **10/10** | REAL |
-| N2: GUI predicted (type + click accepted, 0 submits, `/state` null, 0 mutations) | **10/10**; browser `invalid` beacon in 10/10 | REAL |
-| N2: API predicted (invalid value lands, 1 accepted submit) | **10/10** | REAL |
-| N2 valid-value GUI control (secondary) | 3/3 confirmed with 1 accepted submit | REAL |
-| N3: GUI predicted (confirmed, 1 accepted submit, ≥1 `validate` with the value before the submit) | **10/10** | REAL |
-| N3: API predicted (confirmed, same final `/state` shape, 1 accepted submit, 0 `validate`) | **10/10** (`validate` total 0) | REAL |
-| Spec contract check (action, method, field name) on the variant pages | eligible on N1 10/10, N2 10/10, N3 10/10. It saw an extra `nonce:hidden` field (N1), a pattern the value fails (N2) and 1 script (N3), but none of these is part of the check | REAL |
-| Correctness invariants, all 123 measured trials | 0 duplicate mutations, 0 duplicate submit requests, 0 POST retries, 0 GUI action retries, 50/50 API trials with exactly one POST, 0 errors, 10/10 refusals `effect=refused`, 123/123 initial `/state` null with page loaded before T | REAL |
+| N1: GUI predicted (confirmed, 1 accepted submit, fields `[nonce, value]`) | **10/10** | REAL (owned fixture) |
+| N1: API predicted (not confirmed, `/state` null, 1 submit fields `[value]`, 403, `effect=refused`, `missing_nonce`, 0 mutations) | **10/10** | REAL (owned fixture) |
+| N2: GUI predicted (type + click accepted, 0 submits, `/state` null, 0 mutations) | **10/10**; browser `invalid` beacon in 10/10 | REAL (owned fixture) |
+| N2: API predicted (invalid value lands, 1 accepted submit) | **10/10** | REAL (owned fixture) |
+| N2 valid-value GUI control (secondary) | 3/3 confirmed with 1 accepted submit | REAL (owned fixture) |
+| N3: GUI predicted (confirmed, 1 accepted submit, ≥1 `validate` with the value before the submit) | **10/10** | REAL (owned fixture) |
+| N3: API predicted (confirmed, same final `/state` shape, 1 accepted submit, 0 `validate`) | **10/10** (`validate` total 0) | REAL (owned fixture) |
+| Spec contract check (action, method, field name) on the variant pages | eligible on N1 10/10, N2 10/10, N3 10/10. It saw an extra `nonce:hidden` field (N1), a pattern the value fails (N2) and 1 script (N3), but none of these is part of the check | REAL (owned fixture) |
+| Correctness invariants, all 123 measured trials | 0 duplicate mutations, 0 duplicate submit requests, 0 POST retries, 0 GUI action retries, 50/50 API trials with exactly one POST, 0 errors, 10/10 refusals `effect=refused`, 123/123 initial `/state` null with page loaded before T | REAL (owned fixture) |
+| Stale-ref audit, all 73 measured GUI trials (146 actions) | 0 stale-ref dispatches: 146/146 actions sent directly after an ok `semantic_v2` snapshot of the same tab (no other Driver call in between), 0 action results with an error or a stale ref (`invariants.gui_*`); the pilot's 6 GUI trials also show 12/12 | REAL (owned fixture) |
 | Unverified successes | 0: success is only the fixture `/state` read | SOURCE (by construction) |
 | Programmatic request from the documented contract only | `api_task` builds the body from `DOCUMENTED_CONTRACT` | SOURCE |
-| Fixture variants behave as documented; base serves the shipped page | 8/8 tests; jev-use `test_fixture_server.py` 3/3 | UNIT |
+| Fixture variants behave as documented; base serves the shipped page | 8/8 tests in 50/50 repeated runs after the test race fix (`raw/logs/unit-test_variants-repeat50.log`); the committed pre-fix test was flaky (17/20 runs failed, deviation 7); jev-use `test_fixture_server.py` 3/3 | UNIT |
 | Live provider | not used (mock chooser), 0 attempts / 0 reached | NOT_RUN |
 
 ### Component timings (base, median ms, n = 20 each)
@@ -182,7 +183,15 @@ This packet does not authorise a Driver contract, router, route miner or general
 3. `run_negatives.sh` (the host-side loop that ran the six negative chunks plus n2ctl) and `verify_artifacts.py` were added after registration. The loop invokes the registered harness with the registered plan.
 4. The base lock receipt has no explicit `mode=` line. The base used `flock` without `-s` (exclusive), as recorded in `provenance.json`; the negative receipts carry `mode=shared`.
 5. After the runs, the absolute lock path in `run_negatives.sh` was replaced by an optional fifth argument whose default resolves to the same lock file from the lanes root, so the committed script carries no local path. The behaviour is unchanged.
-6. The base ran under the exclusive quiet-lane lock, but loadavg was 3.85 to 8.18 because other agents were active. The paired AB/BA rotation and the very large effect (all 20 pairs within −190.6 to −171.2 ms) make this immaterial to the gate. Absolute milliseconds are environment-specific.
+6. The base ran under the exclusive quiet-lane lock, but loadavg was 3.85 to 8.18 because other agents were active. The rotation and the very large effect (all 20 pairs within −190.6 to −171.2 ms) make this immaterial to the gate. Absolute milliseconds are environment-specific.
+7. **UNIT test race (found by the independent verifier, fixed after the runs).** `variants.py` journals the `submit` receipt after the HTTP response is sent, so `test_variants.py` could read the journal before the server thread wrote it. The committed test failed 17/20 repeated runs (`raw/logs/unit-test_variants-race-repro.log`; `IndexError` in the N1 test, once also in the base test); the original single passing run is kept as `raw/logs/unit-test_variants.log`. The fix changes only `test_variants.py`: journal reads wait with a bounded poll (2 s, 2 ms step) for the expected entry, absence checks follow the receipt that closes the same request, and the N1 test now also asserts the full refusal/acceptance sequence and the single-use nonce. `variants.py`, which the measured runs used, is unchanged. Result: 8/8 in 50/50 runs (`raw/logs/unit-test_variants-repeat50.log`, `raw/logs/unit-test_variants-fixed.log`). Declared in `provenance.json` `post_registration_changes`. The REAL trial data are not affected (300 ms settle before the journal read).
+8. `analyze.py` was edited a second time after the verifier's review: it adds the stale-ref audit counts (`invariants.gui_*`) and the API/G_off order count (`timing.order_API_vs_G_off`). Both are descriptive; no gate, prediction, signature or statistic changed, and the disposition and every gated number are identical.
+9. The negative predictions were registered after the pilot had already shown all of the predicted outcomes (disclosed in PREREG). They hold largely by construction of the variants; their value is that they discriminate against the base API arm under the same harness, not that they were blind forecasts.
+10. Raw-record fields: every trial summary carries `"outcome": "unknown"`. The harness initialises it and sets it only to `harness_error` on a harness exception (none happened); success is never read from it, only from the oracle polls. The harness also stores only `str()` of a top-level exception, so an `ExceptionGroup` would hide its root cause; no measured trial raised one. Both are left unchanged in the registered harness so that the committed code is the code that produced `raw/`.
+
+## Independent verification notes
+
+A fresh verifier re-ran the packet inside `cua-x11-session.sh` (Driver sha256 and Chrome version confirmed in the session). 3 base rounds under the exclusive lock gave identical signatures across the three arms and D_off of −183.9 / −180.7 / −178.6 ms. One N2 chunk under the shared lock first failed 10/10 before T, in the window wait after `browser_prepare` (no on-screen window within 10 s, while other lanes' Xvfb sessions were up), recorded only as a top-level `ExceptionGroup`; an immediate retry passed 10/10 as predicted. It looks environmental and is listed here so no failure is hidden. These re-runs are not part of `raw/` or of any number above.
 
 ## Limits and claim boundary
 
@@ -203,7 +212,7 @@ Claim: *the existing HTTP form endpoint is an eligible and faster route for this
 
 - `PREREG.json`: the pre-registration.
 - `variants.py`: fixture variants, documented contract and eligibility parser.
-- `test_variants.py`: UNIT tests.
+- `test_variants.py`: UNIT tests (bounded journal poll since deviation 7).
 - `run_cross_surface.py`: trial harness.
 - `run_in_session.sh`: isolation guard and identity receipts.
 - `run_negatives.sh`: negative chunk loop.

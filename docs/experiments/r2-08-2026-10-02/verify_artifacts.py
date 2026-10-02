@@ -10,7 +10,8 @@ Checks:
      hashes match the committed files, except files listed in provenance.json post_registration_changes.
   4. Session logs carry the pinned Driver sha256/version and the Chrome version; base ran inside
      an EXCLUSIVE quiet-lane lock window and every negative chunk inside a SHARED one (lockinfo receipts).
-  5. Privacy: no absolute local path, user-home path, run-time host name or credential-shaped string
+  5. UNIT receipts: the 50x repeat log of the committed test_variants.py passes 50/50.
+  6. Privacy: no absolute local path, user-home path, run-time host name or credential-shaped string
      in any packet file.
 """
 
@@ -83,6 +84,20 @@ def main() -> int:
               f"{info.name}: lock receipt incomplete or wrong mode")
     check(len(list(raw.glob("logs/base*.lockinfo"))) >= 1, "no base lock receipt")
     check(len(list(raw.glob("logs/neg-*.lockinfo"))) == 6, "expected 6 negative-chunk lock receipts")
+
+    # UNIT receipts (deviation 7): the repeated run of the fixed test must record 50/50 passes
+    # for the committed test_variants.py.
+    rep = raw / "logs/unit-test_variants-repeat50.log"
+    check(rep.is_file(), "UNIT repeat log missing")
+    if rep.is_file():
+        lines = rep.read_text().splitlines()
+        runs = [ln for ln in lines if ln.startswith("run=")]
+        test_sha = hashlib.sha256((HERE / "test_variants.py").read_bytes()).hexdigest()
+        check(len(runs) == 50 and all(" rc=0 " in ln and "Ran 8 tests" in ln and ln.rstrip().endswith("OK") for ln in runs),
+              "UNIT repeat log: expected 50 passing runs of 8 tests")
+        check(test_sha in lines[0], "UNIT repeat log was not produced by the committed test_variants.py")
+    for name in ("unit-test_variants-fixed.log", "unit-test_variants-race-repro.log", "unit-test_fixture_server.log"):
+        check((raw / "logs" / name).is_file(), f"UNIT log {name} missing")
 
     host = socket.gethostname()
     pats = [re.compile(r"/(home|mnt|tmp|root)/[A-Za-z0-9_.-]+"), re.compile(r"(?i)(api[_-]?key|secret|token)\s*[=:]\s*['\"]?[A-Za-z0-9_\-]{20,}"),

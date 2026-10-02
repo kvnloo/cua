@@ -21,7 +21,7 @@
  "browser": "Driver-selected Google Chrome 151.0.7922.71 (receipt '== chrome_version=' inside each session)",
  "environment": {
   "os": "Linux 7.2.2 x86_64, 10 CPUs",
-  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24, openbox, picom xrender, private dbus; host Wayland/Hyprland variables scrubbed; no AT-SPI bus",
+  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24, openbox, picom xrender, private dbus; host Wayland/Hyprland variables scrubbed; the private session bus auto-activated org.a11y.Bus at the Driver's request, org.a11y.atspi.Registry failed to activate, so the Driver's persistent AT-SPI listener did not start (session-private; no arm used AT-SPI)",
   "python": "jev-use .venv (uv sync --frozen, Python 3.12) via lane-deps.sh",
   "loadavg": "1-minute loadavg before each base trial 3.85 to 8.18 (other agents active; the quiet-lane lock excludes only lock-respecting lanes); every trial's value is in raw/*/*/trials/*.jsonl"
  },
@@ -37,12 +37,18 @@
   "negatives": "run_negatives.sh <lanes> <wt> <driver> <artifacts>",
   "analysis": "python3 analyze.py --write r2-08-summary.json",
   "verify": "python3 verify_artifacts.py",
-  "unit": "<jev-use>/.venv/bin/python test_variants.py -v; <jev-use>/.venv/bin/python -m unittest -v python/tests/test_fixture_server.py (raw/logs/unit-*.log)"
+  "unit": "<jev-use>/.venv/bin/python test_variants.py -v; <jev-use>/.venv/bin/python -m unittest -v python/tests/test_fixture_server.py (raw/logs/unit-*.log)",
+  "unit_repeat": "for i in 1..50: <jev-use>/.venv/bin/python test_variants.py (raw/logs/unit-test_variants-repeat50.log); verbose run raw/logs/unit-test_variants-fixed.log"
  },
  "mirror": "<lanes>/artifacts/r2/R2-08/ holds the unsanitized originals (logs contain the session run dir path)",
- "provider": {"used": false, "attempts": 0, "reached_typesafe": 0},
+ "provider": {
+  "used": false,
+  "attempts": 0,
+  "reached_typesafe": 0
+ },
  "post_registration_changes": {
-  "analyze.py": "after the runs: two invariant fields that were hard-coded are now computed from raw (api_post_retries, plus new gui_action_retries and api_trials_with_exactly_one_post); 'unverified_successes' renamed 'unverified_successes_by_construction'; 'api_requests_built_from_contract_only' now names its SOURCE evidence. No gate, prediction, signature or statistic changed; the disposition and every gated number are identical before and after"
+  "analyze.py": "after the runs: two invariant fields that were hard-coded are now computed from raw (api_post_retries, plus new gui_action_retries and api_trials_with_exactly_one_post); 'unverified_successes' renamed 'unverified_successes_by_construction'; 'api_requests_built_from_contract_only' now names its SOURCE evidence. No gate, prediction, signature or statistic changed; the disposition and every gated number are identical before and after; second edit after the independent verifier's review: adds descriptive counts invariants.gui_trials/gui_actions/gui_actions_after_fresh_ok_snapshot/gui_actions_same_tab_as_snapshot/gui_stale_ref_dispatches and timing.order_API_vs_G_off; no gate or gated number changed",
+  "test_variants.py": "after the runs, found by the independent verifier: the registered test read the fixture journal without waiting, but variants.py journals the submit receipt after sending the HTTP response, so the test raced the server thread (17/20 repeated runs failed: raw/logs/unit-test_variants-race-repro.log). Fix: bounded poll (2 s, 2 ms step) for the expected journal entry; absence checks after the closing receipt; N1 test also asserts the full refusal/acceptance sequence and single-use nonce. variants.py (used by the measured runs) unchanged. 8/8 in 50/50 runs: raw/logs/unit-test_variants-repeat50.log"
  },
  "files_added_after_registration": {
   "run_negatives.sh": "host-side loop that ran the six negative chunks and n2ctl with the pre-registered plan, the shared lock and one session per chunk; it calls the registered run_in_session.sh/run_cross_surface.py unchanged",

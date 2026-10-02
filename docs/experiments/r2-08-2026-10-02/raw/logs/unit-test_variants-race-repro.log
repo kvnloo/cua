@@ -1,0 +1,5 @@
+# committed test_variants.py at cf8c4d0 (before the fix), run 20x with the jev-use venv, 2026-10-02
+# failures: 17/20
+#      17 IndexError: list index out of range
+#       1 ValueError: not enough values to unpack (expected 1, got 0)
+# cause: variants.py journals the submit receipt after sending the HTTP response (N1 refusal and base submit paths), so the test could read the journal before the server thread wrote it

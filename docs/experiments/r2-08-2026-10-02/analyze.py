@@ -127,6 +127,30 @@ def derive(events: list[dict[str, Any]], s: dict[str, Any]) -> dict[str, Any]:
     d["action_sends"] = {"post": sum(1 for e in events if e["event"] == "post_send"),
                          "click": sum(1 for e in events if e["event"] == "call_send" and e.get("tool") == "browser_click"),
                          "type": sum(1 for e in events if e["event"] == "call_send" and e.get("tool") == "browser_type")}
+    # Stale-ref audit (GUI): every action must directly follow an ok snapshot of the same tab
+    # (no other Driver call in between), and no action result may report a stale ref or failure.
+    if arm != "API":
+        audit = {"actions": 0, "after_fresh_ok_snapshot": 0, "same_tab_as_snapshot": 0, "stale_or_error_results": 0}
+        last_ret: dict[str, Any] | None = None
+        snap_tab = None
+        for e in after:
+            action = e.get("tool") in ("browser_type", "browser_click")
+            if e["event"] == "call_send" and action:
+                res = (last_ret or {}).get("result") if (last_ret or {}).get("tool") == "get_browser_state" else None
+                fresh = bool(last_ret and last_ret.get("ok") and isinstance(res, dict)
+                             and res.get("mode") == "snapshot" and res.get("status") == "ok")
+                audit["after_fresh_ok_snapshot"] += fresh
+                snap_tab = res.get("tab_id") if fresh else None
+            elif e["event"] == "call_return":
+                if action:
+                    res = e.get("result")
+                    audit["actions"] += 1
+                    audit["same_tab_as_snapshot"] += bool(snap_tab and snap_tab in json.dumps(res))
+                    audit["stale_or_error_results"] += bool(not e.get("ok") or not isinstance(res, dict) or "error" in res
+                                                            or "stale" in json.dumps(res).lower())
+                last_ret = e
+        d["stale_ref_audit"] = audit
+    d["pos"] = s.get("pos")
     d["final_action_return_to_confirm_ms"] = None if not (final_ret and confirmed) else (confirmed - final_ret["t_mono_ns"]) / 1e6
     return d
 
@@ -220,6 +244,10 @@ def compute(raw: Path) -> dict[str, Any]:
                               for k in (["eligibility_read", "eligibility_check", "post", "verify", "unattributed"] if a == "API" else
                                         ["snapshot1", "decide1", "type", "snapshot2", "decide2", "click", "verify", "unattributed"])}
                           for a in ("G_on", "G_off", "API")},
+        "order_API_vs_G_off": {"G_off_first": sum(1 for r in sorted(by_round) if "API" in by_round[r] and "G_off" in by_round[r]
+                                                  and int(by_round[r]["G_off"]["pos"]) < int(by_round[r]["API"]["pos"])),
+                               "API_first": sum(1 for r in sorted(by_round) if "API" in by_round[r] and "G_off" in by_round[r]
+                                                and int(by_round[r]["API"]["pos"]) < int(by_round[r]["G_off"]["pos"]))},
         "loadavg_1m_range": [min(float(d["loadavg_before"].split()[0]) for d in base), max(float(d["loadavg_before"].split()[0]) for d in base)] if base else None,
     }
     pa, po = timing["per_arm_T_ms"]["API"], timing["per_arm_T_ms"]["G_off"]
@@ -275,6 +303,11 @@ def compute(raw: Path) -> dict[str, Any]:
                                   for d in every if d["arm"] != "API"),
         "api_trials_with_exactly_one_post": sum(1 for d in every if d["arm"] == "API" and d["action_sends"]["post"] == 1),
         "api_trials": sum(1 for d in every if d["arm"] == "API"),
+        "gui_trials": sum(1 for d in every if d["arm"] != "API"),
+        "gui_actions": sum(d["stale_ref_audit"]["actions"] for d in every if d["arm"] != "API"),
+        "gui_actions_after_fresh_ok_snapshot": sum(d["stale_ref_audit"]["after_fresh_ok_snapshot"] for d in every if d["arm"] != "API"),
+        "gui_actions_same_tab_as_snapshot": sum(d["stale_ref_audit"]["same_tab_as_snapshot"] for d in every if d["arm"] != "API"),
+        "gui_stale_ref_dispatches": sum(d["stale_ref_audit"]["stale_or_error_results"] for d in every if d["arm"] != "API"),
     }
     g1 = n_equiv == 20 and len(rounds) == 20
     g2 = all(negatives[v]["discriminating"] for v in negatives)
