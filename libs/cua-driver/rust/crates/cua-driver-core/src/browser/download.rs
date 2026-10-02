@@ -440,15 +440,17 @@ impl Tool for BrowserDownloadTool {
                 "Runtime.callFunctionOn",
                 json!({
                     "objectId": object_id,
-                    "functionDeclaration": "function() { this.click(); }",
+                    "functionDeclaration": super::tools::DOM_CLICK_IF_CONNECTED,
+                    "returnByValue": true,
                     "userGesture": true,
                     "awaitPromise": false
                 }),
             )
             .await;
-        let trigger_failed = trigger
-            .as_ref()
-            .map_or(true, |result| result.get("exceptionDetails").is_some());
+        let trigger_failed = trigger.as_ref().map_or(true, |result| {
+            result.get("exceptionDetails").is_some()
+                || result.pointer("/result/value") == Some(&Value::Bool(false))
+        });
         if trigger_failed {
             reset_download_behavior(&validated.conn).await;
             return BrowserRefusal::new(

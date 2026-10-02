@@ -71,6 +71,11 @@ struct FixtureState {
     omit_primary_target: bool,
     /// Make `Browser.getWindowForTarget` for T1 answer this CDP error.
     primary_window_error: Option<(i64, String)>,
+    /// Backend nodes the page has detached since the snapshot
+    /// (`Node.isConnected === false`); the node object still resolves.
+    detached_backends: Vec<i64>,
+    /// Backend nodes on which a page-side click/event dispatch actually ran.
+    page_dispatches: Vec<i64>,
     /// Every incoming CDP call: (sessionId, method, params).
     calls: Vec<(Option<String>, String, Value)>,
 }
@@ -100,6 +105,8 @@ impl Default for FixtureState {
             viewport_css_width: 800.0,
             viewport_css_height: 600.0,
             tab_visible: true,
+            detached_backends: Vec::new(),
+            page_dispatches: Vec::new(),
             calls: Vec::new(),
         }
     }
@@ -659,7 +666,9 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                 } else {
                     [10, 20, 21, 30].contains(&backend)
                 };
-                if known {
+                // A detached node has no layout object, so Chromium answers
+                // "Could not compute box model." before any coordinates exist.
+                if known && !st.detached_backends.contains(&backend) {
                     let (x, y) = ((backend * 10) as f64, (backend * 10) as f64);
                     MockReply::ok(json!({
                         "model": {
@@ -689,7 +698,41 @@ fn fixture_handler(state: SharedState) -> MockHandler {
             "DOM.resolveNode" => MockReply::ok(json!({
                 "object": { "objectId": format!("obj-{}", call.params["backendNodeId"]) }
             })),
-            "Runtime.callFunctionOn" => MockReply::ok(json!({ "result": { "value": true } })),
+            "Runtime.callFunctionOn" => {
+                // Page-side model of the called function: like Chromium,
+                // `el.click()` and `dispatchEvent` still run listeners on a
+                // detached node unless the SAME function checks isConnected.
+                let backend = call.params["objectId"]
+                    .as_str()
+                    .and_then(|object| object.strip_prefix("obj-"))
+                    .and_then(|backend| backend.parse::<i64>().ok());
+                let function = call.params["functionDeclaration"]
+                    .as_str()
+                    .unwrap_or_default();
+                // A drag destination arrives as the first argument object.
+                let destination = call.params["arguments"][0]["objectId"]
+                    .as_str()
+                    .and_then(|object| object.strip_prefix("obj-"))
+                    .and_then(|backend| backend.parse::<i64>().ok());
+                let detached = [backend, destination]
+                    .into_iter()
+                    .flatten()
+                    .any(|b| st.detached_backends.contains(&b));
+                if detached && function.contains("if (!this.isConnected") {
+                    let answer = if function.contains("return 'detached'") {
+                        json!("detached")
+                    } else {
+                        json!(false)
+                    };
+                    MockReply::ok(json!({ "result": { "value": answer } }))
+                } else {
+                    if function.contains("click()") || function.contains("dispatchEvent") {
+                        st.page_dispatches.extend(backend);
+                    }
+                    MockReply::ok(json!({ "result": { "value": true } }))
+                }
+            }
+            "Browser.setDownloadBehavior" => MockReply::ok(json!({})),
             other => MockReply::method_not_found(other),
         }
     })
@@ -2610,4 +2653,201 @@ async fn method_unsupported_keeps_the_electron_none_path() {
     let tabs = s["tabs"].as_array().expect("tabs");
     assert_eq!(tabs.len(), 1, "{s}");
     assert_eq!(tabs[0]["url"], "https://fixture.test/");
+}
+
+// ── Detached-node dispatch (a re-render replaced the ref's node) ─────────────
+
+fn detach(f: &Fixture, backend: i64) {
+    f.state.lock().unwrap().detached_backends.push(backend);
+}
+
+fn reattach(f: &Fixture, backend: i64) {
+    f.state
+        .lock()
+        .unwrap()
+        .detached_backends
+        .retain(|detached| *detached != backend);
+}
+
+fn page_dispatches(f: &Fixture) -> Vec<i64> {
+    f.state.lock().unwrap().page_dispatches.clone()
+}
+
+fn dom_click_args(target: &str, tab: &str, reference: &str) -> Value {
+    json!({
+        "target_id": target, "tab_id": tab, "ref": reference,
+        "input_route": "dom_event", "session": SESSION
+    })
+}
+
+#[tokio::test]
+async fn dom_event_click_refuses_a_detached_node_inside_the_dispatching_call() {
+    let f = fixture().await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+    detach(&f, 10);
+
+    let args = dom_click_args(&target, &tab, &main_ref);
+    let click = BrowserClickTool::new(f.engine.clone())
+        .invoke(args.clone())
+        .await;
+    assert_ne!(click.is_error, Some(true));
+    assert_eq!(structured(&click)["status"], "refused", "{click:?}");
+    assert_eq!(structured(&click)["refusal"]["code"], "browser_ref_stale");
+    assert!(
+        page_dispatches(&f).is_empty(),
+        "nothing may run on the node"
+    );
+
+    // One round trip: the guard and the dispatch are the same function call.
+    let calls = recorded_calls(&f, "Runtime.callFunctionOn");
+    assert_eq!(calls.len(), 1, "{calls:?}");
+    assert_eq!(
+        calls[0].1["functionDeclaration"],
+        super::tools::DOM_CLICK_IF_CONNECTED
+    );
+    assert_eq!(calls[0].1["returnByValue"], true);
+
+    let public = ActionExecutionRecord::from_legacy("browser_click", &args, structured(&click))
+        .expect("browser click action record")
+        .public_result()
+        .expect("public browser click result");
+    let public = serde_json::to_value(public).expect("serialize public result");
+    assert_eq!(public["effect"], "refused", "{public}");
+}
+
+#[tokio::test]
+async fn dom_event_click_on_connected_and_reattached_nodes_dispatches_once() {
+    let f = fixture().await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+
+    let connected = BrowserClickTool::new(f.engine.clone())
+        .invoke(dom_click_args(&target, &tab, &main_ref))
+        .await;
+    assert_eq!(structured(&connected)["status"], "ok", "{connected:?}");
+    assert_eq!(structured(&connected)["effect"], "unverifiable");
+    assert_eq!(page_dispatches(&f), vec![10]);
+
+    // Detached and put back before dispatch: the check reads live state, so
+    // the same node is connected again and is clicked exactly once more.
+    detach(&f, 10);
+    reattach(&f, 10);
+    let reattached = BrowserClickTool::new(f.engine.clone())
+        .invoke(dom_click_args(&target, &tab, &main_ref))
+        .await;
+    assert_eq!(structured(&reattached)["status"], "ok", "{reattached:?}");
+    assert_eq!(page_dispatches(&f), vec![10, 10]);
+}
+
+#[tokio::test]
+async fn trusted_click_on_a_detached_node_refuses_before_coordinates_exist() {
+    let f = fixture_with_platform(|_| {}, false).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+    detach(&f, 10);
+
+    let click = BrowserClickTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref,
+            "input_route": "trusted", "delivery_mode": "foreground", "session": SESSION
+        }))
+        .await;
+    assert_eq!(
+        structured(&click)["refusal"]["code"],
+        "browser_ref_stale",
+        "{click:?}"
+    );
+    assert!(recorded_calls(&f, "Input.dispatchMouseEvent").is_empty());
+}
+
+#[tokio::test]
+async fn dom_event_pointer_refuses_detached_origin_and_drag_destination() {
+    let f = fixture().await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+    let shadow_input_ref = ref_of(&snap, "main", "Shadow Input");
+
+    let hover = |reference: &str| {
+        json!({
+            "target_id": target, "tab_id": tab, "ref": reference,
+            "action": "hover", "input_route": "dom_event", "session": SESSION
+        })
+    };
+    let connected = BrowserPointerTool::new(f.engine.clone())
+        .invoke(hover(&main_ref))
+        .await;
+    assert_eq!(structured(&connected)["status"], "ok", "{connected:?}");
+    assert_eq!(page_dispatches(&f), vec![10]);
+
+    detach(&f, 10);
+    let detached = BrowserPointerTool::new(f.engine.clone())
+        .invoke(hover(&main_ref))
+        .await;
+    assert_eq!(
+        structured(&detached)["refusal"]["code"],
+        "browser_ref_stale",
+        "{detached:?}"
+    );
+    assert_eq!(
+        page_dispatches(&f),
+        vec![10],
+        "a detached origin gets no event"
+    );
+
+    // A connected origin whose drag destination was detached is refused too.
+    reattach(&f, 10);
+    let drag_origin = shadow_input_ref;
+    let drag = BrowserPointerTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": drag_origin,
+            "destination_ref": main_ref, "action": "drag",
+            "input_route": "dom_event", "session": SESSION
+        }))
+        .await;
+    let before = page_dispatches(&f);
+    detach(&f, 10);
+    let detached_drag = BrowserPointerTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": drag_origin,
+            "destination_ref": main_ref, "action": "drag",
+            "input_route": "dom_event", "session": SESSION
+        }))
+        .await;
+    assert_eq!(structured(&drag)["status"], "ok", "{drag:?}");
+    assert_eq!(
+        structured(&detached_drag)["refusal"]["code"],
+        "browser_ref_stale",
+        "{detached_drag:?}"
+    );
+    assert_eq!(page_dispatches(&f), before, "no drag event after detach");
+}
+
+#[tokio::test]
+async fn download_activation_refuses_a_detached_node() {
+    let f = fixture().await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+    detach(&f, 10);
+    let root = tempfile::tempdir().unwrap();
+    let root = std::fs::canonicalize(root.path()).unwrap();
+
+    let download = super::download::BrowserDownloadTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION,
+            "destination_root": root.to_str().unwrap(),
+            (super::download::MCP_HOST_DOWNLOAD_APPROVAL_ARG): true,
+        }))
+        .await;
+    assert_eq!(
+        structured(&download)["refusal"]["code"],
+        "browser_ref_stale",
+        "{download:?}"
+    );
+    assert!(page_dispatches(&f).is_empty());
 }
