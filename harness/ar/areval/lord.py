@@ -22,6 +22,15 @@ from typing import Sequence
 ALPHA = 0.05
 W0 = ALPHA / 2
 GAMMA_C = 0.0722
+W0_RATIONALE = (
+    "W0 = alpha/2 = 0.025, the usual LORD++ choice. For ~30 tests a night with no rejection the levels run "
+    "1.25e-3 (t=1), 2.3e-4 (t=3), 9.1e-5 (t=10), 3.2e-5 (t=30) and spend 0.0037 of the 0.025 wealth, so a night "
+    "never exhausts it. A larger W0 (up to alpha) raises those levels at most 2x but shrinks the first "
+    "rejection's reward (alpha - W0); after any rejection the later levels are nearly W0-independent "
+    "(alpha_30 ~6.5e-5 for W0 in 0.01..0.049). G5's sign-flip p resolves alpha_i/20 at every level, so W0 decides "
+    "only marginal effects: at n=37 and the loaded-host T_act sigma 0.0376, 80% power needs ~2.4% at t=1 and "
+    "~3.0% at t=30."
+)
 
 
 def gamma(j: int) -> float:
@@ -49,6 +58,11 @@ def replay(p_values: Sequence[float], alpha: float = ALPHA, w0: float = W0) -> l
         out.append({"index": t, "alpha_i": a, "p_value": p, "rejected": rejected,
                     "wealth_before": before, "wealth_after": wealth, "alpha": alpha, "w0": w0})
     return out
+
+
+def next_alpha(prior_p_values: Sequence[float]) -> float:
+    """The level of the next test; it depends only on earlier rejections, never on its own p."""
+    return replay([*prior_p_values, 1.0])[-1]["alpha_i"]
 
 
 def decide(prior_p_values: Sequence[float], p_value: float) -> dict:

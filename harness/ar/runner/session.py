@@ -89,6 +89,25 @@ def session_pidns() -> str:
         return "unknown"
 
 
+def _unix_path(address: str | None) -> str | None:
+    """unix:path=<p>[,guid=...] -> <p> (the parse sandbox-driver.sh applies)."""
+    if not address:
+        return None
+    return address.removeprefix("unix:path=").split(",", 1)[0] or None
+
+
+def session_binds(env: dict[str, str], a11y: str | None) -> dict[str, str | None]:
+    """The paths this session's sandbox-driver.sh binds into every Driver sandbox at their own
+    path (computed from the same variables, the same way). Recorded in the session's start
+    record so G2 can tell the harness's own per-session names (the randomly named session D-Bus
+    socket) from anything a candidate creates."""
+    disp = env.get("DISPLAY", "").removeprefix(":").split(".", 1)[0]
+    return {"x11": f"/tmp/.X11-unix/X{disp}" if disp else None,
+            "dbus": _unix_path(env.get("DBUS_SESSION_BUS_ADDRESS")),
+            "a11y": _unix_path(a11y),
+            "xauthority": env.get("XAUTHORITY") or None}
+
+
 def a11y_address() -> str:
     out = subprocess.run(
         ["gdbus", "call", "--session", "--dest", "org.a11y.Bus", "--object-path", "/org/a11y/bus",
@@ -147,6 +166,7 @@ async def main_async(args: argparse.Namespace) -> int:
                                  "eval_id": chunk["eval_id"], "trials": len(chunk["trials"]),
                                  "loadavg": loadavg(), "fixture_pid": ctx["fixture_pid"],
                                  "pid_namespace": session_pidns(),
+                                 "session_binds": session_binds(dict(os.environ), ctx.get("a11y_address")),
                                  "browser_fixture": server is not None,
                                  "a11y_private": str(ctx.get("a11y_address", "")).startswith("unix:path=")}) + "\n")
         try:

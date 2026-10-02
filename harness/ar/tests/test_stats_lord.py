@@ -29,9 +29,27 @@ class Stats(unittest.TestCase):
         noisy = stats.tau_from_aa([0.2, -0.2, 0.1, -0.15] * 10, batch=5)
         self.assertGreater(noisy["tau"], 0.02)
 
-    def test_bootstrap_p_direction(self):
-        self.assertLess(stats.bootstrap_p_less([-0.1 + 0.01 * (i % 3) for i in range(30)]), 0.01)
-        self.assertGreater(stats.bootstrap_p_less([0.1 + 0.01 * (i % 3) for i in range(30)]), 0.5)
+    def test_sign_flip_p_direction(self):
+        self.assertLess(stats.sign_flip_p_less([-0.1 + 0.01 * (i % 3) for i in range(30)], 20000, seed=1), 0.01)
+        self.assertGreater(stats.sign_flip_p_less([0.1 + 0.01 * (i % 3) for i in range(30)], 20000, seed=1), 0.5)
+
+    def test_sign_flip_p_floor_is_one_over_b_plus_one(self):
+        # All 38 pairs negative: the exact p is 2^-38, the Monte Carlo p sits at its floor.
+        self.assertEqual(stats.sign_flip_p_less([-0.08] * 38, 50000, seed=2), 1 / 50001)
+
+    def test_sign_flip_p_matches_exact_enumeration(self):
+        import itertools
+        xs = [-0.05, 0.02, -0.03, -0.04, 0.01, -0.02, -0.06, 0.03, -0.01, -0.07]
+        obs = sum(xs)
+        exact = sum(1 for s in itertools.product((1, -1), repeat=len(xs))
+                    if sum(a * abs(x) for a, x in zip(s, xs)) <= obs + 1e-12) / 2 ** len(xs)
+        self.assertAlmostEqual(stats.sign_flip_p_less(xs, 200000, seed=3), exact, delta=0.003)
+
+    def test_sign_flip_resamples_resolve_the_level(self):
+        for alpha in (1.25e-3, 2.3e-4, 3.2e-5, 1e-6):
+            b = stats.sign_flip_resamples(alpha)
+            self.assertGreaterEqual(b, 10 / alpha)
+            self.assertGreaterEqual(b, stats.SIGN_FLIP_MIN_RESAMPLES)
 
 
 class Lord(unittest.TestCase):
@@ -51,6 +69,13 @@ class Lord(unittest.TestCase):
         out = lord.replay([0.5] * 500)
         self.assertTrue(all(o["wealth_after"] >= 0 for o in out))
         self.assertEqual([o["index"] for o in out[:3]], [1, 2, 3])
+
+    def test_next_alpha_depends_only_on_the_past(self):
+        prior = [1e-9, 0.3, 0.002]
+        self.assertEqual(lord.next_alpha(prior), lord.decide(prior, 0.9)["alpha_i"])
+        self.assertEqual(lord.next_alpha(prior), lord.decide(prior, 1e-12)["alpha_i"])
+        # The levels the F2 fix must resolve: alpha_3 = 2.3e-4 < 1/4001 after two misses.
+        self.assertLess(lord.next_alpha([0.5, 0.5]), 1 / 4001)
 
     def test_decide_matches_replay(self):
         prior = [1e-9, 0.3, 0.002]

@@ -1,9 +1,10 @@
 """A/A calibration summary: a pure function of AA raw rows (champion build vs champion rebuild).
 
-Computes, for the decision metric and its pre-declared fallback:
-  * whole-task T = t_done - t_spawn (the decision metric), and
-  * T_act = t_done - m0 of the first dispatch call (the plan's fallback when whole-task T
-    needs more than MAX_FEASIBLE_PAIRS pairs by power),
+Computes, for the decision metric and the guardrail metric:
+  * T_act = t_done - m0 of the first dispatch call (the decision metric, pre-registered in the
+    fix round: the A/A CI check passed for it and failed for whole-task T, whose rebuild bias sits
+    in Driver startup), and
+  * whole-task T = t_done - t_spawn (the guardrail, with its own tau),
 the per-pair ln ratio d = ln(T_rebuild / T_base), sigma_ln = sd(d), Delta_AA = mean(d) with a
 pair-resampled bootstrap CI (must include 0), the pair-resampled |Delta_AA| distribution,
 tau = max(2%, 97.5th pct |Delta_AA|), n_pairs by power at delta = ln(1+tau) and the PSI discard
@@ -18,17 +19,9 @@ from statistics import fmean, median
 from typing import Any
 
 from . import gates, lord, stats
+from .gates import DISPATCH_TOOLS, t_act_ns  # noqa: F401  (re-exported for packet tools)
 
 MAX_FEASIBLE_PAIRS = 400
-DISPATCH_TOOLS = ("click", "set_value", "browser_type", "browser_click")
-
-
-def t_act_ns(row: dict) -> int | None:
-    """First dispatch (m0 of the first mutating call) to the verified done."""
-    first = next((c["m0"] for c in row.get("calls", []) if c.get("tool") in DISPATCH_TOOLS), None)
-    if first is None or not row.get("t_done_ns"):
-        return None
-    return row["t_done_ns"] - first
 
 
 def psi_cpu_fraction(row: dict) -> float | None:
@@ -162,8 +155,8 @@ def summarize(rows: list[dict], seed: int = 20261002) -> dict[str, Any]:
     task = gates.trials(rows, kind="task")
     whole = metric_block(ps, lambda r: r.get("T_ns"), seed)
     act = metric_block(ps, t_act_ns, seed + 10)
-    decision = "whole_task_T" if whole["feasible"] else ("T_act" if act["feasible"] else "none_feasible")
-    chosen = whole if decision == "whole_task_T" else act
+    decision = "T_act" if act["feasible"] else "none_feasible"
+    chosen = act
     sessions = sorted({r["session"] for r in task})
     per_session = {}
     for s in sessions:
@@ -180,7 +173,7 @@ def summarize(rows: list[dict], seed: int = 20261002) -> dict[str, Any]:
     t_on = [r["T_ns"] for r in task if r.get("verified") and r.get("trace")]
     t_off = [r["T_ns"] for r in task if r.get("verified") and not r.get("trace")]
     prereg = {"tau": {"value": chosen["tau"]}, "design": {"n_pairs": min(chosen["n_pairs_required"], len(ps)),
-                                                          "seed": seed},
+                                                          "seed": seed, "metric": "T_act"},
               "invariants": {"expected_route": "accessibility", "expected_path": None}}
     g5 = gates.g5(rows, prereg, [])
     attempted = len([r for r in task if not r.get("warmup")])
@@ -191,9 +184,11 @@ def summarize(rows: list[dict], seed: int = 20261002) -> dict[str, Any]:
         "task_trials_verified": sum(1 for r in task if r.get("verified")),
         "failures": sorted({str(r.get("failure")) for r in gates.trials(rows, warmup=None) if r.get("failure")}),
         "decision_metric": decision,
-        "fallback_rule": f"switch to T_act when whole-task T needs > {MAX_FEASIBLE_PAIRS} pairs by power",
+        "decision_rule": ("T_act decides (pre-registered, fix round); whole-task T is the G6 guardrail: "
+                          "mean paired ln ratio <= ln(1 + guardrail tau)"),
         "whole_task_T": whole,
         "T_act": act,
+        "guardrail": {"metric": "T", "tau": whole["tau"], "sigma_ln": whole["sigma_ln"]},
         "chosen": {"metric": decision, "sigma_ln": chosen["sigma_ln"], "tau": chosen["tau"],
                    "n_pairs": chosen["n_pairs_required"], "ci_includes_zero": chosen["ci_includes_zero"]},
         "per_session": per_session,

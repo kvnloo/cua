@@ -1,6 +1,10 @@
-"""Gates G1-G8 and GS: pure functions of raw rows (``ar.trial.v1`` / ``ar.build.v1``),
-the pre-registration and, for G8, the changed paths. :func:`evaluate` runs G0..GS in order and
-stops at the first failure. Nothing here reads files or clocks.
+"""Gates G1-G8 and GS: pure functions of raw rows (``ar.trial.v1`` / ``ar.build.v1`` /
+``ar.session.v1``), the pre-registration and, for G8, the changed paths. :func:`evaluate` runs
+G0..GS in order and stops at the first failure. Nothing here reads files or clocks.
+
+Latency gates read the pre-registered decision metric (``design.metric``): ``T_act`` (first
+dispatch -> verified done) or ``T`` (Driver spawn -> verified done). Whole-task T stays a
+guardrail in G6 (``guardrail.tau``).
 """
 
 from __future__ import annotations
@@ -8,6 +12,7 @@ from __future__ import annotations
 import math
 import re
 from collections import defaultdict
+from pathlib import PurePosixPath
 from statistics import fmean, median
 from typing import Any, Iterable
 
@@ -17,6 +22,7 @@ from .g0 import g0
 POSITIVE_KINDS = ("task", "soak", "spot_gtk3_text", "spot_browser_fill_submit")
 EXPECTED_DISPATCH = {"task": 1, "soak": 1, "spot_gtk3_text": 1, "spot_browser_fill_submit": 1}
 GATE_ORDER = ("G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "GS")
+DISPATCH_TOOLS = ("click", "set_value", "browser_type", "browser_click")
 
 
 def result(gate: str, ok: bool, reasons: list[str], **metrics: Any) -> dict[str, Any]:
@@ -39,8 +45,26 @@ def trials(rows: Iterable[dict], kind: str | None = None, arm: str | None = None
     return out
 
 
-def pairs(rows: Iterable[dict], kind: str = "task", trace: bool | None = None) -> list[tuple[dict, dict]]:
-    """(champion, candidate) rows of complete, verified pairs."""
+def t_act_ns(row: dict) -> int | None:
+    """First dispatch (m0 of the first mutating call) to the verified done."""
+    first = next((c["m0"] for c in row.get("calls", []) if c.get("tool") in DISPATCH_TOOLS), None)
+    if first is None or not row.get("t_done_ns"):
+        return None
+    return row["t_done_ns"] - first
+
+
+def value_ns(row: dict, metric: str = "T") -> int | None:
+    """The row's latency under ``metric``: ``T`` (whole task) or ``T_act``."""
+    if metric == "T":
+        return row.get("T_ns")
+    if metric == "T_act":
+        return t_act_ns(row) if row.get("T_ns") else None
+    raise ValueError(f"unknown metric {metric!r}")
+
+
+def pairs(rows: Iterable[dict], kind: str = "task", trace: bool | None = None,
+          metric: str = "T") -> list[tuple[dict, dict]]:
+    """(champion, candidate) rows of complete, verified pairs with a value under ``metric``."""
     by: dict[Any, dict[str, dict]] = defaultdict(dict)
     for r in trials(rows, kind=kind):
         if trace is not None and bool(r.get("trace")) != trace:
@@ -50,13 +74,13 @@ def pairs(rows: Iterable[dict], kind: str = "task", trace: bool | None = None) -
     for pid in sorted(by, key=str):
         p = by[pid]
         a, c = p.get("champion"), p.get("candidate")
-        if a and c and a.get("verified") and c.get("verified") and a.get("T_ns") and c.get("T_ns"):
+        if a and c and a.get("verified") and c.get("verified") and value_ns(a, metric) and value_ns(c, metric):
             out.append((a, c))
     return out
 
 
-def ln_pairs(ps: list[tuple[dict, dict]]) -> list[float]:
-    return stats.ln_ratios([(a["T_ns"], c["T_ns"]) for a, c in ps])
+def ln_pairs(ps: list[tuple[dict, dict]], metric: str = "T") -> list[float]:
+    return stats.ln_ratios([(value_ns(a, metric), value_ns(c, metric)) for a, c in ps])
 
 
 # --------------------------------------------------------------------------- G1
@@ -82,7 +106,38 @@ _RANDOM_RUN = re.compile(r"[0-9a-fA-F]{6,}|\d+")
 _UUID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
 
-def _norm_file(path: str) -> str:
+_SANDBOX_ROOTS = ("/tmp", "/run/user/trial", "/home/trial")  # the dirs footprint() lists
+
+
+def session_names(rows: Iterable[dict]) -> dict[tuple[Any, Any], dict[str, str]]:
+    """Per (eval_id, session): the sandbox paths the HARNESS itself puts there, from the runner's
+    session manifest (``ar.session.v1`` start record, ``session_binds``: the X socket, the session
+    D-Bus socket, the AT-SPI socket, the Xauthority file, each bound at its own path by
+    sandbox-driver.sh), plus the parent dirs bwrap creates for those binds below a listed root.
+    Each maps to a stable ``<session:...>`` name, so a per-session random name (/tmp/dbus-<random>)
+    compares equal across sessions while any other path, including a look-alike or another
+    session's name, is still compared as itself."""
+    out: dict[tuple[Any, Any], dict[str, str]] = {}
+    for r in rows:
+        if r.get("schema") != "ar.session.v1" or r.get("event") != "start":
+            continue
+        names: dict[str, str] = {}
+        for key, path in sorted((r.get("session_binds") or {}).items()):
+            if not path:
+                continue
+            bound = PurePosixPath(path)
+            names[str(bound)] = f"<session:{key}>"
+            for depth, parent in enumerate(bound.parents, 1):
+                if not any(parent.is_relative_to(root) and str(parent) != root for root in _SANDBOX_ROOTS):
+                    break
+                names.setdefault(str(parent), f"<session:{key}:up{depth}>")
+        out[(r.get("eval_id"), r.get("session"))] = names
+    return out
+
+
+def _norm_file(path: str, names: dict[str, str] | None = None) -> str:
+    if names and path in names:
+        return names[path]
     # UUIDs first (the Driver names its isolated browser profile isolated-<uuid>), whose 4-digit
     # hex groups the generic run rule would leave partly letters. The contents of that profile are
     # written by Chromium, not the Driver, and vary run to run (e.g. VariationsSeedV#), so the
@@ -103,6 +158,12 @@ def _do_action_marks(row: dict) -> int:
 def g2(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
     every = trials(rows, warmup=None)
+    names = session_names(rows)
+
+    def norm(row: dict) -> set[str]:
+        own = names.get((row.get("eval_id"), row.get("session")))
+        return {_norm_file(x, own) for x in row["footprint"]["home_files"]}
+
     route = prereg["invariants"]["expected_route"]
     path = prereg["invariants"]["expected_path"]
     for r in every:
@@ -137,21 +198,21 @@ def g2(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
     # browser process tree can never mask a new process in a GTK trial.
     envelopes: dict[str, Any] = {}
     for cls in sorted({_footprint_class(r) for r in every}):
-        champ = [r["footprint"] for r in every if r.get("arm") == "champion" and "footprint" in r
-                 and _footprint_class(r) == cls]
-        cand = [r["footprint"] for r in every if r.get("arm") == "candidate" and "footprint" in r
-                and _footprint_class(r) == cls]
+        champ = [r for r in every if r.get("arm") == "champion" and "footprint" in r and _footprint_class(r) == cls]
+        cand = [r for r in every if r.get("arm") == "candidate" and "footprint" in r and _footprint_class(r) == cls]
         if champ and cand:
-            env = {"procs": max(f["procs"] for f in champ), "sockets": max(f["sockets"] for f in champ),
-                   "files": sorted({_norm_file(x) for f in champ for x in f["home_files"]})}
+            env = {"procs": max(r["footprint"]["procs"] for r in champ),
+                   "sockets": max(r["footprint"]["sockets"] for r in champ),
+                   "files": sorted(set().union(*(norm(r) for r in champ)))}
             envelopes[cls] = env
             files = set(env["files"])
-            for f in cand:
+            for r in cand:
+                f = r["footprint"]
                 if f["procs"] > env["procs"]:
                     reasons.append(f"new_process:{cls}:{f['procs']}>{env['procs']}")
                 if f["sockets"] > env["sockets"]:
                     reasons.append(f"new_socket:{cls}:{f['sockets']}>{env['sockets']}")
-                extra = sorted({_norm_file(x) for x in f["home_files"]} - files)
+                extra = sorted(norm(r) - files)
                 if extra:
                     reasons.append(f"new_file:{cls}:{extra[0]}")
         else:
@@ -207,13 +268,17 @@ def g5(rows: list[dict], prereg: dict[str, Any], prior_p_values: list[float]) ->
     tau = prereg["tau"]["value"]
     need = prereg["design"]["n_pairs"]
     seed = prereg["design"]["seed"]
-    d = ln_pairs(pairs(rows, "task"))
+    metric = prereg["design"]["metric"]
+    d = ln_pairs(pairs(rows, "task", metric=metric), metric)
     n = len(d)
     if n < need:
-        return result("G5", False, [f"underpowered:{n}<{need}"], n_pairs=n, inconclusive=True)
+        return result("G5", False, [f"underpowered:{n}<{need}"], n_pairs=n, inconclusive=True, metric=metric)
     delta = fmean(d)
     ci = stats.bootstrap_ci(d, 0.95, seed=seed)
-    p = stats.bootstrap_p_less(d, seed=seed + 1)
+    # The level depends only on earlier rejections, so the resample count is fixed before the
+    # data are looked at; its p floor 1/(b+1) is below the level (F2).
+    b = stats.sign_flip_resamples(lord.next_alpha(prior_p_values))
+    p = stats.sign_flip_p_less(d, b, seed=seed + 1)
     decision = lord.decide(prior_p_values, p)
     threshold = -math.log1p(tau)
     reasons = []
@@ -222,23 +287,37 @@ def g5(rows: list[dict], prereg: dict[str, Any], prior_p_values: list[float]) ->
     if delta > threshold:
         reasons.append(f"effect_below_tau:{delta:.4f}>{threshold:.4f}")
     sigma = stats.sd(d)
-    return result("G5", not reasons, reasons, n_pairs=n, delta=delta, ci95=list(ci), p_value=p,
-                  sigma_ln=sigma, power=stats.achieved_power(sigma, tau, n),
+    return result("G5", not reasons, reasons, metric=metric, n_pairs=n, delta=delta, ci95=list(ci), p_value=p,
+                  p_test="paired_sign_flip", p_resamples=b, sigma_ln=sigma, power=stats.achieved_power(sigma, tau, n),
                   n_required_at_sigma=stats.n_pairs_required(sigma, tau) if sigma > 0 else 2,
                   threshold=threshold, lord=decision)
 
 
 # --------------------------------------------------------------------------- G6
-def g6(rows: list[dict], tau: float) -> dict[str, Any]:
-    ta = [r["T_ns"] for r in trials(rows, kind="task", arm="champion") if r.get("verified")]
-    tc = [r["T_ns"] for r in trials(rows, kind="task", arm="candidate") if r.get("verified")]
+def g6(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
+    """Guardrails: the decision metric's p90 tail, and whole-task T's mean paired ln ratio
+    (startup is outside T_act) within ln(1 + guardrail tau)."""
+    tau = prereg["tau"]["value"]
+    metric = prereg["design"]["metric"]
+    ta = [value_ns(r, metric) for r in trials(rows, kind="task", arm="champion") if r.get("verified")]
+    tc = [value_ns(r, metric) for r in trials(rows, kind="task", arm="candidate") if r.get("verified")]
+    ta, tc = [x for x in ta if x], [x for x in tc if x]
     if not ta or not tc:
         return result("G6", False, ["no_rows"])
+    reasons = []
     pa, pc = stats.quantile(ta, 0.9), stats.quantile(tc, 0.9)
     ratio = math.log(pc / pa)
-    ok = ratio <= math.log1p(tau)
-    return result("G6", ok, [] if ok else [f"p90_regression:{ratio:.4f}>{math.log1p(tau):.4f}"],
-                  p90_champion_ms=pa / 1e6, p90_candidate_ms=pc / 1e6, ln_ratio=ratio)
+    if ratio > math.log1p(tau):
+        reasons.append(f"p90_regression:{ratio:.4f}>{math.log1p(tau):.4f}")
+    guard = prereg["guardrail"]
+    d_whole = ln_pairs(pairs(rows, "task", metric=guard["metric"]), guard["metric"])
+    whole = fmean(d_whole) if d_whole else None
+    if whole is None:
+        reasons.append("whole_task_no_pairs")
+    elif whole > math.log1p(guard["tau"]):
+        reasons.append(f"whole_task_regression:{whole:.4f}>{math.log1p(guard['tau']):.4f}")
+    return result("G6", not reasons, reasons, metric=metric, p90_champion_ms=pa / 1e6, p90_candidate_ms=pc / 1e6,
+                  ln_ratio=ratio, whole_task_delta=whole, whole_task_limit=math.log1p(guard["tau"]))
 
 
 # --------------------------------------------------------------------------- G7
@@ -254,34 +333,41 @@ def span_ns(row: dict, start: str, end: str) -> int | None:
 
 
 def g7(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
+    """Mechanism: the pre-registered phase carries >= min_share of the traced saving, and the
+    trace-unset pairs agree: their Delta (all of them) lies inside the traced pairs' bootstrap
+    CI95 widened by ln(1+tau) on each side (F3; a point-vs-point check false-rejected ~8 off
+    pairs on a loaded host)."""
     tau = prereg["tau"]["value"]
     mech = prereg["mechanism"]
-    on = pairs(rows, "task", trace=True)
-    off = pairs(rows, "task", trace=False)
+    metric = prereg["design"]["metric"]
+    on = pairs(rows, "task", trace=True, metric=metric)
+    off = pairs(rows, "task", trace=False, metric=metric)
     reasons = []
     spans = [(span_ns(a, mech["start_mark"], mech["end_mark"]), span_ns(c, mech["start_mark"], mech["end_mark"]))
              for a, c in on]
     complete = [(a, c) for (a, c) in spans if a is not None and c is not None]
     if not on or len(complete) != len(on):
         reasons.append(f"phase_marks_missing:{len(complete)}/{len(on)}")
-    total = fmean(a["T_ns"] - c["T_ns"] for a, c in on) if on else 0.0
+    total = fmean(value_ns(a, metric) - value_ns(c, metric) for a, c in on) if on else 0.0
     phase = fmean(a - c for a, c in complete) if complete else 0.0
     share = phase / total if total > 0 else None
     if total <= 0:
         reasons.append("no_saving_on_trace_on_pairs")
     elif phase < mech.get("min_share", 0.7) * total:
         reasons.append(f"mechanism_share:{share:.3f}<{mech.get('min_share', 0.7)}")
-    d_on, d_off = ln_pairs(on), ln_pairs(off)
-    agree = None
+    d_on, d_off = ln_pairs(on, metric), ln_pairs(off, metric)
+    band = None
     if len(d_off) < 2 or len(d_on) < 2:
         reasons.append(f"trace_off_pairs:{len(d_off)}")
     else:
-        agree = abs(fmean(d_off) - fmean(d_on))
-        if agree > math.log1p(tau):
-            reasons.append(f"trace_off_disagrees:{agree:.4f}>{math.log1p(tau):.4f}")
-    return result("G7", not reasons, reasons, saving_ms=total / 1e6, phase_saving_ms=phase / 1e6,
+        lim = math.log1p(tau)
+        lo, hi = stats.bootstrap_ci(d_on, 0.95, seed=prereg["design"]["seed"] + 11)
+        band = [lo - lim, hi + lim]
+        if not band[0] <= fmean(d_off) <= band[1]:
+            reasons.append(f"trace_off_disagrees:{fmean(d_off):.4f}_outside_[{band[0]:.4f},{band[1]:.4f}]")
+    return result("G7", not reasons, reasons, metric=metric, saving_ms=total / 1e6, phase_saving_ms=phase / 1e6,
                   share=share, delta_on=fmean(d_on) if d_on else None,
-                  delta_off=fmean(d_off) if d_off else None, abs_on_off=agree,
+                  delta_off=fmean(d_off) if d_off else None, trace_off_band=band,
                   pairs_on=len(on), pairs_off=len(off))
 
 
@@ -306,6 +392,7 @@ def gs(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
     tau = prereg["tau"]["value"]
     min_pairs = prereg.get("spot_min_pairs", 10)
     seed = prereg["design"]["seed"]
+    metric = prereg["design"]["metric"]
     reasons = []
     per: dict[str, Any] = {}
     for kind in prereg["spot_checks"]:
@@ -313,7 +400,7 @@ def gs(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
         c = trials(rows, kind=kind, arm="candidate")
         va = sum(1 for r in a if r.get("verified"))
         vc = sum(1 for r in c if r.get("verified"))
-        ps = pairs(rows, kind)
+        ps = pairs(rows, kind, metric=metric)
         info: dict[str, Any] = {"attempted": [len(a), len(c)], "verified": [va, vc], "pairs": len(ps)}
         if not a or not c:
             reasons.append(f"spot_not_run:{kind}")
@@ -322,13 +409,13 @@ def gs(rows: list[dict], prereg: dict[str, Any]) -> dict[str, Any]:
         elif len(ps) < min_pairs:
             reasons.append(f"spot_pairs:{kind}:{len(ps)}<{min_pairs}")
         else:
-            d = ln_pairs(ps)
+            d = ln_pairs(ps, metric)
             lo, hi = stats.bootstrap_ci(d, 0.95, seed=seed + 7)
             info.update(delta=fmean(d), ci95=[lo, hi])
             if hi > math.log1p(tau):
                 reasons.append(f"spot_latency_inferior:{kind}:{hi:.4f}>{math.log1p(tau):.4f}")
         per[kind] = info
-    return result("GS", not reasons, reasons, spot=per)
+    return result("GS", not reasons, reasons, metric=metric, spot=per)
 
 
 # --------------------------------------------------------------------------- pipeline
@@ -344,7 +431,7 @@ def evaluate(prereg: dict[str, Any], rows: list[dict], build_rows: list[dict], g
         ("G3", lambda: g3(rows)),
         ("G4", lambda: g4(rows)),
         ("G5", lambda: g5(rows, prereg, prior_p_values)),
-        ("G6", lambda: g6(rows, tau)),
+        ("G6", lambda: g6(rows, prereg)),
         ("G7", lambda: g7(rows, prereg)),
         ("G8", lambda: g8(rows, g0_inputs_changed(g0_inputs), allowlist, prereg)),
         ("GS", lambda: gs(rows, prereg)),
@@ -373,12 +460,14 @@ def evaluate(prereg: dict[str, Any], rows: list[dict], build_rows: list[dict], g
         "n_pairs": m.get("n_pairs"),
         "tau": tau,
         "lord": m.get("lord"),
-        "median_T_ms": {arm: _median_ms(trials(rows, "task", arm)) for arm in ("champion", "candidate")},
+        "metric": prereg["design"]["metric"],
+        "median_T_ms": {arm: _median_ms(trials(rows, "task", arm), "T") for arm in ("champion", "candidate")},
+        "median_T_act_ms": {arm: _median_ms(trials(rows, "task", arm), "T_act") for arm in ("champion", "candidate")},
     }
 
 
-def _median_ms(rows: list[dict]) -> float | None:
-    ts = [r["T_ns"] for r in rows if r.get("verified") and r.get("T_ns")]
+def _median_ms(rows: list[dict], metric: str) -> float | None:
+    ts = [v for v in (value_ns(r, metric) for r in rows if r.get("verified")) if v]
     return median(ts) / 1e6 if ts else None
 
 

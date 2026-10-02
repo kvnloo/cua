@@ -6,7 +6,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "eval_id", "created_utc", "request", "champion", "candidate", "task", "segment",
-               "frozen", "mechanism", "tau", "design", "fdr", "invariants", "soak", "spot_checks",
+               "frozen", "mechanism", "tau", "guardrail", "design", "fdr", "invariants", "soak", "spot_checks",
                "spot_min_pairs", "g1_required_suites", "gates"],
   "properties": {
     "schema": {"const": "ar.prereg.v1"},
@@ -38,11 +38,21 @@
     },
     "mechanism": {
       "type": "object", "additionalProperties": false,
-      "required": ["start_mark", "end_mark", "min_share"],
+      "required": ["start_mark", "end_mark", "min_share", "trace_off_rule"],
       "properties": {
         "start_mark": {"type": "string", "pattern": "^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$"},
         "end_mark": {"type": "string", "pattern": "^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$"},
-        "min_share": {"type": "number", "minimum": 0.7, "maximum": 1}
+        "min_share": {"type": "number", "minimum": 0.7, "maximum": 1},
+        "trace_off_rule": {"const": "delta_off_within_ci95_on_widened_by_ln1p_tau"}
+      }
+    },
+    "guardrail": {
+      "type": "object", "additionalProperties": false,
+      "required": ["metric", "tau", "rule"],
+      "properties": {
+        "metric": {"const": "T"},
+        "tau": {"type": "number", "minimum": 0.02},
+        "rule": {"type": "string"}
       }
     },
     "tau": {
@@ -59,9 +69,19 @@
     },
     "design": {
       "type": "object", "additionalProperties": false,
-      "required": ["n_pairs", "sigma_ln", "alpha_one_sided", "power", "order", "trace_off_fraction",
+      "required": ["metric", "p_test", "n_pairs", "sigma_ln", "alpha_one_sided", "power", "order", "trace_off_fraction",
                    "session_trials", "block_max_minutes", "seed", "fresh_driver_per_trial", "sandbox", "psi_hz"],
       "properties": {
+        "metric": {"const": "T_act"},
+        "p_test": {
+          "type": "object", "additionalProperties": false,
+          "required": ["name", "min_resamples", "resamples_per_inverse_alpha"],
+          "properties": {
+            "name": {"const": "paired_sign_flip_mc"},
+            "min_resamples": {"const": 20000},
+            "resamples_per_inverse_alpha": {"const": 20}
+          }
+        },
         "n_pairs": {"type": "integer", "minimum": 2},
         "sigma_ln": {"type": "number", "exclusiveMinimum": 0},
         "alpha_one_sided": {"const": 0.01},
@@ -78,12 +98,13 @@
     },
     "fdr": {
       "type": "object", "additionalProperties": false,
-      "required": ["procedure", "alpha", "w0", "gamma_constant"],
+      "required": ["procedure", "alpha", "w0", "gamma_constant", "w0_rationale"],
       "properties": {
         "procedure": {"const": "LORD++"},
         "alpha": {"const": 0.05},
         "w0": {"const": 0.025},
-        "gamma_constant": {"const": 0.0722}
+        "gamma_constant": {"const": 0.0722},
+        "w0_rationale": {"type": "string"}
       }
     },
     "invariants": {

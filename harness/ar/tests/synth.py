@@ -7,6 +7,7 @@ import random
 from typing import Any
 
 MS = 1_000_000
+ALNUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 ROUTE = "accessibility"
 FOOT = {"procs": 2, "sockets": 7, "fds": 17, "home_files": ["/home/trial/.cua-driver",
                                                               "/home/trial/.cua-driver/.telemetry_id"]}
@@ -15,7 +16,8 @@ FOOT = {"procs": 2, "sockets": 7, "fds": 17, "home_files": ["/home/trial/.cua-dr
 def prereg(**over: Any) -> dict[str, Any]:
     p = {
         "tau": {"value": 0.02},
-        "design": {"n_pairs": 30, "seed": 11},
+        "design": {"n_pairs": 30, "seed": 11, "metric": "T_act"},
+        "guardrail": {"metric": "T", "tau": 0.03},
         "mechanism": {"start_mark": "focus_guard/body_done", "end_mark": "focus_guard/restored", "min_share": 0.7},
         "invariants": {"expected_route": ROUTE, "expected_path": None},
         "spot_checks": ["spot_gtk3_text", "spot_browser_fill_submit"],
@@ -38,7 +40,8 @@ def trial(tid: int, arm: str, kind: str, T_ms: float | None, phase_ms: float | N
     positive = kind in ("task", "soak", "spot_gtk3_text", "spot_browser_fill_submit")
     if positive:
         r.update(verified=True, claimed_success=True, seq_delta=1, journal_before_done=True, dispatch_calls=1,
-                 route=ROUTE if kind in ("task", "soak") else None, path=None, T_ns=int(T_ms * MS))
+                 route=ROUTE if kind in ("task", "soak") else None, path=None)
+        set_times(r, int(T_ms * MS))
         if trace and phase_ms is not None:
             t0 = 100 * MS
             r["marks"] = [
@@ -54,6 +57,50 @@ def trial(tid: int, arm: str, kind: str, T_ms: float | None, phase_ms: float | N
                  dispatch_calls=1, route=None, path=None)
     r.update(over)
     return r
+
+
+def set_times(row: dict[str, Any], T_ns: int, act_ns: int | None = None) -> dict[str, Any]:
+    """Whole-task T (spawn -> verified done) and T_act (first dispatch m0 -> done; default 0.6 T,
+    so both metrics share every paired ln ratio unless a test sets them apart)."""
+    act_ns = T_ns * 3 // 5 if act_ns is None else act_ns
+    row.update(T_ns=T_ns, t_done_ns=row["t_spawn_ns"] + T_ns)
+    row["calls"] = [{"tool": "get_window_state", "m0": row["t_spawn_ns"]},
+                    {"tool": "click", "m0": row["t_done_ns"] - act_ns}]
+    return row
+
+
+def with_sessions(rows: list[dict[str, Any]], eval_id: str = "ar-20261002-synth",
+                  manifest: bool = True) -> list[dict[str, Any]]:
+    """Spread rows over sessions the way plan.py does (paired GTK sessions, candidate-only soak
+    sessions of 47, a browser session) and give every GTK row the sandbox /tmp listing of its own
+    session: the bwrap-created X11 dir, the bound X socket and the session's randomly named D-Bus
+    socket. With ``manifest`` each session also gets the runner's ``ar.session.v1`` start record
+    naming those binds (``session_binds``), as session.py writes it."""
+    out: list[dict[str, Any]] = []
+    sessions: dict[int, str] = {}
+    soak_seen = 0
+    for r in rows:
+        kind = r.get("kind")
+        if kind == "soak":
+            s = 10 + soak_seen // 47
+            soak_seen += 1
+        elif kind == "spot_browser_fill_submit":
+            s = 9
+        else:
+            s = (r["trial_id"] // 2) % 2  # two paired GTK sessions
+        r["session"], r["eval_id"] = s, eval_id
+        if kind != "spot_browser_fill_submit":
+            dbus = sessions.setdefault(s, "/tmp/dbus-" + "".join(random.Random(s).choices(ALNUM, k=10)))
+            r["footprint"]["home_files"] = [*r["footprint"]["home_files"], "/tmp/.X11-unix", "/tmp/.X11-unix/X99",
+                                            dbus]
+        else:
+            sessions.setdefault(s, f"/tmp/dbus-browser{s}")
+    if manifest:
+        for s, dbus in sorted(sessions.items()):
+            out.append({"schema": "ar.session.v1", "event": "start", "session": s, "eval_id": eval_id,
+                        "session_binds": {"x11": "/tmp/.X11-unix/X99", "dbus": dbus,
+                                          "a11y": f"/run/user/1000/at-spi/bus_{s}", "xauthority": None}})
+    return out + rows
 
 
 def rows(n_pairs: int = 40, effect_ln: float = -0.10, sigma: float = 0.03, seed: int = 5,

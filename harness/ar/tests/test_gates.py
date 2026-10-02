@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import math
 import sys
 import unittest
 from pathlib import Path
@@ -160,6 +161,47 @@ class G2(unittest.TestCase):
         self.check(lambda rows: first(rows, arm="candidate", kind="task").update(journal_before_done=False),
                    "journal_after_done")
 
+    # F1: every session binds its own randomly named D-Bus socket into the sandbox /tmp. The
+    # candidate-only soak sessions have no champion row with that name; the runner's session
+    # manifest (ar.session.v1 start record, session_binds) names it, so it is collapsed per session.
+    def test_session_dbus_socket_in_candidate_only_soak_session_passes(self):
+        rows = synth.with_sessions(synth.rows())
+        soak_sessions = {r["session"] for r in rows if r.get("kind") == "soak"}
+        champ_sessions = {r["session"] for r in rows if r.get("arm") == "champion"}
+        self.assertTrue(soak_sessions and not soak_sessions & champ_sessions)
+        r = gates.g2(rows, synth.prereg())
+        self.assertTrue(r["pass"], r["reasons"][:5])
+
+    def test_session_dbus_socket_without_manifest_still_fails(self):
+        # Fail closed: no manifest record, no collapsing (the calibration's F1 symptom).
+        r = gates.g2(synth.with_sessions(synth.rows(), manifest=False), synth.prereg())
+        self.assertFalse(r["pass"])
+        self.assertTrue(any(x.startswith("new_file:gtk:/tmp/dbus-") for x in r["reasons"]), r["reasons"][:5])
+
+    def test_planted_socket_still_fails_with_session_manifest(self):
+        for planted in ("/tmp/dbus-Pl4ntedSock", "/tmp/ar-settle.sock", "/run/user/trial/bus",
+                        "/tmp/.X11-unix/X5", "/home/trial/.cua-driver/listener.sock"):
+            rows = synth.with_sessions(synth.rows())
+            first(rows, arm="candidate", kind="soak")["footprint"]["home_files"].append(planted)
+            r = gates.g2(rows, synth.prereg())
+            self.assertFalse(r["pass"], planted)
+            self.assertTrue(any(x.startswith("new_file:gtk:") for x in r["reasons"]), (planted, r["reasons"][:5]))
+
+    def test_another_sessions_dbus_name_is_not_collapsed(self):
+        # Keyed on the row's own (eval_id, session): a candidate cannot reuse a name another
+        # session bound.
+        rows = synth.with_sessions(synth.rows())
+        other = next(r for r in rows if r.get("schema") == "ar.session.v1" and r["session"] == 0)
+        soak = first(rows, arm="candidate", kind="soak")
+        soak["footprint"]["home_files"].append(other["session_binds"]["dbus"])
+        self.assertFalse(gates.g2(rows, synth.prereg())["pass"])
+
+    def test_listening_socket_fd_still_fails_with_session_manifest(self):
+        rows = synth.with_sessions(synth.rows())
+        first(rows, arm="candidate", kind="soak")["footprint"].update(sockets=8)
+        r = gates.g2(rows, synth.prereg())
+        self.assertTrue(any(x.startswith("new_socket:gtk") for x in r["reasons"]), r["reasons"][:5])
+
 
 class G3(unittest.TestCase):
     def test_pass(self):
@@ -210,6 +252,48 @@ class G5(unittest.TestCase):
         self.assertFalse(r["pass"])
         self.assertTrue(any(x.startswith("effect_below_tau") for x in r["reasons"]), r["reasons"])
 
+    # F2: LORD++ levels fall below the 4000-resample bootstrap's p floor (1/4001) from the third
+    # test on. The sign-flip p is sized from the level it faces, so its floor is always below it.
+    LOADED_SIGMA = 0.0592  # the loaded-host A/A whole-task sigma_ln
+
+    def test_minus_8pct_n38_rejected_at_alpha_2e4(self):
+        prior = [0.5, 0.5, 0.5]
+        rows = synth.rows(n_pairs=38, effect_ln=math.log(0.92), sigma=self.LOADED_SIGMA, seed=8)
+        r = gates.g5(rows, synth.prereg(design={"n_pairs": 38, "seed": 11, "metric": "T_act"}), prior)
+        lv = r["metrics"]["lord"]
+        self.assertLessEqual(lv["alpha_i"], 2e-4)
+        self.assertGreater(1 / 4001, lv["alpha_i"])  # the old bootstrap could never reject here
+        self.assertTrue(lv["rejected"], (r["reasons"], lv))
+        self.assertTrue(r["pass"], r["reasons"])
+        self.assertLessEqual(1 / (r["metrics"]["p_resamples"] + 1), lv["alpha_i"] / 10)
+
+    def test_null_n38_not_rejected_at_alpha_2e4(self):
+        for seed in range(5):
+            rows = synth.rows(n_pairs=38, effect_ln=0.0, sigma=self.LOADED_SIGMA, seed=seed)
+            r = gates.g5(rows, synth.prereg(design={"n_pairs": 38, "seed": 11, "metric": "T_act"}), [0.5, 0.5, 0.5])
+            self.assertFalse(r["metrics"]["lord"]["rejected"], seed)
+            self.assertFalse(r["pass"])
+
+    def test_resolution_holds_at_the_thirtieth_test(self):
+        prior = [0.5] * 29
+        rows = synth.rows(n_pairs=38, effect_ln=math.log(0.92), sigma=self.LOADED_SIGMA, seed=8)
+        r = gates.g5(rows, synth.prereg(design={"n_pairs": 38, "seed": 11, "metric": "T_act"}), prior)
+        lv = r["metrics"]["lord"]
+        self.assertEqual(lv["index"], 30)
+        self.assertTrue(lv["rejected"], lv)
+        self.assertLessEqual(1 / (r["metrics"]["p_resamples"] + 1), lv["alpha_i"] / 10)
+
+    def test_reads_the_preregistered_metric(self):
+        # Startup 30% slower in the candidate, the act 10% faster: T_act is the decision metric.
+        rows = synth.rows(n_pairs=40, effect_ln=0.0, sigma=0.005)
+        for r in rows:
+            if r.get("kind") == "task":
+                act = r["T_ns"] * 3 // 5
+                if r["arm"] == "candidate":
+                    synth.set_times(r, int((r["T_ns"] - act) * 1.3 + act * 0.9), int(act * 0.9))
+        self.assertTrue(gates.g5(rows, synth.prereg(), [])["pass"])
+        self.assertFalse(gates.g5(rows, synth.prereg(design={"n_pairs": 30, "seed": 11, "metric": "T"}), [])["pass"])
+
     def test_inconclusive_when_underpowered(self):
         r = gates.g5(synth.rows(n_pairs=10), synth.prereg(), [])
         self.assertFalse(r["pass"])
@@ -218,15 +302,37 @@ class G5(unittest.TestCase):
 
 class G6(unittest.TestCase):
     def test_pass(self):
-        self.assertTrue(gates.g6(synth.rows(), 0.02)["pass"])
+        self.assertTrue(gates.g6(synth.rows(), synth.prereg())["pass"])
 
     def test_fail_tail(self):
         rows = synth.rows(effect_ln=-0.05)
         cand = [r for r in rows if r["kind"] == "task" and r["arm"] == "candidate"]
         for r in cand[: len(cand) // 5]:
-            r["T_ns"] *= 3
-        r = gates.g6(rows, 0.02)
+            synth.set_times(r, r["T_ns"] * 3)
+        r = gates.g6(rows, synth.prereg())
         self.assertFalse(r["pass"])
+        self.assertTrue(any(x.startswith("p90_regression") for x in r["reasons"]))
+
+    def test_fail_whole_task_guardrail(self):
+        # T_act 10% faster but whole-task T 8% slower (startup regression): the guardrail rejects.
+        rows = synth.rows(effect_ln=0.0, sigma=0.002)
+        for r in rows:
+            if r.get("kind") == "task" and r["arm"] == "candidate":
+                act = r["T_ns"] * 3 // 5
+                synth.set_times(r, int(r["T_ns"] * 1.08), int(act * 0.9))
+        r = gates.g6(rows, synth.prereg())
+        self.assertFalse(r["pass"])
+        self.assertTrue(any(x.startswith("whole_task_regression") for x in r["reasons"]), r["reasons"])
+
+    def test_whole_task_layout_bias_within_guardrail_passes(self):
+        # The A/A's padded-rebuild startup bias (+1.7% whole-task) stays inside tau_T = 3%.
+        rows = synth.rows(effect_ln=0.0, sigma=0.002)
+        for r in rows:
+            if r.get("kind") == "task" and r["arm"] == "candidate":
+                synth.set_times(r, int(r["T_ns"] * 1.017), r["T_ns"] * 3 // 5)
+        r = gates.g6(rows, synth.prereg())
+        self.assertTrue(r["pass"], r["reasons"])
+        self.assertAlmostEqual(r["metrics"]["whole_task_delta"], math.log(1.017), places=3)
 
 
 class G7(unittest.TestCase):
@@ -243,6 +349,35 @@ class G7(unittest.TestCase):
         r = gates.g7(synth.rows(sigma=0.005, off_effect_ln=0.0), synth.prereg())
         self.assertFalse(r["pass"])
         self.assertTrue(any(x.startswith("trace_off_disagrees") for x in r["reasons"]))
+
+    # F3: the trace-off check compares the trace-unset pairs' Delta with the traced pairs' CI95
+    # widened by ln(1+tau), on all trace-unset pairs, instead of two point values.
+    def test_loaded_host_rows_pass(self):
+        # Loaded-host noise (the A/A T_act sigma 0.0376), same effect on and off: the old point
+        # rule |Delta_off - Delta_on| <= ln(1+tau) failed often here.
+        fails_new = fails_old = 0
+        for seed in range(40):
+            rows = synth.rows(effect_ln=-0.10, sigma=0.0376, seed=100 + seed)
+            r = gates.g7(rows, synth.prereg())
+            fails_new += not r["pass"]
+            fails_old += abs(r["metrics"]["delta_off"] - r["metrics"]["delta_on"]) > math.log1p(0.02)
+            self.assertEqual(r["metrics"]["pairs_off"], 8)  # every trace-unset pair is used
+        self.assertLessEqual(fails_new, 2)   # observed 1/40
+        self.assertGreaterEqual(fails_old, 4)  # observed 6/40
+
+    def test_loaded_host_startup_stall_on_a_trace_off_pair_passes(self):
+        # r02's shape: one trace-off candidate trial stalls ~1 s before MCP initialize. The stall
+        # is outside T_act, so the decision metric's trace-off Delta is unaffected.
+        rows = synth.rows(effect_ln=-0.10, sigma=0.0376, seed=7)
+        off = first(rows, arm="candidate", kind="task", trace=False)
+        synth.set_times(off, off["T_ns"] + 1000 * synth.MS, off["T_ns"] * 3 // 5)
+        r = gates.g7(rows, synth.prereg())
+        self.assertTrue(r["pass"], r["reasons"])
+
+    def test_fail_trace_off_disagrees_under_load(self):
+        r = gates.g7(synth.rows(effect_ln=-0.10, sigma=0.0376, off_effect_ln=0.0, seed=3), synth.prereg())
+        self.assertFalse(r["pass"])
+        self.assertTrue(any(x.startswith("trace_off_disagrees") for x in r["reasons"]), r["reasons"])
 
     def test_fail_marks_missing(self):
         rows = synth.rows(sigma=0.005)

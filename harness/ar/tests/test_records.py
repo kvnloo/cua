@@ -60,7 +60,8 @@ class Schemas(unittest.TestCase):
         self.assertEqual(validate(pre, schema), [])
         for path, value in ((("tau", "value"), 0.01), (("mechanism", "min_share"), 0.5),
                             (("design", "alpha_one_sided"), 0.05), (("design", "session_trials"), 60),
-                            (("fdr", "procedure"), "BH")):
+                            (("fdr", "procedure"), "BH"), (("design", "metric"), "T"),
+                            (("mechanism", "trace_off_rule"), "point"), (("guardrail", "metric"), "T_act")):
             bad = json.loads(json.dumps(pre))
             bad[path[0]][path[1]] = value
             self.assertTrue(validate(bad, schema), path)
@@ -69,6 +70,19 @@ class Schemas(unittest.TestCase):
         sys.path.insert(0, str(AR / "tests"))
         import synth
         self.assertEqual(validate(synth.trial(1, "champion", "task", 1500.0, 241.0), load("trial.schema.json")), [])
+
+
+class SessionManifest(unittest.TestCase):
+    def test_session_binds_match_the_sandbox_binds(self):
+        import session
+        env = {"DISPLAY": ":99", "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-GsPY0lwP1M,guid=eadf",
+               "XAUTHORITY": "/tmp/xauth-a"}
+        self.assertEqual(session.session_binds(env, "unix:path=/run/user/1000/at-spi/bus_99,guid=1"),
+                         {"x11": "/tmp/.X11-unix/X99", "dbus": "/tmp/dbus-GsPY0lwP1M",
+                          "a11y": "/run/user/1000/at-spi/bus_99", "xauthority": "/tmp/xauth-a"})
+        self.assertEqual(session.session_binds({"DISPLAY": ":7.0", "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/d"},
+                                               None),
+                         {"x11": "/tmp/.X11-unix/X7", "dbus": "/tmp/d", "a11y": None, "xauthority": None})
 
 
 class Plan(unittest.TestCase):

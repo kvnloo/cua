@@ -4,7 +4,7 @@
   selfcheck  verify the harness files against the manifest
   g0         collect G0 inputs for a candidate branch and print the G0 verdict
   tau        AA calibration -> tau (from AA raw rows)
-  aa         full A/A summary (sigma, Delta_AA CI, tau, n by power, T_act fallback, PSI threshold)
+  aa         full A/A summary (sigma, Delta_AA CI, tau, n by power, T_act decision metric + whole-task guardrail, PSI threshold)
   prereg     write a pre-registration for one request (validated against the schema)
   evaluate   run G0..GS on raw rows and append one line to results.jsonl
   verify     check the results.jsonl hash chain and replay LORD++
@@ -25,6 +25,8 @@ from .scanner import RULES_PATH, load_rules
 from .schema import load, validate
 
 AR = Path(__file__).resolve().parent.parent
+PTEST = {"name": "paired_sign_flip_mc", "min_resamples": stats.SIGN_FLIP_MIN_RESAMPLES,
+         "resamples_per_inverse_alpha": stats.SIGN_FLIP_PER_ALPHA}
 ALLOWLIST = AR / "allowlist.json"
 MANIFEST = AR / "manifest.json"
 
@@ -92,9 +94,10 @@ def cmd_aa(a: argparse.Namespace) -> int:
     out["aa_rows_sha256"] = rows_sha(a.aa_rows)
     Path(a.out).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
     if a.tau_out:
-        key = "whole_task_T" if out["decision_metric"] == "whole_task_T" else "T_act"
-        m = out[key]
-        tau = {"metric": key, "tau": m["tau"], "q975_abs_delta_aa_ln": m["abs_delta_aa_q975_ln"],
+        if out["decision_metric"] != "T_act":
+            raise SystemExit(f"no feasible decision metric: {out['decision_metric']}")
+        m = out["T_act"]
+        tau = {"metric": "T_act", "guardrail": out["guardrail"], "tau": m["tau"], "q975_abs_delta_aa_ln": m["abs_delta_aa_q975_ln"],
                "sigma_ln": m["sigma_ln"], "aa_pairs": m["pairs"], "batch": m["pairs"],
                "n_pairs_required": m["n_pairs_required"], "floor": stats.TAU_FLOOR,
                "psi_discard_threshold": out["psi"].get("threshold"), "aa_rows_sha256": out["aa_rows_sha256"]}
@@ -127,14 +130,19 @@ def cmd_prereg(a: argparse.Namespace) -> int:
         "frozen": {"manifest_sha256": sha_file(Path(a.manifest)), "allowlist_sha256": allow_sha,
                    "scanner_rules_sha256": rules_sha, "harness_commit": a.harness_commit},
         "mechanism": {"start_mark": req.get("mechanism_start_mark", a.start_mark),
-                      "end_mark": req.get("mechanism_end_mark", a.end_mark), "min_share": 0.7},
+                      "end_mark": req.get("mechanism_end_mark", a.end_mark), "min_share": 0.7,
+                      "trace_off_rule": "delta_off_within_ci95_on_widened_by_ln1p_tau"},
         "tau": {"value": tau["tau"], "floor": 0.02, "q975_abs_delta_aa_ln": tau["q975_abs_delta_aa_ln"],
                 "aa_pairs": tau["aa_pairs"], "batch": tau["batch"], "aa_rows_sha256": tau["aa_rows_sha256"]},
-        "design": {"n_pairs": n, "sigma_ln": tau["sigma_ln"], "alpha_one_sided": 0.01, "power": 0.8,
+        "guardrail": {"metric": tau["guardrail"]["metric"], "tau": tau["guardrail"]["tau"],
+                      "rule": "G6: whole-task mean paired ln ratio <= ln(1 + tau)"},
+        "design": {"metric": tau["metric"], "p_test": dict(PTEST),
+                   "n_pairs": n, "sigma_ln": tau["sigma_ln"], "alpha_one_sided": 0.01, "power": 0.8,
                    "order": "AB/BA alternating", "trace_off_fraction": 0.2, "session_trials": 48,
                    "block_max_minutes": 10, "seed": a.seed, "fresh_driver_per_trial": True,
                    "sandbox": "harness/ar/sandbox/sandbox-driver.sh", "psi_hz": 10},
-        "fdr": {"procedure": "LORD++", "alpha": lord.ALPHA, "w0": lord.W0, "gamma_constant": lord.GAMMA_C},
+        "fdr": {"procedure": "LORD++", "alpha": lord.ALPHA, "w0": lord.W0, "gamma_constant": lord.GAMMA_C,
+                "w0_rationale": lord.W0_RATIONALE},
         "invariants": {"expected_route": a.expected_route, "expected_path": a.expected_path},
         "soak": {"min_trials": a.soak},
         "spot_checks": ["spot_gtk3_text", "spot_browser_fill_submit"],

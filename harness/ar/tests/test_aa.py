@@ -55,24 +55,22 @@ class AASummary(unittest.TestCase):
         self.assertTrue(w["ci_includes_zero"])
         self.assertAlmostEqual(w["tau"], max(0.02, math.exp(w["abs_delta_aa_q975_ln"]) - 1))
         self.assertEqual(w["n_pairs_required"], stats.n_pairs_required(w["sigma_ln"], w["tau"]))
-        self.assertEqual(out["decision_metric"], "whole_task_T")
+        self.assertEqual(out["decision_metric"], "T_act")
+        self.assertEqual(out["guardrail"]["metric"], "T")
+        self.assertEqual(out["guardrail"]["tau"], w["tau"])
         self.assertTrue(out["gates_on_aa"]["G2"]["pass"], out["gates_on_aa"]["G2"]["reasons"][:3])
         self.assertTrue(out["gates_on_aa"]["G3"]["pass"])
         self.assertTrue(out["gates_on_aa"]["G4"]["pass"])
         self.assertFalse(out["gates_on_aa"]["G5_false_keep_check"]["pass"])
 
-    def test_fallback_to_t_act_when_whole_task_infeasible(self):
-        # With tau read at the A/A batch (72 pairs), n by power is bounded by ~10.04 * 72 / 1.96^2
-        # (about 188) whenever the 2% floor does not bind, so the switch is exercised with a lower cap.
-        saved = aa.MAX_FEASIBLE_PAIRS
-        aa.MAX_FEASIBLE_PAIRS = 50
-        try:
-            out = aa.summarize(aa_rows(72, 0.15, act_sigma_ln=0.01))
-        finally:
-            aa.MAX_FEASIBLE_PAIRS = saved
-        self.assertFalse(out["whole_task_T"]["feasible"])
+    def test_t_act_decides_whole_task_guards(self):
+        # Pre-registered in the fix round: T_act is the decision metric whatever whole-task T's
+        # sigma; whole-task T is the guardrail with its own A/A tau.
+        out = aa.summarize(aa_rows(72, 0.15, act_sigma_ln=0.01))
         self.assertEqual(out["decision_metric"], "T_act")
-        self.assertLessEqual(out["chosen"]["n_pairs"], 50)
+        self.assertEqual(out["chosen"]["tau"], out["T_act"]["tau"])
+        self.assertEqual(out["chosen"]["n_pairs"], out["T_act"]["n_pairs_required"])
+        self.assertGreater(out["guardrail"]["tau"], out["T_act"]["tau"])
 
     def test_self_consistent_tau_is_the_floor(self):
         # At the evaluation's own size n = n_required(tau), q975|Delta_AA| ~ 0.62 ln(1+tau) < ln(1+tau),

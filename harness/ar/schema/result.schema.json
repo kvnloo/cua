@@ -27,9 +27,10 @@
       }
     },
     "not_evaluated": {"type": "array", "items": {"type": "string"}},
-    "delta": {"type": ["number", "null"], "description": "mean paired ln(T_candidate / T_champion)"},
+    "delta": {"type": ["number", "null"], "description": "mean paired ln(candidate / champion) of the pre-registered metric"},
+    "metric": {"enum": ["T_act", "T"], "description": "the pre-registered decision metric"},
     "ci95": {"type": ["array", "null"], "items": {"type": "number"}},
-    "p_value": {"type": ["number", "null"], "description": "one-sided bootstrap p for H0: Delta >= 0"},
+    "p_value": {"type": ["number", "null"], "description": "one-sided paired sign-flip p (Monte Carlo, resamples sized to the LORD++ level) for H0: no effect, H1: Delta < 0"},
     "power": {"type": ["number", "null"], "description": "achieved power at delta = ln(1+tau), alpha 0.01"},
     "n_pairs": {"type": ["integer", "null"]},
     "tau": {"type": "number"},
@@ -46,6 +47,7 @@
       }
     },
     "median_T_ms": {"type": "object"},
+    "median_T_act_ms": {"type": "object"},
     "recorded_utc": {"type": "string"},
     "prev_sha256": {"type": "string", "pattern": "^([0-9a-f]{64}|genesis)$"}
   }
