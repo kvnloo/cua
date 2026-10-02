@@ -1,14 +1,21 @@
 use crate::protocol::ToolResult;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::OnceLock;
 
 pub const LRU_CAP_PER_PID: usize = 8;
 pub const STALE_TOKEN_ERROR: &str =
     "element_token is stale; call get_window_state again to refresh";
 
-static SNAPSHOT_COUNTER: AtomicU32 = AtomicU32::new(1);
+/// Snapshot ids count up from a random per-process base, so a token minted
+/// by an earlier Driver process does not name a snapshot of this one: it
+/// refuses as stale instead of resolving to whatever this process happened to
+/// mint under the same id. The wire shape stays `s<8 hex>:<index>`.
+static SNAPSHOT_COUNTER: OnceLock<AtomicU32> = OnceLock::new();
 
 pub(crate) fn mint_snapshot_id() -> u32 {
-    SNAPSHOT_COUNTER.fetch_add(1, Ordering::Relaxed)
+    SNAPSHOT_COUNTER
+        .get_or_init(|| AtomicU32::new(uuid::Uuid::new_v4().as_u128() as u32))
+        .fetch_add(1, Ordering::Relaxed)
 }
 
 pub fn format_snapshot_id(snapshot_id: u32) -> String {
