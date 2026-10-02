@@ -93,12 +93,48 @@ export class DriverToolError extends Error {
     message: string,
     readonly code?: string,
     readonly recommendedDelivery?: string,
-    // True only for a structured Driver refusal: nothing was dispatched.
-    readonly refused = false
+    // True for a structured Driver refusal. Only the codes in
+    // PRE_DISPATCH_REFUSALS prove that nothing was dispatched.
+    readonly refused = false,
+    // The refusal's own `retryable` flag when it carries one.
+    readonly retryable?: boolean
   ) {
     super(message);
     this.name = 'DriverToolError';
   }
+}
+
+/**
+ * Refusal codes the Driver returns for browser_click / browser_type only before
+ * any input reaches the page: binding, tab, ref, consent and origin checks, and
+ * the ref-node checks that precede dispatch. A refusal with any other code, for
+ * example browser_input_trust_unavailable (delivery may be partial or unknown)
+ * or browser_input_incomplete, may have landed and is never re-dispatched.
+ */
+export const PRE_DISPATCH_REFUSALS: ReadonlySet<string> = new Set([
+  'browser_ref_stale',
+  'browser_action_unavailable',
+  'browser_binding_stale',
+  'browser_binding_ambiguous',
+  'browser_wrong_target_refused',
+  'browser_tab_required',
+  'browser_tab_not_found',
+  'browser_route_unavailable',
+  'browser_requires_setup',
+  'browser_endpoint_owner_mismatch',
+  'browser_consent_required',
+  'browser_consent_revoked',
+  'browser_reconnect_exhausted',
+  'browser_origin_outside_scope',
+]);
+
+/** A refusal earns a fresh dispatch only when it proves nothing was dispatched. */
+export function mayRedispatchAfter(error: DriverToolError): boolean {
+  return (
+    error.code !== undefined &&
+    PRE_DISPATCH_REFUSALS.has(error.code) &&
+    error.retryable !== false
+  );
 }
 
 /** Recover the closed refusal code from the stable `refused (<code>):` text prefix. */
@@ -152,12 +188,14 @@ export class Driver {
         typeof structuredCode === 'string' && structuredCode
           ? structuredCode
           : refusalCodeFromContent(result.content);
+      const retryable = data.refusal ? data.refusal.detail?.retryable : data.retryable;
       // DriverToolError is an Error, so existing handlers still match.
       throw new DriverToolError(
         `${name} refused: ${JSON.stringify(data.refusal ?? data)}`,
         code,
         undefined,
-        true
+        true,
+        typeof retryable === 'boolean' ? retryable : undefined
       );
     }
     return data;
@@ -595,7 +633,9 @@ async function run(args: Arguments): Promise<Outcome> {
               action_refused: code,
               visual: visualRecord,
             };
-            if (refusalRetried) {
+            // Only a refusal that proves nothing was dispatched earns one fresh
+            // observation and decision; any other may have landed and stays unknown.
+            if (refusalRetried || !mayRedispatchAfter(error)) {
               await writeEvent(args.log, { event: 'outcome', outcome: 'unknown', ...refused });
               return 'unknown';
             }

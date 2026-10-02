@@ -12,13 +12,27 @@ import { FixtureFormTask } from './tasks.js';
 const TOKEN = 'fix01-private-token';
 const STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document";
 
-type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean };
+type Refusal = 'stale' | 'trust_unknown' | 'not_retryable';
+type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean; refusal?: Refusal };
+
+const TRUST_UNKNOWN_TEXT =
+  'refused (browser_input_trust_unavailable): trusted click was acknowledged but CDP focus ' +
+  'emulation could not be restored (x); delivery is unknown and must not be retried automatically';
 
 // An action result as the Driver's MCP boundary emits it: not an MCP error.
-const refusedResult = () => ({
-  content: [{ type: 'text', text: STALE_TEXT }],
-  structuredContent: { effect: 'refused', route: 'dom' },
-});
+const refusedResult = (kind: Refusal = 'stale') =>
+  kind === 'not_retryable'
+    ? {
+        content: [{ type: 'text', text: 'refused (browser_reconnect_exhausted): x' }],
+        structuredContent: {
+          status: 'refused',
+          refusal: { code: 'browser_reconnect_exhausted', detail: { retryable: false } },
+        },
+      }
+    : {
+        content: [{ type: 'text', text: kind === 'stale' ? STALE_TEXT : TRUST_UNKNOWN_TEXT }],
+        structuredContent: { effect: 'refused', route: kind === 'stale' ? 'dom' : 'trusted_input' },
+      };
 
 async function runFixture(scenario: Scenario, log: string) {
   let value = '';
@@ -70,7 +84,7 @@ async function runFixture(scenario: Scenario, log: string) {
       } else if (name === 'browser_click') {
         if (refuseClicks > 0) {
           refuseClicks -= 1;
-          return refusedResult();
+          return refusedResult(scenario.refusal);
         }
         if (scenario.clickLands !== false) submitted = value;
         data = { effect: 'unverifiable', route: 'dom' };
@@ -177,6 +191,33 @@ if (process.argv[2] === '--fixture-run') {
     assert.equal(refused[0].action_refused, 'browser_ref_stale');
     const clicks = calls.flatMap((name, index) => (name === 'browser_click' ? [index] : []));
     assert.ok(calls.slice(clicks[0] + 1, clicks[1]).includes('get_browser_state'));
+  });
+
+  test('retryable is read from the refusal detail', async () => {
+    await assert.rejects(
+      driverFor(refusedResult('not_retryable')).call('browser_click', {}),
+      (error: unknown) =>
+        error instanceof DriverToolError &&
+        error.refused &&
+        error.code === 'browser_reconnect_exhausted' &&
+        error.retryable === false
+    );
+  });
+
+  test('a refusal whose delivery is unknown ends unknown without a re-dispatch', () => {
+    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'trust_unknown' });
+    assert.equal(status, 1);
+    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
+    assert.equal(events.at(-1)?.outcome, 'unknown');
+    assert.equal(events.at(-1)?.action_refused, 'browser_input_trust_unavailable');
+  });
+
+  test('a refusal marked not retryable ends unknown without a re-dispatch', () => {
+    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'not_retryable' });
+    assert.equal(status, 1);
+    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
+    assert.equal(events.at(-1)?.outcome, 'unknown');
+    assert.equal(events.at(-1)?.action_refused, 'browser_reconnect_exhausted');
   });
 
   test('second refusal stops without another dispatch', () => {
