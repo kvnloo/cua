@@ -4321,7 +4321,7 @@ async fn select_item_in_chain(
             );
             return None;
         }
-        tokio::time::sleep(Duration::from_millis(50)).await;
+        tokio::time::sleep(Duration::from_micros(50_000)).await;
         let verified = matches!(
             call(selection.is_child_selected(index)).await,
             Some(Ok(true))
