@@ -1503,8 +1503,11 @@ impl BrowserEngine {
             }
         }
 
+        // B-01 measurement only (env-gated, default off): revalidation steps.
+        crate::phase_trace::mark("reval.lifecycle_checked", session);
         // 1. Process fingerprint — pid reuse / restart detection.
         let fp_now = self.platform.process_fingerprint(record.pid).await?;
+        crate::phase_trace::mark("reval.fingerprint", session);
         if !record.fingerprint.matches(&fp_now) {
             return Err(refuse(
                 BrowserRefusalCode::BrowserBindingStale,
@@ -1520,6 +1523,7 @@ impl BrowserEngine {
         let native = self
             .native_window_checked(record.pid, record.window_id)
             .await?;
+        crate::phase_trace::mark("reval.native_window", session);
 
         // 3. Endpoint still owned and unchanged.
         let endpoint = if record.generation > 0 {
@@ -1542,10 +1546,12 @@ impl BrowserEngine {
             ));
         }
 
+        crate::phase_trace::mark("reval.endpoint", session);
         // 4. CDP target still a page in the bound CDP window, with either
         //    matching geometry or the same singleton cardinality proof.
         let conn = self.connection_for_record(session, &record).await?;
         let candidates = self.window_candidates(&conn).await?;
+        crate::phase_trace::mark("reval.cdp_candidates", session);
         let live = candidates
             .iter()
             .find(|c| c.cdp_target_id == tab.cdp_target_id)
@@ -1596,7 +1602,9 @@ impl BrowserEngine {
             ));
         }
 
+        crate::phase_trace::mark("reval.correlated", session);
         let cdp_session = self.attach(&conn, &tab.cdp_target_id).await?;
+        crate::phase_trace::mark("reval.attached", session);
         let dispatch_context = crate::tool::current_dispatch_authorization_context();
         if dispatch_context
             .as_deref()
@@ -2292,9 +2300,12 @@ impl BrowserEngine {
             conn.call(Some(cdp_session), "Page.getLayoutMetrics", json!({})),
         )
         .map_err(|error| route_err("semantic layout collection failed", error))?;
+        // B-01 measurement only (env-gated, default off): CDP vs processing.
+        crate::phase_trace::mark("snap.layout_cdp_done", "");
         let dom = build_dom_index(&root);
         let layout = build_layout_index(&layout);
         let viewport = parse_viewport(&metrics);
+        crate::phase_trace::mark("snap.indexed", "");
 
         let identities = tree.map(LocalFrameTree::identities).unwrap_or_default();
         let mut result = SemanticDocument::default();
@@ -2303,6 +2314,7 @@ impl BrowserEngine {
                 .call(Some(cdp_session), "Accessibility.getFullAXTree", json!({}))
                 .await
                 .map_err(|error| route_err("Accessibility.getFullAXTree failed", error))?;
+            crate::phase_trace::mark("snap.ax_cdp_done", "");
             result = compose_accessibility_tree(
                 &ax,
                 &dom,
@@ -2310,6 +2322,7 @@ impl BrowserEngine {
                 &viewport,
                 FrameRef::main_unproven(),
             );
+            crate::phase_trace::mark("snap.ax_composed", "");
         } else {
             for (index, identity) in identities.into_iter().enumerate() {
                 let ax = conn
@@ -2320,6 +2333,7 @@ impl BrowserEngine {
                     )
                     .await
                     .map_err(|error| route_err("Accessibility.getFullAXTree failed", error))?;
+                crate::phase_trace::mark("snap.ax_cdp_done", "");
                 let kind = if oopif_target_id.is_some() {
                     FrameKind::Oopif
                 } else if index == 0 {
@@ -2342,6 +2356,7 @@ impl BrowserEngine {
                     frame_document.css_hidden_dom_count = 0;
                 }
                 result.extend(frame_document);
+                crate::phase_trace::mark("snap.ax_composed", "");
             }
         }
         Ok(result)
@@ -2620,6 +2635,8 @@ impl BrowserEngine {
             return Ok(outcome);
         }
 
+        // B-01 measurement only (env-gated, default off).
+        crate::phase_trace::mark("snap.enter", session);
         let scope_backend_node_id = match scope_ref {
             Some(external) => Some(
                 self.store
@@ -2637,7 +2654,11 @@ impl BrowserEngine {
         })?;
         let conn = self.connection_for_record(session, &record).await?;
         let cdp_session = self.attach(&conn, &tab.cdp_target_id).await?;
+        crate::phase_trace::mark("snap.attached", session);
         let (document, document_complete) = self.semantic_document(&conn, &cdp_session).await?;
+        crate::phase_trace::mark_detail("snap.document", session, || {
+            json!({ "complete": document_complete })
+        });
         let root = document.get("root").cloned().unwrap_or(Value::Null);
         let url = root
             .get("documentURL")
@@ -2652,9 +2673,11 @@ impl BrowserEngine {
             }
         };
         let semantic_root_identity = local_tree.as_ref().map(LocalFrameTree::main_identity);
+        crate::phase_trace::mark("snap.frame_tree", session);
         let mut semantic = self
             .collect_semantic_session(&conn, &cdp_session, &document, local_tree.as_ref(), None)
             .await?;
+        crate::phase_trace::mark("snap.collected", session);
         semantic.complete &= document_complete;
         // The stored tab title is the bind-time one. Prefer the document's own
         // title, then the browser's live target title.
@@ -2738,6 +2761,9 @@ impl BrowserEngine {
         } else {
             OopifStatus::Unsupported
         };
+        crate::phase_trace::mark_detail("snap.oopif_done", session, || {
+            json!({ "oopif": oopif.as_str() })
+        });
 
         let page = semantic.page(
             0,
@@ -2745,6 +2771,7 @@ impl BrowserEngine {
             query,
             scope_backend_node_id,
         );
+        crate::phase_trace::mark("snap.paged", session);
         let next_offset = page.next_offset;
         let snapshot_id = self.store.mint_snapshot_id();
         let scope = if scope_ref.is_some() {
@@ -2764,6 +2791,7 @@ impl BrowserEngine {
             oopif,
             0,
         );
+        crate::phase_trace::mark("snap.outcome", session);
         let continuation_token = outcome.continuation.clone();
         self.store
             .update_target(session, target_id, |stored_target| {
@@ -2798,6 +2826,7 @@ impl BrowserEngine {
                     );
                 }
             });
+        crate::phase_trace::mark("snap.stored", session);
         Ok(outcome)
     }
 }

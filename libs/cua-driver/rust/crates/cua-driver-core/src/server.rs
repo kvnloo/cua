@@ -891,6 +891,8 @@ async fn handle_request_inner(
             return response;
         }
     }
+    // B-01 measurement only (env-gated, default off).
+    crate::phase_trace::mark("mcp.inner_validated", "");
     let method = req.method.clone();
     let response =
         if let Some(response) = crate::mcp_wire::handle_metadata_request(&req, id.clone()) {
@@ -964,11 +966,15 @@ async fn dispatch_request(
                 // Both arms answer through the shared boundary, so a tool
                 // payload and an invocation failure are held to the same
                 // advertised `outputSchema`.
+                crate::phase_trace::mark("mcp.invoke_start", "");
                 let result = match provider.invoke_tool(&call.name, call.args).await {
                     Ok(result) => result,
                     Err(error) => tool_error_result(error, serde_json::json!({"exit_code": 1})),
                 };
-                Response::ok(id, conforming_tool_result(&call.name, result))
+                crate::phase_trace::mark("mcp.invoke_end", "");
+                let conformed = conforming_tool_result(&call.name, result);
+                crate::phase_trace::mark("mcp.conformed", "");
+                Response::ok(id, conformed)
             }
         },
 
