@@ -38,6 +38,31 @@ use x11rb::COPY_DEPTH_FROM_PARENT;
 /// How long the guard watches for a late focus change after delivery (a
 /// transient dialog is mapped and focused by the WM a beat after the action).
 const SETTLE_WATCH: Duration = Duration::from_millis(220);
+/// Measurement-only (research experiment N-01R, not for upstream): overrides
+/// [`SETTLE_WATCH`]. Unset (the default) keeps 220 ms; `0` drops the settle
+/// watch while the capture and the immediate restore check still run. Read
+/// once per process.
+const EXP_SETTLE_ENV: &str = "CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS";
+
+fn settle_watch() -> Duration {
+    static VALUE: std::sync::OnceLock<Duration> = std::sync::OnceLock::new();
+    *VALUE.get_or_init(|| {
+        let ms = exp_knob_ms(std::env::var(EXP_SETTLE_ENV).ok().as_deref());
+        if let Some(ms) = ms {
+            cua_driver_core::phase_trace::mark("exp_knob", &format!("focus_guard_settle_ms={ms}"));
+        }
+        settle_watch_for(ms)
+    })
+}
+
+/// A set, non-negative integer knob value in ms; anything else is "unset".
+fn exp_knob_ms(raw: Option<&str>) -> Option<u64> {
+    raw.and_then(|value| value.trim().parse::<u64>().ok())
+}
+
+fn settle_watch_for(knob_ms: Option<u64>) -> Duration {
+    knob_ms.map_or(SETTLE_WATCH, Duration::from_millis)
+}
 /// Longer watch once a new top-level appeared during the short one while the
 /// focus belonged to *another* application: a dialog (LibreOffice's take
 /// ~1 s to build) is focused by the WM only when mapped, and that steal must
@@ -594,7 +619,7 @@ impl FocusSnapshot {
         // that steal must be undone; when the target app already owns the
         // focus the new window is its own and the watch ends at once.
         let mut watch_until = if settle_watch {
-            started + SETTLE_WATCH
+            started + self::settle_watch()
         } else {
             started
         };
@@ -807,6 +832,31 @@ pub fn guarded_settled<T>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unset_or_invalid_settle_knob_keeps_the_constants() {
+        assert_eq!(SETTLE_WATCH, Duration::from_millis(220));
+        assert_eq!(RESTORE_POLL, Duration::from_millis(50));
+        for raw in [
+            None,
+            Some(""),
+            Some(" "),
+            Some("-1"),
+            Some("off"),
+            Some("2.5"),
+        ] {
+            assert_eq!(settle_watch_for(exp_knob_ms(raw)), SETTLE_WATCH, "{raw:?}");
+        }
+    }
+
+    #[test]
+    fn set_settle_knob_value_is_used() {
+        assert_eq!(settle_watch_for(exp_knob_ms(Some("0"))), Duration::ZERO);
+        assert_eq!(
+            settle_watch_for(exp_knob_ms(Some("90"))),
+            Duration::from_millis(90)
+        );
+    }
 
     #[test]
     fn report_json_and_summary_name_what_moved() {
