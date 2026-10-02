@@ -1,0 +1,670 @@
+{
+  "I6": {
+    "content_hits": 0,
+    "envelopes_scanned": 550,
+    "hits": [],
+    "positive_control": {
+      "blocks_sessions": 84,
+      "marker_saved_on_oracle": 84,
+      "own_marker_found": 84
+    },
+    "refusals_disclosing_other_session_snapshot_handles": 52,
+    "verdict": "KEEP"
+  },
+  "attempts_total": 410,
+  "blocks": 48,
+  "blocks_complete": 46,
+  "displays": {
+    ":100": 16,
+    ":101": 5,
+    ":99": 27
+  },
+  "driver_sha256_seen": [
+    "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"
+  ],
+  "driver_version_seen": [
+    "cua-driver 0.32.0"
+  ],
+  "rows": {
+    "T1/I1": {
+      "attempts": 20,
+      "checks": {
+        "A_own_capture_tail_verified": "20/20",
+        "B_capture_refused": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "B_uses_A_capture": {
+          "capture_generation_mismatch": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T1/I1/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_own_capture_tail_verified": "5/5",
+        "B_capture_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "B_uses_A_capture": {
+          "capture_id_invalid": 2,
+          "capture_not_found": 3
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T1/I2": {
+      "attempts": 20,
+      "checks": {
+        "A_own_token_tail_verified": "20/20",
+        "B-uses-A-token-on-A-pid_refused": "0/20",
+        "B-uses-A-token-on-B-pid_refused": "20/20"
+      },
+      "cross_session_mutations": 20,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "B-uses-A-token-on-A-pid": {
+          "None": 20
+        },
+        "B-uses-A-token-on-B-pid": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "KILL"
+    },
+    "T1/I2/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_own_token_tail_verified": "5/5",
+        "B-uses-A-token-on-A-pid_refused": "5/5",
+        "B-uses-A-token-on-B-pid_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "B-uses-A-token-on-A-pid": {
+          "invalid_element_token": 4,
+          "stale_element_token": 1
+        },
+        "B-uses-A-token-on-B-pid": {
+          "invalid_element_token": 3,
+          "stale_element_token": 2
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T1/I2d": {
+      "attempts": 20,
+      "checks": {
+        "A_own_token_tail_verified": "20/20",
+        "derived_token_landed_on_A": "20/20",
+        "probe_disclosed_A_snapshot": "20/20",
+        "probe_refused": "20/20"
+      },
+      "cross_session_mutations": 20,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "derived": {
+          "None": 20
+        },
+        "probe": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "DIAGNOSTIC"
+    },
+    "T1/I3": {
+      "attempts": 20,
+      "checks": {
+        "A_superseded_refused": "20/20",
+        "B_pre_replacement_token_verified": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "A_superseded": {
+          "stale_element_token": 20
+        },
+        "B_own": {
+          "None": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T1/I3/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_superseded_refused": "5/5",
+        "B_forged_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "A_superseded": {
+          "stale_element_token": 5
+        },
+        "B_own": {
+          "invalid_element_token": 4,
+          "stale_element_token": 1
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T1/I3s": {
+      "attempts": 10,
+      "checks": {
+        "earlier_observer_token_refused": "10/10",
+        "later_observer_verified": "10/10"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 5,
+        "BA": 5
+      },
+      "refusal_codes": {
+        "earlier_observer": {
+          "stale_element_token": 10
+        }
+      },
+      "verdict": "DIAGNOSTIC"
+    },
+    "T1/I4": {
+      "attempts": 20,
+      "checks": {
+        "A_own_ended_token_refused": "20/20",
+        "B_ended_A_token_refused": "20/20",
+        "B_own_token_verified_after_A_end": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "A_own_after_end": {
+          "session_ended": 20
+        },
+        "B_uses_ended_A_token": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T1/I4/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_own_ended_token_refused": "5/5",
+        "B_ended_A_token_refused": "5/5",
+        "B_own_token_verified_after_A_end": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "A_own_after_end": {
+          "session_ended": 5
+        },
+        "B_uses_ended_A_token": {
+          "invalid_element_token": 3,
+          "stale_element_token": 2
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T1/I5": {
+      "attempts": 20,
+      "checks": {
+        "B_verified": "20/20",
+        "new_token_verified": "20/20",
+        "old_capture_refused": "20/20",
+        "old_token_refused": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "old_capture": {
+          "capture_not_found": 20
+        },
+        "old_token": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T1/I5/forged": {
+      "attempts": 5,
+      "checks": {
+        "B_verified": "5/5",
+        "new_token_verified": "5/5",
+        "old_capture_refused": "5/5",
+        "old_token_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "old_capture": {
+          "capture_not_found": 5
+        },
+        "old_token": {
+          "invalid_element_token": 4,
+          "stale_element_token": 1
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T1/N": {
+      "attempts": 10,
+      "checks": {
+        "dead_pid_error": "10/10",
+        "dead_pid_no_mutation": "10/10",
+        "stale_token_on_recreated_window_refused": "10/10"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 5,
+        "BA": 5
+      },
+      "refusal_codes": {
+        "dead_pid": {
+          "stale_element_token": 10
+        },
+        "recreated_pid": {
+          "stale_element_token": 10
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T1/P": {
+      "attempts": 20,
+      "checks": {
+        "own_token_A_verified": "20/20",
+        "own_token_B_verified": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {},
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/I1": {
+      "attempts": 20,
+      "checks": {
+        "A_own_capture_tail_verified": "20/20",
+        "B_capture_refused": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "B_uses_A_capture": {
+          "capture_generation_mismatch": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T2/I1/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_own_capture_tail_verified": "5/5",
+        "B_capture_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "B_uses_A_capture": {
+          "capture_id_invalid": 2,
+          "capture_not_found": 3
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/I2": {
+      "attempts": 20,
+      "checks": {
+        "A_own_token_tail_verified": "20/20",
+        "B-uses-A-token-on-A-pid_refused": "0/20",
+        "B-uses-A-token-on-B-pid_refused": "20/20"
+      },
+      "cross_session_mutations": 20,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "B-uses-A-token-on-A-pid": {
+          "None": 20
+        },
+        "B-uses-A-token-on-B-pid": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "KILL"
+    },
+    "T2/I2/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_own_token_tail_verified": "5/5",
+        "B-uses-A-token-on-A-pid_refused": "5/5",
+        "B-uses-A-token-on-B-pid_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "B-uses-A-token-on-A-pid": {
+          "invalid_element_token": 4,
+          "stale_element_token": 1
+        },
+        "B-uses-A-token-on-B-pid": {
+          "invalid_element_token": 3,
+          "stale_element_token": 2
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/I2d": {
+      "attempts": 20,
+      "checks": {
+        "A_own_token_tail_verified": "20/20",
+        "derived_token_landed_on_A": "20/20",
+        "probe_disclosed_A_snapshot": "20/20",
+        "probe_refused": "20/20"
+      },
+      "cross_session_mutations": 20,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "derived": {
+          "None": 20
+        },
+        "probe": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "DIAGNOSTIC"
+    },
+    "T2/I3": {
+      "attempts": 20,
+      "checks": {
+        "A_superseded_refused": "20/20",
+        "B_pre_replacement_token_verified": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "A_superseded": {
+          "stale_element_token": 20
+        },
+        "B_own": {
+          "None": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T2/I3/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_superseded_refused": "5/5",
+        "B_forged_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "A_superseded": {
+          "stale_element_token": 5
+        },
+        "B_own": {
+          "invalid_element_token": 4,
+          "stale_element_token": 1
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/I3s": {
+      "attempts": 10,
+      "checks": {
+        "earlier_observer_token_refused": "10/10",
+        "later_observer_verified": "10/10"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 5,
+        "BA": 5
+      },
+      "refusal_codes": {
+        "earlier_observer": {
+          "stale_element_token": 10
+        }
+      },
+      "verdict": "DIAGNOSTIC"
+    },
+    "T2/I4": {
+      "attempts": 20,
+      "checks": {
+        "A_own_ended_token_refused": "20/20",
+        "B_ended_A_token_refused": "20/20",
+        "B_own_token_verified_after_A_end": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "A_own_after_end": {
+          "tool_invocation_failed": 20
+        },
+        "B_uses_ended_A_token": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T2/I4/forged": {
+      "attempts": 5,
+      "checks": {
+        "A_own_ended_token_refused": "5/5",
+        "B_ended_A_token_refused": "5/5",
+        "B_own_token_verified_after_A_end": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "A_own_after_end": {
+          "tool_invocation_failed": 5
+        },
+        "B_uses_ended_A_token": {
+          "invalid_element_token": 3,
+          "stale_element_token": 2
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/I5": {
+      "attempts": 20,
+      "checks": {
+        "B_verified": "20/20",
+        "new_token_verified": "20/20",
+        "old_capture_refused": "20/20",
+        "old_token_refused": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "old_capture": {
+          "capture_not_found": 20
+        },
+        "old_token": {
+          "stale_element_token": 20
+        }
+      },
+      "verdict": "KEEP"
+    },
+    "T2/I5/forged": {
+      "attempts": 5,
+      "checks": {
+        "B_verified": "5/5",
+        "new_token_verified": "5/5",
+        "old_capture_refused": "5/5",
+        "old_token_refused": "5/5"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 3,
+        "BA": 2
+      },
+      "refusal_codes": {
+        "old_capture": {
+          "capture_not_found": 5
+        },
+        "old_token": {
+          "invalid_element_token": 4,
+          "stale_element_token": 1
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/N": {
+      "attempts": 10,
+      "checks": {
+        "dead_pid_error": "10/10",
+        "dead_pid_no_mutation": "10/10",
+        "stale_token_on_recreated_window_refused": "10/10"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 5,
+        "BA": 5
+      },
+      "refusal_codes": {
+        "dead_pid": {
+          "stale_element_token": 10
+        },
+        "recreated_pid": {
+          "stale_element_token": 10
+        }
+      },
+      "verdict": "CONTROL_PASS"
+    },
+    "T2/P": {
+      "attempts": 20,
+      "checks": {
+        "own_token_A_verified": "20/20",
+        "own_token_B_verified": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {},
+      "verdict": "CONTROL_PASS"
+    },
+    "T3/I5p": {
+      "arms": {
+        "same": {
+          "attempts": 10,
+          "gen1_capture_refused": 10,
+          "gen1_token_accepted": 10
+        },
+        "swapped": {
+          "attempts": 10,
+          "gen1_capture_refused": 10,
+          "gen1_token_accepted": 0
+        }
+      },
+      "attempts": 20,
+      "checks": {
+        "gen1_capture_refused": "20/20",
+        "gen1_token_refused": "10/20",
+        "gen1_token_string_equals_gen2": "10/20"
+      },
+      "cross_session_mutations": 10,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {
+        "gen1_capture": {
+          "capture_not_found": 20
+        },
+        "gen1_token": {
+          "None": 10,
+          "stale_element_token": 10
+        }
+      },
+      "verdict": "KILL"
+    },
+    "T3/X1": {
+      "attempts": 20,
+      "checks": {
+        "concurrent_process_tokens_equal": "20/20"
+      },
+      "cross_session_mutations": 0,
+      "orders": {
+        "AB": 10,
+        "BA": 10
+      },
+      "refusal_codes": {},
+      "verdict": "DIAGNOSTIC"
+    }
+  },
+  "schema": "cua.own36.summary.v1",
+  "setup_records": 84
+}

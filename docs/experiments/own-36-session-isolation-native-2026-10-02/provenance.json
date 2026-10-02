@@ -1,0 +1,35 @@
+{
+  "schema": "cua.rfc-loop.provenance.v1",
+  "lane": "OWN-36",
+  "branch": "exp/own-36-session-isolation-native-20261002",
+  "tested_source": {
+    "sha": "352507b6c03162ab286b21d5ed509125cc3daece",
+    "subject": "fix: post-launch CI follow-ups (#4405)",
+    "driver_tree_equal_to": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+    "driver_tree_check": "git diff --quiet 229b65b28 352507b6c -- libs/cua-driver => exit 0 (lane re-verified 2026-10-02T04:31Z)"
+  },
+  "binary": {
+    "path": "<lanes>/bin/cua-driver-r2-main-229b65b28 (existing loop binary; not rebuilt: Driver tree unchanged and no Driver code changed)",
+    "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+    "version": "cua-driver 0.32.0",
+    "build_provenance": "SETUP.json of the loop: built from 229b65b28 in a clean detached worktree with build-driver.sh (cargo --locked --release -p cua-driver --features portal-input, rustc 1.97.1)",
+    "in_session_reads": "every block header records sha256 (hashed inside the private session) and `--version` output; verify_artifacts.py requires both on every block"
+  },
+  "prereg_commit": "967dfc22d444c679250ace623695bc981dc82bd3",
+  "prereg_commit_utc": "2026-10-02T04:57:15Z",
+  "live_heads": {
+    "read_utc": "2026-10-02T04:59:50Z",
+    "upstream_main_live": "091c6ee07469e193a1c07aa0cdcf74c60470a6b4 (trycua/cua main; 1 commit after the tested source: images-only change trycua/cua PR 4443; `git diff --stat 352507b6c 091c6ee07 -- libs/cua-driver` is empty)",
+    "trycua_cua_4317": "closed, merged; merge commit 0ddf0f7a388630715a5b2a7361ee267e77b5c70d, head 68b1d9d5874a09db6936fcc6bcf9e07bec68a7cd (browser isolation rows; not re-run here)",
+    "tested_vs_live": "tested 352507b6c; live upstream main 091c6ee07; libs/cua-driver identical between them",
+    "publication_sha": "the branch tip that carries this packet (reported in the lane result; not knowable inside the commit itself)"
+  },
+  "environment": {
+    "isolation": "hostless (private tmpfs over the host X11/ICE socket dirs and the user runtime dir, desktop variables unset) -> cua-x11-session.sh: rootless Xvfb 1920x1080x24 -nolisten tcp via xvfb-run -a, private dbus-run-session, openbox, picom (xrender), AT-SPI bus launcher + registryd (CUA_SESSION_ATSPI=1)",
+    "displays": "recorded per block in raw block headers (see own-36-summary.json displays)",
+    "driver_env": "DO_NOT_TRACK=1, CUA_DRIVER_RS_TELEMETRY_ENABLED=0; private HOME/XDG dirs from the session",
+    "fixture_python": "system python3 with PyGObject (GTK 3), launched only inside the private session",
+    "lock": "each block under flock -s quiet-lane.lock (shared), <= 10 attempts; receipts in raw/lock-ledger.jsonl",
+    "provider": "TypeSafe not used: 0 attempts, 0 reached"
+  }
+}
