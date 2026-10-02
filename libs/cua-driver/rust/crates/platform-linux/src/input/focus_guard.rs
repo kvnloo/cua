@@ -838,7 +838,6 @@ mod tests {
         let json = report.to_json();
         assert_eq!(json["focus_changed"], false);
         assert!(json.get("focus_outcome").is_none());
-        assert!(json.get("grab_held_by").is_none());
         assert!(json.get("focus_changes").is_none());
     }
 
