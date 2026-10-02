@@ -1,0 +1,42 @@
+{
+ "schema": "ar.fix_prereg.v1",
+ "created_utc": "2026-10-02T17:20:00Z",
+ "worker": "Evaluator fix round (evaluator builder; Claude Code workflow subagent). No provider of any kind; scripted caller only; feedback code frozen (D1/D13).",
+ "harness_commit": "f56422868403857a032e069f33686efbbc0b48b6",
+ "harness_manifest_sha256": "836a646e5b0e8acd439b9ed27c7aaa0f868b05eca8c1e8a4a810fa06230faa41",
+ "supersedes": "evaluator 2615af74f (calibrated in ar-calibration-2026-10-02, FAIL 9/10 on evaluator defects F1-F3)",
+ "changes": {
+  "F1_G2": "The session runner records session_binds (X socket, session D-Bus socket, AT-SPI socket, Xauthority; the paths sandbox-driver.sh binds at their own path) in the ar.session.v1 start record. G2 maps exactly those paths, and the parents bwrap creates for them below /tmp, /run/user/trial or /home/trial, to <session:...> for rows of the same (eval_id, session). Every other path is compared as before; no manifest means no collapsing (fail closed). Enumerated from every calibration raw log (r01-r10, 10 noops, screens): the only per-session random name in any GTK footprint is /tmp/dbus-<random> (106 sessions, 106 names); /tmp/.X11-unix and /tmp/.X11-unix/X99 are session-owned but constant; browser footprints list the trial HOME only.",
+  "F2_G5": "p = one-sided paired sign-flip (randomisation) test on the per-pair ln ratios, Monte Carlo with b = max(20000, ceil(20/alpha_i)) sign vectors, alpha_i = the LORD++ level of this test, which depends only on earlier rejections and is fixed before the data. p = (1 + hits)/(b + 1) is valid for any b and its floor is <= alpha_i/20. No normality assumption (the AB/BA order randomisation is the null's justification). LORD++ unchanged: FDR 0.05, W0 0.025, gamma C 0.0722.",
+  "F3_G7": "The trace-unset pairs' Delta, over all trace-unset pairs, must lie inside the traced pairs' bootstrap CI95 (4000 resamples, seed+11) widened by ln(1+tau) on each side. Synthetic loaded-host check at the decision metric's loaded sigma 0.0376 (40 seeds, 8 off pairs): new rule 1/40 false rejects, old point rule 6/40; at sigma 0.0592: 4/40 vs 14/40.",
+  "metric": "T_act decides (G5, G6 p90, G7, GS); whole-task T is a G6 guardrail: mean paired ln ratio <= ln(1 + guardrail tau), guardrail tau from the A/A whole-task T."
+ },
+ "w0_rationale": "W0 = alpha/2 = 0.025, the usual LORD++ choice. For ~30 tests a night with no rejection the levels run 1.25e-3 (t=1), 2.3e-4 (t=3), 9.1e-5 (t=10), 3.2e-5 (t=30) and spend 0.0037 of the 0.025 wealth, so a night never exhausts it. A larger W0 (up to alpha) raises those levels at most 2x but shrinks the first rejection's reward (alpha - W0); after any rejection the later levels are nearly W0-independent (alpha_30 ~6.5e-5 for W0 in 0.01..0.049). G5's sign-flip p resolves alpha_i/20 at every level, so W0 decides only marginal effects: at n=37 and the loaded-host T_act sigma 0.0376, 80% power needs ~2.4% at t=1 and ~3.0% at t=30.",
+ "layout_bias_decision": {
+  "chosen": "(a) T_act as the decision metric, whole-task T as a guardrail",
+  "evidence": [
+   "A/A (3x24 pairs, base vs env-padded rebuild, loaded host): whole-task Delta +1.68% CI [+0.35%, +3.07%] excludes 0, located in Driver startup (spawn->initialize +6.8 ms); T_act +0.78% CI [-0.06%, +1.64%] includes 0.",
+   "Same-binary A/A (2x24): whole-task +0.60% CI [-1.0%, +2.2%], T_act +0.10% CI [-0.22%, +0.46%]: no harness or order bias in either metric.",
+   "10 independent no-op candidate builds (R7, 24 pairs each, each its own layout): whole-task build deltas mean -0.14%, sd 0.22%, estimated between-build sd 0.13%, 2 of 10 CIs exclude 0 (noop03 -0.62%, noop06 -0.24%); T_act mean -0.03%, sd 0.12%, between-build sd 0.06%, 0 of 10 CIs exclude 0.",
+   "T_act sigma_ln is lower in every A/A: 0.0376 vs 0.0592 (loaded), 0.0122 vs 0.0576 (same binary).",
+   "Under load, whole-task outliers are Driver start-up stalls (r02: one trace-off pair sd 0.418 whole-task vs 0.014 T_act); every segment-1 wait lies after the first dispatch, so T_act carries the whole effect (R3: T_act Delta -18%, whole-task -10.5%, same ~50 ms)."
+  ],
+  "rejected": "(b) randomised layout padding (each arm built twice, builds alternated): doubles G1 build time per candidate (serialized builds already cap screens at ~16/h), turns the build-layout effect into a 2-level random effect that two builds per arm cannot average out, and inflates sigma; the no-op evidence shows the residual T_act layout effect (between-build sd ~0.06%) is far below tau (2%)."
+ },
+ "aa_rerun": {
+  "design": "base cua-driver-ar-base-457bc65d4 (sha256 8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209) vs the env-padded rebuild cua-driver-ar-champ-rebuild-457bc65d4 (sha256 5ce01b3c580ac9b0c520d8ebbfd2bcb4e62b5a4fb1f014862a646aefd9599819), the same pair that failed the whole-task A/A check; plan.py --pairs 48 --soak 24 --seed 20261012 -> 2 GTK sessions x 24 AB/BA pairs (20% trace-off, 2 warm-ups, 4 controls each) + 1 candidate-only soak session (1 warm-up + 24 trials); each session one quiet-timed block via run_blocks.py; fresh sandboxed Driver per trial.",
+  "primary": "T_act Delta_AA (mean paired ln ratio, rebuild vs base) bootstrap CI95 (ar-eval aa, seed 20261002+10) includes 0.",
+  "secondary": [
+   "whole-task guardrail on the A/A: whole-task Delta_AA <= ln(1 + 0.0311) (the A/A whole-task tau of record).",
+   "G2 passes on all rows including the candidate-only soak session, whose session D-Bus name differs from both paired sessions' names (live F1 check; the old evaluator, re-run on the same rows, must fail G2 with new_file:gtk:/tmp/dbus-...).",
+   "G3, G4 pass; G5 does not keep the A/A (no false keep)."
+  ],
+  "if_primary_fails": "report FAIL; do not tune metric or rules after seeing data."
+ },
+ "replay_diagnostic": {
+  "what": "Re-evaluate the recorded R3 delete50 r01-r10 confirm rows with the fixed evaluator, in ledger order on a fresh scratch ledger. NOT a calibration result: the re-calibration on fresh data is the next phase.",
+  "inputs": "rows from the calibration run dir; session manifests reconstructed from the harness's own session logs (the '[session] DISPLAY=... dbus=unix:path=...' line cua-x11-session.sh writes for each session); prereg = the recorded prereg plus the new fields: design.metric T_act, tau 0.02 (A/A T_act), n_pairs 37 (A/A T_act), guardrail tau 0.0311.",
+  "expectation": ">= 8 of 10 KEEP (r01's browser spot and r02's soak never ran, so those two cannot be KEEP)."
+ },
+ "n01_reference": "N-01R (RFC loop, local branch exp/n-01r-native-wait-ab-20261002 at 3bb4a7fc7) is cited, not duplicated: it rules the 50 ms post-DoAction sleep DELETED on GTK3 AT-SPI background delivery and the settle watch IRREDUCIBLE. This round changes no wait and measures champion builds only."
+}
