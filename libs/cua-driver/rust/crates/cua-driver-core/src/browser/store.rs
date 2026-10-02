@@ -201,6 +201,10 @@ pub struct TabRecord {
     pub active: Option<bool>,
     pub generation: u64,
     pub snapshots: HashMap<u64, SnapshotRecord>,
+    /// kvnloo/cua#107 CSHADOW experiment only (env-gated, default off): the
+    /// tab's read-only shadow observation mirror. Owned here so every path
+    /// that drops the tab or its snapshots drops the mirror too.
+    pub(crate) i107_mirror: Option<std::sync::Arc<super::i107_mirror::TabMirror>>,
 }
 
 /// One bound browser target: the full evidence set captured at bind
@@ -422,6 +426,7 @@ impl BrowserStore {
         self.update_target(session, target_id, |rec| {
             if let Some(tab) = rec.tabs.get_mut(tab_id) {
                 tab.snapshots.clear();
+                tab.i107_mirror = None;
             }
         });
     }
@@ -540,6 +545,7 @@ mod tests {
                             continuations: HashMap::new(),
                         },
                     )]),
+                    i107_mirror: None,
                 },
             );
         });

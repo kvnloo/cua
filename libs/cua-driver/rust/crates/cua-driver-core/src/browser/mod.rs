@@ -41,6 +41,7 @@ pub mod cdp_ws;
 pub mod download;
 pub mod engine;
 mod grant;
+mod i107_mirror;
 mod keyed_gates;
 #[cfg(test)]
 pub(crate) mod mock_cdp;

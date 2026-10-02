@@ -1363,6 +1363,7 @@ impl BrowserEngine {
                     active: selected_cdp_target_id.map(|selected| selected == c.cdp_target_id),
                     generation: grant.as_ref().map_or(0, |grant| grant.generation),
                     snapshots: HashMap::new(),
+                    i107_mirror: None,
                 },
             );
         }
@@ -2668,6 +2669,21 @@ impl BrowserEngine {
         let conn = self.connection_for_record(session, &record).await?;
         let cdp_session = self.attach(&conn, &tab.cdp_target_id).await?;
         crate::phase_trace::mark("snap.attached", session);
+        // kvnloo/cua#107 CSHADOW experiment only (env-gated, default off): the
+        // shadow mirror never feeds this read, its refs or any action.
+        let i107_mirror = super::i107_mirror::ensure_for_tab(
+            super::i107_mirror::mode(),
+            &self.store,
+            session,
+            target_id,
+            tab_id,
+            &tab,
+            &conn,
+            record.generation,
+        );
+        let i107_window = i107_mirror
+            .as_ref()
+            .and_then(|mirror| mirror.audit_window_start());
         let (document, document_complete) = self.semantic_document(&conn, &cdp_session).await?;
         crate::phase_trace::mark_detail("snap.document", session, || {
             json!({ "complete": document_complete })
@@ -2692,6 +2708,14 @@ impl BrowserEngine {
             .await?;
         crate::phase_trace::mark("snap.collected", session);
         semantic.complete &= document_complete;
+        if let Some(mirror) = &i107_mirror {
+            if let Some(window) = i107_window {
+                mirror
+                    .audit(window, &document, document_complete, &semantic, session)
+                    .await;
+            }
+            mirror.emit_stats(session, "snapshot");
+        }
         // The stored tab title is the bind-time one. Prefer the document's own
         // title, then the browser's live target title.
         let title = match semantic.document_title() {

@@ -3180,6 +3180,7 @@ mod tests {
                 active: Some(true),
                 generation: 0,
                 snapshots: HashMap::new(),
+                i107_mirror: None,
             },
         );
         let target_id = e.store.mint_target(
@@ -3240,6 +3241,7 @@ mod tests {
                 active: Some(true),
                 generation: 0,
                 snapshots: HashMap::new(),
+                i107_mirror: None,
             },
         );
         // Bound fingerprint has start_time 999; MockPlatform now reports 1.
