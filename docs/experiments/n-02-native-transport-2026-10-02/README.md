@@ -350,4 +350,4 @@ A verdict transfers to R2-10's source by mechanism only. No Driver default chang
 | `raw/n02-<block>[-rN]/trials.jsonl.gz`, `session.txt` | One ledger per block attempt: meta, every trial (caller stamps, client stamps, oracle samples, Driver marks, receipts, focus samples), end |
 | `raw/n02-e01/hc-corpus.jsonl.gz`, `raw/n02-<block>/output-schemas.json` | Full real results kept for the HC control; output schemas from tools/list |
 | `raw/lock-ledger.jsonl` | quiet-timed (exclusive) and shared-lock receipts for every packaged label |
-| `raw/driver-build/`, `raw/unit/`, `raw/run_all-*.txt` | Build output and hashes, Driver version, unit logs, orchestration logs |
+| `raw/driver-build/`, `raw/unit/`, `raw/run_all-measured.txt`, `raw/run_all-controls.txt`, `raw/run_all-rerun.txt` | Build output and hashes, Driver version, unit logs, orchestration logs |
