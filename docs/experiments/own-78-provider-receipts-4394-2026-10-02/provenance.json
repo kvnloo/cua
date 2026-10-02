@@ -1,0 +1,61 @@
+{
+  "schema": "cua.experiment.provenance.v1",
+  "id": "OWN-78",
+  "owners": ["kvnloo/cua#78", "kvnloo/cua#10", "kvnloo/cua#74"],
+  "upstream_item": "trycua/cua PR 4394 (plain text)",
+  "shas": {
+    "tested_source": "039257811e0bbb2348c616c52562409923d2856f",
+    "tested_source_base": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
+    "pr_4394_live_head_start": {"sha": "039257811e0bbb2348c616c52562409923d2856f", "read_utc": "2026-10-02T01:49Z", "state": "OPEN", "updatedAt": "2026-10-01T15:16:55Z"},
+    "pr_4394_live_head_end": {"sha": "039257811e0bbb2348c616c52562409923d2856f", "read_utc": "2026-10-02T02:19Z", "state": "OPEN", "updatedAt": "2026-10-01T15:16:55Z"},
+    "pr_head_drift": "none",
+    "r0_control_source": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4 (detached worktree; examples identical to base)",
+    "branch": "exp/own-78-provider-receipts-4394-20261002",
+    "prereg_commit": "c263e28955f4e6165b8b91ea0686cecaf089cab9",
+    "amendment_and_harness_commit": "68ff8eea0ffa8f9ff1e3e7f80185651458bbc900",
+    "measured_blocks_worktree_head": "68ff8eea0ffa8f9ff1e3e7f80185651458bbc900 for m1-m5 and m7-m8 (libs/cua-driver/examples/jev-use and libs/cua-driver/rust identical to 039257811 per raw/<block>/validity.json); 2ca90d338 for m6-r0",
+    "publication_sha": "the branch commit that adds this file (see git log of the branch; it cannot be written inside itself)"
+  },
+  "driver": {
+    "binary_label": "own78-4394-0392578",
+    "sha256": "19bad35248702fd42f6aa372f1f4bebe4ca3728d9be0f67287f1c186a0b47df9",
+    "version_in_session": "cua-driver 0.31.0",
+    "built_from": "039257811e0bbb2348c616c52562409923d2856f; git diff 2ca90d338..039257811 -- libs/cua-driver/rust is empty, so the same binary is the base's Driver for the R0 control",
+    "build_cmd": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <worktree> own78-4394-0392578 cua-release-4394",
+    "cargo": "cargo build -v --locked --release -p cua-driver --features portal-input",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "build_seconds": 180,
+    "fresh_workspace_units": 0,
+    "build_summary": "raw/build-driver.out",
+    "disclosure": "build-driver.sh ends with one '<bin> --version' outside the isolated session (no display access); the version was re-recorded inside cua-x11-session.sh"
+  },
+  "harness_sha256": {
+    "harness/own78_harness.py": "33b3544a97bbd2ad78a7709e990aa26182f08b8218c94c2b1f8be0e4f04e0900",
+    "harness/receipt_launcher.py": "cb6b64d7074dc5c03e320d2f5e93a304f7879e2fd1ff3ea96d10d1db8f7c6b74",
+    "harness/ts_receipts.mjs": "64d88fc055de87b5ba8bf3af14647f8c8cc7a8e95261271dbd16a078fb61b006",
+    "harness/run_phase.sh": "8872ae36ed5834be910e536f2613b1429d7cfd9c12514e41a8d2567241cea8c6",
+    "note": "every measured block's validity.json records the same harness/launcher/preload hashes as committed in 68ff8eea"
+  },
+  "lane_scripts_sha256": {
+    "cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+    "build-driver.sh": "0d5fb029f44c77a682649aaf71395a517c2d2e46ba10ee802073ac9e2a0269ce",
+    "lane-deps.sh": "896282d0c51f3b6670aca5b27496e6284f2e603c6091239c224b89e1d851ad14",
+    "run-unit.sh": "f9b67231f94b0dbca23145d94a807215f5b9ee0ec6ab11a45f18922471538e49"
+  },
+  "environment": {
+    "kernel": "Linux 7.2.2-1-cachyos x86_64",
+    "cpu": "Intel Core i9-10900KF @ 3.70GHz, 10 logical CPUs",
+    "display": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox + picom xrender, private dbus-run-session, scrubbed env (no WAYLAND_DISPLAY / HYPRLAND_* / host XDG_RUNTIME_DIR); AT-SPI not enabled",
+    "browser": "Google Chrome 151.0.7922.71 (launched by the Driver, isolated_new profile)",
+    "driver_safety": "default; no permission/approval/sandbox overrides, no *-e2e wrapper",
+    "python": "3.12.13 (uv sync --frozen)",
+    "node": "v22.23.2 (npm ci --ignore-scripts)",
+    "uv": "0.11.7",
+    "sdks": {"typesafe-sdk (python)": "0.6.0", "@typesafe-ai/sdk": "0.6.0", "mcp (python)": "1.30.0", "@modelcontextprotocol/sdk": "1.30.0"},
+    "provider": "TypeSafe api.typesafe.ai, model reported jev-1.13.0; key forwarded by name only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY)",
+    "locks": "every block under flock -s quiet-lane.lock (shared), <= 10 cells per acquisition; build under flock -s quiet-lane.lock + flock cargo-build.lock",
+    "loadavg_1min_at_spawn_range": "4.03-14.61 (other lanes active; correctness lane, no timing claim)"
+  },
+  "budget": {"lane_cap_reached": 45, "reached": 42, "loopback_refused_attempts": 90, "attempts_counted": 132, "stub_answered_not_provider": 22, "guard_refused": 0, "file": "raw/budget.json"},
+  "mirror": "local raw mirror at <lanes>/artifacts/r2/OWN-78/ (runs/, unit/, unit-diag/, build logs; includes runner stdout/stderr that are not committed)"
+}

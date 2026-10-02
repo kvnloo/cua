@@ -1,0 +1,605 @@
+{
+ "budget": {
+  "attempts_counted": 132,
+  "budget_file_http_attempts_all": 154,
+  "budget_file_reached": 42,
+  "by_phase_reached": {
+   "m1-r2": 0,
+   "m2-r3": 0,
+   "m3-r1": 10,
+   "m4-r4a": 10,
+   "m5-r4b": 10,
+   "m6-r0": 10,
+   "m7-r4s-a": 0,
+   "m8-r4s-b": 0,
+   "smoke-a": 0,
+   "smoke-b": 0,
+   "smoke-c": 0,
+   "smoke-d": 0,
+   "smoke-live": 2
+  },
+  "guard_refused": 0,
+  "lane_cap_reached": 45,
+  "loopback_refused": 90,
+  "provider": "TypeSafe",
+  "reached": 42,
+  "stub_answered_not_provider": 22
+ },
+ "gates": {
+  "KEEP": false,
+  "KILL": false,
+  "disposition": "REVISE",
+  "keep_conditions": {
+   "R1_backend_eq_http_20_of_20_with_verified": "10/10 decisions match; verified 0/10",
+   "R2_zero_http": true,
+   "R3_zero_mutations": "6/6",
+   "R4_zero_replays_and_20_failure_receipts": "replays 0, failure receipts 0/20, precondition met 0/20",
+   "suites": false
+  },
+  "suites_pass": false
+ },
+ "id": "OWN-78",
+ "invariants": {
+  "configured_intent_counted_as_decision": 0,
+  "decision_receipt_backend_mismatch_live_and_mock_rows": 0,
+  "decisions_without_response": 0,
+  "duplicate_submits": 0,
+  "harness_errors": 0,
+  "measured_trials": 71,
+  "replays_after_partial_progress": 0,
+  "restarts": 0,
+  "timeouts": 0,
+  "unverified_successes": 0
+ },
+ "rows": {
+  "R0": {
+   "class": "LIVE_PROVIDER+REAL",
+   "decisions": 10,
+   "input_tokens_step1_median": 638,
+   "n_trials": 5,
+   "p_type_step1": [
+    0.81,
+    0.85,
+    0.81,
+    0.84,
+    0.81
+   ],
+   "reached": 10,
+   "responder_typesafe": 10,
+   "runner": "pre-PR base 2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4 (no backend field exists there)",
+   "step1_selected": {
+    "type-verification-value": 5
+   },
+   "verified": 5
+  },
+  "R1": {
+   "attempts": 10,
+   "backend_field_eq_http_responder": 10,
+   "class": "LIVE_PROVIDER+REAL",
+   "decision_count_eq_200_count_all_trials": true,
+   "decisions": 10,
+   "decisions_by_kind": {
+    "abstain": 10
+   },
+   "input_tokens_median": 528.0,
+   "models": [
+    "jev-1.13.0"
+   ],
+   "n_by_runtime": {
+    "py": 6,
+    "ts": 4
+   },
+   "n_trials": 10,
+   "p_abstain_step1": [
+    0.65,
+    0.58,
+    0.66,
+    0.56,
+    0.58,
+    0.5599999999999999,
+    0.63,
+    0.56,
+    0.61,
+    0.64
+   ],
+   "p_type_step1": [
+    0.09,
+    0.08,
+    0.1,
+    0.08,
+    0.1,
+    0.07,
+    0.11,
+    0.09,
+    0.1,
+    0.11
+   ],
+   "planned": {
+    "py": 6,
+    "ts": 4
+   },
+   "reached": 10,
+   "request_id_match": 10,
+   "submits": 0,
+   "verified": 0
+  },
+  "R2": {
+   "backend_mock": 20,
+   "class": "REAL",
+   "decisions": 20,
+   "http_attempts": 0,
+   "key_in_runner_env": false,
+   "n_by_runtime": {
+    "py": 5,
+    "ts": 5
+   },
+   "n_trials": 10,
+   "planned": {
+    "py": 5,
+    "ts": 5
+   },
+   "python_mock_receipts": 10,
+   "verified": 10
+  },
+  "R3": {
+   "class": "REAL",
+   "decision_records": 0,
+   "explicit_failure_trials": 6,
+   "failure_record_backend_values": {
+    "typesafe": 6
+   },
+   "failure_records_content_free": 6,
+   "loopback_refused": 18,
+   "n_by_runtime": {
+    "py": 3,
+    "ts": 3
+   },
+   "n_trials": 6,
+   "planned": {
+    "py": 3,
+    "ts": 3
+   },
+   "reached": 0,
+   "zero_mutation_trials": 6
+  },
+  "R4": {
+   "class": "LIVE_PROVIDER+REAL",
+   "failure_receipts_decide_step2": 0,
+   "final_records": {
+    "outcome:abstained:None:step1": 20
+   },
+   "input_mutations_hist": {
+    "0": 20
+   },
+   "loopback_refused": 0,
+   "n_by_runtime": {
+    "py": 12,
+    "ts": 8
+   },
+   "n_trials": 20,
+   "p_type_step1": [
+    0.09,
+    0.08,
+    0.1,
+    0.1,
+    0.1,
+    0.07,
+    0.09,
+    0.07,
+    0.11,
+    0.1,
+    0.1,
+    0.07,
+    0.1,
+    0.1,
+    0.12,
+    0.09,
+    0.1,
+    0.07,
+    0.09,
+    0.12
+   ],
+   "pass": 0,
+   "per_check_failures": {
+    "browser_prepare_eq_1": 0,
+    "browser_type_calls_eq_1": 20,
+    "decision_records_eq_1": 0,
+    "exit_nonzero": 0,
+    "failure_record_content_free": 0,
+    "final_unknown_decide_step2": 20,
+    "input_mutations_eq_1": 20,
+    "navigations_eq_1": 0,
+    "post_switch_all_loopback_refused": 20,
+    "precondition_met": 20,
+    "routine_starts_eq_1": 0,
+    "submits_eq_0": 0
+   },
+   "planned": {
+    "py": 12,
+    "ts": 8
+   },
+   "precondition_met": 0,
+   "reached": 20,
+   "replays": 0,
+   "restarts": 0,
+   "step1_backend_field": {
+    "typesafe": 20
+   },
+   "step1_responder": {
+    "typesafe": 20
+   },
+   "step1_selected": {
+    "abstain": 20
+   },
+   "stub_answered": 0,
+   "submits": 0
+  },
+  "R4s": {
+   "class": "FIXTURE+REAL",
+   "failure_receipts_decide_step2": 20,
+   "final_records": {
+    "outcome:unknown:decide:step2": 20
+   },
+   "input_mutations_hist": {
+    "1": 20
+   },
+   "loopback_refused": 60,
+   "n_by_runtime": {
+    "py": 12,
+    "ts": 8
+   },
+   "n_trials": 20,
+   "p_type_step1": null,
+   "pass": 20,
+   "per_check_failures": {
+    "browser_prepare_eq_1": 0,
+    "browser_type_calls_eq_1": 0,
+    "decision_records_eq_1": 0,
+    "exit_nonzero": 0,
+    "failure_record_content_free": 0,
+    "final_unknown_decide_step2": 0,
+    "input_mutations_eq_1": 0,
+    "navigations_eq_1": 0,
+    "post_switch_all_loopback_refused": 0,
+    "precondition_met": 0,
+    "routine_starts_eq_1": 0,
+    "submits_eq_0": 0
+   },
+   "planned": {
+    "py": 12,
+    "ts": 8
+   },
+   "precondition_met": 20,
+   "reached": 0,
+   "replays": 0,
+   "restarts": 0,
+   "step1_backend_field": {
+    "typesafe": 20
+   },
+   "step1_responder": {
+    "loopback_stub": 20
+   },
+   "step1_selected": {
+    "type-verification-value": 20
+   },
+   "stub_answered": 20,
+   "submits": 0
+  },
+  "R5": {
+   "blocker": "adapter not local; non-TypeSafe provider not permitted",
+   "class": "BLOCKED"
+  }
+ },
+ "schema": "cua.experiment.summary.v1",
+ "smoke": [
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value",
+    "submit-form"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "verified",
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-a-01-R2-py",
+   "loopback_refused": 0,
+   "rc": 0,
+   "reached": 0,
+   "row": "R2",
+   "runtime": "py",
+   "stub_answered": 0,
+   "verified": true
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value",
+    "submit-form"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "verified",
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-a-02-R2-ts",
+   "loopback_refused": 0,
+   "rc": 0,
+   "reached": 0,
+   "row": "R2",
+   "runtime": "ts",
+   "stub_answered": 0,
+   "verified": true
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [],
+   "final": {
+    "event": "outcome",
+    "outcome": "unknown",
+    "phase": "decide",
+    "step": 1
+   },
+   "id": "smoke-a-03-R3-py",
+   "loopback_refused": 3,
+   "rc": 1,
+   "reached": 0,
+   "row": "R3",
+   "runtime": "py",
+   "stub_answered": 0,
+   "verified": false
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [],
+   "final": {
+    "event": "outcome",
+    "outcome": "unknown",
+    "phase": "decide",
+    "step": 1
+   },
+   "id": "smoke-a-04-R3-ts",
+   "loopback_refused": 3,
+   "rc": 1,
+   "reached": 0,
+   "row": "R3",
+   "runtime": "ts",
+   "stub_answered": 0,
+   "verified": false
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value",
+    "submit-form"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "verified",
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-b-01-S2-py",
+   "loopback_refused": 0,
+   "rc": 0,
+   "reached": 0,
+   "row": "S2",
+   "runtime": "py",
+   "stub_answered": 0,
+   "verified": true
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value",
+    "submit-form"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "verified",
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-b-02-S2-ts",
+   "loopback_refused": 0,
+   "rc": 0,
+   "reached": 0,
+   "row": "S2",
+   "runtime": "ts",
+   "stub_answered": 0,
+   "verified": true
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "abstain"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "abstained",
+    "phase": null,
+    "step": 1
+   },
+   "id": "smoke-live-01-R4-py",
+   "loopback_refused": 0,
+   "rc": 1,
+   "reached": 1,
+   "row": "R4",
+   "runtime": "py",
+   "stub_answered": 0,
+   "verified": false
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "abstain"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "abstained",
+    "phase": null,
+    "step": 1
+   },
+   "id": "smoke-live-02-R4-ts",
+   "loopback_refused": 0,
+   "rc": 1,
+   "reached": 1,
+   "row": "R4",
+   "runtime": "ts",
+   "stub_answered": 0,
+   "verified": false
+  },
+  {
+   "browser_window_ready": false,
+   "decisions": [],
+   "final": {
+    "event": null,
+    "outcome": null,
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-c-01-R4s-py",
+   "loopback_refused": 0,
+   "rc": 1,
+   "reached": 0,
+   "row": "R4s",
+   "runtime": "py",
+   "stub_answered": 0,
+   "verified": false
+  },
+  {
+   "browser_window_ready": false,
+   "decisions": [],
+   "final": {
+    "event": null,
+    "outcome": null,
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-c-02-R4s-ts",
+   "loopback_refused": 0,
+   "rc": 1,
+   "reached": 0,
+   "row": "R4s",
+   "runtime": "ts",
+   "stub_answered": 0,
+   "verified": false
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value",
+    "submit-form"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "verified",
+    "phase": null,
+    "step": null
+   },
+   "id": "smoke-d-01-S2-py",
+   "loopback_refused": 0,
+   "rc": 0,
+   "reached": 0,
+   "row": "S2",
+   "runtime": "py",
+   "stub_answered": 0,
+   "verified": true
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "unknown",
+    "phase": "decide",
+    "step": 2
+   },
+   "id": "smoke-d-02-R4s-py",
+   "loopback_refused": 3,
+   "rc": 1,
+   "reached": 0,
+   "row": "R4s",
+   "runtime": "py",
+   "stub_answered": 1,
+   "verified": false
+  },
+  {
+   "browser_window_ready": true,
+   "decisions": [
+    "type-verification-value"
+   ],
+   "final": {
+    "event": "outcome",
+    "outcome": "unknown",
+    "phase": "decide",
+    "step": 2
+   },
+   "id": "smoke-d-03-R4s-ts",
+   "loopback_refused": 3,
+   "rc": 1,
+   "reached": 0,
+   "row": "R4s",
+   "runtime": "ts",
+   "stub_answered": 1,
+   "verified": false
+  }
+ ],
+ "unit": {
+  "credential_free": {
+   "failures": [
+    {
+     "error": "CUA_S1_DECISION_URL is not set",
+     "failureType": "testCodeFailure",
+     "name": "S1ServiceError",
+     "test": "S1 uses the bounded browser request and reports s1 as the actual backend"
+    },
+    {
+     "error": "No API key was provided. Pass `apiKey` to the TypeSafeClient constructor or set the TYPESAFE_API_KEY environment variable.",
+     "failureType": "testCodeFailure",
+     "name": "TypeSafeError",
+     "test": "live and typesafe aliases report typesafe after a bounded decision"
+    }
+   ],
+   "log": "ts-npm-test.log (local mirror)",
+   "totals": [
+    "# tests 109",
+    "# pass 107",
+    "# fail 2"
+   ]
+  },
+  "steps": [
+   "python-unittest-discover                             rc=0  12062 ms",
+   "python-guarded-focused                               rc=5  39 ms",
+   "verify_choice_cli                                    rc=0  88 ms",
+   "verify_decision_cli-mock                             rc=0  93 ms",
+   "verify_choice_cli-v2                                 rc=0  91 ms",
+   "verify_decision_cli-native                           rc=0  93 ms",
+   "ts-npm-test                                          rc=1  1101 ms",
+   "ts-guarded-focused                                   rc=1  27 ms",
+   "ts-typecheck                                         rc=0  1588 ms"
+  ],
+  "with_dummy_env": {
+   "env": "CUA_S1_DECISION_URL=http://127.0.0.1:9/decide, TYPESAFE_API_KEY=<dummy non-secret>, TYPESAFE_BASE_URL=http://127.0.0.1:9",
+   "failures": [
+    {
+     "error": "response is not a cua.decision_choice_v1 decision",
+     "failureType": "testCodeFailure",
+     "name": "S1ServiceError",
+     "test": "S1 uses the bounded browser request and reports s1 as the actual backend"
+    }
+   ],
+   "log": "ts-npm-test-with-dummy-env.log (local mirror)",
+   "totals": [
+    "# tests 109",
+    "# pass 108",
+    "# fail 1"
+   ]
+  }
+ }
+}

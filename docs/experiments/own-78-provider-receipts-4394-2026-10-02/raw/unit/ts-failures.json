@@ -1,0 +1,41 @@
+{
+ "credential_free": {
+  "failures": [
+   {
+    "error": "CUA_S1_DECISION_URL is not set",
+    "failureType": "testCodeFailure",
+    "name": "S1ServiceError",
+    "test": "S1 uses the bounded browser request and reports s1 as the actual backend"
+   },
+   {
+    "error": "No API key was provided. Pass `apiKey` to the TypeSafeClient constructor or set the TYPESAFE_API_KEY environment variable.",
+    "failureType": "testCodeFailure",
+    "name": "TypeSafeError",
+    "test": "live and typesafe aliases report typesafe after a bounded decision"
+   }
+  ],
+  "log": "ts-npm-test.log (local mirror)",
+  "totals": [
+   "# tests 109",
+   "# pass 107",
+   "# fail 2"
+  ]
+ },
+ "with_dummy_env": {
+  "env": "CUA_S1_DECISION_URL=http://127.0.0.1:9/decide, TYPESAFE_API_KEY=<dummy non-secret>, TYPESAFE_BASE_URL=http://127.0.0.1:9",
+  "failures": [
+   {
+    "error": "response is not a cua.decision_choice_v1 decision",
+    "failureType": "testCodeFailure",
+    "name": "S1ServiceError",
+    "test": "S1 uses the bounded browser request and reports s1 as the actual backend"
+   }
+  ],
+  "log": "ts-npm-test-with-dummy-env.log (local mirror)",
+  "totals": [
+   "# tests 109",
+   "# pass 108",
+   "# fail 1"
+  ]
+ }
+}
