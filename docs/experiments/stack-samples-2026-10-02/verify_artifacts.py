@@ -163,6 +163,10 @@ def main() -> None:
     check(bool(labels) and ok, f"9 ledger rc=0 for all {len(labels)} timed labels, after collection ended {last_end}")
 
     iso = [r for r in runs if r["status"] == "RUN"]
+    head = manifest["identities"]["hermes"]["commit"]
+    check(head.startswith(prereg["identities"]["hermes"]["commit"][:10])
+          and all(r["worktree_head"] == head and r["worktree_clean"] for r in iso),
+          f"10 every run executed hermes {head[:12]} with a clean worktree (PREREG short prefix; erratum E1 in provenance.json)")
     check(all(r["isolation"]["ok"] for r in iso), "10 mask receipts ok for every run (live home, real home, host runtime dir empty; GUI runs see only their private X socket)")
     changed = [(r["task_id"], c) for r in iso for c in r["isolation"]["live_home_changed_entries"]]
     declared = all(c["entry"] == "auth.json" and not c["size_changed"] for _, c in changed)

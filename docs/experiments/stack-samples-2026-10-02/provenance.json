@@ -1,7 +1,7 @@
 {
   "branches": {
     "cua_packet": "kvnloo/cua exp/stack-samples-20261002 (base 352507b6c; PREREG 726d6bf3094cb2b6bf6eecbcc7c6cc2ffec81762)",
-    "hermes": "kvnloo/hermes-agent exp/stack-samples-20261002 @ 5d01f608975ab1d32d6a07c6c19213d2d4c5d98f (local, not pushed)"
+    "hermes": "kvnloo/hermes-agent exp/stack-samples-20261002 @ 5d01f60897373e67f7a3af5a9150439760be93f9 (local, not pushed)"
   },
   "commands": {
     "collect": "STACK_LANE_DIR=$LANE_DIR STACK_X11_SESSION=$LANES/cua-x11-session.sh STACK_RUN_PREFIX=S $HOSTLESS harness/collect.sh workload/tasks.jsonl workload/fixtures $LANE_DIR/collect 2026-10-02T08:35:00Z",
@@ -9,6 +9,12 @@
     "score_evaluate_analyze": "HOSTLESS=.. QUIET=.. HERMES_WT=.. Z0_WT=.. Z0_VENV=.. PACKET=.. COLLECT=.. RUNS=.. WORK=.. NANOJEV_CKPT=.. JULIA_PY=.. bash harness/run_scoring.sh",
     "scorer_env": "HF_HUB_OFFLINE=1 TMPDIR=$WORK/tmp Z0INT_HOME=$WORK/z0int-home Z0INT_NANOJEV_CHECKPOINT=<nanojev bundle> Z0INT_JULIA_PYTHON=<julia venv python> Z0INT_LAYA_DEVICE=cpu Z0INT_JULIA_DEVICE=cpu"
   },
+  "errata": [
+    {
+      "id": "E1",
+      "what": "PREREG.json (726d6bf30) states the hermes commit as 5d01f608975ab1d32d6a07c6c19213d2d4c5d98f; the actual commit is 5d01f60897373e67f7a3af5a9150439760be93f9. The first 10 hex digits (5d01f60897) agree; the remainder was a hand-expansion error in the PREREG text. Every run's meta/worktree-head records 5d01f60897373e67f7a3af5a9150439760be93f9 with a clean worktree (105/105), checked by verify_artifacts.py. PREREG is left unmodified (no history rewrite); MANIFEST/provenance carry the correct hash."
+    }
+  ],
   "freeze_history": [
     {
       "content_sha256": "54f5aa49bf64553eff26ccee57211c06f41364c1a453654bc480f86d9fe4f586",
@@ -37,7 +43,7 @@
     "gui_fixture_sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
     "hermes": {
       "branch": "exp/stack-samples-20261002",
-      "commit": "5d01f608975ab1d32d6a07c6c19213d2d4c5d98f",
+      "commit": "5d01f60897373e67f7a3af5a9150439760be93f9",
       "observer_plugin_source": "lab/z0_hermes_observer/__init__.py unchanged from #385 head ce5c027b",
       "observer_schema": "z0int.hermes_observer_event.v1",
       "python": "3.14.7",

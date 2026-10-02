@@ -148,6 +148,12 @@ canary-to-small-cohort grade).
 4. **Pilots** (`pilot-01`, `pilot-cua-01`, `P-p000*`, `P-p001*`) used separate prompts and are excluded. Their
    receipts are in the local mirror only.
 5. **The executor model is also the Qwen baseline scorer** (qwen2.5:3b), as declared in PREREG.
+6. **Erratum E1:** `PREREG.json` gives the hermes commit as `5d01f608975ab1d3…`. The actual commit is
+   `5d01f60897373e67f7a3af5a9150439760be93f9`. Only the first 10 hex digits match; the rest was mis-expanded
+   by hand. All 105 runs recorded that true head with a clean worktree, and `verify_artifacts.py` checks it.
+   PREREG is left unmodified; MANIFEST and provenance carry the correct hash.
+7. **NanoJev identity quirk:** its `decision.revision` reports the Qwen3-0.6B backbone (`c1899de2…`). The bundle
+   pin `4a19595e…` and `best.safetensors` sha256 `fff62d14…` are in `dataset/MANIFEST.json` identities.
 
 ## Layout
 
