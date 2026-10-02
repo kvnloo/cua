@@ -1690,7 +1690,11 @@ impl CuaDriver {
         }
         if let DriverBackend::Embedded(runtime) = &self.backend {
             let raw = runtime.invoke_from_trusted_adapter(name, arguments).await?;
-            return normalize_result(name, raw);
+            // B-01 measurement only (env-gated, default off).
+            cua_driver_core::phase_trace::mark("sdk.runtime_returned", "");
+            let normalized = normalize_result(name, raw);
+            cua_driver_core::phase_trace::mark("sdk.normalized", "");
+            return normalized;
         }
 
         // Trust evidence is local to the adapter/runtime boundary. A private
