@@ -7,6 +7,10 @@ verdict), rebuilds the row matrix and the pre-registered row statuses and
 disposition, compares them with summary.json, checks that PREREG.json was
 committed before the first counted run, and scans the packet (and optionally
 every branch commit) for absolute paths, the host name and secret patterns.
+It also fails when a file on disk in the packet is untracked, git-ignored or
+differs from HEAD (the committed packet must be the verified packet), and when
+a recorded PASS relies on an ordering whose later event is absent (no vacuous
+Ledger.before passes; an audit only, verdict rules are unchanged).
 
 Usage:
   python3 verify_artifacts.py                 # verify
@@ -260,6 +264,43 @@ def build_summary(prereg):
     }, mismatches
 
 
+# Ordering checks whose later event must be present for a recorded PASS to be
+# non-vacuous. Audit only: it adds problems, it never changes a verdict.
+REQUIRED_LATER_EVENT = {
+    "R1": "admitted:3",  # witness (all R1 variants except cancel_race)
+    "R2": "admitted:2",  # probe
+    "R7": "admitted:2",  # guarded retry (except control_ack)
+}
+NO_LATER_EVENT_VARIANTS = {("R1", "cancel_race"), ("R7", "control_ack")}
+
+
+def presence_audit(problems):
+    for p in PASSES:
+        for rec in records(p):
+            need = REQUIRED_LATER_EVENT.get(rec["row"])
+            if (
+                rec["verdict"] != "PASS"
+                or need is None
+                or (rec["row"], rec["variant"]) in NO_LATER_EVENT_VARIANTS
+            ):
+                continue
+            if not Ledger(rec.get("events")).has(need):
+                problems.append(
+                    f"{p} {rec['arm']} {rec['row']} {rec['variant']} iter {rec['iter']}: "
+                    f"PASS without {need} (vacuous ordering)"
+                )
+
+
+def committed_tree_check(problems):
+    inside = git("rev-parse", "--is-inside-work-tree")
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        print("note: not a git work tree; committed-tree check skipped")
+        return
+    status = git("status", "--porcelain", "--ignored", "--untracked-files=all", "--", ".")
+    for line in status.stdout.splitlines():
+        problems.append(f"packet file not committed as verified (git status '{line[:2]}'): {line[3:]}")
+
+
 def parse_utc(text):
     return datetime.datetime.strptime(text.rstrip("Z")[:23], "%Y-%m-%dT%H:%M:%S.%f").replace(
         tzinfo=datetime.timezone.utc
@@ -373,6 +414,8 @@ def main():
             if sum(counts.values()) < ITERATIONS:
                 problems.append(f"{p} {arm} {row} {variant}: only {sum(counts.values())} iterations")
     check_prereg_order(prereg, problems)
+    presence_audit(problems)
+    committed_tree_check(problems)
     privacy_scan(problems, args.git_range)
     print(json.dumps(summary["disposition"], indent=2))
     for arm in ("M", "P"):

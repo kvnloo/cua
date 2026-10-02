@@ -10,7 +10,7 @@
     "merge_commit_arm_p_tree": "98cdf5415616a88fe2ecb91ade7e7878ba6412c9",
     "prereg_commit": "34674f3c3756fd76cf60f1dc8cb16ef7115e4b24",
     "arm_p_runs_at_head": "34674f3c3756fd76cf60f1dc8cb16ef7115e4b24",
-    "publication_sha": "the commit that adds this file (not self-referential); read it with git log on the branch"
+    "publication_sha": "the branch head that carries this file (not self-referential): the packet was first committed in 76e855c23 and updated by a later fix-round commit on the same branch (committed raw/logs, environment wording, verifier audits); read it with git log on the branch"
   },
   "libs_cua_driver_tree": {
     "base_352507b6c": "892fdddb07de3f12deb09c78619e043549ee06cd",
@@ -22,12 +22,12 @@
     "driver_binary": "none: no cua-driver executable and no Driver session; the system under test is the in-process embedded SDK runtime linked into each integration-test binary",
     "own09_arm_m": {"sha256": "8c542d7ae36cc09e6378c03a22f10c57a7e22be5b389b97c3fd3d7879ff073bc", "profile": "test (unoptimized + debuginfo)", "crate_version": "cua-driver-sdk 0.32.0"},
     "own09_arm_p": {"sha256": "3c7567b2ade89ed3c1cb2f5a8fd6e4dda30d1589d1e418a7ea48ba8997f2a003", "profile": "test (unoptimized + debuginfo)", "crate_version": "cua-driver-sdk 0.32.0"},
-    "build_provenance": "raw/logs/build-m.compiled.log and build-p.compiled.log show cua-driver-core compiled from the arm-M worktree and the lane-branch worktree respectively, each into its own fresh target dir"
+    "build_provenance": "raw/logs/build-m.compiled.txt and build-p.compiled.txt (sanitized excerpts of the full cargo -v build logs; .txt because the repository .gitignore ignores *.log) show cua-driver-core compiled from the arm-M worktree and the lane-branch worktree respectively, each into its own fresh target dir"
   },
   "environment": {
     "os": "Linux 7.2.2 (x86_64)",
     "toolchain": "rustc 1.97.1, cargo 1.97.1",
-    "isolation": "bwrap hostless wrapper: host X11/ICE/user-runtime sockets masked, desktop and session variables removed; no display, no D-Bus session, no AT-SPI; no GUI session started",
+    "isolation": "hostless v2 wrapper (in place from 05:06:31Z, before the PREREG commit and every counted run): removes desktop and session variables (DISPLAY, WAYLAND_*, HYPRLAND_*, SWAYSOCK, I3SOCK, DBUS_SESSION_BUS_ADDRESS, AT_SPI_BUS_ADDRESS, XAUTHORITY, XDG_SESSION_TYPE and related), points XDG_RUNTIME_DIR at a private per-invocation dir, and applies a Landlock scope that blocks connect() to abstract unix sockets bound outside the scope and signals to processes outside it. It does not use bwrap and does not mask socket directories (that was v1). No display, no D-Bus session, no AT-SPI; no GUI session started",
     "locks": "shared quiet-lane lock + exclusive cargo-build lock held for every cargo invocation (no timing claims)",
     "provider": "none; TypeSafe attempts 0, reached 0",
     "concurrent_load": "other lanes were running (loadavg about 11-20 during counted passes); recorded because R1's one FAIL is a scheduling race"
