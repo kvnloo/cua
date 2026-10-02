@@ -4897,7 +4897,7 @@ pub fn focus_element(pid: u32, idx: usize) -> Result<bool> {
             }
 
             let settle_deadline =
-                tokio::time::Instant::now() + std::time::Duration::from_millis(500);
+                tokio::time::Instant::now() + std::time::Duration::from_millis(400);
             while tokio::time::Instant::now() < settle_deadline {
                 match tokio::time::timeout(
                     std::time::Duration::from_millis(100),
