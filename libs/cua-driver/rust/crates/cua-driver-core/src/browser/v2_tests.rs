@@ -74,6 +74,8 @@ struct FixtureState {
     /// Backend nodes the page has detached since the snapshot
     /// (`Node.isConnected === false`); the node object still resolves.
     detached_backends: Vec<i64>,
+    /// Backend nodes that describe as `<input type=file>`.
+    file_inputs: Vec<i64>,
     /// Backend nodes on which a page-side click/event dispatch actually ran.
     page_dispatches: Vec<i64>,
     /// Every incoming CDP call: (sessionId, method, params).
@@ -106,6 +108,7 @@ impl Default for FixtureState {
             viewport_css_height: 600.0,
             tab_visible: true,
             detached_backends: Vec::new(),
+            file_inputs: Vec::new(),
             page_dispatches: Vec::new(),
             calls: Vec::new(),
         }
@@ -528,6 +531,22 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     })
                 }
             }
+            "DOM.describeNode"
+                if call.params["backendNodeId"]
+                    .as_i64()
+                    .is_some_and(|backend| st.file_inputs.contains(&backend)) =>
+            {
+                MockReply::ok(json!({
+                    "node": { "nodeName": "INPUT", "attributes": ["type", "file"] }
+                }))
+            }
+            // Like Chromium: the files are assigned, and input/change fire, on
+            // the node even when the page has detached it.
+            "DOM.setFileInputFiles" => {
+                st.page_dispatches
+                    .extend(call.params["backendNodeId"].as_i64());
+                MockReply::ok(json!({}))
+            }
             "DOM.describeNode" if is_tab && call.params["backendNodeId"] == 999 => {
                 MockReply::ok(json!({
                     "node": large_semantic_document()["root"]["children"][0].clone()
@@ -718,7 +737,9 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     .into_iter()
                     .flatten()
                     .any(|b| st.detached_backends.contains(&b));
-                if detached && function.contains("if (!this.isConnected") {
+                if function.contains("return this.isConnected;") {
+                    MockReply::ok(json!({ "result": { "value": !detached } }))
+                } else if detached && function.contains("if (!this.isConnected") {
                     let answer = if function.contains("return 'detached'") {
                         json!("detached")
                     } else {
@@ -2850,4 +2871,51 @@ async fn download_activation_refuses_a_detached_node() {
         "{download:?}"
     );
     assert!(page_dispatches(&f).is_empty());
+}
+
+async fn set_input_files(f: &Fixture, target: &str, tab: &str, reference: &str) -> ToolResult {
+    let root = tempfile::tempdir().unwrap();
+    let upload = root.path().join("upload.txt");
+    std::fs::write(&upload, b"fixture upload").unwrap();
+    super::tools::BrowserSetInputFilesTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": reference, "session": SESSION,
+            "files": [upload.to_str().unwrap()],
+        }))
+        .await
+}
+
+#[tokio::test]
+async fn set_input_files_refuses_a_detached_file_input() {
+    let f = fixture_with(|st| st.file_inputs.push(10)).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let input_ref = ref_of(&snap, "main", "main-btn");
+    detach(&f, 10);
+
+    let result = set_input_files(&f, &target, &tab, &input_ref).await;
+    assert_ne!(result.is_error, Some(true));
+    assert_eq!(structured(&result)["status"], "refused", "{result:?}");
+    assert_eq!(structured(&result)["refusal"]["code"], "browser_ref_stale");
+    assert!(recorded_calls(&f, "DOM.setFileInputFiles").is_empty());
+    assert!(page_dispatches(&f).is_empty(), "no file may be assigned");
+}
+
+#[tokio::test]
+async fn set_input_files_assigns_connected_and_reattached_file_inputs() {
+    let f = fixture_with(|st| st.file_inputs.push(10)).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let input_ref = ref_of(&snap, "main", "main-btn");
+
+    let connected = set_input_files(&f, &target, &tab, &input_ref).await;
+    assert_eq!(structured(&connected)["status"], "ok", "{connected:?}");
+    assert_eq!(structured(&connected)["file_count"], 1);
+    assert_eq!(page_dispatches(&f), vec![10]);
+
+    detach(&f, 10);
+    reattach(&f, 10);
+    let reattached = set_input_files(&f, &target, &tab, &input_ref).await;
+    assert_eq!(structured(&reattached)["status"], "ok", "{reattached:?}");
+    assert_eq!(page_dispatches(&f), vec![10, 10]);
 }

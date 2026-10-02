@@ -1346,6 +1346,9 @@ impl Tool for BrowserClickTool {
 pub(crate) const DOM_CLICK_IF_CONNECTED: &str =
     "function() { if (!this.isConnected) return false; this.click(); return true; }";
 
+/// Read-only connectedness probe for mutations that are not a page function.
+pub(crate) const NODE_IS_CONNECTED: &str = "function() { return this.isConnected; }";
+
 /// The page answered that the ref's node is detached: nothing was dispatched.
 pub(crate) fn detached_node_refusal() -> ToolResult {
     BrowserRefusal::new(
@@ -2501,6 +2504,39 @@ impl Tool for BrowserSetInputFilesTool {
                 "the live ref is not an input[type=file] element",
             )
             .to_tool_result();
+        }
+        // DOM.setFileInputFiles still assigns files to, and fires input/change
+        // on, a node a re-render detached after the snapshot. The assignment is
+        // a DOM-domain command, not a callFunctionOn this check could share,
+        // so it runs on the node immediately before it.
+        let connected = match validated
+            .conn
+            .call(
+                Some(&cdp_session),
+                "DOM.resolveNode",
+                json!({ "backendNodeId": entry.backend_node_id }),
+            )
+            .await
+            .ok()
+            .and_then(|resolved| resolved.pointer("/object/objectId").cloned())
+        {
+            Some(object_id) => validated
+                .conn
+                .call(
+                    Some(&cdp_session),
+                    "Runtime.callFunctionOn",
+                    json!({
+                        "objectId": object_id,
+                        "functionDeclaration": NODE_IS_CONNECTED,
+                        "returnByValue": true,
+                    }),
+                )
+                .await
+                .is_ok_and(|value| value.pointer("/result/value") == Some(&Value::Bool(true))),
+            None => false,
+        };
+        if !connected {
+            return detached_node_refusal();
         }
         match validated
             .conn
