@@ -1,0 +1,62 @@
+{
+ "schema": "cua.stack.multiseat.provenance.v1",
+ "prereg_commit": "c9276c01a6e349fd60873741beff89e57fc74552",
+ "prereg_commit_epoch": 1790920766,
+ "prereg_commit_time": "2026-10-02T00:59:26-05:00",
+ "branch": "exp/stack-multiseat-20261002",
+ "base": "exp/stack-sway-20261002 d7317fd2f56217b27742bf9c2186bdd864633787 (upstream main 352507b6c + sway kit packet)",
+ "hermes": {
+  "worktree_branch": "exp/stack-multiseat-20261002",
+  "commit": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+  "lane_commits": 0,
+  "worktree_clean_after": true,
+  "note": "no Hermes code change; all lane config is harness/config.template.yaml rendered into a private HERMES_HOME per agent"
+ },
+ "driver": {
+  "version": "0.32.0",
+  "build": "r2-main-229b65b28",
+  "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"
+ },
+ "model": {
+  "name": "qwen2.5:7b-instruct",
+  "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+  "server": "ollama 0.35.0 (binary sha256 0b0650a962dda61ec0598141ea11e3b688d225e926c9c00bc2c299d0ed34c4f8; release tarball sha256 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525), 127.0.0.1:11500",
+  "server_owner": "started by another stack lane (not this lane); this lane neither started, stopped, reconfigured nor pulled into it (the model was pulled by the SMOKE lane)",
+  "observed_server_config": {
+   "n_seq_max": 2,
+   "n_ctx": 65536,
+   "n_ctx_seq": 32768,
+   "flash_attn": "enabled",
+   "source": "server log llama_context lines"
+  },
+  "api_ps": {
+   "size_vram": 6564274502,
+   "context_length": 32768
+  }
+ },
+ "gpu": "NVIDIA RTX 3080 Ti 12 GB, driver 610.57.04; no z0int GPU backend loaded by this lane",
+ "session_kit": {
+  "session_script_sha256": "fed58de9b208748ec6f6ec9a1bc11008c651eb68ddd103cb5200f7c368384c1f",
+  "hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+  "seatctl": "2da9f12a409ba2cea11c351a0b47f69d6c41a029253102515d78983b6ad3fb32",
+  "seatprobe": "8179ca0a78ccd05f80c9f69794728f6fed998e5ba7c9ebe1e6a53eaaff5dbf27",
+  "landlock_scope": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8",
+  "gtk": "3.24.52"
+ },
+ "quiet_timed": {
+  "sha256": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b",
+  "ledger_lines": 16,
+  "ledger_copy": "raw/measured/quiet-lane-ledger.ms-main.jsonl",
+  "note": "16/16 main rounds have an ms-main-<round> exclusive-lock receipt; look-alike, cross-wire and seat controls report no timing"
+ },
+ "schedule": {
+  "launch_1": "aborted before any round started (raw/attempts/aborted-launch-1.schedule.log): moved to a detached launcher so the schedule could outlive the tool timeout while queued for the quiet-lane lock; no round directory had been created",
+  "measured_window_utc": [
+   "2026-10-02T06:27:55.707Z",
+   "2026-10-02T07:59:27Z"
+  ]
+ },
+ "host_load": "other lanes ran concurrently throughout (load average 14-24; other lanes' requests on the same model server in every round, counted per round as model_requests_foreign)",
+ "grade_equivalence": "grade.json regraded from the sanitized packet (messages.jsonl, server-requests.log) is identical to the grade computed from the full local receipts (state.db, full server log)",
+ "host_name_sha256": "c76d9da671ff244fa274ad83621cc1ae1c3a2a78b5baa590ad5ab0b5347ea1dd"
+}

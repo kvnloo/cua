@@ -1,0 +1,57 @@
+2026-10-02 07:48:35,503 INFO hermes_cli.boot_bootstrap: home maintenance: code changed to 0d60437a3329, running steps
+2026-10-02 07:48:35,530 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up ~/.hermes/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
+2026-10-02 07:48:36,118 INFO hermes_cli.plugins: Plugin 'browser-browser-use' registered browser provider: browser-use
+2026-10-02 07:48:36,158 INFO hermes_cli.plugins: Plugin 'browser-browserbase' registered browser provider: browserbase
+2026-10-02 07:48:36,169 INFO hermes_cli.plugins: Plugin 'browser-firecrawl' registered browser provider: firecrawl
+2026-10-02 07:48:36,598 INFO hermes_cli.plugins: Plugin 'deepinfra' registered image_gen provider: deepinfra
+2026-10-02 07:48:36,603 INFO hermes_cli.plugins: Plugin 'fal' registered image_gen provider: fal
+2026-10-02 07:48:36,605 INFO hermes_cli.plugins: Plugin 'krea' registered image_gen provider: krea
+2026-10-02 07:48:36,611 INFO hermes_cli.plugins: Plugin 'meta-ai-image-gen' registered image_gen provider: meta-ai
+2026-10-02 07:48:36,618 INFO hermes_cli.plugins: Plugin 'openai' registered image_gen provider: openai
+2026-10-02 07:48:36,621 INFO hermes_cli.plugins: Plugin 'openai-codex' registered image_gen provider: openai-codex
+2026-10-02 07:48:36,625 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: openrouter
+2026-10-02 07:48:36,625 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: nous
+2026-10-02 07:48:36,629 INFO hermes_cli.plugins: Plugin 'xai' registered image_gen provider: xai
+2026-10-02 07:48:36,769 INFO hermes_cli.plugins: Plugin 'deepinfra' registered video_gen provider: deepinfra
+2026-10-02 07:48:36,774 INFO hermes_cli.plugins: Plugin 'fal' registered video_gen provider: fal
+2026-10-02 07:48:36,778 INFO hermes_cli.plugins: Plugin 'openrouter' registered video_gen provider: openrouter
+2026-10-02 07:48:36,784 INFO hermes_cli.plugins: Plugin 'xai' registered video_gen provider: xai
+2026-10-02 07:48:36,793 INFO hermes_cli.plugins: Plugin 'web-brave-free' registered web provider: brave-free
+2026-10-02 07:48:36,796 INFO hermes_cli.plugins: Plugin 'web-ddgs' registered web provider: ddgs
+2026-10-02 07:48:36,799 INFO hermes_cli.plugins: Plugin 'web-exa' registered web provider: exa
+2026-10-02 07:48:36,809 INFO hermes_cli.plugins: Plugin 'web-firecrawl' registered web provider: firecrawl
+2026-10-02 07:48:36,814 INFO hermes_cli.plugins: Plugin 'web-keenable' registered web provider: keenable
+2026-10-02 07:48:36,819 INFO hermes_cli.plugins: Plugin 'web-openai-native' registered web provider: openai-native
+2026-10-02 07:48:36,822 INFO hermes_cli.plugins: Plugin 'web-parallel' registered web provider: parallel
+2026-10-02 07:48:36,825 INFO hermes_cli.plugins: Plugin 'web-perplexity' registered web provider: perplexity
+2026-10-02 07:48:36,828 INFO hermes_cli.plugins: Plugin 'web-searxng' registered web provider: searxng
+2026-10-02 07:48:36,832 INFO hermes_cli.plugins: Plugin 'web-tavily' registered web provider: tavily
+2026-10-02 07:48:36,837 INFO hermes_cli.plugins: Plugin 'web-xai' registered web provider: xai
+2026-10-02 07:48:36,860 INFO hermes_cli.plugin_capabilities: capability_check plugin=z0-hermes-observer capability=tools.override decision=deny checked_by=plugin_capability_granted evidence=not granted
+2026-10-02 07:48:36,863 INFO hermes_cli.plugins: Plugin discovery complete: 59 found, 54 enabled
+2026-10-02 07:48:39,281 INFO run_agent: No .env file found. Using system environment variables.
+2026-10-02 07:48:40,698 INFO cli: tirith not ready (downloading or lazy installs off); pattern matching only
+2026-10-02 07:48:40,762 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 07:48:40,772 WARNING cli: Background MCP discovery previously exited with no connected servers; retrying discovery thread
+2026-10-02 07:48:41,763 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 07:48:41,940 INFO run_agent: OpenAI client created (agent_init, shared=True) thread=MainThread:139933965581248 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 07:48:42,135 WARNING agent.context_pin: model.context_length pins qwen2.5:7b-instruct at 65,536 tokens but the provider advertises 131,072; the pin wins. Remove model.context_length from config.yaml to use the advertised window.
+2026-10-02 07:48:42,586 INFO [20261002_074838_10dcde] agent.turn_context: conversation turn: session=20261002_074838_10dcde model=qwen2.5:7b-instruct provider=custom platform=cli history=0 msg='You are operating a Linux desktop through the computer_use tool. The only applic...'
+2026-10-02 07:48:43,426 INFO run_agent: OpenAI client created (chat_completion_stream_request, shared=False) thread=Thread-5 (<lambda>):139933357401792 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 07:48:43,775 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 07:48:45,943 INFO [20261002_074838_10dcde] agent.conversation_loop: API call #1: model=qwen2.5:7b-instruct provider=custom in=3859 out=21 total=3880 latency=2.7s cache=1949/3859 (51%) id=chatcmpl-79
+2026-10-02 07:48:47,778 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 07:48:48,300 INFO tools.computer_use.cua_backend: cua-driver session ready in 0.5s (manifest=0.0s, mcp_init=0.4s)
+2026-10-02 07:48:48,488 INFO [20261002_074838_10dcde] agent.tool_executor: tool computer_use completed (2.36s, 169 chars)
+2026-10-02 07:48:48,780 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 07:48:50,515 INFO [20261002_074838_10dcde] agent.conversation_loop: API call #2: model=qwen2.5:7b-instruct provider=custom in=3962 out=46 total=4008 latency=2.0s cache=1953/3962 (49%) id=chatcmpl-528
+2026-10-02 07:48:50,690 INFO [20261002_074838_10dcde] agent.tool_executor: tool computer_use completed (0.15s, 1422 chars)
+2026-10-02 07:48:50,781 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 07:48:53,207 INFO [20261002_074838_10dcde] agent.conversation_loop: API call #3: model=qwen2.5:7b-instruct provider=custom in=4727 out=39 total=4766 latency=2.5s cache=3873/4727 (82%) id=chatcmpl-693
+2026-10-02 07:48:53,477 INFO [20261002_074838_10dcde] agent.tool_executor: tool computer_use completed (0.24s, 1422 chars)
+2026-10-02 07:48:55,638 INFO [20261002_074838_10dcde] agent.conversation_loop: API call #4: model=qwen2.5:7b-instruct provider=custom in=4852 out=46 total=4898 latency=2.1s cache=4765/4852 (98%) id=chatcmpl-532
+2026-10-02 07:48:55,675 INFO [20261002_074838_10dcde] agent.conversation_loop: Turn ended: reason=text_response(finish_reason=stop) model=qwen2.5:7b-instruct api_calls=4/16 budget=4/16 tool_turns=3 last_msg_role=assistant response_len=115 session=20261002_074838_10dcde
+2026-10-02 07:48:55,697 INFO agent.auxiliary_client: Auxiliary auto-detect: using main provider custom (qwen2.5:7b-instruct)
+2026-10-02 07:48:55,698 INFO agent.auxiliary_client: Auxiliary title_generation: using custom (qwen2.5:7b-instruct) at http://127.0.0.1:11500/v1/
+2026-10-02 07:48:55,737 INFO [20261002_074838_10dcde] cli: CLI cleanup calling memory shutdown for session 20261002_074838_10dcde with 8 message(s)
+2026-10-02 07:48:55,767 INFO [20261002_074838_10dcde] cli: CLI cleanup calling memory shutdown for session 20261002_074838_10dcde with 8 message(s)

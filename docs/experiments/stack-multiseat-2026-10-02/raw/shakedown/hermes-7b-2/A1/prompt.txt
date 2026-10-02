@@ -1,0 +1,5 @@
+You are operating a Linux desktop through the computer_use tool. The only application window is titled "CuaTestHarness GTK3 Tasks". Do exactly this task in that window:
+1. Put the text SHK-H3-q7 into the "Note" text field.
+2. Click the "Save note" button once.
+3. Click the "Increment" button exactly 2 time(s).
+How to work: first call computer_use with action="list_windows" to get the window's pid and window_id. Then call action="capture" with mode="ax" and that pid and window_id to see the elements and their indexes. Act with action="click" element=<index> and action="type" text=<text>. Capture again (same pid and window_id) to check the result before you finish. Do not touch any other control. Keep calling tools until the task is complete, then reply with the single word DONE.

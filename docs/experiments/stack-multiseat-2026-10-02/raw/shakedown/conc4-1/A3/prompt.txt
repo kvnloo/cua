@@ -1,0 +1,9 @@
+You are operating a Linux desktop through the computer_use tool. The only application window is titled "CuaTestHarness GTK3 Tasks". Your task in that window: put the text SHK-C1-a3 into the "Note" text field and click the "Save note" button once.
+Follow these steps, one computer_use call per step:
+Step 1. action="list_windows". Remember the window's pid and window_id; pass both on every later call.
+Step 2. action="capture", mode="ax". Read the bounds [x, y, width, height] of "Note" and of "Save note". The click point of an element with bounds [x, y, w, h] is [x + 10, y + 10]; for example the click point of [100, 40, 60, 20] is [110, 50].
+Step 3. action="click", coordinate=<click point of "Note">, delivery_mode="foreground".
+Step 4. action="type", text="SHK-C1-a3", delivery_mode="foreground".
+Step 5. action="click", coordinate=<click point of "Save note">, delivery_mode="foreground". Click it only once.
+Step 6. action="capture", mode="ax" to check the result.
+Never pass the element argument (element-index clicks are not available here). Do not touch any other control. When the steps are done, reply with the single word DONE.

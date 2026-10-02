@@ -1,0 +1,147 @@
+{
+ "mode": "click_xy",
+ "pid": 34,
+ "points": [
+  [
+   320.0,
+   346.0
+  ],
+  [
+   360.0,
+   386.0
+  ]
+ ],
+ "session": "agentA",
+ "steps": [
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 34,
+    "session": "agentA"
+   },
+   "is_error": false,
+   "ms": 118.5,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "cua-seatprobe",
+      "bounds": {
+       "height": 693,
+       "width": 640,
+       "x": 0,
+       "y": 27
+      },
+      "height": 693,
+      "is_on_screen": true,
+      "pid": 34,
+      "title": "CuaTestHarness GTK3 Tasks [cua-seatprobe]",
+      "width": 640,
+      "window_id": 5,
+      "x": 0,
+      "y": 27,
+      "z_index": null
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=5 pid=34 \"CuaTestHarness GTK3 Tasks [cua-seatprobe]\" 640x693+0+27 app=cua-seatprobe"
+  },
+  {
+   "tool": "get_window_state",
+   "args": {
+    "pid": 34,
+    "window_id": 5,
+    "session": "agentA",
+    "include_screenshot": true,
+    "include_accessibility_tree": false
+   },
+   "is_error": false,
+   "ms": 76.2,
+   "structured": {
+    "app_name": "cua-seatprobe",
+    "capture_id": "capture_398f0e194deb4036a646919fc87b1aa5_0000000000000000",
+    "coordinate_frame": "window",
+    "frame_note": "x/y for click / double_click / right_click / drag / scroll on this window are pixels of THIS screenshot (window-local, 0..screenshot_width x 0..screenshot_height), as are the element frames; the screenshot is kept at or below 1.15 megapixels so the image you read is the image these pixels index (frame_scale < 1 says the window was downsized to it). window_bounds is where it sits on the screen. Pass scope:\"desktop\" only for get_desktop_state pixels.",
+    "pid": 34,
+    "screenshot_frame_valid": true,
+    "screenshot_height": 693,
+    "screenshot_mime_type": "image/png",
+    "screenshot_width": 640,
+    "window_bounds": {
+     "height": 693,
+     "width": 640,
+     "x": 0,
+     "y": 27
+    },
+    "window_id": 5,
+    "window_title": "CuaTestHarness GTK3 Tasks [cua-seatprobe]"
+   },
+   "text": ""
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 34,
+    "window_id": 5,
+    "session": "agentA",
+    "x": 320.0,
+    "y": 346.0,
+    "delivery_mode": "foreground"
+   },
+   "is_error": false,
+   "ms": 116.3,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (320.0, 346.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(320, 346) screen_point=(320, 373)]"
+   },
+   "text": "Clicked at (320.0, 346.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(320, 346) screen_point=(320, 373)]"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 34,
+    "window_id": 5,
+    "session": "agentA",
+    "x": 360.0,
+    "y": 386.0,
+    "delivery_mode": "foreground"
+   },
+   "is_error": false,
+   "ms": 86.8,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (360.0, 386.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(360, 386) screen_point=(360, 413)]"
+   },
+   "text": "Clicked at (360.0, 386.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(360, 386) screen_point=(360, 413)]"
+  }
+ ],
+ "window": {
+  "app_name": "cua-seatprobe",
+  "bounds": {
+   "height": 693,
+   "width": 640,
+   "x": 0,
+   "y": 27
+  },
+  "height": 693,
+  "is_on_screen": true,
+  "pid": 34,
+  "title": "CuaTestHarness GTK3 Tasks [cua-seatprobe]",
+  "width": 640,
+  "window_id": 5,
+  "x": 0,
+  "y": 27,
+  "z_index": null
+ },
+ "click_marks": [
+  1790927961.3923707,
+  1790927961.9089174
+ ]
+}

@@ -71,11 +71,16 @@ def all_tokens():
 def transcript(db):
     out = {"tool_calls": 0, "results": 0, "stale_results": 0, "refused_results": 0, "element_index_refusals": 0,
            "approval_blocks": 0, "actions": {}}
-    if not os.path.exists(db):
+    exported = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(db))), "messages.jsonl")
+    if os.path.exists(db):
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        rows = con.execute("SELECT role, content, tool_calls FROM messages ORDER BY rowid").fetchall()
+    elif os.path.exists(exported):  # packet copy: export_messages.py output (same rows, same order)
+        rows = [(m["role"], m["content"], m["tool_calls"]) for m in jl(exported)]
+    else:
         out["missing"] = True
         return out
-    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
-    for role, content, tool_calls in con.execute("SELECT role, content, tool_calls FROM messages ORDER BY rowid"):
+    for role, content, tool_calls in rows:
         if role == "assistant" and tool_calls:
             try:
                 for tc in json.loads(tool_calls):
