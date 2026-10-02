@@ -1,0 +1,102 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "lane": "R2-07",
+ "title": "One verified compiled, fresh-bound routine on jev-use fill->submit vs ordinary and guarded callers (live TypeSafe), with all six #93 gates",
+ "owners": ["kvnloo/cua#93 (R2-07)", "kvnloo/cua#10 (P1 compiled-practice accounting)", "kvnloo/cua#73", "kvnloo/cua#74"],
+ "registered_utc": "2026-10-02T02:20:00Z",
+ "registered_before_first_measured_trial": true,
+ "source": {
+  "base": "trycua/cua main c4d0c6625b5c93849aa8bec610782410e9d45f69",
+  "merged": "trycua/cua PR 4316 head a0bca744067d04f05904319d3d919be30c336556 (git merge --no-ff, conflict-free)",
+  "tested_sha": "031ee5f58c222ea60ca0fcaf0a7858535a73c75b",
+  "rust_tree_check": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 031ee5f58 -- libs/cua-driver/rust succeeds (recorded in every phase validity.json)",
+  "driver": {"path": "<lanes>/bin/cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version": "cua-driver 0.32.0", "rebuilt": false}
+ },
+ "step0_compatibility": {
+  "result": "PASS (before PREREG)",
+  "python_unittest_discover": "248 ran, OK (skipped=1)",
+  "python_guarded_focused": "8 ran, OK",
+  "ts_npm_test": "rc=0", "ts_guarded_focused": "rc=0", "ts_typecheck": "rc=0",
+  "mock_smoke_in_session": {"plain": "verified", "guarded_completion": "verified (step 2 decision_route=guarded-completion)"}
+ },
+ "shakedown_disclosure": {
+  "note": "Feasibility/harness shakedown ran BEFORE this file was frozen, with the mock provider only (0 provider requests). None of it is analysed as a measured trial. Raw kept under raw/shakedown/.",
+  "observed": [
+   "set_agent_cursor_enabled is scoped to a session label: without `session` it lands on the implicit mcp-* session and run.py's jev-python-* label keeps feedback ON (smoke1 T~3.2 s in all arms). Fixed in the launcher: {enabled:false, session:<label>} before the first call of each Driver label (smoke2 T~186-211 ms).",
+   "N4a: the Driver's dom_event browser_click ACCEPTS a ref whose DOM node the page replaced after the snapshot (effect=unverifiable, no submit landed). The unmodified run.py path behaves the same (N4a_ord shakedown), and then re-dispatches Submit on a fresh ref after its 20x100 ms poll.",
+   "N4b: a ref from a superseded snapshot namespace is refused as effect=refused / browser_ref_stale with isError=false, so a caller must treat effect=refused as a refusal (run.py's Driver.call does not).",
+   "N5: the old target id is refused in a replacement session label (code authorization_host_failed); browser_prepare {pid} + get_browser_state {pid, window_id} rebinds the same browser.",
+   "Trusted (non-dom_event) browser_click is refused on this Linux standalone window (browser_input_trust_unavailable), so dom_event is the only background route; the artifact keeps the route the learning trace used."
+  ]
+ },
+ "hypothesis": "A compiled routine whose artifact stores only logical targets, parameters, dependencies, preconditions, the expected outcome and fallback points, verified on a clean reset before admission and freshly bound before every mutation, removes both provider decisions on warm replay. It is faster than guarded completion (B, 1 decision) and the ordinary caller (A, 2 decisions), with paired CIs excluding 0, while all six #93 gates hold.",
+ "arms": {
+  "A": "unmodified run.py --provider live (2 provider decisions)",
+  "B": "unmodified run.py --provider live --guarded-completion (1 decision)",
+  "C": "compiled replay of the admitted artifact (0 decisions); fallback none in P3/P4"
+ },
+ "held_fixed": {
+  "feedback": "OFF in every arm and phase: set_agent_cursor_enabled {enabled:false, session:<label>} before the first call of each Driver session label (measurement-only launcher harness/r2_07_launcher.py wrapping the unmodified run.py; derived from R2-03 harness/receipt_launcher.py @ 6bab214ab). A cell whose feedback_off receipt is missing or not enabled=false is invalid (counted as a failure).",
+  "visual_observation": "run.py default (auto)",
+  "driver_safety": "defaults: no permission-mode override, no approval bypass, no sandbox bypass, no *-e2e wrapper",
+  "browser": "Driver-launched isolated_new profile (Chrome 151 selected by the Driver), fresh per trial",
+  "environment": "private rootless Xvfb via cua-x11-session.sh, X11 only"
+ },
+ "artifact_schema": {
+  "fields": ["schema", "routine_id", "task_class=fill_submit", "steps[{logical_target{role,name}, action, param_slot|input_route, precondition{unique, page_origin, field_state}, depends_on}]", "expected_outcome{oracle, journal_submits}", "fallback_points", "compiled_from{learning_outcome, learning_provider_decisions, trace_mutations}"],
+  "forbidden": "any ref, refs, element_token, element_index, capture_id, target_id, tab_id, session/session_id/session_epoch/epoch, generation, snapshot_id, backend_node_id/node_id, pid, window_id, x, y, coordinates, bounds, frame/loader ids, continuation; also values shaped like page refs (p<n>:<n>), bt-/tab-/bc- ids, session labels, UUIDs, and any float",
+  "checked_by": ["harness/compiled_routine.py check_artifact_authority (allowlist + denylist + value patterns)", "harness/test_compiled_routine.py AuthorityTests", "verify_artifacts.py re-runs the check on raw/learn/artifact.json"]
+ },
+ "phases": {
+  "P1_learning": "1 ordinary LIVE run (arm A config) with receipts; G1 = independently verified (journal applied==1 and /state.submitted==token) with exactly 2 TypeSafe decisions",
+  "P2_compile": "compile_trace(receipts) -> artifact; compile_ms timed in process; authority check must be empty",
+  "P3_admission": "fresh fixture (clean reset), fresh Driver+Chrome, compiled replay with fresh binding and NO fallback, 0 provider requests; the independent journal must verify BEFORE admission. Failure => KILL",
+  "P4_warm": "20 rounds x {A,B,C}; per-round order rotates ABC,BCA,CAB,ACB,CBA,BAC,...; fresh Driver, Chrome, fixture and unique token per trial; EXCLUSIVE quiet-lane lock; loadavg at spawn and exit of every trial; every trial kept",
+  "P5_gate4_negatives": "in-process compiled replay with the MOCK chooser as fallback, untimed, SHARED quiet lock in blocks of <=10 trials, 3 reps each: N1 Submit renamed 'Send'; N2 Submit missing; N3 duplicate Submit; N4a page replaces the Submit node between bind and dispatch (no new snapshot); N4b a superseding snapshot is taken between bind and dispatch; N5 Driver session label replaced between steps (all target/tab/ref capabilities invalid; old-target probe must be refused; rebind via browser_prepare{pid}+get_browser_state{pid,window_id}); N6 typing opens a modal <dialog> over the form; N7 field prefilled with a different value; N8 artifact invoked on the issue24 toggle->confirm page (commit 5474aa31f, verbatim). Comparator N4a_ord: same re-render injection before the unmodified run.py's first browser_click (mock), 3 reps",
+  "P6_gate5_reconcile": "in-process compiled replay; acknowledgement loss injected on the compiled Submit at the seam between ClientSession and the SDK stdio streams (harness/fault_transport.py copied verbatim from R2-05 @ 236e37e01). Rows x5: applied_ack_lost (Driver response held until the target journal shows applied, dropped, EOF); delayed_after_first_unchanged_read (journal holds the first submit until one caller /state read returned unchanged after receipt; response held until received, dropped, EOF). Extra control row x3: withheld_unresolved (effect held until the caller finished). Reconcile = bounded re-read of /state every 50 ms for <=3 s BEFORE any fallback dispatch",
+  "P7_live_fallback": "N1 (Submit renamed) with the LIVE chooser as fallback (max 2 fallback decisions), n=3 subprocess cells, timed under the EXCLUSIVE lock"
+ },
+ "fallback_policy": "At a failed precondition the CURRENT state goes to the chooser (never a restart at step 1): fresh semantic_v2 observation -> unmodified FixtureFormTask candidates -> drop any page candidate whose role+name is not unique in that observation -> chooser (mock or live) -> dispatch with that observation's ref -> completion candidates end with the bounded oracle re-read. At most 2 fallback decisions, then explicit stop.",
+ "replay_policy": "Before every mutation: fresh semantic_v2 observation; unique role+name bind; preconditions (page_origin, field_state, declared action) and the dependency's postcondition (the field holds the token) checked on THAT observation; dispatch with the ref minted by it. Refusal (isError, status=refused or effect=refused) is not an effect; browser_ref_stale gets exactly one rebind from a fresh observation, any other refusal stops. A transport failure on a mutation is UNKNOWN: Submit -> reconcile by bounded re-read; type -> stop unknown. After the last step, bounded oracle re-read (10 ms cadence, <=3 s, R2-06). Unresolved stays unknown; nothing is replayed.",
+ "metrics": {
+  "T": "harness-side: monotonic send time of the first semantic_v2 get_browser_state of the trial -> first harness /state poll (4 ms cadence, header X-R207-Oracle so it is never journaled as a caller read) that shows submitted == token",
+  "T_target": "secondary: first semantic_v2 send -> target journal applied event",
+  "process_wall": "spawn -> exit of the caller process (includes Driver/Chrome start and teardown)",
+  "independent_oracle": "the fixture's target-owned journal (received/applied per POST /submit, value compared to the trial token only) + /state; never the caller's report and never events",
+  "provider_receipts": "per HTTP attempt: host, path, status, reached, request-id presence + sha256 prefix; per decision: backend, model, token usage, selected id. Never headers, bodies, typed text or the key"
+ },
+ "analysis": {
+  "paired": "per round d_CB = T(C)-T(B), d_CA = T(C)-T(A), d_BA = T(B)-T(A) over rounds where both arms are independently verified; median and 95% percentile bootstrap CI of the median (10000 resamples, seed 20261002, Python random). Failed trials are not imputed; they stay in the N-of-M denominators and the all-invocation costs",
+  "also_reported": "per-arm median/IQR T, T_target, process_wall; T by position; provider decisions, tokens and requests deleted per warm run (work deleted) separately from paired T saved (wall-clock saved); stale window = observation end -> mutation dispatch start per arm"
+ },
+ "costs": {
+  "reported_separately": ["learning (P1 T, wall, requests)", "compile (compile_ms)", "admission verification (P3 T, wall)", "warm replay (P4 C)", "fallback (P7 T to explicit stop, wall, requests)", "wrong-match (N8 routine time to stop, informational/untimed)", "totals over ALL compiled-routine invocations incl. failures"],
+  "break_even": "only if the measured median saving per warm replay vs B (and vs A) is > 0: incremental n* = ceil((compile_ms + admission T) / saving); conservative n* additionally counts the whole learning run T as overhead",
+  "never": "successful-replay-only latency is never presented as whole-workload latency"
+ },
+ "gates": {
+  "G1": "P1 learning run independently verified, 2 live decisions",
+  "G2": "P3 clean-reset replay independently verified before admission, 0 fallback, 0 provider requests",
+  "G3": "100% of compiled-routine mutation dispatches (P3, P4-C, P5, P6, P7; fallback dispatches included) used a ref minted by the routine's latest observation, taken after the previous mutation",
+  "G4": "every routine negative row (N1-N8, 3/3 reps) ends verified or as an explicit stop with 0 stale dispatch, 0 ambiguous dispatch (dispatch on a non-unique role+name), 0 duplicate submit (journal applied <= 1); N8 dispatches nothing",
+  "G5": "P6 rows: reconcile read before any fallback dispatch, 0 duplicates (journal received <= 1, applied <= 1), 0 re-dispatch after an unknown mutation, resolved rows end verified_by_reconcile, unresolved stays unknown",
+  "G6": "costs above reported separately with all-invocation denominators"
+ },
+ "stale_dispatch_attribution": {
+  "routine_attributable": "a dispatch whose ref was not minted by the routine's latest observation taken after the previous mutation (G3 violation), or any re-dispatch of a possibly landed mutation",
+  "driver_accepted_stale_node": "N4a: the Driver ACCEPTS a dispatch whose bound DOM node the page replaced after the routine's fresh observation. Counted and reported as a stale dispatch for G4 (so G4 fails if it occurs and KEEP is impossible). It is attributed to the Driver, not the routine, iff the N4a_ord comparator shows the same acceptance on the unmodified run.py path. The KILL rule's 'stale dispatch' is applied to routine-attributable stale dispatches; this split is a pre-registered deviation from the literal spec text, justified by the shakedown disclosure above. Readers who apply the literal rule should read the disposition as KILL; both readings are printed in the summary."
+ },
+ "disposition_rules": {
+  "KILL": "any routine-attributable stale dispatch; any ambiguous dispatch; any duplicate submit in any phase; any unverified success (caller reports verified, journal disagrees); an authority field in the artifact; failed admission (P3); N8 dispatching anything; or the median paired T(C)-T(B) CI includes 0 or lies above 0",
+  "KEEP": "G1-G6 all hold, C faster than both B and A with CI upper bounds < 0, and C independently verified >= 19/20 with every C failure safe (explicit stop/unknown, no duplicate)",
+  "REVISE": "otherwise, with the measured narrowed claim stated"
+ },
+ "provider_budget": {
+  "provider": "TypeSafe (live), key forwarded by NAME only via CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY",
+  "lane_cap_reached": 80,
+  "plan": "learning 2 + A 40 + B 20 + P7 <= 6 = 68 (no live smoke)",
+  "enforcement": "harness refuses to start a cell unless reached + reserve <= 80 (reserve A 4, B 3, live-fallback 3); raw/budget.json counts every HTTP attempt and every reached request"
+ },
+ "claim_boundary": "one admitted #24 class (fill->submit), Python runner, trycua/cua PR 4316 merged onto main c4d0c6625, Driver 0.32.0 8b037961, TypeSafe model as reported in the receipts, feedback OFF, X11 Xvfb, Chrome 151. Not a routine framework; nothing transfers to other tasks. toggle->confirm and modal->act admission under the same schema is assessed at SOURCE/FIXTURE level only.",
+ "invariants": "no routine engine, route miner, router, registry, batch API, second verifier or service; the compiled routine is packet harness code; refs, element tokens, capture ids, target/tab ids, session ids/epochs, backend node ids and coordinates never become stored authority; a possibly landed effect stays unknown until reconciled and is never blind-replayed; events are never the oracle"
+}
