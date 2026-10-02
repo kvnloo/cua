@@ -1,0 +1,35 @@
+diff --cc libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs
+index 59594eb83,a82aabad6..000000000
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs
+@@@ -1169,11 -1182,18 +1169,29 @@@ impl Tool for BrowserClickTool 
+                      "Runtime.callFunctionOn",
+                      json!({
+                          "objectId": object_id,
+-                         "functionDeclaration": "function() { this.click(); }",
++                         "functionDeclaration": DOM_CLICK_IF_CONNECTED,
++                         "returnByValue": true,
+                      }),
+                  )
+++<<<<<<< HEAD
+ +                .await
+ +            {
+++||||||| parent of 7d6cbe377 (fix(cua-driver): refuse DOM-event dispatch on a detached ref node)
+++                .await;
+++            crate::phase_trace::mark_detail("click.cdp_response", &session, || {
+++                json!({ "ok": dispatched.is_ok() })
+++            });
+++            return match dispatched {
+++=======
++                 .await;
++             crate::phase_trace::mark_detail("click.cdp_response", &session, || {
++                 json!({ "ok": dispatched.is_ok() })
++             });
++             return match dispatched {
++                 Ok(value) if value.pointer("/result/value") == Some(&Value::Bool(false)) => {
++                     detached_node_refusal()
++                 }
+++>>>>>>> 7d6cbe377 (fix(cua-driver): refuse DOM-event dispatch on a detached ref node)
+                  Ok(_) => ToolResult::text(format!(
+                      "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
+                       verified (trust-gated controls may ignore untrusted events). Refresh page \

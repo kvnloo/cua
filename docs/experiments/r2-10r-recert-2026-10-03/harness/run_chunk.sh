@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # usage (on the host, ALWAYS through hostless; native chunks through hostless hostless-strict):
 #   run_chunk.sh <label> <exclusive|shared> <atspi:0|1> <live:0|1> <worktree> <python-script> [args...]
-# exclusive: bin/quiet-timed <label> (EXCLUSIVE quiet-lane lock + receipt in the loop ledger), then
-#            flock on the cargo-build lock for the whole chunk, then the private X11 session.
+# exclusive: flock on the cargo-build lock for the whole chunk, then bin/quiet-timed <label>
+#            (EXCLUSIVE quiet-lane lock + receipt in the loop ledger), then the private X11 session.
+#            (R2-10R deviation: R2-10 took the quiet lock first; the loop now orders cargo first.)
 # shared:    flock -s on the quiet-lane lock (receipt appended to the loop ledger and the lane
 #            ledger), no cargo lock, then the private X11 session.
 # live=1 forwards the provider key by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY).
@@ -22,16 +23,17 @@ session=("${envs[@]}" "$LANES/cua-x11-session.sh" "$HERE/in_session.sh" "$WT" "$
 la() { cut -d' ' -f1-3 /proc/loadavg; }
 echo "[$(date -u +%FT%T.%3NZ)] chunk $LABEL mode=$MODE atspi=$ATSPI live=$LIVE loadavg=$(la)"
 if [ "$MODE" = exclusive ]; then
-  ( cd "$WT" && "$LANES/bin/quiet-timed" "$LABEL" flock "$LOCKDIR/cargo-build.lock" "${session[@]}" )
+  # R2-10R: cargo-build lock FIRST, then the EXCLUSIVE quiet lock (loop lock order).
+  ( cd "$WT" && flock "$LOCKDIR/cargo-build.lock" "$LANES/bin/quiet-timed" "$LABEL" "${session[@]}" )
   rc=$?
-  printf '{"lane":"R2-10","label":"%s","mode":"exclusive+cargo","released":"%s","rc":%d,"loadavg_at_release":"%s"}\n' \
+  printf '{"lane":"R2-10R","label":"%s","mode":"exclusive+cargo","released":"%s","rc":%d,"loadavg_at_release":"%s"}\n' \
     "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" "$(la)" >> "$LEDGER"
 else
   exec 8>"$LOCKDIR/quiet-lane.lock"
   flock -s 8
   acq="$(date -u +%FT%T.%3NZ)"; la_acq="$(la)"
   ( cd "$WT" && "${session[@]}" ); rc=$?
-  line=$(printf '{"lane":"R2-10","label":"%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
+  line=$(printf '{"lane":"R2-10R","label":"%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
     "$LABEL" "$$" "$acq" "$(date -u +%FT%T.%3NZ)" "$rc" "$la_acq")
   printf '%s\n' "$line" >> "$LEDGER"; printf '%s\n' "$line" >> "$LOCKDIR/quiet-lane-ledger.jsonl"
   flock -u 8

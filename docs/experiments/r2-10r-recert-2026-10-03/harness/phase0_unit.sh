@@ -17,6 +17,11 @@ M=libs/cua-driver/rust/Cargo.toml
 find libs/cua-driver/rust -path libs/cua-driver/rust/target -prune -o -type f -exec touch {} +
 step core-browser nice -n 10 cargo test --locked --manifest-path "$M" -p cua-driver-core --lib -j 8 -- browser::
 step core-phase-trace nice -n 10 cargo test --locked --manifest-path "$M" -p cua-driver-core --lib -j 8 -- phase_trace
+# R2-10R additions (drift files of trycua/cua PR 4375): tool_schema incl.
+# first_snapshot_grace_never_overrides_an_explicit_timeout, and snapshot_store incl.
+# semantic_membership_ignores_capture_only_publication.
+step core-tool-schema nice -n 10 cargo test --locked --manifest-path "$M" -p cua-driver-core --lib -j 8 -- tool_schema::
+step core-snapshot-store nice -n 10 cargo test --locked --manifest-path "$M" -p cua-driver-core --lib -j 8 -- snapshot_store::
 cd libs/cua-driver/examples/jev-use
 step py-unittest uv run --frozen python -m unittest discover -s python/tests -v
 step py-runner-refusal uv run --frozen python -m unittest discover -s python/tests -p test_runner_refusal.py -v

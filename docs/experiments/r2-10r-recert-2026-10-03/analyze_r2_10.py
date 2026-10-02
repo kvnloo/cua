@@ -470,9 +470,9 @@ def pairs_by_round(rows: list[dict[str, Any]], a: str, b: str, key: str, cls_key
 
 
 def s_block(rows: list[dict[str, Any]], arm: str, groups: list[str], cls_key: str = "cls",
-            charged: dict[tuple, float] | None = None) -> dict[str, Any]:
+            charged: dict[tuple, float] | None = None, key: str = "T_oracle_ms") -> dict[str, Any]:
+    # R2-10R: ``key`` added so the same S rule is reported on T_land (no training charge there).
     out = {}
-    key = "T_oracle_ms"
     pr = pairs_by_round(rows, "BASE", arm, key, cls_key)
     for g in groups:
         p = pr.get(g, [])
@@ -579,6 +579,8 @@ def analyze(raw: Path) -> dict[str, Any]:
     S["admissions"] = admissions
     layers_out = {}
     for layer, rows in rows_by_layer.items():
+        if not rows:  # R2-10R: L-live is not re-run (BLOCKED, budget)
+            continue
         arms = sorted({r["arm"] for r in rows})
         lo: dict[str, Any] = {"arms": {}, "S": {}}
         for cls in CLASSES:
@@ -607,6 +609,8 @@ def analyze(raw: Path) -> dict[str, Any]:
             sb["fill"]["warm_only"] = ratio_stat([(x[0], x[1]) for x in fillp if x[2] != tr_round])
             sb["fill"]["training_round"] = tr_round
             lo["S"][arm] = sb
+        # R2-10R: T_land S next to T_oracle S (same pairing and bootstrap; training rows uncharged).
+        lo["S_land"] = {arm: s_block(rows, arm, CLASSES, key="T_land_ms") for arm in arms if arm != "BASE"}
         lo["modes"] = dict(Counter((r["cls"], r["arm"], r["mode"]) for r in rows if r["arm"] in COMP_ARMS).items()) \
             if False else {f"{c}/{a}/{m}": n for (c, a, m), n in Counter((r["cls"], r["arm"], r["mode"]) for r in rows).items()}
         lo["decomposition"] = {f"{cls}/{arm}": decomposition([r for r in rows if r["cls"] == cls and r["arm"] == arm],
@@ -693,6 +697,8 @@ def analyze(raw: Path) -> dict[str, Any]:
     N: dict[str, Any] = {"arms": {t: {a: arm_summary([r for r in main if r["task"] == t and r["arm"] == a])
                                       for a in ("BASE", "S0", "X")} for t in TASKS}}
     N["S"] = {arm: s_block([{**r, "cls": r["task"]} for r in main], arm, TASKS) for arm in ("S0", "X")}
+    N["S_land"] = {arm: s_block([{**r, "cls": r["task"]} for r in main], arm, TASKS, key="T_land_ms")
+                   for arm in ("S0", "X")}  # R2-10R: T_land S
     N["decomposition"] = {f"{t}/{a}": decomposition([{**r, "cls": r["task"]} for r in main if r["task"] == t and r["arm"] == a],
                                                     NATIVE_VERDICTS, t, "T_oracle_ms") for t in TASKS for a in ("BASE", "S0", "X")}
     N["work_deleted_vs_wall_clock"] = {
@@ -745,6 +751,22 @@ def phase0(p0: Path) -> dict[str, Any]:
     out["a_unit"] = {"steps": steps.split("\n") if steps else [], "browser_passed": passed,
                      "pass": bool(steps) and all(x.endswith("rc=0") for x in steps.strip().splitlines()) and passed >= 187
                      and "0 failed" in browser_line}
+    # R2-10R: the named drift and FIX-01 tests must each be listed as "ok", and the two drift steps must have run.
+    named = {"core-browser": ["browser::v2_tests::dom_event_click_refuses_a_detached_node_inside_the_dispatching_call",
+                              "browser::v2_tests::download_activation_refuses_a_detached_node",
+                              "browser::v2_tests::dom_event_pointer_refuses_detached_origin_and_drag_destination",
+                              "browser::v2_tests::trusted_click_on_a_detached_node_refuses_before_coordinates_exist"],
+             "core-tool-schema": ["tool_schema::tests::first_snapshot_grace_never_overrides_an_explicit_timeout"],
+             "core-snapshot-store": ["snapshot_store::tests::semantic_membership_ignores_capture_only_publication"]}
+    named_ok = {}
+    for step_name, tests in named.items():
+        p = p0 / "a-unit" / f"{step_name}-tests.txt"
+        lines = set(p.read_text().splitlines()) if p.exists() else set()
+        for t in tests:
+            named_ok[t] = f"test {t} ... ok" in lines
+    out["a_unit"]["named_tests_ok"] = named_ok
+    out["a_unit"]["drift_steps_ran"] = all(f"{s} rc=0" in steps for s in ("core-tool-schema", "core-snapshot-store"))
+    out["a_unit"]["pass"] = bool(out["a_unit"]["pass"] and all(named_ok.values()) and out["a_unit"]["drift_steps_ran"])
     c1r = read_jsonl(p0 / "b-c1-R" / "cells.jsonl")
     c1u = read_jsonl(p0 / "b-c1-U" / "cells.jsonl")
     out["b_c1"] = {
@@ -869,7 +891,10 @@ def gates(S: dict[str, Any]) -> dict[str, Any]:
     g["S"] = sg
     per_unit = {}
     for cls in CLASSES:
-        per_unit[cls] = sg[f"browser/live/{cls}"]["pass"] and sg[f"browser/scripted/{cls}"]["pass"]
+        # R2-10R: the live layer is not re-run (BLOCKED, budget); a layer with no data is left out of
+        # the per-class rule instead of failing it. The recertification gates are in recert_gates.py.
+        layers = [lay for lay in ("live", "scripted") if lay in S["browser"]]
+        per_unit[cls] = bool(layers) and all(sg[f"browser/{lay}/{cls}"]["pass"] for lay in layers)
     for t in TASKS:
         per_unit[t] = sg[f"native/{t}"]["pass"]
     g["per_class_task"] = per_unit

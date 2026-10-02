@@ -89,6 +89,17 @@ def main() -> None:
         if src.exists():
             copy_jsonl_gz(src, raw / "native" / d.name.removeprefix("native-") / "trials.jsonl.gz")
             report[f"native/{d.name}"] = sum(1 for _ in src.open())
+    # R2-10R drift row D1 (and its pre-PREREG shakedown d1k)
+    for d in sorted(m.glob("drift-*")):
+        src = d / "raw" / "trials.jsonl"
+        if src.exists():
+            copy_jsonl_gz(src, raw / "drift" / d.name.removeprefix("drift-") / "trials.jsonl.gz")
+            report[f"drift/{d.name}"] = sum(1 for _ in src.open())
+    for d in sorted(runs.glob("d1k*")):
+        if (d / "raw" / "trials.jsonl").exists():
+            copy_jsonl_gz(d / "raw" / "trials.jsonl", raw / "shakedown" / f"{d.name}-trials.jsonl.gz")
+    if (runs / "versions.txt").exists():
+        put_text(raw / "provenance" / "versions.txt", (runs / "versions.txt").read_text())
     # phase 0
     p0 = runs / "p0"
     a = runs / "p0a-unit"
@@ -96,7 +107,7 @@ def main() -> None:
         put_text(raw / "phase0" / "a-unit" / "steps.txt", (a / "steps.txt").read_text())
         put_text(raw / "phase0" / "a-unit" / "env.txt", (a / "env.txt").read_text())
         lines = []
-        for name in ("core-browser", "core-phase-trace"):
+        for name in ("core-browser", "core-phase-trace", "core-tool-schema", "core-snapshot-store"):
             log = (a / f"{name}.log").read_text()
             res = [x for x in log.splitlines() if x.startswith("test result:")]
             lines.append(f"{name}: {res[-1] if res else 'missing'}")
@@ -160,7 +171,7 @@ def main() -> None:
         put_text(raw / "provider-ledger.jsonl", (runs / "provider-ledger.jsonl").read_text())
     put_text(raw / "lock-receipts-lane.jsonl", Path(args.lane_ledger).read_text())
     glines = [x for x in Path(args.global_ledger).read_text().splitlines()
-              if '"label":"r2-10-' in x or '"label": "r2-10-' in x]
+              if '"label":"r2-10r-' in x or '"label": "r2-10r-' in x]
     put_text(raw / "lock-receipts-global.jsonl", "\n".join(glines) + "\n")
     for f in sorted(list(runs.glob("*.log")) + list(m.glob("*.log")) + list(p0.glob("*.log"))):
         text = "\n".join(x for x in f.read_text(errors="replace").splitlines() if "WARN" not in x)
