@@ -3656,6 +3656,7 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
             };
             cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
             tokio::time::sleep(Duration::from_millis(50)).await;
+            tokio::time::sleep(Duration::from_millis(50)).await;
             cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
             Ok((
                 actions.get(chosen).cloned().unwrap_or_default(),
