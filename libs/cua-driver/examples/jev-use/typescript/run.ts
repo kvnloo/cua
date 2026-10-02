@@ -100,11 +100,23 @@ export class DriverToolError extends Error {
   constructor(
     message: string,
     readonly code?: string,
-    readonly recommendedDelivery?: string
+    readonly recommendedDelivery?: string,
+    // True only for a structured Driver refusal: nothing was dispatched.
+    readonly refused = false
   ) {
     super(message);
     this.name = 'DriverToolError';
   }
+}
+
+/** Recover the closed refusal code from the stable `refused (<code>):` text prefix. */
+export function refusalCodeFromContent(content: unknown): string | undefined {
+  for (const item of Array.isArray(content) ? content : []) {
+    const text = (item as { text?: unknown })?.text;
+    const match = typeof text === 'string' ? /^refused \(([a-z0-9_]+)\)/.exec(text) : null;
+    if (match) return match[1];
+  }
+  return undefined;
 }
 
 export class Driver {
@@ -144,12 +156,20 @@ export class Driver {
     }
     const data = result.structuredContent as Record<string, any> | undefined;
     if (!data) throw new Error(`${name} returned no structured result`);
-    if (data.status === 'refused' || data.refusal) {
-      const code = data.refusal?.code;
+    // An action result keeps its refusal as `effect: "refused"` with
+    // `isError` false; the code survives only in the text prefix.
+    if (data.status === 'refused' || data.refusal || data.effect === 'refused') {
+      const structuredCode = data.refusal ? data.refusal.code : data.code;
+      const code =
+        typeof structuredCode === 'string' && structuredCode
+          ? structuredCode
+          : refusalCodeFromContent(result.content);
       // DriverToolError is an Error, so existing handlers still match.
       throw new DriverToolError(
         `${name} refused: ${JSON.stringify(data.refusal ?? data)}`,
-        typeof code === 'string' && code ? code : undefined
+        code,
+        undefined,
+        true
       );
     }
     return data;
@@ -413,6 +433,10 @@ async function run(args: Arguments): Promise<Outcome> {
     env: driverEnvironment(),
   });
   const client = new Client({ name: 'cua-driver-jev-use-example', version: '0.1.0' });
+  // Accepted mutations may still land, so none is dispatched twice in one run.
+  // A refusal landed nothing: it earns one fresh observation and decision.
+  const dispatched = new Set<string>();
+  let refusalRetried = false;
   // Compact what-happened record for the decision model. The full telemetry
   // events (timings, probabilities) go only to the JSONL log.
   const history: HistoryEntry[] = [];
@@ -602,12 +626,23 @@ async function run(args: Arguments): Promise<Outcome> {
         return 'abstained';
       }
 
+      if (!args.dryRun && dispatched.has(candidate.id)) {
+        await writeEvent(args.log, {
+          event: 'outcome',
+          outcome: 'unknown',
+          step,
+          phase: 'redispatch_blocked',
+          tool: candidate.tool,
+        });
+        return 'unknown';
+      }
       let actionMs = 0;
       if (!args.dryRun) {
         const actionStarted = performance.now();
         try {
           if (!candidate.tool) throw new Error('selected candidate has no executable tool');
           await driver.call(candidate.tool, candidate.arguments);
+          dispatched.add(candidate.id);
         } catch (error: unknown) {
           const refusal = backgroundRefusalCode(candidate, error);
           if (refusal) {
@@ -634,6 +669,29 @@ async function run(args: Arguments): Promise<Outcome> {
             };
             history.push(task.historyEntry(step, candidate.id, refusal));
             await writeEvent(args.log, event);
+            continue;
+          }
+          if (error instanceof DriverToolError && error.refused) {
+            const code = error.code ?? 'refused';
+            const refused = {
+              step,
+              phase: 'refused',
+              candidate: candidate.id,
+              tool: candidate.tool,
+              action_refused: code,
+              visual: visualRecord,
+            };
+            if (refusalRetried) {
+              await writeEvent(args.log, { event: 'outcome', outcome: 'unknown', ...refused });
+              return 'unknown';
+            }
+            refusalRetried = true;
+            await writeEvent(args.log, { event: 'step', ...refused });
+            history.push({
+              step,
+              selected_id: candidate.id,
+              outcome: `Driver refused the action (${code}); nothing was dispatched`,
+            });
             continue;
           }
           await writeEvent(args.log, {
@@ -680,6 +738,10 @@ async function run(args: Arguments): Promise<Outcome> {
           }
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
+        // Accepted but unconfirmed after the bounded re-read: the click may
+        // still land, so stop instead of re-planning it.
+        await writeEvent(args.log, { event: 'outcome', outcome: 'unknown', step, phase: 'reconcile' });
+        return 'unknown';
       }
     }
 
