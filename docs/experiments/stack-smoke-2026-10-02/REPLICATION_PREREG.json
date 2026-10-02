@@ -1,0 +1,11 @@
+{
+ "schema": "cua.stack.prereg.v1",
+ "id": "stack-smoke-2026-10-02/replication-browser-on-off",
+ "status": "CONFIRMATORY FOLLOW-UP of one post-hoc signal (committed before these runs)",
+ "trigger": "Measured browser cells: on 0/12 vs off 3/12 (paired sign test p=0.25, the pre-registered H3b test, not significant). Exploratory controls: offdelay 4/12, onnowait 3/12, outage 1/3. Post hoc, on vs all other browser arms pooled gives Fisher p=0.048 (unadjusted, chosen after seeing the data). This replication re-tests the unchanged on and off arms on fresh pairs.",
+ "runs": "browser task, fresh pairs 13..24 (new tokens), arms on and off exactly as in PREREG.json (harness unchanged for these arms), seeded order inside each pair (20261004), driver pinned_0_21_0; 24 runs in plan_replication.json",
+ "hypothesis": "R1: the shadow-on configuration lowers the browser oracle pass rate relative to off.",
+ "test": "exact paired sign test on oracle-discordant pairs (two-sided), and Fisher exact on the 2x2 of pass counts; reported with the measured pairs both separately and pooled (24 pairs).",
+ "decision_rule": "R1 supported only if the replication alone gives p < 0.05 in the direction on < off. Otherwise the measured on-arm 0/12 is reported as not replicated. Either way, the information-flow claim (H3a) is unaffected; R1 concerns a resource/timing path, not shadow output.",
+ "claim_boundary": "Small n; GPU shared with other lanes; temperature-0 outputs are not deterministic on this server (first-call divergence with identical inputs in 5/24 measured pairs)."
+}
