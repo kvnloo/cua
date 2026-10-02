@@ -345,6 +345,33 @@ def main() -> None:
                        "untested_fraction_from_b03": frac, "untested_ms": ms,
                        "untested_share": ms / b["T_runner_mean_ms"], "b02_untested_share_before": b["untested_share"]}
         out["toggle_restated_on_b02_e2"] = rest
+    # POST HOC (added after the measured block; no verdict above depends on it)
+    gates_wo_nc = out["gates"]["validity_pass"] and inv["pass"]
+    X = "first_snapshot_excess_ms"
+    post: dict[str, Any] = {"label": "POST HOC: computed after seeing the data; not a pre-registered verdict",
+                            "nc_gate_waived": {}, "per_process_at_D0": {}}
+    for cls, ks in (("toggle", ("K5V", "K5EV")), ("fill", ("K5V",))):
+        for k in ks:
+            base = {"cls": cls, "arm": k, "variant": "task"}
+            if not cell(rows, **base):
+                continue
+            pp0 = paired(rows, X, {**base, "P": "cold", "D": 0}, X, {**base, "P": "warm", "D": 0})
+            E0 = med([r[X] for r in cell(rows, **base, P="cold", D=0) if r["valid"]])
+            post["per_process_at_D0"][f"{cls}:{k}"] = {
+                "contrast": "excess(cold, D0) - excess(warm, D0), round-paired", **pp0,
+                "share_of_E": None if (not E0 or pp0["median"] is None) else pp0["median"] / E0}
+            if cls == "toggle":
+                d = decide(rows, cls, k, gates_wo_nc, pos_ok)
+                acc = d["accounting"]
+                b = json.loads(p1f.read_text())["classes"]["toggle"]["arms"][k] if p1f.exists() else None
+                frac = acc["untested_fraction_of_cold_excess"] or 0.0
+                rest_ms = None if b is None else (b["untested_ms"]["admission_residual_after_V"] + b["untested_ms"]["unattributed"]
+                                                  + frac * b["untested_ms"].get("first_snapshot_cold_excess", 0.0))
+                post["nc_gate_waived"][k] = {"verdicts": d["verdicts"], "parts": acc["parts"],
+                                             "undecided_cold_excess_ms": acc["undecided_cold_excess_ms"],
+                                             "untested_share_b03_cell": acc["untested_share"],
+                                             "untested_share_restated_on_b02": None if b is None else rest_ms / b["T_runner_mean_ms"]}
+    out["post_hoc"] = post
     out["per_trial"] = [{k: r.get(k) for k in ("trial", "cls", "arm", "P", "D", "variant", "round", "valid", "reasons",
                                                "T_oracle_task_ms", "T_runner_task_ms", "T_oracle_ms", "first_snapshot_excess_ms",
                                                "snapshot1_ms", "snapshot2_ms", "warmup_ms", "delay_actual_ms",

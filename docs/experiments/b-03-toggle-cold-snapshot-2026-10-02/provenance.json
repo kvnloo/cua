@@ -1,0 +1,61 @@
+{
+ "schema": "cua.r2.b03.provenance.v1",
+ "lane": "B-03",
+ "branch": "exp/b-03-toggle-cold-snapshot-20261002",
+ "lane_base": "b282ff3894fa85a7b82257cb1edd5088c2f0ac37",
+ "packet_commits": {
+  "prereg_runner_part1": "2edc0bee20ab1c354bf861c3686daba0189b3d5f",
+  "prereg_committed_utc": "2026-10-02T17:26:25Z",
+  "amendment_analyzer_shakedown_raw": "2549fc1e8e58b5a7c152e66554a076a1fb8e728b",
+  "amendment_committed_utc": "2026-10-02T17:30:48Z",
+  "results": "the commit that adds this file"
+ },
+ "tested_driver_source": {
+  "b01_source": "f5c991e5927513c8b94da4330c94276dc5f8ce22",
+  "b02_measurement_commit": "560bd8247c36c9d249f481b509a073c131e93620",
+  "composition": "upstream main 229b65b2849c3a595ddbc85200d7181b18bd2e47 + R2-01 trace 7d3a28b66 + trycua/cua PR 4316 merge 0c6a53237 + B-01 marks f5c991e59 + B-02 marks/knobs 560bd8247 (default off)",
+  "driver_code_changed_by_this_lane": false
+ },
+ "driver_binary": {
+  "name": "cua-driver-b02-560bd8247",
+  "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0",
+  "version": "cua-driver 0.32.0 (read inside cua-x11-session.sh under hostless)",
+  "rehash_start_utc": "2026-10-02T17:21:53Z",
+  "rehash_end_utc": "2026-10-02T17:46:14Z",
+  "rehash_equal": true,
+  "rebuilt": false,
+  "predates_fix01": true
+ },
+ "verdict_sources": {
+  "B-01R": "0cd63f786290f967f41a5a6b615d54f98045ebec (exp/b-01r-browser-critpath-textfix-20261002): H_P, H_T, H_C, visualization, IRREDUCIBLE E2 rows",
+  "B-02": "b282ff3894fa85a7b82257cb1edd5088c2f0ac37 (exp/b-02-browser-driver-sites-20261002): H_E, H_V, H_W"
+ },
+ "live_heads_gh": {
+  "read_utc": "2026-10-02T17:46:22Z",
+  "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open; equals the head merged into the tested source)",
+  "upstream_main": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (committer 2026-10-02T17:25:37Z)",
+  "upstream_main_vs_229b65b28": "45 ahead, 300 files, 18 under libs/cua-driver: contract manifest/compatibility/inputs, cua-driver-core tool_schema.rs (element_token schema constraints, trycua/cua PR 4318), doctor, skills, platform-linux wayland/hyprland, platform-macos (4 files), platform-windows (6 files). None in the browser engine, snapshot/CDP code or Linux browser_platform.rs",
+  "publication_sha": "set by the Publish agent; this lane did not push"
+ },
+ "environment": {
+  "host": "Linux 7.2.2 x86_64, 10 CPUs, shared with other tracks",
+  "isolation": "hostless v2 for every code-executing command; cua-x11-session.sh (private rootless Xvfb 1920x1080x24, openbox, picom, private dbus, env -i) for every browser/Driver command",
+  "session_extra_env": "CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1",
+  "display": {"shakedown": ":102", "measured_a": ":99", "measured_b": ":99"},
+  "browser": "Driver-chosen system Chrome via browser_prepare {allow_launch, isolated_new}, sandbox on, fresh isolated profile per trial",
+  "loadavg_1m_measured": [13.03, 25.37]
+ },
+ "locks": {
+  "measured_a": {"label": "b03-measured-a", "mode": "EXCLUSIVE quiet-timed", "acquired": "2026-10-02T17:32:42.554Z", "released": "2026-10-02T17:35:21.360Z", "runner": ["2026-10-02T17:32:49.013Z", "2026-10-02T17:35:20.331Z"]},
+  "measured_b": {"label": "b03-measured-b", "mode": "EXCLUSIVE quiet-timed", "acquired": "2026-10-02T17:40:33.996Z", "released": "2026-10-02T17:43:27.744Z", "runner": ["2026-10-02T17:40:40.827Z", "2026-10-02T17:43:26.816Z"]},
+  "shakedown": {"mode": "SHARED (runner)", "acquired": "2026-10-02T17:27:22.949Z", "released": "2026-10-02T17:27:35.341Z", "trials": 7},
+  "ledger": "raw/lock-ledger.jsonl (verbatim quiet-timed lines + runner receipt)"
+ },
+ "provider": {"chooser": "scripted mock (choose_mock_for_task)", "typesafe_attempts": 0, "typesafe_reached": 0, "runner_non_loopback_connects": 0},
+ "harness": {
+  "runner": "run_b03.py (B-01 run_critpath.run_trial step loop with three marked B-03 insertions)",
+  "imported_in_place_from": "../b-02-browser-driver-sites-2026-10-02/ (run_b02.py, run_critpath.py, analyze_b02.py, analyze_browser.py, b01_analysis.py, step0_analysis.py, b01_fixtures.py, b01_tasks.py, cdp_raw.py): byte-identical to b282ff389, checked by verify_artifacts.py",
+  "jev_use_deps": "lane-deps.sh (uv sync --frozen, npm ci --ignore-scripts) under hostless"
+ },
+ "unit_suites": "none run: no Driver or shared harness code touched"
+}
