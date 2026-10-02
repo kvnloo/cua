@@ -957,7 +957,18 @@ fn actual_delivery_from_legacy(
         tool_name,
         "browser_click" | "browser_pointer" | "browser_type"
     ) {
-        return Some(ActualDelivery::Background);
+        // Browser producers state the posture their executed branch ran under
+        // (trusted input on the foreground branch where background is refused).
+        // A request alone is not proof, so anything else stays background.
+        return Some(
+            match structured
+                .get("delivery_mode")
+                .and_then(serde_json::Value::as_str)
+            {
+                Some("foreground") => ActualDelivery::Foreground,
+                _ => ActualDelivery::Background,
+            },
+        );
     }
     if transport == ActionTransport::AgentCursorOverlay
         || args.get("scope").and_then(serde_json::Value::as_str) == Some("desktop")
