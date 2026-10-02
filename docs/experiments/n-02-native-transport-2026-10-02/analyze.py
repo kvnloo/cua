@@ -408,6 +408,10 @@ def trial_metrics(label: str, r: dict[str, Any]) -> dict[str, Any]:
             "focus_samples": fs.get("samples"), "focus_max_gap_ms": fs.get("max_gap_ms"),
             "receipt_focus_outcome": receipt_focus(last),
             "detected_and_restored": bool(dec.get("stolen") and restored and receipt_focus(last) == "restored"),
+            # EXPLORATORY (not pre-registered, never used by a verdict): the focus sampler's final state
+            # vs its own first sample (taken after focus placement, before T0), instead of the earlier
+            # one-shot focus_pre snapshot that GTK may still move to its focus child.
+            "x_restored_to_sampler_start": bool(final and changes and final[1:] == changes[0][1:]),
             "false_restore": bool(r.get("kind") == "nosteal" and (receipt_focus(last) == "restored" or len(changes) > 1)),
         }
     return out
@@ -584,6 +588,15 @@ def analyze() -> tuple[dict[str, Any], list[dict[str, Any]]]:
                     "steal_before_body_done": sum(1 for x in st if x.get("steal_before_body_done")),
                     "steal_after_return": sum(1 for x in st if x.get("steal_after_return")),
                     "false_restore": sum(1 for x in st if x.get("false_restore")),
+                    "x_exploratory_detected_and_restored_to_sampler_start": sum(
+                        1 for x in st if x.get("stolen") and x.get("x_restored_to_sampler_start")
+                        and x.get("receipt_focus_outcome") == "restored"),
+                    "x_exploratory_valid_steals_inside_watch": sum(1 for x in st if x.get("steal_inside_watch")),
+                    "failing_trials": [{"id": m["id"], "label": m["label"], **{k: (m.get("steal") or {}).get(k) for k in (
+                        "steal_after_guard_start_ms", "steal_inside_watch", "steal_after_return", "restored", "missed",
+                        "receipt_focus_outcome", "x_restored_to_sampler_start", "detect_poll_after_guard_start_ms")},
+                        "settle_ms": (m.get("components_ms") or {}).get("settle"), "settle_polls": m.get("settle_polls")}
+                        for m in rows if kind != "nosteal" and not (m.get("steal") or {}).get("detected_and_restored")],
                     "receipt_outcomes": sorted({str(x.get("receipt_focus_outcome")) for x in st}),
                     "steal_after_do_action_ms": describe([x.get("steal_after_do_action_ms") for x in st]),
                     "steal_after_guard_start_ms": describe([x.get("steal_after_guard_start_ms") for x in st]),

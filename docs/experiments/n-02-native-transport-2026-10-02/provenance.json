@@ -1,0 +1,56 @@
+{
+ "schema": "n02.provenance.v1",
+ "lane": "N-02 (wave 3)",
+ "branch": "exp/n-02-native-transport-20261002",
+ "branch_base": {
+  "sha": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+  "what": "N-01R packet head (exp/n-01r-native-wait-ab-20261002, accepted wave 2)",
+  "libs_cua_driver_tree": "identical to b9b357bc72fe0627b841f66a2d0812fafca8711f (git diff --quiet 3bb4a7fc7 b9b357bc7 -- libs/cua-driver: rc 0) = 28b915ae9ec2b1330ad3104f281e0bf4bfde2c49 (R2-04 marks on upstream main 229b65b28) + the N-01R knob commit; libs/cua-driver at 229b65b28 equals upstream main 352507b6c03162ab286b21d5ed509125cc3daece (per N-01R)"
+ },
+ "measurement_commit": {
+  "sha": "194a6342e21b74f37f4e23af1d90bf32ad377397",
+  "files": ["libs/cua-driver/rust/crates/cua-driver/src/proxy.rs", "libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs"],
+  "content": "CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP=1 (default off) settle-poll clamp + settle_poll trace mark; direct-stdio MCP span marks behind CUA_DRIVER_PHASE_TRACE_FILE"
+ },
+ "tested_source": "3bb4a7fc7 libs/cua-driver tree + 194a6342e (the commit is the only libs/ change on this branch)",
+ "prereg_commit": {"sha": "e8234b73dcf617692b207fe71c2dda7e5dd11353", "committed_utc": "2026-10-02T17:38:00Z",
+                   "first_measured_trial_block": "n02-d01 (session started 2026-10-02T17:38:25Z)"},
+ "driver": {
+  "name": "cua-driver-n02-194a6342e",
+  "sha256": "893646ab95ebaa946283c5e05dd0e8555b64702bf41b0d63d90a17ff6098865e",
+  "version": "cua-driver 0.32.0 (read inside cua-x11-session.sh: raw/driver-build/driver-version.txt)",
+  "build": "hostless flock <cargo-build.lock> build-driver.sh <wt> n02-194a6342e cua-release-n02; head=194a6342e, rustc 1.97.1 (8bab26f4f 2026-07-14), cargo build -v --locked --release -p cua-driver --features portal-input, 0 Fresh workspace units, 216 s; target-dir artifact sha256 equals the copied binary (raw/driver-build/build-driver.txt, raw/driver-build/sha256.txt)",
+  "lock_receipts": "cargo-build lock waiting 17:24:33.960Z, acquired 17:30:41.381Z, released 17:34:17.275Z rc 0 (raw/driver-build/build-driver.txt)"
+ },
+ "provenance_link_binary": {
+  "name": "cua-driver-n01r-b9b357bc7",
+  "sha256": "c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95",
+  "use": "hashed for the provenance link only (raw/driver-build/sha256.txt); never run or compared against in this packet. N-01R's committed trial metrics are quoted only in the qualitative load section"
+ },
+ "harness_origin": {
+  "n01r_harness.py": "bc79513f8b9a4c4422c87fea7bea71e46197bd2d (at 3bb4a7fc7; n02_harness.py is derived from it)",
+  "xprobe.py": "f17d83691faacc9397dc4c91a1f4018622c0d75d (copied verbatim)",
+  "run_block.sh": "0300946ab992951b35eaefc42c2bf208e5a60a9f (derived)",
+  "run_all.sh": "b54aebf50f8da1011e5f2d96ab48f1301f36b4fa (derived)",
+  "make_plan.py": "79b2f060e09af122bb5f27930e5791b12375da66 (derived)",
+  "analyze.py": "d7ced0ef8b81fdfdedf0a2e96d024b6643d91afd (derived)",
+  "unit_in_session.sh": "bbf2ea58cf0e4d42ef59780cd36cf73156a49164 (derived)",
+  "package.py": "N-01R package.py at 3bb4a7fc7 (extended for the HC corpus and output schemas)",
+  "B-01 H_C method": "exp/b-01r-browser-critpath-textfix-20261002 @ 0cd63f786290f967f41a5a6b615d54f98045ebec, run_critpath.py compile_output_validators/_compiled_validate (re-implemented here as a ClientSession subclass, no monkeypatch)"
+ },
+ "client_libraries": "jev-use venv (uv sync --frozen): mcp 1.30.0, jsonschema 4.26.0, pydantic 2.13.5, Python 3.12.13",
+ "environment": {
+  "isolation": "TMPDIR=<lane tmp> hostless (v2: env scrub + Landlock) hostless-strict (v1 bwrap mask of the host runtime and X11 socket dirs) for every code-executing command",
+  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080 -nolisten tcp, private dbus, openbox + picom, env -i; CUA_SESSION_ATSPI=1 (private AT-SPI bus); CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1\"; the harness also sets CUA_DRIVER_RS_TELEMETRY_ENABLED=0 and DO_NOT_TRACK=1 in the Driver environment",
+  "machine": "10 CPUs, shared with other tracks; 1-minute loadavg over main trials median ~12.5 (range 7.9-21.5)",
+  "locks": "e01/e02 under bin/quiet-timed (EXCLUSIVE); smoke and controls under flock -s (shared); receipts in raw/lock-ledger.jsonl"
+ },
+ "live_heads": {
+  "read_utc": "2026-10-02T18:36:05Z (gh, read-only)",
+  "upstream_main": "310cdfd589631bba98444d1e4e77ed03269e0d80 (committer 2026-10-02T18:16:15Z): compare 352507b6c...310cdfd58 = 36 ahead; the file list (capped at 300 by the API) shows 25 files under libs/cua-driver, none of them proxy.rs, focus_guard.rs, server.rs, mcp_wire.rs or atspi/*; it does include cua-driver-core/src/tool_schema.rs, snapshot_store.rs and platform-linux/src/tools/impl_.rs, so E6 freshness needs a recertification for claims that depend on output-schema size",
+  "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open; not this source)",
+  "packet_format_reference": "kvnloo/cua#106"
+ },
+ "publication_sha": "set by the Publish agent",
+ "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0}
+}

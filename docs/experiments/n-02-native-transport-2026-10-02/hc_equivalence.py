@@ -6,7 +6,7 @@ Inputs (packaged raw): the first measured block's output schemas
 (raw/<label>/output-schemas.json) and its corpus of full real structuredContent results
 (raw/<label>/hc-corpus.jsonl.gz, rounds 0-1). Selection is deterministic: per tool, the first
 results in corpus order up to a fixed quota (40 in total). Each real result also yields one
-mutated result: mutation strategies are tried in a fixed order starting at (index mod 4); the
+mutated result: mutation strategies are tried in a fixed order starting at (index mod the number of strategies that apply); the
 first mutant that the reference path rejects is kept (40 invalid results).
 
 Both paths are the exact code the arms run: the reference is
@@ -70,8 +70,13 @@ def mutants(value: dict[str, Any], schema: dict[str, Any]) -> list[tuple[str, An
             m[key] = WRONG[t]
             out.append((f"wrong_type:{key}", m))
             break
-    # 3: not an object at all
-    out.append(("root_not_object", ["n02-not-an-object"]))
+    # 3: a present required property set to null. (The pre-registered "root_not_object" cannot be
+    # built: mcp's CallToolResult requires structuredContent to be an object, so such a result never
+    # reaches either validation path; deviation recorded in the README.)
+    if req:
+        m = copy.deepcopy(value)
+        m[req[-1]] = None
+        out.append((f"required_to_null:{req[-1]}", m))
     return out
 
 

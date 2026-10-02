@@ -1,0 +1,1101 @@
+{
+ "click": {
+  "anyOf": [
+   {
+    "additionalProperties": false,
+    "properties": {
+     "delivery": {
+      "additionalProperties": false,
+      "properties": {
+       "delivered_count": {
+        "minimum": 0,
+        "type": [
+         "integer",
+         "null"
+        ]
+       },
+       "mode": {
+        "enum": [
+         "background",
+         "foreground",
+         "not_applicable",
+         "unknown"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "mode"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "effect": {
+      "enum": [
+       "confirmed",
+       "partial",
+       "unverifiable",
+       "suspected_noop",
+       "refused"
+      ],
+      "type": "string"
+     },
+     "error": {
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "type": "string"
+       },
+       "hint": {
+        "type": [
+         "string",
+         "null"
+        ]
+       }
+      },
+      "required": [
+       "code"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "escalation": {
+      "additionalProperties": false,
+      "properties": {
+       "reason": {
+        "enum": [
+         "route_unavailable",
+         "delivery_failed",
+         "effect_unconfirmed",
+         "suspected_noop",
+         "permission_required"
+        ],
+        "type": "string"
+       },
+       "target": {
+        "enum": [
+         "pixel",
+         "foreground",
+         "page",
+         "session"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "target",
+       "reason"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "evidence": {
+      "items": {
+       "additionalProperties": false,
+       "properties": {
+        "detail": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "kind": {
+         "enum": [
+          "value_readback",
+          "window_change"
+         ],
+         "type": "string"
+        }
+       },
+       "required": [
+        "kind"
+       ],
+       "type": "object"
+      },
+      "type": [
+       "array",
+       "null"
+      ]
+     },
+     "route": {
+      "enum": [
+       "accessibility",
+       "synthetic_events",
+       "global_input",
+       "system_api",
+       "dom",
+       "trusted_input"
+      ],
+      "type": "string"
+     },
+     "summary": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    },
+    "required": [
+     "effect",
+     "route"
+    ],
+    "type": "object"
+   },
+   {
+    "additionalProperties": true,
+    "anyOf": [
+     {
+      "required": [
+       "refusal"
+      ]
+     },
+     {
+      "required": [
+       "status"
+      ]
+     },
+     {
+      "required": [
+       "code"
+      ]
+     }
+    ],
+    "type": "object"
+   }
+  ],
+  "type": "object"
+ },
+ "get_agent_cursor_state": {
+  "anyOf": [
+   {
+    "additionalProperties": true,
+    "properties": {
+     "enabled": {
+      "type": "boolean"
+     },
+     "motion": {
+      "properties": {
+       "arc_flow": {
+        "type": "number"
+       },
+       "arc_size": {
+        "type": "number"
+       },
+       "dwell_after_click_ms": {
+        "type": "number"
+       },
+       "end_handle": {
+        "type": "number"
+       },
+       "glide_duration_ms": {
+        "type": "number"
+       },
+       "idle_hide_ms": {
+        "type": "number"
+       },
+       "spring": {
+        "type": "number"
+       },
+       "start_handle": {
+        "type": "number"
+       },
+       "turn_radius": {
+        "type": "number"
+       }
+      },
+      "required": [
+       "start_handle",
+       "end_handle",
+       "arc_size",
+       "arc_flow",
+       "spring",
+       "glide_duration_ms",
+       "dwell_after_click_ms",
+       "idle_hide_ms",
+       "turn_radius"
+      ],
+      "type": "object"
+     },
+     "position": {
+      "anyOf": [
+       {
+        "properties": {
+         "x": {
+          "type": "number"
+         },
+         "y": {
+          "type": "number"
+         }
+        },
+        "required": [
+         "x",
+         "y"
+        ],
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "session": {
+      "type": "string"
+     },
+     "theme": {
+      "properties": {
+       "fallback": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "id": {
+        "type": "string"
+       },
+       "profile": {
+        "type": "string"
+       },
+       "reduced_motion": {
+        "enum": [
+         "auto",
+         "on",
+         "off"
+        ],
+        "type": "string"
+       },
+       "version": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "id",
+       "version",
+       "profile",
+       "reduced_motion",
+       "fallback"
+      ],
+      "type": "object"
+     },
+     "visual_state": {
+      "properties": {
+       "frame": {
+        "minimum": 0,
+        "type": "integer"
+       },
+       "modifiers": {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "phase": {
+        "type": "string"
+       },
+       "preempted_count": {
+        "minimum": 0,
+        "type": "integer"
+       },
+       "requested_action": {
+        "enum": [
+         "idle",
+         "observe",
+         "click",
+         "drag",
+         "scroll",
+         "text",
+         "key",
+         "navigate",
+         "app",
+         "transfer",
+         "record",
+         "system"
+        ],
+        "type": "string"
+       },
+       "resolved_action": {
+        "enum": [
+         "idle",
+         "observe",
+         "click",
+         "drag",
+         "scroll",
+         "text",
+         "key",
+         "navigate",
+         "app",
+         "transfer",
+         "record",
+         "system"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "requested_action",
+       "resolved_action",
+       "modifiers",
+       "phase",
+       "frame",
+       "preempted_count"
+      ],
+      "type": "object"
+     }
+    },
+    "required": [
+     "session",
+     "enabled",
+     "position",
+     "theme",
+     "visual_state",
+     "motion"
+    ],
+    "type": "object"
+   },
+   {
+    "additionalProperties": true,
+    "anyOf": [
+     {
+      "required": [
+       "refusal"
+      ]
+     },
+     {
+      "required": [
+       "status"
+      ]
+     },
+     {
+      "required": [
+       "code"
+      ]
+     }
+    ],
+    "type": "object"
+   }
+  ],
+  "type": "object"
+ },
+ "get_window_state": {
+  "anyOf": [
+   {
+    "additionalProperties": true,
+    "properties": {
+     "app_name": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "degraded": {
+      "type": [
+       "boolean",
+       "null"
+      ]
+     },
+     "degraded_reason": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "element_count": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "elements": {
+      "items": {
+       "properties": {
+        "actions": {
+         "items": {
+          "type": "string"
+         },
+         "type": [
+          "array",
+          "null"
+         ]
+        },
+        "depth": {
+         "minimum": 0,
+         "type": "integer"
+        },
+        "element_index": {
+         "minimum": 0,
+         "type": "integer"
+        },
+        "element_token": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "enabled": {
+         "type": [
+          "boolean",
+          "null"
+         ]
+        },
+        "frame": {
+         "properties": {
+          "h": {
+           "type": "number"
+          },
+          "w": {
+           "type": "number"
+          },
+          "x": {
+           "type": "number"
+          },
+          "y": {
+           "type": "number"
+          }
+         },
+         "required": [
+          "x",
+          "y",
+          "w",
+          "h"
+         ],
+         "type": [
+          "object",
+          "null"
+         ]
+        },
+        "in_web_content": {
+         "type": [
+          "boolean",
+          "null"
+         ]
+        },
+        "label": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "max": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "min": {
+         "type": [
+          "number",
+          "null"
+         ]
+        },
+        "parent_index": {
+         "minimum": 0,
+         "type": [
+          "integer",
+          "null"
+         ]
+        },
+        "role": {
+         "type": "string"
+        },
+        "selected": {
+         "type": [
+          "boolean",
+          "null"
+         ]
+        },
+        "value": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "value_description": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       },
+       "required": [
+        "element_index",
+        "role",
+        "depth"
+       ],
+       "type": "object"
+      },
+      "type": [
+       "array",
+       "null"
+      ]
+     },
+     "elements_complete": {
+      "type": [
+       "boolean",
+       "null"
+      ]
+     },
+     "filtered_element_count": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "pid": {
+      "minimum": 0,
+      "type": "integer"
+     },
+     "returned_element_count": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "screenshot_file_path": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "screenshot_frame_valid": {
+      "type": [
+       "boolean",
+       "null"
+      ]
+     },
+     "screenshot_height": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "screenshot_mime_type": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "screenshot_scale": {
+      "type": [
+       "number",
+       "null"
+      ]
+     },
+     "screenshot_width": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "snapshot_id": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "total_element_count": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "tree_markdown": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "truncated": {
+      "type": [
+       "boolean",
+       "null"
+      ]
+     },
+     "truncation_reason": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "window_bounds": {
+      "properties": {
+       "height": {
+        "type": "number"
+       },
+       "width": {
+        "type": "number"
+       },
+       "x": {
+        "type": "number"
+       },
+       "y": {
+        "type": "number"
+       }
+      },
+      "required": [
+       "x",
+       "y",
+       "width",
+       "height"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "window_id": {
+      "minimum": 0,
+      "type": "integer"
+     },
+     "window_title": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    },
+    "required": [
+     "pid",
+     "window_id"
+    ],
+    "type": "object"
+   },
+   {
+    "additionalProperties": true,
+    "anyOf": [
+     {
+      "required": [
+       "refusal"
+      ]
+     },
+     {
+      "required": [
+       "status"
+      ]
+     },
+     {
+      "required": [
+       "code"
+      ]
+     }
+    ],
+    "type": "object"
+   }
+  ],
+  "type": "object"
+ },
+ "list_windows": {
+  "anyOf": [
+   {
+    "additionalProperties": true,
+    "properties": {
+     "current_space_id": {
+      "minimum": 0,
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "windows": {
+      "items": {
+       "properties": {
+        "app_name": {
+         "type": "string"
+        },
+        "bounds": {
+         "properties": {
+          "height": {
+           "type": "number"
+          },
+          "width": {
+           "type": "number"
+          },
+          "x": {
+           "type": "number"
+          },
+          "y": {
+           "type": "number"
+          }
+         },
+         "required": [
+          "x",
+          "y",
+          "width",
+          "height"
+         ],
+         "type": "object"
+        },
+        "current_space_id": {
+         "minimum": 0,
+         "type": [
+          "integer",
+          "null"
+         ]
+        },
+        "is_on_screen": {
+         "type": "boolean"
+        },
+        "layer": {
+         "format": "int32",
+         "type": [
+          "integer",
+          "null"
+         ]
+        },
+        "minimized": {
+         "type": [
+          "boolean",
+          "null"
+         ]
+        },
+        "on_current_space": {
+         "type": [
+          "boolean",
+          "null"
+         ]
+        },
+        "pid": {
+         "maximum": 4294967295,
+         "minimum": 0,
+         "type": [
+          "integer",
+          "null"
+         ]
+        },
+        "space_ids": {
+         "items": {
+          "minimum": 0,
+          "type": "integer"
+         },
+         "type": [
+          "array",
+          "null"
+         ]
+        },
+        "title": {
+         "type": "string"
+        },
+        "window_id": {
+         "minimum": 0,
+         "type": "integer"
+        },
+        "z_index": {
+         "description": "Higher values are closer to the front. Null means the provider cannot observe stacking order; callers must not infer an order from array position or treat null as zero.",
+         "type": [
+          "integer",
+          "null"
+         ]
+        }
+       },
+       "required": [
+        "window_id",
+        "pid",
+        "app_name",
+        "title",
+        "bounds",
+        "is_on_screen",
+        "z_index"
+       ],
+       "type": "object"
+      },
+      "type": "array"
+     }
+    },
+    "required": [
+     "windows"
+    ],
+    "type": "object"
+   },
+   {
+    "additionalProperties": true,
+    "anyOf": [
+     {
+      "required": [
+       "refusal"
+      ]
+     },
+     {
+      "required": [
+       "status"
+      ]
+     },
+     {
+      "required": [
+       "code"
+      ]
+     }
+    ],
+    "type": "object"
+   }
+  ],
+  "type": "object"
+ },
+ "set_agent_cursor_motion": {
+  "anyOf": [
+   {
+    "additionalProperties": true,
+    "properties": {
+     "motion": {
+      "properties": {
+       "arc_flow": {
+        "type": "number"
+       },
+       "arc_size": {
+        "type": "number"
+       },
+       "dwell_after_click_ms": {
+        "type": "number"
+       },
+       "end_handle": {
+        "type": "number"
+       },
+       "glide_duration_ms": {
+        "type": "number"
+       },
+       "idle_hide_ms": {
+        "type": "number"
+       },
+       "spring": {
+        "type": "number"
+       },
+       "start_handle": {
+        "type": "number"
+       },
+       "turn_radius": {
+        "type": "number"
+       }
+      },
+      "required": [
+       "start_handle",
+       "end_handle",
+       "arc_size",
+       "arc_flow",
+       "spring",
+       "glide_duration_ms",
+       "dwell_after_click_ms",
+       "idle_hide_ms",
+       "turn_radius"
+      ],
+      "type": "object"
+     },
+     "session": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "session",
+     "motion"
+    ],
+    "type": "object"
+   },
+   {
+    "additionalProperties": true,
+    "anyOf": [
+     {
+      "required": [
+       "refusal"
+      ]
+     },
+     {
+      "required": [
+       "status"
+      ]
+     },
+     {
+      "required": [
+       "code"
+      ]
+     }
+    ],
+    "type": "object"
+   }
+  ],
+  "type": "object"
+ },
+ "set_value": {
+  "anyOf": [
+   {
+    "additionalProperties": false,
+    "properties": {
+     "delivery": {
+      "additionalProperties": false,
+      "properties": {
+       "delivered_count": {
+        "minimum": 0,
+        "type": [
+         "integer",
+         "null"
+        ]
+       },
+       "mode": {
+        "enum": [
+         "background",
+         "foreground",
+         "not_applicable",
+         "unknown"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "mode"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "effect": {
+      "enum": [
+       "confirmed",
+       "partial",
+       "unverifiable",
+       "suspected_noop",
+       "refused"
+      ],
+      "type": "string"
+     },
+     "error": {
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "type": "string"
+       },
+       "hint": {
+        "type": [
+         "string",
+         "null"
+        ]
+       }
+      },
+      "required": [
+       "code"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "escalation": {
+      "additionalProperties": false,
+      "properties": {
+       "reason": {
+        "enum": [
+         "route_unavailable",
+         "delivery_failed",
+         "effect_unconfirmed",
+         "suspected_noop",
+         "permission_required"
+        ],
+        "type": "string"
+       },
+       "target": {
+        "enum": [
+         "pixel",
+         "foreground",
+         "page",
+         "session"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "target",
+       "reason"
+      ],
+      "type": [
+       "object",
+       "null"
+      ]
+     },
+     "evidence": {
+      "items": {
+       "additionalProperties": false,
+       "properties": {
+        "detail": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "kind": {
+         "enum": [
+          "value_readback",
+          "window_change"
+         ],
+         "type": "string"
+        }
+       },
+       "required": [
+        "kind"
+       ],
+       "type": "object"
+      },
+      "type": [
+       "array",
+       "null"
+      ]
+     },
+     "route": {
+      "enum": [
+       "accessibility",
+       "synthetic_events",
+       "global_input",
+       "system_api",
+       "dom",
+       "trusted_input"
+      ],
+      "type": "string"
+     },
+     "summary": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    },
+    "required": [
+     "effect",
+     "route"
+    ],
+    "type": "object"
+   },
+   {
+    "additionalProperties": true,
+    "anyOf": [
+     {
+      "required": [
+       "refusal"
+      ]
+     },
+     {
+      "required": [
+       "status"
+      ]
+     },
+     {
+      "required": [
+       "code"
+      ]
+     }
+    ],
+    "type": "object"
+   }
+  ],
+  "type": "object"
+ }
+}
