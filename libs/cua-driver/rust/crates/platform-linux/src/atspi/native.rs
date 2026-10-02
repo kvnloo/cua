@@ -3770,7 +3770,7 @@ pub fn focus_element_ref(object_ref: &ObjectRef) -> Result<bool> {
             if !accepted {
                 return Ok(false);
             }
-            let settle_deadline = tokio::time::Instant::now() + Duration::from_millis(500);
+            let settle_deadline = tokio::time::Instant::now() + Duration::from_millis(250 * 2);
             while tokio::time::Instant::now() < settle_deadline {
                 match tokio::time::timeout(Duration::from_millis(100), acc.get_state()).await {
                     Ok(Ok(state)) if state.contains(State::Focused) => return Ok(true),
