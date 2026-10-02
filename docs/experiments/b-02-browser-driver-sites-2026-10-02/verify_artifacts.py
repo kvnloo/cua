@@ -50,7 +50,8 @@ def main() -> int:
     summary = json.loads((HERE / "b02-summary.json").read_text())
 
     # 1. recompute
-    with tempfile.TemporaryDirectory() as tmp:
+    # Scratch space inside the packet (never the system /tmp), removed afterwards.
+    with tempfile.TemporaryDirectory(dir=HERE, prefix=".verify-") as tmp:
         out = Path(tmp) / "s.json"
         subprocess.run([sys.executable, str(HERE / "analyze_b02.py"), "--raw", str(RAW), "--out", str(out)],
                        check=True, capture_output=True)
@@ -124,7 +125,7 @@ def main() -> int:
     import tarfile
     texts: list[tuple[str, str]] = []
     for p in HERE.rglob("*"):
-        if p.is_dir() or "__pycache__" in p.parts:
+        if p.is_dir() or "__pycache__" in p.parts or any(part.startswith(".verify-") for part in p.parts):
             continue
         if p.suffixes[-2:] == [".tar", ".gz"]:
             with tarfile.open(p, "r:gz") as tar:

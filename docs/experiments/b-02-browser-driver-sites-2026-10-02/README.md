@@ -28,7 +28,7 @@ The browser A/B could not run. Every command must run under the `hostless` wrapp
 ## Environment
 
 - Linux 7.2.2 x86_64, 10 CPUs. About 660 host processes during the lane (relevant to the endpoint proof's host-wide `/proc` scan).
-- Every code-executing command ran as `hostless …`. GUI and Driver work also ran inside `cua-x11-session.sh`: private rootless Xvfb, openbox, picom, private dbus, `env -i`. DISPLAY per block: STEP 0 `:99`, step0-dbg1 `:100`, version read `:100`, vmicro `:99`, N-V `:101` (`raw/*/session.log`, `run-manifest-*.json`). No AT-SPI bus.
+- Every build, test, Driver, session, runner and analysis command ran as `hostless …`. The exceptions are about 20 standard-library `python3` file-edit and JSON-inspection commands run in the plain host shell (Deviation 10). GUI and Driver work also ran inside `cua-x11-session.sh`: private rootless Xvfb, openbox, picom, private dbus, `env -i`. DISPLAY per block: STEP 0 `:99`, step0-dbg1 `:100`, version read `:100`, vmicro `:99`, N-V `:101` (`raw/*/session.log`, `run-manifest-*.json`). No AT-SPI bus.
 - Locks (`raw/lock-ledger.jsonl`):
   - vmicro ran in one EXCLUSIVE quiet-timed window, 05:10:51.908Z–05:11:24.105Z (`b02-vmicro`).
   - STEP 0 ran in EXCLUSIVE `b02-step0`, 05:02:04.352Z–05:02:26.755Z.
@@ -188,6 +188,9 @@ The projection is labelled PROJECTION: it is not measured on a browser task and 
 7. `run_b02.py` (browser runner with the N-E1/N-E2/N-W2 controls) and `cdp_raw.py` are written but have never run against a browser. They need a shakedown before any measured use.
 8. rustfmt was not run over the touched files (as in B-01 and R2-01).
 9. The STEP 0 and vmicro numbers are on the B-02 binary. The STEP 0 localization numbers for (a) and (c) come from B-01's committed traces (binary `2e0248ad…`). They are not compared with B-02 numbers in any gate.
+
+10. **Isolation rule broken without effect (near miss).** About 20 standard-library `python3` commands ran in the plain host shell instead of under `hostless`. They were file edits (string replacement in lane files) and read-only JSON inspection: an orientation look at B-01's lane traces, and checks of `PREREG.json` and the summary. None imported a GUI, display, D-Bus or AT-SPI library, none started a process or opened a socket, and DISPLAY played no part. No number in this packet comes from them: `b01_snapshot_reanalysis.py`, `analyze_b02.py` and `verify_artifacts.py` were run under `hostless`.
+11. **Temp location (near miss).** `TMPDIR` is unset in the host environment and `hostless` does not set it. So the `unit-compile-1` cargo run (under `hostless`, outside the session) and the first two `verify_artifacts.py` runs could write temporaries under the system `/tmp`, and `tempfile` removes its own. Runner and unit-run temporaries were under the session's private dir on the lane tmp. `verify_artifacts.py` now keeps its scratch space inside the packet directory.
 
 ## Limits
 
