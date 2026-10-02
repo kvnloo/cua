@@ -3626,7 +3626,7 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
             let proxies = acc
                 .proxies()
                 .await
-                .map_err(|e| anyhow!("interface proxies unavailable: {e}"))?;
+                .map_err(|e| anyhow!("AT-SPI interface proxies unavailable: {e}"))?;
             let ap = proxies
                 .action()
                 .await
