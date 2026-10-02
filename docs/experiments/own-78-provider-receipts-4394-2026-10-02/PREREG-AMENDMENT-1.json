@@ -1,0 +1,28 @@
+{
+  "schema": "cua.experiment.prereg.amendment.v1",
+  "id": "OWN-78",
+  "amends": "PREREG.json (committed c263e28955f4e6165b8b91ea0686cecaf089cab9, unchanged)",
+  "registered_utc": "2026-10-02T02:10Z",
+  "registered_before": "every measured trial (only smoke cells have run: smoke-a, smoke-b, smoke-live)",
+  "trigger": "smoke-live (excluded from gates): in both runtimes the first live TypeSafe decision (model jev-1.13.0) on the PR 4394 runner was abstain (Python: abstain 0.66 / reobserve 0.25 / type 0.09; TypeScript: abstain 0.57 / reobserve 0.35 / type 0.08). SOURCE: browser_provider.browser_decision_request sends goal, capture_id, regions (empty on the page-structure path), history and candidate ids/descriptions only; the pre-PR live path (jev_adapter.choose_for_task -> task_decision_state) also sent observation.page, observation.form (the runner-verified state summary) and observation.outline. If live step 1 abstains, R1 cannot verify and R4's precondition (browser_type lands) cannot be met on the live path.",
+  "unchanged": "R1, R2, R3, R4 and R5 run exactly as registered (same n, same gates, no replacement). The KEEP/KILL/REVISE gates are unchanged and apply to R1-R4 and the suites.",
+  "added_rows": {
+    "R4s": {
+      "class": "FIXTURE+REAL",
+      "what": "R4 with the first provider decision answered by an experiment-owned loopback stub that speaks the TypeSafe /v1/systemone wire format: TYPESAFE_BASE_URL = stub, TYPESAFE_API_KEY replaced in the runner env by a dummy non-secret value (the real key never reaches the stub), journal fixture; after the first ok browser_type the launcher seam switches TYPESAFE_BASE_URL to a closed loopback port (same seam as R4).",
+      "stub": "answers each request with choice = type-verification-value if it is a criteria id, else submit-form, else abstain; probabilities cover exactly the request's criteria ids (0.9 on the choice, the rest split evenly); returns x-typesafe-request-id 'own78-stub-<n>'; records only request count, criteria ids, chosen id and whether an Authorization header was present (never its value, never the body).",
+      "n_trials": {"python": 12, "typescript": 8},
+      "pass_per_trial": "same as R4 (input_mutations == 1, submits == 0, browser_type calls == 1, navigations == 1, routine_starts == 1, browser_prepare == 1, decision records == 1, final outcome=unknown phase=decide step=2, exit != 0, every post-switch attempt is loopback and fails without a status)",
+      "gate_role": "closes 'no replay after partial progress' on the PR 4394 runner code path when the live provider will not make partial progress. Reported as FIXTURE evidence; it does not substitute for R4 in the registered KEEP gate.",
+      "attribution_characterization": "the step-1 decision record's backend is expected to be 'typesafe' while the HTTP responder is the loopback stub. This characterizes the field as adapter identity (which client handled the decision), not network-responder identity. It is reported as a claim-boundary finding and is excluded from the KILL clause, which concerns live rows where the HTTP evidence identifies the responder."
+    },
+    "R0": {
+      "class": "LIVE_PROVIDER+REAL",
+      "what": "control for the abstain attribution: the pre-PR runner at base 2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4 (detached worktree, examples identical to base), --provider live, stock fixture, same Driver binary (the PR changes no libs/cua-driver/rust file, so the Driver built at 039257811 is built from the base's Rust tree), same session/provider/task.",
+      "condition": "run only after R1 and R4, with n = min(5, floor((45 - lane reached) / 2)) Python trials; skipped (NOT_RUN, budget) if n < 2",
+      "measure": "step-1 choice and fixture verification; compared with R1/R4 step-1 choices on the PR runner (same everything except the runner's provider request)",
+      "gate_role": "attribution of the step-1 abstain to the PR's request construction; not part of the KEEP/KILL gate"
+    }
+  },
+  "budget": "R4s uses no provider requests (stub + closed port). R0 uses at most 10 reached and only what remains under the lane cap of 45."
+}
