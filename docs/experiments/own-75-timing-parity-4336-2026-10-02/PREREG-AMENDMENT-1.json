@@ -1,0 +1,39 @@
+{
+  "schema": "cua.r2.prereg.amendment.v1",
+  "experiment": "OWN-75",
+  "amendment": 1,
+  "lane": "OWN-75R (wave 3 resume of OWN-75)",
+  "written_utc": "2026-10-02T17:21Z",
+  "base_prereg": "PREREG.json as committed in cd18788725090377d64347235cb31ce628d9d796; unchanged by this amendment (byte-identical; verify_artifacts.py checks it)",
+  "branch": "exp/own-75r-timing-parity-4336-20261002 (new branch from cd1878872; the wave-2 branch exp/own-75-timing-parity-4336-20261002 and its worktrees are not touched)",
+  "committed_before": "every new measured trial and the reported S1/S4 runs of this lane; verify_artifacts.py checks the commit time against raw/unit/run-utc.txt, raw/mutation/run-utc.txt and the first trial start",
+  "disclosures": {
+    "a_aborted_measured_attempt": "A measured attempt under this PREREG ran on 2026-10-02 from 04:47:40Z (blocks m01-m04 complete, m05 started): 42 of 160 REAL trials ran and all 42 verified. It was stopped by the host-isolation breach at 2026-10-02T04:51:47Z (a Gtk gi import in the plain host shell, outside the REAL harness). None of its data is used here: no trial, digest, unit log or mutation row of that attempt enters this packet. Its block-m05 lock receipt was acquired (04:51:56.83Z) and never released. All 160 trials are re-run fresh under this amendment; the old data stay in the artifact mirror (artifacts/r2/OWN-75/stopped-run) only. The aborted attempt's results that are known (42/42 verified, unit and typecheck clean, 16/16 mutants caught) are disclosed because they were seen before the stricter mutation gate below was adopted.",
+    "b_prereg_timestamp": "PREREG.json says written_utc 2026-10-02T04:50Z, but its commit cd1878872 has author/committer time 2026-10-01T23:46:25-05:00 = 2026-10-02T04:46:25Z, i.e. the written_utc field was set ~4 minutes later than the actual commit. The commit time is authoritative for 'committed before the first measured trial'; the first trial of the aborted attempt started at 04:47:40Z (after the commit).",
+    "c_missing_near_miss": "The wave-2 lane did not report a near miss at 2026-10-02T04:41:15Z: a 'zcat | python3' pipeline ran in the plain host shell (stdlib JSON parsing of a pilot trace; no GUI library). It is listed here as a near miss of that lane.",
+    "c2_this_lane_near_miss": "This lane (OWN-75R) ran 'python3 -c 1' once in the plain host shell at about 2026-10-02T17:17Z (a no-op inside a read-only inspection command; no import beyond site, no output used). It could not reach the desktop (no GUI library; the owner's usercustomize guard strips desktop variables for Claude Code shells). Reported as a near miss; every other code-executing command of this lane runs under bin/hostless.",
+    "d_network_claim_scope": "Any '0 non-loopback connects' claim in this packet is scoped to the guarded runner processes (python/run_native.py, typescript/run_native.ts) via harness/netguard. It does not cover the Driver process, the fixture or the tee. In this amendment the Driver's telemetry is disabled in both arms (CUA_DRIVER_RS_TELEMETRY_ENABLED=0 and DO_NOT_TRACK=1 through CUA_SESSION_EXTRA_ENV; the variable name is the one read by libs/cua-driver/rust/crates/cua-driver/src/telemetry.rs at the binary's source 229b65b28), and the values the trials actually saw are recorded per block in raw/real/session-env/. The Driver's own sockets are still not monitored.",
+    "e_provenance_drift": "trycua/cua PR 4336 live head is 8391cf80275d2a5e7288f9d7c6b0a3e5f7822939 (gh pr view 4336 -R trycua/cua --json headRefOid at 2026-10-02T17:18:53Z, state OPEN, updatedAt 2026-10-01T15:16:52Z). The kvnloo/cua#75 issue body still cites the older head d301a076c. This packet tests 8391cf802 only; nothing here speaks for d301a076c.",
+    "f_upstream_main_freshness": {
+      "upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa (local upstream/main ref, committer date 2026-10-02T09:59:29-07:00)",
+      "command": "git merge-tree --write-tree 989cc76cec262ff8bcf6968b637820340fb9caaa 8391cf80275d2a5e7288f9d7c6b0a3e5f7822939",
+      "rc": 0,
+      "tree": "e7fc835fc51fb577b73d9a75095c071fe4c7da8d",
+      "conflicts": "none (object-level merge only; no build of the merged tree)",
+      "merge_base": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4 (= M0)",
+      "pr_files": "git diff --name-only 2ca90d338 8391cf802 = exactly 7 files, all under libs/cua-driver/examples/jev-use (README.md, fake_native_driver.py, fixtures/native/timing-contract-v1.json, python/run_native.py, python/tests/test_native_timing.py, typescript/native_timing.test.ts, typescript/run_native.ts)",
+      "jev_use_drift_on_main": "git diff --name-only 2ca90d338 989cc76ce -- libs/cua-driver/examples/jev-use = 0 files",
+      "driver_drift_on_main": "git diff --name-only 229b65b28 989cc76ce -- libs/cua-driver = 18 files (contract/manifest.json, cua-driver-contract, cua-driver-core tool_schema.rs, cua-driver doctor.rs/skills.rs, platform-linux wayland/hyprland.rs + wayland/mod.rs, platform-macos x4, platform-windows x6); none in examples/jev-use or the GTK3 fixture. The tested Driver binary is built from 229b65b28, so the REAL rows speak for that Driver only."
+    }
+  },
+  "protocol_changes": {
+    "lock": "Each REAL block (<= 10 trials) runs as one <lanes>/bin/quiet-timed phase (EXCLUSIVE quiet-lane lock, receipt line with label own75r-<block> in the shared quiet-lane ledger) through the new harness/run_batch_qt.sh, instead of run_batch.sh's 'flock -s' (a nested shared flock on the same lock file inside quiet-timed would deadlock). run_batch.sh stays in the tree unchanged and is not used. The packet keeps its own receipts in raw/real/lock-ledger.jsonl (acquired + released per block, mode exclusive) and an excerpt of the shared-ledger lines for its labels in raw/real/quiet-lane-ledger-excerpt.jsonl. The lock is released between blocks (chunks of about 1-2 minutes, far under 15 minutes) so higher-priority lanes (R2-10) can take it.",
+    "telemetry": "Driver telemetry disabled in both arms (see d). The PREREG said 'left at its default'. The change is identical across arms, so it cannot create a head-vs-m0 difference.",
+    "tmp": "TMPDIR and the per-block work dirs live under the lane tmp root, never /tmp.",
+    "worktrees": "head: this branch at cd1878872 (+ packet-only commits); m0: a fresh detached worktree at 2ca90d338, removed at the end. Same jev-use trees as the PREREG names (head f3ba27c40253d00cd235ca001bdae72357300f6c, m0 635a4f588c6817ccb6cb6f5b7baacddbfc42f786), deps installed by lane-deps.sh (uv sync --frozen, npm ci --ignore-scripts).",
+    "mutation_gate": "The PREREG gates M1 and M2 in both languages (plus both 'none' controls passing) and reports M3-M8. The wave-3 directive additionally requires all 16 mutant rows (M1-M8 x python/typescript) to be detected; this stricter gate is adopted as an extra KEEP condition. Disclosure: the aborted attempt already showed 16/16 detected (see a).",
+    "added_files": "summarize.py (builds own-75-summary.json from raw/), verify_artifacts.py (stdlib recomputation and evidence-rule checks), README.md, provenance.json. They read raw outputs only and do not change any measured behaviour.",
+    "unchanged": "plan (make_plan.py: 160 trials, 16 blocks of 10, 10 AB + 10 BA pairs per cell), real_block.py, mcp_tee.py, netguard, analyze.py normalization, mutate.py rows, oracle, gates KEEP/REVISE/KILL/INCONCLUSIVE_rule, Driver binary (sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3, re-hashed at start 2026-10-02T17:19:13Z and again at the end), mock chooser, TypeSafe cap 0."
+  },
+  "provider": {"name": "TypeSafe", "lane_cap_reaching": 0, "expected_attempts": 0, "expected_reached": 0}
+}
