@@ -1,0 +1,73 @@
+{
+ "schema": "cua.i107.cshadow.prereg.v1",
+ "issue": "kvnloo/cua#107",
+ "lane": "CSHADOW: qualify C in shadow mode and decide whether active C is admissible",
+ "frozen_utc": "2026-10-02T05:33:00Z",
+ "status": "FROZEN before any measured trial of this lane. Adds only the harness details the map PREREG leaves to lanes, plus the definitions listed under 'definitions' (disclosed refinements of metrics the map PREREG names). Arms, scope, cohorts, conditions, requirements, budgets, thresholds, controls, statistics, continuation rule and decision table are the map PREREG's, unchanged.",
+ "parent_prereg": {
+  "path": "docs/experiments/i107-map-2026-10-02/PREREG.json",
+  "sha256": "8eeb837ffa24425cfc36ba2c72a8ea65df4207e1a39a7d261f1cda85496b2c53",
+  "commit": "be68363bc38940d5560be55165ceaf6fd743437b"
+ },
+ "binary": {
+  "name": "cua-driver-i107-cshadow-904b249c1",
+  "source_commit": "904b249c1d109b06c8c061bab0549984b469d271 (= map driver build commit 092b065d5 + i107 shadow mirror; branch exp/i107-cshadow-20261002)",
+  "sha256": "6b481e0e0d52d624005494f64ebe42a3475f86e14943eb36c36b9fc1d021fd23",
+  "version": "cua-driver 0.32.0 (read inside cua-x11-session.sh under hostless)",
+  "rule": "both sides of every C comparison run this one binary; A = mirror env unset. No number is compared across binaries."
+ },
+ "arms_in_this_lane": {
+  "A": "CUA_DRIVER_EXP_I107_MIRROR unset (default off)",
+  "C_shadow_M": "CUA_DRIVER_EXP_I107_MIRROR=shadow: bootstrap + event maintenance + invalidation/resync; no audit, no cut round trip",
+  "C_shadow_audit": "CUA_DRIVER_EXP_I107_MIRROR=shadow_audit: as C_shadow_M plus the audit at every normal fresh semantic_v2 snapshot (diagnostic timings only)",
+  "C_active": "NOT_ADMISSIBLE if the classification finds every get_browser_state call in (a)-(d); no active trial runs (map PREREG procedure)",
+  "not_in_this_lane": "B_proj and D (lane AB/D, on cua-driver-i107-092b065d5)"
+ },
+ "fixed_in_all_arms": "feedback OFF (set_agent_cursor_enabled enabled:false), choose_mock_for_task, no --guarded-completion, fresh Driver + isolated_new browser per trial (except CMP-C-resident), phase trace ON (CUA_DRIVER_PHASE_TRACE_FILE), CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS unset",
+ "harness": {
+  "runner": "run_cshadow.py (mirrors jev-use run.py with its own functions, as B-01's runner did); one block per invocation",
+  "block_command": "quiet-timed <label> hostless [env CUA_SESSION_EXTRA_ENV=JEV_USE_DIR=<jev-use>] cua-x11-session.sh <jev-use>/.venv/bin/python run_cshadow.py --driver <bin> --out <dir> --plan <plan> --block <label> ...",
+  "fixture": "cshadow_fixture.py: quiet = jev-use fixture_server.PAGE byte-for-byte; churn = same form + 500-node region (250 spans x text) mutated at 20 Hz, 10 nodes per tick (text / attribute flip / insert+remove), xorshift seed 20261002, no 'submit'/'verification' in the region, form untouched; static = churn page with ?churn=0; control/churn_control = + EventSource channel, page-applied ops, body data-i107-op stamp, sendBeacon ack journaled server-side on CLOCK_MONOTONIC with the page's wall-clock mutation time mapped to CLOCK_MONOTONIC",
+  "oracle": "fixture state (submitted value + form main/decoy) re-read every 2 ms by an independent thread; server submit journal; runner outcome logged, not the oracle",
+  "plans": {
+   "overhead": "CMP-C-overhead, ABBA pairs A vs C_shadow_M, >=30 pairs per condition (W-quiet, W-churn)",
+   "idle": "CMP-C-idle, ABBA pairs; per trial: prepare, bind, navigate, one snapshot (creates the mirror in C), 1 s settle, 20 s interval with no tool calls sampled at both ends (Driver utime+stime, VmHWM/VmRSS; Driver-launched browser tree CPU and RSS), one closing snapshot; >=30 pairs per condition (W-idle-quiet, W-idle-churn); events/s from the cdp.event ledger inside the interval",
+   "fidelity": "CMP-C-fidelity, >=30 C_shadow_audit trials per condition (W-quiet, W-churn)",
+   "controls": ">=5 trials per control, arms A and C_shadow_audit alternating; DC18 C_shadow_audit only on W-churn with faults drop:7, dup:7, delay:7:200, swap:7, early, foreign:7, stale:7, overflow:50, reconnect:50 (>=5 each)",
+   "resident": "CMP-C-resident, >=6 ABBA session pairs, 10 tasks per session, W-churn; session age and CDP attach/detach counts from the ledger"
+  },
+  "control_points": {
+   "after_type": "op sent after browser_type returns, ack awaited (<=2 s), before the step-2 snapshot",
+   "check_to_dispatch": "op sent after the step-2 snapshot and decision, ack awaited, before browser_click",
+   "during_bootstrap": "burst op sent concurrently with the step-1 snapshot (mirror bootstrap in flight)",
+   "during_audit": "burst op sent concurrently with the step-2 snapshot (audit compare in flight)"
+  },
+  "dc11": "renderer processes are SIGKILLed only if each one's ppid chain is proven to pass through the prepared browser pid, this runner's Driver pid and this runner's pid; otherwise the trial is recorded NOT_RUN (descent unproven)",
+  "dc10": "after step 1, a second session label on the same MCP connection reuses the old target_id/tab_id (snapshot) and the old ref (click); expected browser_binding_stale / browser_ref_stale"
+ },
+ "definitions": {
+  "covered_fields": "exists, node_name, node_value (text/comment/cdata), attributes (per name), children (ordered backendNodeIds); pseudo elements excluded on both sides",
+  "unestablished_fields": "visibility, geometry, occlusion, focus, value_property, ax_role, ax_name, ax_states: always unknown in the mirror (no subscribed event establishes them)",
+  "bracketing_window": "R_a = mirror revision read immediately before the normal snapshot's DOM.getDocument is sent; after that read, an ordered Page.getFrameTree round trip on the mirror's own session, then every queued event is applied (the cut). Nodes the mirror changed after R_a (or whose nearest mirrored ancestor changed after R_a) may postdate the fresh read and are counted ambiguous_in_flight, never as agreement or false-current. raw_differences_including_window is reported alongside.",
+  "false_current": "a covered field the mirror holds as current (coverage current, field not uncertain, node not in an unpushed subtree, outside the bracketing window) that differs from the fresh read; action-relevant if the node is in the closure (ancestors + descendants) of a fresh semantic node with role=button name=Submit or role textbox/searchbox",
+  "unknown_share": "unknown (node,field) checks / all checks on action-relevant nodes, unestablished fields included",
+  "match_set": "fresh: count of role=button name=Submit (and actionable visible); mirror: status always 'unknown' (AX/visibility derived); a DOM-level look-alike estimate is logged as a diagnostic, never as a claim",
+  "event_lag": "t(i107.mirror.op_applied for the op's data-i107-op stamp) - (a) server ack receipt t_mono_ns (biased low by page->server latency) and (b) the page's wall-clock mutation time mapped to CLOCK_MONOTONIC at receipt (bias = clock mapping error)",
+  "audit_void": "an audit whose cut times out or whose ping fails is recorded coverage unknown (cut_unavailable / cut_ping_failed), never compared"
+ },
+ "evidence_already_in_hand_at_freeze": {
+  "UNIT": "cua-driver-core lib 860/860 (821 + 39 mirror tests), platform-linux lib 602 passed / 10 ignored, under hostless; TDD red log (165 compile errors, missing API) before green",
+  "SOURCE_plus_REAL_reuse": "active-C classification of 600 get_browser_state calls in 200 B-01 fill traces: 400 (a), 200 (b), 0 outside; 0 Driver reads after the last mutation (verification = fixture oracle)",
+  "SOURCE": "Chrome 151.0.7922.71 protocol JSON (extracted from the installed resources.pak) confirms every event the map lists"
+ },
+ "infrastructure": {
+  "status_at_freeze": "the map's blocker (bwrap hostless v1 remapping root-owned Chrome to uid 65534) is superseded at the canonical hostless path by a Landlock-based hostless v2 (installed 2026-10-02T05:06Z; v1 kept as hostless-strict). Under v2 the Chrome executable shows uid 0. REAL blocks start only after the orchestrator confirms v2 as the approved isolation wrapper; until then every REAL cell is BLOCKED.",
+  "known_v2_gap": "Landlock scope covers abstract unix sockets and signals, not pathname sockets (/tmp/.X11-unix/X*, /run/user/<uid>/*); those paths rely on the environment scrub. The runner refuses to start unless inside hostless (no_new_privs or a non-identity uid map) and inside the private X11 session."
+ },
+ "deviations_disclosed": [
+  "Protocol events confirmed from the installed Chrome's resources.pak (the resource behind /json/protocol), not from the Driver-launched endpoint inside the session; the endpoint read is repeated if REAL runs.",
+  "DOM.adRelatedStateUpdated and DOM.distributedNodesUpdated (present in Chrome 151) fall into the mirror's conservative unmodeled -> invalidate path; neither establishes a covered field.",
+  "Dependency controls in this lane run A and C_shadow_audit on the lane binary; D-arm control outcomes are lane AB/D's.",
+  "cargo clippy is not installed for the pinned toolchain: NOT_RUN."
+ ]
+}

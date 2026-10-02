@@ -1,0 +1,836 @@
+{
+ "css_computed_style_updated_params": [
+  "nodeId"
+ ],
+ "domains": {
+  "Accessibility": {
+   "domain_experimental": true,
+   "events": {
+    "loadComplete": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "root"
+     ]
+    },
+    "nodesUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "nodes"
+     ]
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": []
+  },
+  "CSS": {
+   "domain_experimental": true,
+   "events": {
+    "computedStyleUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "nodeId"
+     ]
+    },
+    "fontsUpdated": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "font"
+     ]
+    },
+    "mediaQueryResultChanged": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": []
+    },
+    "styleSheetAdded": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "header"
+     ]
+    },
+    "styleSheetChanged": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "styleSheetId"
+     ]
+    },
+    "styleSheetRemoved": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "styleSheetId"
+     ]
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": [
+    "computedStyleUpdated"
+   ]
+  },
+  "DOM": {
+   "domain_experimental": false,
+   "events": {
+    "adRelatedStateUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "unmodeled -> invalidate (conservative; establishes no covered field)",
+     "params": [
+      "nodeId",
+      "adProvenance"
+     ]
+    },
+    "adoptedStyleSheetsModified": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "no-op (no covered field)",
+     "params": [
+      "nodeId",
+      "adoptedStyleSheets"
+     ]
+    },
+    "affectedByStartingStylesFlagUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "no-op (no covered field)",
+     "params": [
+      "nodeId",
+      "affectedByStartingStyles"
+     ]
+    },
+    "attributeModified": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "nodeId",
+      "name",
+      "value"
+     ]
+    },
+    "attributeRemoved": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "nodeId",
+      "name"
+     ]
+    },
+    "characterDataModified": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "nodeId",
+      "characterData"
+     ]
+    },
+    "childNodeCountUpdated": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "check (mismatch -> invalidate)",
+     "params": [
+      "nodeId",
+      "childNodeCount"
+     ]
+    },
+    "childNodeInserted": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "parentNodeId",
+      "previousNodeId",
+      "node"
+     ]
+    },
+    "childNodeRemoved": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "parentNodeId",
+      "nodeId"
+     ]
+    },
+    "distributedNodesUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "unmodeled -> invalidate (conservative; establishes no covered field)",
+     "params": [
+      "insertionPointId",
+      "distributedNodes"
+     ]
+    },
+    "documentUpdated": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "invalidate",
+     "params": []
+    },
+    "inlineStyleInvalidated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "style attribute -> uncertain",
+     "params": [
+      "nodeIds"
+     ]
+    },
+    "pseudoElementAdded": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "no-op (pseudo excluded)",
+     "params": [
+      "parentId",
+      "pseudoElement"
+     ]
+    },
+    "pseudoElementRemoved": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "no-op (pseudo excluded)",
+     "params": [
+      "parentId",
+      "pseudoElementId"
+     ]
+    },
+    "scrollableFlagUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "no-op (no covered field)",
+     "params": [
+      "nodeId",
+      "isScrollable"
+     ]
+    },
+    "setChildNodes": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "parentId",
+      "nodes"
+     ]
+    },
+    "shadowRootPopped": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "hostId",
+      "rootId"
+     ]
+    },
+    "shadowRootPushed": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "apply",
+     "params": [
+      "hostId",
+      "root"
+     ]
+    },
+    "topLayerElementsUpdated": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "no-op (no covered field)",
+     "params": []
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": [
+    "adoptedStyleSheetsModified",
+    "distributedNodesUpdated",
+    "adRelatedStateUpdated",
+    "affectedByStartingStylesFlagUpdated"
+   ]
+  },
+  "Inspector": {
+   "domain_experimental": true,
+   "events": {
+    "detached": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "session lost",
+     "params": [
+      "reason"
+     ]
+    },
+    "targetCrashed": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "session lost",
+     "params": []
+    },
+    "targetReloadedAfterCrash": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "invalidate",
+     "params": []
+    },
+    "workerScriptLoaded": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": []
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": [
+    "workerScriptLoaded"
+   ]
+  },
+  "Page": {
+   "domain_experimental": false,
+   "events": {
+    "backForwardCacheNotUsed": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "loaderId",
+      "frameId",
+      "notRestoredExplanations",
+      "notRestoredExplanationsTree"
+     ]
+    },
+    "compilationCacheProduced": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "url",
+      "data"
+     ]
+    },
+    "documentOpened": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "invalidate",
+     "params": [
+      "frame"
+     ]
+    },
+    "domContentEventFired": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "timestamp"
+     ]
+    },
+    "downloadProgress": {
+     "deprecated": true,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "guid",
+      "totalBytes",
+      "receivedBytes",
+      "state"
+     ]
+    },
+    "downloadWillBegin": {
+     "deprecated": true,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "guid",
+      "url",
+      "suggestedFilename"
+     ]
+    },
+    "fileChooserOpened": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "mode",
+      "backendNodeId"
+     ]
+    },
+    "frameAttached": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "invalidate",
+     "params": [
+      "frameId",
+      "parentFrameId",
+      "stack"
+     ]
+    },
+    "frameClearedScheduledNavigation": {
+     "deprecated": true,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId"
+     ]
+    },
+    "frameDetached": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "invalidate",
+     "params": [
+      "frameId",
+      "reason"
+     ]
+    },
+    "frameNavigated": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "invalidate",
+     "params": [
+      "frame",
+      "type"
+     ]
+    },
+    "frameRequestedNavigation": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "reason",
+      "url",
+      "disposition"
+     ]
+    },
+    "frameResized": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": []
+    },
+    "frameScheduledNavigation": {
+     "deprecated": true,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "delay",
+      "reason",
+      "url"
+     ]
+    },
+    "frameStartedLoading": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId"
+     ]
+    },
+    "frameStartedNavigating": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "url",
+      "loaderId",
+      "navigationType"
+     ]
+    },
+    "frameStoppedLoading": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId"
+     ]
+    },
+    "frameSubtreeWillBeDetached": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId"
+     ]
+    },
+    "interstitialHidden": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": []
+    },
+    "interstitialShown": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": []
+    },
+    "javascriptDialogClosed": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "result",
+      "userInput"
+     ]
+    },
+    "javascriptDialogOpening": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "url",
+      "frameId",
+      "message",
+      "type",
+      "hasBrowserHandler",
+      "defaultPrompt"
+     ]
+    },
+    "lifecycleEvent": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "loaderId",
+      "name",
+      "timestamp"
+     ]
+    },
+    "loadEventFired": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "timestamp"
+     ]
+    },
+    "navigatedWithinDocument": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "frameId",
+      "url",
+      "navigationType"
+     ]
+    },
+    "screencastFrame": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "data",
+      "metadata",
+      "sessionId"
+     ]
+    },
+    "screencastVisibilityChanged": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "visible"
+     ]
+    },
+    "windowOpen": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "url",
+      "windowName",
+      "windowFeatures",
+      "userGesture"
+     ]
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": [
+    "fileChooserOpened",
+    "frameClearedScheduledNavigation",
+    "frameSubtreeWillBeDetached",
+    "frameStartedNavigating",
+    "frameRequestedNavigation",
+    "frameScheduledNavigation",
+    "downloadWillBegin",
+    "downloadProgress",
+    "interstitialHidden",
+    "interstitialShown",
+    "backForwardCacheNotUsed",
+    "screencastFrame",
+    "screencastVisibilityChanged",
+    "windowOpen",
+    "compilationCacheProduced"
+   ]
+  },
+  "Runtime": {
+   "domain_experimental": false,
+   "events": {
+    "bindingCalled": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "name",
+      "payload",
+      "executionContextId"
+     ]
+    },
+    "consoleAPICalled": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "type",
+      "args",
+      "executionContextId",
+      "timestamp",
+      "stackTrace",
+      "context"
+     ]
+    },
+    "exceptionRevoked": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "reason",
+      "exceptionId"
+     ]
+    },
+    "exceptionThrown": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "timestamp",
+      "exceptionDetails"
+     ]
+    },
+    "executionContextCreated": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "context"
+     ]
+    },
+    "executionContextDestroyed": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "executionContextId",
+      "executionContextUniqueId"
+     ]
+    },
+    "executionContextsCleared": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": []
+    },
+    "inspectRequested": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "object",
+      "hints",
+      "executionContextId"
+     ]
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": [
+    "bindingCalled",
+    "consoleAPICalled",
+    "exceptionRevoked",
+    "exceptionThrown",
+    "inspectRequested"
+   ]
+  },
+  "Target": {
+   "domain_experimental": false,
+   "events": {
+    "attachedToTarget": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "sessionId",
+      "targetInfo",
+      "waitingForDebugger"
+     ]
+    },
+    "detachedFromTarget": {
+     "deprecated": false,
+     "experimental": true,
+     "in_map": true,
+     "mirror": "session lost when it names the mirror session",
+     "params": [
+      "sessionId",
+      "targetId"
+     ]
+    },
+    "receivedMessageFromTarget": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": false,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "sessionId",
+      "message",
+      "targetId"
+     ]
+    },
+    "targetCrashed": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "session lost for the tab target",
+     "params": [
+      "targetId",
+      "status",
+      "errorCode"
+     ]
+    },
+    "targetCreated": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "targetInfo"
+     ]
+    },
+    "targetDestroyed": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "session lost for the tab target",
+     "params": [
+      "targetId"
+     ]
+    },
+    "targetInfoChanged": {
+     "deprecated": false,
+     "experimental": false,
+     "in_map": true,
+     "mirror": "not subscribed / no-op",
+     "params": [
+      "targetInfo"
+     ]
+    }
+   },
+   "map_listed_missing_from_protocol": [],
+   "protocol_events_not_in_map": [
+    "receivedMessageFromTarget"
+   ]
+  }
+ },
+ "evidence": "SOURCE: protocol JSON extracted from the installed Chrome resources.pak (the resource the browser serves at /json/protocol); reading it from the Driver-launched endpoint inside the session is BLOCKED by the hostless launch blocker",
+ "pak_resource_id": 52220,
+ "pak_sha256": "9db15ebcb1585adb334f7ff3a38afb9eceab887e51e4e05c5bdc4ceac9283dfe",
+ "protocol_json_bytes": 1605774,
+ "protocol_json_sha256": "c61c953ca9e11d498943ded43fd3d5b1870e0107413dec4e84a4e7cdebc61458",
+ "protocol_version": {
+  "major": "1",
+  "minor": "3"
+ },
+ "relevant_methods_present": {
+  "Accessibility.enable": true,
+  "CSS.trackComputedStyleUpdates": true,
+  "DOM.getDocument": true,
+  "DOM.requestChildNodes": true,
+  "DOM.setInspectedNode": true,
+  "Inspector.enable": true,
+  "Page.enable": true,
+  "Page.getFrameTree": true,
+  "Target.attachToTarget": true,
+  "Target.detachFromTarget": true
+ },
+ "schema": "cua.i107.cshadow.protocol-events.v1"
+}

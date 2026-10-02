@@ -1,0 +1,6247 @@
+{
+ "archive_sha256": "3703af67f2b236e5b4200e4a3b8e97a3e0210f850a1a04876d738a3e1e497bdf",
+ "by_arm": {
+  "K0": {
+   "a": 40,
+   "b": 20
+  },
+  "K0n": {
+   "a": 40,
+   "b": 20
+  },
+  "K1": {
+   "a": 40,
+   "b": 20
+  },
+  "K2": {
+   "a": 80,
+   "b": 40
+  },
+  "K3": {
+   "a": 80,
+   "b": 40
+  },
+  "K4": {
+   "a": 80,
+   "b": 40
+  },
+  "K5": {
+   "a": 40,
+   "b": 20
+  }
+ },
+ "by_category": {
+  "a": 400,
+  "b": 200
+ },
+ "category_c_note": "post-effect verification is the fixture /state oracle (caller oracle_send), never a Driver read",
+ "category_d_note": "no #105 reconciliation read exists in the main caller (OWN-105 runner fixes are not in main)",
+ "driver_reads_after_last_mutation": 0,
+ "evidence": "SOURCE (run.py loop) + REAL traces reused from B-01 (PENDING; same libs/cua-driver tree)",
+ "get_browser_state_calls": 600,
+ "per_trial": [
+  {
+   "arm": "K0n",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m000-fill-K0n-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m001-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m002-fill-K4-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m003-fill-K1-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m004-fill-K3-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m005-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m022-fill-K0-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m023-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m024-fill-K0n-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m025-fill-K2-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m026-fill-K4-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m027-fill-K3-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m032-fill-K1-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m033-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m034-fill-K0-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m035-fill-K3-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m036-fill-K0n-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m037-fill-K4-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m042-fill-K2-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m043-fill-K3-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m044-fill-K1-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m045-fill-K4-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m046-fill-K0-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m047-fill-K0n-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m064-fill-K3-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m065-fill-K4-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m066-fill-K2-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m067-fill-K0n-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m068-fill-K1-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m069-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m074-fill-K4-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m075-fill-K0n-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m076-fill-K3-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m077-fill-K0-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m078-fill-K2-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m079-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m084-fill-K0n-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m085-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m086-fill-K4-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m087-fill-K1-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m088-fill-K3-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m089-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m106-fill-K0-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m107-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m108-fill-K0n-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m109-fill-K2-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m110-fill-K4-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m111-fill-K3-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m116-fill-K1-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m117-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m118-fill-K0-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m119-fill-K3-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m120-fill-K0n-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m121-fill-K4-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m126-fill-K2-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m127-fill-K3-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m128-fill-K1-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m129-fill-K4-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m130-fill-K0-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m131-fill-K0n-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m148-fill-K3-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m149-fill-K4-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m150-fill-K2-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m151-fill-K0n-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m152-fill-K1-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m153-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m158-fill-K4-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m159-fill-K0n-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m160-fill-K3-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m161-fill-K0-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m162-fill-K2-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m163-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m168-fill-K0n-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m169-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m170-fill-K4-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m171-fill-K1-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m172-fill-K3-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m173-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m190-fill-K0-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m191-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m192-fill-K0n-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m193-fill-K2-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m194-fill-K4-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m195-fill-K3-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m200-fill-K1-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m201-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m202-fill-K0-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m203-fill-K3-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m204-fill-K0n-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m205-fill-K4-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m210-fill-K2-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m211-fill-K3-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m212-fill-K1-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m213-fill-K4-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m214-fill-K0-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m215-fill-K0n-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m232-fill-K3-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m233-fill-K4-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m234-fill-K2-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m235-fill-K0n-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m236-fill-K1-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m237-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m242-fill-K4-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m243-fill-K0n-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m244-fill-K3-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m245-fill-K0-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m246-fill-K2-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m247-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m252-fill-K0n-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m253-fill-K0-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m254-fill-K4-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m255-fill-K1-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m256-fill-K3-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m257-fill-K2-measured"
+  },
+  {
+   "arm": "K0",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m274-fill-K0-measured"
+  },
+  {
+   "arm": "K1",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m275-fill-K1-measured"
+  },
+  {
+   "arm": "K0n",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m276-fill-K0n-measured"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m277-fill-K2-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m278-fill-K4-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/m279-fill-K3-measured"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t400-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t401-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t402-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t403-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t404-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t405-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t406-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t407-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t408-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t409-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t410-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t411-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t412-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t413-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t414-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t415-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t416-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t417-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t418-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t419-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t420-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t421-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t422-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t423-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t424-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t425-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t426-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t427-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t428-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t429-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t430-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t431-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t432-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t433-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t434-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t435-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t436-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t437-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K2",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t438-fill-K2-t0_stress"
+  },
+  {
+   "arm": "K3",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/t439-fill-K3-t0_stress"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v280-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v281-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v290-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v291-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v294-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v295-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v298-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v299-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v308-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v309-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v312-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v313-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v316-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v317-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v326-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v327-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v330-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v331-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v334-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v335-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v344-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v345-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v348-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v349-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v352-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v353-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v362-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v363-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v366-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v367-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v370-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v371-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v380-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v381-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v384-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v385-fill-K4-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v388-fill-K4-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v389-fill-K5-measured"
+  },
+  {
+   "arm": "K5",
+   "oracle_reads": 4,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v398-fill-K5-measured"
+  },
+  {
+   "arm": "K4",
+   "oracle_reads": 3,
+   "reads": [
+    {
+     "aligned": true,
+     "category": "b",
+     "label": "bind",
+     "why": "pid+window_id binding: mints the target/tab capability every mutation re-proves"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot1",
+     "next_ref_resolved": true,
+     "next_tool": "browser_type",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    },
+    {
+     "aligned": true,
+     "category": "a",
+     "label": "snapshot2",
+     "next_ref_resolved": true,
+     "next_tool": "browser_click",
+     "snapshot_stored": true,
+     "why": "semantic_v2 snapshot whose minted ref the next mutation resolved (no snapshot between)"
+    }
+   ],
+   "trial": "trials/v399-fill-K4-measured"
+  }
+ ],
+ "schema": "cua.i107.cshadow.admissibility.v1",
+ "trials": 200,
+ "verdict": "NOT_ADMISSIBLE"
+}
