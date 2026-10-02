@@ -58,6 +58,9 @@ struct FixtureState {
     completed_key_pairs: usize,
     reject_editability: bool,
     drop_text_reply: bool,
+    dialog_open: bool,
+    drop_dialog_reply: bool,
+    resolved_dialogs: Vec<bool>,
     focused_nodes: BTreeMap<String, i64>,
     // Target-owned text, independent of the driver's result and request log.
     editable_text: BTreeMap<(String, i64), String>,
@@ -100,6 +103,9 @@ impl Default for FixtureState {
             completed_key_pairs: 0,
             reject_editability: false,
             drop_text_reply: false,
+            dialog_open: false,
+            drop_dialog_reply: false,
+            resolved_dialogs: Vec::new(),
             focused_nodes: BTreeMap::new(),
             editable_text: BTreeMap::new(),
             semantic_large_page: false,
@@ -594,6 +600,17 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                         "value": st.tab_visible
                     }
                 }))
+            }
+            "Page.enable" if is_tab && st.dialog_open => MockReply::ok(json!({})).with_events(vec![MockEvent {
+                method: "Page.javascriptDialogOpening".into(),
+                session_id: Some(sess.clone()),
+                params: json!({"type": "confirm", "message": "fixture confirmation", "url": "https://fixture.test/", "hasBrowserHandler": true}),
+            }]),
+            "Page.handleJavaScriptDialog" if is_tab => {
+                assert!(st.dialog_open, "a resolved dialog must not be replayed");
+                st.dialog_open = false;
+                st.resolved_dialogs.push(call.params["accept"].as_bool().unwrap());
+                if st.drop_dialog_reply { MockReply::disconnect() } else { MockReply::ok(json!({})) }
             }
             "Page.captureScreenshot" if is_tab => {
                 MockReply::ok(json!({"data": st.screenshot_data.clone()}))
@@ -2837,4 +2854,81 @@ async fn typing_pre_dispatch_refusal_preserves_target_text() {
             "browser_input_trust_unavailable"
         );
     }
+}
+
+#[tokio::test]
+async fn dialog_lost_reply_reports_unknown_effect_without_replay() {
+    use super::tools::BrowserDialogTool;
+    let mut incorrectly_refused = Vec::new();
+    for action in ["accept", "dismiss"] {
+        for lost_reply in [false, true] {
+            let f = fixture_with(|state| {
+                state.dialog_open = true;
+                state.drop_dialog_reply = lost_reply;
+            })
+            .await;
+            let (target, tab) = bind(&f).await;
+            let tool = BrowserDialogTool::new(f.engine.clone());
+            let inspected = tool
+                .invoke(json!({
+                    "target_id": target, "tab_id": tab, "session": SESSION, "action": "inspect"
+                }))
+                .await;
+            let inspected = structured(&inspected);
+            assert_eq!(inspected["present"], true, "{inspected}");
+            let dialog_id = inspected["dialog_id"].as_str().unwrap();
+            let stale = tool
+                .invoke(json!({
+                    "target_id": target, "tab_id": tab, "session": SESSION, "action": action,
+                    "dialog_id": "not-the-current-dialog", "delivery_mode": "foreground"
+                }))
+                .await;
+            assert_eq!(structured(&stale)["status"], "refused");
+            assert_eq!(
+                structured(&stale)["refusal"]["code"],
+                "browser_action_unavailable"
+            );
+            assert!(f.state.lock().unwrap().resolved_dialogs.is_empty());
+            assert!(f.state.lock().unwrap().dialog_open);
+            let result = tool
+                .invoke(json!({
+                    "target_id": target, "tab_id": tab, "session": SESSION, "action": action,
+                    "dialog_id": dialog_id, "delivery_mode": "foreground"
+                }))
+                .await;
+            let state = f.state.lock().unwrap();
+            assert!(!state.dialog_open, "target resolved before reply handling");
+            assert_eq!(state.resolved_dialogs, vec![action == "accept"]);
+            let calls = state
+                .calls
+                .iter()
+                .filter(|(_, method, _)| method == "Page.handleJavaScriptDialog")
+                .count();
+            assert_eq!(calls, 1, "no repeated dialog mutation");
+            drop(state);
+            println!(
+                "DIALOG_OUTCOME:{}",
+                serde_json::to_string(&json!({
+                    "action": action, "lost_reply": lost_reply, "resolved": true,
+                    "mutation_calls": calls, "wire": result,
+                }))
+                .unwrap()
+            );
+            if lost_reply {
+                let uncertainty = result.content.iter().any(|content| matches!(content,
+                    Content::Text { text, .. } if text.starts_with(&format!("JavaScript dialog {action} outcome is uncertain:"))
+                        && text.contains("do not replay this request")
+                ));
+                if result.is_error != Some(true)
+                    || !uncertainty
+                    || result.structured_content.is_some()
+                {
+                    incorrectly_refused.push(action);
+                }
+            } else {
+                assert_eq!(structured(&result)["status"], "ok");
+            }
+        }
+    }
+    assert!(incorrectly_refused.is_empty(), "post-resolution lost replies must report uncertain tool errors, not proven refusal: {incorrectly_refused:?}");
 }

@@ -2334,11 +2334,11 @@ impl Tool for BrowserDialogTool {
                         "dialog_id": dialog_id, "kind": dialog.kind, "action": action
                     }))
             }
-            Err(error) => BrowserRefusal::new(
-                BrowserRefusalCode::BrowserActionUnavailable,
-                format!("the exact JavaScript dialog could not be resolved: {error}"),
-            )
-            .to_tool_result(),
+            Err(error) => ToolResult::error(format!(
+                "JavaScript dialog {action} outcome is uncertain: {error}. \
+                 The dialog may already be resolved. Inspect fresh browser/dialog state \
+                 before considering another action; do not replay this request."
+            )),
         }
     }
 }
