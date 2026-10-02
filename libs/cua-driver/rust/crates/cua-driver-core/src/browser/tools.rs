@@ -1773,6 +1773,8 @@ impl Tool for BrowserTypeTool {
             )
             .to_tool_result();
         }
+        // B-05 measurement only (env-gated, default off): CDP DOM.focus done.
+        crate::phase_trace::mark("type.focused", &session);
         // Frame- and shadow-aware editability check: evaluated on the
         // ref's own node so it works identically for the main document,
         // shadow roots (getRootNode().activeElement), same-process
@@ -1801,6 +1803,8 @@ impl Tool for BrowserTypeTool {
                 .to_tool_result()
             }
         };
+        // B-05 measurement only (env-gated, default off): CDP node resolve done.
+        crate::phase_trace::mark("type.node_resolved", &session);
         let editable = conn
             .call(
                 Some(cdp),
