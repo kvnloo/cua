@@ -1,0 +1,19 @@
+{
+ "schema": "cua.i107.lane-prereg-amendment.v1",
+ "amends": "docs/experiments/i107-d-2026-10-02/PREREG.json (commit 3b40d8333, unchanged)",
+ "committed_before": "any measured lane-D trial (none has run; the only REAL run so far is the excluded smoke block)",
+ "changes": [
+  {
+   "field": "harness.lock",
+   "was": "one quiet-timed invocation per block",
+   "now": "one quiet-timed invocation per block OR per lock group of consecutive schedule blocks (run_d.py resolve_blocks refuses gaps and reordering). Every block keeps its own fixture process and manifest; the group's EXCLUSIVE window must contain every block's start and end (verify_artifacts check 7). Reason: the quiet lane is shared by several tracks and each acquisition waits behind other holders; grouping consecutive blocks changes no pair, order, condition or arm, so it cannot bias a within-pair comparison",
+   "groups_planned": ["smoke", "shake", "cmpd-b1 .. cmpd-b6", "cmpd-xq1 .. cmpd-xq3 (only if required)", "cmpd-xc1 .. cmpd-xc3 (only if required)", "k2-b1 .. k2-b3", "ctl-b01 .. ctl-b05", "ctl-b06 .. ctl-b10"]
+  },
+  {
+   "field": "blocked_at_freeze.REAL",
+   "was": "BLOCKED until an approved host-isolation wrapper is provided",
+   "now": "the lanes' canonical wrapper <lanes>/bin/hostless was replaced by the orchestrator with hostless v2 at 2026-10-02T05:06:31Z (sha256 367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b): environment scrub (DISPLAY, WAYLAND_*, HYPRLAND_*, SWAY/I3 sockets, session D-Bus, AT-SPI, XAUTHORITY, session type/desktop, keyring, ssh agent), private XDG_RUNTIME_DIR, and a Landlock domain (landlock-scope sha256 d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8) that blocks connect() to abstract unix sockets bound outside and signals to outside processes, with no user namespace, so root-owned files keep uid 0 and the Driver's isolated-launch trust check is not bypassed. v1 is kept as hostless-strict. Lane-D REAL blocks run under v2 and inside cua-x11-session.sh; run_d.py additionally refuses a missing hostless ancestor, host Wayland/Hyprland variables and DISPLAY :0. The wrapper identity is recorded per block (manifest isolation record) and in provenance.json"
+  }
+ ],
+ "unchanged": "arms, fixed settings, cohorts, conditions, schedule order, pairs, controls, metrics, validity, statistics, thresholds, continuation rule, disposition"
+}

@@ -9,7 +9,7 @@
 # The worktree and jev-use paths are derived from this file's location; nothing host-specific
 # is written into the packet.
 set -euo pipefail
-BLOCK="$1"; DRV="$2"; OUT="$3"
+BLOCK="$1"; DRV="$2"; OUT="$3"   # BLOCK: one block name, or a quoted space-separated lock group
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WT="$(cd "$HERE/../../../.." && pwd)"
 JEV="$WT/libs/cua-driver/examples/jev-use"
@@ -28,5 +28,7 @@ mkdir -p "$OUT"
 echo "[entry] block=$BLOCK version=$("$DRV" --version 2>&1) caller_tree=$TREE" >&2
 cd "$HERE"
 export JEV_USE_DIR="$JEV" PYTHONDONTWRITEBYTECODE=1
-exec "$JEV/.venv/bin/python" run_d.py --driver "$DRV" --out "$OUT" --block "$BLOCK" \
-  --binary-sha256 "$SHA" --caller-tree "$TREE" --lock-label "i107-d-$BLOCK"
+read -r -a BLOCKS <<< "$BLOCK"
+LABEL="i107-d-${BLOCKS[0]}"; [ "${#BLOCKS[@]}" -gt 1 ] && LABEL="$LABEL..${BLOCKS[-1]}"
+exec "$JEV/.venv/bin/python" run_d.py --driver "$DRV" --out "$OUT" --block "${BLOCKS[@]}" \
+  --binary-sha256 "$SHA" --caller-tree "$TREE" --lock-label "$LABEL"

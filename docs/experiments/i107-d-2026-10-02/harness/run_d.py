@@ -755,11 +755,20 @@ def isolation_record(env: dict[str, str], ancestor: Any = None) -> dict[str, Any
             "wayland_display_set": bool(env.get("WAYLAND_DISPLAY"))}
 
 
+def resolve_blocks(names: list[str]) -> list[dict[str, Any]]:
+    """Blocks of one lock group, in schedule order (PREREG-AMENDMENT-1: consecutive blocks only)."""
+    order = [b["block"] for b in d_plan.schedule()]
+    idx = [order.index(n) for n in names]
+    if idx != list(range(idx[0], idx[0] + len(idx))):
+        raise SystemExit(f"refusing: a lock group must be consecutive blocks in schedule order: {names}")
+    return [d_plan.block_by_name(n) for n in names]
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--driver", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--block", required=True)
+    p.add_argument("--block", required=True, nargs="+", help="one block, or a lock group of consecutive blocks")
     p.add_argument("--binary-sha256", required=True)
     p.add_argument("--caller-tree", required=True)
     p.add_argument("--lock-label", required=True)
@@ -770,7 +779,8 @@ def main() -> None:
         raise SystemExit(f"refusing: driver sha256 {digest} != expected {a.binary_sha256}")
     opts = Options(driver=a.driver, out=Path(a.out), binary_sha256=a.binary_sha256, caller_tree=a.caller_tree,
                    lock_label=a.lock_label)
-    asyncio.run(run_block(d_plan.block_by_name(a.block), opts))
+    for block in resolve_blocks(a.block):
+        asyncio.run(run_block(block, opts))
 
 
 if __name__ == "__main__":
