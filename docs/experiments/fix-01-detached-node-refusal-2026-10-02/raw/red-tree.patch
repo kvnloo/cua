@@ -1,0 +1,743 @@
+diff --git i/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py w/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
+new file mode 100644
+index 000000000..3fb83c211
+--- /dev/null
++++ w/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
+@@ -0,0 +1,221 @@
++from __future__ import annotations
++
++import argparse
++import asyncio
++import contextlib
++import io
++import json
++import sys
++import tempfile
++import unittest
++from contextlib import asynccontextmanager
++from pathlib import Path
++from types import SimpleNamespace
++from unittest.mock import patch
++from urllib.parse import urlencode
++from urllib.request import Request, urlopen
++
++BASE = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(BASE / "python"))
++sys.path.insert(0, str(BASE))
++
++import run
++from verify_setup import fixture
++
++STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document"
++
++
++def refused_result():
++    """An action result as the Driver's MCP boundary emits it: not an MCP error."""
++    return SimpleNamespace(
++        isError=False,
++        content=[SimpleNamespace(type="text", text=STALE_TEXT)],
++        structuredContent={"effect": "refused", "route": "dom"},
++    )
++
++
++class Session:
++    async def __aenter__(self):
++        return self
++
++    async def __aexit__(self, *_args):
++        pass
++
++    async def initialize(self):
++        pass
++
++    async def list_tools(self):
++        return SimpleNamespace(tools=[])
++
++
++class OneResult(Session):
++    def __init__(self, result):
++        self.result = result
++
++    async def call_tool(self, _name, _args):
++        return self.result
++
++
++class FixtureSession(Session):
++    """In-memory Driver; the HTTP fixture is the outcome oracle."""
++
++    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True):
++        self.url = url
++        self.value = ""
++        self.refuse_clicks = refuse_clicks
++        self.click_lands = click_lands
++        self.type_kept = type_kept
++        self.calls = []
++        self.observations = 0
++
++    async def call_tool(self, name, args):
++        self.calls.append(name)
++        if name == "browser_prepare":
++            data = {"prepared_pid": 1}
++        elif name == "list_windows":
++            data = {
++                "windows": [
++                    {"window_id": 1, "is_on_screen": True, "bounds": {"width": 100, "height": 100}}
++                ]
++            }
++        elif name == "get_browser_state":
++            self.observations += 1
++            n = self.observations
++            data = {
++                "target_id": "target",
++                "tabs": [{"tab_id": "tab"}],
++                "tab_id": "tab",
++                "refs": [
++                    {"role": "textbox", "name": "verification value", "ref": f"p{n}:0", "value": self.value},
++                    {"role": "button", "name": "Submit", "ref": f"p{n}:1"},
++                ],
++            }
++        elif name == "browser_type":
++            if self.type_kept:
++                self.value = args["text"]
++            data = {"effect": "unverifiable", "route": "trusted_input"}
++        elif name == "browser_click":
++            if self.refuse_clicks > 0:
++                self.refuse_clicks -= 1
++                return refused_result()
++            if self.click_lands:
++                with urlopen(
++                    Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
++                    timeout=2,
++                ):
++                    pass
++            data = {"effect": "unverifiable", "route": "dom"}
++        else:
++            assert name == "browser_navigate", name
++            data = {}
++        return SimpleNamespace(isError=False, content=[], structuredContent=data)
++
++    def mutations(self):
++        return [name for name in self.calls if name in {"browser_type", "browser_click"}]
++
++
++async def no_wait(_seconds):
++    return None
++
++
++class DriverCallRefusalTest(unittest.TestCase):
++    def call(self, result):
++        driver = run.Driver(OneResult(result), "jev-python-test")
++        return asyncio.run(driver.call("browser_click", {"ref": "p1:1"}))
++
++    def test_effect_refused_without_is_error_is_a_refusal_not_success(self):
++        with self.assertRaises(run.DriverToolError) as raised:
++            self.call(refused_result())
++        self.assertTrue(raised.exception.refused)
++        self.assertEqual(raised.exception.code, "browser_ref_stale")
++
++    def test_status_refused_envelope_keeps_its_structured_code(self):
++        result = SimpleNamespace(
++            isError=False,
++            content=[],
++            structuredContent={"status": "refused", "refusal": {"code": "browser_binding_stale"}},
++        )
++        with self.assertRaises(run.DriverToolError) as raised:
++            self.call(result)
++        self.assertTrue(raised.exception.refused)
++        self.assertEqual(raised.exception.code, "browser_binding_stale")
++
++    def test_accepted_unverifiable_result_is_returned(self):
++        result = SimpleNamespace(
++            isError=False, content=[], structuredContent={"effect": "unverifiable", "route": "dom"}
++        )
++        self.assertEqual(self.call(result)["effect"], "unverifiable")
++
++    def test_mcp_error_is_not_marked_refused(self):
++        result = SimpleNamespace(isError=True, content=[], structuredContent={"code": "x"})
++        with self.assertRaises(run.DriverToolError) as raised:
++            self.call(result)
++        self.assertFalse(raised.exception.refused)
++
++
++class RunnerRefusalTest(unittest.TestCase):
++    def execute(self, expected, **session_options):
++        token = "fix01-private-token"
++        with tempfile.TemporaryDirectory() as directory, fixture() as url:
++            session = FixtureSession(url, **session_options)
++            args = argparse.Namespace(
++                token=token,
++                fixture_url=url,
++                max_steps=4,
++                log=str(Path(directory) / "run.jsonl"),
++                provider="mock",
++                guarded_completion=False,
++                visual_observation="off",
++                dry_run=False,
++            )
++
++            @asynccontextmanager
++            async def transport(_params):
++                yield None, None
++
++            with (
++                patch.object(run, "stdio_client", transport),
++                patch.object(run, "ClientSession", return_value=session),
++                patch.object(run.asyncio, "sleep", no_wait),
++                contextlib.redirect_stdout(io.StringIO()),
++            ):
++                self.assertEqual(asyncio.run(run.run(args)), expected)
++            events = [json.loads(line) for line in Path(args.log).read_text().splitlines()]
++            return events, session
++
++    def test_one_refusal_gets_one_fresh_observation_and_one_fresh_dispatch(self):
++        events, session = self.execute("verified", refuse_clicks=1)
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click", "browser_click"])
++        refused = [event for event in events if event.get("action_refused")]
++        self.assertEqual(len(refused), 1)
++        self.assertEqual(refused[0]["event"], "step")
++        self.assertEqual(refused[0]["action_refused"], "browser_ref_stale")
++        # The retry used a ref from an observation taken after the refusal.
++        clicks = [i for i, name in enumerate(session.calls) if name == "browser_click"]
++        self.assertIn("get_browser_state", session.calls[clicks[0] + 1 : clicks[1]])
++
++    def test_second_refusal_stops_without_another_dispatch(self):
++        events, session = self.execute("unknown", refuse_clicks=2)
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click", "browser_click"])
++        self.assertEqual(events[-1]["phase"], "refused")
++        self.assertEqual(events[-1]["action_refused"], "browser_ref_stale")
++
++    def test_unconfirmed_accepted_click_is_never_dispatched_again(self):
++        events, session = self.execute("unknown", click_lands=False)
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++        self.assertEqual(events[-1], {"event": "outcome", "outcome": "unknown", "step": 2, "phase": "reconcile"})
++
++    def test_accepted_mutation_is_not_repeated_on_a_fresh_ref(self):
++        events, session = self.execute("unknown", type_kept=False)
++        self.assertEqual(session.mutations(), ["browser_type"])
++        self.assertEqual(events[-1]["phase"], "redispatch_blocked")
++        self.assertEqual(events[-1]["tool"], "browser_type")
++
++    def test_ordinary_path_is_unchanged(self):
++        events, session = self.execute("verified")
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++        self.assertFalse(any(event.get("action_refused") for event in events))
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git i/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts w/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
+new file mode 100644
+index 000000000..0bc121517
+--- /dev/null
++++ w/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
+@@ -0,0 +1,213 @@
++import assert from 'node:assert/strict';
++import { spawnSync } from 'node:child_process';
++import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
++import test, { mock } from 'node:test';
++import { fileURLToPath } from 'node:url';
++
++import { Client } from '@modelcontextprotocol/sdk/client/index.js';
++import { FixtureFormTask } from './tasks.js';
++
++const TOKEN = 'fix01-private-token';
++const STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document";
++
++type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean };
++
++// An action result as the Driver's MCP boundary emits it: not an MCP error.
++const refusedResult = () => ({
++  content: [{ type: 'text', text: STALE_TEXT }],
++  structuredContent: { effect: 'refused', route: 'dom' },
++});
++
++async function runFixture(scenario: Scenario, log: string) {
++  let value = '';
++  let submitted: string | null = null;
++  let observations = 0;
++  let refuseClicks = scenario.refuseClicks ?? 0;
++  const calls: string[] = [];
++
++  mock.method(FixtureFormTask.prototype, 'reset', async () => {});
++  mock.method(FixtureFormTask.prototype, 'readOracle', async () => ({ submitted }));
++  mock.method(Client.prototype, 'connect', async () => {});
++  mock.method(Client.prototype, 'listTools', async () => ({ tools: [] }));
++  mock.method(Client.prototype, 'close', async () => {
++    console.error(JSON.stringify({ closed: true, calls }));
++  });
++  mock.method(globalThis, 'setTimeout', (resolve: () => void) => {
++    resolve();
++    return 0;
++  });
++  mock.method(
++    Client.prototype,
++    'callTool',
++    async (request: { name: string; arguments: Record<string, unknown> }) => {
++      const { name, arguments: args } = request;
++      calls.push(name);
++      let data: Record<string, unknown> = {};
++      if (name === 'browser_prepare') data = { prepared_pid: 42 };
++      else if (name === 'list_windows') {
++        data = {
++          windows: [{ window_id: 7, is_on_screen: true, bounds: { width: 800, height: 600 } }],
++        };
++      } else if (name === 'get_browser_state') {
++        if (args.snapshot_format !== 'semantic_v2') {
++          data = { target_id: 'target', tabs: [{ tab_id: 'tab', active: true }] };
++        } else {
++          observations += 1;
++          data = {
++            target_id: 'target',
++            tab_id: 'tab',
++            refs: [
++              { role: 'textbox', name: 'verification value', ref: `p${observations}:0`, value },
++              { role: 'button', name: 'Submit', ref: `p${observations}:1` },
++            ],
++          };
++        }
++      } else if (name === 'browser_type') {
++        if (scenario.typeKept !== false) value = String(args.text);
++        data = { effect: 'unverifiable', route: 'trusted_input' };
++      } else if (name === 'browser_click') {
++        if (refuseClicks > 0) {
++          refuseClicks -= 1;
++          return refusedResult();
++        }
++        if (scenario.clickLands !== false) submitted = value;
++        data = { effect: 'unverifiable', route: 'dom' };
++      } else if (name !== 'browser_navigate') {
++        throw new Error(`unexpected Driver tool ${name}`);
++      }
++      return { content: [], structuredContent: data };
++    }
++  );
++
++  process.argv = [
++    process.execPath,
++    fileURLToPath(new URL('./run.ts', import.meta.url)),
++    '--provider',
++    'mock',
++    '--visual-observation',
++    'off',
++    '--token',
++    TOKEN,
++    '--max-steps',
++    '4',
++    '--log',
++    log,
++  ];
++  await import('./run.js');
++}
++
++function runScenario(scenario: Scenario = {}) {
++  const directory = mkdtempSync(join(tmpdir(), 'jev-refusal-run-'));
++  try {
++    const log = join(directory, 'events.jsonl');
++    const child = spawnSync(
++      process.execPath,
++      ['--import', 'tsx', fileURLToPath(import.meta.url), '--fixture-run', JSON.stringify(scenario), log],
++      { encoding: 'utf8', timeout: 15_000 }
++    );
++    assert.equal(child.error, undefined);
++    const events: Record<string, any>[] = readFileSync(log, 'utf8')
++      .trim()
++      .split('\n')
++      .filter(Boolean)
++      .map((line) => JSON.parse(line));
++    const receipt = JSON.parse(
++      child.stderr
++        .trim()
++        .split('\n')
++        .find((line) => line.startsWith('{')) ?? '{}'
++    );
++    assert.equal(receipt.closed, true, child.stderr);
++    const mutations = (receipt.calls as string[]).filter((name) =>
++      ['browser_type', 'browser_click'].includes(name)
++    );
++    return { events, calls: receipt.calls as string[], mutations, status: child.status };
++  } finally {
++    rmSync(directory, { recursive: true, force: true });
++  }
++}
++
++if (process.argv[2] === '--fixture-run') {
++  await runFixture(JSON.parse(process.argv[3]), process.argv[4]);
++} else {
++  const { Driver, DriverToolError } = await import('./run.js');
++  const driverFor = (result: Record<string, unknown>) =>
++    new Driver({ callTool: async () => result } as unknown as Client, 'jev-ts-test');
++
++  test('effect refused without isError is a refusal, not success', async () => {
++    await assert.rejects(
++      driverFor(refusedResult()).call('browser_click', { ref: 'p1:1' }),
++      (error: unknown) =>
++        error instanceof DriverToolError && error.refused && error.code === 'browser_ref_stale'
++    );
++  });
++
++  test('status refused envelope keeps its structured code', async () => {
++    await assert.rejects(
++      driverFor({
++        content: [],
++        structuredContent: { status: 'refused', refusal: { code: 'browser_binding_stale' } },
++      }).call('browser_click', {}),
++      (error: unknown) =>
++        error instanceof DriverToolError && error.refused && error.code === 'browser_binding_stale'
++    );
++  });
++
++  test('accepted unverifiable result is returned and MCP errors are not refusals', async () => {
++    const data = await driverFor({
++      content: [],
++      structuredContent: { effect: 'unverifiable', route: 'dom' },
++    }).call('browser_click', {});
++    assert.equal(data.effect, 'unverifiable');
++    await assert.rejects(
++      driverFor({ isError: true, content: [], structuredContent: { code: 'x' } }).call('browser_click', {}),
++      (error: unknown) => error instanceof DriverToolError && !error.refused
++    );
++  });
++
++  test('one refusal gets one fresh observation and one fresh dispatch', () => {
++    const { events, calls, mutations, status } = runScenario({ refuseClicks: 1 });
++    assert.equal(status, 0);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click', 'browser_click']);
++    const refused = events.filter((event) => event.action_refused);
++    assert.equal(refused.length, 1);
++    assert.equal(refused[0].event, 'step');
++    assert.equal(refused[0].action_refused, 'browser_ref_stale');
++    const clicks = calls.flatMap((name, index) => (name === 'browser_click' ? [index] : []));
++    assert.ok(calls.slice(clicks[0] + 1, clicks[1]).includes('get_browser_state'));
++  });
++
++  test('second refusal stops without another dispatch', () => {
++    const { events, mutations, status } = runScenario({ refuseClicks: 2 });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click', 'browser_click']);
++    assert.equal(events.at(-1)?.phase, 'refused');
++    assert.equal(events.at(-1)?.outcome, 'unknown');
++  });
++
++  test('unconfirmed accepted click is never dispatched again', () => {
++    const { events, mutations, status } = runScenario({ clickLands: false });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++    assert.deepEqual(events.at(-1), { event: 'outcome', outcome: 'unknown', step: 2, phase: 'reconcile' });
++  });
++
++  test('accepted mutation is not repeated on a fresh ref', () => {
++    const { events, mutations, status } = runScenario({ typeKept: false });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type']);
++    assert.equal(events.at(-1)?.phase, 'redispatch_blocked');
++  });
++
++  test('ordinary path is unchanged', () => {
++    const { events, mutations, status } = runScenario();
++    assert.equal(status, 0);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++    assert.equal(
++      events.some((event) => event.action_refused),
++      false
++    );
++  });
++}
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs
+index 59594eb83..cf6101d83 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs
+@@ -1333,6 +1333,12 @@ impl Tool for BrowserClickTool {
+     }
+ }
+ 
++/// RED HARNESS STUB (FIX-01 red run only): the two symbols the new tests name, with NO
++/// behaviour change: the DOM route below still dispatches `function() { this.click(); }`.
++#[allow(dead_code)]
++pub(crate) const DOM_CLICK_IF_CONNECTED: &str =
++    "function() { if (!this.isConnected) return false; this.click(); return true; }";
++
+ /// Center of the content quad from a `DOM.getBoxModel` result.
+ fn quad_center(box_model: &Value) -> Option<(f64, f64)> {
+     let quad = box_model.get("model")?.get("content")?.as_array()?;
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
+index 52793d806..95bfc0e06 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
+@@ -71,6 +71,11 @@ struct FixtureState {
+     omit_primary_target: bool,
+     /// Make `Browser.getWindowForTarget` for T1 answer this CDP error.
+     primary_window_error: Option<(i64, String)>,
++    /// Backend nodes the page has detached since the snapshot
++    /// (`Node.isConnected === false`); the node object still resolves.
++    detached_backends: Vec<i64>,
++    /// Backend nodes on which a page-side click/event dispatch actually ran.
++    page_dispatches: Vec<i64>,
+     /// Every incoming CDP call: (sessionId, method, params).
+     calls: Vec<(Option<String>, String, Value)>,
+ }
+@@ -100,6 +105,8 @@ impl Default for FixtureState {
+             viewport_css_width: 800.0,
+             viewport_css_height: 600.0,
+             tab_visible: true,
++            detached_backends: Vec::new(),
++            page_dispatches: Vec::new(),
+             calls: Vec::new(),
+         }
+     }
+@@ -659,7 +666,9 @@ fn fixture_handler(state: SharedState) -> MockHandler {
+                 } else {
+                     [10, 20, 21, 30].contains(&backend)
+                 };
+-                if known {
++                // A detached node has no layout object, so Chromium answers
++                // "Could not compute box model." before any coordinates exist.
++                if known && !st.detached_backends.contains(&backend) {
+                     let (x, y) = ((backend * 10) as f64, (backend * 10) as f64);
+                     MockReply::ok(json!({
+                         "model": {
+@@ -689,7 +698,41 @@ fn fixture_handler(state: SharedState) -> MockHandler {
+             "DOM.resolveNode" => MockReply::ok(json!({
+                 "object": { "objectId": format!("obj-{}", call.params["backendNodeId"]) }
+             })),
+-            "Runtime.callFunctionOn" => MockReply::ok(json!({ "result": { "value": true } })),
++            "Runtime.callFunctionOn" => {
++                // Page-side model of the called function: like Chromium,
++                // `el.click()` and `dispatchEvent` still run listeners on a
++                // detached node unless the SAME function checks isConnected.
++                let backend = call.params["objectId"]
++                    .as_str()
++                    .and_then(|object| object.strip_prefix("obj-"))
++                    .and_then(|backend| backend.parse::<i64>().ok());
++                let function = call.params["functionDeclaration"]
++                    .as_str()
++                    .unwrap_or_default();
++                // A drag destination arrives as the first argument object.
++                let destination = call.params["arguments"][0]["objectId"]
++                    .as_str()
++                    .and_then(|object| object.strip_prefix("obj-"))
++                    .and_then(|backend| backend.parse::<i64>().ok());
++                let detached = [backend, destination]
++                    .into_iter()
++                    .flatten()
++                    .any(|b| st.detached_backends.contains(&b));
++                if detached && function.contains("if (!this.isConnected") {
++                    let answer = if function.contains("return 'detached'") {
++                        json!("detached")
++                    } else {
++                        json!(false)
++                    };
++                    MockReply::ok(json!({ "result": { "value": answer } }))
++                } else {
++                    if function.contains("click()") || function.contains("dispatchEvent") {
++                        st.page_dispatches.extend(backend);
++                    }
++                    MockReply::ok(json!({ "result": { "value": true } }))
++                }
++            }
++            "Browser.setDownloadBehavior" => MockReply::ok(json!({})),
+             other => MockReply::method_not_found(other),
+         }
+     })
+@@ -2611,3 +2654,200 @@ async fn method_unsupported_keeps_the_electron_none_path() {
+     assert_eq!(tabs.len(), 1, "{s}");
+     assert_eq!(tabs[0]["url"], "https://fixture.test/");
+ }
++
++// ── Detached-node dispatch (a re-render replaced the ref's node) ─────────────
++
++fn detach(f: &Fixture, backend: i64) {
++    f.state.lock().unwrap().detached_backends.push(backend);
++}
++
++fn reattach(f: &Fixture, backend: i64) {
++    f.state
++        .lock()
++        .unwrap()
++        .detached_backends
++        .retain(|detached| *detached != backend);
++}
++
++fn page_dispatches(f: &Fixture) -> Vec<i64> {
++    f.state.lock().unwrap().page_dispatches.clone()
++}
++
++fn dom_click_args(target: &str, tab: &str, reference: &str) -> Value {
++    json!({
++        "target_id": target, "tab_id": tab, "ref": reference,
++        "input_route": "dom_event", "session": SESSION
++    })
++}
++
++#[tokio::test]
++async fn dom_event_click_refuses_a_detached_node_inside_the_dispatching_call() {
++    let f = fixture().await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let main_ref = ref_of(&snap, "main", "main-btn");
++    detach(&f, 10);
++
++    let args = dom_click_args(&target, &tab, &main_ref);
++    let click = BrowserClickTool::new(f.engine.clone())
++        .invoke(args.clone())
++        .await;
++    assert_ne!(click.is_error, Some(true));
++    assert_eq!(structured(&click)["status"], "refused", "{click:?}");
++    assert_eq!(structured(&click)["refusal"]["code"], "browser_ref_stale");
++    assert!(
++        page_dispatches(&f).is_empty(),
++        "nothing may run on the node"
++    );
++
++    // One round trip: the guard and the dispatch are the same function call.
++    let calls = recorded_calls(&f, "Runtime.callFunctionOn");
++    assert_eq!(calls.len(), 1, "{calls:?}");
++    assert_eq!(
++        calls[0].1["functionDeclaration"],
++        super::tools::DOM_CLICK_IF_CONNECTED
++    );
++    assert_eq!(calls[0].1["returnByValue"], true);
++
++    let public = ActionExecutionRecord::from_legacy("browser_click", &args, structured(&click))
++        .expect("browser click action record")
++        .public_result()
++        .expect("public browser click result");
++    let public = serde_json::to_value(public).expect("serialize public result");
++    assert_eq!(public["effect"], "refused", "{public}");
++}
++
++#[tokio::test]
++async fn dom_event_click_on_connected_and_reattached_nodes_dispatches_once() {
++    let f = fixture().await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let main_ref = ref_of(&snap, "main", "main-btn");
++
++    let connected = BrowserClickTool::new(f.engine.clone())
++        .invoke(dom_click_args(&target, &tab, &main_ref))
++        .await;
++    assert_eq!(structured(&connected)["status"], "ok", "{connected:?}");
++    assert_eq!(structured(&connected)["effect"], "unverifiable");
++    assert_eq!(page_dispatches(&f), vec![10]);
++
++    // Detached and put back before dispatch: the check reads live state, so
++    // the same node is connected again and is clicked exactly once more.
++    detach(&f, 10);
++    reattach(&f, 10);
++    let reattached = BrowserClickTool::new(f.engine.clone())
++        .invoke(dom_click_args(&target, &tab, &main_ref))
++        .await;
++    assert_eq!(structured(&reattached)["status"], "ok", "{reattached:?}");
++    assert_eq!(page_dispatches(&f), vec![10, 10]);
++}
++
++#[tokio::test]
++async fn trusted_click_on_a_detached_node_refuses_before_coordinates_exist() {
++    let f = fixture_with_platform(|_| {}, false).await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let main_ref = ref_of(&snap, "main", "main-btn");
++    detach(&f, 10);
++
++    let click = BrowserClickTool::new(f.engine.clone())
++        .invoke(json!({
++            "target_id": target, "tab_id": tab, "ref": main_ref,
++            "input_route": "trusted", "delivery_mode": "foreground", "session": SESSION
++        }))
++        .await;
++    assert_eq!(
++        structured(&click)["refusal"]["code"],
++        "browser_ref_stale",
++        "{click:?}"
++    );
++    assert!(recorded_calls(&f, "Input.dispatchMouseEvent").is_empty());
++}
++
++#[tokio::test]
++async fn dom_event_pointer_refuses_detached_origin_and_drag_destination() {
++    let f = fixture().await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let main_ref = ref_of(&snap, "main", "main-btn");
++    let shadow_input_ref = ref_of(&snap, "main", "Shadow Input");
++
++    let hover = |reference: &str| {
++        json!({
++            "target_id": target, "tab_id": tab, "ref": reference,
++            "action": "hover", "input_route": "dom_event", "session": SESSION
++        })
++    };
++    let connected = BrowserPointerTool::new(f.engine.clone())
++        .invoke(hover(&main_ref))
++        .await;
++    assert_eq!(structured(&connected)["status"], "ok", "{connected:?}");
++    assert_eq!(page_dispatches(&f), vec![10]);
++
++    detach(&f, 10);
++    let detached = BrowserPointerTool::new(f.engine.clone())
++        .invoke(hover(&main_ref))
++        .await;
++    assert_eq!(
++        structured(&detached)["refusal"]["code"],
++        "browser_ref_stale",
++        "{detached:?}"
++    );
++    assert_eq!(
++        page_dispatches(&f),
++        vec![10],
++        "a detached origin gets no event"
++    );
++
++    // A connected origin whose drag destination was detached is refused too.
++    reattach(&f, 10);
++    let drag_origin = shadow_input_ref;
++    let drag = BrowserPointerTool::new(f.engine.clone())
++        .invoke(json!({
++            "target_id": target, "tab_id": tab, "ref": drag_origin,
++            "destination_ref": main_ref, "action": "drag",
++            "input_route": "dom_event", "session": SESSION
++        }))
++        .await;
++    let before = page_dispatches(&f);
++    detach(&f, 10);
++    let detached_drag = BrowserPointerTool::new(f.engine.clone())
++        .invoke(json!({
++            "target_id": target, "tab_id": tab, "ref": drag_origin,
++            "destination_ref": main_ref, "action": "drag",
++            "input_route": "dom_event", "session": SESSION
++        }))
++        .await;
++    assert_eq!(structured(&drag)["status"], "ok", "{drag:?}");
++    assert_eq!(
++        structured(&detached_drag)["refusal"]["code"],
++        "browser_ref_stale",
++        "{detached_drag:?}"
++    );
++    assert_eq!(page_dispatches(&f), before, "no drag event after detach");
++}
++
++#[tokio::test]
++async fn download_activation_refuses_a_detached_node() {
++    let f = fixture().await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let main_ref = ref_of(&snap, "main", "main-btn");
++    detach(&f, 10);
++    let root = tempfile::tempdir().unwrap();
++    let root = std::fs::canonicalize(root.path()).unwrap();
++
++    let download = super::download::BrowserDownloadTool::new(f.engine.clone())
++        .invoke(json!({
++            "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION,
++            "destination_root": root.to_str().unwrap(),
++            (super::download::MCP_HOST_DOWNLOAD_APPROVAL_ARG): true,
++        }))
++        .await;
++    assert_eq!(
++        structured(&download)["refusal"]["code"],
++        "browser_ref_stale",
++        "{download:?}"
++    );
++    assert!(page_dispatches(&f).is_empty());
++}

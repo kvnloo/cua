@@ -1,0 +1,27 @@
+{
+  "lane": "FIX-01",
+  "branch": "exp/fix-01-detached-node-refusal-20261002",
+  "base": {"sha": "2d71548b46114cd1a1bc58ccdef323ce185c9965", "what": "R2-07 tip: 031ee5f58 (upstream c4d0c6625 + trycua/cua PR 4316 head a0bca7440) + R2-07 harness and packet",
+           "rust_tree": "ceadcc0e60ba811ba6ff926f63834561be3c9e30", "rust_tree_equals": ["229b65b2849c3a595ddbc85200d7181b18bd2e47", "352507b6c03162ab286b21d5ed509125cc3daece"],
+           "rust_equality_check": "git diff --quiet 2d71548b4 352507b6c -- libs/cua-driver/rust (rc 0) and vs 229b65b28 (rc 0), re-verified by this lane"},
+  "fix_commits": {
+    "part_a_driver": {"sha": "8cfa8c1dbd281da84f9acf8745dc8bea73da96e3", "touches": "libs/cua-driver/rust only", "rust_tree": "e24808eff03761bacd52240a702180c2f45c83b2"},
+    "part_b_caller": {"sha": "6eb9319fe785a7eb7d5e156a9221edf818a3697f", "touches": "libs/cua-driver/examples/jev-use only"}
+  },
+  "packet_commits": {"prereg": "b47b6cc30 (PREREG.json + harness, before any trial)", "harness_fix_after_shakedown": "872790bce", "results": "see git log of this packet directory"},
+  "upstream_applied_tree": {"base": "352507b6c03162ab286b21d5ed509125cc3daece", "worktree": "detached <lanes>/w2-fix01-upmain (removed after the lane)",
+                            "cherry_picked": ["8cfa8c1db -> 66a6f0a2c", "6eb9319fe -> e69cebc50"], "tree": "e35efb8e8f5c43ebe08dc771795025e628eef0fa", "merge_tree_tree": "e35efb8e8f5c43ebe08dc771795025e628eef0fa"},
+  "b01_source": {"sha": "f5c991e5927513c8b94da4330c94276dc5f8ce22", "merge_tree": "Part A CONFLICT in browser/tools.rs; Part B clean",
+                 "resolution": "raw/b01-resolution-tools.rs.diff (keep f5c991e59's marks, add the detached arm after `return match dispatched {`); 187 browser:: unit tests pass on the resolved tree (raw/unit/b01res-rust)"},
+  "binaries": {
+    "U": {"name": "cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version_in_session": "cua-driver 0.32.0", "rehashed": "2026-10-02 by this lane"},
+    "F": {"name": "cua-driver-fix01-8cfa8c1db", "sha256": "6ce995b8cc7637af0c46d4a67854a73352a437d03c1de1b272a9eadcf942ac04", "version_in_session": "cua-driver 0.32.0",
+          "build": "hostless locked.sh shared + flock cargo-build.lock build-driver.sh <wt> fix01-8cfa8c1db cua-release-fix01; head 6eb9319fe (Rust tree == 8cfa8c1db); 185 s; 0 Fresh workspace units; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1"}
+  },
+  "live_heads": {
+    "start_2026-10-02T05:04:44Z": {"trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)", "upstream_main": "bc55ff2d236a62075c981ebadf0ff97dd90d45be (2 past 352507b6c, 0 libs/cua-driver files)"},
+    "end": "see README Provenance (read at packaging)"
+  },
+  "publication_sha": "set by the Publish agent; nothing pushed by this lane",
+  "environment": {"os": "Linux 7.2.2 x86_64", "session": "hostless v2 (env strip, private XDG_RUNTIME_DIR, Landlock scope) -> lock -> cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom, private dbus)", "chrome": "google-chrome 151.0.7922.71 (Driver-launched, isolated_new profile)", "python": "3.12.13 (jev-use venv)", "node": "v22.23.2", "displays": "recorded per block in validity.json"}
+}

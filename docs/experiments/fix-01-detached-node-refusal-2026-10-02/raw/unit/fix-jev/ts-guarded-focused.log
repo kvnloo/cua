@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: guarded completion returns the fresh candidate and exact redacted accepted telemetry
+ok 1 - guarded completion returns the fresh candidate and exact redacted accepted telemetry
+  ---
+  duration_ms: 5.338641
+  type: 'test'
+  ...
+# Subtest: guarded completion declines session "" before other checks
+ok 2 - guarded completion declines session "" before other checks
+  ---
+  duration_ms: 0.807244
+  type: 'test'
+  ...
+# Subtest: guarded completion declines session "session-b" before other checks
+ok 3 - guarded completion declines session "session-b" before other checks
+  ---
+  duration_ms: 0.362879
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a different task before checking page presence
+ok 4 - guarded completion declines a different task before checking page presence
+  ---
+  duration_ms: 0.340554
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a missing page without reading task state
+ok 5 - guarded completion declines a missing page without reading task state
+  ---
+  duration_ms: 0.208369
+  type: 'test'
+  ...
+# Subtest: guarded completion declines unproven field "" before targets
+ok 6 - guarded completion declines unproven field "" before targets
+  ---
+  duration_ms: 0.239681
+  type: 'test'
+  ...
+# Subtest: guarded completion declines unproven field "other" before targets
+ok 7 - guarded completion declines unproven field "other" before targets
+  ---
+  duration_ms: 0.225657
+  type: 'test'
+  ...
+# Subtest: guarded completion declines unproven field undefined before targets
+ok 8 - guarded completion declines unproven field undefined before targets
+  ---
+  duration_ms: 0.158503
+  type: 'test'
+  ...
+# Subtest: guarded completion declines non-unique submit refs [] before reuse
+ok 9 - guarded completion declines non-unique submit refs [] before reuse
+  ---
+  duration_ms: 0.397887
+  type: 'test'
+  ...
+# Subtest: guarded completion declines non-unique submit refs ["p2:1","p2:2"] before reuse
+ok 10 - guarded completion declines non-unique submit refs ["p2:1","p2:2"] before reuse
+  ---
+  duration_ms: 0.507864
+  type: 'test'
+  ...
+# Subtest: guarded completion declines non-unique submit refs ["p1:1","p1:1"] before reuse
+ok 11 - guarded completion declines non-unique submit refs ["p1:1","p1:1"] before reuse
+  ---
+  duration_ms: 2.141718
+  type: 'test'
+  ...
+# Subtest: guarded completion declines non-unique submit refs [""] before reuse
+ok 12 - guarded completion declines non-unique submit refs [""] before reuse
+  ---
+  duration_ms: 0.438961
+  type: 'test'
+  ...
+# Subtest: guarded completion declines old-ref reuse before checking executable candidates
+ok 13 - guarded completion declines old-ref reuse before checking executable candidates
+  ---
+  duration_ms: 0.540705
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with wrong ID
+ok 14 - guarded completion declines a candidate with wrong ID
+  ---
+  duration_ms: 0.258034
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with wrong tool
+ok 15 - guarded completion declines a candidate with wrong tool
+  ---
+  duration_ms: 0.148731
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with visual tool
+ok 16 - guarded completion declines a candidate with visual tool
+  ---
+  duration_ms: 0.3675
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with missing tool
+ok 17 - guarded completion declines a candidate with missing tool
+  ---
+  duration_ms: 0.175653
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with visual source
+ok 18 - guarded completion declines a candidate with visual source
+  ---
+  duration_ms: 0.137088
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with native source
+ok 19 - guarded completion declines a candidate with native source
+  ---
+  duration_ms: 0.134387
+  type: 'test'
+  ...
+# Subtest: guarded completion declines a candidate with missing source
+ok 20 - guarded completion declines a candidate with missing source
+  ---
+  duration_ms: 0.136156
+  type: 'test'
+  ...
+# Subtest: guarded completion declines 0 executable candidates before ref matching
+ok 21 - guarded completion declines 0 executable candidates before ref matching
+  ---
+  duration_ms: 0.301511
+  type: 'test'
+  ...
+# Subtest: guarded completion declines 2 executable candidates before ref matching
+ok 22 - guarded completion declines 2 executable candidates before ref matching
+  ---
+  duration_ms: 0.186447
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref "p1:1"
+ok 23 - guarded completion declines mismatched or malformed candidate ref "p1:1"
+  ---
+  duration_ms: 0.2646
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref "p2:2"
+ok 24 - guarded completion declines mismatched or malformed candidate ref "p2:2"
+  ---
+  duration_ms: 0.172664
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref ""
+ok 25 - guarded completion declines mismatched or malformed candidate ref ""
+  ---
+  duration_ms: 0.156203
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref undefined
+ok 26 - guarded completion declines mismatched or malformed candidate ref undefined
+  ---
+  duration_ms: 0.180183
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref null
+ok 27 - guarded completion declines mismatched or malformed candidate ref null
+  ---
+  duration_ms: 0.143331
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref 2
+ok 28 - guarded completion declines mismatched or malformed candidate ref 2
+  ---
+  duration_ms: 0.138165
+  type: 'test'
+  ...
+# Subtest: guarded completion declines mismatched or malformed candidate ref {"ref":"p2:1"}
+ok 29 - guarded completion declines mismatched or malformed candidate ref {"ref":"p2:1"}
+  ---
+  duration_ms: 0.146261
+  type: 'test'
+  ...
+# Subtest: guarded completion still requires a unique initial target
+ok 30 - guarded completion still requires a unique initial target
+  ---
+  duration_ms: 0.346781
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 522.871899

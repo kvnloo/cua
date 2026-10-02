@@ -1,0 +1,7 @@
+[fix01] host_runtime_entries=0 x11_sockets=X100 
+[fix01] DISPLAY=:100 loadavg=3.66 5.85 8.47 phase_args=--phase c1 --driver cua-driver-fix01-8cfa8c1db --driver-label F --reps 1 --out c1F 
+{"event": "validity", "ok": true, "display": ":100"}
+Cua Driver sends content-free product telemetry by default. Run `cua-driver telemetry disable` to stop it; `cua-driver telemetry status` shows the current setting.
+[2m2026-10-02T05:05:41.100371Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 10, body: Str, fds: [] })
+[2m2026-10-02T05:05:41.108627Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+{"event": "cell", "id": "c1-c1-F-rep1", "outcome": "error", "verified": false, "first": null, "code": null, "dup": 0}
