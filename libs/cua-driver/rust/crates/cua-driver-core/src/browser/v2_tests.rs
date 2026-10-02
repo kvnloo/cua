@@ -58,6 +58,9 @@ struct FixtureState {
     completed_key_pairs: usize,
     reject_editability: bool,
     drop_text_reply: bool,
+    file_input_enabled: bool,
+    drop_file_reply: bool,
+    assigned_files: Vec<Vec<String>>,
     focused_nodes: BTreeMap<String, i64>,
     // Target-owned text, independent of the driver's result and request log.
     editable_text: BTreeMap<(String, i64), String>,
@@ -100,6 +103,9 @@ impl Default for FixtureState {
             completed_key_pairs: 0,
             reject_editability: false,
             drop_text_reply: false,
+            file_input_enabled: false,
+            drop_file_reply: false,
+            assigned_files: Vec::new(),
             focused_nodes: BTreeMap::new(),
             editable_text: BTreeMap::new(),
             semantic_large_page: false,
@@ -527,8 +533,40 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     MockReply::ok(if st.semantic_large_page {
                         large_semantic_document()
                     } else {
-                        main_document()
+                        let mut document = main_document();
+                        if st.file_input_enabled {
+                            document["root"]["children"][0]["children"][1]["shadowRoots"][0]
+                                ["children"][0]["attributes"] = json!([
+                                "id",
+                                "shadow-input",
+                                "type",
+                                "file",
+                                "aria-label",
+                                "Shadow Input"
+                            ]);
+                        }
+                        document
                     })
+                }
+            }
+            "DOM.describeNode" if is_tab && call.params["backendNodeId"] == 20 => {
+                MockReply::ok(json!({"node": {"nodeName": "INPUT", "backendNodeId": 20,
+                    "attributes": ["type", if st.file_input_enabled { "file" } else { "text" }]}}))
+            }
+            "DOM.setFileInputFiles" if is_tab => {
+                assert_eq!(call.params["backendNodeId"], 20);
+                st.assigned_files.push(
+                    call.params["files"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|value| value.as_str().unwrap().to_owned())
+                        .collect(),
+                );
+                if st.drop_file_reply {
+                    MockReply::disconnect()
+                } else {
+                    MockReply::ok(json!({}))
                 }
             }
             "DOM.describeNode" if is_tab && call.params["backendNodeId"] == 999 => {
@@ -2836,5 +2874,73 @@ async fn typing_pre_dispatch_refusal_preserves_target_text() {
             public.error.unwrap().code,
             "browser_input_trust_unavailable"
         );
+    }
+}
+
+#[tokio::test]
+async fn file_input_lost_reply_reports_unknown_assignment_without_replay() {
+    use super::tools::BrowserSetInputFilesTool;
+    let file = tempfile::NamedTempFile::new().unwrap();
+    std::fs::write(file.path(), "benign local fixture\n").unwrap();
+    let path = std::fs::canonicalize(file.path())
+        .unwrap()
+        .to_string_lossy()
+        .into_owned();
+    for (enabled, lost_reply) in [(false, false), (true, false), (true, true)] {
+        let f = fixture_with(|state| {
+            state.file_input_enabled = enabled;
+            state.drop_file_reply = lost_reply;
+        })
+        .await;
+        let (target, tab) = bind(&f).await;
+        let observed = snapshot(&f, &target, &tab).await;
+        let input = ref_of(&observed, "main", "Shadow Input");
+        let result = BrowserSetInputFilesTool::new(f.engine.clone())
+            .invoke(json!({
+                "target_id": target, "tab_id": tab, "ref": input,
+                "session": SESSION, "files": [path]
+            }))
+            .await;
+        let assigned = f.state.lock().unwrap().assigned_files.clone();
+        let calls = recorded_calls(&f, "DOM.setFileInputFiles").len();
+        if !enabled {
+            assert_eq!(structured(&result)["status"], "refused");
+            assert_eq!(
+                structured(&result)["refusal"]["code"],
+                "browser_action_unavailable"
+            );
+            assert!(assigned.is_empty());
+            assert_eq!(calls, 0);
+            continue;
+        }
+        assert_eq!(
+            assigned,
+            vec![vec![path.clone()]],
+            "target owns the exact assignment"
+        );
+        assert_eq!(calls, 1, "never replay an uncertain file assignment");
+        println!(
+            "FILE_ASSIGNMENT_OUTCOME:{}",
+            serde_json::to_string(&json!({
+                "lost_reply": lost_reply, "assigned_files": 1,
+                "mutation_calls": calls, "wire": result
+            }))
+            .unwrap()
+        );
+        if lost_reply {
+            assert_eq!(
+                result.is_error,
+                Some(true),
+                "assignment may have happened before reply loss"
+            );
+            assert!(result.structured_content.is_none());
+            assert!(result.content.iter().any(|content| matches!(content,
+                Content::Text { text, .. } if text.starts_with("File input assignment outcome is uncertain:")
+                    && text.contains("do not replay this request")
+            )));
+        } else {
+            assert_eq!(structured(&result)["status"], "ok");
+            assert_eq!(structured(&result)["file_count"], 1);
+        }
     }
 }

@@ -2531,11 +2531,11 @@ impl Tool for BrowserSetInputFilesTool {
                     "status": "ok", "target_id": target_id, "tab_id": tab_id,
                     "ref": ext_ref, "frame": entry.frame.kind.as_str(), "file_count": files.len()
                 })),
-            Err(error) => BrowserRefusal::new(
-                BrowserRefusalCode::BrowserActionUnavailable,
-                format!("the browser refused the exact file input assignment: {error}"),
-            )
-            .to_tool_result(),
+            Err(error) => ToolResult::error(format!(
+                "File input assignment outcome is uncertain: {error}. \
+                 The files may already be assigned. Inspect fresh browser/file-input state \
+                 before considering another action; do not replay this request."
+            )),
         }
     }
 }
