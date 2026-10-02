@@ -1,0 +1,63 @@
+{
+ "schema": "cua.stack.prereg.v1",
+ "id": "stack2-addr-2026-10-02",
+ "lane": "stack v2 ADDR: element addressing between Hermes computer_use and cua-driver 0.32.0",
+ "committed_before_measured_runs": true,
+ "scope": "kvnloo/hermes-agent#319 2026-10-01 directive: no new integration architecture, protocol, question family or active controller; shadow output never changes Hermes behaviour (no shadow sidecar runs in this lane; the #385 observer is metadata-only and returns None from every hook). CUA invariants (kvnloo/cua#73/#93): no Driver change, no new Driver service, fresh verification retained, no blind replay. The fix is on the Hermes integration side only.",
+
+ "finding_before_runs": {
+  "evidence": "SOURCE + UNIT + REAL (pilot, excluded)",
+  "hermes_sends": "tools/computer_use/cua_backend_input.py: click/double_click -> {element_index} (+ element_token from the last capture when the live schema lists element_token), scroll -> {element_index}, set_value -> {element_index, value}, drag -> {from_element, to_element}; coordinates as {x, y} (drag: from_x..to_y). NousResearch/hermes-agent main 54bc5e50 and kvnloo/hermes-agent main 54bc5e50 have tools/computer_use byte-identical to the stack base 0d60437a.",
+  "driver_accepts": "trycua/cua#3873 (61f1c0ab, 2026-09-30, breaking): element_token is the only element target; element_index and snapshot_id removed from every action schema; unknown argument names refused at dispatch. Live tools/list of 0.32.0 (229b65b28): click, double_click, right_click, scroll, set_value, type_text advertise element_token and no element_index, additionalProperties=false; drag has no element form. 0.21.0 (Hermes' pinned release) advertises element_index + element_token + snapshot_id. trycua/cua main 989cc76c keeps token-only and adds the token pattern ^s[0-9a-f]{8}:[0-9]+$.",
+  "stale_side": "Hermes (upstream and fork main) is stale relative to the Driver's current contract; the Driver contract is authority-preserving (snapshot-bound tokens, stale tokens refused). The fix belongs on the Hermes side.",
+  "fix": "kvnloo/hermes-agent exp/stack-addr-20261002 70cfc7a5 (one hunk in CuaDriverBackend._action): when the live schema of the action advertises element_token but not element_index, send the current snapshot's token alone; with no token for that index refuse locally (code element_token_unavailable) - never a bare index, never a coordinate fallback. Drivers that advertise element_index keep their current wire shape.",
+  "unit": "tests/tools/test_computer_use_element_token_contract.py against a strict fake driver built from the frozen live schemas: 7 token-only cases red on 0d60437a ('unknown argument element_index'), 12/12 green on 70cfc7a5; computer_use suites 294 passed on base, 306 passed on the fix (0 failed)."
+ },
+
+ "stack": {
+  "hermes_before": "exp/stack-integration-20261002 0d60437a3329448bb9d2992e34cec81b0afd36df (fork main 4d3555e5 + #385 + #386 + #387), own venv",
+  "hermes_after": "exp/stack-addr-20261002 70cfc7a5b325372c689147cd1398147bdb7f2bca (= 0d60437a + the fix), own venv",
+  "invocation": "python -m hermes_cli.main chat -Q -t computer_use --max-turns 12 -q <task prompt> (unchanged from SMOKE)",
+  "hermes_config": "unchanged from the SMOKE observer-enabled arm (harness/drive.py config_yaml is verbatim): provider custom -> Ollama /v1 on loopback; tools.tool_search.enabled=off; computer_use.permission_mode=standard; capture_after_mode=ax; explicit command_allowlist for cua:{click,type,key,scroll}:{background,foreground} and cua:set_value:background; no --yolo, no approvals.mode off, no approval-bypass variable. Observer plugin z0-hermes-observer present and enabled (metadata only); no shadow sidecar.",
+  "model": "qwen2.5:7b-instruct weights 845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e via tag qwen2.5:7b-instruct-smoke-t0 digest 77a5de209c159812c77a247142269a75acfdef0c1cbfbcb264ce2c85bbe0ada4 (temperature 0, seed 42; recreated byte-identical to the SMOKE tag) on the shared user-local Ollama 0.35.0 at 127.0.0.1:11500 (GPU; served context 32768 = model maximum). Server residency recorded per run in the drive ledger; the server is shared with other lanes, so outputs are not deterministic.",
+  "driver_measured": "cua-driver 0.32.0, trycua/cua 229b65b28, binary sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3 (both arms)",
+  "driver_legacy": "cua-driver 0.21.0 official release, binary sha256 43d926a1b938012379db57cf351530f81e75a574017676815f85d1e13aff23f7 (legacy set only)",
+  "session": "one private rootless Xvfb session per run (cua-x11-session.sh under hostless v2, private D-Bus + private AT-SPI); Hermes inside bwrap with the live Hermes home, the real home and the fixture state masked by empty tmpfs",
+  "fixtures": "gtk3 task window libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py sha256 547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059; jev-use examples/jev-use/fixture_server.py sha256 0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf in Google Chrome --app (identical to SMOKE and to trycua/cua main 989cc76c)",
+  "oracle": "harness/oracle.py, byte-identical to the SMOKE oracle: gtk3 PASS iff agreed is true and counter 0, size none, note_saved null; browser PASS iff the fixture /state submitted == the run token; unreadable state = unknown"
+ },
+
+ "runs": {
+  "plan": "plan.json (harness/make_plan.py, seed 20261002), executed in file order",
+  "measured": "12 pairs x {gtk3, browser} x {before, after} on Driver 0.32.0 = 48 runs; arm order inside each (pair, task) seeded random; both arms of a pair use the same token adr<pair>-sha256('stack2-addr-2026-10-02/<pair>')[:6]",
+  "legacy": "after-arm Hermes on Driver 0.21.0, 3 per task = 6 runs, reported separately, never pooled with the measured set",
+  "pilots_excluded": "pilot-01..pilot-04 (one per task x arm on 0.32.0, harness check before this commit) and the backend-level probes are kept under raw/attempts and excluded from every denominator",
+  "no_post_hoc_exclusion": "every planned run is reported; harness errors, timeouts and unknown verdicts stay in their denominators"
+ },
+
+ "tool_result_classes": {
+  "source": "Hermes' private state.db: every computer_use call paired with its result by tool_call_id (harness/extract.py)",
+  "addressing_refused": "result message contains 'unknown argument element_index|snapshot_id|from_element|to_element'",
+  "token_unavailable": "result code element_token_unavailable (Hermes-local refusal; no Driver call)",
+  "stale_token": "result contains 'element_token is stale' (Driver)",
+  "invalid_token": "result contains an invalid-format, out-of-range or window-conflict token refusal (Driver)",
+  "other_error": "any other ok=false, {error: ...} or non-JSON result",
+  "capture_ok": "a capture result (or Hermes' byte-identical-result note)",
+  "ok": "an action result with ok=true (the Driver accepted and dispatched it; 'ok' is NOT task success - only the oracle grades outcomes)",
+  "tool_error": "any class other than capture_ok and ok",
+  "element_action": "a click/double_click/right_click/middle_click/triple_click/scroll/set_value/drag call whose arguments carry an integer element/from_element/to_element"
+ },
+
+ "hypotheses_and_gates": {
+  "H1_contract": {"claim": "With the fix, no element-addressing argument is refused by Driver 0.32.0.", "gate": "PASS iff after-arm measured runs have 0 addressing_refused results and every after-arm run has a summary. The before-arm count and the number of before-arm runs with a refusal are reported."},
+  "H2_element_reach": {"claim": "Element actions reach Driver 0.32.0 and are dispatched.", "gate": "PASS iff >= 90% of after-arm measured runs that issue an element action have >= 1 element action with result ok. Before-arm element-action ok count reported (expected 0)."},
+  "H3_task_success": {"claim": "The fix raises oracle-verified task success on 0.32.0.", "metric": "paired by (task, pair): after-only vs before-only passes", "gate": "SUPPORTED per task iff after-only > before-only and the exact one-sided sign test p < 0.05. gtk3 is the primary test; browser is reported with the same test (the SMOKE browser task was hard for this model even on 0.21.0: 0-4/12 per arm). Pass counts with Wilson 95% CIs per cell."},
+  "H4_authority": {"claim": "Hermes never sends a superseded or foreign token and never substitutes coordinates for a refused element.", "gate": "PASS iff after-arm stale_token == 0 and invalid_token == 0. token_unavailable local refusals are counted; by construction (unit-tested) each one makes no Driver call. Coordinate actions are counted per arm; any coordinate action is the model's own explicit choice (its arguments are recorded), never a Hermes substitution."},
+  "H5_tool_errors": {"claim": "Tool-call errors per run, before vs after.", "report": "tool calls, successful tool calls, tool errors (total, mean and median per run, runs with >= 1 error) and the result-class breakdown per arm and task; descriptive, no gate."},
+  "legacy": {"claim": "The fix keeps the pinned 0.21.0 wire shape working.", "gate": "PASS iff 0 addressing_refused in the 6 legacy runs; pass counts descriptive (SMOKE 0.21.0 reference: gtk3 12/12, browser 0-4/12 per arm)."}
+ },
+
+ "secondary_reported": ["Hermes exit codes", "peak prompt tokens vs served context 32768 (observer usage)", "system-prompt hash per arm (expected identical: the fix does not touch the prompt)", "isolation: mask.inside, env.inside, live Hermes home stat before/after", "model-server residency at each run start"],
+
+ "claim_boundary": "Integration evidence for one local 7B model on two fixtures in private Xvfb sessions with cua-driver 0.32.0 (and a small 0.21.0 regression set). Not a model-capability benchmark and not a latency claim (no timing is reported; wall times are incidental). Driver 'ok' means accepted and dispatched; only the fixture oracle grades success."
+}
