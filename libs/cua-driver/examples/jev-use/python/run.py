@@ -73,10 +73,24 @@ class DriverToolError(RuntimeError):
         message: str,
         code: str | None = None,
         recommended_delivery: str | None = None,
+        refused: bool = False,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.recommended_delivery = recommended_delivery
+        # True only for a structured Driver refusal: nothing was dispatched.
+        self.refused = refused
+
+
+def refusal_code_from_content(content: Any) -> str | None:
+    """Recover the closed refusal code from the stable ``refused (<code>):`` text prefix."""
+    for item in content or []:
+        text = getattr(item, "text", None)
+        if isinstance(text, str) and text.startswith("refused (") and ")" in text:
+            code = text[len("refused (") : text.index(")")]
+            if code.replace("_", "").isalnum():
+                return code
+    return None
 
 
 class Driver:
@@ -103,13 +117,18 @@ class Driver:
         data = result.structuredContent
         if not isinstance(data, dict):
             raise RuntimeError(f"{name} returned no structured result")
-        if data.get("status") == "refused" or data.get("refusal"):
+        # An action result keeps its refusal as ``effect: "refused"`` with
+        # ``isError`` false; the code survives only in the text prefix.
+        if data.get("status") == "refused" or data.get("refusal") or data.get("effect") == "refused":
             refusal = data.get("refusal")
-            code = refusal.get("code") if isinstance(refusal, dict) else None
+            code = refusal.get("code") if isinstance(refusal, dict) else data.get("code")
+            if not (isinstance(code, str) and code):
+                code = refusal_code_from_content(getattr(result, "content", None))
             # DriverToolError is a RuntimeError, so existing handlers still match.
             raise DriverToolError(
                 f"{name} refused: {data.get('refusal', data)}",
                 code if isinstance(code, str) and code else None,
+                refused=True,
             )
         return data
 
@@ -371,6 +390,10 @@ async def run(args: argparse.Namespace) -> str:
     token = args.token or f"jev-{uuid.uuid4().hex[:10]}"
     task: Task = FixtureFormTask(token, args.fixture_url, args.max_steps)
     label = f"jev-python-{uuid.uuid4().hex[:8]}"
+    # Accepted mutations may still land, so none is dispatched twice in one run.
+    # A refusal landed nothing: it earns one fresh observation and decision.
+    dispatched: set[str] = set()
+    refusal_retried = False
     # Compact what-happened record for the decision model. The full telemetry
     # events (timings, probabilities) go only to the JSONL log.
     history: list[dict[str, Any]] = []
@@ -575,11 +598,24 @@ async def run(args: argparse.Namespace) -> str:
                     )
                     return "abstained"
 
+                if not args.dry_run and candidate.id in dispatched:
+                    write_event(
+                        log_path,
+                        {
+                            "event": "outcome",
+                            "outcome": "unknown",
+                            "step": step,
+                            "phase": "redispatch_blocked",
+                            "tool": candidate.tool,
+                        },
+                    )
+                    return "unknown"
                 if not args.dry_run:
                     action_started = time.perf_counter()
                     try:
                         assert candidate.tool is not None
                         await driver.call(candidate.tool, candidate.arguments)
+                        dispatched.add(candidate.id)
                     except Exception as error:
                         refusal = background_refusal_code(candidate, error)
                         if refusal is not None:
@@ -610,6 +646,29 @@ async def run(args: argparse.Namespace) -> str:
                             }
                             history.append(task.history_entry(step, candidate.id, refusal=refusal))
                             write_event(log_path, event)
+                            continue
+                        if isinstance(error, DriverToolError) and error.refused:
+                            code = error.code or "refused"
+                            refused = {
+                                "step": step,
+                                "phase": "refused",
+                                "candidate": candidate.id,
+                                "tool": candidate.tool,
+                                "action_refused": code,
+                                "visual": visual_record,
+                            }
+                            if refusal_retried:
+                                write_event(log_path, {"event": "outcome", "outcome": "unknown", **refused})
+                                return "unknown"
+                            refusal_retried = True
+                            write_event(log_path, {"event": "step", **refused})
+                            history.append(
+                                {
+                                    "step": step,
+                                    "selected_id": candidate.id,
+                                    "outcome": f"Driver refused the action ({code}); nothing was dispatched",
+                                }
+                            )
                             continue
                         write_event(
                             log_path,
@@ -659,6 +718,13 @@ async def run(args: argparse.Namespace) -> str:
                             )
                             return outcome
                         await asyncio.sleep(0.1)
+                    # Accepted but unconfirmed after the bounded re-read: the click
+                    # may still land, so stop instead of re-planning it.
+                    write_event(
+                        log_path,
+                        {"event": "outcome", "outcome": "unknown", "step": step, "phase": "reconcile"},
+                    )
+                    return "unknown"
 
             outcome = task.classify(task.read_oracle(), steps=task.max_steps)
             write_event(log_path, {"event": "outcome", "outcome": outcome})
