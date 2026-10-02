@@ -198,6 +198,8 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                 response
             }
         };
+        // B-05 measurement only (env-gated, default off): result serialize start.
+        cua_driver_core::phase_trace::mark("mcp.serialize_start", "");
         let serialized = serde_json::to_string(&response).unwrap_or_else(|error| {
             format!(
                 r#"{{"jsonrpc":"2.0","id":null,"error":{{"code":-32603,"message":"serialize error: {error}"}}}}"#
@@ -209,6 +211,8 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
         }
         writer.write_all(serialized.as_bytes()).await?;
         writer.write_all(b"\n").await?;
+        // B-05 measurement only (env-gated, default off): write_all done, before flush.
+        cua_driver_core::phase_trace::mark("mcp.write_done", "");
         writer.flush().await?;
         cua_driver_core::phase_trace::mark("mcp.written", "");
         if trace {

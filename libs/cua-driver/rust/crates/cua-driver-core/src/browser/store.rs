@@ -356,6 +356,8 @@ impl BrowserStore {
                 ),
             )
         })?;
+        // B-05 measurement only (env-gated, default off): ref parsed.
+        crate::phase_trace::mark("res.ref_parsed", session);
         let target = self.get_target(session, target_id)?;
         let tab = target.tabs.get(tab_id).ok_or_else(|| {
             BrowserRefusal::new(
@@ -363,7 +365,8 @@ impl BrowserStore {
                 format!("tab {tab_id} is not known for target {target_id}"),
             )
         })?;
-        tab.snapshots
+        let entry = tab
+            .snapshots
             .get(&snap)
             .filter(|snapshot| snapshot.generation == target.generation)
             .and_then(|snapshot| snapshot.refs.get(&idx))
@@ -376,7 +379,10 @@ impl BrowserStore {
                          was superseded; re-run get_browser_state to re-snapshot"
                     ),
                 )
-            })
+            });
+        // B-05 measurement only (env-gated, default off): snapshot-store lookup done.
+        crate::phase_trace::mark("res.store_looked_up", session);
+        entry
     }
 
     /// Resolve an opaque continuation within the same session, target, tab,
