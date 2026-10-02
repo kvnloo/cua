@@ -1,0 +1,154 @@
+{
+  "schema": "stack2.confirm.prereg.v1",
+  "experiment_id": "stack2-confirm-2026-10-02",
+  "issue": "kvnloo/hermes-agent#319 (2026-10-01 directive: collect joined receipts from ordinary Hermes workload without changing behaviour, freeze, compare baselines with the installed local z0int backends on the same examples). Follows the SAMPLES lane (stack-samples-2026-10-02, repaired by stack2-samplesfix) and the ADDR lane (stack2-addr-2026-10-02).",
+  "registered_before_measured_runs": true,
+  "registered_before_outcomes_seen": "Yes for every measured task. Before this file was written the lane owner had seen: the SAMPLES packet and its numbers (julia_1 Brier 0.2466 vs LOO-family prior 0.2709, log-loss 0.852 vs 0.735), the ADDR packet, and 4 pilot tasks generated from a different seed (777) and excluded from all data (pilots P, P2, P3, P4; see pilots below). No measured task had run and no backend had scored anything from this workload.",
+  "scope": "Sample collection on the fixed integration plus offline shadow evaluation only. No new integration architecture, protocol, question family or active controller. No shadow sidecar runs during collection: the observer plugin (#385) is metadata-only and every hook returns None; z0int scoring runs only after the dataset is frozen and committed, offline, in separate processes that Hermes never reads. Hermes is the executor; z0intelligence owns the schema (z0int.hermes_shadow_example.v1, z0int.decision_result.v1, adapters.hermes_z0int); an independent fixture oracle grades every outcome; no observer or backend credits its own success. CUA invariants (kvnloo/cua#73/#93): no new Driver services, fresh verification kept, no blind replay.",
+
+  "identities": {
+    "hermes": {
+      "repo": "kvnloo/hermes-agent fork",
+      "branch": "exp/stack-confirm-20261002",
+      "commit": "b51c7a222e (full sha recorded in provenance.json and every run's meta/worktree-head)",
+      "lineage": "exp/stack-addr-20261002 head d39e1175 (= exp/stack-integration-20261002 0d60437a + ADDR token-addressing fix 70cfc7a5 + c3d96b04 + d39e1175) + cherry-pick of the SAMPLES harness hygiene 5d01f608 (as 7dc9ea03) + b51c7a22 (Ollama logprob adapter refuses a single-label top-k instead of a one-hot answer)",
+      "runtime_change_vs_addr_head": "none: 7dc9ea03 and b51c7a22 touch only the offline scripts lab/z0_hermes_observer/{shadow_api_failure,evaluate_shadow,ollama_logprob_backend}.py and tests/lab; the observer plugin __init__.py and every runtime module are byte-identical to d39e1175",
+      "venv": "dedicated uv venv, CPython 3.14, editable install with extra [computer-use] and group dev",
+      "unit": "tests/lab 29 passed (z0int src on PYTHONPATH); single-label refusal test red (2 failed) before b51c7a22 and green after; tests/tools/test_computer_use_element_token_contract.py 16 passed"
+    },
+    "z0intelligence": {"worktree": "detached origin/dev", "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a", "venv": "python 3.11.14, torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6 (Z0_SETUP.json)", "julia_worker": "separate CPU interpreter (Z0_SETUP.json)", "nanojev_bundle": "C-Tianyu/NanoJev@4a19595e (best.safetensors sha256 recorded at scoring)"},
+    "executor_model": {"server": "user-local Ollama 0.35.0 on 127.0.0.1:11500 (GPU, OLLAMA_CONTEXT_LENGTH=65536, NUM_PARALLEL=2, flash attention, q8_0 KV); shared server not started, stopped or reconfigured by this lane; no tag created", "model": "qwen2.5:7b-instruct", "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e", "served_context": "32768 (the model's native limit; /api/ps context_length)", "sampling": "Hermes defaults (no temperature-0 tag; ordinary sampling)", "hermes_provider": "custom /v1, context_length 65536 and ollama_num_ctx 65536 declared by the SMOKE/ADDR profile"},
+    "cua_driver": {"binary": "cua-driver-r2-main-229b65b28", "version": "0.32.0", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"},
+    "gui_fixtures": {
+      "gtk3": {"path": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py", "sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059", "mode": "TaskWindow, app-owned state file (CUA_GTK3_TASK_STATE), optional CUA_GTK3_TASK_DENSITY 12/24"},
+      "browser": {"path": "libs/cua-driver/examples/jev-use/fixture_server.py", "sha256": "0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf", "mode": "loopback form served by harness/fixture_serve.py, Chrome --app window, /state endpoint read by the harness after Hermes exits"}
+    },
+    "session_kits": {"hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b", "cua_x11_session_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b", "quiet_timed_sha256": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b"},
+    "harness_sha256_at_registration": {"drive.py": "a65b9c642ff1e024e2a287735433f4ed513668064dbb1f07f2247d4801cb6b96", "run_task.sh": "a135174cae6be23df354f69cfdf2a5b246ff4ee28689d498005a94137633c1e0", "workload.py": "d41774de8066d423186e58c39b849e9cef5547639b499796713f496f15f5a4ee", "oracle_selftest.py": "2079ab87f7893623373a4b915a91941c6113b6494b199c6149115b2c8b0fa2db", "fixture_serve.py": "3d586cb32f438b946bc0b30a2a2906c74a905576aa18357b812f00168a24416a"}
+  },
+
+  "fixed_integration": "Exactly the ADDR confirmation configuration: Hermes token addressing on cua-driver 0.32.0, the SMOKE/ADDR private Hermes profile verbatim (tool_search off, computer_use permission_mode standard, explicit per-action cua command_allowlist grants as in SMOKE/ADDR, no --yolo, no approvals.single_query_mode, no approval-bypass variable), observer plugin on. The same profile is used for file tasks.",
+
+  "workload": {
+    "description": "Ordinary one-shot Hermes CLI turns (python -m hermes_cli.main chat -Q -t <toolset> --max-turns N -q <prompt>), one isolated process and a fresh private HOME/HERMES_HOME per task. 100 file-tool tasks (the 10 SAMPLES families verbatim x 10 instances, NEW seed, toolset 'file', --max-turns 6) and 42 CUA tasks (toolset 'computer_use', --max-turns 12) on cua-driver 0.32.0, each inside a fresh private Xvfb session (cua-x11-session.sh under hostless v2, private AT-SPI): GTK3 TaskWindow cua_agree 8 (density none 4, 12 2, 24 2), cua_increment 8, cua_size 6, cua_note 6, cua_button_present 6 (density 12/24; 4 yes, 2 no), and browser_submit 8 (jev-use form in Chrome).",
+    "tasks_file": "workload/tasks.jsonl",
+    "tasks_sha256": "f192ff16d66e280acd8572b3fd166d512ecbd4bc704338c5f50ce0fd4bac7ec2",
+    "n_tasks": 142,
+    "fixtures_tree_sha256": "d3febae7403a202170a7bbabaf0312fcb005b4301c7d5bb25a922450b2246fe1 (sha256 of sorted 'sha256sum' lines of workload/fixtures/**, run from that dir)",
+    "generator": "harness/workload.py generate workload (seed 20261012; order shuffled with seed 20261013 before any outcome existed); re-generation is byte-identical",
+    "isolation_per_run": "nested bwrap: tmpfs over the live Hermes home, the real home, the run's fixture-state dir, this packet dir and the lane collect dirs (answer keys), the host runtime dir /run/user/<uid> and the host /tmp/.X11-unix (a GUI run re-binds only its own private display socket); env -i allow-list; HTTP(S) egress proxied to a dead port except loopback; stable bind paths so every run sees the same home/cwd path",
+    "stop_rule": "drive.py runs tasks strictly in tasks.jsonl order, one at a time, until all 142 ran or the deadline (collection start + 3 h 45 min, recorded in raw/collect/drive.log; the 4-hour budget) passes; no task starts after it and tasks not started are NOT_RUN and listed. No task is re-run, skipped or dropped after its outcome is seen. A harness error is recorded on the task's row and the task keeps its slot (verdict from whatever the oracle can read; unknown if the oracle input is missing).",
+    "minimum": ">= 100 RUN tasks with a known oracle verdict for the confirmatory test; otherwise the confirmation is reported INCONCLUSIVE (not run as a test)"
+  },
+
+  "pilots": {
+    "what": "4 tasks generated with seed 777 (json_field, cua_agree, browser_submit, cua_note), excluded from every denominator, used only to debug the harness. Run prefixes P, P2, P3, P4.",
+    "harness_fixes_from_pilots": ["run_task.sh was not executable (session rc 126)", "CUA_HOSTLESS=1 was not forwarded into the private X11 session, so run_task.sh refused (rc 97)", "the host runtime dir and host /tmp/.X11-unix were visible inside Hermes in GUI runs (run_user_entries=37, x11_entries=X0 X1 X100 ...); now masked, only the private display socket re-bound (P4: run_user_entries=0, x11_entries=X100)"],
+    "pilot_outcomes_seen": "P4: json_field pass, cua_agree pass, browser_submit fail (model typed with element=15 without focusing the field; Hermes 'type' does not use an element argument), cua_note fail (note saved empty)"
+  },
+
+  "oracle": {
+    "id": "fixture_oracle:stack2-confirm-v1",
+    "implementation": "harness/workload.py oracle",
+    "inputs": "only the final reply (meta/stdout) and files the task produced in the run cwd, or fixture-owned state captured by run_task.sh after Hermes exited (fixture/state.after.json: the GTK3 app-written state file, or the jev-use form's /state). Never observer rows, Hermes logs or backend output.",
+    "verdicts": "verified_success true/false; null (unknown) when a fixture state file is missing or unreadable. GTK3 state tasks pass only if the target holds AND nothing else changed (counter 0 / agreed false / size none / note_saved null unless targeted, and no distractor actions). Unknown stays unknown: excluded from Brier/log-loss, counted in denominators.",
+    "self_test": "harness/oracle_selftest.py: for all 142 tasks a synthetic ideal run passes, an empty run fails (or is unknown), a wrong answer fails. Result before measured runs: PASS 142/142."
+  },
+
+  "freeze": {
+    "when": "after collection ends and before any z0int backend scores anything from this workload",
+    "what": "harness/freeze.py: dataset/events.jsonl (every RUN task's observer spool, rows unchanged, concatenated in task order), dataset/runs.jsonl (index + oracle verdict + isolation receipts per task, RUN and NOT_RUN), dataset/MANIFEST.json (sha256 of each frozen file, counts, identities, content_sha256 = sha256 of the canonical JSON of the file-hash map)",
+    "proof": "the dataset directory is committed to exp/stack-confirm-20261002 (kvnloo/cua) in its own commit before the first scorer process starts; every scorer ledger line is later than that commit; verify_artifacts.py recomputes the manifest hashes"
+  },
+
+  "decision_lanes": [
+    {
+      "id": "api.attempt_will_fail",
+      "status": "registered row, honestly reported; expected DEGENERATE on a healthy local workload",
+      "unit": "one physical provider attempt (pre_api_request joined to post_api_request|api_request_error by the #386 joiner)",
+      "request": "#386 request_for(pre) unchanged",
+      "label": "objective lifecycle fact: true iff the terminal event is api_request_error",
+      "denominators": "join_audit: n_pre, n_joined, n_orphan_pre_overwritten, n_orphan_pre_unclosed, n_terminal_without_pre, observer_rows_dropped",
+      "gate": "DEGENERATE if < 5 positives (or < 5 negatives) among labelled attempts: report exact counts and the one-sided 95% Clopper-Pearson upper bound; no ranking or confirmation claim on this lane"
+    },
+    {
+      "id": "verification_needed",
+      "status": "the lane that carries the signal (orchestrator decision 3); existing z0int decision-capability-v1 capability; no new question family",
+      "unit": "one Hermes task turn (fixture_task_id -> session_id -> observer trace)",
+      "question": {"id": "verification_needed", "type": "boolean", "instructions": "Does this turn require an explicit verification pass before responding?", "criteria": {"false": "Safe to respond without extra verification", "true": "Run verification before responding"}, "source": "benchmarks/fixtures/decision-capability-v1/examples.jsonl verification_needed rows, verbatim"},
+      "state": "content-free turn counters from that turn's observer rows only (identical to SAMPLES build_turn_examples.py): harness, provider, model, api_call_count, api_error_count, max_retry_count, tool_call_count, tool_error_count, tools_used, distinct_tool_count, final_finish_reason, execution_completed, turn_exit_reason, interrupted, approx_input_tokens_max, prompt_tokens_last, output_tokens_total. No prompt, task family, file content or oracle field.",
+      "join": "adapters.hermes_z0int.normalize_envelope({session_id, turn_id, trace_id: observer identity.trace_id}) -> close_observation(execution_completed=..., verified_success=None, model=...) -> join_outcome(gold_verified=<oracle verdict or None>)",
+      "label": "y = true iff the joined verified_success is False (the unverified outcome failed the independent oracle). Declared proxy: decision-capability-v1 gold is normative ('should verify'); here it is 'the outcome was wrong', i.e. verification would have been needed."
+    }
+  ],
+
+  "rows": {
+    "deterministic_loo_group_prior": "THE REFERENCE (the SAMPLES preregistered deterministic prior, unchanged): p_i = (positives outside family(i) + 0.5) / (labelled examples outside family(i) + 1), group = task family; computed once on the full frozen set; no backend",
+    "julia_1": "registry backend (CPU worker) - the CONFIRMATORY row",
+    "laya_421m": "registry backend (CPU) - descriptive (current z0int default candidate)",
+    "nanojev": "registry backend (GPU) - descriptive, comparison only, never verify truth",
+    "qwen_7b_logprob": "--backend ollama:qwen2.5:7b-instruct via lab/z0_hermes_observer/ollama_logprob_backend.py at b51c7a22 against 127.0.0.1:11500 (Z0INT_OLLAMA_BASE_URL); first-token top-20 logprob distribution renormalised over true/false; refuses (counted backend_error) instead of a one-hot answer; same weights as the executor - descriptive",
+    "decider_2b": "registry backend (GPU, alone on the GPU after the chat model is unloaded) - descriptive",
+    "deterministic_constant_0_5": "p = 0.5 - descriptive",
+    "deterministic_samples_prior": "p = 57/105 = 0.542857, the SAMPLES verification_needed prevalence, fixed before this workload ran (non-leaky external prior) - descriptive",
+    "base_rate_in_sample": "constant at the in-sample prevalence (evaluate_shadow base_rate_brier); oracle-optimistic reference only, never a competitor",
+    "jev_reference": "NOT_RUN (TypeSafe, paid; policy)",
+    "openjev": "NOT_RUN (not registered in create_backend; outside the requested set)"
+  },
+
+  "confirmatory_test": {
+    "hypothesis": "On verification_needed, julia_1 has lower Brier score AND lower log-loss than deterministic_loo_group_prior on the fresh frozen set.",
+    "examples": "every verification_needed example with a known label (oracle verdict true/false); unknown labels excluded and counted",
+    "missing_julia_probability": "a labelled example with a julia_1 backend_error or missing probability is imputed p = 0.5 in the confirmatory test and counted; a complete-case analysis is reported as a sensitivity row",
+    "per_example_differences": "d_B = (p_J - y)^2 - (p_R - y)^2 ; d_L = LL(p_J, y) - LL(p_R, y), LL(p, y) = -[y ln p + (1-y) ln(1-p)] with p clipped to [1e-12, 1 - 1e-12]",
+    "statistic": "mean of d over the examples (negative = julia_1 better)",
+    "bootstrap": "paired nonparametric bootstrap, resampling examples with replacement (iid, n = number of labelled examples), B = 10000, random.Random(20261012) seeded once and used for Brier then log-loss in that order; p_R is held at its full-set value",
+    "one_sided_bound": "U = the 95th percentile of the B bootstrap means (sorted, index ceil(0.95 B) - 1)",
+    "p_value": "p_boot = (1 + #{bootstrap mean >= 0}) / (B + 1), reported",
+    "decision": "H0_B (Brier difference >= 0) rejected iff U_B < 0; H0_L likewise for log-loss; alpha 0.05 one-sided each",
+    "verdict": "CONFIRMED iff both H0_B and H0_L are rejected (intersection-union test: the joint claim keeps familywise alpha 0.05 without correction); BRIER_ONLY or LOGLOSS_ONLY if exactly one is rejected (reported as such, not as a confirmation); NOT_CONFIRMED if neither",
+    "preconditions": ">= 100 labelled examples, >= 10 positives and >= 10 negatives, and julia_1 coverage >= 0.9 of labelled examples; otherwise INCONCLUSIVE with the counts",
+    "implementation": "harness/analyze.py (committed before the dataset freeze; see analysis_code_commit)"
+  },
+
+  "descriptive_analysis": {
+    "per_row": ["denominators (rows, labelled, unknown label, backend_error, missing probability, coverage)", "positive rate", "Brier", "log-loss (same clipping)", "accuracy@0.5", "calibration: 5 equal-width reliability bins (evaluate_shadow) + ECE; 10-bin table for julia_1", "n probabilities exactly 0 or 1", "two-sided 95% paired-bootstrap CIs (2000 resamples, seed 20261002) of the Brier and log-loss differences vs deterministic_loo_group_prior - descriptive, no claims", "latency: backend_create_ms, first-call wall ms, warm wall ms p50/p95/max and warm backend latency_ms p50/p95/max"],
+    "slices": "Brier and log-loss by task kind (file/cua), app (none/gtk3/browser), family and execution_completed; pairwise disagreement at 0.5 between all model rows and between julia_1 and the reference; examples where every model row is wrong / right",
+    "coverage_rule": "a row with coverage < 1 is reported with its error counts and never ranked above a full-coverage row; no imputation outside the confirmatory test's declared rule"
+  },
+
+  "scoring_and_gpu_plan": {
+    "env": "every scorer runs under hostless with HF_HUB_OFFLINE=1, a private Z0INT_HOME and TMPDIR under the lane dir, explicit Z0INT_NANOJEV_CHECKPOINT and Z0INT_JULIA_PYTHON, Z0INT_LAYA_DEVICE=cpu, Z0INT_JULIA_DEVICE=cpu; one process per backend per lane; each wrapped in quiet-timed (exclusive lock + ledger) so every reported latency is a quiet-lane number",
+    "order": "1) laya_421m, julia_1 (CPU; chat model may stay resident) 2) qwen_7b_logprob (needs the chat model on 11500) 3) unload the chat model (keep_alive=0), confirm /api/ps is empty and record nvidia-smi 4) nanojev alone 5) decider_2b alone (the GPU slot: cold = backend_create_ms + first call; warm = calls 2..n, p50/p95/max reported, so a compile stall is visible) 6) chat model reloaded only if a later step needs it",
+    "gpu_guard": "a GPU scorer starts only if nvidia-smi shows enough free memory (decider 4800 MiB, nanojev 3000 MiB) and no large chat model is resident on 11500; never both a large chat model and these backends beyond 12 GB",
+    "fail_open_control": "score the turn lane with --backend ollama:qwen2.5:7b-instruct and Z0INT_OLLAMA_BASE_URL=http://127.0.0.1:9 (dead port). Pass = scorer exits 0, every row carries backend_error stage=create, coverage 0, no row dropped"
+  },
+
+  "controls": [
+    {"id": "behaviour_unchanged", "what": "SOURCE: the Hermes runtime is byte-identical to the ADDR head d39e1175 (git diff d39e1175..HEAD touches only lab offline scripts and tests); no shadow sidecar ran; scorer ledger lines are all later than the freeze commit; no Hermes runtime module imports z0int or reads examples/scored files"},
+    {"id": "isolation_receipts", "what": "per run: meta/mask.inside (live Hermes home, real home, fixture-state dir, host runtime dir empty; x11_entries empty for file runs and exactly the private display socket for GUI runs), meta/env.inside free of live paths and host display variables, live-home stat before/after (metadata only)"},
+    {"id": "observer_completeness", "what": "observer_rows_dropped total must be 0 and every RUN task must have an oracle row; otherwise the cohort is flagged incomplete"}
+  ],
+
+  "gates": {
+    "G1_sample": "confirmatory preconditions above",
+    "G2_degenerate": "a lane with < 5 positives or < 5 negatives among labelled examples is DEGENERATE (exact counts + one-sided 95% Clopper-Pearson upper bound; no ranking claim)",
+    "G4_coverage": "coverage < 1 reported with error counts; not ranked above a full-coverage row",
+    "G5_completeness": "observer_rows_dropped == 0 and every RUN task has an oracle row",
+    "promotion": "promotion_ready is false for every row regardless of results; nothing here enables or proposes active control"
+  },
+
+  "hypotheses": [
+    {"id": "C1", "statement": "Confirmatory: julia_1 beats deterministic_loo_group_prior on verification_needed in both Brier and log-loss (confirmatory_test).", "type": "confirmatory, one-sided, alpha 0.05 (IUT)"},
+    {"id": "D1", "statement": "api.attempt_will_fail has < 5 positives on this workload (DEGENERATE).", "type": "descriptive expectation"},
+    {"id": "D2", "statement": "Rows laya_421m, nanojev, qwen_7b_logprob, decider_2b, constant 0.5 and the SAMPLES prior vs the reference.", "type": "descriptive only; no hypothesis test, no ranking claim"}
+  ],
+
+  "claim_boundary": [
+    "One executor model (qwen2.5:7b-instruct Q4_K_M on a shared GPU Ollama, 32K served context) on one machine; synthetic fixture tasks; ~142 turns. Not a statement about other models, providers or real user workloads.",
+    "verification_needed labels are the proxy 'unverified outcome failed the fixture oracle', not the normative v1 gold.",
+    "The reference row is the SAMPLES LOO-family prior, which is known to be weak (SAMPLES accuracy 0.352); beating it is not the same as beating a good predictor. The constant-0.5 and SAMPLES-prior rows are reported next to it so a reader can see that.",
+    "Latency numbers are quiet-lane measurements on a shared machine (other lanes may use the GPU/CPU), small-cohort grade.",
+    "No backend is promoted; nothing here authorises active control."
+  ]
+}
