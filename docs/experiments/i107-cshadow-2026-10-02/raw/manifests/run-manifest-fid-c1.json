@@ -1,0 +1,62 @@
+{
+ "plan": "fidelity",
+ "block": "fid-c1",
+ "trials": [
+  "fid-c1-000-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-001-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-002-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-003-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-004-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-005-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-006-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-007-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-008-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-009-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-010-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-011-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-012-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-013-fidelity-W-churn-C_shadow_audit",
+  "fid-c1-014-fidelity-W-churn-C_shadow_audit"
+ ],
+ "started_mono_ns": 234335015570241,
+ "pressure_start": {
+  "loadavg": "19.02 17.90 17.35 12/2002 2931464",
+  "psi_cpu": "some avg10=1.81 avg60=4.35 avg300=4.60 total=4926725077\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+  "psi_memory": "some avg10=1.35 avg60=1.57 avg300=1.61 total=2818263207\nfull avg10=0.93 avg60=1.05 avg300=1.02 total=2445816495"
+ },
+ "provider": "mock",
+ "driver_sha256": "6b481e0e0d52d624005494f64ebe42a3475f86e14943eb36c36b9fc1d021fd23",
+ "ref_driver_sha256": null,
+ "harness_sha256": "223d1ef6d48581fee69e84d891866f8fb9468869b69a324a5263e41086b99715",
+ "fixture_sha256": "cab564f03f6b223a29b55ad7893425cdfbecd8e746c93eae84c3b92531d69d51",
+ "isolation": {
+  "wrapper": "hostless v2 (<lanes>/bin/hostless)",
+  "hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+  "landlock_scope_sha256": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8",
+  "session_script_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+  "session_run_dir": "<lane-tmp>/x11-session.UNYl0y",
+  "inner_display": ":99",
+  "x_socket": "/tmp/.X11-unix/X99 (listening inodes owned by session Xvfb: True)",
+  "checks": {
+   "display_is_private_number": true,
+   "display_not_host_x0_x2": true,
+   "no_wayland_vars": true,
+   "x_socket_owned_by_session_xvfb": true,
+   "xdg_runtime_dir_in_session_run_dir": true,
+   "dbus_daemon_is_session_child": true,
+   "xauthority_absent_or_session_own": true,
+   "no_host_atspi_bus": true,
+   "landlock_no_new_privs": true
+  },
+  "ok": true
+ },
+ "ended_mono_ns": 234366889607203,
+ "pressure_end": {
+  "loadavg": "19.16 18.04 17.41 13/2025 2958343",
+  "psi_cpu": "some avg10=2.08 avg60=3.43 avg300=4.34 total=4927644885\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+  "psi_memory": "some avg10=1.42 avg60=1.54 avg300=1.60 total=2818942073\nfull avg10=1.21 avg60=1.14 avg300=1.04 total=2446364077"
+ },
+ "network": {
+  "non_loopback_connect_attempts": 0
+ }
+}

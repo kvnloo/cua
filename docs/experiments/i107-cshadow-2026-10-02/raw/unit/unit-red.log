@@ -1,0 +1,1026 @@
+[2026-10-02T05:06:38Z] unit start head=be68363bc38940d5560be55165ceaf6fd743437b filter=i107_mirror
+   Compiling cua-driver-core v0.32.0 (<lanes>/i107-cshadow/libs/cua-driver/rust/crates/cua-driver-core)
+error[E0425]: cannot find type `CdpEvent` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:49:62
+   |
+49 | fn ev(method: &str, session: Option<&str>, params: Value) -> CdpEvent {
+   |                                                              ^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 + use crate::browser::cdp_ws::CdpEvent;
+   |
+
+error[E0422]: cannot find struct, variant or union type `CdpEvent` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:50:5
+   |
+50 |     CdpEvent {
+   |     ^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 + use crate::browser::cdp_ws::CdpEvent;
+   |
+
+error[E0425]: cannot find type `CdpEvent` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:57:40
+   |
+57 | fn dom(method: &str, params: Value) -> CdpEvent {
+   |                                        ^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 + use crate::browser::cdp_ws::CdpEvent;
+   |
+
+error[E0425]: cannot find type `MirrorMode` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:90:15
+   |
+90 | fn live(mode: MirrorMode) -> MirrorState {
+   |               ^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `MirrorState` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:90:30
+   |
+90 | fn live(mode: MirrorMode) -> MirrorState {
+   |                              ^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `MIRROR_ENV` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:137:25
+    |
+137 |     if std::env::var_os(MIRROR_ENV).is_none() {
+    |                         ^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `MAX_NODES` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:206:18
+    |
+206 |     for i in 0..(MAX_NODES as i64 + 5) {
+    |                  ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `UNESTABLISHED_FIELDS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:347:13
+    |
+347 |     assert!(UNESTABLISHED_FIELDS.contains(&"value_property"));
+    |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `UNESTABLISHED_FIELDS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:348:13
+    |
+348 |     assert!(UNESTABLISHED_FIELDS.contains(&"visibility"));
+    |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `UNESTABLISHED_FIELDS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:349:13
+    |
+349 |     assert!(UNESTABLISHED_FIELDS.contains(&"occlusion"));
+    |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `UNESTABLISHED_FIELDS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:350:13
+    |
+350 |     assert!(UNESTABLISHED_FIELDS.contains(&"focus"));
+    |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `UNESTABLISHED_FIELDS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:351:13
+    |
+351 |     assert!(UNESTABLISHED_FIELDS.contains(&"geometry"));
+    |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `UNESTABLISHED_FIELDS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:353:44
+    |
+353 |         report.unknown_action_relevant >= (UNESTABLISHED_FIELDS.len() as u64) * 2,
+    |                                            ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `MAX_QUEUED_EVENTS` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:568:20
+    |
+568 |     state.overflow(MAX_QUEUED_EVENTS + 1);
+    |                    ^^^^^^^^^^^^^^^^^ not found in this scope
+
+warning: unused import: `super::*`
+ --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:3:5
+  |
+3 | use super::*;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find type `MirrorState` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:91:21
+   |
+91 |     let mut state = MirrorState::new(mode, "CDP1".into(), 0);
+   |                     ^^^^^^^^^^^ use of undeclared type `MirrorState`
+
+error[E0433]: cannot find type `Coverage` in this scope
+  --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:94:32
+   |
+94 |     assert_eq!(state.coverage, Coverage::Current);
+   |                                ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:127:16
+    |
+127 |     assert_eq!(MirrorMode::parse(None), MirrorMode::Off);
+    |                ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:127:41
+    |
+127 |     assert_eq!(MirrorMode::parse(None), MirrorMode::Off);
+    |                                         ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:129:20
+    |
+129 |         assert_eq!(MirrorMode::parse(Some(raw)), MirrorMode::Off, "{raw:?}");
+    |                    ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:129:50
+    |
+129 |         assert_eq!(MirrorMode::parse(Some(raw)), MirrorMode::Off, "{raw:?}");
+    |                                                  ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:131:16
+    |
+131 |     assert_eq!(MirrorMode::parse(Some("shadow")), MirrorMode::Shadow);
+    |                ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:131:51
+    |
+131 |     assert_eq!(MirrorMode::parse(Some("shadow")), MirrorMode::Shadow);
+    |                                                   ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:132:16
+    |
+132 |     assert_eq!(MirrorMode::parse(Some("shadow_audit")), MirrorMode::ShadowAudit);
+    |                ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:132:57
+    |
+132 |     assert_eq!(MirrorMode::parse(Some("shadow_audit")), MirrorMode::ShadowAudit);
+    |                                                         ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `mode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:138:20
+    |
+138 |         assert_eq!(mode(), MirrorMode::Off);
+    |                    ^^^^ not found in this scope
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:138:28
+    |
+138 |         assert_eq!(mode(), MirrorMode::Off);
+    |                            ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:144:16
+    |
+144 |     assert_eq!(FaultPlan::parse(None), FaultPlan::None);
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:144:40
+    |
+144 |     assert_eq!(FaultPlan::parse(None), FaultPlan::None);
+    |                                        ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:145:16
+    |
+145 |     assert_eq!(FaultPlan::parse(Some("")), FaultPlan::None);
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:145:44
+    |
+145 |     assert_eq!(FaultPlan::parse(Some("")), FaultPlan::None);
+    |                                            ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:146:16
+    |
+146 |     assert_eq!(FaultPlan::parse(Some("bogus:3")), FaultPlan::None);
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:146:51
+    |
+146 |     assert_eq!(FaultPlan::parse(Some("bogus:3")), FaultPlan::None);
+    |                                                   ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:147:16
+    |
+147 |     assert_eq!(FaultPlan::parse(Some("drop:0")), FaultPlan::None);
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:147:50
+    |
+147 |     assert_eq!(FaultPlan::parse(Some("drop:0")), FaultPlan::None);
+    |                                                  ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:148:16
+    |
+148 |     assert_eq!(FaultPlan::parse(Some("drop:5")), FaultPlan::Drop(5));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:148:50
+    |
+148 |     assert_eq!(FaultPlan::parse(Some("drop:5")), FaultPlan::Drop(5));
+    |                                                  ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:149:16
+    |
+149 |     assert_eq!(FaultPlan::parse(Some("dup:2")), FaultPlan::Duplicate(2));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:149:49
+    |
+149 |     assert_eq!(FaultPlan::parse(Some("dup:2")), FaultPlan::Duplicate(2));
+    |                                                 ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:150:16
+    |
+150 |     assert_eq!(FaultPlan::parse(Some("delay:3:40")), FaultPlan::Delay(3, 40));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:150:54
+    |
+150 |     assert_eq!(FaultPlan::parse(Some("delay:3:40")), FaultPlan::Delay(3, 40));
+    |                                                      ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:151:16
+    |
+151 |     assert_eq!(FaultPlan::parse(Some("swap:4")), FaultPlan::Swap(4));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:151:50
+    |
+151 |     assert_eq!(FaultPlan::parse(Some("swap:4")), FaultPlan::Swap(4));
+    |                                                  ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:152:16
+    |
+152 |     assert_eq!(FaultPlan::parse(Some("early")), FaultPlan::Early);
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:152:49
+    |
+152 |     assert_eq!(FaultPlan::parse(Some("early")), FaultPlan::Early);
+    |                                                 ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:153:16
+    |
+153 |     assert_eq!(FaultPlan::parse(Some("foreign:2")), FaultPlan::Foreign(2));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:153:53
+    |
+153 |     assert_eq!(FaultPlan::parse(Some("foreign:2")), FaultPlan::Foreign(2));
+    |                                                     ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:154:16
+    |
+154 |     assert_eq!(FaultPlan::parse(Some("stale:2")), FaultPlan::Stale(2));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:154:51
+    |
+154 |     assert_eq!(FaultPlan::parse(Some("stale:2")), FaultPlan::Stale(2));
+    |                                                   ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:155:16
+    |
+155 |     assert_eq!(FaultPlan::parse(Some("overflow:7")), FaultPlan::Overflow(7));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:155:54
+    |
+155 |     assert_eq!(FaultPlan::parse(Some("overflow:7")), FaultPlan::Overflow(7));
+    |                                                      ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:156:16
+    |
+156 |     assert_eq!(FaultPlan::parse(Some("reconnect:9")), FaultPlan::Reconnect(9));
+    |                ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:156:55
+    |
+156 |     assert_eq!(FaultPlan::parse(Some("reconnect:9")), FaultPlan::Reconnect(9));
+    |                                                       ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `MirrorState` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:163:21
+    |
+163 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                     ^^^^^^^^^^^ use of undeclared type `MirrorState`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:163:38
+    |
+163 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:168:32
+    |
+168 |     assert_eq!(state.coverage, Coverage::Current);
+    |                                ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorState` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:174:21
+    |
+174 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                     ^^^^^^^^^^^ use of undeclared type `MirrorState`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:174:38
+    |
+174 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:180:25
+    |
+180 |     assert_eq!(outcome, Intake::Buffered);
+    |                         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorState` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:191:21
+    |
+191 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                     ^^^^^^^^^^^ use of undeclared type `MirrorState`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:191:38
+    |
+191 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:198:25
+    |
+198 |     assert_eq!(outcome, Intake::Unrelated);
+    |                         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:200:32
+    |
+200 |     assert_eq!(state.coverage, Coverage::Current);
+    |                                ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorState` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:212:21
+    |
+212 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                     ^^^^^^^^^^^ use of undeclared type `MirrorState`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:212:38
+    |
+212 |     let mut state = MirrorState::new(MirrorMode::Shadow, "CDP1".into(), 0);
+    |                                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:224:26
+    |
+224 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:231:9
+    |
+231 |         Intake::Applied
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:239:9
+    |
+239 |         Intake::Applied
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:253:22
+    |
+253 |     let state = live(MirrorMode::ShadowAudit);
+    |                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:258:32
+    |
+258 |     assert_eq!(state.coverage, Coverage::Current, "the mirror cannot know");
+    |                                ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:266:26
+    |
+266 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:281:26
+    |
+281 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:289:9
+    |
+289 |         Intake::Applied
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:297:9
+    |
+297 |         Intake::Applied
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:306:26
+    |
+306 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:313:25
+    |
+313 |     assert_eq!(outcome, Intake::Applied);
+    |                         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:322:9
+    |
+322 |         Intake::Applied
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:330:26
+    |
+330 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:344:22
+    |
+344 |     let state = live(MirrorMode::ShadowAudit);
+    |                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:360:22
+    |
+360 |     let state = live(MirrorMode::ShadowAudit);
+    |                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:370:26
+    |
+370 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:386:26
+    |
+386 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:398:22
+    |
+398 |     let state = live(MirrorMode::ShadowAudit);
+    |                      ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:420:30
+    |
+420 |         let mut state = live(MirrorMode::Shadow);
+    |                              ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:423:13
+    |
+423 |             Intake::Invalidated(reason.into()),
+    |             ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:432:26
+    |
+432 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:437:26
+    |
+437 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:442:26
+    |
+442 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:451:26
+    |
+451 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:460:26
+    |
+460 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:467:9
+    |
+467 |         Intake::Unrelated
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:473:26
+    |
+473 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:482:13
+    |
+482 |             Intake::Unrelated
+    |             ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:487:32
+    |
+487 |     assert_eq!(state.coverage, Coverage::Current);
+    |                                ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:493:26
+    |
+493 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:500:39
+    |
+500 |     assert_eq!(state.intake(&insert), Intake::Applied);
+    |                                       ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:503:9
+    |
+503 |         Intake::Invalidated("duplicate_node".into())
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:506:26
+    |
+506 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:512:9
+    |
+512 |         Intake::Invalidated("missing_node".into())
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:515:26
+    |
+515 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:523:9
+    |
+523 |         Intake::Invalidated("missing_previous".into())
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:526:26
+    |
+526 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:532:9
+    |
+532 |         Intake::Invalidated("missing_node".into())
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:535:26
+    |
+535 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:541:9
+    |
+541 |         Intake::Invalidated("child_count_mismatch".into())
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:544:26
+    |
+544 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:553:26
+    |
+553 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:560:9
+    |
+560 |         Intake::DiscardedUnknown
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:567:26
+    |
+567 |     let mut state = live(MirrorMode::Shadow);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:576:17
+    |
+576 |     let mut f = FaultInjector::new(FaultPlan::Drop(2));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:576:36
+    |
+576 |     let mut f = FaultInjector::new(FaultPlan::Drop(2));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:594:17
+    |
+594 |     let mut f = FaultInjector::new(FaultPlan::Duplicate(1));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:594:36
+    |
+594 |     let mut f = FaultInjector::new(FaultPlan::Duplicate(1));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:601:17
+    |
+601 |     let mut f = FaultInjector::new(FaultPlan::Swap(1));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:601:36
+    |
+601 |     let mut f = FaultInjector::new(FaultPlan::Swap(1));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:614:17
+    |
+614 |     let mut f = FaultInjector::new(FaultPlan::Delay(1, 30));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:614:36
+    |
+614 |     let mut f = FaultInjector::new(FaultPlan::Delay(1, 30));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:626:18
+    |
+626 |     for plan in [FaultPlan::Foreign(1), FaultPlan::Stale(1)] {
+    |                  ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:626:41
+    |
+626 |     for plan in [FaultPlan::Foreign(1), FaultPlan::Stale(1)] {
+    |                                         ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:627:21
+    |
+627 |         let mut f = FaultInjector::new(plan.clone());
+    |                     ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:638:17
+    |
+638 |     let mut f = FaultInjector::new(FaultPlan::Overflow(2));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:638:36
+    |
+638 |     let mut f = FaultInjector::new(FaultPlan::Overflow(2));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:644:17
+    |
+644 |     let mut f = FaultInjector::new(FaultPlan::Reconnect(1));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:644:36
+    |
+644 |     let mut f = FaultInjector::new(FaultPlan::Reconnect(1));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:652:26
+    |
+652 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:653:17
+    |
+653 |     let mut f = FaultInjector::new(FaultPlan::Duplicate(1));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:653:36
+    |
+653 |     let mut f = FaultInjector::new(FaultPlan::Duplicate(1));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:660:20
+    |
+660 |     let mut last = Intake::NoOp;
+    |                    ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:664:22
+    |
+664 |     assert_eq!(last, Intake::Invalidated("duplicate_node".into()));
+    |                      ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:666:26
+    |
+666 |     let mut state = live(MirrorMode::ShadowAudit);
+    |                          ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0433]: cannot find type `FaultInjector` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:667:17
+    |
+667 |     let mut f = FaultInjector::new(FaultPlan::Drop(1));
+    |                 ^^^^^^^^^^^^^ use of undeclared type `FaultInjector`
+
+error[E0433]: cannot find type `FaultPlan` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:667:36
+    |
+667 |     let mut f = FaultInjector::new(FaultPlan::Drop(1));
+    |                                    ^^^^^^^^^ use of undeclared type `FaultPlan`
+
+error[E0560]: struct `store::TabRecord` has no field named `i107_mirror`
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:723:17
+    |
+723 |                 i107_mirror: None,
+    |                 ^^^^^^^^^^^ `store::TabRecord` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:780:33
+    |
+780 |     let mirror = ensure_for_tab(MirrorMode::Off, &store, "sess-a", &tid, &tab_id, &t, &conn, 0);
+    |                                 ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:780:18
+    |
+780 |     let mirror = ensure_for_tab(MirrorMode::Off, &store, "sess-a", &tid, &tab_id, &t, &conn, 0);
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `i107_mirror` on type `store::TabRecord`
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:784:40
+    |
+784 |     assert!(tab(&store, &tid, &tab_id).i107_mirror.is_none());
+    |                                        ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `tab_id`, `cdp_target_id`, `title`, `url`, `active` ... and 2 others
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:796:9
+    |
+796 |         MirrorMode::ShadowAudit,
+    |         ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:795:18
+    |
+795 |     let mirror = ensure_for_tab(
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:817:33
+    |
+817 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                                 ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:817:18
+    |
+817 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:819:40
+    |
+819 |     wait_until(|| mirror.coverage() == Coverage::Current).await;
+    |                                        ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:837:9
+    |
+837 |         MirrorMode::Shadow,
+    |         ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:836:17
+    |
+836 |     let again = ensure_for_tab(
+    |                 ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:859:9
+    |
+859 |         MirrorMode::ShadowAudit,
+    |         ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:858:18
+    |
+858 |     let mirror = ensure_for_tab(
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:869:40
+    |
+869 |     wait_until(|| mirror.coverage() == Coverage::Current).await;
+    |                                        ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:888:33
+    |
+888 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                                 ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:888:18
+    |
+888 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:900:33
+    |
+900 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                                 ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:900:18
+    |
+900 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:902:40
+    |
+902 |     wait_until(|| mirror.coverage() == Coverage::Current).await;
+    |                                        ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:924:33
+    |
+924 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                                 ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:924:18
+    |
+924 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `i107_mirror` on type `store::TabRecord`
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:930:40
+    |
+930 |     assert!(tab(&store, &tid, &tab_id).i107_mirror.is_none());
+    |                                        ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `tab_id`, `cdp_target_id`, `title`, `url`, `active` ... and 2 others
+
+error[E0433]: cannot find type `MirrorMode` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:941:33
+    |
+941 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                                 ^^^^^^^^^^ use of undeclared type `MirrorMode`
+
+error[E0425]: cannot find function `ensure_for_tab` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:941:18
+    |
+941 |     let mirror = ensure_for_tab(MirrorMode::Shadow, &store, "sess-a", &tid, &tab_id, &t, &conn, 0)
+    |                  ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:166:38
+    |
+166 |     assert!(matches!(state.coverage, Coverage::Unknown(_)));
+    |                                      ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:547:9
+    |
+547 |         Intake::Invalidated(r) if r.starts_with("unmodeled:")
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:458:9
+    |
+458 |         Intake::SessionLost(_)
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:440:9
+    |
+440 |         Intake::SessionLost(_)
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:449:9
+    |
+449 |         Intake::SessionLost(_)
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:569:39
+    |
+569 |     assert!(matches!(&state.coverage, Coverage::Unknown(r) if r == "overflow"));
+    |                                       ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:183:35
+    |
+183 |         matches!(&state.coverage, Coverage::Unknown(r) if r == "pre_bootstrap_event"),
+    |                                   ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `Intake` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:435:9
+    |
+435 |         Intake::SessionLost(_)
+    |         ^^^^^^ use of undeclared type `Intake`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:215:39
+    |
+215 |     assert!(matches!(&state.coverage, Coverage::Unknown(r) if r == "node_cap"));
+    |                                       ^^^^^^^^ use of undeclared type `Coverage`
+
+error[E0433]: cannot find type `Coverage` in this scope
+   --> crates/cua-driver-core/src/browser/i107_mirror_tests.rs:164:38
+    |
+164 |     assert!(matches!(state.coverage, Coverage::Unknown(_)));
+    |                                      ^^^^^^^^ use of undeclared type `Coverage`
+
+Some errors have detailed explanations: E0422, E0425, E0433, E0560, E0609.
+For more information about an error, try `rustc --explain E0422`.
+warning: `cua-driver-core` (lib test) generated 1 warning
+error: could not compile `cua-driver-core` (lib test) due to 165 previous errors; 1 warning emitted
+[2026-10-02T05:07:00Z] unit done rc=101

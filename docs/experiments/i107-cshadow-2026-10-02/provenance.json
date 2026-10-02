@@ -1,8 +1,8 @@
 {
- "schema": "cua.i107.cshadow.provenance.v1",
+ "schema": "cua.i107.cshadow.provenance.v2",
  "issue": "kvnloo/cua#107",
  "lane": "CSHADOW",
- "paths": "<lanes> = lanes root, <targets> = cargo target root, <tmp> = lane temp root; no local path or host name is recorded",
+ "paths": "<lanes> = lanes root, <targets> = cargo target root, <tmp> / <lane-tmp> = lane temp root; no local path or host name is recorded",
  "pins": {
   "upstream_main": "352507b6c03162ab286b21d5ed509125cc3daece",
   "map_branch_head": "be68363bc38940d5560be55165ceaf6fd743437b (exp/i107-map-20261002)",
@@ -16,7 +16,16 @@
   "parent": "be68363bc (map packet) whose driver tree = 092b065d5 (map i107 ledger build)",
   "libs_cua_driver_tree": "72d572805ef5a6f189f0d898e35359c02f16e9a6",
   "diff_vs_parent": "browser/i107_mirror.rs (new), browser/i107_mirror_tests.rs (new), browser/mod.rs (+1), browser/store.rs (+6: TabRecord field, navigation-invalidation drop), browser/engine.rs (+24: ensure/audit/stats at the fresh semantic_v2 snapshot), browser/tools.rs (+2: test literals)",
-  "prereg_commit": "9dbd2f9667c210b0e3a26595208f02841e51086b (2026-10-02T05:33Z, before any measured trial)"
+  "prereg_commit": "9dbd2f9667c210b0e3a26595208f02841e51086b (2026-10-02T05:33Z, before any measured trial)",
+  "harness_at_measurement": "run_cshadow.py sha256 223d1ef6d48581fee69e84d891866f8fb9468869b69a324a5263e41086b99715 and cshadow_fixture.py sha256 cab564f03f6b223a29b55ad7893425cdfbecd8e746c93eae84c3b92531d69d51 (committed in 9014f640b014283cb870fee5f5674a5cd80e82e7 at 2026-10-02T08:13:44Z; every measured block manifest records these hashes)"
+ },
+ "prereg_amendment": {
+  "path": "PREREG_AMENDMENT_1.json",
+  "sha256": "397d84dfd42469ac1850a88e258d0f5ab82c9dd4da7da9d16adddb6c9a042466",
+  "commit": "1d36233a89807f9fa670d82568ca04d9a038dab3",
+  "committed_utc": "2026-10-02T08:12:28Z",
+  "schedule_commit": "9014f640b014283cb870fee5f5674a5cd80e82e7 (2026-10-02T08:13:44Z)",
+  "first_measured_lock_acquired_utc": "2026-10-02T08:13:56.728Z"
  },
  "binary": {
   "name": "cua-driver-i107-cshadow-904b249c1",
@@ -26,27 +35,53 @@
   "lock": {"requested": "2026-10-02T05:20:36.937Z", "acquired": "2026-10-02T05:23:45.085Z", "released": "2026-10-02T05:26:33.551Z"},
   "seconds": 168,
   "fresh_workspace_units": 0,
-  "receipt": "raw/build/build-receipt.txt"
+  "receipt": "raw/build/build-receipt.txt",
+  "use": "both sides of every C comparison (A = mirror env unset)"
+ },
+ "ref_binary": {
+  "name": "cua-driver-i107-092b065d5 (map binary, no mirror code)",
+  "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
+  "use": "default-off structural check only (CDP method multisets); no timing comparison across binaries"
+ },
+ "isolation": {
+  "approval": "orchestrator approval 2026-10-02 relayed in the lane task: bin/hostless v2 approved for REAL browser blocks in this lane, with the conditions listed in PREREG_AMENDMENT_1",
+  "wrapper": "hostless v2: environment scrub (DISPLAY, WAYLAND_*, HYPRLAND_*, SWAYSOCK, session D-Bus, AT-SPI, XAUTHORITY, desktop variables) + private XDG_RUNTIME_DIR + landlock-scope (no connect() to abstract unix sockets bound outside the scope, no signals outside)",
+  "hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+  "landlock_scope_sha256": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8",
+  "session_script_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+  "session": "cua-x11-session.sh: rootless Xvfb (xvfb-run -a, -nolisten tcp) + private dbus-run-session + openbox + picom, env -i, session-local HOME/TMPDIR/XDG_*",
+  "inner_display": ":99 in every block (pre-flight: number > 2, listening socket inodes owned by the session's own Xvfb)",
+  "preflight": "run_cshadow.py preflight(): 9 checks, all true in every measured block manifest (raw/manifests/)",
+  "block_command": "hostless quiet-timed i107-cshadow-<block> cua-x11-session.sh <jev-use>/.venv/bin/python run_cshadow.py --driver <bin> --out <dir> --block <block> ... (run_schedule.sh)"
+ },
+ "raw": {
+  "trials_archive": "raw/trials-measured.tar.gz (577 measured trials: caller events + Driver phase trace per trial)",
+  "trials_archive_sha256": "0aebbf38d4f52ddae6e8e9ed3272ff700e9bbc286477623919b8cbaa7ba970c6",
+  "smoke_archive": "raw/smoke/trials-smoke-excluded.tar.gz sha256 6c4fec260e24e85a3c514cdeae8ae3504adb3ab562d22becf624c43a35935be8 (excluded)",
+  "interrupted_archive": "raw/interrupted/ctl-3-first-attempt-partial.tar.gz sha256 a7a4507ab5f7bfb86af8e4e75c9d0ac754109c8a98ddc7164a4c2e87abb27996 (15 complete + 1 partial controls trials from the first ctl-3 attempt, killed by the agent harness's 2 h background limit before its manifest/receipt were written; kept, excluded, block re-run as ctl-3 with the same round index)",
+  "manifests": "raw/manifests/run-manifest-<block>.json",
+  "receipts": "raw/quiet-lane-receipts.jsonl (every i107-cshadow-* line of the quiet-lane ledger: 7 smoke + 30 measured)",
+  "block_logs": "raw/block-logs/ (placeholder-reduced, D-Bus activation noise removed)"
  },
  "unit": {
   "runner": "hostless; CARGO_TARGET_DIR=<targets>/cua-test-i107-cshadow; cargo test --locked -p cua-driver-core --lib and -p platform-linux --lib",
   "red": "raw/unit/unit-red.log: 165 compile errors (mirror API absent), tests written first",
   "green": "raw/unit/unit-green-full.log: cua-driver-core lib 860 passed / 0 failed (821 existing + 39 mirror); platform-linux lib 602 passed / 0 failed / 10 ignored",
-  "clippy": "NOT_RUN (cargo-clippy not installed for toolchain 1.97.1)",
-  "rustfmt": "new files formatted; edited existing files add no rustfmt diffs (pre-existing counts unchanged: engine 5, store 0, tools 9)"
+  "clippy": "NOT_RUN (cargo-clippy not installed for toolchain 1.97.1)"
  },
  "reused_evidence": {
   "b01_traces": {
    "source": "kvnloo/cua branch exp/b-01-browser-critpath-20261002 at 6689610d5a2619cb45dd4328b2921c89f88967be, packet docs/experiments/b-01-browser-critpath-2026-10-02/raw/trials-measured.tar.gz",
    "sha256": "3703af67f2b236e5b4200e4a3b8e97a3e0210f850a1a04876d738a3e1e497bdf",
-   "status": "B-01 PENDING (rejected for text only; numbers reproduced by its verifier). B-01's tested libs/cua-driver tree (5bdb3b61) equals the map's tree before the env-gated i107 ledger commit; neither the ledger nor the default-off mirror changes the caller's read sequence, so its traces are valid for the read classification.",
+   "status": "B-01 PENDING (rejected for text only; numbers reproduced by its verifier). Used only for the active-C read classification; this lane's own 165 lane-A REAL task trials (overhead, default-off, controls) show the same read sequence (bind + a fresh semantic_v2 snapshot before every decision, no Driver read after the last mutation of a verified trial): cshadow-summary.json active_c.lane_real_cross_check.",
    "derived": "raw/admissibility.json (classify_reads.py)"
   }
  },
  "browser": {
-  "product": "Google Chrome 151.0.7922.71 (installed, 'stable'; version read under hostless)",
-  "protocol": "raw/protocol_events.json: protocol JSON from resources.pak resource 52220 (sha256 c61c953ca9e11d498943ded43fd3d5b1870e0107413dec4e84a4e7cdebc61458, pak sha256 9db15ebcb1585adb334f7ff3a38afb9eceab887e51e4e05c5bdc4ceac9283dfe)"
+  "product": "Google Chrome 151.0.7922.71 (Driver-launched, isolated_new profile, inside the private session)",
+  "protocol_sha256": "c61c953ca9e11d498943ded43fd3d5b1870e0107413dec4e84a4e7cdebc61458",
+  "protocol": "raw/endpoint_protocol.json: /json/protocol read from each smoke-s3 trial's own DevTools endpoint inside the session (protocol 1.3, 1605774 bytes) = the resources.pak resource 52220 behind raw/protocol_events.json (same sha256)"
  },
- "provider": {"chooser": "choose_mock_for_task (FIXTURE/BENCHMARK)", "typesafe_requests": 0, "live_provider_cells": "BLOCKED"},
+ "provider": {"chooser": "choose_mock_for_task (FIXTURE/BENCHMARK)", "typesafe_requests": 0, "non_loopback_connect_attempts": 0, "live_provider_cells": "BLOCKED"},
  "github": {"pushes": 0, "writes": 0}
 }

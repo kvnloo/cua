@@ -8,11 +8,19 @@ Checks:
    on the archive (sha256 must match provenance) and must reproduce the file.
 2. cshadow-summary.json and raw/ledger.jsonl are reproduced exactly by
    analyze_cshadow.py from raw/ (run into a temporary copy).
-3. PREREG.json parent hash matches the committed map PREREG; binary identity in
-   PREREG and provenance agree; the fixture self-test passed; the unit logs show
-   the recorded red/green results; the protocol inventory lists every event the
-   map named.
-4. No file in the packet contains a local absolute path, this host's name, or a
+3. Every measured trial belongs to a block whose run manifest is present, records
+   the lane binary sha256 (or the map binary for default-off reference trials),
+   hostless v2 + landlock-scope + session script hashes, a placeholder-reduced
+   session run dir, a private inner DISPLAY (> :2) and an all-pass isolation
+   pre-flight; and every block has a quiet-lane ledger receipt with rc 0 that
+   was acquired after the amendment commit time. Trial archive sha256 matches
+   provenance.
+4. PREREG.json parent hash matches the committed map PREREG; binary identity in
+   PREREG and provenance agree; fixture self-test, unit logs and protocol
+   inventory as recorded; the endpoint protocol read inside the session has the
+   same sha256 as the resources.pak extraction.
+5. Required-zero counts are zero; 0 non-loopback connects (mock chooser).
+6. No file in the packet contains a local absolute path, this host's name, or a
    secret-like token.
 Exit 0 only if every check passes.
 """
@@ -26,12 +34,15 @@ import shutil
 import socket
 import subprocess
 import sys
+import tarfile
 import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 RAW = HERE / "raw"
 FAIL: list[str] = []
+LANE_SHA = "6b481e0e0d52d624005494f64ebe42a3475f86e14943eb36c36b9fc1d021fd23"
+REF_SHA = "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed"
 
 
 def check(ok: bool, what: str) -> None:
@@ -42,6 +53,10 @@ def check(ok: bool, what: str) -> None:
 
 def load(path: Path):
     return json.loads(path.read_text())
+
+
+def jsonl(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
 def admissibility() -> None:
@@ -84,11 +99,54 @@ def summary() -> None:
               "analyze_cshadow.py reproduces raw/ledger.jsonl")
     s = load(HERE / "cshadow-summary.json")
     check(s["active_c"]["verdict"] == "NOT_ADMISSIBLE", "summary carries the active-C verdict")
-    if s["trials_measured"] == 0:
-        blocked = all(c.get("t_oracle_ms", c.get("idle_driver_cpu_s", {})).get("status") == "BLOCKED"
-                      for c in s["comparisons"].values())
-        check(blocked and all(v["status"] == "BLOCKED" for v in s["fidelity"].values()),
-              "no measured trial: every REAL cell reported BLOCKED (never zero-filled)")
+    check(all(v == 0 for v in s["required_zero"].values()), f"required-zero counts are zero {s['required_zero']}")
+    check(s["non_loopback_connect_attempts"] == 0, "0 non-loopback connect attempts (mock chooser, 0 provider HTTP)")
+    for key, cell in s["comparisons"].items():
+        if key.startswith(("CMP-C-overhead", "CMP-C-idle")):
+            first = cell.get("t_oracle_ms") or cell.get("idle_driver_cpu_s")
+            check(first.get("status") == "MEASURED" and first.get("pairs", 0) >= 30, f"{key}: >= 30 valid pairs")
+    for cond in ("W-quiet", "W-churn"):
+        check(s["fidelity"][cond]["trials"] >= 30, f"fidelity {cond}: >= 30 C_shadow_audit trials")
+
+
+def blocks() -> None:
+    prov = load(HERE / "provenance.json")
+    ledger = jsonl(RAW / "ledger.jsonl")
+    by_label = {r["label"]: r for r in jsonl(RAW / "quiet-lane-receipts.jsonl")}
+    manifests = {p.name[len("run-manifest-"):-len(".json")]: load(p) for p in (RAW / "manifests").glob("run-manifest-*.json")}
+    measured_blocks = sorted({r["block"] for r in ledger if not r["excluded"]})
+    amend_utc = prov["prereg_amendment"]["committed_utc"]
+    iso_ref = prov["isolation"]
+    bad = []
+    for b in measured_blocks:
+        m = manifests.get(b)
+        if m is None:
+            bad.append(f"{b}: no manifest")
+            continue
+        iso = m.get("isolation") or {}
+        checks = iso.get("checks") or {}
+        disp = iso.get("inner_display", "")
+        ok = (m.get("driver_sha256") == LANE_SHA and m.get("ref_driver_sha256") in (None, REF_SHA)
+              and iso.get("ok") is True and all(checks.values()) and len(checks) >= 9
+              and iso.get("hostless_sha256") == iso_ref["hostless_sha256"]
+              and iso.get("landlock_scope_sha256") == iso_ref["landlock_scope_sha256"]
+              and iso.get("session_script_sha256") == iso_ref["session_script_sha256"]
+              and str(iso.get("session_run_dir", "")).startswith("<lane-tmp>/")
+              and disp.startswith(":") and disp[1:].isdigit() and int(disp[1:]) > 2
+              and m.get("provider") == "mock" and (m.get("network") or {}).get("non_loopback_connect_attempts") == 0)
+        if not ok:
+            bad.append(f"{b}: manifest identity/isolation")
+        rec = by_label.get(f"i107-cshadow-{b}")
+        if rec is None or rec.get("rc") != 0 or rec["acquired"] < amend_utc:
+            bad.append(f"{b}: quiet-lane receipt")
+    check(not bad and bool(measured_blocks),
+          f"{len(measured_blocks)} measured blocks: manifest, isolation pre-flight and quiet-lane receipt {bad[:8]}")
+    names = {r["trial"] for r in ledger}
+    listed = {t for b in measured_blocks for t in manifests.get(b, {}).get("trials", [])}
+    check(listed <= names, f"every trial a manifest lists is in the ledger (missing {sorted(listed - names)[:5]})")
+    archive = RAW / "trials-measured.tar.gz"
+    check(hashlib.sha256(archive.read_bytes()).hexdigest() == prov["raw"]["trials_archive_sha256"],
+          "trial archive sha256 matches provenance")
 
 
 def identities() -> None:
@@ -98,7 +156,9 @@ def identities() -> None:
     if parent.exists():
         check(hashlib.sha256(parent.read_bytes()).hexdigest() == prereg["parent_prereg"]["sha256"],
               "parent map PREREG sha256 matches")
-    check(prereg["binary"]["sha256"] == prov["binary"]["sha256"], "binary sha256 agrees (PREREG vs provenance)")
+    check(prereg["binary"]["sha256"] == prov["binary"]["sha256"] == LANE_SHA, "binary sha256 agrees (PREREG vs provenance)")
+    check(hashlib.sha256((HERE / "PREREG_AMENDMENT_1.json").read_bytes()).hexdigest()
+          == prov["prereg_amendment"]["sha256"], "PREREG_AMENDMENT_1 sha256 matches provenance")
     receipt = (RAW / "build" / "build-receipt.txt").read_text()
     check(prov["binary"]["sha256"] in receipt and "Fresh workspace units: 0" in receipt, "build receipt: sha256, 0 fresh units")
     check(load(RAW / "fixture-selftest.json").get("ok") is True, "fixture self-test passed")
@@ -111,6 +171,9 @@ def identities() -> None:
     missing = {d: v["map_listed_missing_from_protocol"] for d, v in proto["domains"].items()
                if v["map_listed_missing_from_protocol"]}
     check(not missing, f"every map-listed CDP event exists in the Chrome 151 protocol {missing}")
+    endpoint = load(RAW / "endpoint_protocol.json")
+    check(endpoint.get("protocol_sha256") == prov["browser"]["protocol_sha256"] and endpoint.get("port_found") is True,
+          "endpoint /json/protocol read inside the session equals the resources.pak extraction")
 
 
 def scan() -> None:
@@ -119,23 +182,31 @@ def scan() -> None:
                                         r"(?i)typesafe_api_key\s*[=:]\s*\S", r"sk-[A-Za-z0-9]{20,}",
                                         r"(?i)bearer\s+[A-Za-z0-9._-]{20,}")]
     bad = []
+    texts: list[tuple[str, str]] = []
     for path in sorted(HERE.rglob("*")):
-        if not path.is_file() or "__pycache__" in path.parts:
+        if not path.is_file() or "__pycache__" in path.parts or path.name == "verify_artifacts.py":
             continue
-        text = path.read_text(errors="replace")
-        if path.name == "verify_artifacts.py":
+        if path.name.endswith(".tar.gz"):
+            with tarfile.open(path, "r:gz") as tar:
+                for member in tar.getmembers():
+                    if member.isfile():
+                        texts.append((f"{path.relative_to(HERE)}:{member.name}",
+                                      tar.extractfile(member).read().decode(errors="replace")))
             continue
+        texts.append((str(path.relative_to(HERE)), path.read_text(errors="replace")))
+    for name, text in texts:
         if host and re.search(rf"\b{re.escape(host)}\b", text):
-            bad.append(f"{path.relative_to(HERE)}: host name")
+            bad.append(f"{name}: host name")
         for pattern in patterns:
             if pattern.search(text):
-                bad.append(f"{path.relative_to(HERE)}: {pattern.pattern}")
-    check(not bad, f"no local paths, host name or secrets {bad[:10]}")
+                bad.append(f"{name}: {pattern.pattern}")
+    check(not bad, f"no local paths, host name or secrets in {len(texts)} files {bad[:10]}")
 
 
 def main() -> int:
     admissibility()
     summary()
+    blocks()
     identities()
     scan()
     print("VERIFY " + ("OK" if not FAIL else f"FAILED ({len(FAIL)})"))

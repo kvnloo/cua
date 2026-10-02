@@ -1,4 +1,34 @@
 {
+ "accounting_gate": {
+  "CMP-C-overhead/W-churn": {
+   "A": {
+    "gate_gt_0_90": true,
+    "median_named_share": 1.0,
+    "min_named_share": 0.998,
+    "trials": 30
+   },
+   "C_shadow_M": {
+    "gate_gt_0_90": true,
+    "median_named_share": 1.0,
+    "min_named_share": 1.0,
+    "trials": 30
+   }
+  },
+  "CMP-C-overhead/W-quiet": {
+   "A": {
+    "gate_gt_0_90": true,
+    "median_named_share": 1.0,
+    "min_named_share": 0.999,
+    "trials": 30
+   },
+   "C_shadow_M": {
+    "gate_gt_0_90": true,
+    "median_named_share": 1.0,
+    "min_named_share": 0.995,
+    "trials": 30
+   }
+  }
+ },
  "active_c": {
   "by_category": {
    "a": 400,
@@ -6,232 +36,3319 @@
   },
   "calls": 600,
   "driver_reads_after_last_mutation": 0,
+  "lane_real_cross_check": {
+   "driver_reads_after_last_mutation_in_verified_trials": 0,
+   "lane_A_trials_checked": 165,
+   "reads": {
+    "a_ref_minting_before_mutation": 315,
+    "a_ref_minting_no_admissible_candidate": 35,
+    "a_ref_minting_then_reobserve": 60,
+    "b_binding": 165
+   },
+   "reads_outside_a_d": {},
+   "trials_all_reads_in_a_d": 165
+  },
   "trials": 200,
   "verdict": "NOT_ADMISSIBLE"
  },
  "comparisons": {
   "CMP-C-idle/W-idle-churn": {
    "browser_rss_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 1174.984,
+    "a_p95": 1220.719,
+    "budget": {
+     "limit_mib": 64.0,
+     "within_budget": true
+    },
+    "c_median": 1177.758,
+    "c_p95": 1201.422,
+    "ci95": [
+     -2.822,
+     6.26
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.65,
+    "median_delta": 1.73,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      -4.846,
+      6.26
+     ],
+     "median_delta": 1.172,
+     "pairs": 28
+    },
+    "sign_counts": {
+     "neg": 12,
+     "pos": 18,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "driver_rss_plus_swap_mib": {
+    "a_median": 54.916,
+    "a_p95": 59.273,
+    "c_median": 56.275,
+    "c_p95": 63.523,
+    "ci95": [
+     1.744,
+     2.711
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.65,
+    "median_delta": 2.354,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      1.744,
+      2.711
+     ],
+     "median_delta": 2.354,
+     "pairs": 28
+    },
+    "sign_counts": {
+     "neg": 3,
+     "pos": 27,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    },
    "driver_vmhwm_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 54.916,
+    "a_p95": 59.273,
+    "budget": {
+     "limit_mib": 32.0,
+     "within_budget": true
+    },
+    "c_median": 56.275,
+    "c_p95": 63.523,
+    "ci95": [
+     1.744,
+     2.711
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.65,
+    "median_delta": 2.354,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      1.744,
+      2.711
+     ],
+     "median_delta": 2.354,
+     "pairs": 28
+    },
+    "sign_counts": {
+     "neg": 3,
+     "pos": 27,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    },
    "idle_browser_cpu_s": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 2.71,
+    "a_p95": 2.78,
+    "budget": 2.0,
+    "c_median": 2.89,
+    "c_p95": 3.0,
+    "ci95": [
+     0.135,
+     0.18
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.65,
+    "median_delta": 0.15,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      0.13,
+      0.175
+     ],
+     "median_delta": 0.145,
+     "pairs": 28
+    },
+    "sign_counts": {
+     "neg": 2,
+     "pos": 28,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60,
+    "within_budget": true
    },
    "idle_driver_cpu_s": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 0.3,
+    "a_p95": 0.31,
+    "budget": 1.0,
+    "c_median": 0.68,
+    "c_p95": 0.7,
+    "ci95": [
+     0.37,
+     0.385
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.65,
+    "median_delta": 0.38,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      0.37,
+      0.38
+     ],
+     "median_delta": 0.375,
+     "pairs": 28
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60,
+    "within_budget": true
+   },
+   "idle_events_per_s": {
+    "a_median": 267.049,
+    "a_p95": 267.247,
+    "c_median": 534.097,
+    "c_p95": 534.496,
+    "ci95": [
+     267.048,
+     267.049
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.65,
+    "median_delta": 267.049,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      267.048,
+      267.049
+     ],
+     "median_delta": 267.049,
+     "pairs": 28
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    }
   },
   "CMP-C-idle/W-idle-quiet": {
    "browser_rss_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 999.67,
+    "a_p95": 1020.559,
+    "budget": {
+     "limit_mib": 64.0,
+     "within_budget": true
+    },
+    "c_median": 1006.25,
+    "c_p95": 1025.641,
+    "ci95": [
+     -3.539,
+     7.52
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.97,
+    "median_delta": 1.209,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      -3.441,
+      5.082
+     ],
+     "median_delta": 0.957,
+     "pairs": 23
+    },
+    "sign_counts": {
+     "neg": 14,
+     "pos": 16,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "driver_rss_plus_swap_mib": {
+    "a_median": 48.203,
+    "a_p95": 51.664,
+    "c_median": 47.451,
+    "c_p95": 54.25,
+    "ci95": [
+     -0.053,
+     0.48
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.97,
+    "median_delta": 0.24,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      0.051,
+      0.578
+     ],
+     "median_delta": 0.262,
+     "pairs": 23
+    },
+    "sign_counts": {
+     "neg": 10,
+     "pos": 20,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    },
    "driver_vmhwm_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 48.398,
+    "a_p95": 51.664,
+    "budget": {
+     "limit_mib": 32.0,
+     "within_budget": true
+    },
+    "c_median": 47.451,
+    "c_p95": 54.25,
+    "ci95": [
+     -0.053,
+     0.48
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.97,
+    "median_delta": 0.252,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      0.051,
+      0.578
+     ],
+     "median_delta": 0.262,
+     "pairs": 23
+    },
+    "sign_counts": {
+     "neg": 10,
+     "pos": 20,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    },
    "idle_browser_cpu_s": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 0.74,
+    "a_p95": 1.34,
+    "budget": 1.0,
+    "c_median": 0.75,
+    "c_p95": 1.55,
+    "ci95": [
+     -0.0,
+     0.035
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.97,
+    "median_delta": 0.01,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      -0.01,
+      0.03
+     ],
+     "median_delta": 0.01,
+     "pairs": 23
+    },
+    "sign_counts": {
+     "neg": 10,
+     "pos": 20,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60,
+    "within_budget": true
    },
    "idle_driver_cpu_s": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 0.015,
+    "a_p95": 0.04,
+    "budget": 0.2,
+    "c_median": 0.01,
+    "c_p95": 0.03,
+    "ci95": [
+     -0.0,
+     0.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.97,
+    "median_delta": 0.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "median_delta": 0.0,
+     "pairs": 23
+    },
+    "sign_counts": {
+     "neg": 11,
+     "pos": 7,
+     "zero": 12
+    },
+    "status": "MEASURED",
+    "trials": 60,
+    "within_budget": true
+   },
+   "idle_events_per_s": {
+    "a_median": 0.0,
+    "a_p95": 0.0,
+    "c_median": 0.0,
+    "c_p95": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 2.97,
+    "median_delta": 0.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "median_delta": 0.0,
+     "pairs": 23
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 0,
+     "zero": 30
+    },
+    "status": "MEASURED",
+    "trials": 60
    }
   },
   "CMP-C-overhead/W-churn": {
+   "attach_calls": {
+    "a_median": 5.0,
+    "a_p95": 5,
+    "c_median": 7.0,
+    "c_p95": 7,
+    "ci95": [
+     2.0,
+     2.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 2.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
    "browser_rss_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 1100.598,
+    "a_p95": 1123.617,
+    "budget": {
+     "limit_mib": 64.0,
+     "within_budget": true
+    },
+    "c_median": 1103.904,
+    "c_p95": 1122.086,
+    "ci95": [
+     -0.205,
+     2.955
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 1.373,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 10,
+     "pos": 20,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "cdp_events_total": {
+    "a_median": 186.0,
+    "a_p95": 322,
+    "c_median": 308.0,
+    "c_p95": 525,
+    "ci95": [
+     128.0,
+     160.5
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 136.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "cdp_reply_kib": {
+    "a_median": 623.211,
+    "a_p95": 623.534,
+    "c_median": 707.558,
+    "c_p95": 707.996,
+    "ci95": [
+     84.246,
+     84.428
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 84.365,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "cdp_sends_total": {
+    "a_median": 54.0,
+    "a_p95": 54,
+    "c_median": 66.0,
+    "c_p95": 66,
+    "ci95": [
+     12.0,
+     12.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 12.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "driver_cpu_budget": {
+    "limit_ms": 64.0,
+    "within_budget": true
    },
    "driver_cpu_ms": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 640.0,
+    "a_p95": 820.0,
+    "c_median": 620.0,
+    "c_p95": 860.0,
+    "ci95": [
+     -40.0,
+     25.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": -10.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 17,
+     "pos": 12,
+     "zero": 1
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "driver_rss_plus_swap_mib": {
+    "a_median": 55.812,
+    "a_p95": 61.949,
+    "c_median": 61.219,
+    "c_p95": 63.898,
+    "ci95": [
+     2.893,
+     6.373
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 3.539,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 3,
+     "pos": 27,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    },
    "driver_vmhwm_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 55.812,
+    "a_p95": 61.949,
+    "budget": {
+     "limit_mib": 32.0,
+     "within_budget": true
+    },
+    "c_median": 61.219,
+    "c_p95": 63.898,
+    "ci95": [
+     2.893,
+     6.373
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": 3.539,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 3,
+     "pos": 27,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "mirror_costs_C_shadow_M": {
+    "bootstrap_failures_total": 1,
+    "bootstrap_nodes_median": 526,
+    "bootstrap_parts_median_ms": {
+     "attach": 5.59,
+     "enable": 3.341,
+     "frame_tree": 0.509,
+     "get_document": 4.017
+    },
+    "bootstraps_total": 59,
+    "discarded_overflow_total": 0,
+    "final_coverage": {
+     "current": 29,
+     "unknown:get_document_failed": 1
+    },
+    "invalidation_reasons": {
+     "frame_navigated": 30,
+     "get_document_failed": 1
+    },
+    "median_events_applied": 125.0,
+    "median_events_total": 306.0,
+    "median_ms": {
+     "audit_compare": 0.0,
+     "bootstrap_total": 28.929,
+     "construct": 1.049,
+     "cut": 0.0,
+     "event_handling": 0.889
+    },
+    "median_unrelated_events": 174.0,
+    "node_cap_trips_total": 0,
+    "nodes_hwm_max": 529,
+    "overflows_total": 0,
+    "queue_hwm_max": 31,
+    "resyncs_total": 30,
+    "trials": 30
    },
    "t_budget": {
-    "status": "BLOCKED"
+    "continuation_block_required": false,
+    "exceeds": false,
+    "straddled": false,
+    "threshold_ms": 25.798,
+    "within_budget": true
    },
    "t_oracle_ms": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 515.969,
+    "a_p95": 846.284,
+    "c_median": 479.214,
+    "c_p95": 785.98,
+    "ci95": [
+     -41.133,
+     13.559
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 15.85,
+    "median_delta": -5.277,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 15,
+     "pos": 15,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    }
   },
   "CMP-C-overhead/W-quiet": {
+   "attach_calls": {
+    "a_median": 5.0,
+    "a_p95": 5,
+    "c_median": 6.0,
+    "c_p95": 7,
+    "ci95": [
+     1.0,
+     1.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 1.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
    "browser_rss_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 1091.482,
+    "a_p95": 1112.059,
+    "budget": {
+     "limit_mib": 64.0,
+     "within_budget": true
+    },
+    "c_median": 1091.939,
+    "c_p95": 1101.695,
+    "ci95": [
+     -2.604,
+     2.305
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": -0.713,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 17,
+     "pos": 13,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "cdp_events_total": {
+    "a_median": 10.0,
+    "a_p95": 10,
+    "c_median": 19.0,
+    "c_p95": 21,
+    "ci95": [
+     9.0,
+     9.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 9.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "cdp_reply_kib": {
+    "a_median": 45.578,
+    "a_p95": 45.91,
+    "c_median": 50.327,
+    "c_p95": 52.853,
+    "ci95": [
+     4.746,
+     5.084
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 4.75,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "cdp_sends_total": {
+    "a_median": 54.0,
+    "a_p95": 54,
+    "c_median": 60.0,
+    "c_p95": 66,
+    "ci95": [
+     6.0,
+     6.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 6.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 30,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "driver_cpu_budget": {
+    "limit_ms": 38.0,
+    "within_budget": true
    },
    "driver_cpu_ms": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 380.0,
+    "a_p95": 560.0,
+    "c_median": 385.0,
+    "c_p95": 550.0,
+    "ci95": [
+     -15.0,
+     25.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 0.0,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 14,
+     "pos": 13,
+     "zero": 3
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "driver_rss_plus_swap_mib": {
+    "a_median": 47.539,
+    "a_p95": 53.812,
+    "c_median": 47.801,
+    "c_p95": 49.004,
+    "ci95": [
+     -0.328,
+     0.482
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 0.289,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 11,
+     "pos": 19,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    },
    "driver_vmhwm_mib": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 47.539,
+    "a_p95": 53.812,
+    "budget": {
+     "limit_mib": 32.0,
+     "within_budget": true
+    },
+    "c_median": 47.801,
+    "c_p95": 49.004,
+    "ci95": [
+     -0.328,
+     0.482
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": 0.289,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 11,
+     "pos": 19,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
+   },
+   "mirror_costs_C_shadow_M": {
+    "bootstrap_failures_total": 0,
+    "bootstrap_nodes_median": 23.0,
+    "bootstrap_parts_median_ms": {
+     "attach": 1.458,
+     "enable": 1.518,
+     "frame_tree": 0.479,
+     "get_document": 1.869
+    },
+    "bootstraps_total": 38,
+    "discarded_overflow_total": 0,
+    "final_coverage": {
+     "current": 8,
+     "unknown:frame_navigated": 22
+    },
+    "invalidation_reasons": {
+     "frame_navigated": 30
+    },
+    "median_events_applied": 1.0,
+    "median_events_total": 12.0,
+    "median_ms": {
+     "audit_compare": 0.0,
+     "bootstrap_total": 8.182,
+     "construct": 0.066,
+     "cut": 0.0,
+     "event_handling": 0.029
+    },
+    "median_unrelated_events": 5.0,
+    "node_cap_trips_total": 0,
+    "nodes_hwm_max": 24,
+    "overflows_total": 0,
+    "queue_hwm_max": 7,
+    "resyncs_total": 30,
+    "trials": 30
    },
    "t_budget": {
-    "status": "BLOCKED"
+    "continuation_block_required": false,
+    "exceeds": false,
+    "straddled": false,
+    "threshold_ms": 11.056,
+    "within_budget": true
    },
    "t_oracle_ms": {
-    "pairs": 0,
-    "status": "BLOCKED",
-    "trials": 0
+    "a_median": 221.115,
+    "a_p95": 335.259,
+    "c_median": 210.999,
+    "c_p95": 350.193,
+    "ci95": [
+     -19.118,
+     4.374
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 17.385,
+    "median_delta": -2.318,
+    "pairs": 30,
+    "sensitivity_loadavg_le_8": {
+     "ci95": null,
+     "median_delta": null,
+     "pairs": 0
+    },
+    "sign_counts": {
+     "neg": 19,
+     "pos": 11,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 60
    }
+  },
+  "CMP-C-resident/W-churn": {
+   "attach_calls": {
+    "a_median": 59.0,
+    "a_p95": 59,
+    "c_median": 79.0,
+    "c_p95": 79,
+    "ci95": [
+     20.0,
+     20.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": 20.0,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      20.0,
+      20.0
+     ],
+     "median_delta": 20.0,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 6,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "browser_rss_mib": {
+    "a_median": 1248.152,
+    "a_p95": 1293.207,
+    "c_median": 1247.033,
+    "c_p95": 1316.02,
+    "ci95": [
+     -34.582,
+     39.234
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": -1.119,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      -34.582,
+      39.234
+     ],
+     "median_delta": -1.119,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 3,
+     "pos": 3,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "cdp_events_total": {
+    "a_median": 1919.0,
+    "a_p95": 2018,
+    "c_median": 2566.0,
+    "c_p95": 2617,
+    "ci95": [
+     566.0,
+     654.5
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": 622.0,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      566.0,
+      654.5
+     ],
+     "median_delta": 622.0,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 6,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "cdp_sends_total": {
+    "a_median": 594.0,
+    "a_p95": 594,
+    "c_median": 714.0,
+    "c_p95": 714,
+    "ci95": [
+     120.0,
+     120.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": 120.0,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      120.0,
+      120.0
+     ],
+     "median_delta": 120.0,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 6,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "driver_cpu_ms": {
+    "a_median": 2580.0,
+    "a_p95": 2630.0,
+    "c_median": 2670.0,
+    "c_p95": 2700.0,
+    "ci95": [
+     55.0,
+     120.0
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": 85.0,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      55.0,
+      120.0
+     ],
+     "median_delta": 85.0,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 6,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "driver_vmhwm_mib": {
+    "a_median": 98.254,
+    "a_p95": 103.938,
+    "c_median": 111.277,
+    "c_p95": 116.633,
+    "ci95": [
+     7.486,
+     21.074
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": 10.535,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      7.486,
+      21.074
+     ],
+     "median_delta": 10.535,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 0,
+     "pos": 6,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "evidence_note": "secondary; per-task latency is the runner's verified read (no independent poller in resident sessions)",
+   "mirror_costs_C_shadow_M": {
+    "bootstrap_failures_total": 0,
+    "bootstrap_nodes_median": 267.5,
+    "bootstrap_parts_median_ms": {
+     "attach": 0.548,
+     "enable": 0.766,
+     "frame_tree": 0.335,
+     "get_document": 2.26
+    },
+    "bootstraps_total": 12,
+    "discarded_overflow_total": 0,
+    "final_coverage": {
+     "unknown:frame_navigated": 6
+    },
+    "invalidation_reasons": {
+     "child_count_mismatch": 6,
+     "frame_navigated": 6
+    },
+    "median_events_applied": 43.0,
+    "median_events_total": 258.0,
+    "median_ms": {
+     "audit_compare": 0.0,
+     "bootstrap_total": 14.469,
+     "construct": 0.484,
+     "cut": 0.0,
+     "event_handling": 0.277
+    },
+    "median_unrelated_events": 208.0,
+    "node_cap_trips_total": 0,
+    "nodes_hwm_max": 529,
+    "overflows_total": 0,
+    "queue_hwm_max": 98,
+    "resyncs_total": 12,
+    "trials": 6
+   },
+   "resident_task_median_ms": {
+    "a_median": 389.599,
+    "a_p95": 391.814,
+    "c_median": 390.703,
+    "c_p95": 391.981,
+    "ci95": [
+     -0.119,
+     1.684
+    ],
+    "invalid_pairs": 0,
+    "loadavg1_median": 0.82,
+    "median_delta": 1.202,
+    "pairs": 6,
+    "sensitivity_loadavg_le_8": {
+     "ci95": [
+      -0.119,
+      1.684
+     ],
+     "median_delta": 1.202,
+     "pairs": 6
+    },
+    "sign_counts": {
+     "neg": 1,
+     "pos": 5,
+     "zero": 0
+    },
+    "status": "MEASURED",
+    "trials": 12
+   },
+   "session_age_ms_median": 4992.62,
+   "sessions": 12,
+   "tasks_total": 120,
+   "tasks_verified": 120
   }
  },
  "controls": {
   "DC01": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 15,
+      "audits_compared": 10,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.14,
+       "vs_page_mutation_median": 0.824,
+       "vs_page_mutation_p95": 1.042
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "current": 4,
+      "unknown:page_enable_failed": 1
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5,
+      "page_enable_failed": 1
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC02": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 0,
+       "vs_ack_receipt_median": null,
+       "vs_page_mutation_median": null,
+       "vs_page_mutation_p95": null
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC03": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.453,
+       "vs_page_mutation_median": 0.755,
+       "vs_page_mutation_p95": 0.872
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "unknown:frame_navigated": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC04": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 15,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.252,
+       "vs_page_mutation_median": 0.802,
+       "vs_page_mutation_p95": 0.936
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {},
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "no submit (target gone/hidden/covered/disabled/renamed)",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC05a": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.156,
+       "vs_page_mutation_median": 0.727,
+       "vs_page_mutation_p95": 0.789
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "unknown:frame_navigated": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC07": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:refused > browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form > type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:refused > browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 10,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.451,
+       "vs_page_mutation_median": 3.194,
+       "vs_page_mutation_p95": 4.391
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form > type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "current": 1,
+      "unknown:frame_navigated": 4
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC10": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "dc10_refusals": {
+      "{\"browser_click\": \"protected_resource_scope_invalid\", \"get_browser_state\": \"authorization_host_failed\"}": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 0,
+       "vs_ack_receipt_median": null,
+       "vs_page_mutation_median": null,
+       "vs_page_mutation_p95": null
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "dc10_refusals": {
+      "{\"browser_click\": \"protected_resource_scope_invalid\", \"get_browser_state\": \"authorization_host_failed\"}": 5
+     },
+     "mirror_final_coverage": {
+      "unknown:frame_navigated": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC11": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value": 5
+     },
+     "dc11_descent_proven": 5,
+     "dc11_killed_total": 20,
+     "oracle_verified": 0,
+     "outcomes": {
+      "unknown": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {
+      "browser_route_unavailable": 5
+     },
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 5,
+      "audits_compared": 0,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 0,
+       "vs_ack_receipt_median": null,
+       "vs_page_mutation_median": null,
+       "vs_page_mutation_p95": null
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value": 5
+     },
+     "dc11_descent_proven": 5,
+     "dc11_killed_total": 20,
+     "mirror_final_coverage": {
+      "unknown:page_enable_failed": 5
+     },
+     "mirror_invalidations": {
+      "page_enable_failed": 30,
+      "session_detached": 25,
+      "target_crashed": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "unknown": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {
+      "browser_route_unavailable": 5
+     },
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC12": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 15,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.297,
+       "vs_page_mutation_median": 0.699,
+       "vs_page_mutation_p95": 0.824
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {},
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "no submit (target gone/hidden/covered/disabled/renamed)",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC13": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.23,
+       "vs_page_mutation_median": 0.654,
+       "vs_page_mutation_p95": 0.689
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "unknown:frame_navigated": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC14a": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 15,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.226,
+       "vs_page_mutation_median": 0.621,
+       "vs_page_mutation_p95": 0.924
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {},
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "no submit (target gone/hidden/covered/disabled/renamed)",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC14b": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.336,
+       "vs_page_mutation_median": 0.703,
+       "vs_page_mutation_p95": 0.919
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "unknown:frame_navigated": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC15": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.375,
+       "vs_page_mutation_median": 1.013,
+       "vs_page_mutation_p95": 1.219
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "unknown:frame_navigated": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC16a": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 15,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": 0.424,
+       "vs_page_mutation_median": 1.426,
+       "vs_page_mutation_p95": 1.815
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {},
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "no submit (target gone/hidden/covered/disabled/renamed)",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC16b": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 15,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.221,
+       "vs_page_mutation_median": 0.74,
+       "vs_page_mutation_p95": 0.88
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {},
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "no submit (target gone/hidden/covered/disabled/renamed)",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC17a": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 15,
+      "audits_compared": 10,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.177,
+       "vs_page_mutation_median": 0.864,
+       "vs_page_mutation_p95": 0.965
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC17b": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 20,
+      "audits_compared": 15,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": -0.29,
+       "vs_page_mutation_median": 0.724,
+       "vs_page_mutation_p95": 0.897
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > reobserve > reobserve > reobserve": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {},
+     "oracle_verified": 0,
+     "outcomes": {
+      "budget_exhausted": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 0,
+     "trials": 5
+    }
+   },
+   "expectation": "no submit (target gone/hidden/covered/disabled/renamed)",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC18": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 45
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 90,
+      "audits_compared": 30,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 0,
+       "vs_ack_receipt_median": null,
+       "vs_page_mutation_median": null,
+       "vs_page_mutation_p95": null
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {
+       "attributes": 7,
+       "node_value": 10
+      },
+      "false_current_total": 17,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 45
+     },
+     "mirror_final_coverage": {
+      "current": 30,
+      "unknown:duplicate_node": 5,
+      "unknown:frame_navigated": 10
+     },
+     "mirror_invalidations": {
+      "duplicate_node": 15,
+      "frame_navigated": 40,
+      "missing_node": 10,
+      "overflow": 5,
+      "pre_bootstrap_event": 5,
+      "reconnect": 5
+     },
+     "oracle_verified": 45,
+     "outcomes": {
+      "verified": 45
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 45,
+     "trials": 45
+    },
+    "by_fault": {
+     "delay:7:200": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {
+       "attributes": 2,
+       "node_value": 5
+      },
+      "false_current_total_detected_by_audit": 7,
+      "faults_injected": 60,
+      "final_coverage": {
+       "current": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5,
+       "missing_node": 5
+      },
+      "trials": 5
+     },
+     "drop:7": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {
+       "attributes": 5,
+       "node_value": 5
+      },
+      "false_current_total_detected_by_audit": 10,
+      "faults_injected": 60,
+      "final_coverage": {
+       "current": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5,
+       "missing_node": 5
+      },
+      "trials": 5
+     },
+     "dup:7": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 30,
+      "final_coverage": {
+       "unknown:duplicate_node": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "duplicate_node": 15
+      },
+      "trials": 5
+     },
+     "early": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 5,
+      "final_coverage": {
+       "current": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5,
+       "pre_bootstrap_event": 5
+      },
+      "trials": 5
+     },
+     "foreign:7": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 70,
+      "final_coverage": {
+       "current": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5
+      },
+      "trials": 5
+     },
+     "overflow:50": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 5,
+      "final_coverage": {
+       "unknown:frame_navigated": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5,
+       "overflow": 5
+      },
+      "trials": 5
+     },
+     "reconnect:50": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 5,
+      "final_coverage": {
+       "unknown:frame_navigated": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5,
+       "reconnect": 5
+      },
+      "trials": 5
+     },
+     "stale:7": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 70,
+      "final_coverage": {
+       "current": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5
+      },
+      "trials": 5
+     },
+     "swap:7": {
+      "false_current_action_relevant_detected_by_audit": 0,
+      "false_current_fields": {},
+      "false_current_total_detected_by_audit": 0,
+      "faults_injected": 70,
+      "final_coverage": {
+       "current": 5
+      },
+      "outcomes": {
+       "verified": 5
+      },
+      "self_detected_invalidations": {
+       "frame_navigated": 5
+      },
+      "trials": 5
+     }
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC19a": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 4,
+       "vs_ack_receipt_median": 115.02,
+       "vs_page_mutation_median": 116.087,
+       "vs_page_mutation_p95": 116.529
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   },
   "DC19b": {
-   "by_arm": {},
-   "status": "BLOCKED"
+   "by_arm": {
+    "A": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    },
+    "C_shadow_audit": {
+     "action_effects": {
+      "browser_type:unverifiable > browser_click:unverifiable": 5
+     },
+     "action_errors": {},
+     "audit": {
+      "audits": 10,
+      "audits_compared": 5,
+      "audits_coverage_unknown": {},
+      "event_lag_ms": {
+       "n": 5,
+       "vs_ack_receipt_median": 56.822,
+       "vs_page_mutation_median": 57.881,
+       "vs_page_mutation_p95": 113.81
+      },
+      "false_current_action_relevant": 0,
+      "false_current_fields": {},
+      "false_current_total": 0,
+      "unknown_share_action_relevant": 0.615
+     },
+     "candidates": {
+      "type-verification-value > submit-form": 5
+     },
+     "mirror_final_coverage": {
+      "current": 5
+     },
+     "mirror_invalidations": {
+      "frame_navigated": 5
+     },
+     "oracle_verified": 5,
+     "outcomes": {
+      "verified": 5
+     },
+     "required_zero": {
+      "duplicate_effect": 0,
+      "injected_fault_false_current_action_relevant": 0,
+      "mirror_false_current_action_relevant": 0,
+      "unexpected_submit": 0,
+      "unverified_success": 0,
+      "wrong_target_effect": 0
+     },
+     "snapshot_errors": {},
+     "submits_decoy_total": 0,
+     "submits_main_total": 5,
+     "trials": 5
+    }
+   },
+   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
+   "expectation_met": true,
+   "status": "MEASURED"
   }
  },
  "default_off": {
-  "a_trials": 0,
-  "a_trials_with_mirror_marks": 0,
-  "a_trials_with_mirror_only_sends": 0,
-  "status": "BLOCKED"
- },
- "disposition": "BLOCKED for C shadow qualification (no REAL measured trial; fidelity, overhead and budget untested). Active C NOT_ADMISSIBLE (SOURCE + REAL B-01 traces): no Driver read on this fixture may be replaced by mirror state, so no active-C trial and E stays NOT_RUN. Pre-registered expectation if shadow fidelity holds: park the persistent mirror; if any action-relevant false-current appears: KILL the mechanism as built.",
- "fidelity": {
-  "W-churn": {
-   "agree": 0,
-   "ambiguous_in_flight": 0,
-   "audits": 0,
-   "audits_current": 0,
-   "coverage_unknown_reasons": {},
-   "false_current_action_relevant": 0,
-   "false_current_total": 0,
-   "field_checks": 0,
-   "match_set_estimate_agreement": {},
-   "status": "BLOCKED",
-   "trials": 0,
-   "unknown_share_action_relevant": 0.0
+  "all_lane_A_trials": 231,
+  "all_lane_A_trials_with_mirror_marks": 0,
+  "all_lane_A_trials_with_mirror_only_sends": 0,
+  "lane_A_vs_map_binary_A_equal_method_multiset": 10,
+  "lane_A_vs_map_binary_A_equal_method_set": 10,
+  "lane_C_trials_with_mirror_create": 10,
+  "multiset_differences": [],
+  "outcomes": {
+   "A/lane:verified": 10,
+   "A/ref:verified": 10,
+   "C_shadow_M/lane:verified": 10
   },
-  "W-quiet": {
-   "agree": 0,
-   "ambiguous_in_flight": 0,
-   "audits": 0,
-   "audits_current": 0,
-   "coverage_unknown_reasons": {},
-   "false_current_action_relevant": 0,
-   "false_current_total": 0,
-   "field_checks": 0,
-   "match_set_estimate_agreement": {},
-   "status": "BLOCKED",
-   "trials": 0,
-   "unknown_share_action_relevant": 0.0
+  "rounds": 10,
+  "rounds_compared": 10,
+  "status": "MEASURED"
+ },
+ "denominators": {
+  "controls/DC01/A": {
+   "verified": 5
+  },
+  "controls/DC01/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC02/A": {
+   "verified": 5
+  },
+  "controls/DC02/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC03/A": {
+   "verified": 5
+  },
+  "controls/DC03/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC04/A": {
+   "budget_exhausted": 5
+  },
+  "controls/DC04/C_shadow_audit": {
+   "budget_exhausted": 5
+  },
+  "controls/DC05a/A": {
+   "verified": 5
+  },
+  "controls/DC05a/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC07/A": {
+   "verified": 5
+  },
+  "controls/DC07/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC10/A": {
+   "verified": 5
+  },
+  "controls/DC10/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC11/A": {
+   "unknown": 5
+  },
+  "controls/DC11/C_shadow_audit": {
+   "unknown": 5
+  },
+  "controls/DC12/A": {
+   "budget_exhausted": 5
+  },
+  "controls/DC12/C_shadow_audit": {
+   "budget_exhausted": 5
+  },
+  "controls/DC13/A": {
+   "verified": 5
+  },
+  "controls/DC13/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC14a/A": {
+   "budget_exhausted": 5
+  },
+  "controls/DC14a/C_shadow_audit": {
+   "budget_exhausted": 5
+  },
+  "controls/DC14b/A": {
+   "verified": 5
+  },
+  "controls/DC14b/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC15/A": {
+   "verified": 5
+  },
+  "controls/DC15/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC16a/A": {
+   "budget_exhausted": 5
+  },
+  "controls/DC16a/C_shadow_audit": {
+   "budget_exhausted": 5
+  },
+  "controls/DC16b/A": {
+   "budget_exhausted": 5
+  },
+  "controls/DC16b/C_shadow_audit": {
+   "budget_exhausted": 5
+  },
+  "controls/DC17a/A": {
+   "verified": 5
+  },
+  "controls/DC17a/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC17b/A": {
+   "budget_exhausted": 5
+  },
+  "controls/DC17b/C_shadow_audit": {
+   "budget_exhausted": 5
+  },
+  "controls/DC18/C_shadow_audit": {
+   "verified": 45
+  },
+  "controls/DC19a/A": {
+   "verified": 5
+  },
+  "controls/DC19a/C_shadow_audit": {
+   "verified": 5
+  },
+  "controls/DC19b/A": {
+   "verified": 5
+  },
+  "controls/DC19b/C_shadow_audit": {
+   "verified": 5
+  },
+  "defaultoff/W-quiet/A": {
+   "verified": 10
+  },
+  "defaultoff/W-quiet/A/ref": {
+   "verified": 10
+  },
+  "defaultoff/W-quiet/C_shadow_M": {
+   "verified": 10
+  },
+  "fidelity/W-churn/C_shadow_audit": {
+   "verified": 30
+  },
+  "fidelity/W-quiet/C_shadow_audit": {
+   "verified": 30
+  },
+  "idle/W-idle-churn/A": {
+   "idle_complete": 30
+  },
+  "idle/W-idle-churn/C_shadow_M": {
+   "idle_complete": 30
+  },
+  "idle/W-idle-quiet/A": {
+   "idle_complete": 30
+  },
+  "idle/W-idle-quiet/C_shadow_M": {
+   "idle_complete": 30
+  },
+  "overhead/W-churn/A": {
+   "verified": 30
+  },
+  "overhead/W-churn/C_shadow_M": {
+   "verified": 30
+  },
+  "overhead/W-quiet/A": {
+   "verified": 30
+  },
+  "overhead/W-quiet/C_shadow_M": {
+   "verified": 30
+  },
+  "resident/W-churn/A": {
+   "resident_complete": 6
+  },
+  "resident/W-churn/C_shadow_M": {
+   "resident_complete": 6
   }
  },
+ "disposition": {
+  "open_items": [],
+  "rows": [
+   "C shadow fidelity holds (false-current 0) and C_active NOT_ADMISSIBLE -> park the persistent mirror (no deletable read on this fixture); keep the shadow evidence as qualification data"
+  ],
+  "verdict": "park"
+ },
+ "fidelity": {
+  "W-churn": {
+   "action_relevant_field_checks": 8190,
+   "agree": 51265,
+   "ambiguous_in_flight": 17887,
+   "audits": 60,
+   "audits_bootstrap_coincident": 30,
+   "audits_compared": 30,
+   "audits_coverage_unknown": {},
+   "event_lag_ms": {
+    "n": 0,
+    "vs_ack_receipt_median": null,
+    "vs_page_mutation_median": null,
+    "vs_page_mutation_p95": null
+   },
+   "false_current_action_relevant": 0,
+   "false_current_fields": {},
+   "false_current_total": 0,
+   "field_checks": 51265,
+   "match_set": {
+    "dom_estimate_agrees_diagnostic": {
+     "True": 60
+    },
+    "fresh_count": {
+     "1": 60
+    },
+    "mirror_status": {
+     "unknown": 60
+    }
+   },
+   "mirror_costs": {
+    "bootstrap_failures_total": 2,
+    "bootstrap_nodes_median": 526.0,
+    "bootstrap_parts_median_ms": {
+     "attach": 4.571,
+     "enable": 2.643,
+     "frame_tree": 0.551,
+     "get_document": 3.784
+    },
+    "bootstraps_total": 58,
+    "discarded_overflow_total": 0,
+    "final_coverage": {
+     "current": 28,
+     "unknown:frame_tree_failed": 2
+    },
+    "invalidation_reasons": {
+     "frame_navigated": 30,
+     "frame_tree_failed": 2
+    },
+    "median_events_applied": 137.0,
+    "median_events_total": 332.0,
+    "median_ms": {
+     "audit_compare": 6.308,
+     "bootstrap_total": 31.434,
+     "construct": 1.208,
+     "cut": 1.715,
+     "event_handling": 1.023
+    },
+    "median_unrelated_events": 187.0,
+    "node_cap_trips_total": 0,
+    "nodes_hwm_max": 529,
+    "overflows_total": 0,
+    "queue_hwm_max": 29,
+    "resyncs_total": 30,
+    "trials": 30
+   },
+   "raw_differences_including_window": 3208,
+   "status": "MEASURED",
+   "trials": 30,
+   "unknown_action_relevant": 5040,
+   "unknown_share_action_relevant": 0.615
+  },
+  "W-quiet": {
+   "action_relevant_field_checks": 8190,
+   "agree": 1890,
+   "ambiguous_in_flight": 690,
+   "audits": 60,
+   "audits_bootstrap_coincident": 30,
+   "audits_compared": 30,
+   "audits_coverage_unknown": {},
+   "event_lag_ms": {
+    "n": 0,
+    "vs_ack_receipt_median": null,
+    "vs_page_mutation_median": null,
+    "vs_page_mutation_p95": null
+   },
+   "false_current_action_relevant": 0,
+   "false_current_fields": {},
+   "false_current_total": 0,
+   "field_checks": 1890,
+   "match_set": {
+    "dom_estimate_agrees_diagnostic": {
+     "True": 60
+    },
+    "fresh_count": {
+     "1": 60
+    },
+    "mirror_status": {
+     "unknown": 60
+    }
+   },
+   "mirror_costs": {
+    "bootstrap_failures_total": 1,
+    "bootstrap_nodes_median": 23.0,
+    "bootstrap_parts_median_ms": {
+     "attach": 4.39,
+     "enable": 6.875,
+     "frame_tree": 1.513,
+     "get_document": 3.219
+    },
+    "bootstraps_total": 48,
+    "discarded_overflow_total": 0,
+    "final_coverage": {
+     "current": 18,
+     "unknown:frame_navigated": 11,
+     "unknown:frame_tree_failed": 1
+    },
+    "invalidation_reasons": {
+     "frame_navigated": 30,
+     "frame_tree_failed": 1
+    },
+    "median_events_applied": 1.0,
+    "median_events_total": 18.0,
+    "median_ms": {
+     "audit_compare": 0.366,
+     "bootstrap_total": 31.556,
+     "construct": 0.087,
+     "cut": 1.955,
+     "event_handling": 0.045
+    },
+    "median_unrelated_events": 11.0,
+    "node_cap_trips_total": 0,
+    "nodes_hwm_max": 24,
+    "overflows_total": 0,
+    "queue_hwm_max": 7,
+    "resyncs_total": 30,
+    "trials": 30
+   },
+   "raw_differences_including_window": 0,
+   "status": "MEASURED",
+   "trials": 30,
+   "unknown_action_relevant": 5040,
+   "unknown_share_action_relevant": 0.615
+  },
+  "all_unfaulted_C_shadow_audit_trials": {
+   "action_relevant_field_checks": 54860,
+   "agree": 90659,
+   "ambiguous_in_flight": 29812,
+   "audits": 385,
+   "audits_bootstrap_coincident": 160,
+   "audits_compared": 225,
+   "audits_coverage_unknown": {},
+   "event_lag_ms": {
+    "n": 79,
+    "vs_ack_receipt_median": -0.226,
+    "vs_page_mutation_median": 0.812,
+    "vs_page_mutation_p95": 115.711
+   },
+   "false_current_action_relevant": 0,
+   "false_current_fields": {},
+   "false_current_total": 0,
+   "field_checks": 90659,
+   "match_set": {
+    "dom_estimate_agrees_diagnostic": {
+     "False": 30,
+     "True": 355
+    },
+    "fresh_count": {
+     "0": 45,
+     "1": 335,
+     "2": 5
+    },
+    "mirror_status": {
+     "unknown": 385
+    }
+   },
+   "raw_differences_including_window": 4549,
+   "status": "MEASURED",
+   "trials": 155,
+   "unknown_action_relevant": 33760,
+   "unknown_share_action_relevant": 0.615
+  }
+ },
+ "injected_fault_false_current_action_relevant": 0,
+ "non_loopback_connect_attempts": 0,
  "required_zero": {
   "duplicate_effect": 0,
   "mirror_false_current_action_relevant": 0,
+  "unexpected_submit": 0,
   "unverified_success": 0,
   "wrong_target_effect": 0
  },
- "schema": "cua.i107.cshadow.summary.v1",
- "trials_measured": 0,
+ "schema": "cua.i107.cshadow.summary.v2",
+ "trials_measured": 577,
  "trials_smoke_excluded": 0,
- "trials_total": 0
+ "trials_total": 577,
+ "trials_with_harness_error": 0
 }

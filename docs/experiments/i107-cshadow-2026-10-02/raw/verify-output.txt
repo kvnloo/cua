@@ -4,19 +4,29 @@ PASS 200 B-01 fill trials
 PASS verdict follows the rule
 PASS active C NOT_ADMISSIBLE; no Driver read after the last mutation
 PASS read labels/categories [('bind', 'b'), ('snapshot1', 'a'), ('snapshot2', 'a')]
-PASS B-01 archive sha256 matches provenance
-PASS classifier re-run reproduces raw/admissibility.json
 PASS analyze_cshadow.py reproduces cshadow-summary.json
 PASS analyze_cshadow.py reproduces raw/ledger.jsonl
 PASS summary carries the active-C verdict
-PASS no measured trial: every REAL cell reported BLOCKED (never zero-filled)
+PASS required-zero counts are zero {'duplicate_effect': 0, 'mirror_false_current_action_relevant': 0, 'unexpected_submit': 0, 'unverified_success': 0, 'wrong_target_effect': 0}
+PASS 0 non-loopback connect attempts (mock chooser, 0 provider HTTP)
+PASS CMP-C-idle/W-idle-churn: >= 30 valid pairs
+PASS CMP-C-idle/W-idle-quiet: >= 30 valid pairs
+PASS CMP-C-overhead/W-churn: >= 30 valid pairs
+PASS CMP-C-overhead/W-quiet: >= 30 valid pairs
+PASS fidelity W-quiet: >= 30 C_shadow_audit trials
+PASS fidelity W-churn: >= 30 C_shadow_audit trials
+PASS 30 measured blocks: manifest, isolation pre-flight and quiet-lane receipt []
+PASS every trial a manifest lists is in the ledger (missing [])
+PASS trial archive sha256 matches provenance
 PASS parent map PREREG sha256 matches
 PASS binary sha256 agrees (PREREG vs provenance)
+PASS PREREG_AMENDMENT_1 sha256 matches provenance
 PASS build receipt: sha256, 0 fresh units
 PASS fixture self-test passed
 PASS TDD red log: compile errors before implementation
 PASS cua-driver-core lib 860 passed
 PASS platform-linux lib 602 passed
 PASS every map-listed CDP event exists in the Chrome 151 protocol {}
-PASS no local paths, host name or secrets []
+PASS endpoint /json/protocol read inside the session equals the resources.pak extraction
+PASS no local paths, host name or secrets in 1419 files []
 VERIFY OK
