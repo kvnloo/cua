@@ -63,6 +63,39 @@ fn exp_knob_ms(raw: Option<&str>) -> Option<u64> {
 fn settle_watch_for(knob_ms: Option<u64>) -> Duration {
     knob_ms.map_or(SETTLE_WATCH, Duration::from_millis)
 }
+
+/// Measurement-only (research experiment N-02, not for upstream): `1` clamps
+/// each settle-watch poll sleep to the time left before `watch_until`, so the
+/// last poll ends at the deadline instead of up to one `SETTLE_POLL` past it.
+/// The watch window itself is unchanged. Unset or any other value (the
+/// default) keeps the whole-poll sleep. Read once per process.
+const EXP_CLAMP_ENV: &str = "CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP";
+
+fn settle_clamp() -> bool {
+    static VALUE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *VALUE.get_or_init(|| {
+        let on = clamp_knob_on(std::env::var(EXP_CLAMP_ENV).ok().as_deref());
+        if on {
+            cua_driver_core::phase_trace::mark("exp_knob", "focus_guard_clamp=1");
+        }
+        on
+    })
+}
+
+fn clamp_knob_on(raw: Option<&str>) -> bool {
+    raw.map(str::trim) == Some("1")
+}
+
+/// One settle-watch poll sleep: a whole `SETTLE_POLL`, or with the clamp the
+/// part of it that still falls before `watch_until`.
+fn settle_poll_sleep(clamp: bool, now: Instant, watch_until: Instant) -> Duration {
+    if clamp {
+        SETTLE_POLL.min(watch_until.saturating_duration_since(now))
+    } else {
+        SETTLE_POLL
+    }
+}
+
 /// Longer watch once a new top-level appeared during the short one while the
 /// focus belonged to *another* application: a dialog (LibreOffice's take
 /// ~1 s to build) is focused by the WM only when mapped, and that steal must
@@ -631,9 +664,11 @@ impl FocusSnapshot {
             extended = true;
             watch_until = started + SETTLE_WATCH_NEW_WINDOW;
         }
+        let clamp = settle_clamp();
         while changes.is_empty() && own_window.is_none() && Instant::now() < watch_until {
-            std::thread::sleep(SETTLE_POLL);
+            std::thread::sleep(settle_poll_sleep(clamp, Instant::now(), watch_until));
             changes = self.diff(&x);
+            cua_driver_core::phase_trace::mark("focus_guard", "settle_poll");
             new_clients = self.new_clients(&x);
             own_window = self.own_new_window(&x, target_pid, &new_clients);
             if !extended && !new_clients.is_empty() && own_window.is_none() {
@@ -856,6 +891,58 @@ mod tests {
             settle_watch_for(exp_knob_ms(Some("90"))),
             Duration::from_millis(90)
         );
+    }
+
+    #[test]
+    fn clamp_knob_is_on_only_for_one() {
+        for raw in [
+            None,
+            Some(""),
+            Some("0"),
+            Some("true"),
+            Some("2"),
+            Some("on"),
+        ] {
+            assert!(!clamp_knob_on(raw), "{raw:?}");
+        }
+        assert!(clamp_knob_on(Some("1")));
+        assert!(clamp_knob_on(Some(" 1 ")));
+    }
+
+    #[test]
+    fn unclamped_poll_sleeps_a_whole_poll_past_the_deadline() {
+        let now = Instant::now();
+        assert_eq!(
+            settle_poll_sleep(false, now, now + Duration::from_millis(10)),
+            SETTLE_POLL
+        );
+        assert_eq!(settle_poll_sleep(false, now, now), SETTLE_POLL);
+    }
+
+    #[test]
+    fn clamped_poll_ends_at_the_deadline() {
+        let now = Instant::now();
+        assert_eq!(
+            settle_poll_sleep(true, now, now + Duration::from_millis(10)),
+            Duration::from_millis(10)
+        );
+        assert_eq!(
+            settle_poll_sleep(true, now, now + Duration::from_millis(90)),
+            SETTLE_POLL
+        );
+        assert_eq!(settle_poll_sleep(true, now, now), Duration::ZERO);
+        // A quiet 220 ms watch polled every 30 ms: the clamped sleeps sum to
+        // exactly the window; the unclamped ones overshoot it by 20 ms.
+        let watch = SETTLE_WATCH;
+        let (mut clamped, mut whole) = (Duration::ZERO, Duration::ZERO);
+        while clamped < watch {
+            clamped += settle_poll_sleep(true, now + clamped, now + watch);
+        }
+        while whole < watch {
+            whole += settle_poll_sleep(false, now + whole, now + watch);
+        }
+        assert_eq!(clamped, watch);
+        assert_eq!(whole, Duration::from_millis(240));
     }
 
     #[test]
