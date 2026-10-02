@@ -1,0 +1,15 @@
+{
+ "schema": "cua.r2.prereg_amendment.v1",
+ "experiment": "OWN-20",
+ "amends": "PREREG.json timing_and_locks.per_block and schedule execution order",
+ "reason": "Exclusive quiet-lane acquisition was starved by other lanes' shared and exclusive holders on the shared machine: 3 blocks completed in ~50 min (block 3 waited ~35 min for flock -x), which projects to ~15 h for 54 exclusive acquisitions. The lane's rules allow count-only blocks under flock -s with receipts in raw/lock-ledger.jsonl.",
+ "state_at_amendment": "blocks seq 1-3 (b01-text_v1-1, b02-text_v2-1, b03-focus_v1-1) completed under quiet-timed; block seq 4 was waiting for the exclusive lock, never acquired it (no ledger receipt, no session started) and was stopped by this lane (its own processes only) together with the batch runner; nothing else ran",
+ "change": {
+  "timing_blocks": "schedule seq 1-18 (round 0: exactly one block of every block type) run under bin/quiet-timed (EXCLUSIVE + ledger receipt), unchanged. Every REPORTED timing (event-arrival latencies, fixture op / Driver call / mutation durations, retained-listener subscription and cleanup, fresh-listener subscription and cleanup) is computed ONLY from these blocks (analyze.TIMING_MAX_SEQ = 18).",
+  "count_only_blocks": "schedule seq 19-54 run under flock -s on the same quiet-lane lock with one receipt per block in raw/lock-ledger.jsonl (label own20-<block_id>, mode shared). They contribute counts (relevant deltas, L1/L2 presence, false negatives/positives, failures) to the classification only; no timing from them is reported.",
+  "order": "count-only blocks seq 19-54 run first (in schedule order), then the remaining timing blocks seq 4-18 (in schedule order). Every block still runs in its own isolated session under hostless.",
+  "unchanged": "rows, reps, block contents, loop, guard, quiesce window, L1/L2 definitions, delta rules, inherited rows, classification rule and thresholds"
+ },
+ "risk_disclosed": "count-only blocks may run while other lanes' shared work (builds, tests) loads the machine; an event delayed beyond the 1000 ms window would count as a false negative. loadavg is recorded per mutation, so any false negative can be checked against load.",
+ "first_affected_seq": 4
+}

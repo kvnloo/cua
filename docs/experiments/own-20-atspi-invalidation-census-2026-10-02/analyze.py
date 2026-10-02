@@ -66,6 +66,13 @@ SCOPES: dict[str, dict[str, Any]] = {
     "listener_subscription": {"own": ["listener_cycle"], "inherited": [], "listener": "fresh"},
 }
 MIN_REPS_PER_ROW = 20
+# AMENDMENT-1: only round-0 blocks (schedule seq 1-18, one block of every type) ran under the EXCLUSIVE
+# quiet-lane lock; every reported timing comes from them. Counts and classification use all blocks.
+TIMING_MAX_SEQ = 18
+
+
+def is_timing_block(block_id: str) -> bool:
+    return int(block_id[1:3]) <= TIMING_MAX_SEQ
 UNUSABLE_FN1_RATE = 0.25
 
 
@@ -362,8 +369,10 @@ def summarize(rows: list[dict[str, Any]], metas: list[dict[str, Any]]) -> dict[s
         ok = [r for r in rs if "failure" not in r]
         delta = [r for r in ok if r["relevant_delta"]]
         nod = [r for r in ok if not r["relevant_delta"]]
+        tok = [r for r in ok if is_timing_block(r["block_id"])]
+        tdelta = [r for r in tok if r["relevant_delta"]]
         per_row[mid] = {
-            "scope": ROWS[mid][0], "variant": ROWS[mid][1], "attempted": len(rs), "failures": len(rs) - len(ok),
+            "scope": ROWS[mid][0], "variant": ROWS[mid][1], "attempted": len(rs), "timing_reps": len(tok), "failures": len(rs) - len(ok),
             "failure_texts": sorted({r["failure"] for r in rs if "failure" in r}),
             "relevant_delta": len(delta), "no_delta": len(nod),
             "obs_delta": sum(1 for r in ok if r.get("obs_delta")), "oracle_delta": sum(1 for r in ok if r.get("oracle_delta")),
@@ -376,17 +385,17 @@ def summarize(rows: list[dict[str, Any]], metas: list[dict[str, Any]]) -> dict[s
             "false_positive_target": sum(1 for r in nod if r["false_positive_target"]),
             "false_positive_any_atspi": sum(1 for r in nod if r["false_positive_any_atspi"]),
             "l2_types_seen": sorted({t for r in delta for t in r["l2_types"]}),
-            "first_l2_ms": stats([r["first_l2_ms"] for r in delta]),
-            "first_l1_ms": stats([r["first_l1_ms"] for r in delta]),
-            "last_target_event_ms": stats([r["last_target_event_ms"] for r in ok]),
-            "first_l2_after_return_ms": stats([r.get("first_l2_after_return_ms") for r in delta]),
+            "first_l2_ms": stats([r["first_l2_ms"] for r in tdelta]),
+            "first_l1_ms": stats([r["first_l1_ms"] for r in tdelta]),
+            "last_target_event_ms": stats([r["last_target_event_ms"] for r in tok]),
+            "first_l2_after_return_ms": stats([r.get("first_l2_after_return_ms") for r in tdelta]),
             "spurious_target_events_median": statistics.median([r["spurious_target_events"] for r in ok]) if ok else None,
             "foreign_atspi_events_total": sum(r["foreign_atspi_events"] for r in ok),
             "decoy_events_total": sum(r["decoy_events"] for r in ok),
             "lifecycle_signals_total": sum(r["lifecycle_signals"] for r in ok),
-            "fixture_op_ms": stats([r.get("fixture_op_ms") for r in ok]),
-            "mutation_ms": stats([r.get("mutation_ms") for r in ok]),
-            "driver_call_ms": stats([(r.get("driver_call") or {}).get("ms") for r in ok]),
+            "fixture_op_ms": stats([r.get("fixture_op_ms") for r in tok]),
+            "mutation_ms": stats([r.get("mutation_ms") for r in tok]),
+            "driver_call_ms": stats([(r.get("driver_call") or {}).get("ms") for r in tok]),
             "driver_effects": sorted({json.dumps(r.get("driver_structured"), sort_keys=True) for r in ok if r.get("driver_structured")}),
         }
         if mid in ("exit_v1", "exit_v2", "process_start"):
@@ -398,7 +407,7 @@ def summarize(rows: list[dict[str, Any]], metas: list[dict[str, Any]]) -> dict[s
         if mid == "listener_cycle":
             per_row[mid]["retained_listener_l2_in_delta"] = sum(1 for r in delta if r.get("retained_listener_l2"))
             for k in ("subscription_ms", "spawn_to_ready_ms", "ready_to_mutation_ms", "cleanup_ms", "stop_to_exit_ms"):
-                per_row[mid]["fresh_" + k] = stats([(r.get("fresh_listener") or {}).get(k) for r in ok])
+                per_row[mid]["fresh_" + k] = stats([(r.get("fresh_listener") or {}).get(k) for r in tok])
     classes = {}
     for scope, spec in SCOPES.items():
         own = [r for mid in spec["own"] for r in by_mid.get(mid, []) if "failure" not in r and r["relevant_delta"]]
@@ -431,7 +440,7 @@ def summarize(rows: list[dict[str, Any]], metas: list[dict[str, Any]]) -> dict[s
     sub = [m["listener"]["subscription_ms"] for m in metas]
     return {
         "per_row": per_row, "classification": classes,
-        "listener_timing_retained": {k: stats([m["listener"][k] for m in metas]) for k in
+        "listener_timing_retained": {k: stats([m["listener"][k] for m in metas if is_timing_block(m["block_id"])]) for k in
                                      ("subscription_ms", "spawn_to_ready_ms", "cleanup_ms", "stop_to_exit_ms")},
         "listener_register_errors": sum(len(m["listener"]["register_errors"] or []) for m in metas),
         "blocks": len(metas), "mutations_attempted": len(rows),
