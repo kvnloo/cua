@@ -1,0 +1,99 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "status": "DRAFT - not executed; written by B-01 from b01-summary.json",
+ "experiment": "R2-10 live composition: baseline vs composed surviving deletions on one source",
+ "source": "branch exp/b-01-browser-critpath-20261002, Driver commit f5c991e5927513c8b94da4330c94276dc5f8ce22 (229b65b28 + R2-01 trace + B-01 marks/knob, merged with trycua/cua PR 4316 a0bca7440)",
+ "binary": {
+  "name": "cua-driver-b01-f5c991e59",
+  "sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3",
+  "rule": "same binary in both arms; experiment knobs set only in the composed arm; trace on in both arms"
+ },
+ "provider": {
+  "name": "TypeSafe",
+  "path": "jev-use choose_live_for_task (request builder validated dry for toggle/modal in B-01 raw/live-request-validation.json)",
+  "secret_forwarding": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY (by name only)"
+ },
+ "classes": [
+  "fill",
+  "toggle",
+  "modal"
+ ],
+ "arms": {
+  "baseline": "K0n shape: feedback default ON, no guarded completion, focus settle unset (100 ms), completion poll 100 ms, library MCP schema validation",
+  "composed": {
+   "feedback": "fast glide: set_agent_cursor_motion {glide_duration_ms:1, dwell_after_click_ms:0}, cursor enabled",
+   "focus_settle": "CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS=0 (fill)",
+   "completion_poll": {
+    "fill": "10 ms, same 2.0 s deadline",
+    "toggle": "10 ms, same 2.0 s deadline",
+    "modal": "10 ms, same 2.0 s deadline"
+   },
+   "completion_poll_rationale": "H_P found no material component with library validation, but with compiled validators the fill completion poll is entered in 100% of K5 trials (the action returns before the submit lands), so the composed arm keeps the cost-free 10 ms poll",
+   "mcp_client_validation": "compiled once per schema at tools/list (caller-side), all classes",
+   "mcp_client_validation_basis": {
+    "fill": "not material",
+    "toggle": "KEEP",
+    "modal": "KEEP"
+   },
+   "guarded_completion": "PR 4316 --guarded-completion on fill only (binds only FIXTURE_TASK_ID; does not apply to toggle/modal at this source)",
+   "compiled_replay": "slot reserved; enabled only if R2-07 is KEEP, measured over all invocations incl. fallback and compile/admission cost"
+  }
+ },
+ "design": {
+  "pairs_per_class": 30,
+  "order": "AB/BA alternating per pair, classes interleaved per round",
+  "lock": "EXCLUSIVE quiet-lane lock; loadavg per trial; every trial and failure kept"
+ },
+ "metrics": {
+  "T": "first semantic_v2 send -> runner's first oracle-confirmed read (T_runner, B-01 definition); T_oracle (2 ms harness re-read) also reported",
+  "S": "median T_baseline / median T_composed per class with seeded paired bootstrap CI (10000, seed fixed in the final PREREG)",
+  "floor_ratio": "T_composed / T_irreducible, T_irreducible = sum of IRREDUCIBLE components from the decomposition",
+  "decision_ms": "provider decision time per decision (live)"
+ },
+ "gates": {
+  "validity": ">= 95% verified per arm per class, identical verified outcomes",
+  "E3": ">= 30 AB/BA pairs per browser class with identical verified outcomes"
+ },
+ "provider_budget": {
+  "decisions_per_trial": {
+   "fill": {
+    "baseline": 2,
+    "composed": 1
+   },
+   "toggle": {
+    "baseline": 2,
+    "composed": 2
+   },
+   "modal": {
+    "baseline": 2,
+    "composed": 2
+   }
+  },
+  "requests_per_pair": {
+   "fill": 3,
+   "toggle": 4,
+   "modal": 4
+  },
+  "requests_reaching_provider_total": 330,
+  "attempt_cap": 363,
+  "stop_rule": "stop the lane when reached requests exceed the attempt cap or the loop budget in STATE.json"
+ },
+ "b01_inputs": {
+  "H_V": {
+   "fill": "KEEP",
+   "toggle": "KEEP",
+   "modal": "KEEP"
+  },
+  "H_T": "OWNER_DECISION",
+  "H_P": {
+   "fill": "no material component",
+   "toggle": "no material component",
+   "modal": "no material component"
+  },
+  "H_C": {
+   "fill": "not material",
+   "toggle": "KEEP",
+   "modal": "KEEP"
+  }
+ }
+}

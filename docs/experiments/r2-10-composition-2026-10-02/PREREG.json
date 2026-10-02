@@ -1,0 +1,162 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "R2-10",
+ "wave": 3,
+ "experiment": "Whole-task composition on one fresh source: BASE vs composed surviving deletions (browser TypeSafe + scripted; native scripted), with build qualification (Phase 0) and recertification",
+ "owners": ["kvnloo/cua#93 (R2-10)", "kvnloo/cua#10 (accounting)", "kvnloo/cua#73 (canonical state)", "kvnloo/cua#105 / kvnloo/cua#73 (FIX-01 re-qualification)", "kvnloo/cua#24 classes"],
+ "written_before_first_measured_trial": true,
+ "hypothesis": "On one source and binary, composing the surviving verified deletions cuts whole-task verified time T. S = median T_BASE / median T_COMP has a 95% CI lower bound above 1 for each browser class (fill->submit, toggle->confirm, modal->act) and each native GTK3 task (checkbox, text entry), with identical verified outcomes and zero E4 violations.",
+ "source": {
+  "base": "989cc76cec262ff8bcf6968b637820340fb9caaa (upstream main, pinned; gh read 2026-10-02T17:18Z: main = 989cc76ce, trycua/cua PR 4316 head = a0bca744067d04f05904319d3d919be30c336556, open)",
+  "branch": "exp/r2-10-composition-20261002",
+  "tested_head": "8f3a646b4818b757648835cf89db8886626b1cf0",
+  "tested_rust_tree": "f1f93375453d0b18b7bde77cbf1f945ed91de62b",
+  "steps": [
+   "1 cherry-pick 7d3a28b66 -> f3f7ff473 (R2-01 phase trace)",
+   "2 git merge --no-ff a0bca7440 -> b10cd09f2 (trycua/cua PR 4316 live head; touches no libs/cua-driver/rust file)",
+   "3 cherry-pick f5c991e59 -> c7e9c2a06 (B-01 marks + CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS)",
+   "4 cherry-pick 560bd8247 -> 96195e3b7 (B-02 CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, sub-span marks)",
+   "5 cherry-pick 28b915ae9 -> 0cc03fbed (R2-04 native phase marks); add/add conflict in phase_trace.rs resolved as the union of both mark sets (identical to the reference 457bc65d4 file except the first doc line; see Deviations)",
+   "6 cherry-pick b9b357bc7 -> 8f5ec81bc (N-01R knobs CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS, CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS)",
+   "7 cherry-pick 8cfa8c1db -> 7d6cbe377 (FIX-01 Part A); browser/tools.rs conflict resolved by applying exactly 4a301d32a raw/b01-resolution-tools.rs.diff to the pre-pick blob 00628e773 -> result blob a82aabad6 (= the diff's target index)",
+   "8 cherry-pick 6eb9319fe -> 8f3a646b4 (FIX-01 Part B runners)"
+  ],
+  "control": {"branch": "exp/r2-10-control-20261002", "head": "1381014a3403272cedeb657c3e9d16e7cf36a1ca", "rust_tree": "fb828e03f0edfd182e804b50a4d78f12a510bfce", "recipe": "989cc76ce + steps 7-8 only (both cherry-picks clean)"}
+ },
+ "binaries": {
+  "R": {"label": "r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version": "cua-driver 0.32.0 (read inside a private session)", "build": "hostless flock cargo-build.lock build-driver.sh <wt> r2-10-8f3a646b4 cua-release-r2-10 (0 Fresh workspace units, 206 s)"},
+  "Cn": {"label": "r2-10-ctl-1381014a3", "sha256": "bd656a2c73128323b010e2c81267a2c397f78a1e2921857d3f50efd7889938f2", "version": "cua-driver 0.32.0", "build": "same command, family cua-release-r2-10 (0 Fresh workspace units, 108 s)", "use": "Phase 0 (d) default-off smoke only"},
+  "U": {"label": "b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version": "cua-driver 0.32.0", "use": "Phase 0 (b)/(c) positive control only, never timing"}
+ },
+ "environment": "one Linux host; bin/hostless v2 (Landlock + env scrub) for every code-executing command; native additionally nested in bin/hostless-strict (bwrap mask of host socket dirs), as N-01R; private Xvfb session cua-x11-session.sh (AT-SPI bus for native); Driver telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); TMPDIR under the lane tmp root; 1-minute loadavg recorded per trial",
+ "phase0_gate": {
+  "rule": "Any failure means STOP: the packet reports BLOCKED or REVISE with a diagnosis and runs no measured trial.",
+  "a_unit": "R tree: cargo test -p cua-driver-core --lib browser:: (>= 187 passed, 0 failed, FIX-01 tests included) and phase_trace; jev-use python unittest discover (incl. test_runner_refusal.py, test_guarded_runner.py) and npm test (incl. run_refusal.test.ts) rc 0",
+  "b_fix01_c1": "FIX-01 harness phase c1 (page re-render between bind and dispatch) on R n=20: first Submit click refused browser_ref_stale 20/20, 0 old-node page events, rebind + verify 20/20 (journal applied 1 with the token). U positive control: first click accepted >= 5/5 (n=5).",
+  "c_b02_nw2": "B-02 N-W2 (run_b02.control_one, kind nw2: same-document node replacement between snapshot and action) on R, toggle and modal n=20 each: stale action refused 20/20 per class and 0 detached-handler server effects (journal); U control: stale action fires the server effect >= 5/5 per class (n=5).",
+  "d_default_off": "R with no CUA_DRIVER_EXP_* and no CUA_DRIVER_PHASE_TRACE_FILE vs Cn: tools/list reply bytes identical (raw stdio, 3 reads each); 5 runs per class/task (fill, toggle, modal: BASE arm; checkbox, text: native BASE) give identical receipt shapes (per mutation: tool, route, effect, sorted result keys; native: route/effect/status/sorted keys) and verified outcomes; no phase-trace file appears (browser: no new trace-like file in the session HOME/TMPDIR; native: the pre-created per-trial file stays empty).",
+  "e_r2_07b": "on R, n >= 5 each: (1) verified training execution (guarded scripted run, oracle-verified) -> compile (authority check clean) -> (2) clean-reset admission replay (fresh fixture state, Driver, browser; compiled replay, no fallback) verified by the oracle, 5/5; (3) fresh binding before every compiled mutation (ref minted by the routine's latest observation, taken after the previous mutation) 100%; (4) N4a refuse + rebind = Phase 0 (b) R cells; (5) may-have-landed effects reconciled before any fallback = FIX-01 g5 rows applied_ack_lost / delayed_after_first_unchanged_read / withheld_unresolved, 5 each: 0 duplicates, 0 dispatches after unknown, applied/delayed verified_by_reconcile, withheld unknown."
+ },
+ "arms": {
+  "binary_rule": "R in every arm; phase trace on (CUA_DRIVER_PHASE_TRACE_FILE per trial) in every arm",
+  "browser": {
+   "BASE": "product default (B-01 K0n shape): set_agent_cursor_enabled true + set_agent_cursor_motion {glide_duration_ms:0, dwell_after_click_ms:80} (Driver default glide), ordinary runner (run.py rules incl. FIX-01 Part B; no guarded completion, no compiled replay), completion poll 100 ms / 2.0 s deadline, library MCP output validation, no CUA_DRIVER_EXP_* variable",
+   "COMP": {
+    "feedback": "OFF via set_agent_cursor_enabled false [OWNER_DECISION]",
+    "focus_settle": "CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS=0 on fill [OWNER_DECISION]",
+    "completion_poll": "10 ms, same 2.0 s deadline [H_P not material]",
+    "mcp_output_validation": "caller-compiled validators, compiled once at tools/list outside T [H_C KEEP]",
+    "admission": "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1 [H_V DELETED fill/toggle; NOT_MATERIAL modal]",
+    "guarded_completion": "fill only [R2-03 KEEP]",
+    "compiled_replay": "fill only [R2-07b KEEP]: the first COMP fill invocation per (layer, arm) runs the guarded step loop as training, then compile (timed) and a clean-reset admission replay (fresh Driver/browser, no fallback); admitted -> later invocations replay; refused (precondition failure, or a second browser_ref_stale) -> the guarded continuation takes the current state; not admitted -> later invocations run the guarded step loop. All counted."
+   },
+   "COMP_E": "COMP + CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound [B-02 H_E OWNER_DECISION]; scripted layer only",
+   "COMP_K": "COMP minus every OWNER_DECISION knob: feedback default ON (as BASE), focus settle default (100 ms); scripted layer only",
+   "lifecycle": "fresh Driver process, fresh isolated_new browser, fresh token per trial (B-02 run_b02/run_critpath lifecycle); setup (initialize, tools/list, validator compile, cursor calls, browser_prepare, bind, navigate) outside T"
+  },
+  "native": {
+   "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py (R tree), tasks checkbox toggle and text entry, private Xvfb + AT-SPI, background delivery, fresh Driver and fresh fixture per trial, scripted chooser (N-01R harness, unchanged, monkeypatched arms only)",
+   "BASE": "defaults",
+   "S0": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0 [KEEP; DELETED scoped to GTK3 background delivery]",
+   "X": "S0 + set_agent_cursor_motion {glide_duration_ms:1} [OWNER_DECISION]",
+   "live_provider": "BLOCKED (budget)"
+  }
+ },
+ "design": {
+  "L_live": "TypeSafe through jev-use choose_live_for_task, key forwarded by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY); BASE vs COMP; 30 rounds; round r: classes in rotated order (r mod 3), each class one pair, order AB (BASE first) on even r, BA on odd r (15 AB + 15 BA per class)",
+  "L_scripted": "scripted chooser (jev-use choose_mock_for_task, labelled 'scripted'); arms BASE, COMP, COMP_K, COMP_E; 32 rounds; round r: classes rotated, each class runs the 4 arms in Williams row (r mod 4) of the 4x4 Williams square",
+  "native": "24 rounds; round r: task order alternates by round; each task runs BASE, S0, X in row (r mod 6) of the 3-treatment Williams design (3x3 square + mirror = 6 sequences)",
+  "controls_excluded_from_T": {
+   "N4a": "inside L-scripted COMP, n=5 per class: an independent CDP client replaces the next mutation's target node (same document) between bind and dispatch (fill: inside the compiled replay before Submit; toggle/modal: before action 2); must refuse (browser_ref_stale) and rebind (one fresh observation) -> verified",
+   "OOD": "n=5: the scripted COMP fill routine applied to the toggle (k even) / modal (k odd) page: must fail its precondition and fall back to the guarded continuation (current state, chooser) -> verified",
+   "N-W2": "n=5 (classes rotate fill/toggle/modal): run_b02 control_one kind nw2 with the COMP admission knob; stale action refused, 0 detached-handler effects, fresh re-derivation verified",
+   "fallback": "when compiled replay is refused, the guarded continuation runs and is counted in the COMP denominators",
+   "native_focus_steal": "N-01R decoy (xprobe.Decoy) steals focus ~100 ms after the app state changes (DoAction landed), n=5 per arm per task (BASE, S0, X): the guard must restore focus 5/5 per arm"
+  },
+  "lock": "every measured block runs under bin/quiet-timed (EXCLUSIVE quiet-lane lock, ledger receipt) AND holds flock on the cargo-build lock for the chunk; chunks <= 40 min; released between chunks; each background run < 2 h",
+  "order_of_work": "Phase 0 (a)-(e) -> L-scripted chunks -> controls -> L-live chunks -> native main -> native focus-steal; every trial and failure kept"
+ },
+ "forced_paths": {
+  "browser": "clicks: dom_event route through the Driver CDP engine (candidate input_route dom_event; receipt route 'dom'; trace click.cdp_send inside the call); typing: browser_type (receipt route recorded per action, must be identical across arms). A row whose action route differs from its arm's forced path is refused (invalid, kept in the denominator).",
+  "native": "AT-SPI DoAction (click, background delivery) and set_value; receipt route 'accessibility' and the R2-04 click/set_value mark sequence present in order; knob marks exactly as the arm sets them; cursor motion as the arm sets it",
+  "arm_configuration_checks_browser": "feedback: BASE/COMP_K arrival waits present and arrived with glide_duration_ms 0, COMP/COMP_E none; settle (fill): BASE/COMP_K 100 ms, COMP/COMP_E 0 ms; poll sleeps equal the arm's poll; V: every admitted tools/call inside T shows mcp.inner_validation_skipped (COMP arms) / none (BASE); E: COMP_E ep.bound_hit per reval.native_window inside T, others no ep.bound_* mark; compiled validators > 0 in COMP arms; decision routes: BASE provider only; COMP fill compiled / compiled+fallback / training (provider, guarded-completion) / guarded after a failed admission"
+ },
+ "oracle": "independent, target-owned, polled every 2 ms by a harness thread: browser = the jev-use fixture server state (fill: submitted == token; toggle: checked true; modal: opened and modal true) with its CLOCK_MONOTONIC journal; native = the GTK3 task state file (CUA_GTK3_TASK_STATE, fresh per trial)",
+ "metrics": {
+  "T0": "send of the first observation request (browser: label snapshot1; native: get_window_state send)",
+  "T_oracle_gating": "T0 -> first 2 ms oracle sample, taken at or after the return of the task's last accepted mutation, that shows the expected final state (N-01R rule, applied to both surfaces)",
+  "T_land": "T0 -> first oracle sample showing the expected final state (regardless of returns)",
+  "T_runner": "browser: T0 -> the runner's first oracle-confirmed read (B-01 definition); native: T0 -> return of the last action (the scripted native runner has no verification read)",
+  "decomposition": "browser: B-01 b01_analysis.decompose (telescoping over T_runner) with the B-02 taxonomy extension (analyze_browser.classify_mark), reported as provider decision(s), observation, resolution, endpoint revalidation (reval_endpoint), revalidation other, MCP admission (pre_admission_validate + pre_inner_validate), MCP transport in/out (transport + driver_post_dispatch + pre_other), client validation, visualization/glide, input prep, focus settle (settles), dispatch (+ dispatch_post), target effect (target_effect_lag), verification reads, sleeps/polls, runner, unattributed; native: N-01R contiguous boundaries from the merged trace (phase/session keys, CLOCK_MONOTONIC): observation transport, observation, runner/lookup, resolution, reveal, dispatch (AT-SPI DoAction / set_value write), post-action sleep, guard settle, result, action transport, effect lag, verification read"
+ },
+ "statistics": {
+  "S": "per class/task and arm pair: S = median T_BASE / median T_arm over rounds where both trials are valid; seeded paired bootstrap over rounds (seed 20261002, 10000 resamples, percentile 95% CI)",
+  "reported": "S_COMP (live and scripted), S_COMP_K and S_COMP_E (scripted), S_S0 and S_X (native)",
+  "fill": "S_all (gating): COMP rows include the training invocation with its charged cost T_charged = T_oracle(training) + compile_ms + T_oracle(admission replay); S_amortized = sum T_BASE / sum T_COMP_charged over paired rounds (ratio of means, same bootstrap); S_warm = median ratio over rounds excluding the training round",
+  "primary_analysis": "all trials",
+  "secondary_analysis": "subset with 1-minute loadavg < 2 at trial start (both trials of a pair)"
+ },
+ "gates": {
+  "validity": ">= 95% verified (oracle exact match, exactly one completion mutation, runner outcome verified) per arm per class/task, over all trials including errors",
+  "E4": "0 stale-ref dispatches (accepted mutation not bound by the latest observation after the previous mutation, or accepted dispatch onto a replaced node, or a detached-handler server effect), 0 duplicate mutations (completion mutations > 1), 0 unverified successes (runner verified, oracle not), refusals classified as refused (no effect=refused result returned as success), 0 blind replays (no re-dispatch of an accepted candidate; redispatch_blocked ends unknown)",
+  "S": "gating S per class/task: browser = L-live S_COMP (fill: S_all) AND L-scripted S_COMP (fill: S_all) CI lower bounds > 1; native = S_X CI lower bound > 1 per task. S_COMP_K, S_COMP_E, S_S0, fill S_amortized/S_warm are reported, not gating.",
+  "E2": "untested share per task on COMP (sum of mean component time whose verdict is UNTESTED, over mean T_runner); target < 5%",
+  "disposition": {
+   "KEEP": "every class/task has gating S CI lower bound > 1 and validity and E4 gates hold",
+   "REVISE": "only some do (name them; the revised claim is the measured one)",
+   "KILL": "none do, or any E4 gate fails"
+  }
+ },
+ "e2_verdicts_preregistered": {
+  "browser": {
+   "provider_decision": "fill: second decision DELETED (guarded completion, R2-03 KEEP), remaining decision DELETED on warm invocations (compiled replay, R2-07b KEEP; kept in training/fallback rows); toggle/modal: UNTESTED (plausibly deletable by a compiled routine; not qualified for these classes at this source; guarded completion binds 0/160)",
+   "observation": "IRREDUCIBLE (one fresh semantic snapshot per mutation, #73)",
+   "resolution": "UNTESTED",
+   "reval_endpoint": "OWNER_DECISION (B-02 H_E; deleted in COMP_E)",
+   "reval_other": "IRREDUCIBLE (#73 revalidation)",
+   "mcp_admission": "DELETED fill/toggle (H_V); modal NOT_MATERIAL -> counted IRREDUCIBLE-scale residual; residual after the cache UNTESTED",
+   "mcp_transport": "UNTESTED",
+   "client_validation": "DELETED (H_C KEEP; residual compiled-validator time UNTESTED)",
+   "visualization": "OWNER_DECISION (feedback; residual platform-gate bookkeeping in COMP)",
+   "input_prep": "UNTESTED",
+   "settles": "OWNER_DECISION (H_T)",
+   "dispatch": "IRREDUCIBLE",
+   "target_effect_lag": "IRREDUCIBLE",
+   "verification_reads": "IRREDUCIBLE (R2-06 bounded oracle read)",
+   "sleeps_polls": "IRREDUCIBLE (H_P not material)",
+   "runner": "UNTESTED",
+   "unattributed": "UNTESTED"
+  },
+  "native": {
+   "observation_transport": "IRREDUCIBLE by invariant (N-01R)",
+   "observation": "IRREDUCIBLE",
+   "runner": "UNTESTED",
+   "resolution": "UNTESTED",
+   "reveal": "OWNER_DECISION (N-01R H_C)",
+   "dispatch": "IRREDUCIBLE (the AT-SPI action itself)",
+   "post_action_sleep": "DELETED (N-01R H_S, GTK3 background delivery)",
+   "settle": "IRREDUCIBLE (N-01R H_F)",
+   "result": "UNTESTED",
+   "action_transport": "UNTESTED",
+   "effect_lag": "IRREDUCIBLE",
+   "verification_read": "IRREDUCIBLE"
+  },
+  "T_irreducible": "sum of the mean components whose verdict is IRREDUCIBLE on the COMP arm (native: X); floor ratio = mean T_runner(COMP) / T_irreducible (also reported with median T_oracle)"
+ },
+ "provider_budget": {
+  "provider": "TypeSafe",
+  "lane_cap_reached": 330,
+  "lane_cap_attempts": 363,
+  "expected_reached": "fill 30x2 (BASE) + ~1-2 (COMP training/fallback); toggle 30x(2+2); modal 30x(2+2); ~301-302",
+  "shakedown_before_prereg": {"attempts": 5, "reached": 5, "note": "lshake2: 1 fill COMP training decision + 2 toggle BASE + 2 modal BASE; an earlier lshake1 ran the same plan with the scripted chooser by a harness bug (0 attempts)"},
+  "ledger": "raw/provider-ledger.jsonl, one line per HTTP attempt (attempt, reached, latency, status, class, arm, layer, trial); no headers, bodies, request ids or credentials",
+  "stop_rule": "before each live trial the harness requires reached + 3 <= 330 and attempts + 3 <= 363 (lane totals incl. the shakedown); otherwise the remaining pairs are NOT_RUN"
+ },
+ "shakedowns_before_prereg": "scripted browser shake1 (crashed after a 180 s trial timeout, harness fixed), shake2, shake3; native nshake1, nshake2 (decoy); live lshake1 (scripted by bug), lshake2 (5 reached). All under the SHARED quiet-lane lock with receipts; none is measured or analysed.",
+ "references_not_gates": {
+  "PreAct": "8.5-13x warm replay (different benchmark: warm replay of recorded plans, not whole-task verified time on this fixture)",
+  "SkillDroid": "~2.4x pure replay only (different benchmark and platform)"
+ },
+ "claim_boundary": "one Linux host, X11 Xvfb, the jev-use and GTK3 fixtures; TypeSafe for the browser live layer, scripted chooser elsewhere; binary R built from 989cc76ce + the listed commits; OWNER_DECISION components labelled; no default change claimed; never compared with B-01, B-02 or N-01R absolute numbers (different source, binary and environment)",
+ "denominators": "every trial is kept; errors and forced-path failures stay in the validity denominators; a block whose session fails to start is kept, counted and re-run under a new label"
+}
