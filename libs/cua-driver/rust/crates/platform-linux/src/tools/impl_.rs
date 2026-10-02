@@ -292,7 +292,7 @@ impl Tool for ListAppsTool {
     }
 
     async fn invoke(&self, _args: Value) -> ToolResult {
-        let apps = tokio::task::spawn_blocking(|| -> Vec<serde_json::Value> {
+        let apps = cua_driver_core::tool::spawn_blocking_owned(|| -> Vec<serde_json::Value> {
             let procs = crate::proc_fs::list_processes();
             let installed = crate::installed_apps::list_installed_apps();
             let windows = crate::wayland::list_windows_dispatch(None);
@@ -552,10 +552,11 @@ impl Tool for ListWindowsTool {
         use cua_driver_core::tool_args::ArgsExt;
         let filter_pid = args.opt_u64("pid").map(|v| v as u32);
         let on_screen_only = args.bool_or("on_screen_only", false);
-        let mut windows =
-            tokio::task::spawn_blocking(move || crate::wayland::list_windows_dispatch(filter_pid))
-                .await
-                .unwrap_or_default();
+        let mut windows = cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::wayland::list_windows_dispatch(filter_pid)
+        })
+        .await
+        .unwrap_or_default();
         // Exited applications can remain visible in AT-SPI/X11 as zombies;
         // never return those stale targets to callers.
         windows.retain(|window| window.pid.is_none_or(crate::proc_fs::is_process_live));
@@ -1098,7 +1099,7 @@ impl Tool for GetWindowStateTool {
         let xid = match args.opt_u64("window_id") {
             Some(v) => v,
             None => {
-                let chosen = tokio::task::spawn_blocking(move || {
+                let chosen = cua_driver_core::tool::spawn_blocking_owned(move || {
                     if let Some(popup) = crate::input::mapped_popup_windows()
                         .into_iter()
                         .rev()
@@ -1270,7 +1271,7 @@ impl Tool for GetWindowStateTool {
         let state_for_capture = state.clone();
         let query_for_walk = query.clone();
 
-        let result = tokio::task::spawn_blocking(move || -> anyhow::Result<_> {
+        let result = cua_driver_core::tool::spawn_blocking_owned(move || -> anyhow::Result<_> {
             // Skip the AT-SPI walk on the capture-only path
             // (include_accessibility_tree:false).
             let tree_result = if want_tree {
@@ -1933,13 +1934,15 @@ impl Tool for LaunchAppTool {
         // Snapshot the top-levels before spawning so a window created by an
         // already-running service (D-Bus activation) can be told apart.
         let windows_before: std::collections::HashSet<u64> =
-            tokio::task::spawn_blocking(|| crate::wayland::list_windows_dispatch(None))
-                .await
-                .unwrap_or_default()
-                .into_iter()
-                .map(|w| w.xid)
-                .collect();
-        let result = tokio::task::spawn_blocking(
+            cua_driver_core::tool::spawn_blocking_owned(|| {
+                crate::wayland::list_windows_dispatch(None)
+            })
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .map(|w| w.xid)
+            .collect();
+        let result = cua_driver_core::tool::spawn_blocking_owned(
             move || -> anyhow::Result<(String, Option<u32>, String)> {
                 // Open URLs via xdg-open.
                 if !urls.is_empty() {
@@ -2038,7 +2041,7 @@ impl Tool for LaunchAppTool {
                     // query, Exec=) for a desktop-entry launch.
                     let query = name.clone();
                     let name = name.split('\u{0}').next().unwrap_or("").to_owned();
-                    let resolved = tokio::task::spawn_blocking(move || {
+                    let resolved = cua_driver_core::tool::spawn_blocking_owned(move || {
                         resolve_launched_windows(launcher_pid, &query, &windows_before)
                     })
                     .await
@@ -2444,7 +2447,7 @@ async fn spawn_blocking_bounded<T: Send + 'static>(
     budget: std::time::Duration,
     f: impl FnOnce() -> anyhow::Result<T> + Send + 'static,
 ) -> Result<anyhow::Result<T>, tokio::task::JoinError> {
-    match tokio::time::timeout(budget, tokio::task::spawn_blocking(f)).await {
+    match tokio::time::timeout(budget, cua_driver_core::tool::spawn_blocking_owned(f)).await {
         Ok(joined) => joined,
         Err(_elapsed) => Ok(Err(anyhow::anyhow!(
             "{}: {label} did not complete within {budget:?}; the X server or the target \
@@ -2699,11 +2702,12 @@ async fn type_text_ax_result_verified(
     if is_chromium_embedder(pid) {
         return type_text_ax_result(pid, text_len, route);
     }
-    let readback =
-        tokio::task::spawn_blocking(move || crate::atspi::read_value_in(pid, xid_opt, idx))
-            .await
-            .ok()
-            .flatten();
+    let readback = cua_driver_core::tool::spawn_blocking_owned(move || {
+        crate::atspi::read_value_in(pid, xid_opt, idx)
+    })
+    .await
+    .ok()
+    .flatten();
     type_text_readback_result(pid, idx, text, route, readback)
 }
 
@@ -3169,10 +3173,11 @@ async fn attach_focused_cell(mut result: ToolResult, pid: u32) -> ToolResult {
     if result.is_error == Some(true) {
         return result;
     }
-    let focused = tokio::task::spawn_blocking(move || crate::atspi::focused_control(pid))
-        .await
-        .ok()
-        .flatten();
+    let focused =
+        cua_driver_core::tool::spawn_blocking_owned(move || crate::atspi::focused_control(pid))
+            .await
+            .ok()
+            .flatten();
     let Some((role, name)) = focused.filter(|(role, name)| {
         let role = role.to_ascii_lowercase();
         (role.contains("cell") || role == "table cell") && !name.trim().is_empty()
@@ -4033,7 +4038,7 @@ async fn wm_chord_background(
 /// (`_NET_CLOSE_WINDOW` -> `WM_DELETE_WINDOW`) and watch it go.
 async fn close_window_background(pid: u32, xid: u64, display: &str) -> ToolResult {
     let before: Vec<crate::x11::WindowInfo> =
-        tokio::task::spawn_blocking(move || crate::x11::list_windows(Some(pid)))
+        cua_driver_core::tool::spawn_blocking_owned(move || crate::x11::list_windows(Some(pid)))
             .await
             .unwrap_or_default();
     let title = before
@@ -4041,7 +4046,9 @@ async fn close_window_background(pid: u32, xid: u64, display: &str) -> ToolResul
         .find(|w| w.xid == xid)
         .map(|w| w.title.clone())
         .unwrap_or_default();
-    let sent = tokio::task::spawn_blocking(move || crate::x11::close_window(xid, pid)).await;
+    let sent =
+        cua_driver_core::tool::spawn_blocking_owned(move || crate::x11::close_window(xid, pid))
+            .await;
     match sent {
         Ok(Ok(())) => {}
         Ok(Err(error)) => {
@@ -4061,15 +4068,17 @@ async fn close_window_background(pid: u32, xid: u64, display: &str) -> ToolResul
     let mut closed = false;
     while std::time::Instant::now() < deadline {
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        let viewable =
-            tokio::task::spawn_blocking(move || crate::x11::window_is_viewable(xid)).await;
+        let viewable = cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::x11::window_is_viewable(xid)
+        })
+        .await;
         if matches!(viewable, Ok(false)) {
             closed = true;
             break;
         }
     }
     let after: Vec<crate::x11::WindowInfo> =
-        tokio::task::spawn_blocking(move || crate::x11::list_windows(Some(pid)))
+        cua_driver_core::tool::spawn_blocking_owned(move || crate::x11::list_windows(Some(pid)))
             .await
             .unwrap_or_default();
     let new_windows: Vec<&crate::x11::WindowInfo> = after
@@ -4421,7 +4430,7 @@ fn spawn_isolated_hyprland(
     )
     .map_err(isolated_hyprland_refusal)?;
     let (guard, cancellation) = crate::wayland::hyprland_input::ActionCancellation::invocation();
-    let dispatch = tokio::task::spawn_blocking(move || {
+    let dispatch = cua_driver_core::tool::spawn_blocking_owned(move || {
         let _lifecycle = lifecycle;
         work(cancellation)
     });
@@ -4545,7 +4554,11 @@ async fn focus_hyprland_foreground(
         if activation.is_error == Some(true) {
             return Err(activation);
         }
-        match tokio::task::spawn_blocking(move || crate::atspi::focus_element(pid, index)).await {
+        match cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::atspi::focus_element(pid, index)
+        })
+        .await
+        {
             Ok(Ok(true)) => {}
             _ => return Err(foreground_hyprland_refusal("AT-SPI child focus failed")),
         }
@@ -5414,7 +5427,7 @@ async fn announce_keyboard_target(
         return;
     }
     let cursor_id = resolve_cursor_key(args);
-    let target = tokio::task::spawn_blocking(move || {
+    let target = cua_driver_core::tool::spawn_blocking_owned(move || {
         explicit_keyboard_cursor_target(pid, xid, element_index, pixel_target)
             .or_else(|| (xid != 0).then(|| keyboard_window_center(xid)).flatten())
     })
@@ -5453,7 +5466,7 @@ async fn position_named_session_keyboard_cursor(
             .get(&cursor_id)
             .and_then(|cursor| cursor.x.zip(cursor.y))
     });
-    let explicit = tokio::task::spawn_blocking(move || {
+    let explicit = cua_driver_core::tool::spawn_blocking_owned(move || {
         explicit_keyboard_cursor_target(pid, xid, element_index, pixel_target)
     })
     .await
@@ -5464,7 +5477,7 @@ async fn position_named_session_keyboard_cursor(
         && explicit.is_none()
         && cursor_overlay::keyboard_cursor_target(None, remembered, None, None).is_none()
     {
-        tokio::task::spawn_blocking(move || {
+        cua_driver_core::tool::spawn_blocking_owned(move || {
             let center = keyboard_window_center(xid);
             let pointer = center.is_none().then(current_pointer_position).flatten();
             (center, pointer)
@@ -5751,7 +5764,7 @@ impl ClickTool {
         modifiers: &[String],
     ) -> ToolResult {
         let observed_for_state = observed.clone();
-        let decided = tokio::task::spawn_blocking(move || {
+        let decided = cua_driver_core::tool::spawn_blocking_owned(move || {
             decide_foreground_element_placement(pid, &observed_for_state, xid_hint, placement)
         })
         .await;
@@ -5776,7 +5789,7 @@ impl ClickTool {
                 let (sx, sy, redirect_note) = if let Some(oref) = owned_ref {
                     let (pid_c, oref_c, sx_i, sy_i) =
                         (pid, oref, sx.round() as i32, sy.round() as i32);
-                    let ownership = tokio::task::spawn_blocking(move || {
+                    let ownership = cua_driver_core::tool::spawn_blocking_owned(move || {
                         crate::atspi::native::hit_test::point_ownership(
                             pid_c, xid, &oref_c, sx_i, sy_i,
                         )
@@ -6212,7 +6225,7 @@ impl Tool for ClickTool {
             // sees the cursor "click somewhere else."
             reveal_pointer_action_for(&self.state, &cursor_id, f64::from(sx), f64::from(sy), true)
                 .await;
-            let r = tokio::task::spawn_blocking(move || {
+            let r = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if crate::wayland::wayland_input_enabled() {
                     if !modifiers.is_empty() {
                         anyhow::bail!(
@@ -6320,18 +6333,20 @@ impl Tool for ClickTool {
             // degrades to the AX action (background) or a refusal (foreground).
             let placement = tokio::time::timeout(
                 ELEMENT_AX_BUDGET,
-                tokio::task::spawn_blocking(move || -> anyhow::Result<(u64, f64, f64)> {
-                    let (cx, cy) = element_screen_center(pid, idx, xid_hint)?;
-                    let xid = xid_hint
-                        .or_else(|| {
-                            crate::x11::list_windows(Some(pid))
-                                .into_iter()
-                                .next()
-                                .map(|w| w.xid)
-                        })
-                        .unwrap_or(0);
-                    Ok((xid, cx, cy))
-                }),
+                cua_driver_core::tool::spawn_blocking_owned(
+                    move || -> anyhow::Result<(u64, f64, f64)> {
+                        let (cx, cy) = element_screen_center(pid, idx, xid_hint)?;
+                        let xid = xid_hint
+                            .or_else(|| {
+                                crate::x11::list_windows(Some(pid))
+                                    .into_iter()
+                                    .next()
+                                    .map(|w| w.xid)
+                            })
+                            .unwrap_or(0);
+                        Ok((xid, cx, cy))
+                    },
+                ),
             )
             .await
             .ok()
@@ -6394,7 +6409,7 @@ impl Tool for ClickTool {
             let menu_entry_on_screen = real_pointer && element_is_menu_role(&observed.role) && {
                 // A bounded D-Bus round-trip: off the runtime thread.
                 let observed_for_state = observed.clone();
-                let showing = tokio::task::spawn_blocking(move || {
+                let showing = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::atspi::element_showing_observed(&observed_for_state)
                 })
                 .await;
@@ -6428,7 +6443,7 @@ impl Tool for ClickTool {
                 let guard_pid = (!delivery.is_foreground()).then_some(pid);
                 let ax_result = match tokio::time::timeout(
                     ELEMENT_AX_BUDGET,
-                    tokio::task::spawn_blocking(move || {
+                    cua_driver_core::tool::spawn_blocking_owned(move || {
                         // Background: an AT-SPI action can open a menu (GTK/VCL
                         // grab the keyboard and activate the toplevel) or map a
                         // dialog mutter then focuses. Snapshot, act, restore.
@@ -6505,7 +6520,7 @@ impl Tool for ClickTool {
                         "an exact window_id or window-bound element token is required",
                     );
                 };
-                let point = tokio::task::spawn_blocking(move || {
+                let point = cua_driver_core::tool::spawn_blocking_owned(move || {
                     resolve_element_local_coords(pid, idx, Some(xid))
                 })
                 .await;
@@ -6575,54 +6590,56 @@ impl Tool for ClickTool {
             // click at the element (no focus steal), then to a target-addressed
             // X11 event for toolkits that accept it.
             let cursor_id_for_fallback = cursor_id.clone();
-            let result = tokio::task::spawn_blocking(move || -> anyhow::Result<PointerRoute> {
-                let (xid2, lx, ly) = checked_element_local_coords(pid, idx, xid_hint)?;
-                let modifier_refs: Vec<&str> = modifiers.iter().map(String::as_str).collect();
-                if crate::wayland::wayland_input_enabled() && !modifier_refs.is_empty() {
-                    anyhow::bail!(
-                        "modified element clicks are unavailable on native Wayland: \
+            let result = cua_driver_core::tool::spawn_blocking_owned(
+                move || -> anyhow::Result<PointerRoute> {
+                    let (xid2, lx, ly) = checked_element_local_coords(pid, idx, xid_hint)?;
+                    let modifier_refs: Vec<&str> = modifiers.iter().map(String::as_str).collect();
+                    if crate::wayland::wayland_input_enabled() && !modifier_refs.is_empty() {
+                        anyhow::bail!(
+                            "modified element clicks are unavailable on native Wayland: \
                          the pointer route cannot carry keyboard modifier state"
-                    );
-                }
-                // An explicit X11 foreground request needs the real XTest path
-                // even for a plain click. Some native widgets (notably GTK
-                // selectable rows) expose bounds but no AT-SPI Action and
-                // ignore a targeted XSendEvent; limiting XTest to modified
-                // clicks made those rows addressable but not selectable.
-                if delivery.is_foreground() && !crate::wayland::wayland_input_enabled() {
-                    let (_, sx, sy) = placement
-                        .ok_or_else(|| anyhow::anyhow!("element screen bounds unavailable"))?;
-                    crate::input::with_x11_foreground(xid2, 80, || {
-                        crate::input::send_click_xtest_desktop_with_modifiers(
-                            sx.round() as i32,
-                            sy.round() as i32,
+                        );
+                    }
+                    // An explicit X11 foreground request needs the real XTest path
+                    // even for a plain click. Some native widgets (notably GTK
+                    // selectable rows) expose bounds but no AT-SPI Action and
+                    // ignore a targeted XSendEvent; limiting XTest to modified
+                    // clicks made those rows addressable but not selectable.
+                    if delivery.is_foreground() && !crate::wayland::wayland_input_enabled() {
+                        let (_, sx, sy) = placement
+                            .ok_or_else(|| anyhow::anyhow!("element screen bounds unavailable"))?;
+                        crate::input::with_x11_foreground(xid2, 80, || {
+                            crate::input::send_click_xtest_desktop_with_modifiers(
+                                sx.round() as i32,
+                                sy.round() as i32,
+                                button,
+                                count,
+                                &modifier_refs,
+                            )
+                        })
+                        .map(|()| PointerRoute::Foreground)
+                    } else if modifier_refs.is_empty() && !crate::wayland::wayland_input_enabled() {
+                        x11_pixel_click_no_focus_steal(
+                            &cursor_id_for_fallback,
+                            xid2,
+                            lx as i32,
+                            ly as i32,
                             button,
                             count,
+                        )
+                    } else {
+                        crate::input::send_click_with_modifiers(
+                            xid2,
+                            lx as i32,
+                            ly as i32,
+                            count,
+                            button,
                             &modifier_refs,
                         )
-                    })
-                    .map(|()| PointerRoute::Foreground)
-                } else if modifier_refs.is_empty() && !crate::wayland::wayland_input_enabled() {
-                    x11_pixel_click_no_focus_steal(
-                        &cursor_id_for_fallback,
-                        xid2,
-                        lx as i32,
-                        ly as i32,
-                        button,
-                        count,
-                    )
-                } else {
-                    crate::input::send_click_with_modifiers(
-                        xid2,
-                        lx as i32,
-                        ly as i32,
-                        count,
-                        button,
-                        &modifier_refs,
-                    )
-                    .map(|()| PointerRoute::Synthetic)
-                }
-            })
+                        .map(|()| PointerRoute::Synthetic)
+                    }
+                },
+            )
             .await;
             let mode_label = if delivery.is_foreground() {
                 "foreground"
@@ -6728,7 +6745,11 @@ impl Tool for ClickTool {
             }
         }
         if desktop_frame {
-            match tokio::task::spawn_blocking(move || desktop_to_window_local(xid, x, y)).await {
+            match cua_driver_core::tool::spawn_blocking_owned(move || {
+                desktop_to_window_local(xid, x, y)
+            })
+            .await
+            {
                 Ok(Ok((lx, ly))) => {
                     x = lx;
                     y = ly;
@@ -6761,7 +6782,7 @@ impl Tool for ClickTool {
         let glide_target = if let Some((sx, sy)) = wayland_output_point {
             Some((sx as f64, sy as f64))
         } else {
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y))
+            cua_driver_core::tool::spawn_blocking_owned(move || window_local_to_screen(xid, x, y))
                 .await
                 .ok()
                 .and_then(|r| r.ok())
@@ -6801,7 +6822,7 @@ impl Tool for ClickTool {
                 );
             }
             if button == 1 && count == 1 {
-                let semantic = tokio::task::spawn_blocking(move || {
+                let semantic = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::atspi::perform_action_at_screen_point(pid, xid, output_x, output_y)
                 })
                 .await;
@@ -7097,8 +7118,10 @@ async fn focus_nested_inject_target(
     pixel: Option<(f64, f64)>,
 ) -> Result<(), ToolResult> {
     if let Some(index) = element_index {
-        return match tokio::task::spawn_blocking(move || crate::atspi::focus_element(pid, index))
-            .await
+        return match cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::atspi::focus_element(pid, index)
+        })
+        .await
         {
             Ok(Ok(true)) => Ok(()),
             Ok(Ok(false)) => Err(ToolResult::error(format!(
@@ -7109,7 +7132,7 @@ async fn focus_nested_inject_target(
         };
     }
     if let Some((x, y)) = pixel {
-        return match tokio::task::spawn_blocking(move || {
+        return match cua_driver_core::tool::spawn_blocking_owned(move || {
             crate::wayland::inject_click(pid, window_id, x, y, 1, 1)
         })
         .await
@@ -7170,7 +7193,7 @@ impl Tool for TypeTextTool {
                 .await;
             let wayland = crate::wayland::wayland_input_enabled();
             let path = if wayland { "wayland_focused" } else { "xtest" };
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if wayland {
                     crate::wayland::type_text_focused(&text)
                 } else {
@@ -7214,7 +7237,7 @@ impl Tool for TypeTextTool {
         let xid = match xid_opt {
             Some(x) => x,
             None => {
-                let windows = tokio::task::spawn_blocking(move || {
+                let windows = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::x11::list_windows(if pid == 0 { None } else { Some(pid) })
                 })
                 .await
@@ -7326,9 +7349,9 @@ impl Tool for TypeTextTool {
                 if let Some(index) = resolved_elem_idx {
                     let text_ax = text.clone();
                     if matches!(
-                        tokio::task::spawn_blocking(move || crate::atspi::type_into_editable_at(
-                            pid, index, &text_ax
-                        ))
+                        cua_driver_core::tool::spawn_blocking_owned(move || {
+                            crate::atspi::type_into_editable_at(pid, index, &text_ax)
+                        })
                         .await,
                         Ok(Ok(()))
                     ) {
@@ -7412,7 +7435,7 @@ impl Tool for TypeTextTool {
                 && !is_webkitgtk_embedder(pid)
         }) {
             let text_at = text.clone();
-            let targeted = tokio::task::spawn_blocking(move || {
+            let targeted = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::atspi::type_into_editable_at(pid, idx, &text_at)
             })
             .await;
@@ -7437,7 +7460,7 @@ impl Tool for TypeTextTool {
                 return error;
             }
             let text_w = text.clone();
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::inject_type_text(pid, xid, &text_w)
             })
             .await;
@@ -7499,7 +7522,7 @@ impl Tool for TypeTextTool {
         {
             if let Some(idx) = resolved_elem_idx {
                 let text_w = text.clone();
-                let result = tokio::task::spawn_blocking(move || {
+                let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::wayland::with_target_foreground(pid, xid, || {
                         if !crate::atspi::focus_element(pid, idx)? {
                             anyhow::bail!(
@@ -7530,7 +7553,7 @@ impl Tool for TypeTextTool {
         // compositor's globally focused surface.
         if let Some(idx) = resolved_elem_idx {
             let text_at = text.clone();
-            let targeted = tokio::task::spawn_blocking(move || {
+            let targeted = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::atspi::type_into_editable_at(pid, idx, &text_at)
             })
             .await;
@@ -7567,7 +7590,7 @@ impl Tool for TypeTextTool {
             }
             let text_w = text.clone();
             let idx = resolved_elem_idx;
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::with_target_foreground(pid, xid, || {
                     if let Some(idx) = idx {
                         if !crate::atspi::focus_element(pid, idx)? {
@@ -7603,10 +7626,11 @@ impl Tool for TypeTextTool {
         // synthesis. Either way the structured response reports
         // `path: "key_events"` so callers can verify the route taken.
         let pid_is_terminal = is_terminal_process(pid);
-        let wm_class_is_terminal =
-            tokio::task::spawn_blocking(move || crate::terminal::is_terminal_window(xid))
-                .await
-                .unwrap_or(false);
+        let wm_class_is_terminal = cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::terminal::is_terminal_window(xid)
+        })
+        .await
+        .unwrap_or(false);
         if pid_is_terminal || wm_class_is_terminal {
             let text_len = text.chars().count();
             let text_t = text.clone();
@@ -7736,7 +7760,7 @@ impl Tool for TypeTextTool {
         // widget instead: terminals via pty injection, everything else via
         // XSendEvent to the focused window. A focused *editable* (Some(true)) or
         // nothing focused (None) falls through to the existing AT-SPI-first flow.
-        let focus_kind = tokio::task::spawn_blocking(move || {
+        let focus_kind = cua_driver_core::tool::spawn_blocking_owned(move || {
             crate::atspi::focused_is_editable(pid).ok().flatten()
         })
         .await
@@ -7773,7 +7797,7 @@ impl Tool for TypeTextTool {
                 };
             }
             let text_f = text.clone();
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if inject_terminal_input(pid, xid, &text_f)? {
                     return Ok(());
                 }
@@ -7802,9 +7826,10 @@ impl Tool for TypeTextTool {
 
         // Try AT-SPI EditableText first (focus-free, works for Qt6/GTK4).
         let text_clone = text.clone();
-        let atspi_result =
-            tokio::task::spawn_blocking(move || crate::atspi::type_into_editable(pid, &text_clone))
-                .await;
+        let atspi_result = cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::atspi::type_into_editable(pid, &text_clone)
+        })
+        .await;
 
         match atspi_result {
             Ok(Ok(())) => {
@@ -7823,7 +7848,7 @@ impl Tool for TypeTextTool {
         // expose the widget tree, type via AT-SPI, then send FocusOut.
         // This doesn't change the X11 active window, so the test's focus check passes.
         let text_clone2 = text.clone();
-        let qt5_result = tokio::task::spawn_blocking(move || {
+        let qt5_result = cua_driver_core::tool::spawn_blocking_owned(move || {
             if !is_qt5_process(pid) {
                 anyhow::bail!("not a Qt5 process; synthetic-FocusIn bridge workaround skipped");
             }
@@ -8047,7 +8072,7 @@ impl Tool for PressKeyTool {
                 .await;
             let wayland = crate::wayland::wayland_input_enabled();
             let path = if wayland { "wayland_focused" } else { "xtest" };
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if wayland && modifiers.is_empty() {
                     crate::wayland::press_key_focused(&key)
                 } else if wayland {
@@ -8102,7 +8127,7 @@ impl Tool for PressKeyTool {
         let xid = match xid_opt {
             Some(x) => x,
             None => {
-                let windows = tokio::task::spawn_blocking(move || {
+                let windows = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::x11::list_windows(if pid == 0 { None } else { Some(pid) })
                 })
                 .await
@@ -8254,13 +8279,13 @@ impl Tool for PressKeyTool {
             let result = match press_key_chord(&mods, &key) {
                 None => {
                     let key_w = key.clone();
-                    tokio::task::spawn_blocking(move || {
+                    cua_driver_core::tool::spawn_blocking_owned(move || {
                         crate::wayland::inject_press_key(pid, xid, &key_w)
                     })
                     .await
                 }
                 Some(chord) => {
-                    tokio::task::spawn_blocking(move || {
+                    cua_driver_core::tool::spawn_blocking_owned(move || {
                         crate::wayland::inject_hotkey(pid, xid, &chord)
                     })
                     .await
@@ -8305,7 +8330,7 @@ impl Tool for PressKeyTool {
             let key_w = key.clone();
             let chord = press_key_chord(&mods, &key);
             let idx = resolved_element_index;
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::with_target_foreground(pid, xid, || {
                     if let Some(idx) = idx {
                         if !crate::atspi::focus_element(pid, idx)? {
@@ -8473,7 +8498,7 @@ impl Tool for HotkeyTool {
                 .await;
             let wayland = crate::wayland::wayland_input_enabled();
             let path = if wayland { "wayland_focused" } else { "xtest" };
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if wayland {
                     crate::wayland::hotkey_focused(&keys)
                 } else {
@@ -8514,7 +8539,7 @@ impl Tool for HotkeyTool {
         let xid = match xid_opt {
             Some(x) => x,
             None => {
-                let windows = tokio::task::spawn_blocking(move || {
+                let windows = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::x11::list_windows(if pid == 0 { None } else { Some(pid) })
                 })
                 .await
@@ -8707,7 +8732,7 @@ impl Tool for HotkeyTool {
             }
             let mut chord = mods.clone();
             chord.push(key.clone());
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::inject_hotkey(pid, xid, &chord)
             })
             .await;
@@ -8728,7 +8753,7 @@ impl Tool for HotkeyTool {
             && is_chromium_embedder(pid)
         {
             if let Some(element_index) = resolved_element_index {
-                let coordinates = tokio::task::spawn_blocking(move || {
+                let coordinates = cua_driver_core::tool::spawn_blocking_owned(move || {
                     resolve_element_local_coords(pid, element_index, Some(xid))
                 })
                 .await;
@@ -8748,7 +8773,7 @@ impl Tool for HotkeyTool {
         // Foreground: GrabFocus the addressed element up front. Background
         // does it inside `background_key_route`, under the focus guard.
         if let Some(element_index) = resolved_element_index.filter(|_| delivery.is_foreground()) {
-            let focused = tokio::task::spawn_blocking(move || {
+            let focused = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::atspi::focus_element(pid, element_index)
             })
             .await;
@@ -8916,7 +8941,7 @@ impl Tool for SetValueTool {
         .await;
         let ax_error = match ax {
             Ok(Ok(())) => {
-                let readback = tokio::task::spawn_blocking(move || {
+                let readback = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::atspi::read_value_in(pid, xid_opt, idx)
                 })
                 .await
@@ -9002,7 +9027,7 @@ impl Tool for SetValueTool {
             Ok(Ok(guard)) => {
                 // Let the toolkit commit on focus-out before reading back.
                 tokio::time::sleep(std::time::Duration::from_millis(150)).await;
-                let readback = tokio::task::spawn_blocking(move || {
+                let readback = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::atspi::read_value_in(pid, xid_opt, idx)
                 })
                 .await
@@ -9252,7 +9277,7 @@ impl Tool for ScrollTool {
                 )
                 .await;
             }
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if wayland {
                     crate::wayland::scroll_desktop(x, y, &direction, amount as u32)
                 } else {
@@ -9303,7 +9328,7 @@ impl Tool for ScrollTool {
         let xid = match xid_opt {
             Some(x) => x,
             None => {
-                let windows = tokio::task::spawn_blocking(move || {
+                let windows = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::x11::list_windows(if pid == 0 { None } else { Some(pid) })
                 })
                 .await
@@ -9358,7 +9383,10 @@ impl Tool for ScrollTool {
             (Some(x), Some(y)) if desktop_frame_requested(&args) => {
                 // Desktop-frame pixels (from get_desktop_state) against a named
                 // window: map into the window-local frame the pipeline expects.
-                match tokio::task::spawn_blocking(move || desktop_to_window_local(xid, x, y)).await
+                match cua_driver_core::tool::spawn_blocking_owned(move || {
+                    desktop_to_window_local(xid, x, y)
+                })
+                .await
                 {
                     Ok(Ok(local)) => Some(local),
                     Ok(Err(e)) => {
@@ -9402,7 +9430,7 @@ impl Tool for ScrollTool {
         }
 
         if named_session_cursor_key(&args).is_some() {
-            let visual_target = tokio::task::spawn_blocking(move || {
+            let visual_target = cua_driver_core::tool::spawn_blocking_owned(move || {
                 explicit_keyboard_cursor_target(pid, xid, resolved_element_index, pixel_target)
                     .or_else(|| keyboard_window_center(xid))
             })
@@ -9434,7 +9462,7 @@ impl Tool for ScrollTool {
             // coordinate-based compositor fallback.
             if !(crate::wayland::wayland_input_enabled() && is_webkitgtk_embedder(pid)) {
                 let direction_for_ax = direction.clone();
-                let ax_result = tokio::task::spawn_blocking(move || {
+                let ax_result = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::atspi::scroll_element(pid, idx, &direction_for_ax, amount, by)
                 })
                 .await;
@@ -9463,7 +9491,7 @@ impl Tool for ScrollTool {
                 );
             }
             let point = if let Some(index) = resolved_element_index {
-                match tokio::task::spawn_blocking(move || {
+                match cua_driver_core::tool::spawn_blocking_owned(move || {
                     resolve_element_local_coords(pid, index, Some(xid))
                 })
                 .await
@@ -9533,7 +9561,7 @@ impl Tool for ScrollTool {
                 );
             };
             let direction_for_inject = direction.clone();
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::inject_scroll(pid, xid, x, y, &direction_for_inject, amount as u32)
             })
             .await;
@@ -9565,7 +9593,7 @@ impl Tool for ScrollTool {
                     },
                 ) => {
                     let idx = *element_index;
-                    match tokio::task::spawn_blocking(move || {
+                    match cua_driver_core::tool::spawn_blocking_owned(move || {
                         resolve_element_local_coords(pid, idx, Some(xid))
                     })
                     .await
@@ -9588,7 +9616,7 @@ impl Tool for ScrollTool {
             let output_point = local_point.map(|(x, y)| {
                 crate::wayland::window_local_to_output(xid, x.round() as i32, y.round() as i32)
             });
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::scroll_at(xid, output_point, &direction_for_wayland, amount as u32)
             })
             .await;
@@ -9616,7 +9644,7 @@ impl Tool for ScrollTool {
         let element_point = match &resolved {
             cua_driver_core::element_token::ResolvedElement::Element { element_index, .. } => {
                 let idx = *element_index;
-                match tokio::task::spawn_blocking(move || {
+                match cua_driver_core::tool::spawn_blocking_owned(move || {
                     resolve_element_local_coords(pid, idx, Some(xid))
                 })
                 .await
@@ -9654,7 +9682,7 @@ impl Tool for ScrollTool {
         let cursor_id_for_task = cursor_id.clone();
         let direction_for_wayland = direction.clone();
         let amount_u32 = amount as u32;
-        let result = tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
+        let result = cua_driver_core::tool::spawn_blocking_owned(move || -> anyhow::Result<()> {
             if crate::wayland::wayland_input_enabled() {
                 return crate::wayland::scroll(xid, &direction_for_wayland, amount_u32);
             }
@@ -9826,16 +9854,19 @@ impl Tool for DoubleClickTool {
         };
         if let Some(idx) = elem_idx_resolved {
             let xid_hint = window_id_resolved;
-            let result = tokio::task::spawn_blocking(move || -> anyhow::Result<(u64, f64, f64)> {
-                checked_element_local_coords(pid, idx, xid_hint)
-            })
+            let result = cua_driver_core::tool::spawn_blocking_owned(
+                move || -> anyhow::Result<(u64, f64, f64)> {
+                    checked_element_local_coords(pid, idx, xid_hint)
+                },
+            )
             .await;
             return match result {
                 Ok(Ok((xid, lx, ly))) => {
-                    if let Ok(Ok((sx, sy))) = tokio::task::spawn_blocking(move || {
-                        element_screen_center(pid, idx, Some(xid))
-                    })
-                    .await
+                    if let Ok(Ok((sx, sy))) =
+                        cua_driver_core::tool::spawn_blocking_owned(move || {
+                            element_screen_center(pid, idx, Some(xid))
+                        })
+                        .await
                     {
                         crate::overlay::send_command_for(
                             cursor_id.clone(),
@@ -9848,8 +9879,8 @@ impl Tool for DoubleClickTool {
                     let wayland_point = crate::wayland::wayland_input_enabled()
                         .then(|| crate::wayland::window_local_to_output(xid, lxi, lyi));
                     let cursor_id_for_task = cursor_id.clone();
-                    let click_result =
-                        tokio::task::spawn_blocking(move || -> anyhow::Result<PointerRoute> {
+                    let click_result = cua_driver_core::tool::spawn_blocking_owned(
+                        move || -> anyhow::Result<PointerRoute> {
                             if crate::wayland::is_inject_mode() {
                                 return crate::wayland::inject_click(pid, xid, lx, ly, 2, 1)
                                     .map(|()| PointerRoute::Wayland);
@@ -9873,8 +9904,9 @@ impl Tool for DoubleClickTool {
                                 .map(|()| PointerRoute::Foreground);
                             }
                             x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, lxi, lyi, 1, 2)
-                        })
-                        .await;
+                        },
+                    )
+                    .await;
                     let mode_label = if delivery.is_foreground() {
                         "foreground"
                     } else {
@@ -9925,7 +9957,11 @@ impl Tool for DoubleClickTool {
             y *= ratio;
         }
         if desktop_frame {
-            match tokio::task::spawn_blocking(move || desktop_to_window_local(xid, x, y)).await {
+            match cua_driver_core::tool::spawn_blocking_owned(move || {
+                desktop_to_window_local(xid, x, y)
+            })
+            .await
+            {
                 Ok(Ok((lx, ly))) => {
                     x = lx;
                     y = ly;
@@ -9954,7 +9990,7 @@ impl Tool for DoubleClickTool {
         let glide_target = if let Some((sx, sy)) = wayland_output_point {
             Some((sx as f64, sy as f64))
         } else {
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y))
+            cua_driver_core::tool::spawn_blocking_owned(move || window_local_to_screen(xid, x, y))
                 .await
                 .ok()
                 .and_then(|r| r.ok())
@@ -9964,39 +10000,40 @@ impl Tool for DoubleClickTool {
         }
         let (xi, yi) = (x as i32, y as i32);
         let cursor_id_for_task = cursor_id.clone();
-        let result = tokio::task::spawn_blocking(move || -> anyhow::Result<PointerRoute> {
-            if crate::wayland::is_inject_mode() {
-                return crate::wayland::inject_click(pid, xid, x, y, 2, 1)
-                    .map(|()| PointerRoute::Wayland);
-            }
-            if crate::wayland::wayland_input_enabled() {
-                let (output_x, output_y) = wayland_output_point.unwrap_or((xi, yi));
-                return crate::wayland::click(xid, output_x, output_y, 2, 1)
-                    .map(|()| PointerRoute::Wayland);
-            }
-            if delivery.is_foreground() {
-                return crate::input::with_x11_foreground(xid, 80, || {
-                    // Real XTest double-click at the screen point — synthetic
-                    // XSendEvent button events are dropped by GTK/Qt and the MPX
-                    // uinput path needs /dev/uinput (absent on Xvfb/Xtigervnc), so
-                    // neither lands. Mirrors the single-click foreground path.
-                    if let Ok((sx, sy)) = window_local_to_screen(xid, xi as f64, yi as f64) {
-                        crate::input::send_click_xtest_desktop(
-                            sx.round() as i32,
-                            sy.round() as i32,
-                            1,
-                            2,
-                        )?;
-                        return Ok(());
-                    }
-                    x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 1, 2)
-                        .map(|_| ())
-                })
-                .map(|()| PointerRoute::Foreground);
-            }
-            x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 1, 2)
-        })
-        .await;
+        let result =
+            cua_driver_core::tool::spawn_blocking_owned(move || -> anyhow::Result<PointerRoute> {
+                if crate::wayland::is_inject_mode() {
+                    return crate::wayland::inject_click(pid, xid, x, y, 2, 1)
+                        .map(|()| PointerRoute::Wayland);
+                }
+                if crate::wayland::wayland_input_enabled() {
+                    let (output_x, output_y) = wayland_output_point.unwrap_or((xi, yi));
+                    return crate::wayland::click(xid, output_x, output_y, 2, 1)
+                        .map(|()| PointerRoute::Wayland);
+                }
+                if delivery.is_foreground() {
+                    return crate::input::with_x11_foreground(xid, 80, || {
+                        // Real XTest double-click at the screen point — synthetic
+                        // XSendEvent button events are dropped by GTK/Qt and the MPX
+                        // uinput path needs /dev/uinput (absent on Xvfb/Xtigervnc), so
+                        // neither lands. Mirrors the single-click foreground path.
+                        if let Ok((sx, sy)) = window_local_to_screen(xid, xi as f64, yi as f64) {
+                            crate::input::send_click_xtest_desktop(
+                                sx.round() as i32,
+                                sy.round() as i32,
+                                1,
+                                2,
+                            )?;
+                            return Ok(());
+                        }
+                        x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 1, 2)
+                            .map(|_| ())
+                    })
+                    .map(|()| PointerRoute::Foreground);
+                }
+                x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 1, 2)
+            })
+            .await;
         let mode_label = if delivery.is_foreground() {
             "foreground"
         } else {
@@ -10105,16 +10142,19 @@ impl Tool for RightClickTool {
         };
         if let Some(idx) = elem_idx_resolved {
             let xid_hint = window_id_resolved;
-            let result = tokio::task::spawn_blocking(move || -> anyhow::Result<(u64, f64, f64)> {
-                checked_element_local_coords(pid, idx, xid_hint)
-            })
+            let result = cua_driver_core::tool::spawn_blocking_owned(
+                move || -> anyhow::Result<(u64, f64, f64)> {
+                    checked_element_local_coords(pid, idx, xid_hint)
+                },
+            )
             .await;
             return match result {
                 Ok(Ok((xid, lx, ly))) => {
-                    if let Ok(Ok((sx, sy))) = tokio::task::spawn_blocking(move || {
-                        element_screen_center(pid, idx, Some(xid))
-                    })
-                    .await
+                    if let Ok(Ok((sx, sy))) =
+                        cua_driver_core::tool::spawn_blocking_owned(move || {
+                            element_screen_center(pid, idx, Some(xid))
+                        })
+                        .await
                     {
                         crate::overlay::send_command_for(
                             cursor_id.clone(),
@@ -10127,8 +10167,8 @@ impl Tool for RightClickTool {
                     let wayland_point = crate::wayland::wayland_input_enabled()
                         .then(|| crate::wayland::window_local_to_output(xid, lxi, lyi));
                     let cursor_id_for_task = cursor_id.clone();
-                    let click_result =
-                        tokio::task::spawn_blocking(move || -> anyhow::Result<PointerRoute> {
+                    let click_result = cua_driver_core::tool::spawn_blocking_owned(
+                        move || -> anyhow::Result<PointerRoute> {
                             if crate::wayland::is_inject_mode() {
                                 return crate::wayland::inject_click(pid, xid, lx, ly, 1, 3)
                                     .map(|()| PointerRoute::Wayland);
@@ -10152,8 +10192,9 @@ impl Tool for RightClickTool {
                                 .map(|()| PointerRoute::Foreground);
                             }
                             x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, lxi, lyi, 3, 1)
-                        })
-                        .await;
+                        },
+                    )
+                    .await;
                     let mode_label = if delivery.is_foreground() {
                         "foreground"
                     } else {
@@ -10204,7 +10245,11 @@ impl Tool for RightClickTool {
             y *= ratio;
         }
         if desktop_frame {
-            match tokio::task::spawn_blocking(move || desktop_to_window_local(xid, x, y)).await {
+            match cua_driver_core::tool::spawn_blocking_owned(move || {
+                desktop_to_window_local(xid, x, y)
+            })
+            .await
+            {
                 Ok(Ok((lx, ly))) => {
                     x = lx;
                     y = ly;
@@ -10233,7 +10278,7 @@ impl Tool for RightClickTool {
         let glide_target = if let Some((sx, sy)) = wayland_output_point {
             Some((sx as f64, sy as f64))
         } else {
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y))
+            cua_driver_core::tool::spawn_blocking_owned(move || window_local_to_screen(xid, x, y))
                 .await
                 .ok()
                 .and_then(|r| r.ok())
@@ -10243,38 +10288,39 @@ impl Tool for RightClickTool {
         }
         let (xi, yi) = (x as i32, y as i32);
         let cursor_id_for_task = cursor_id.clone();
-        let result = tokio::task::spawn_blocking(move || -> anyhow::Result<PointerRoute> {
-            if crate::wayland::is_inject_mode() {
-                return crate::wayland::inject_click(pid, xid, x, y, 1, 3)
-                    .map(|()| PointerRoute::Wayland);
-            }
-            if crate::wayland::wayland_input_enabled() {
-                let (output_x, output_y) = wayland_output_point.unwrap_or((xi, yi));
-                return crate::wayland::click(xid, output_x, output_y, 1, 3)
-                    .map(|()| PointerRoute::Wayland);
-            }
-            if delivery.is_foreground() {
-                return crate::input::with_x11_foreground(xid, 80, || {
-                    // Real XTest right-click at the screen point (synthetic
-                    // XSendEvent is dropped by GTK/Qt; MPX needs /dev/uinput).
-                    // Mirrors the single-click foreground path.
-                    if let Ok((sx, sy)) = window_local_to_screen(xid, xi as f64, yi as f64) {
-                        crate::input::send_click_xtest_desktop(
-                            sx.round() as i32,
-                            sy.round() as i32,
-                            3,
-                            1,
-                        )?;
-                        return Ok(());
-                    }
-                    x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 3, 1)
-                        .map(|_| ())
-                })
-                .map(|()| PointerRoute::Foreground);
-            }
-            x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 3, 1)
-        })
-        .await;
+        let result =
+            cua_driver_core::tool::spawn_blocking_owned(move || -> anyhow::Result<PointerRoute> {
+                if crate::wayland::is_inject_mode() {
+                    return crate::wayland::inject_click(pid, xid, x, y, 1, 3)
+                        .map(|()| PointerRoute::Wayland);
+                }
+                if crate::wayland::wayland_input_enabled() {
+                    let (output_x, output_y) = wayland_output_point.unwrap_or((xi, yi));
+                    return crate::wayland::click(xid, output_x, output_y, 1, 3)
+                        .map(|()| PointerRoute::Wayland);
+                }
+                if delivery.is_foreground() {
+                    return crate::input::with_x11_foreground(xid, 80, || {
+                        // Real XTest right-click at the screen point (synthetic
+                        // XSendEvent is dropped by GTK/Qt; MPX needs /dev/uinput).
+                        // Mirrors the single-click foreground path.
+                        if let Ok((sx, sy)) = window_local_to_screen(xid, xi as f64, yi as f64) {
+                            crate::input::send_click_xtest_desktop(
+                                sx.round() as i32,
+                                sy.round() as i32,
+                                3,
+                                1,
+                            )?;
+                            return Ok(());
+                        }
+                        x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 3, 1)
+                            .map(|_| ())
+                    })
+                    .map(|()| PointerRoute::Foreground);
+                }
+                x11_pixel_click_no_focus_steal(&cursor_id_for_task, xid, xi, yi, 3, 1)
+            })
+            .await;
         let mode_label = if delivery.is_foreground() {
             "foreground"
         } else {
@@ -10389,7 +10435,7 @@ impl Tool for DragTool {
                 return wayland_modified_drag_refusal();
             }
             let path = if wayland { "wayland_desktop" } else { "xtest" };
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 if wayland {
                     crate::wayland::drag_desktop(
                         from_x.round() as i32,
@@ -10530,7 +10576,7 @@ impl Tool for DragTool {
             }
         }
         if desktop_frame {
-            let mapped = tokio::task::spawn_blocking(move || {
+            let mapped = cua_driver_core::tool::spawn_blocking_owned(move || {
                 Ok::<_, anyhow::Error>((
                     desktop_to_window_local(xid, from_x, from_y)?,
                     desktop_to_window_local(xid, to_x, to_y)?,
@@ -10697,10 +10743,12 @@ impl Tool for DragTool {
         let screen_from = if let Some((from, _)) = wayland_points {
             Some((from.0 as f64, from.1 as f64))
         } else {
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, from_x, from_y))
-                .await
-                .ok()
-                .and_then(|result| result.ok())
+            cua_driver_core::tool::spawn_blocking_owned(move || {
+                window_local_to_screen(xid, from_x, from_y)
+            })
+            .await
+            .ok()
+            .and_then(|result| result.ok())
         };
         if let Some((sx_from, sy_from)) = screen_from {
             overlay_glide_to_for(&cursor_id, sx_from, sy_from).await;
@@ -10722,7 +10770,7 @@ impl Tool for DragTool {
         if crate::wayland::wayland_input_enabled() {
             let steps_u32 = steps as u32;
             let drag_result = if crate::wayland::is_inject_mode() {
-                tokio::task::spawn_blocking(move || {
+                cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::wayland::inject_drag(
                         pid,
                         xid,
@@ -10737,7 +10785,7 @@ impl Tool for DragTool {
                     (from_x.round() as i32, from_y.round() as i32),
                     (to_x.round() as i32, to_y.round() as i32),
                 ));
-                tokio::task::spawn_blocking(move || {
+                cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::wayland::drag(
                         xid,
                         (fxi, fyi),
@@ -10780,7 +10828,7 @@ impl Tool for DragTool {
         }
 
         if delivery.is_foreground() {
-            let screen_points = tokio::task::spawn_blocking(move || {
+            let screen_points = cua_driver_core::tool::spawn_blocking_owned(move || {
                 Ok::<_, anyhow::Error>((
                     window_local_to_screen(xid, from_x, from_y)?,
                     window_local_to_screen(xid, to_x, to_y)?,
@@ -10792,7 +10840,7 @@ impl Tool for DragTool {
                 Ok(Err(e)) => return ToolResult::error(e.to_string()),
                 Err(e) => return ToolResult::error(format!("Task error: {e}")),
             };
-            let drag_result = tokio::task::spawn_blocking(move || {
+            let drag_result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 let modifier_refs: Vec<&str> = modifiers.iter().map(String::as_str).collect();
                 crate::input::with_x11_foreground(xid, 80, || {
                     crate::input::send_drag_xtest_desktop_with_modifiers(
@@ -10842,7 +10890,7 @@ impl Tool for DragTool {
         // synthetic XSendEvent gesture below); the target's screen points are
         // resolved once and the agent cursor tracks the glide.
         if crate::input::real_pointer_input_available() {
-            let screen_points = tokio::task::spawn_blocking(move || {
+            let screen_points = cua_driver_core::tool::spawn_blocking_owned(move || {
                 Ok::<_, anyhow::Error>((
                     window_local_to_screen(xid, from_x, from_y)?,
                     window_local_to_screen(xid, to_x, to_y)?,
@@ -10859,7 +10907,7 @@ impl Tool for DragTool {
                 cursor_overlay::OverlayCommand::SetPressed(true),
             );
             let cursor_id_for_task = cursor_id.clone();
-            let drag_result = tokio::task::spawn_blocking(move || {
+            let drag_result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 let (outcome, guard) =
                     crate::input::focus_guard::guarded_settled(Some(pid), || {
                         Ok(crate::input::send_virtual_pointer_drag(
@@ -10922,7 +10970,7 @@ impl Tool for DragTool {
             cursor_id.clone(),
             cursor_overlay::OverlayCommand::SetPressed(true),
         );
-        let press_result = tokio::task::spawn_blocking(move || {
+        let press_result = cua_driver_core::tool::spawn_blocking_owned(move || {
             crate::input::send_button_down(
                 xid,
                 from_x.round() as i32,
@@ -10947,7 +10995,7 @@ impl Tool for DragTool {
                 let t = i as f64 / steps.max(1) as f64;
                 let ix = from_x + (to_x - from_x) * t;
                 let iy = from_y + (to_y - from_y) * t;
-                let motion_result = tokio::task::spawn_blocking(move || {
+                let motion_result = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::input::send_motion(
                         xid,
                         ix.round() as i32,
@@ -10959,8 +11007,10 @@ impl Tool for DragTool {
                 match motion_result {
                     Ok(Ok(())) => {
                         if let Ok(Ok((sx, sy))) =
-                            tokio::task::spawn_blocking(move || window_local_to_screen(xid, ix, iy))
-                                .await
+                            cua_driver_core::tool::spawn_blocking_owned(move || {
+                                window_local_to_screen(xid, ix, iy)
+                            })
+                            .await
                         {
                             self.state
                                 .cursor_registry
@@ -10987,7 +11037,7 @@ impl Tool for DragTool {
             }
         }
 
-        let release_result = tokio::task::spawn_blocking(move || {
+        let release_result = cua_driver_core::tool::spawn_blocking_owned(move || {
             crate::input::send_button_up(xid, to_x.round() as i32, to_y.round() as i32, button)
         })
         .await;
@@ -11004,8 +11054,10 @@ impl Tool for DragTool {
         );
 
         if result.is_ok() {
-            if let Ok(Ok((sx_to, sy_to))) =
-                tokio::task::spawn_blocking(move || window_local_to_screen(xid, to_x, to_y)).await
+            if let Ok(Ok((sx_to, sy_to))) = cua_driver_core::tool::spawn_blocking_owned(move || {
+                window_local_to_screen(xid, to_x, to_y)
+            })
+            .await
             {
                 crate::overlay::send_command_for(
                     cursor_id.clone(),
@@ -11112,7 +11164,11 @@ impl Tool for MouseButtonDownTool {
             y *= ratio;
         }
         if desktop_frame {
-            match tokio::task::spawn_blocking(move || desktop_to_window_local(xid, x, y)).await {
+            match cua_driver_core::tool::spawn_blocking_owned(move || {
+                desktop_to_window_local(xid, x, y)
+            })
+            .await
+            {
                 Ok(Ok((lx, ly))) => {
                     x = lx;
                     y = ly;
@@ -11131,7 +11187,8 @@ impl Tool for MouseButtonDownTool {
             cursor_overlay::OverlayCommand::PinAbove(xid),
         );
         if let Ok(Ok((sx, sy))) =
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y)).await
+            cua_driver_core::tool::spawn_blocking_owned(move || window_local_to_screen(xid, x, y))
+                .await
         {
             overlay_glide_to_for(&cursor_id, sx, sy).await;
             crate::overlay::send_command_for(
@@ -11155,13 +11212,15 @@ impl Tool for MouseButtonDownTool {
                 yi,
                 crate::wayland::window_local_to_output,
             );
-            tokio::task::spawn_blocking(move || {
+            cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::persistent_vptr::press(&cid, xid, output_x, output_y, button)
             })
             .await
         } else {
-            tokio::task::spawn_blocking(move || crate::input::send_button_down(xid, xi, yi, button))
-                .await
+            cua_driver_core::tool::spawn_blocking_owned(move || {
+                crate::input::send_button_down(xid, xi, yi, button)
+            })
+            .await
         };
         match result {
             Ok(Ok(())) => {
@@ -11177,8 +11236,10 @@ impl Tool for MouseButtonDownTool {
                     .lock()
                     .unwrap()
                     .insert(cursor_id.clone(), hold.clone());
-                if let Ok(Ok((sx, sy))) =
-                    tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y)).await
+                if let Ok(Ok((sx, sy))) = cua_driver_core::tool::spawn_blocking_owned(move || {
+                    window_local_to_screen(xid, x, y)
+                })
+                .await
                 {
                     self.state
                         .cursor_registry
@@ -11291,8 +11352,10 @@ impl Tool for MouseDragTool {
             cursor_id.clone(),
             cursor_overlay::OverlayCommand::PinAbove(xid),
         );
-        if let Ok(Ok((sx, sy))) =
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, from_x, from_y)).await
+        if let Ok(Ok((sx, sy))) = cua_driver_core::tool::spawn_blocking_owned(move || {
+            window_local_to_screen(xid, from_x, from_y)
+        })
+        .await
         {
             overlay_glide_to_for(&cursor_id, sx, sy).await;
             self.state
@@ -11331,12 +11394,12 @@ impl Tool for MouseDragTool {
                     iy.round() as i32,
                     crate::wayland::window_local_to_output,
                 );
-                tokio::task::spawn_blocking(move || {
+                cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::wayland::persistent_vptr::move_to(&cid_inner, output_x, output_y)
                 })
                 .await
             } else {
-                tokio::task::spawn_blocking(move || {
+                cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::input::send_motion(
                         xid,
                         ix.round() as i32,
@@ -11349,8 +11412,10 @@ impl Tool for MouseDragTool {
             match move_result {
                 Ok(Ok(())) => {
                     if let Ok(Ok((sx, sy))) =
-                        tokio::task::spawn_blocking(move || window_local_to_screen(xid, ix, iy))
-                            .await
+                        cua_driver_core::tool::spawn_blocking_owned(move || {
+                            window_local_to_screen(xid, ix, iy)
+                        })
+                        .await
                     {
                         let heading = if (ix - prev_x).abs() > f64::EPSILON
                             || (iy - prev_y).abs() > f64::EPSILON
@@ -11390,9 +11455,10 @@ impl Tool for MouseDragTool {
                     .lock()
                     .unwrap()
                     .insert(cursor_id.clone(), hold.clone());
-                if let Ok(Ok((sx, sy))) =
-                    tokio::task::spawn_blocking(move || window_local_to_screen(xid, to_x, to_y))
-                        .await
+                if let Ok(Ok((sx, sy))) = cua_driver_core::tool::spawn_blocking_owned(move || {
+                    window_local_to_screen(xid, to_x, to_y)
+                })
+                .await
                 {
                     self.state
                         .cursor_registry
@@ -11482,7 +11548,11 @@ impl Tool for MouseButtonUpTool {
             }
         };
         if desktop_frame {
-            match tokio::task::spawn_blocking(move || desktop_to_window_local(xid, x, y)).await {
+            match cua_driver_core::tool::spawn_blocking_owned(move || {
+                desktop_to_window_local(xid, x, y)
+            })
+            .await
+            {
                 Ok(Ok((lx, ly))) => {
                     x = lx;
                     y = ly;
@@ -11505,7 +11575,8 @@ impl Tool for MouseButtonUpTool {
             cursor_overlay::OverlayCommand::PinAbove(xid),
         );
         if let Ok(Ok((sx, sy))) =
-            tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y)).await
+            cua_driver_core::tool::spawn_blocking_owned(move || window_local_to_screen(xid, x, y))
+                .await
         {
             overlay_glide_to_for(&cursor_id, sx, sy).await;
         }
@@ -11518,18 +11589,22 @@ impl Tool for MouseButtonUpTool {
         // (single logical drag rather than a click pair).
         let result = if crate::wayland::is_wayland() {
             let cid = cursor_id.clone();
-            tokio::task::spawn_blocking(move || {
+            cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::persistent_vptr::release(&cid, button)
             })
             .await
         } else {
-            tokio::task::spawn_blocking(move || crate::input::send_button_up(xid, xi, yi, button))
-                .await
+            cua_driver_core::tool::spawn_blocking_owned(move || {
+                crate::input::send_button_up(xid, xi, yi, button)
+            })
+            .await
         };
         match result {
             Ok(Ok(())) => {
-                if let Ok(Ok((sx, sy))) =
-                    tokio::task::spawn_blocking(move || window_local_to_screen(xid, x, y)).await
+                if let Ok(Ok((sx, sy))) = cua_driver_core::tool::spawn_blocking_owned(move || {
+                    window_local_to_screen(xid, x, y)
+                })
+                .await
                 {
                     self.state
                         .cursor_registry
@@ -11609,7 +11684,7 @@ async fn parallel_drag_inject(args: &Value) -> ToolResult {
                 .and_then(|v| v.as_str())
                 .unwrap_or("left"),
         ) as u32;
-        let app = match tokio::task::spawn_blocking(move || {
+        let app = match cua_driver_core::tool::spawn_blocking_owned(move || {
             crate::wayland::inject_target_for_window(xid)
         })
         .await
@@ -11627,7 +11702,11 @@ async fn parallel_drag_inject(args: &Value) -> ToolResult {
         });
     }
     let n = drags.len();
-    match tokio::task::spawn_blocking(move || crate::wayland::inject_parallel_drags(&drags)).await {
+    match cua_driver_core::tool::spawn_blocking_owned(move || {
+        crate::wayland::inject_parallel_drags(&drags)
+    })
+    .await
+    {
         Ok(Ok(())) => ToolResult::text(format!(
             "Ran {n} concurrent drags (multi-cursor via cua-compositor)."
         )),
@@ -11685,7 +11764,11 @@ impl Tool for ParallelMouseDragTool {
                  or run the target under X11.",
             );
         }
-        match tokio::task::spawn_blocking(crate::input::check_parallel_pointer_support).await {
+        match cua_driver_core::tool::spawn_blocking_owned(
+            crate::input::check_parallel_pointer_support,
+        )
+        .await
+        {
             Ok(Ok(())) => {}
             Ok(Err(e)) => return ToolResult::error(e.to_string()),
             Err(e) => return ToolResult::error(format!("Task error: {e}")),
@@ -11764,14 +11847,15 @@ impl Tool for ParallelMouseDragTool {
                 .unwrap_or(if is_fn { 1500 } else { 500 });
 
             // One translate gives the window origin; the path is a pure offset.
-            let origin =
-                match tokio::task::spawn_blocking(move || window_local_to_screen(xid, 0.0, 0.0))
-                    .await
-                {
-                    Ok(Ok(o)) => o,
-                    Ok(Err(e)) => return ToolResult::error(e.to_string()),
-                    Err(e) => return ToolResult::error(format!("Task error: {e}")),
-                };
+            let origin = match cua_driver_core::tool::spawn_blocking_owned(move || {
+                window_local_to_screen(xid, 0.0, 0.0)
+            })
+            .await
+            {
+                Ok(Ok(o)) => o,
+                Ok(Err(e)) => return ToolResult::error(e.to_string()),
+                Err(e) => return ToolResult::error(format!("Task error: {e}")),
+            };
             let path: Vec<(i32, i32)> = local
                 .iter()
                 .map(|(lx, ly)| {
@@ -11830,7 +11914,7 @@ impl Tool for ParallelMouseDragTool {
         }
 
         let drags_for_task = drags.clone();
-        let result = tokio::task::spawn_blocking(move || {
+        let result = cua_driver_core::tool::spawn_blocking_owned(move || {
             crate::input::send_parallel_virtual_pointer_drags(&drags_for_task)
         })
         .await;
@@ -11920,7 +12004,7 @@ impl Tool for GetScreenSizeTool {
         if let Err(result) = parse_typed_input::<GetScreenSizeInput>("get_screen_size", args) {
             return result;
         }
-        let result = tokio::task::spawn_blocking(|| {
+        let result = cua_driver_core::tool::spawn_blocking_owned(|| {
             if crate::wayland::is_wayland() && crate::wayland::hyprland::is_session() {
                 // Shared manifest admission needs content-free display
                 // metadata even when this native desktop has no X11 DISPLAY.
@@ -12052,7 +12136,7 @@ impl Tool for GetDesktopStateTool {
         let max_image_dimension = input.max_image_dimension;
         let capture_service = self.state.capture_service.clone();
 
-        let result = tokio::task::spawn_blocking(move || -> anyhow::Result<_> {
+        let result = cua_driver_core::tool::spawn_blocking_owned(move || -> anyhow::Result<_> {
             // Capture the full display at native size first. When the
             // compositor consumes logical input coordinates, normalize the
             // image below so screenshot pixels still land exactly.
@@ -12295,7 +12379,7 @@ impl Tool for GetCursorPositionTool {
                 ).with_structured(json!({ "source": "synthetic", "available": false })),
             };
         }
-        let result = tokio::task::spawn_blocking(|| {
+        let result = cua_driver_core::tool::spawn_blocking_owned(|| {
             use x11rb::connection::Connection;
             use x11rb::protocol::xproto::ConnectionExt as _;
             use x11rb::rust_connection::RustConnection;
@@ -12369,13 +12453,15 @@ impl Tool for MoveCursorTool {
                 "xtest_desktop"
             };
             let result = if wayland {
-                tokio::task::spawn_blocking(move || {
+                cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::wayland::move_cursor_absolute(None, xi, yi)
                 })
                 .await
             } else {
-                tokio::task::spawn_blocking(move || crate::input::send_move_xtest_desktop(xi, yi))
-                    .await
+                cua_driver_core::tool::spawn_blocking_owned(move || {
+                    crate::input::send_move_xtest_desktop(xi, yi)
+                })
+                .await
             };
             return match result {
                 Ok(Ok(())) => ToolResult::text(format!(
@@ -12661,7 +12747,7 @@ impl Tool for CheckPermissionsTool {
     }
     async fn invoke(&self, _args: Value) -> ToolResult {
         // Check X11 connectivity (required for window enumeration and input injection).
-        let x11_ok = tokio::task::spawn_blocking(|| {
+        let x11_ok = cua_driver_core::tool::spawn_blocking_owned(|| {
             x11rb::rust_connection::RustConnection::connect(None).is_ok()
         })
         .await
@@ -12672,9 +12758,10 @@ impl Tool for CheckPermissionsTool {
         // /run/user heuristic false-passed exactly the headless/container case
         // (/run/user exists, but no a11y bus → empty trees). Probe for real.
         let dbus_address = std::env::var("DBUS_SESSION_BUS_ADDRESS").ok();
-        let atspi_ok = tokio::task::spawn_blocking(crate::health_report::probe_a11y_bus)
-            .await
-            .unwrap_or(false);
+        let atspi_ok =
+            cua_driver_core::tool::spawn_blocking_owned(crate::health_report::probe_a11y_bus)
+                .await
+                .unwrap_or(false);
 
         let wayland_display = std::env::var("WAYLAND_DISPLAY").ok();
         let atspi_status = if atspi_ok {
@@ -12931,7 +13018,7 @@ impl Tool for GetAccessibilityTreeTool {
         })
     }
     async fn invoke(&self, _args: Value) -> ToolResult {
-        let (procs, windows) = tokio::task::spawn_blocking(|| {
+        let (procs, windows) = cua_driver_core::tool::spawn_blocking_owned(|| {
             (
                 crate::proc_fs::list_processes(),
                 crate::x11::list_windows(None),
@@ -13072,7 +13159,7 @@ impl Tool for ZoomTool {
             y2 * screenshot.scale,
         );
         let state = self.state.clone();
-        let result = tokio::task::spawn_blocking(move || {
+        let result = cua_driver_core::tool::spawn_blocking_owned(move || {
             // Route through the Wayland-aware window capture dispatcher so
             // pure-Wayland sessions surface a typed "per-window capture not
             // supported yet" error instead of accidentally calling the
@@ -13166,7 +13253,7 @@ impl Tool for TypeTextCharsTool {
         let xid = match xid_opt {
             Some(x) => x,
             None => {
-                let windows = tokio::task::spawn_blocking(move || {
+                let windows = cua_driver_core::tool::spawn_blocking_owned(move || {
                     crate::x11::list_windows(if pid == 0 { None } else { Some(pid) })
                 })
                 .await
@@ -13207,7 +13294,7 @@ impl Tool for TypeTextCharsTool {
             }
         };
         let text_len = text.chars().count();
-        let result = tokio::task::spawn_blocking(move || {
+        let result = cua_driver_core::tool::spawn_blocking_owned(move || {
             if crate::wayland::wayland_input_enabled() {
                 // Per-char `wtype` loop with the requested delay — mirrors the
                 // X11 XSendEvent per-char path. Sleeping here is fine because
@@ -13497,7 +13584,7 @@ impl Tool for InvokeMenuTool {
         }
 
         if !crate::wayland::is_wayland() && !delivery.is_foreground() {
-            let outcome = tokio::task::spawn_blocking(move || {
+            let outcome = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::input::focus_guard::guarded(Some(pid), || {
                     crate::atspi::native::invoke_menu_path_in(pid, window_id, &path)
                 })
@@ -13537,7 +13624,7 @@ impl Tool for InvokeMenuTool {
         }
 
         let activation = if crate::wayland::is_wayland() {
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::activate_window_for_input_target(window_id, Some(pid))
             })
             .await;
@@ -13553,7 +13640,7 @@ impl Tool for InvokeMenuTool {
                 }
             }
         } else {
-            match tokio::task::spawn_blocking(move || {
+            match cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::input::x11_activate_window_persistent(window_id)
             })
             .await
@@ -13570,7 +13657,7 @@ impl Tool for InvokeMenuTool {
             }
         };
 
-        let outcome = tokio::task::spawn_blocking(move || {
+        let outcome = cua_driver_core::tool::spawn_blocking_owned(move || {
             let result = crate::atspi::native::invoke_menu_path_in(pid, window_id, &path);
             if let Some(Some(prior_window)) = activation {
                 let _ = crate::input::x11_activate_window_persistent(prior_window);
@@ -13694,7 +13781,7 @@ impl Tool for SetWindowFrameTool {
         };
         let window_id = input.window_id;
         let pid = input.pid;
-        let outcome = tokio::task::spawn_blocking(move || {
+        let outcome = cua_driver_core::tool::spawn_blocking_owned(move || {
             let before = crate::x11::list_windows(Some(pid))
                 .into_iter()
                 .find(|window| window.xid == window_id)
@@ -13814,7 +13901,7 @@ impl Tool for BringToFrontTool {
                 )
                 .await;
             }
-            let result = tokio::task::spawn_blocking(move || {
+            let result = cua_driver_core::tool::spawn_blocking_owned(move || {
                 crate::wayland::activate_window_for_input_target(window_id, Some(pid))
             })
             .await;
@@ -13836,10 +13923,11 @@ impl Tool for BringToFrontTool {
         let xid = match args.opt_u64("window_id") {
             Some(x) => x,
             None => {
-                let windows =
-                    tokio::task::spawn_blocking(move || crate::x11::list_windows(Some(pid)))
-                        .await
-                        .unwrap_or_default();
+                let windows = cua_driver_core::tool::spawn_blocking_owned(move || {
+                    crate::x11::list_windows(Some(pid))
+                })
+                .await
+                .unwrap_or_default();
                 match windows.first() {
                     Some(w) => w.xid,
                     None => {
@@ -13850,9 +13938,10 @@ impl Tool for BringToFrontTool {
                 }
             }
         };
-        let r =
-            tokio::task::spawn_blocking(move || crate::input::x11_activate_window_persistent(xid))
-                .await;
+        let r = cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::input::x11_activate_window_persistent(xid)
+        })
+        .await;
         match r {
             Ok(Ok(prior)) => ToolResult::text(format!(
                 "✅ Brought window {xid} to front (X11 _NET_ACTIVE_WINDOW)."

@@ -271,33 +271,36 @@ pub async fn handle(
     loop {
         prove_window_owner(pid, request.window_id)?;
         let window_id = request.window_id;
-        let tree =
-            tokio::task::spawn_blocking(move || crate::atspi::walk_tree(pid, window_id, None))
-                .await
-                .map_err(|error| {
-                    refusal(
-                        BrowserRefusalCode::BrowserRouteUnavailable,
-                        format!("could not inspect the browser consent UI: {error}"),
-                    )
-                })?;
+        let tree = cua_driver_core::tool::spawn_blocking_owned(move || {
+            crate::atspi::walk_tree(pid, window_id, None)
+        })
+        .await
+        .map_err(|error| {
+            refusal(
+                BrowserRefusalCode::BrowserRouteUnavailable,
+                format!("could not inspect the browser consent UI: {error}"),
+            )
+        })?;
         let prompt_present = remote_debugging_prompt_present(&tree.nodes);
         saw_prompt |= prompt_present;
         match exact_allow_button(&tree.nodes, &tree.bounds)? {
             Some(index) if accessibility_action_at.is_none() => {
-                tokio::task::spawn_blocking(move || crate::atspi::perform_action(pid, index))
-                    .await
-                    .map_err(|error| {
-                        refusal(
-                            BrowserRefusalCode::BrowserRouteUnavailable,
-                            format!("could not dispatch the exact browser consent action: {error}"),
-                        )
-                    })?
-                    .map_err(|error| {
-                        refusal(
-                            BrowserRefusalCode::BrowserWrongTargetRefused,
-                            format!("the exact browser consent action failed: {error}"),
-                        )
-                    })?;
+                cua_driver_core::tool::spawn_blocking_owned(move || {
+                    crate::atspi::perform_action(pid, index)
+                })
+                .await
+                .map_err(|error| {
+                    refusal(
+                        BrowserRefusalCode::BrowserRouteUnavailable,
+                        format!("could not dispatch the exact browser consent action: {error}"),
+                    )
+                })?
+                .map_err(|error| {
+                    refusal(
+                        BrowserRefusalCode::BrowserWrongTargetRefused,
+                        format!("the exact browser consent action failed: {error}"),
+                    )
+                })?;
                 accessibility_action_at = Some(Instant::now());
             }
             Some(_)
@@ -307,22 +310,22 @@ pub async fn handle(
                     }) =>
             {
                 let window_id = request.window_id;
-                tokio::task::spawn_blocking(move || trusted_allow_click(pid, window_id))
-                    .await
-                    .map_err(|error| {
-                        refusal(
-                            BrowserRefusalCode::BrowserRouteUnavailable,
-                            format!(
-                                "could not dispatch the trusted browser consent click: {error}"
-                            ),
-                        )
-                    })?
-                    .map_err(|error| {
-                        refusal(
-                            BrowserRefusalCode::BrowserWrongTargetRefused,
-                            format!("the trusted browser consent click failed: {error}"),
-                        )
-                    })?;
+                cua_driver_core::tool::spawn_blocking_owned(move || {
+                    trusted_allow_click(pid, window_id)
+                })
+                .await
+                .map_err(|error| {
+                    refusal(
+                        BrowserRefusalCode::BrowserRouteUnavailable,
+                        format!("could not dispatch the trusted browser consent click: {error}"),
+                    )
+                })?
+                .map_err(|error| {
+                    refusal(
+                        BrowserRefusalCode::BrowserWrongTargetRefused,
+                        format!("the trusted browser consent click failed: {error}"),
+                    )
+                })?;
                 trusted_click_attempted = true;
             }
             None if saw_prompt && !prompt_present => {
