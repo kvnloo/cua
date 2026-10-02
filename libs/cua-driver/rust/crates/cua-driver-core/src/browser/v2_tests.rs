@@ -2611,3 +2611,115 @@ async fn method_unsupported_keeps_the_electron_none_path() {
     assert_eq!(tabs.len(), 1, "{s}");
     assert_eq!(tabs[0]["url"], "https://fixture.test/");
 }
+
+// ── Receipt delivery attribution (BUG-01) ───────────────────────────────────
+
+/// Public receipt for a successful browser action, built exactly as the
+/// dispatch seam does: legacy producer payload -> internal record -> closed
+/// public `ActionResult`.
+fn public_receipt(tool: &str, args: &Value, result: &ToolResult) -> Value {
+    let public = ActionExecutionRecord::from_legacy(tool, args, structured(result))
+        .unwrap_or_else(|| panic!("{tool} action record: {}", structured(result)))
+        .public_result()
+        .unwrap_or_else(|error| panic!("{tool} public result: {error:?}"));
+    serde_json::to_value(public).expect("serialize public result")
+}
+
+#[tokio::test]
+async fn foreground_trusted_browser_input_receipt_does_not_claim_background_delivery() {
+    // On a platform whose trusted route cannot stay in the background (Linux
+    // Chromium), trusted input runs only on the foreground branch: background
+    // is refused before dispatch. The receipt must report the branch that ran.
+    let f = fixture_with_platform(|_| {}, true).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+
+    let click_args = json!({
+        "target_id": target, "tab_id": tab, "ref": main_ref,
+        "delivery_mode": "foreground", "session": SESSION
+    });
+    let click = BrowserClickTool::new(f.engine.clone())
+        .invoke(click_args.clone())
+        .await;
+    assert_eq!(structured(&click)["status"], "ok", "{}", structured(&click));
+    assert_eq!(recorded_calls(&f, "Input.dispatchMouseEvent").len(), 2);
+    let public = public_receipt("browser_click", &click_args, &click);
+    assert_eq!(public["route"], "trusted_input", "{public}");
+    assert_ne!(
+        public["delivery"]["mode"], "background",
+        "a foreground trusted click must not be reported as background delivery: {public}"
+    );
+    assert_eq!(public["delivery"]["mode"], "foreground", "{public}");
+
+    let pointer_args = json!({
+        "target_id": target, "tab_id": tab, "ref": main_ref, "action": "double_click",
+        "delivery_mode": "foreground", "session": SESSION
+    });
+    let pointer = BrowserPointerTool::new(f.engine.clone())
+        .invoke(pointer_args.clone())
+        .await;
+    assert_eq!(structured(&pointer)["status"], "ok", "{}", structured(&pointer));
+    let public = public_receipt("browser_pointer", &pointer_args, &pointer);
+    assert_eq!(public["route"], "trusted_input", "{public}");
+    assert_eq!(public["delivery"]["mode"], "foreground", "{public}");
+}
+
+#[tokio::test]
+async fn background_browser_receipts_keep_background_delivery() {
+    // Guards for the attribution fix: a request alone is not delivery proof.
+    let f = fixture_with_platform(|_| {}, true).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+
+    // A synthetic DOM click is full-background whatever delivery_mode says.
+    let dom_args = json!({
+        "target_id": target, "tab_id": tab, "ref": main_ref,
+        "input_route": "dom_event", "delivery_mode": "foreground", "session": SESSION
+    });
+    let dom = BrowserClickTool::new(f.engine.clone())
+        .invoke(dom_args.clone())
+        .await;
+    assert_eq!(structured(&dom)["status"], "ok", "{}", structured(&dom));
+    let public = public_receipt("browser_click", &dom_args, &dom);
+    assert_eq!(public["route"], "dom", "{public}");
+    assert_eq!(public["delivery"]["mode"], "background", "{public}");
+
+    let pointer_args = json!({
+        "target_id": target, "tab_id": tab, "ref": main_ref, "action": "double_click",
+        "input_route": "dom_event", "delivery_mode": "foreground", "session": SESSION
+    });
+    let pointer = BrowserPointerTool::new(f.engine.clone())
+        .invoke(pointer_args.clone())
+        .await;
+    assert_eq!(structured(&pointer)["status"], "ok", "{}", structured(&pointer));
+    let public = public_receipt("browser_pointer", &pointer_args, &pointer);
+    assert_eq!(public["route"], "dom", "{public}");
+    assert_eq!(public["delivery"]["mode"], "background", "{public}");
+
+    // Trusted background is refused before dispatch: no delivery at all.
+    let refused_args = json!({
+        "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION
+    });
+    let refused = BrowserClickTool::new(f.engine.clone())
+        .invoke(refused_args.clone())
+        .await;
+    let public = public_receipt("browser_click", &refused_args, &refused);
+    assert_eq!(public["effect"], "refused", "{public}");
+    assert!(public.get("delivery").is_none(), "{public}");
+
+    // Text insertion has no foreground branch; a stray request field changes nothing.
+    let input_ref = ref_of(&snap, "main", "Shadow Input");
+    let type_args = json!({
+        "target_id": target, "tab_id": tab, "ref": input_ref, "text": "ab",
+        "delivery_mode": "foreground", "session": SESSION
+    });
+    let typed = BrowserTypeTool::new(f.engine.clone())
+        .invoke(type_args.clone())
+        .await;
+    assert_eq!(structured(&typed)["status"], "ok", "{}", structured(&typed));
+    let public = public_receipt("browser_type", &type_args, &typed);
+    assert_eq!(public["route"], "trusted_input", "{public}");
+    assert_eq!(public["delivery"]["mode"], "background", "{public}");
+}
