@@ -79,6 +79,10 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
         transport_session: transport_session.clone(),
     };
 
+    // Measurement-only MCP span marks (research experiment N-02): written only
+    // when CUA_DRIVER_PHASE_TRACE_FILE is set; otherwise one OnceLock read.
+    let trace = cua_driver_core::phase_trace::enabled();
+    let mut trace_scope = String::new();
     loop {
         line.clear();
         if reader.read_line(&mut line).await? == 0 {
@@ -86,11 +90,19 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
         }
         // B-01 measurement only (env-gated, default off): MCP stdio boundary.
         cua_driver_core::phase_trace::mark("mcp.line_read", "");
+        if trace {
+            cua_driver_core::phase_trace::mark("mcp", "request_read");
+        }
         let trimmed = line.trim();
         if trimmed.is_empty() {
             continue;
         }
-        let response = match serde_json::from_str::<Request>(trimmed) {
+        let parsed = serde_json::from_str::<Request>(trimmed);
+        if trace {
+            trace_scope = mcp_trace_scope(parsed.as_ref().ok());
+            cua_driver_core::phase_trace::mark(&trace_scope, "parse_done");
+        }
+        let response = match parsed {
             Err(error) => {
                 error!("JSON parse error: {error}");
                 Response::parse_error()
@@ -156,6 +168,9 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                 );
                 cua_driver_core::phase_trace::mark("mcp.timer_started", "");
                 let id = request.id.clone().unwrap_or(serde_json::Value::Null);
+                if trace {
+                    cua_driver_core::phase_trace::mark(&trace_scope, "handler_start");
+                }
                 let response =
                     cua_driver_core::server::handle_request_with_transport_session_prevalidated(
                         request,
@@ -166,6 +181,9 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                     )
                     .await;
                 cua_driver_core::phase_trace::mark("mcp.handled", "");
+                if trace {
+                    cua_driver_core::phase_trace::mark(&trace_scope, "handler_end");
+                }
                 if let Some(metadata) = initialize_metadata {
                     observe_proxy_session_started(metadata);
                     session_observed = true;
@@ -186,13 +204,31 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
             )
         });
         cua_driver_core::phase_trace::mark("mcp.serialized", "");
+        if trace {
+            cua_driver_core::phase_trace::mark(&trace_scope, "serialize_done");
+        }
         writer.write_all(serialized.as_bytes()).await?;
         writer.write_all(b"\n").await?;
         writer.flush().await?;
         cua_driver_core::phase_trace::mark("mcp.written", "");
+        if trace {
+            cua_driver_core::phase_trace::mark(&trace_scope, "response_written");
+        }
     }
 
     sdk.shutdown().await.map_err(anyhow::Error::msg)
+}
+
+/// Phase-trace scope for one direct-stdio request (measurement only):
+/// `mcp:<tool>` for tools/call, `mcp:<method>` otherwise.
+fn mcp_trace_scope(request: Option<&Request>) -> String {
+    let Some(request) = request else {
+        return "mcp:unparsed".into();
+    };
+    let tool = (request.method == "tools/call")
+        .then(|| request.params.as_ref()?.get("name")?.as_str())
+        .flatten();
+    format!("mcp:{}", tool.unwrap_or(&request.method))
 }
 
 pub(crate) fn apply_direct_session_identity(request: &mut Request, transport_session: &str) {
@@ -1086,6 +1122,27 @@ mod tests {
             apply_direct_session_identity(&mut request, "mcp-transport");
             assert_eq!(before, decide(&request));
         }
+    }
+
+    #[test]
+    fn mcp_trace_scope_names_the_tool_or_method() {
+        let call: Request = serde_json::from_value(serde_json::json!({
+            "jsonrpc": "2.0", "id": 7, "method": "tools/call",
+            "params": {"name": "click", "arguments": {}}
+        }))
+        .unwrap();
+        assert_eq!(mcp_trace_scope(Some(&call)), "mcp:click");
+        let list: Request = serde_json::from_value(serde_json::json!({
+            "jsonrpc": "2.0", "id": 8, "method": "tools/list"
+        }))
+        .unwrap();
+        assert_eq!(mcp_trace_scope(Some(&list)), "mcp:tools/list");
+        let nameless: Request = serde_json::from_value(serde_json::json!({
+            "jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": {}
+        }))
+        .unwrap();
+        assert_eq!(mcp_trace_scope(Some(&nameless)), "mcp:tools/call");
+        assert_eq!(mcp_trace_scope(None), "mcp:unparsed");
     }
 
     #[tokio::test]
