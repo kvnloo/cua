@@ -113,8 +113,11 @@ pub async fn with_admission_holds<F: std::future::Future>(
     ADMISSION_HOLDS.scope(all, future).await
 }
 
-/// `tokio::task::spawn_blocking` whose closure keeps the current call's admission holds until it returns.
-pub async fn spawn_blocking_owned<F, R>(work: F) -> Result<R, tokio::task::JoinError>
+/// Drop-in for `tokio::task::spawn_blocking` (same `JoinHandle`) whose closure keeps the current
+/// call's admission holds until it returns. Production native work uses it so that aborting the
+/// caller releases neither capacity nor lifecycle readiness before native exit. Outside a dispatch
+/// scope there are no holds and it is exactly `spawn_blocking`.
+pub fn spawn_blocking_owned<F, R>(work: F) -> tokio::task::JoinHandle<R>
 where
     F: FnOnce() -> R + Send + 'static,
     R: Send + 'static,
@@ -124,7 +127,6 @@ where
         let _holds = holds;
         work()
     })
-    .await
 }
 
 tokio::task_local! {
@@ -1881,8 +1883,7 @@ impl ToolRegistry {
             .collect();
         let invocation = with_admission_holds(holds, tool.invoke(args.clone()));
         let mut result =
-            crate::recording::scope_dispatch_click_capture(pending_turn.as_ref(), invocation)
-                .await;
+            crate::recording::scope_dispatch_click_capture(pending_turn.as_ref(), invocation).await;
         match resolved_name {
             "get_desktop_state" if result.is_error != Some(true) => {
                 crate::desktop_capture_scale::record_desktop_state(

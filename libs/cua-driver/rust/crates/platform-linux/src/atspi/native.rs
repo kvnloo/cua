@@ -102,7 +102,7 @@ async fn bounded_blocking<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'sta
     if budget.is_zero() {
         return None;
     }
-    match tokio::time::timeout(budget, tokio::task::spawn_blocking(f)).await {
+    match tokio::time::timeout(budget, cua_driver_core::tool::spawn_blocking_owned(f)).await {
         Ok(Ok(value)) => Some(value),
         _ => None,
     }
@@ -1772,13 +1772,14 @@ async fn collect_visited_bounded_opts<'a>(
                     // open menu is a mapped override-redirect window of this
                     // pid, and its entries' screen extents lie inside it.
                     if pid_popups.is_none() {
-                        let popups =
-                            tokio::task::spawn_blocking(crate::input::mapped_popup_windows)
-                                .await
-                                .unwrap_or_default()
-                                .into_iter()
-                                .filter(|popup| popup.pid.is_none_or(|popup_pid| popup_pid == pid))
-                                .collect::<Vec<_>>();
+                        let popups = cua_driver_core::tool::spawn_blocking_owned(
+                            crate::input::mapped_popup_windows,
+                        )
+                        .await
+                        .unwrap_or_default()
+                        .into_iter()
+                        .filter(|popup| popup.pid.is_none_or(|popup_pid| popup_pid == pid))
+                        .collect::<Vec<_>>();
                         pid_popups = Some(popups);
                     }
                     if let Some(popups) = pid_popups.as_ref().filter(|popups| !popups.is_empty()) {

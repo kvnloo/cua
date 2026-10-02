@@ -114,7 +114,12 @@ impl Ledger {
         )
     }
 
-    async fn wait_until(&self, what: &str, limit: Duration, mut done: impl FnMut() -> bool) -> bool {
+    async fn wait_until(
+        &self,
+        what: &str,
+        limit: Duration,
+        mut done: impl FnMut() -> bool,
+    ) -> bool {
         let mut changed = self.changed.subscribe();
         let deadline = tokio::time::Instant::now() + limit;
         loop {
@@ -140,7 +145,9 @@ impl Ledger {
     }
 
     async fn absent_within(&self, name: &str) -> bool {
-        !self.wait_until(name, NEGATIVE_WINDOW, || self.has(name)).await
+        !self
+            .wait_until(name, NEGATIVE_WINDOW, || self.has(name))
+            .await
     }
 }
 
@@ -158,7 +165,12 @@ impl Shared {
         self.counters.lock().unwrap().entry(id).or_insert([0, 0])[slot] += 1;
     }
     fn counter(&self, id: u64) -> [usize; 2] {
-        self.counters.lock().unwrap().get(&id).copied().unwrap_or([0, 0])
+        self.counters
+            .lock()
+            .unwrap()
+            .get(&id)
+            .copied()
+            .unwrap_or([0, 0])
     }
     fn balanced(&self) -> bool {
         self.counters.lock().unwrap().values().all(|[a, b]| a == b)
@@ -212,7 +224,11 @@ impl Tool for BarrierTool {
             native.ledger.log(format!("native-enter:{id}"));
             let released = gate.recv_timeout(WAIT).is_ok();
             if effect && released {
-                native.journal.lock().unwrap().push(json!({"id": id, "effect": "applied"}));
+                native
+                    .journal
+                    .lock()
+                    .unwrap()
+                    .push(json!({"id": id, "effect": "applied"}));
                 native.ledger.log(format!("effect-applied:{id}"));
             }
             native.ledger.log(format!("native-exit:{id}"));
@@ -376,7 +392,14 @@ impl Fixture {
             unsafe { drop(Arc::from_raw(context)) };
             return Err(format!("invoke {id}: {status:?} {error}"));
         }
-        self.ops.insert(id, Op { token, slot, context });
+        self.ops.insert(
+            id,
+            Op {
+                token,
+                slot,
+                context,
+            },
+        );
         Ok(token)
     }
 
@@ -567,7 +590,10 @@ where
     let mut sorted: Vec<_> = verdicts.into_iter().collect();
     sorted.sort();
     println!("OWN09R arm={arm} route=c_abi row={row} variant={variant} verdicts={sorted:?}");
-    assert!(errors.is_empty(), "harness errors in {row} {variant}: {errors:#?}");
+    assert!(
+        errors.is_empty(),
+        "harness errors in {row} {variant}: {errors:#?}"
+    );
 }
 
 // ------------------------------------------------------------------ rows ---
@@ -581,14 +607,19 @@ enum R4c {
     BrokenLatestToken,
 }
 
-async fn r4c_late_cancel_on_retained_token(fx: &mut Fixture, variant: R4c) -> Result<Checks, String> {
+async fn r4c_late_cancel_on_retained_token(
+    fx: &mut Fixture,
+    variant: R4c,
+) -> Result<Checks, String> {
     let (early, later) = (1, 2);
     fx.gate(early);
     fx.gate(later);
     let mut by_name: HashMap<&'static str, *mut CuaDriverOperation> = HashMap::new();
     let early_token = fx.invoke(early, json!({"effect": true}))?;
     by_name.insert(TOOL, early_token);
-    fx.ledger().wait_for(&format!("native-enter:{early}")).await?;
+    fx.ledger()
+        .wait_for(&format!("native-enter:{early}"))
+        .await?;
     match variant {
         R4c::AfterCompletion | R4c::BrokenLatestToken => {
             fx.release(early);
@@ -601,12 +632,20 @@ async fn r4c_late_cancel_on_retained_token(fx: &mut Fixture, variant: R4c) -> Re
     }
     let later_token = fx.invoke(later, json!({"effect": true}))?;
     by_name.insert(TOOL, later_token);
-    if fx.ledger().absent_within(&format!("admitted:{later}")).await {
+    if fx
+        .ledger()
+        .absent_within(&format!("admitted:{later}"))
+        .await
+    {
         // Capacity is still owned by the cancelled early call's native work.
         fx.release(early);
-        fx.ledger().wait_for(&format!("native-exit:{early}")).await?;
+        fx.ledger()
+            .wait_for(&format!("native-exit:{early}"))
+            .await?;
     }
-    fx.ledger().wait_for(&format!("native-enter:{later}")).await?;
+    fx.ledger()
+        .wait_for(&format!("native-enter:{later}"))
+        .await?;
     // The late cancel: the host still holds the early token (not yet released).
     match variant {
         R4c::BrokenLatestToken => fx.cancel_token("late-by-name", by_name[TOOL]),
@@ -619,7 +658,9 @@ async fn r4c_late_cancel_on_retained_token(fx: &mut Fixture, variant: R4c) -> Re
     fx.release(early);
     fx.release(later);
     fx.wait_callback(later).await?;
-    fx.ledger().wait_for(&format!("native-exit:{later}")).await?;
+    fx.ledger()
+        .wait_for(&format!("native-exit:{later}"))
+        .await?;
     let ledger = fx.ledger();
     let early_callbacks = fx.completions(early);
     let later_callbacks = fx.completions(later);
@@ -644,7 +685,12 @@ async fn r4c_late_cancel_on_retained_token(fx: &mut Fixture, variant: R4c) -> Re
     checks.gate("later_native_once", fx.shared.counter(later) == [1, 1]);
     checks.gate(
         "later_effect_landed_once",
-        fx.shared.landed_ids().iter().filter(|id| **id == later).count() == 1,
+        fx.shared
+            .landed_ids()
+            .iter()
+            .filter(|id| **id == later)
+            .count()
+            == 1,
     );
     Ok(checks)
 }
@@ -661,9 +707,14 @@ async fn r1d_admission_window(fx: &mut Fixture, variant: R1d) -> Result<Checks, 
     fx.gate(queued);
     fx.gate(witness);
     fx.invoke(holder, json!({}))?;
-    fx.ledger().wait_for(&format!("native-enter:{holder}")).await?;
+    fx.ledger()
+        .wait_for(&format!("native-enter:{holder}"))
+        .await?;
     let queued_token = fx.invoke(queued, json!({"effect": true}))?;
-    let queued_waited = fx.ledger().absent_within(&format!("admitted:{queued}")).await;
+    let queued_waited = fx
+        .ledger()
+        .absent_within(&format!("admitted:{queued}"))
+        .await;
     // A wrongly admitted call must complete instead of wedging the run.
     fx.release(queued);
     if variant == R1d::FlagBeforeAdmission {
@@ -675,10 +726,14 @@ async fn r1d_admission_window(fx: &mut Fixture, variant: R1d) -> Result<Checks, 
     }
     fx.release(holder);
     fx.wait_callback(holder).await?;
-    fx.ledger().wait_for(&format!("native-exit:{holder}")).await?;
+    fx.ledger()
+        .wait_for(&format!("native-exit:{holder}"))
+        .await?;
     fx.wait_callback(queued).await?;
     fx.invoke(witness, json!({}))?;
-    fx.ledger().wait_for(&format!("native-enter:{witness}")).await?;
+    fx.ledger()
+        .wait_for(&format!("native-enter:{witness}"))
+        .await?;
     fx.release(witness);
     fx.wait_callback(witness).await?;
     let ledger = fx.ledger();
@@ -689,14 +744,26 @@ async fn r1d_admission_window(fx: &mut Fixture, variant: R1d) -> Result<Checks, 
     checks.set("queued_counter", json!(fx.shared.counter(queued)));
     checks.gate(
         "witness_admitted_after_holder_native_exit",
-        ledger.strictly_before(&format!("native-exit:{holder}"), &format!("admitted:{witness}")),
+        ledger.strictly_before(
+            &format!("native-exit:{holder}"),
+            &format!("admitted:{witness}"),
+        ),
     );
     checks.gate("queued_completed_exactly_once", queued_callbacks.len() == 1);
     match variant {
         R1d::FlagBeforeAdmission => {
-            checks.gate("queued_never_admitted", !ledger.has(&format!("admitted:{queued}")));
-            checks.gate("queued_never_entered_native", fx.shared.counter(queued) == [0, 0]);
-            checks.gate("queued_no_effect", !fx.shared.landed_ids().contains(&queued));
+            checks.gate(
+                "queued_never_admitted",
+                !ledger.has(&format!("admitted:{queued}")),
+            );
+            checks.gate(
+                "queued_never_entered_native",
+                fx.shared.counter(queued) == [0, 0],
+            );
+            checks.gate(
+                "queued_no_effect",
+                !fx.shared.landed_ids().contains(&queued),
+            );
             checks.set(
                 "queued_refusal_code",
                 queued_callbacks
