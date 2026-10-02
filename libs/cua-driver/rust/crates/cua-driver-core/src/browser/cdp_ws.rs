@@ -148,6 +148,21 @@ impl Demux {
     }
 }
 
+// i107 measurement only (env-gated via CUA_DRIVER_PHASE_TRACE_FILE, default
+// off): a producer-RPC ledger. Details carry method names, ids and frame sizes,
+// never params, results or page content.
+fn ledger_send_detail(id: u64, method: &str, on_session: bool, bytes: usize) -> Value {
+    serde_json::json!({ "id": id, "method": method, "on_session": on_session, "bytes": bytes })
+}
+
+fn ledger_reply_detail(id: u64, bytes: usize, error: bool) -> Value {
+    serde_json::json!({ "id": id, "bytes": bytes, "error": error })
+}
+
+fn ledger_event_detail(method: &str, on_session: bool, bytes: usize) -> Value {
+    serde_json::json!({ "method": method, "on_session": on_session, "bytes": bytes })
+}
+
 /// The reader task: routes replies by id, fans events out to
 /// subscribers, and fails everything on socket close.
 async fn read_loop(mut read: SplitStream<WsStream>, demux: Arc<Demux>) {
@@ -166,6 +181,9 @@ async fn read_loop(mut read: SplitStream<WsStream>, demux: Arc<Demux>) {
             Err(_) => continue,
         };
         if let Some(id) = v.get("id").and_then(Value::as_u64) {
+            crate::phase_trace::mark_detail("cdp.reply", "", || {
+                ledger_reply_detail(id, text.len(), v.get("error").is_some())
+            });
             let Some(tx) = demux.pending.lock().unwrap().remove(&id) else {
                 continue; // reply to a timed-out or unknown call
             };
@@ -182,6 +200,9 @@ async fn read_loop(mut read: SplitStream<WsStream>, demux: Arc<Demux>) {
             };
             let _ = tx.send(outcome);
         } else if let Some(method) = v.get("method").and_then(Value::as_str) {
+            crate::phase_trace::mark_detail("cdp.event", "", || {
+                ledger_event_detail(method, v.get("sessionId").is_some(), text.len())
+            });
             let event = CdpEvent {
                 method: method.to_owned(),
                 session_id: v
@@ -380,9 +401,13 @@ impl CdpConnection {
         if let Some(sid) = session_id {
             msg["sessionId"] = Value::String(sid.to_owned());
         }
+        let text = msg.to_string();
+        crate::phase_trace::mark_detail("cdp.send", "", || {
+            ledger_send_detail(id, method, session_id.is_some(), text.len())
+        });
         let sent = {
             let mut writer = self.writer.lock().await;
-            writer.send(Message::Text(msg.to_string())).await
+            writer.send(Message::Text(text)).await
         };
         if let Err(e) = sent {
             self.demux.pending.lock().unwrap().remove(&id);
@@ -643,6 +668,23 @@ mod tests {
     use crate::browser::mock_cdp::{MockCdpServer, MockEvent, MockReply};
     use serde_json::json;
     use std::sync::Arc as StdArc;
+
+    #[test]
+    fn i107_ledger_details_carry_method_ids_and_sizes_only() {
+        let send = ledger_send_detail(7, "DOM.getDocument", true, 42);
+        assert_eq!(
+            send,
+            json!({ "id": 7, "method": "DOM.getDocument", "on_session": true, "bytes": 42 })
+        );
+        assert_eq!(
+            ledger_reply_detail(7, 1234, false),
+            json!({ "id": 7, "bytes": 1234, "error": false })
+        );
+        assert_eq!(
+            ledger_event_detail("DOM.attributeModified", true, 99),
+            json!({ "method": "DOM.attributeModified", "on_session": true, "bytes": 99 })
+        );
+    }
 
     #[test]
     fn loopback_urls_are_accepted() {

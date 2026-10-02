@@ -281,6 +281,19 @@ impl DomIndex {
     }
 }
 
+// i107 measurement only: acquired-node counts for the env-gated trace.
+impl DomIndex {
+    pub(crate) fn node_count(&self) -> usize {
+        self.nodes.len()
+    }
+}
+
+impl LayoutIndex {
+    pub(crate) fn node_count(&self) -> usize {
+        self.nodes.len()
+    }
+}
+
 pub(crate) fn build_dom_index(root: &Value) -> DomIndex {
     fn walk(
         node: &Value,
@@ -1165,6 +1178,20 @@ mod tests {
     use serde_json::json;
 
     use super::*;
+
+    #[test]
+    fn i107_acquisition_counts_report_indexed_nodes() {
+        let root = json!({
+            "nodeType": 9, "backendNodeId": 1, "nodeName": "#document",
+            "children": [{
+                "nodeType": 1, "backendNodeId": 2, "nodeName": "HTML", "attributes": [],
+                "children": [{ "nodeType": 1, "backendNodeId": 3, "nodeName": "BUTTON", "attributes": [] }]
+            }]
+        });
+        let dom = build_dom_index(&root);
+        assert_eq!(dom.node_count(), 3);
+        assert_eq!(build_layout_index(&json!({})).node_count(), 0);
+    }
 
     #[test]
     fn file_inputs_expose_upload_instead_of_text_typing() {

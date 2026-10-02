@@ -269,6 +269,11 @@ fn viewport_point_to_screen(
 /// Whether a CDP error is Chromium's "method not implemented" shape.
 /// Everything else stays a hard failure — a transient error must never
 /// be misread as a capability gap.
+/// i107 measurement only: AX node count for the env-gated trace (no content).
+fn ax_count_detail(ax: &Value) -> Value {
+    json!({ "ax_nodes": ax.get("nodes").and_then(Value::as_array).map_or(0, Vec::len) })
+}
+
 fn is_method_unsupported(error: &anyhow::Error) -> bool {
     error.to_string().contains("(-32601)")
 }
@@ -2306,6 +2311,12 @@ impl BrowserEngine {
         let layout = build_layout_index(&layout);
         let viewport = parse_viewport(&metrics);
         crate::phase_trace::mark("snap.indexed", "");
+        // i107 measurement only (env-gated, default off): acquired-node counts.
+        crate::phase_trace::mark_detail(
+            "snap.acquired_dom",
+            "",
+            || json!({ "dom_nodes": dom.node_count(), "layout_nodes": layout.node_count() }),
+        );
 
         let identities = tree.map(LocalFrameTree::identities).unwrap_or_default();
         let mut result = SemanticDocument::default();
@@ -2315,6 +2326,7 @@ impl BrowserEngine {
                 .await
                 .map_err(|error| route_err("Accessibility.getFullAXTree failed", error))?;
             crate::phase_trace::mark("snap.ax_cdp_done", "");
+            crate::phase_trace::mark_detail("snap.acquired_ax", "", || ax_count_detail(&ax));
             result = compose_accessibility_tree(
                 &ax,
                 &dom,
@@ -2334,6 +2346,7 @@ impl BrowserEngine {
                     .await
                     .map_err(|error| route_err("Accessibility.getFullAXTree failed", error))?;
                 crate::phase_trace::mark("snap.ax_cdp_done", "");
+                crate::phase_trace::mark_detail("snap.acquired_ax", "", || ax_count_detail(&ax));
                 let kind = if oopif_target_id.is_some() {
                     FrameKind::Oopif
                 } else if index == 0 {
@@ -2969,6 +2982,13 @@ async fn live_title(conn: &Arc<CdpConnection>, cdp_target_id: &str, fallback: &s
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn i107_ax_count_detail_counts_nodes_without_content() {
+        let ax = json!({ "nodes": [{ "nodeId": "1", "name": { "value": "secret" } }, { "nodeId": "2" }] });
+        assert_eq!(ax_count_detail(&ax), json!({ "ax_nodes": 2 }));
+        assert_eq!(ax_count_detail(&json!({})), json!({ "ax_nodes": 0 }));
+    }
 
     #[test]
     fn endpoint_access_policy_requires_grants_for_standalone_consumers() {
