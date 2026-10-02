@@ -1182,7 +1182,8 @@ impl Tool for BrowserClickTool {
                     "Runtime.callFunctionOn",
                     json!({
                         "objectId": object_id,
-                        "functionDeclaration": "function() { this.click(); }",
+                        "functionDeclaration": DOM_CLICK_IF_CONNECTED,
+                        "returnByValue": true,
                     }),
                 )
                 .await;
@@ -1190,6 +1191,9 @@ impl Tool for BrowserClickTool {
                 json!({ "ok": dispatched.is_ok() })
             });
             return match dispatched {
+                Ok(value) if value.pointer("/result/value") == Some(&Value::Bool(false)) => {
+                    detached_node_refusal()
+                }
                 Ok(_) => ToolResult::text(format!(
                     "dispatched synthetic DOM click on {} in {tab_id}; application effect not \
                      verified (trust-gated controls may ignore untrusted events). Refresh page \
@@ -1347,6 +1351,24 @@ impl Tool for BrowserClickTool {
             "y": y,
         }))
     }
+}
+
+/// A ref's backend node can outlive its place in the document (a framework
+/// re-render replaces it), and `el.click()` still runs listeners on a detached
+/// node. The connectedness check runs inside the same `Runtime.callFunctionOn`
+/// that dispatches, so there is no window between check and dispatch. The
+/// trusted route needs no such check: `DOM.getBoxModel` fails for a node with
+/// no layout box, which includes every detached node, before coordinates exist.
+pub(crate) const DOM_CLICK_IF_CONNECTED: &str =
+    "function() { if (!this.isConnected) return false; this.click(); return true; }";
+
+/// The page answered that the ref's node is detached: nothing was dispatched.
+pub(crate) fn detached_node_refusal() -> ToolResult {
+    BrowserRefusal::new(
+        BrowserRefusalCode::BrowserRefStale,
+        "the ref's node is no longer connected to the document; nothing was dispatched",
+    )
+    .to_tool_result()
 }
 
 /// Center of the content quad from a `DOM.getBoxModel` result.
