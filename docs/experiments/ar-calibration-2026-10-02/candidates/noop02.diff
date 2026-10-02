@@ -1,0 +1,13 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+index 571ce8fd5..0f24739a5 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+@@ -3626,7 +3626,7 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
+             let proxies = acc
+                 .proxies()
+                 .await
+-                .map_err(|e| anyhow!("interface proxies unavailable: {e}"))?;
++                .map_err(|e| anyhow!("AT-SPI interface proxies unavailable: {e}"))?;
+             let ap = proxies
+                 .action()
+                 .await

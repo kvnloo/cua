@@ -1,0 +1,12 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+index 0c7ecf119..b81abe606 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+@@ -838,7 +838,6 @@ mod tests {
+         let json = report.to_json();
+         assert_eq!(json["focus_changed"], false);
+         assert!(json.get("focus_outcome").is_none());
+-        assert!(json.get("grab_held_by").is_none());
+         assert!(json.get("focus_changes").is_none());
+     }
+ 

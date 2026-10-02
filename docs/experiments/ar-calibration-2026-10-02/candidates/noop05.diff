@@ -1,0 +1,13 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+index 571ce8fd5..00adff8da 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+@@ -4218,7 +4218,7 @@ async fn actuate_chain(
+                 dlog!("hit-test doAction declined; falling through to the pointer route");
+                 return Ok(None);
+             }
+-            Some(Err(e)) => return Err(anyhow!("doAction failed: {e}")),
++            Some(Err(e)) => return Err(anyhow!("doAction call failed: {e}")),
+             // Dispatched; the reply waits on a nested main loop.
+             None => return Ok(Some(hit)),
+         }

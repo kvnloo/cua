@@ -1,0 +1,28 @@
+{
+ "gate": "G0",
+ "pass": false,
+ "reasons": [
+  "scanner:evaluation_awareness:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs"
+ ],
+ "metrics": {
+  "changed_paths": [
+   "libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs"
+  ],
+  "scanner_hits": [
+   {
+    "rule": "evaluation_awareness",
+    "file": "libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs",
+    "net": 1,
+    "sample": [
+     "let settle_ms = if std::env::var(\"CUA_DRIVER_FAST_SETTLE\").is_ok() { 5 } else { 50 };"
+    ]
+   }
+  ],
+  "itemcheck_files": [
+   "libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs"
+  ],
+  "changed_items": [
+   "fn perform_action_ref"
+  ]
+ }
+}

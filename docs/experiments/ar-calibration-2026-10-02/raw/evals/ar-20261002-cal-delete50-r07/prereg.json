@@ -1,0 +1,91 @@
+{
+ "candidate": {
+  "binary_label": "cua-driver-ar-calib-delete50-edddf26fa",
+  "binary_sha256": "264482417eb1addd79a4ed517dfb77af6e0778b64eb0c29c5b0df7dfeee8cfd5",
+  "commit": "edddf26fa80311a08fcb982d0e2d0ef0cd7d8a07"
+ },
+ "champion": {
+  "binary_label": "cua-driver-ar-base-457bc65d4",
+  "binary_sha256": "8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209",
+  "commit": "457bc65d45b2a87ac080b281ea777f8914002c29"
+ },
+ "created_utc": "2026-10-02T10:54:30Z",
+ "design": {
+  "alpha_one_sided": 0.01,
+  "block_max_minutes": 10,
+  "fresh_driver_per_trial": true,
+  "n_pairs": 38,
+  "order": "AB/BA alternating",
+  "power": 0.8,
+  "psi_hz": 10,
+  "sandbox": "harness/ar/sandbox/sandbox-driver.sh",
+  "seed": 20264074,
+  "session_trials": 48,
+  "sigma_ln": 0.05921901921290283,
+  "trace_off_fraction": 0.2
+ },
+ "eval_id": "ar-20261002-cal-delete50-r07",
+ "fdr": {
+  "alpha": 0.05,
+  "gamma_constant": 0.0722,
+  "procedure": "LORD++",
+  "w0": 0.025
+ },
+ "frozen": {
+  "allowlist_sha256": "2ee00e0893f0cf7ca38a28f1f11087fe29c6e482c48f32a6d01320d9adbf529f",
+  "harness_commit": "2615af74f3517200e86004ac924c06d07ddf2ae4",
+  "manifest_sha256": "7f567a1a847730ef63fd6372d9ab2f75bfb71af52bcf338991ef4cf3440e95fc",
+  "scanner_rules_sha256": "e94a14c9cfcb108f715b5ec548dcf77ec89ac7099ff55102cc7c3ada380802dd"
+ },
+ "g1_required_suites": [
+  "cua-driver-core --lib",
+  "platform-linux --lib"
+ ],
+ "gates": [
+  "G0",
+  "G1",
+  "G2",
+  "G3",
+  "G4",
+  "G5",
+  "G6",
+  "G7",
+  "G8",
+  "GS"
+ ],
+ "invariants": {
+  "expected_path": null,
+  "expected_route": "accessibility"
+ },
+ "mechanism": {
+  "end_mark": "atspi_action/post_sleep_done",
+  "min_share": 0.7,
+  "start_mark": "atspi_action/do_action_replied"
+ },
+ "n01_reference": "none: no N-01 packet exists (artifacts/r2/n-01 empty, artifacts/r2/N-01R holds plans and pilots only) at calibration time",
+ "request": {
+  "branch": "ar/calib/delete50",
+  "hypothesis": "Calibration known answer (KEEP): removing the fixed 50 ms post-DoAction sleep in perform_action_ref shortens the GTK3 checkbox click by about 50 ms inside atspi_action.",
+  "request_sha256": "50362a11e5ed88250b59fc3a873f38d7e2b82d684a7c81fa25bc2f26f1bb25d7",
+  "submitted_utc": "2026-10-02T07:44:07Z"
+ },
+ "schema": "ar.prereg.v1",
+ "segment": "segment-1",
+ "soak": {
+  "min_trials": 300
+ },
+ "spot_checks": [
+  "spot_gtk3_text",
+  "spot_browser_fill_submit"
+ ],
+ "spot_min_pairs": 10,
+ "task": "gtk3_checkbox_toggle",
+ "tau": {
+  "aa_pairs": 72,
+  "aa_rows_sha256": "82a2625398bcec78a9fac78c5bd63c4e729de3b34e34156e1e504144117ad07a",
+  "batch": 72,
+  "floor": 0.02,
+  "q975_abs_delta_aa_ln": 0.03063324033585444,
+  "value": 0.031107265974990694
+ }
+}
