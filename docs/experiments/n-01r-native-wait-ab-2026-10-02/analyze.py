@@ -364,7 +364,19 @@ def analyze() -> dict[str, Any]:
     metrics = latest_by_id(allm)
     superseded = [{"label": m["label"], "id": m["id"], "verified": m.get("verified"), "failure": m.get("failure")}
                   for m in allm if m not in metrics]
+    # Block attempts that produced no trial ledger (e.g. the private Xvfb died at start): every
+    # planned cell of the attempt is a failed, not-run cell; the block was re-run under a new label.
+    plan = json.loads((HERE / "plan.json").read_text(encoding="utf-8"))
+    planned = {b["block"]: len(b["trials"]) for b in plan["blocks"]}
+    failed_attempts = []
+    for d in sorted(RAW.glob("n01r-*")):
+        if d.is_dir() and not (d / "trials.jsonl.gz").exists():
+            block = d.name.split("-")[1]
+            note = (d / "session.txt").read_text(encoding="utf-8").strip().splitlines() if (d / "session.txt").exists() else []
+            failed_attempts.append({"label": d.name, "block": block, "planned_cells_not_run": planned.get(block),
+                                    "session": [x for x in note if x.startswith(("[session]", "RuntimeError", "refusing"))][:4]})
     s: dict[str, Any] = {"schema": "n01r.summary.v1", "blocks": meta, "superseded_attempts": superseded,
+                         "failed_block_attempts": failed_attempts,
                          "trials_total": len(allm), "cells": {}}
     for kind in ("main", "warm", "obs", "late", "decoy", "smoke", "stale"):
         for task in TASKS:

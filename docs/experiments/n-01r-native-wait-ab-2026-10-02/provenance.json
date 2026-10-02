@@ -1,0 +1,42 @@
+{
+ "schema": "n01r.provenance.v1",
+ "lane": "N-01R",
+ "branch": "exp/n-01r-native-wait-ab-20261002",
+ "base_commit": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49",
+ "base_note": "R2-04 measurement-only phase marks (parent 1280a9e5e) on upstream main 229b65b2849c3a595ddbc85200d7181b18bd2e47",
+ "tree_equality": {"command": "git diff --quiet 229b65b28 352507b6c -- libs/cua-driver", "rc": 0,
+                   "meaning": "libs/cua-driver at the tested upstream main equals upstream main 352507b6c03162ab286b21d5ed509125cc3daece"},
+ "measurement_commit": "b9b357bc72fe0627b841f66a2d0812fafca8711f",
+ "tested_source": "b9b357bc72fe0627b841f66a2d0812fafca8711f (= base 28b915ae9 + the two env-gated knobs; libs/cua-driver otherwise identical to upstream main 352507b6c)",
+ "prereg_commit": {"sha": "8ff42418df2390821d03fdd059ce5598652a77fc", "committed_utc": "2026-10-02T05:37:49Z"},
+ "first_measured_trial_utc": "2026-10-02T05:38:07Z (block n01r-d01; last trial 07:52:11Z, block n01r-s03)",
+ "analysis_note": "analyze.py and verify_artifacts.py were edited after the PREREG commit (failed-block-attempt accounting; open-receipt handling for the killed a07 run; privacy regex); the pre-registered metric, statistics and gate definitions are unchanged",
+ "driver": {"file": "cua-driver-n01r-b9b357bc7", "sha256": "c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95",
+            "version": "cua-driver 0.32.0", "version_read": "inside cua-x11-session.sh (raw/build/driver-version.txt)",
+            "build": {"command": "hostless flock -s <tmp>/locks/quiet-lane.lock flock <tmp>/locks/cargo-build.lock build-driver.sh <wt> n01r-b9b357bc7 cua-release-n01r",
+                      "head_logged": "b9b357bc72fe0627b841f66a2d0812fafca8711f", "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+                      "fresh_workspace_units": 0, "seconds": 215,
+                      "lock_receipts": "raw/build/build-lock-receipts.jsonl (requested 04:38:50Z, acquired 04:40:09Z, released 04:43:44Z, rc 0)",
+                      "target_artifact_sha256_matches": true}},
+ "harness_origin": {"branch": "exp/r2-04-atspi-profile-20261001", "commit": "9bfd437390571985870a66d941f43dbe417f31c0",
+                    "dir": "docs/experiments/r2-04-2026-10-01/", "copied_verbatim_to": "r2-04-harness/",
+                    "blobs": {"profile_atspi.py": "b3cfae3b9e6258c43464185ce898134c92c1a1a4", "run_in_session.sh": "79683b6169420297ae3fe485ce1e33b105564e1c",
+                              "run_batch.sh": "b554d43c6f34ce9dce908b2e93973a8833061843", "analyze.py": "57d834e67e126ceb6aa6f4f57f6d96634195d2fa",
+                              "verify_artifacts.py": "7111bb10780c3762fcbfe4eb35d7c1de73826a46"}},
+ "live_heads": {
+  "read_utc": "2026-10-02T05:38:54Z", "method": "gh api (read-only)",
+  "upstream_main": "9ab9e890ac63f5d2407fa59f5541a1e3ef9c9b65 (4 commits ahead of 352507b6c, 0 files under libs/cua-driver)",
+  "trycua_cua_PR_4316": "a0bca744067d04f05904319d3d919be30c336556 (open; not part of this source)",
+  "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83 (open; packet-format reference)",
+  "N-01R_PR": "none"
+ },
+ "publication_sha": null,
+ "publication_note": "set by the Publish agent",
+ "environment": {
+  "isolation": "every code-executing command ran as hostless hostless-strict <cmd> (from 05:06:31Z hostless is v2: env scrub + Landlock scope, no mount mask; hostless-strict adds the v1 bwrap mask of the host runtime and X11 socket dirs); GUI/Driver/AT-SPI inside cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, private dbus session, openbox + picom xrender, env -i scrub) with CUA_SESSION_ATSPI=1 (private at-spi-bus-launcher + at-spi2-registryd)",
+  "software": "GTK 3 fixture on system python3 + PyGObject; jev-use venv python 3.12 (mcp 1.30.0) for the harness; Linux 7.2.2; 10 CPUs",
+  "driver_settings": "Driver defaults apart from the arm knobs: no permission-mode override, no approval bypass, telemetry default, fresh HOME per session, no *-e2e wrapper",
+  "machine_sharing": "other lanes ran concurrently on the machine (loadavg recorded per trial); measured blocks held the EXCLUSIVE quiet-lane lock, controls a shared one"
+ },
+ "provider": {"provider": "TypeSafe", "cap": 0, "attempts": 0, "reached": 0}
+}
