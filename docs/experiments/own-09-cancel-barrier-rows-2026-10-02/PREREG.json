@@ -1,0 +1,144 @@
+{
+  "lane": "OWN-09",
+  "wave": 2,
+  "written_utc": "2026-10-02T05:11:12.977Z",
+  "packet": "docs/experiments/own-09-cancel-barrier-rows-2026-10-02/",
+  "owners": [
+    "kvnloo/cua#9 (canonical upstream owner: trycua/cua 3796)",
+    "kvnloo/cua#36 (cancellation cross-session row = R5)",
+    "kvnloo/cua#105 / R2-05 (delayed-effect coordination = R7)",
+    "kvnloo/cua#10 (accounting)"
+  ],
+  "hypothesis": "On upstream main, cancellation abandons admitted native work: cua_driver_operation_cancel_v1 signals OperationState, spawn_completion calls work.abort(), and direct stdio MCP ignores notifications/cancelled. kvnloo/cua#84 (AdmissionHold + spawn_blocking_owned) keeps desktop capacity owned until native exit. Neither may let queued cancelled work enter the native closure, or let a late or foreign cancel reach another issuance.",
+  "arms": {
+    "M": {
+      "description": "upstream main as is; barrier native closure = plain tokio spawn_blocking (the primitive production tools use)",
+      "production_source": "352507b6c03162ab286b21d5ed509125cc3daece",
+      "tree_commit": "143a47c796bbb3a145085e3dd9658fd7b5cd0ee2",
+      "runs_at": "detached worktree at tree_commit (base + OWN-09 test files only)",
+      "test_target": "--test own09_arm_m",
+      "cargo_target_dir_name": "cua-release-own09-m"
+    },
+    "P": {
+      "description": "upstream main + kvnloo/cua#84; barrier native closure = cua_driver_core::tool::spawn_blocking_owned",
+      "production_source": "merge of 352507b6c03162ab286b21d5ed509125cc3daece and kvnloo/cua#84 head 566b9c73245266005c958d40e93d46ee5d463325",
+      "pr84_head": "566b9c73245266005c958d40e93d46ee5d463325",
+      "pr84_base": "c3941497a5545b6b977c55962c29391da10bdc03",
+      "tree_commit": "98cdf5415616a88fe2ecb91ade7e7878ba6412c9",
+      "runs_at": "lane branch head after this PREREG commit; its libs/cua-driver tree must equal tree_commit's",
+      "test_target": "--test own09_arm_p",
+      "cargo_target_dir_name": "cua-release-own09"
+    }
+  },
+  "test_files": {
+    "libs/cua-driver/rust/crates/cua-driver-sdk/tests/own09_arm_m.rs": "cd0245e08575d664fe7c8f835c5204c040c6b9ae",
+    "libs/cua-driver/rust/crates/cua-driver-sdk/tests/own09_arm_p.rs": "00d8f4760edd7ba05ee08d94551608cb7bea3d46",
+    "libs/cua-driver/rust/crates/cua-driver-sdk/tests/own09_harness/mod.rs": "5cb524b39adb1960563e7070c5887fe7c02ab199",
+    "libs/cua-driver/rust/crates/cua-driver-sdk/tests/own09_harness/rows.rs": "27e38cd6a4618be14068130f871d1721989420fe"
+  },
+  "method": {
+    "forced_path": "barrier-backed host tool registered as press_key through DriverHostOptions.register_host_tools on CuaDriver::try_create_configured_for_host (explicit Standard-only ceiling, no permission env override). Route: CuaDriver::call_tool -> NativeAbiDriver::invoke -> cua_driver_invoke_v1 -> spawn_completion -> DriverRuntime lifecycle read guard -> ToolRegistry dispatch desktop coordinator -> Tool::invoke -> native closure. Trusted-session rows use create_trusted_session -> cua_driver_session_invoke_v1. R8 uses cua_driver_core::server::handle_request_with_transport_session over the SDK.",
+    "cancel_route": "caller task abort -> SDK future drop -> OperationGuard::drop -> cua_driver_operation_cancel_v1 -> OperationState::cancel -> spawn_completion select -> work.abort(). Attribution event: invocation-dropped:<id> logged by the barrier invocation's Drop (the dispatch frame lives on the ABI executor, so only the abort can drop it early).",
+    "oracle": "fixture-owned native closure entry/exit counters + target journal written only by the native closure (or the target's delayed commit thread) + ordered ledger. No Driver result is used as a verdict except the caller-visible outcome where a row is about what the caller receives (R4/R5 'completed ok', R8 'response delivered').",
+    "phase_proof": "channels and ledger events; bounded negative windows (300 ms) only decide when the harness releases a barrier, never the verdict",
+    "fresh_runtime_per_iteration": true,
+    "iterations_per_variant": 20,
+    "passes": {
+      "main": "cargo test ... -- --test-threads=1, OWN09_ITERS=20",
+      "stress": "cargo test ... -- --test-threads=8, OWN09_ITERS=20 (tests contend for the per-process runtime lock; one Driver runtime and one desktop coordinator per process)"
+    },
+    "pass_order": ["M main", "P main", "M stress", "P stress"],
+    "no_timing_claims": true,
+    "provider": "none (TypeSafe cap 0)"
+  },
+  "rows": {
+    "R1": {
+      "claim": "cancel or abandon while queued: the work never enters the native closure",
+      "kill_gate": "queued cancelled work enters the native closure",
+      "iteration_pass": "admitted:2 absent AND counter[2]==[0,0] AND native-exit:1 before admitted:3 (cancel_race: admission winner OR counter[2]==[0,0])",
+      "primary_variants": ["cancel_while_queued", "cancel_race"],
+      "broken_controls": {"M": ["broken_detach_on_cancel"], "P": ["broken_detach_on_cancel"]},
+      "positive_controls": []
+    },
+    "R2": {
+      "claim": "after admission, capacity stays owned until the native closure exits",
+      "kill_gate": "admitted capacity becomes reusable before native exit",
+      "iteration_pass": "native-exit:1 before admitted:2",
+      "primary_variants": ["cancel_after_admission"],
+      "broken_controls": {"M": [], "P": ["broken_plain_closure"]},
+      "positive_controls": ["control_no_cancel"]
+    },
+    "R3": {
+      "status": "BLOCKED",
+      "reason": "held-input cleanup exactly once needs a macOS-first target-side drag/mouse-up oracle; not attempted"
+    },
+    "R4": {
+      "claim": "a late cancel cannot reach a later issuance",
+      "kill_gate": "a late cancel reaches the wrong issuance",
+      "iteration_pass": "later outcome is_error==false AND invoke-end:2 before invocation-dropped:2 AND counter[2]==[1,1]",
+      "primary_variants": ["after_completion", "after_inflight_cancel"],
+      "broken_controls": {"M": ["broken_name_keyed"], "P": ["broken_name_keyed"]},
+      "positive_controls": []
+    },
+    "R5": {
+      "claim": "a foreign transport or session cannot cancel, end or substitute into this operation (kvnloo/cua#36 cancellation cross-session row)",
+      "kill_gate": "a foreign cancel reaches this issuance",
+      "iteration_pass": "own outcome ok AND invoke-end:1 before invocation-dropped:1 AND foreign mutation never admitted AND foreign end refused AND journal landed ids == [1]",
+      "primary_variants": ["foreign_session_and_transport"],
+      "broken_controls": {"M": ["broken_session_keyed"], "P": ["broken_session_keyed"]},
+      "positive_controls": []
+    },
+    "R6": {
+      "claim": "session end or shutdown does not claim readiness before admitted native work exits, with and without a cancelled caller",
+      "kill_gate": "readiness is claimed before admitted work drains",
+      "readiness_events": {"shutdown": "shutdown-returned (CuaDriver::shutdown future resolved)", "end_session": "session-cleanup (core session-end hook fired for the session's runtime key)"},
+      "iteration_pass": "readiness event observed AND native-exit:1 before it",
+      "primary_variants": ["shutdown_no_cancel", "shutdown_after_cancel", "end_session_no_cancel", "end_session_after_cancel"],
+      "broken_controls": {"M": ["broken_ready_on_cancel"], "P": ["broken_ready_on_cancel"]},
+      "informational_variants": {"P": ["broken_plain_closure_shutdown_after_cancel"]},
+      "positive_controls": []
+    },
+    "R7": {
+      "claim": "admitted -> caller loses the ack -> first fresh read unchanged -> native work exits and the effect lands later: the unchanged read neither frees capacity nor authorizes a second mutation; exactly 1 effect",
+      "kill_gate": "a second mutation is authorized by an unchanged read",
+      "iteration_pass": "first-read:0 AND native-exit:1 before admitted:2 AND exactly 1 applied effect in the target journal (control_ack: exactly 1 applied effect)",
+      "primary_variants": ["ack_lost_guarded_retry"],
+      "broken_controls": {"M": ["broken_blind_retry"], "P": ["broken_blind_retry", "broken_plain_closure"]},
+      "positive_controls": ["control_ack"],
+      "characterization_variants": ["delayed_after_native_exit"],
+      "characterization_note": "effect committed by the target after native exit; native-exit ownership cannot cover it; non-gating"
+    },
+    "R8": {
+      "claim": "notifications/cancelled sent during an in-flight call (SDK/core level)",
+      "characterization": true,
+      "classification": "IGNORED = in-flight response delivered and dispatch frame not dropped early; HONORED otherwise",
+      "primary_variants": ["notification_in_flight"],
+      "broken_controls": {"M": ["broken_honoring_transport"], "P": ["broken_honoring_transport"]},
+      "broken_expected": "HONORED",
+      "real_stdio": "NOT_RUN unless a barrier-backed tool is reachable over the stdio binary without modifying production"
+    }
+  },
+  "row_rules": {
+    "PASS": "every primary variant PASS 20/20 in main AND in stress, AND every broken control FAIL 20/20 in main (a row with no broken control for that arm cannot PASS)",
+    "FAIL": "any primary iteration FAIL in either pass (a kill-gate violation), provided every listed positive control PASSes 20/20 in main",
+    "INVALID": "harness errors, a broken control not detected 20/20, or a FAIL without its positive control",
+    "M_FAIL_label": "CONFIRMED_GAP with exact source lines",
+    "evidence_labels": "every row: SOURCE + UNIT/FIXTURE (R3 BLOCKED, R8 REAL NOT_RUN)"
+  },
+  "disposition_rule": {
+    "gating_rows": ["R1", "R2", "R4", "R5", "R6", "R7"],
+    "KEEP": "P passes R1, R2, R4, R5, R6 and R7 (evidence for #84 slice-A promotion, with the CONFIRMED_GAP on M)",
+    "REVISE": "P passes some rows and none FAIL (name them)",
+    "KILL": "P violates any kill gate (any gating row FAIL on P)"
+  },
+  "predictions_from_source": {
+    "M": {"R1": "PASS", "R2": "FAIL (guard dropped with aborted dispatch frame)", "R4": "PASS", "R5": "PASS", "R6": "FAIL on *_after_cancel (lifecycle read guard and session dispatch guard dropped with the aborted frame)", "R7": "FAIL (retry admitted while original native work is stuck; 2 effects)", "R8": "IGNORED"},
+    "P": {"R1": "PASS", "R2": "PASS", "R4": "PASS", "R5": "PASS", "R6": "FAIL on *_after_cancel (AdmissionHold owns only the desktop coordinator, not the lifecycle read guard or the session dispatch guard)", "R7": "PASS", "R8": "IGNORED"},
+    "predicted_disposition": "KILL by the rule above, driven by R6; recorded before any counted run",
+    "shakedown_disclosure": "uncounted shakedown runs (2 iterations) were made on both arms while developing the harness; they are mirrored outside the packet and not counted"
+  },
+  "supporting_runs_uncounted": [
+    "kvnloo/cua#84 own tests (cancellation_slice_a) at its own head 566b9c732 in a detached worktree",
+    "cargo test --lib --no-run on the P tree, to record whether #84's own cfg(test) file compiles after the base moved (main changed TEST_RUNTIME_LOCK to a tokio mutex)"
+  ]
+}
