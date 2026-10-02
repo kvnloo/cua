@@ -1,0 +1,48 @@
+{
+ "lane": "B-02",
+ "branch": "exp/b-02-browser-driver-sites-20261002",
+ "base": "f5c991e5927513c8b94da4330c94276dc5f8ce22",
+ "base_composition": "upstream main 229b65b28 + R2-01 trace 7d3a28b66 + trycua/cua PR 4316 merge 0c6a53237 (head a0bca7440) + B-01 marks/focus-settle knob f5c991e59",
+ "measurement_commit": "560bd8247c36c9d249f481b509a073c131e93620",
+ "prereg_commit": "1a902e45320a199f1852c4d71ab197a1ca4cbd87",
+ "prereg_commit_utc": "2026-10-02T05:08:15Z",
+ "packet_commit": "the commit adding README.md on the branch (see git log)",
+ "publication_sha": null,
+ "tested_driver_source": "560bd8247c36c9d249f481b509a073c131e93620",
+ "driver_binary": {
+  "label": "cua-driver-b02-560bd8247",
+  "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0",
+  "version": "cua-driver 0.32.0 (read inside cua-x11-session.sh under hostless, DISPLAY :100)",
+  "build": "build-driver.sh <worktree> b02-560bd8247 cua-release-r2-01 under hostless + flock -s quiet-lane.lock + flock cargo-build.lock; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; 0 Fresh workspace units; 89 s; receipt label build-b02-560bd8247 in raw/lock-ledger.jsonl; raw/build-receipt.txt"
+ },
+ "harness_copied_from": {
+  "commit": "6689610d5a2619cb45dd4328b2921c89f88967be",
+  "dir": "docs/experiments/b-01-browser-critpath-2026-10-02/",
+  "blobs": {
+   "run_critpath.py": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+   "b01_fixtures.py": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+   "b01_tasks.py": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+   "b01_analysis.py": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+   "analyze.py": "c70e622721439cc824dce1c5b94dec8cd3dd8d1a"
+  }
+ },
+ "b01_traces_reanalysed": {"commit": "6689610d5a2619cb45dd4328b2921c89f88967be", "path": "docs/experiments/b-01-browser-critpath-2026-10-02/raw/trials-measured.tar.gz", "binary_sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3", "status": "B-01 pending; read-only localization only"},
+ "live_heads": {
+  "trycua_cua_pr_4316": {"start": {"utc": "2026-10-02T05:07:15Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}, "end": {"utc": "2026-10-02T05:18:06Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}},
+  "upstream_main_gh": {"start": "bc55ff2d236a62075c981ebadf0ff97dd90d45be (13 ahead of 229b65b28, 0 libs/cua-driver files)", "end": "6fbcdf97b6ed953e70ea5efad5a61d3ffb490a2f (14 ahead of 229b65b28, 0 libs/cua-driver files)"}
+ },
+ "environment": {
+  "kernel": "Linux 7.2.2 x86_64, 10 CPUs",
+  "isolation": "every code-executing command under hostless (bwrap user namespace: tmpfs over host X11/ICE dirs and the user runtime dir, desktop variables dropped); GUI/Driver work additionally inside cua-x11-session.sh (private rootless Xvfb 1920x1080x24, openbox, picom xrender, private dbus, env -i)",
+  "displays": {"step0": ":99", "step0-dbg1": ":100", "version_read": ":100", "vmicro": ":99", "nv": ":101"},
+  "python": "jev-use .venv (Python 3.12) for runners; system python3 for analysis",
+  "browser": "none launched: Driver refused isolated launch under hostless (uid mapping)",
+  "host_processes_during_lane": "about 660"
+ },
+ "locks": "raw/lock-ledger.jsonl: quiet-timed EXCLUSIVE receipts b02-step0 and b02-vmicro (verbatim ledger lines); lane receipts (flock -s quiet [+ cargo-build]) for unit-compile-1, build-b02-560bd8247, unit-run-1, b02-step0-dbg1, b02-shake-vmicro, b02-shake-vmicro2; runner SHARED acquisition for N-V (10 trials)",
+ "provider": {"TypeSafe": {"attempts": 0, "reached": 0}},
+ "forced_path": "vmicro: K5V every tools/call skips the inner validation (mcp.inner_validation_skipped, 0 inner inventory builds); K5 every call builds and validates (0 skips). nv: identical invalid calls per arm.",
+ "actual_producer": "Driver phase-trace marks in the direct stdio adapter (proxy::run_direct) and server::handle_request_inner of the tested binary",
+ "oracle": "vmicro: Driver CLOCK_MONOTONIC marks of the deleted work itself and the client round trip; nv: byte-exact JSON-RPC reply lines. No target-owned browser oracle (no browser task could run).",
+ "claim_boundary": "Linux X11 private Xvfb under hostless; binary 7e6c0609 (0.32.0); raw MCP stdio; get_config; legacy and modern MCP eras. Not a browser-task, LIVE_PROVIDER, Wayland, macOS or Windows claim; no default change."
+}

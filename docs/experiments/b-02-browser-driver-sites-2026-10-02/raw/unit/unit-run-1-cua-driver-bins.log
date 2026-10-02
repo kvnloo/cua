@@ -1,0 +1,367 @@
+   Compiling cua-driver-contract v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cua-driver v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/cua-driver)
+   Compiling cua-driver-core v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling cua-driver-testkit v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/cua-driver-testkit)
+   Compiling platform-linux v0.32.0 (<lanes>/w2-b02-browser-sites/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.75s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (<cargo-targets>/cua-release-r2-01/debug/deps/cua_driver-5cf731db19094b5a)
+
+running 291 tests
+test autostart::tests::absent_task_contradicts_reported_success ... ok
+test autostart::tests::access_failure_is_permission_denied ... ok
+test autostart::tests::file_not_found_is_not_registered ... ok
+test autostart::tests::present_task_confirms_registration ... ok
+test autostart::tests::successful_task_query_is_registered ... ok
+test autostart::tests::unanswerable_query_is_never_a_false_failure ... ok
+test autostart::tests::unrecognized_failure_is_unknown ... ok
+test autostart::tests::elevation_script_escapes_quotes_in_the_executable_path ... ok
+test autostart::tests::elevation_script_guards_every_failure_path ... ok
+test autostart::tests::windows_task_path_preserves_extended_unc_path ... ok
+test autostart::tests::windows_task_path_strips_short_extended_drive_prefix ... ok
+test autostart::tests::windows_task_path_preserves_extended_long_drive_path ... ok
+test broken_pipe::tests::wrapper_reports_signal_deaths_like_a_shell ... ok
+test broken_pipe::tests::keeps_other_print_failures_and_panics_visible ... ok
+test broken_pipe::tests::recognises_the_platform_broken_pipe_print_panic ... ok
+test bundle::tests::local_identity_requires_the_explicit_local_product_name ... ok
+test cli::tests::expected_pid_does_not_shadow_other_subcommands ... ok
+test cli::tests::deprecated_session_policy_flag_remains_a_capability_manifest_alias ... ok
+test cli::tests::expected_pid_is_absent_for_an_ordinary_stop ... ok
+test cli::tests::finite_call_tool_extraction_ignores_non_call_commands ... ok
+test cli::tests::expected_pid_keeps_stop_as_the_subcommand ... ok
+test cli::tests::finite_call_tool_extraction_supports_subcommand_and_legacy_forms ... ok
+test cli::tests::finite_mcp_config_clients_are_closed_before_worker_handoff ... ok
+test cli::tests::finite_operations_are_closed_and_ignore_values ... ok
+test cli::tests::manifest_never_advertises_linux_portal_features_on_non_linux_targets ... ok
+test cli::tests::history_relaunch_preserves_explicit_unrestricted_approval ... ok
+test cli::tests::history_relaunch_preserves_authorization_mode_and_every_grant ... ok
+test cli::tests::only_transports_skip_the_finite_broken_pipe_contract ... ok
+test cli::tests::permission_grant_accepts_all_live_checks ... ok
+test cli::tests::permission_grant_missing_live_probe_is_not_ready ... ok
+test cli::tests::permission_grant_rejects_verification_errors_with_stale_evidence ... ok
+test cli::tests::permission_grant_requires_live_capture_probe ... ok
+test cli::tests::permission_status_request_is_read_only_and_uses_the_public_tool_route ... ok
+test cli::tests::pid_file_is_parsed_for_serve_before_or_after_the_subcommand ... ok
+test cli::tests::manifest_subcommands_have_uniform_shape ... ok
+test doctor::tests::report_to_text_renders_status_tag_and_message ... ok
+test cli::tests::manifest_has_documented_top_level_shape ... ok
+test driver_service_http::tests::envelope_mode_rejects_unknown_and_bounded_values ... ok
+test driver_service_http::tests::envelope_mode_never_implicitly_inherits_unrestricted ... ok
+test driver_service_http::tests::envelope_unrestricted_requires_matching_host_and_no_manifest ... ok
+test driver_service_http::tests::creation_rejects_wire_session_options ... ok
+test driver_service_http::tests::strict_headers ... ok
+test driver_service_http::tests::generation_required_on_every_connection_route ... ok
+test driver_service_http::tests::raw_result_and_closed_ledger ... ok
+test cli::tests::cli_docs_default_subcommands_exist ... ok
+test driver_service_http::tests::capacity_and_active_reaping ... ok
+test extension_manager::tests::absent_perception_extension_has_no_worker_config ... ok
+test cli::daemon_compatibility_tests::incompatible_daemon_is_refused_before_a_cli_action_can_dispatch ... ok
+test driver_service_http::tests::bounded_read_and_unary_pipelining ... ok
+test extension_manager::tests::a_hook_with_an_unlaunchable_entrypoint_fails_closed ... ok
+test extension_manager::tests::compressed_reader_stops_at_its_limit ... ok
+test extension_manager::tests::extension_hooks_forbid_deferred_windows_acl_cleanup ... ok
+test cli::tests::cli_docs_json_examples_cover_every_command ... ok
+test extension_manager::tests::extension_lock_retries_transient_contention_until_acquired ... ok
+test extension_manager::tests::extension_lock_returns_persistent_contention_after_retry_window ... ok
+test cli::tests::cli_docs_json_lists_every_subcommand ... ok
+test extension_manager::tests::lifecycle_acl_lock_recovers_before_entering_the_critical_section ... ok
+test extension_manager::tests::ed25519_verification_rejects_tampering ... ok
+test driver_service_http::tests::saturated_exchanges_leave_cancel_and_close_admitted ... ok
+test extension_manager::tests::model_hash_must_exactly_match_the_declared_file_hash ... ok
+test cli::tests::finite_computer_action_discards_arguments_after_fixed_classification ... ok
+test doctor::tests::wait_for_child_times_out ... ok
+test extension_manager::tests::absence_is_healthy ... ok
+test doctor::tests::wait_for_child_reports_exit ... ok
+test extension_manager::tests::catalog_verification_rejects_invalid_trust_and_stale_two_phase_decisions ... ok
+test extension_manager::tests::publisher_key_rotation_enforces_windows_and_rollback ... ok
+test driver_service_http::tests::envelope_startup_mode_requires_explicit_acknowledgement ... ok
+test extension_manager::tests::preview_footer_is_reserved_for_non_mutating_inspection ... ok
+test extension_manager::tests::python_node_catalog_golden_is_canonical_and_verified_by_rust ... ok
+test extension_manager::tests::publisher_trust_state_is_durable_and_recovers_backup ... ok
+test extension_manager::tests::malformed_manifest_version_cleans_staging ... ok
+test extension_manager::tests::a_fresh_install_records_and_verifies_before_running_its_hook ... ok
+test extension_manager::tests::rejects_unknown_or_unsupported_target_abis ... ok
+test extension_manager::tests::activation_failure_restores_previous_version ... ok
+test extension_manager::tests::installs_owner_only_files_and_requires_executable_entrypoint ... ok
+test extension_manager::tests::retained_directory_handle_survives_name_swap_without_touching_replacement ... ok
+test extension_manager::tests::same_version_catalog_is_accepted_only_when_byte_identical ... ok
+test extension_manager::tests::same_version_catalogs_for_other_targets_do_not_corrupt_the_ledger ... ok
+test extension_manager::tests::rejects_traversal_and_link_entries_and_cleans_staging ... ok
+test extension_manager::tests::strict_command_grammar_rejects_ambiguous_arguments ... ok
+test extension_manager::tests::fresh_and_idempotent_fixture_install ... ok
+test extension_manager::tests::windows_acl_convergence_does_not_retry_hardening_failure ... ok
+test extension_manager::tests::windows_acl_convergence_does_not_retry_matching_untyped_text ... ok
+test extension_manager::tests::windows_acl_convergence_honors_retry_window_after_attempt ... ok
+test extension_manager::tests::windows_acl_convergence_retries_drift_then_succeeds ... ok
+test extension_manager::tests::windows_acl_convergence_retries_hardening_drift_then_succeeds ... ok
+test extension_manager::tests::windows_acl_convergence_stops_after_persistent_drift ... ok
+test extension_manager::tests::windows_acl_convergence_stops_after_persistent_hardening_drift ... ok
+test extension_manager::tests::windows_acl_lease_name_is_component_scoped ... ok
+test extension_manager::tests::windows_acl_lease_retries_contention_until_acquired ... ok
+test extension_manager::tests::windows_acl_lease_timeout_never_enters_the_critical_section ... ok
+test extension_manager::tests::windows_startup_verification_does_not_rewrite_a_healthy_tree ... ok
+test extension_manager::tests::windows_startup_verification_hardens_and_retries_typed_acl_drift ... ok
+test extension_manager::tests::windows_startup_verification_preserves_non_acl_failure ... ok
+test history_admission_tests::admission_requires_an_explicit_or_persisted_request ... ok
+test history_admission_tests::persisted_preview_admission_survives_a_relaunch_without_the_cli_flag ... ok
+test history_runtime::tests::admission_preference_does_not_read_or_follow_symlinks ... ok
+test extension_manager::tests::active_perception_extension_resolves_owned_worker_arguments ... ok
+test history_runtime::tests::default_root_is_namespace_specific ... ok
+test extension_manager::tests::removal_refuses_unowned_files ... ok
+test history_runtime::tests::admission_preference_roundtrips_and_rejects_malformed_state ... ok
+test mcp_envelope::tests::early_cancel_and_connection_limit_use_the_receiver_ledger ... ok
+test extension_manager::tests::recovery_validates_and_restores_interrupted_backup ... ok
+test extension_manager::tests::perception_runtime_contract_cannot_escape_the_active_directory ... ok
+test mcp_envelope::tests::real_receiver_rejects_foreign_generation_and_duplicate_action ... ok
+test mcp_envelope::tests::relay_forwards_only_after_ack_and_fails_when_daemon_disappears ... ok
+test mcp_envelope::tests::relay_refuses_old_daemon_without_forwarding_actions ... ok
+test extension_manager::tests::nonexecuted_tampering_is_deferred_to_full_verification ... ok
+test extension_manager::tests::perception_resolver_rejects_symlinked_installed_payload ... ok
+test mcp_envelope::tests::strict_operation_parameters_never_accept_authority_or_paths ... ok
+test mcp_http::tests::apply_session_identity_uses_transport_implicit_without_session ... ok
+test mcp_http::tests::bearer_comparison_requires_the_exact_value ... ok
+test mcp_http::tests::configured_auth_token_fails_closed ... ok
+test mcp_http::tests::configured_port_parses_env ... ok
+test extension_manager::tests::stores_without_a_catalog_ledger_keep_working ... ok
+test mcp_http::tests::http_observes_tool_calls_but_not_initialize_requests ... ok
+test mcp_envelope::tests::extension_requires_explicit_launcher_opt_in ... ok
+test extension_manager::tests::removal_rejects_a_swapped_versions_symlink_without_touching_its_target ... ok
+test extension_manager::tests::rejects_corrupt_target_and_protocol_mismatches ... ok
+test extension_manager::tests::live_perception_client_follows_install_update_and_remove ... ok
+test mcp_runtime_selection_tests::embedded_host_without_private_endpoint_fails_closed ... ok
+test mcp_runtime_selection_tests::explicit_direct_owns_the_runtime_on_macos_and_in_embedded_hosts ... ok
+test mcp_runtime_selection_tests::normal_linux_and_windows_stdio_own_the_runtime ... ok
+test mcp_runtime_selection_tests::normal_macos_stdio_preserves_the_service_boundary ... ok
+test perception_cli::tests::arguments_require_both_paths_and_json ... ok
+test perception_cli::tests::validates_rfc3339_timestamps ... ok
+test proxy::tests::a_conforming_daemon_success_is_forwarded_unchanged ... ok
+test proxy::tests::an_ok_daemon_response_with_no_result_becomes_a_conforming_error ... ok
+test proxy::tests::b02_identity_stamping_preserves_admission_outcome ... ok
+test proxy::tests::cached_proxy_tool_allowlist_is_exact ... ok
+test proxy::tests::closed_control_prevents_ready_request_dispatch ... ok
+test proxy::tests::control_disconnect_ends_idle_proxy ... ok
+test extension_manager::tests::rejects_symlinked_store_components_without_deleting_external_targets ... ok
+test proxy::tests::daemon_failure_with_no_error_message_uses_fallback_text ... ok
+test proxy::tests::daemon_tool_failure_wraps_as_jsonrpc_success_with_iserror_true ... ok
+test proxy::tests::daemon_without_schema_preserves_legacy_success ... ok
+test proxy::tests::incompatible_daemon_schema_is_rejected_before_advertising ... ok
+test proxy::tests::matching_daemon_schema_retains_local_output_validation ... ok
+test proxy::tests::modern_proxy_metadata_and_rejections_need_no_daemon_call ... ok
+test proxy::tests::observation_ownership_requires_the_daemon_capability ... ok
+test proxy::tests::proxy_authorization_refusal_is_a_tool_error_without_forwarding ... ok
+test proxy::tests::proxy_eof_drops_its_control_connection ... ok
+test proxy::tests::proxy_loop_returns_promptly_on_clean_eof ... ok
+test proxy::tests::proxy_loop_serves_initialize_before_eof ... ok
+test proxy::tests::session_begin_requires_a_positive_typed_acknowledgement ... ok
+test release_channel::tests::current_channel_uses_strict_version_shape ... ok
+test release_channel::tests::strict_channel_vocabulary ... ok
+test sdk_adapter::tests::daemon_shape_is_derived_from_canonical_mcp_inventory ... ok
+test proxy::tests::control_disconnect_exits_with_stdin_open ... ok
+test extension_manager::tests::verified_extension_can_be_removed_and_reinstalled_from_the_same_catalog ... ok
+test mcp_envelope::tests::abort_and_oversized_input_close_owned_receivers ... ok
+test extension_manager::tests::perception_startup_rejects_tampered_execution_inputs ... ok
+test extension_manager::tests::a_hook_cannot_run_a_single_instruction_outside_its_containment ... ok
+test serve::peer_authentication_tests::foreign_unix_uid_is_rejected_before_request_parsing ... ok
+test serve::peer_authentication_tests::forged_cli_metadata_does_not_authenticate_history_control ... ok
+test serve::peer_authentication_tests::only_history_methods_select_the_peer_for_authentication ... ok
+test serve::peer_authentication_tests::pid_bound_shutdown_accepts_only_the_current_process ... ok
+test serve::peer_authentication_tests::pid_bound_shutdown_rejects_malformed_pid ... ok
+test serve::peer_authentication_tests::same_user_unix_peer_is_accepted ... ok
+test serve::permission_gate_routing_tests::calls_resume_only_after_the_gate_completes ... ok
+test serve::permission_gate_routing_tests::pending_gate_rejects_desktop_calls_with_typed_retry ... ok
+test serve::service_authorization_status_tests::only_an_embedded_authenticated_service_reports_binding_ready ... ok
+test serve::session_boundary_tests::browser_download_approval_requires_a_live_proxy_session ... ok
+test serve::socket_tests::cleanup_preserves_a_replacement_socket ... ok
+test serve::socket_tests::every_local_service_socket_is_forced_private ... ok
+test serve::telemetry_routing_tests::observation_origin_is_additive_and_backward_compatible ... ok
+test serve::telemetry_routing_tests::observation_origin_selects_exactly_one_transport ... ok
+test serve::trusted_resume_tests::resume_credentials_are_single_use_expiring_and_prune_orphans ... ok
+test skills::tests::bundled_skill_keeps_agent_control_non_interfering_by_default ... ok
+test skills::tests::bundled_skill_keeps_conditional_history_consultation_policy ... ok
+test skills::tests::bundled_skill_keeps_filesystem_outcome_ladder_and_gui_proof_boundaries ... ok
+test skills::tests::bundled_skill_keeps_semantic_clipboard_outcome_ladder ... ok
+test skills::tests::bundled_skill_keeps_sessions_and_authorization_as_separate_concepts ... ok
+test skills::tests::detected_client_links_once_and_rerun_reports_existing_link ... ok
+test skills::tests::existing_skills_parent_needs_no_client_marker ... ok
+test skills::tests::extract_all_platforms_flag_keeps_every_platform_doc ... ok
+test skills::tests::extract_double_wrap_new_name_also_strips ... ok
+test skills::tests::extract_flat_tarball_v_0_2_20_plus ... ok
+test skills::tests::extract_legacy_tarball_v_0_2_18_double_wrap_old_name ... ok
+test skills::tests::extract_per_host_filter_drops_other_platform_docs ... ok
+test skills::tests::extract_preserves_subdirs_inside_pack ... ok
+test skills::tests::extracted_skill_pack_keeps_canonical_skill_bytes ... ok
+test skills::tests::fresh_codex_and_claude_markers_are_explicit ... ok
+test skills::tests::from_main_manifest_matches_canonical_markdown_files ... ok
+test skills::tests::hermes_defaults_report_missing_required_environment ... ok
+test skills::tests::hermes_target_ignores_empty_or_whitespace_override ... ok
+test skills::tests::hermes_target_prefers_hermes_home ... ok
+test skills::tests::hermes_target_uses_native_windows_local_appdata ... ok
+test skills::tests::hermes_target_uses_unix_default_home ... ok
+test skills::tests::hermes_target_uses_windows_userprofile_fallback ... ok
+test skills::tests::macos_skill_keeps_ax_only_and_non_prompting_permission_guidance ... ok
+test skills::tests::missing_parent_and_marker_are_not_detected ... ok
+test skills::tests::missing_skills_parent_is_created_only_for_detected_client ... ok
+test skills::tests::nightly_skill_pack_uses_the_nightly_tag_and_compatible_asset_name ... ok
+test skills::tests::non_directory_parent_is_rejected ... ok
+test skills::tests::prime_agent_target_matches_its_native_global_skill_directory ... ok
+test skills::tests::stable_skill_pack_uses_the_stable_release_tag ... ok
+test telemetry::tests::agent_session_aggregate_is_bounded_content_free_and_multi_transport ... ok
+test telemetry::tests::agent_session_buckets_have_fixed_boundaries ... ok
+test telemetry::tests::agent_session_inspect_samples_expose_only_the_contract ... ok
+test telemetry::tests::browser_refusal_is_bounded_and_not_a_completed_computer_action ... ok
+test telemetry::tests::cli_command_values_are_fixed ... ok
+test telemetry::tests::cli_duration_buckets_have_fixed_boundaries ... ok
+test telemetry::tests::cli_operations_and_client_kinds_are_revalidated_in_the_worker ... ok
+test telemetry::tests::cli_tool_names_are_fixed_and_content_free ... ok
+test telemetry::tests::compound_tool_operation_reaches_payload_as_a_fixed_value ... ok
+test telemetry::tests::disabled_agent_session_observation_creates_no_state_or_identity ... ok
+test telemetry::tests::disabled_install_makes_no_request_or_marker_and_keeps_existing_id ... ok
+test telemetry::tests::disabled_permissions_events_do_not_create_an_installation_id ... ok
+test telemetry::tests::every_browser_tool_marks_the_session_without_retaining_arguments ... ok
+test telemetry::tests::execution_mode_requires_the_exact_embedded_sentinel ... ok
+test telemetry::tests::failed_lifecycle_delivery_defers_retries_without_marking_success ... ok
+test telemetry::tests::failed_or_non_auto_escalation_is_not_counted ... ok
+test telemetry::tests::history_reads_do_not_change_tool_or_agent_session_telemetry ... ok
+test telemetry::tests::http_tool_completion_reaches_the_final_payload_as_mcp_http ... ok
+test telemetry::tests::identity_process_child ... ok
+test telemetry::tests::inspect_events_match_the_emitted_bounded_schema ... ok
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+
+running 1 test
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::identity_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.01s
+
+test telemetry::tests::installation_identity_creation_is_atomic_across_processes ... ok
+test telemetry::tests::lifecycle_markers_are_written_only_after_each_2xx ... ok
+test telemetry::tests::lifecycle_process_child ... ok
+
+running 1 test
+
+running 1 test
+test telemetry::tests::lifecycle_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.00s
+
+test telemetry::tests::lifecycle_process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.02s
+
+test telemetry::tests::lifecycle_registration_is_single_writer_and_non_blocking_across_processes ... ok
+test telemetry::tests::mcp_tool_names_outside_the_registry_are_other ... ok
+test telemetry::tests::pending_send_flush_waits_for_bounded_delivery ... ok
+test telemetry::tests::permissions_resolution_covers_grant_dismissal_recovery_and_timeout ... ok
+test telemetry::tests::persisted_install_channel_prevents_first_run_attribution_race ... ok
+test telemetry::tests::precedence_is_environment_then_persisted_then_default ... ok
+test telemetry::tests::process_session_id_is_stable_and_not_written_to_disk ... ok
+test telemetry::tests::release_version_is_bounded_and_safe_for_payloads_and_marker_paths ... ok
+test telemetry::tests::release_versions_accept_strict_semver_and_drop_leading_v ... ok
+test telemetry::tests::reported_models_are_coarse_fixed_categories ... ok
+test telemetry::tests::reset_erases_identity_and_markers_but_preserves_preference ... ok
+test telemetry::tests::reset_erases_legacy_identity_before_migration_can_restore_it ... ok
+test telemetry::tests::session_observation_keys_are_bounded_by_transport_and_client_category ... ok
+test telemetry::tests::shared_cua_switches_turn_the_driver_off ... ok
+test telemetry::tests::synthetic_marker_is_explicit_and_common_to_all_events ... ok
+test telemetry::tests::tool_completion_rate_limit_resets_after_one_hour ... ok
+test telemetry::tests::update_events_expose_only_bounded_funnel_properties ... ok
+test telemetry::tests::v3_payload_disables_geoip_and_sends_no_ip_or_client_timestamp ... ok
+test updater::tests::managed_install_never_starts_installer ... ok
+test mcp_envelope::tests::duplicate_active_rpc_id_ends_stream_without_replay ... ok
+test updater::tests::ownership_queries_symlink_target ... ok
+test updater::tests::ownership_requires_successful_query_with_literal_path ... ok
+test version_check::tests::banner_contains_required_lines ... ok
+test version_check::tests::cache_lands_in_the_canonical_home ... ok
+test version_check::tests::cache_older_than_threshold_triggers_refresh ... ok
+test version_check::tests::cache_round_trips_through_tempdir ... ok
+test version_check::tests::cache_younger_than_threshold_skips_network ... ok
+test version_check::tests::channel_mismatch_is_available_even_when_target_version_is_lower ... ok
+test version_check::tests::config_flag_disables_check ... ok
+test version_check::tests::config_flag_true_or_missing_leaves_check_on ... ok
+test version_check::tests::dismissed_latest_suppresses_banner ... ok
+test version_check::tests::env_opt_out_short_circuits_enabled_check ... ok
+test version_check::tests::failed_migration_preserves_the_legacy_cache ... ok
+test version_check::tests::is_newer_recognises_minor_bump_past_double_digit ... ok
+test version_check::tests::is_newer_recognises_strict_patch_bump ... ok
+test version_check::tests::is_newer_returns_false_for_equal_versions ... ok
+test version_check::tests::is_newer_returns_false_for_older_candidate ... ok
+test version_check::tests::is_newer_returns_false_for_unparseable_input ... ok
+test version_check::tests::is_newer_treats_pre_release_as_lower_than_release ... ok
+test version_check::tests::is_prerelease_flags_dev_and_rc_suffixes ... ok
+test version_check::tests::is_prerelease_passes_plain_release ... ok
+test version_check::tests::is_prerelease_returns_true_for_garbage ... ok
+test version_check::tests::iso8601_round_trips_against_known_unix_timestamp ... ok
+test version_check::tests::legacy_cache_is_migrated_and_its_home_removed ... ok
+test version_check::tests::migration_leaves_a_legacy_home_that_still_holds_other_files ... ok
+test version_check::tests::nightly_discovery_rejects_stable_and_wrong_prefix_tags ... ok
+test version_check::tests::pacman_managed_check_ignores_upstream_cache_and_channel ... ok
+test version_check::tests::pacman_managed_startup_never_fetches_or_prints_banner ... ok
+test version_check::tests::pick_latest_release_filters_swift_port_tags ... ok
+test version_check::tests::pick_latest_release_rejects_every_nightly_shape ... ok
+test version_check::tests::pick_latest_release_returns_none_for_empty_array ... ok
+test version_check::tests::pick_latest_release_skips_drafts_but_accepts_prereleases ... ok
+test updater::tests::missing_failed_and_timed_out_queries_are_not_ownership ... ok
+test mcp_envelope::tests::invalid_jsonrpc_shape_never_allocates_a_receiver ... ok
+test driver_service_http::tests::oversized_response_closes_connection_with_unknown_completion ... ok
+test mcp_envelope::tests::saturated_stream_keeps_acknowledged_cancel_and_close_responsive ... ok
+test mcp_envelope::tests::stream_preserves_legacy_tools_and_closes_on_eof ... ok
+test mcp_http::tests::http_keeps_legacy_initialize_negotiation ... ok
+test mcp_http::tests::http_rejects_modern_requests_before_dispatch ... ok
+test mcp_http::tests::http_tools_list_is_the_sdk_inventory ... ok
+test mcp_http::tests::invalid_bearer_receives_401_before_json_rpc_dispatch ... ok
+test mcp_http::tests::origin_header_is_forbidden_but_originless_request_is_unchanged ... ok
+test sdk_adapter::tests::failed_end_preserves_an_existing_out_of_band_tombstone ... ok
+test sdk_adapter::tests::public_observation_mirror_revives_an_implicit_transport_session ... ok
+test sdk_adapter::tests::public_observation_mirror_tracks_scope_end_and_revival ... ok
+test sdk_adapter::tests::runtime_owned_end_hook_updates_only_its_adapter ... ok
+test serve::gate_tests::ended_session_and_runtime_revocation_are_gated ... ok
+test doctor::tests::report_to_json_marks_ok_true_when_only_warnings ... ok
+test doctor::tests::report_to_json_marks_ok_false_when_any_error ... ok
+test doctor::tests::cross_platform_probes_always_emit_something ... ok
+test doctor::tests::run_emits_at_least_cross_platform_probes ... ok
+
+test result: ok. 291 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.84s
+
