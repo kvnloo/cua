@@ -140,12 +140,12 @@ struct Fixture {
     driver: Arc<CuaDriver>,
     shared: Arc<Shared>,
     releases: HashMap<u64, mpsc::Sender<()>>,
-    _serial: std::sync::MutexGuard<'static, ()>,
+    _serial: tokio::sync::MutexGuard<'static, ()>,
 }
 
 impl Fixture {
-    fn new(ids: &[u64]) -> Self {
-        let serial = crate::runtime::TEST_RUNTIME_LOCK.lock().unwrap();
+    async fn new(ids: &[u64]) -> Self {
+        let serial = crate::runtime::TEST_RUNTIME_LOCK.lock().await;
         let shared = Arc::new(Shared {
             ledger: Ledger::default(),
             gates: Mutex::new(HashMap::new()),
@@ -271,7 +271,7 @@ fn write_ledger(name: &str, fx: &Fixture, extra: Value) {
 /// not now and not after the permit is released and a later call is admitted.
 #[tokio::test]
 async fn slice_a_cancel_before_admission_never_enters_native_work() {
-    let mut fx = Fixture::new(&[1, 2, 3]);
+    let mut fx = Fixture::new(&[1, 2, 3]).await;
     let first = fx.call(1);
     phase(&fx.entered(1), "call 1 native-enter").await;
 
@@ -301,7 +301,7 @@ async fn slice_a_cancel_before_admission_never_enters_native_work() {
 
 /// Observation shared by the B characterization and the B invariant.
 async fn cancel_after_admission_observation(owned: bool) -> (bool, Vec<String>, Value) {
-    let mut fx = Fixture::new(&[1, 2]);
+    let mut fx = Fixture::new(&[1, 2]).await;
     let first = fx.call_with(1, owned);
     phase(&fx.entered(1), "call 1 native-enter").await;
     first.abort();
@@ -399,7 +399,7 @@ async fn slice_a_prototype_owned_blocking_keeps_permit_until_native_exit() {
 #[tokio::test]
 async fn slice_a_cancel_vs_native_entry_race_has_exactly_one_winner() {
     const ROUNDS: u64 = 60;
-    let mut fx = Fixture::new(&[]);
+    let mut fx = Fixture::new(&[]).await;
     let (mut cancel_won, mut admission_won) = (0, 0);
     for round in 0..ROUNDS {
         let (holder, contender, witness) = (10 * round + 1, 10 * round + 2, 10 * round + 3);
