@@ -1,0 +1,13 @@
+{
+ "schema": "cua.stack.prereg.v1",
+ "id": "stack2-addr-2026-10-02/confirm",
+ "committed_before_confirm_runs": true,
+ "why": "The measured set ran on exp/stack-addr-20261002 70cfc7a5. One after-arm run (m020-browser-after-p05) got two Driver stale_token refusals: a 425 s model call outlived the driver session, Hermes revived the session and replayed the click with a token minted under the ended session (the Driver retires an ended session's snapshots). H4 is therefore FAIL for 70cfc7a5. Follow-up c3d96b0488be6c0e1230bf90a40b3c06cd4605de: after a revival, a call carrying element_token is not replayed; tokens are invalidated and element_token_session_ended asks for a fresh capture (unit red/green and a REAL backend probe reproduce the m020 refusal on 70cfc7a5 and its absence on c3d96b04). This set confirms the branch head at full stack.",
+ "stack": "identical to PREREG.json except Hermes = exp/stack-addr-20261002 c3d96b0488be6c0e1230bf90a40b3c06cd4605de (arm after2); Driver 0.32.0 sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3; same model tag 77a5de20, config, fixtures, oracle and harness",
+ "runs": "plan_confirm.json: 12 pairs (201-212) x {gtk3, browser}, arm after2 only (no before arm: the before arm is unchanged code and was measured in the main set) = 24 runs; every run reported",
+ "gates": {
+  "C1_contract": "PASS iff 0 addressing_refused results",
+  "C4_authority": "PASS iff 0 stale_token and 0 invalid_token results",
+  "C3_success": "descriptive: pass/n per task with Wilson 95% CI, compared with the 70cfc7a5 after arm (unpaired, different tokens); no significance claim"
+ }
+}
