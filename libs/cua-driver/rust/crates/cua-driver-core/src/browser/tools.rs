@@ -16,7 +16,7 @@ use crate::tool_args::ArgsExt;
 
 use super::cdp_ws::CdpConnection;
 use super::download::BrowserDownloadTool;
-use super::engine::{BrowserEngine, BrowserTabScreenshot};
+use super::engine::{BrowserEngine, BrowserTabScreenshot, ValidatedTab};
 use super::platform::{BrowserVisualActionKind, PrepareProfile, PrepareRequest, PrepareStrategy};
 use super::pointer::BrowserPointerTool;
 use super::refusal::{BrowserRefusal, BrowserRefusalCode};
@@ -73,6 +73,31 @@ pub(crate) fn parse_delivery_mode(args: &Value) -> Result<bool, String> {
         Some(other) => Err(format!(
             "delivery_mode must be \"background\" or \"foreground\", got {other:?}"
         )),
+    }
+}
+
+/// Delivery posture of trusted CDP input that actually ran. Trusted input
+/// activates the browser window only for a standalone window on a platform
+/// whose trusted route cannot preserve background posture, and that branch
+/// runs only when the caller accepted `foreground` (background is refused
+/// before dispatch). On embedded routes and on platforms without that
+/// limitation a foreground request runs the same background dispatch, so the
+/// request alone is not reported as foreground delivery.
+pub(crate) fn trusted_delivery_mode(
+    engine: &BrowserEngine,
+    validated: &ValidatedTab,
+    foreground: bool,
+) -> &'static str {
+    let activates = foreground
+        && validated.record.cdp_window_id.is_some()
+        && engine
+            .platform
+            .standalone_trusted_input_background_limitation()
+            .is_some();
+    if activates {
+        "foreground"
+    } else {
+        "background"
     }
 }
 
@@ -1322,7 +1347,7 @@ impl Tool for BrowserClickTool {
         ToolResult::text(format!("clicked ({x:.0}, {y:.0}) in {tab_id}")).with_structured(json!({
             "status": "ok",
             "route": "trusted",
-            "delivery_mode": if foreground { "foreground" } else { "background" },
+            "delivery_mode": trusted_delivery_mode(&self.engine, &validated, foreground),
             "target_id": target_id,
             "tab_id": tab_id,
             "ref": ext_ref,

@@ -22,7 +22,9 @@ use super::platform::BrowserVisualActionKind;
 use super::refusal::{BrowserRefusal, BrowserRefusalCode};
 use super::required_session_schema;
 use super::store::{BrowserActionKind, FrameKind, FrameRef};
-use super::tools::{browser_protected_resource_scope, browser_resource_ownership};
+use super::tools::{
+    browser_protected_resource_scope, browser_resource_ownership, trusted_delivery_mode,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PointerAction {
@@ -550,7 +552,7 @@ impl BrowserPointerTool {
             "action": request.action.as_str(),
             "route": request.route.as_str(),
             "delivery_mode": (request.route == InputRoute::Trusted)
-                .then_some(if request.foreground { "foreground" } else { "background" }),
+                .then(|| trusted_delivery_mode(&self.engine, validated, request.foreground)),
             "target_id": validated.record.target_id,
             "tab_id": validated.tab.tab_id,
             "ref": external_ref,
