@@ -1,0 +1,90 @@
+{
+ "arm": "before",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+ "hermes_rc": 0,
+ "hermes_wall_s": 15.22,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 8,
+   "post_tool_call": 7,
+   "pre_api_request": 8,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 7
+  },
+  "peak_prompt_tokens": 8120,
+  "rows": 34,
+  "trace_ids": [
+   "9872006f751908c4eefad85b1254b1fd362956364436d16fb7f80acd2d9acca3"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 12,
+ "prompt_sha256": "1b0840d27a40aba2cae6a71a4c9fb546183fb55b10a0b975ad8e8ea90fb6fd9a",
+ "run_id": "m048-browser-before-p12",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "It seems the current setup does not allow driving the desktop without manual approval. Please configure your environment to approve such actions or find an alte",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 8,
+    "end_reason": "cli_close",
+    "id": "20261002_175510_b8d6bd",
+    "input_tokens": 4285,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 320,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 7
+   }
+  ],
+  "tool_sequence_sha256": "aee735b8e15e26ea0a7a38d20ff23e11f53e706eba5214c1cb21e1bfc51efd53"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 0,
+  "element_action_classes": {
+   "addressing_refused": 3,
+   "other_error": 1
+  },
+  "element_actions": 4,
+  "element_actions_ok": 0,
+  "gui_actions": 4,
+  "result_classes": {
+   "addressing_refused": 3,
+   "capture_ok": 2,
+   "ok": 1,
+   "other_error": 1
+  },
+  "successful_tool_calls": 3,
+  "tool_calls": 7,
+  "tool_errors": 4
+ }
+}

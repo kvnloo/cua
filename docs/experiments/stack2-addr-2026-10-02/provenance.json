@@ -1,0 +1,34 @@
+{
+ "schema": "cua.stack.provenance.v1",
+ "id": "stack2-addr-2026-10-02",
+ "hermes": {
+  "repo": "kvnloo/hermes-agent",
+  "before": {"branch": "exp/stack-integration-20261002", "head": "0d60437a3329448bb9d2992e34cec81b0afd36df", "base": "fork main 4d3555e5ca1ae3a8babfc33831c3f91eae3a825c + #385 ce5c027b + #386 521d4354 + #387 b8203889"},
+  "after": {"branch": "exp/stack-addr-20261002", "head": "70cfc7a5b325372c689147cd1398147bdb7f2bca", "parent": "0d60437a3329448bb9d2992e34cec81b0afd36df", "diff": "tools/computer_use/cua_backend.py +11; tests/tools/test_computer_use_element_token_contract.py (new); tests/fixtures/cua_driver_element_addressing_schemas.json (new)"},
+  "upstream_checked_read_only": {"NousResearch/hermes-agent main": "54bc5e509c985f37265c3d416bd2c64b10fc77ba", "kvnloo/hermes-agent main": "54bc5e509c985f37265c3d416bd2c64b10fc77ba", "tools/computer_use diff vs 0d60437a": "none"},
+  "venvs": "one per arm, CPython 3.14.7, editable install with extra [computer-use] and group dev; mcp 2.0.0",
+  "runtime": "private HOME/HERMES_HOME per run; live Hermes home and real home masked by empty tmpfs; live console scripts never run"
+ },
+ "cua": {
+  "repo": "kvnloo/cua",
+  "packet_branch": "exp/stack-addr-20261002 (parent exp/stack-smoke-20261002 c9604fb39)",
+  "upstream_checked_read_only": {"trycua/cua main": "989cc76cec262ff8bcf6968b637820340fb9caaa"},
+  "contract_change": "trycua/cua#3873 61f1c0ab255a1a39e675d93341cd50c0ceb2027e (2026-09-30) 'accept element_token as the only element target'; in cua-driver-rs-v0.32.0, not in cua-driver-rs-v0.21.0 (70db98d1)",
+  "driver_0_32_0": {"source": "trycua/cua 229b65b2849c3a595ddbc85200d7181b18bd2e47", "version": "cua-driver 0.32.0", "binary_sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"},
+  "driver_0_21_0": {"source": "official release cua-driver-rs v0.21.0 (tarball sha256 cf29bfaad16737e31e72f38dad2a6424f24b21a4ac2edea885e83cb9d5034135, matches Hermes pm/lock.json)", "version": "cua-driver 0.21.0", "binary_sha256": "43d926a1b938012379db57cf351530f81e75a574017676815f85d1e13aff23f7"},
+  "driver_changed": false
+ },
+ "model": {
+  "server": "user-local official Ollama 0.35.0 at 127.0.0.1:11500 (binary sha256 0b0650a962dda61ec0598141ea11e3b688d225e926c9c00bc2c299d0ed34c4f8), GPU RTX 3080 Ti, OLLAMA_CONTEXT_LENGTH=65536, NUM_PARALLEL=2, MAX_LOADED_MODELS=1; shared, not started or stopped by this lane",
+  "weights": "qwen2.5:7b-instruct 845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e (Q4_K_M, 7.6B, native context 32768)",
+  "tag": "qwen2.5:7b-instruct-smoke-t0 77a5de209c159812c77a247142269a75acfdef0c1cbfbcb264ce2c85bbe0ada4 (from qwen2.5:7b-instruct, temperature 0, seed 42); recreated by this lane with the same recipe and digest as the SMOKE tag; deleted at the end of the lane",
+  "served_context": 32768
+ },
+ "fixtures": {
+  "gtk3": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py sha256 547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+  "jev_use": "libs/cua-driver/examples/jev-use/fixture_server.py sha256 0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf",
+  "browser": "Google Chrome 151.0.7922.71 --app, fresh profile per run, accessibility on, egress proxied to a dead port"
+ },
+ "session": "cua-x11-session.sh (private rootless Xvfb 1920x1080, private D-Bus and AT-SPI, openbox, picom) under hostless v2",
+ "fixture_interpreter": "system CPython 3.14.7 (fixtures and oracle, inside the private session)"
+}

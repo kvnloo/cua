@@ -2,7 +2,7 @@
 
 usage: sanitize_copy.py <mapping.json> <src runs dir> <dst raw/runs dir> <run_id> [...]
 mapping.json (local, never committed): {"replace": [["<local prefix>", "<placeholder>"], ...], "forbid": ["<regex>", ...]}
-Copied per run: run.json, oracle.json, run_summary.json, join/*, meta/{timeline.log,exit_code,mask.inside,
+Copied per run: run.json, oracle.json, run_summary.json, tool_calls.jsonl, join/*, meta/{timeline.log,exit_code,mask.inside,
 env.inside,session.env,stdout,stderr,live-home-stat.*,hermes.start,hermes.end}, fixture/state.*.json,
 observer events.jsonl, shadow/{decisions.full.jsonl,sidecar_summary.json,backend_load.json,sidecar.log},
 shadow/z0int-home/receipts/*.jsonl. NOT copied: state.db (holds full tool results), config, Chrome profile.
@@ -13,7 +13,7 @@ import re
 import sys
 from pathlib import Path
 
-FILES = ["run.json", "oracle.json", "run_summary.json", "join/join_summary.json", "join/observations.jsonl",
+FILES = ["run.json", "oracle.json", "run_summary.json", "tool_calls.jsonl", "join/join_summary.json", "join/observations.jsonl",
          "join/api_lane_labels.jsonl", "meta/timeline.log", "meta/exit_code", "meta/mask.inside", "meta/env.inside",
          "meta/session.env", "meta/stdout", "meta/stderr", "meta/live-home-stat.before", "meta/live-home-stat.after",
          "meta/hermes.start", "meta/hermes.end", "fixture/state.before.json", "fixture/state.after.json",

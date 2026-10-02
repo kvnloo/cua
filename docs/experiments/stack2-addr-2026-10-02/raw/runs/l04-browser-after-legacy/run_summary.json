@@ -1,0 +1,87 @@
+{
+ "arm": "after",
+ "driver_key": "pinned_0_21_0",
+ "hermes_head": "70cfc7a5b325372c689147cd1398147bdb7f2bca",
+ "hermes_rc": 0,
+ "hermes_wall_s": 13.2,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_tool_call": 4,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 4
+  },
+  "peak_prompt_tokens": 9112,
+  "rows": 22,
+  "trace_ids": [
+   "2b3184d7857fcdcb479df78758af1209458f1a2ea38d167647b275c30d5cb871"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 104,
+ "prompt_sha256": "6d9ee3e8af8bf2ec6008e921d873e6ce44f15f22b397d5021d8f4804749c3d0a",
+ "run_id": "l04-browser-after-legacy",
+ "set": "legacy",
+ "state_db": {
+  "final_text_head": "+='<form submitted>' if the form was successfully submitted, or an error description if it failed.",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_175645_4a1c01",
+    "input_tokens": 5556,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 185,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_sequence_sha256": "f89fc7e4402d749c002661eb102585ee26576b96920b18c302d61227234ee82e"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 0,
+  "element_action_classes": {
+   "ok": 2
+  },
+  "element_actions": 2,
+  "element_actions_ok": 2,
+  "gui_actions": 2,
+  "result_classes": {
+   "capture_ok": 1,
+   "ok": 3
+  },
+  "successful_tool_calls": 4,
+  "tool_calls": 4,
+  "tool_errors": 0
+ }
+}

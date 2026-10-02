@@ -1,0 +1,91 @@
+{
+ "arm": "before",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+ "hermes_rc": 0,
+ "hermes_wall_s": 18.67,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 6,
+   "post_auxiliary_call": 1,
+   "post_tool_call": 6,
+   "pre_api_request": 6,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 6
+  },
+  "peak_prompt_tokens": 6434,
+  "rows": 29,
+  "trace_ids": [
+   "1f2ea3a89bce112424b9e2d55cb2080f2ee994cbdb98e2f7d4126a69fc18775f"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 1,
+ "prompt_sha256": "0f58c97c45658071e9b646698a0424c1a9a27008bc5d7ebcb12a7d9eb1f853f0",
+ "run_id": "m004-browser-before-p01",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "DONE",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 6,
+    "end_reason": "cli_close",
+    "id": "20261002_172719_214986",
+    "input_tokens": 2614,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 314,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 6
+   }
+  ],
+  "tool_sequence_sha256": "baceac5a743d00bf4f26cdca1404f98db77c21d96356d266129f7ce44d8a11a7"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 1,
+  "element_action_classes": {
+   "addressing_refused": 2,
+   "other_error": 1
+  },
+  "element_actions": 3,
+  "element_actions_ok": 0,
+  "gui_actions": 4,
+  "result_classes": {
+   "addressing_refused": 2,
+   "capture_ok": 1,
+   "ok": 2,
+   "other_error": 1
+  },
+  "successful_tool_calls": 3,
+  "tool_calls": 6,
+  "tool_errors": 3
+ }
+}

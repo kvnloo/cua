@@ -1,0 +1,88 @@
+{
+ "arm": "after",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "70cfc7a5b325372c689147cd1398147bdb7f2bca",
+ "hermes_rc": 0,
+ "hermes_wall_s": 13.2,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 4,
+   "post_tool_call": 3,
+   "pre_api_request": 4,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 3
+  },
+  "peak_prompt_tokens": 5570,
+  "rows": 18,
+  "trace_ids": [
+   "6412dab9ce808c6382256d899834a24db63b9f1e9c34ced9e0fd0a00b84d8ab8"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "agreed": true,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 2
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "pass"
+ },
+ "pair": 5,
+ "prompt_sha256": "efb1af5af77c9b39d9b6ae0f2ca458f6c99d903c145862ca428260db85f755ef",
+ "run_id": "m018-gtk3-after-p05",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "Verifying the state of the checkbox labeled 'I agree' in the CuaTestHarness GTK3 Tasks window shows that it is now selected. DONE",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 4,
+    "end_reason": "cli_close",
+    "id": "20261002_173357_1ba9a9",
+    "input_tokens": 1894,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 130,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 3
+   }
+  ],
+  "tool_sequence_sha256": "b7ac233a8f933ba9243f37e9bf1712415147ca1fcb5ec30289ab423fa97a5b92"
+ },
+ "task": "gtk3",
+ "tools": {
+  "coordinate_actions": 0,
+  "element_action_classes": {
+   "ok": 1
+  },
+  "element_actions": 1,
+  "element_actions_ok": 1,
+  "gui_actions": 1,
+  "result_classes": {
+   "capture_ok": 2,
+   "ok": 1
+  },
+  "successful_tool_calls": 3,
+  "tool_calls": 3,
+  "tool_errors": 0
+ }
+}

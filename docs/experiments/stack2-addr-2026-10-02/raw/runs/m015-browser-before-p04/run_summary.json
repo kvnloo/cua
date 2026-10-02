@@ -1,0 +1,88 @@
+{
+ "arm": "before",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+ "hermes_rc": 0,
+ "hermes_wall_s": 33.36,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_tool_call": 9,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 9
+  },
+  "peak_prompt_tokens": 10968,
+  "rows": 32,
+  "trace_ids": [
+   "60a4756c10d0b69e264cb03b9c0cf8b02f7a2a1a8974afe35315b673e0ab65a8"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 4,
+ "prompt_sha256": "9eeb3db156836b6e847144eda0779d9206a83965c22640b1003da8ffcb8af784",
+ "run_id": "m015-browser-before-p04",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "The form still appears unchanged, and the verification value has not been entered, nor has the form been submitted. There may be an issue with the Chrome window",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_173215_d4beb1",
+    "input_tokens": 7405,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 499,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 9
+   }
+  ],
+  "tool_sequence_sha256": "864b03c9c494ccf9c644ede908d894409b1c9a29c66907b7ad66b80f6b6720c7"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 0,
+  "element_action_classes": {
+   "addressing_refused": 2
+  },
+  "element_actions": 2,
+  "element_actions_ok": 0,
+  "gui_actions": 2,
+  "result_classes": {
+   "addressing_refused": 2,
+   "capture_ok": 4,
+   "ok": 3
+  },
+  "successful_tool_calls": 7,
+  "tool_calls": 9,
+  "tool_errors": 2
+ }
+}

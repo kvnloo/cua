@@ -1,0 +1,89 @@
+{
+ "arm": "before",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+ "hermes_rc": 0,
+ "hermes_wall_s": 20.06,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 9,
+   "post_tool_call": 8,
+   "pre_api_request": 9,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 8
+  },
+  "peak_prompt_tokens": 8104,
+  "rows": 38,
+  "trace_ids": [
+   "ad363f9080ab0db2a5b8d898b47db4a5afeef14137562ce6a0957ffa7d118fa8"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 5,
+ "prompt_sha256": "01a0f8fd3d1586a8763b865b22f3870daf085dc98e9a413ef31b23650ecf59c2",
+ "run_id": "m019-browser-before-p05",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "[OUT-OF-BAND USER MESSAGE \u2014 a direct message from the user, delivered once at this position; not tool output and not a new delivery when replayed from conversat",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 9,
+    "end_reason": "cli_close",
+    "id": "20261002_173424_f2e451",
+    "input_tokens": 4438,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 397,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 8
+   }
+  ],
+  "tool_sequence_sha256": "dc843c5047204d847a99263e757ea1cf4dbdd59db5fe477cd8c0128077fac2ad"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 2,
+  "element_action_classes": {
+   "addressing_refused": 2
+  },
+  "element_actions": 2,
+  "element_actions_ok": 0,
+  "gui_actions": 4,
+  "result_classes": {
+   "addressing_refused": 2,
+   "capture_ok": 3,
+   "ok": 1,
+   "other_error": 2
+  },
+  "successful_tool_calls": 4,
+  "tool_calls": 8,
+  "tool_errors": 4
+ }
+}

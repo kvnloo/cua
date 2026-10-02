@@ -1,0 +1,89 @@
+{
+ "arm": "before",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+ "hermes_rc": 0,
+ "hermes_wall_s": 23.89,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 12,
+   "post_tool_call": 11,
+   "pre_api_request": 12,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 11
+  },
+  "peak_prompt_tokens": 12328,
+  "rows": 50,
+  "trace_ids": [
+   "0a9932fb0158f087945c1c5e0b4ef5c582443ba3f49864b2af75c8770f08b081"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 8,
+ "prompt_sha256": "5bacbb86a9d4d7e3133895b2a5e92b37bc7a3873f7c81395518b2217bc346b02",
+ "run_id": "m031-browser-before-p08",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "I have clicked on the 'Submit' button. The form entry field for the 'verification value' now has focus, but the field seems to require input. Please manually ve",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 12,
+    "end_reason": "cli_close",
+    "id": "20261002_174744_cf3397",
+    "input_tokens": 8544,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 580,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 11
+   }
+  ],
+  "tool_sequence_sha256": "c13ea2b3c6370f0cfb432a52a9546a7e2c22af52c0909e5f36759d57d3f5ee75"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 2,
+  "element_action_classes": {
+   "addressing_refused": 3
+  },
+  "element_actions": 3,
+  "element_actions_ok": 0,
+  "gui_actions": 5,
+  "result_classes": {
+   "addressing_refused": 3,
+   "capture_ok": 4,
+   "ok": 3,
+   "other_error": 1
+  },
+  "successful_tool_calls": 7,
+  "tool_calls": 11,
+  "tool_errors": 4
+ }
+}

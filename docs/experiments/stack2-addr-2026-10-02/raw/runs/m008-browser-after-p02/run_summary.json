@@ -1,0 +1,87 @@
+{
+ "arm": "after",
+ "driver_key": "main_0_32_0",
+ "hermes_head": "70cfc7a5b325372c689147cd1398147bdb7f2bca",
+ "hermes_rc": 0,
+ "hermes_wall_s": 17.52,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0
+  }
+ },
+ "observer": {
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_tool_call": 4,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 4
+  },
+  "peak_prompt_tokens": 6178,
+  "rows": 22,
+  "trace_ids": [
+   "9def06482c19b1e4e3347baf4bceb758c93e5e955e5a7b987f2dd4b322258941"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)"
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": true,
+   "submitted_present": true
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "pass"
+ },
+ "pair": 2,
+ "prompt_sha256": "cb65dac25120fa6914db5b830bc2f69deffe60eee6771520d3fc4271cd314e2c",
+ "run_id": "m008-browser-after-p02",
+ "set": "measured",
+ "state_db": {
+  "final_text_head": "DONE",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_172916_7dbe49",
+    "input_tokens": 2405,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 159,
+    "system_prompt_hash": "b62862eaf6a850afe2ce2feaebfd3a4ce099eadf305d32181e4aff01a3c53379",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_sequence_sha256": "26a6f625c98cab0f90cb062e25b20a7d90fe1317088cb5da5ed15f782fc52c03"
+ },
+ "task": "browser",
+ "tools": {
+  "coordinate_actions": 0,
+  "element_action_classes": {
+   "ok": 2
+  },
+  "element_actions": 2,
+  "element_actions_ok": 2,
+  "gui_actions": 2,
+  "result_classes": {
+   "capture_ok": 1,
+   "ok": 3
+  },
+  "successful_tool_calls": 4,
+  "tool_calls": 4,
+  "tool_errors": 0
+ }
+}
