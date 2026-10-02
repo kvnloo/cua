@@ -422,7 +422,7 @@ pub(crate) fn ensure_point_hits(
         };
         if Instant::now() >= deadline {
             return Err(TargetedInputError::WouldRequireActivation(format!(
-                "the point ({x}, {y}) is covered by window 0x{covering:x}; XTest input would \
+                "the point ({x}, {y}) is covered by window 0x{covering:x}; XTest input events would \
                  reach it instead of the target 0x{target:x}"
             )));
         }
