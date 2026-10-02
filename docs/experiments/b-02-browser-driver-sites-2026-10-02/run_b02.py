@@ -87,24 +87,27 @@ def williams_any(n: int) -> list[list[int]]:
 
 # ── controls ──────────────────────────────────────────────────────────────────
 
+def browser_gone(pid: int) -> bool:
+    """True once ``pid`` has exited. The Driver (its parent) may not reap it at once, so an
+    exited browser can linger as a zombie: that counts as gone (it holds no sockets)."""
+    try:
+        stat = Path(f"/proc/{pid}/stat").read_text()
+    except OSError:
+        return True
+    return stat.rsplit(")", 1)[1].split()[0] in ("Z", "X")
+
+
 def kill_lane_browser(pid: int) -> bool:
     """Stop the lane-started (Driver-launched) browser; returns True once it is gone."""
-    try:
-        os.kill(pid, signal.SIGTERM)
-    except ProcessLookupError:
-        return True
-    for _ in range(100):
-        if not rc.pid_alive(pid):
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.kill(pid, sig)
+        except ProcessLookupError:
             return True
-        time.sleep(0.05)
-    try:
-        os.kill(pid, signal.SIGKILL)
-    except ProcessLookupError:
-        return True
-    for _ in range(100):
-        if not rc.pid_alive(pid):
-            return True
-        time.sleep(0.05)
+        for _ in range(100):
+            if browser_gone(pid):
+                return True
+            time.sleep(0.05)
     return False
 
 
@@ -193,25 +196,6 @@ async def control_trial(spec: dict[str, Any], args: argparse.Namespace, fixtures
                     return
                 snap = await rc.timed_call(rec, driver, f"snapshot{step}", "get_browser_state",
                                            {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"})
-                if kind == "nw2" and step == 2:
-                    # Same-document DOM replacement between the snapshot and the action.
-                    marker = f"b02 marker {uuid.uuid4().hex[:8]}"
-                    ports = devtools_ports_for_pid(pid)
-                    client = CdpClient(http_get_json(ports[0], "/json/version")["webSocketDebuggerUrl"])
-                    try:
-                        replaced = evaluate(client, page_target(client, fixtures.page_url(cls)),
-                                            dom_replace_js(cls, marker))
-                    finally:
-                        client.close()
-                    rec.add("dom_replaced", result=replaced)
-                    result["dom_replace"] = replaced
-                    old_text = json.dumps(snap)
-                    snap = await rc.timed_call(rec, driver, "snapshot2_fresh", "get_browser_state",
-                                               {"target_id": target_id, "tab_id": tab_id,
-                                                "snapshot_format": "semantic_v2"})
-                    result["marker_in_stale_snapshot"] = marker in old_text
-                    result["marker_in_fresh_snapshot"] = marker in json.dumps(snap)
-                    pending = None  # re-derive the action from the fresh snapshot (provider route)
                 rec.add("cand_start", step=step)
                 candidates, sources, _visual = await rc.task_candidates_for_step(
                     driver, task, snap, pid, int(window["window_id"]), available, capture_bound, visual_mode="auto")
@@ -261,7 +245,54 @@ async def control_trial(spec: dict[str, Any], args: argparse.Namespace, fixtures
                         decoy.close()
                     result["outcome"] = rc.oracle_read(rec, task, "takeover_check", step)
                     return
-                if kind == "ne2" and step == 2:
+                if kind == "nw2" and step == 2:
+                    # Same-document DOM replacement between the snapshot and the action. Branch 1:
+                    # the action derived from the pre-replacement snapshot must be refused (or act on
+                    # the live DOM, never on a stale node). Branch 2: a fresh snapshot must show the
+                    # replacement, and the action re-derived from it completes the task.
+                    marker = f"b02 marker {uuid.uuid4().hex[:8]}"
+                    ports = devtools_ports_for_pid(pid)
+                    client = CdpClient(http_get_json(ports[0], "/json/version")["webSocketDebuggerUrl"])
+                    try:
+                        replaced = evaluate(client, page_target(client, fixtures.page_url(cls)),
+                                            dom_replace_js(cls, marker))
+                    finally:
+                        client.close()
+                    rec.add("dom_replaced", result=replaced)
+                    result["dom_replace"] = replaced
+                    state = fixtures.state(cls)
+                    before = len(rc.completion_mutations(cls, list(state.journal)))
+                    rec.add("call_send", label="stale_dom_action", tool=candidate.tool)
+                    raw = await session.call_tool(candidate.tool, {**candidate.arguments, "session": label})
+                    rec.add("call_return", label="stale_dom_action", tool=candidate.tool, **envelope(raw))
+                    result["nw2_stale_envelope"] = envelope(raw)
+                    await asyncio.sleep(0.5)
+                    result["nw2_mutations_from_stale_action"] = \
+                        len(rc.completion_mutations(cls, list(state.journal))) - before
+                    fresh = await rc.timed_call(rec, driver, "snapshot2_fresh", "get_browser_state",
+                                                {"target_id": target_id, "tab_id": tab_id,
+                                                 "snapshot_format": "semantic_v2"})
+                    result["marker_in_stale_snapshot"] = marker in json.dumps(snap)
+                    result["marker_in_fresh_snapshot"] = marker in json.dumps(fresh)
+                    if result["nw2_mutations_from_stale_action"] == 0:
+                        cands2, sources2, _v = await rc.task_candidates_for_step(
+                            driver, task, fresh, pid, int(window["window_id"]), available, capture_bound,
+                            visual_mode="auto")
+                        choice2, _c2, _p2 = rc.choose_mock_for_task(task, sources2, cands2, history)
+                        if choice2 is None:
+                            result["outcome"] = "abstained"
+                            return
+                        cand2 = rc.validate_choice(choice2, cands2, current_capture_id=None)
+                        result["nw2_fresh_candidate"] = cand2.id
+                        await rc.timed_call(rec, driver, "action2_fresh", cand2.tool, dict(cand2.arguments))
+                    for i in range(int(round(rc.POLL_DEADLINE_S * 1000 / arm.poll_ms))):
+                        outcome = rc.oracle_read(rec, task, f"verify{i}", step)
+                        if outcome in {"verified", "refuted"}:
+                            break
+                        await asyncio.sleep(arm.poll_ms / 1000)
+                    result["outcome"] = outcome
+                    return
+                if kind == "ne2" and step == 2 and not result.get("restart_done"):
                     gone = kill_lane_browser(pid)
                     rec.add("browser_stopped", gone=gone)
                     rec.add("call_send", label="old_binding_action", tool=candidate.tool)
@@ -272,6 +303,7 @@ async def control_trial(spec: dict[str, Any], args: argparse.Namespace, fixtures
                     pid, window, target_id, tab_id = await setup_browser("_restart")
                     result["pids"].append(pid)
                     result["restart_new_pid"] = pid != result["pids"][0]
+                    result["restart_done"] = True
                     history, pending, step = [], None, 0
                     task.reset()
                     rec.add("restart_ready")
@@ -308,6 +340,15 @@ async def control_one(spec: dict[str, Any], args: argparse.Namespace, fixtures: 
     except Exception as error:
         res["outcome"] = "error"
         res["error"] = f"{type(error).__name__}: {str(error)[:300]}"
+        leaves, stack = [], [error]
+        while stack:
+            e = stack.pop()
+            subs = getattr(e, "exceptions", None)
+            if subs:
+                stack.extend(subs)
+            else:
+                leaves.append(f"{type(e).__name__}: {e}"[:300])
+        res["error_leaves"] = leaves
     record["trial_wall_ns"] = rc.now() - t0
     rc.CLIENT["rec"] = None
     rc.CLIENT["compiled"] = None
@@ -321,10 +362,10 @@ async def control_one(spec: dict[str, Any], args: argparse.Namespace, fixtures: 
     pids = res.pop("pids", [])
     res.pop("prepared_pid", None)
     for _ in range(50):
-        if not any(rc.pid_alive(p) for p in pids):
+        if all(browser_gone(p) for p in pids):
             break
         await asyncio.sleep(0.1)
-    record["browsers_alive_after_close"] = [bool(rc.pid_alive(p)) for p in pids]
+    record["browsers_alive_after_close"] = [not browser_gone(p) for p in pids]
     await asyncio.sleep(0.3)
     cls = spec["cls"]
     final_state = fixtures.state(cls).snapshot()
@@ -346,7 +387,8 @@ async def control_one(spec: dict[str, Any], args: argparse.Namespace, fixtures: 
         f.write(json.dumps({"event": "summary", **record}, sort_keys=True, default=str) + "\n")
     print(json.dumps({k: record.get(k) for k in ("trial", "outcome", "oracle_exact_match", "completion_mutations",
                                                   "takeover_envelope", "old_binding_envelope", "decoy_connections",
-                                                  "marker_in_fresh_snapshot", "error")}), flush=True)
+                                                  "marker_in_fresh_snapshot", "nw2_stale_envelope",
+                                                  "nw2_mutations_from_stale_action", "error_leaves")}), flush=True)
     return record
 
 
@@ -422,6 +464,15 @@ def build_plan(kind: str, arms: list[str], rounds: int) -> list[list[dict[str, A
                     trials.append({"cls": cls, "arm": arms[j], "kind": "measured", "block": "m", "round": r,
                                    "lock_mode": "exclusive_external"})
         return [trials]
+    if kind == "shakedown":
+        specs = [("fill", "K5", "measured"), ("toggle", "K5E", "measured"), ("modal", "K5V", "measured"),
+                 ("fill", "K5EV", "measured"), ("toggle", "K5E", "ne1"), ("fill", "K5E", "ne2"),
+                 ("modal", "K5EV", "stale_ref"), ("fill", "K5", "nw2"), ("modal", "K5V", "nw2"),
+                 ("none", "K5V", "nv")]
+        return [[{"cls": c, "arm": a, "kind": k, "block": "shake", "lock_mode": "shared"} for c, a, k in specs]]
+    if kind == "shakedown2":  # re-check of the two controls fixed after the first shakedown
+        return [[{"cls": c, "arm": a, "kind": k, "block": "shakeb", "lock_mode": "shared"}
+                 for c, a, k in [("toggle", "K5E", "ne1"), ("fill", "K5E", "ne2")]]]
     if kind == "smoke":
         return [[{"cls": "fill", "arm": "K5", "kind": "measured", "block": "smoke", "lock_mode": "shared"}
                  for _ in range(5)]]
@@ -521,7 +572,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--driver", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--plan", choices=("measured", "controls", "smoke"), required=True)
+    p.add_argument("--plan", choices=("measured", "controls", "smoke", "shakedown", "shakedown2"), required=True)
     p.add_argument("--arms", default="K5,K5E,K5V,K5EV")
     p.add_argument("--rounds", type=int, default=20)
     p.add_argument("--lock")
