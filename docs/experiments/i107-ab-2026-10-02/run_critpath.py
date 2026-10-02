@@ -479,8 +479,8 @@ def build_plan(plan: str, pairs: int, conditions: list[str]) -> list[dict[str, A
         for i, order in enumerate(L.abba_pairs("A", "A_ref", 10)):
             for arm in order:
                 add(arm, "W-quiet", pair=f"dist-p{i:02d}", order="AR" if order[0] == "A" else "RA")
-    elif plan == "ab":
-        for cond in conditions:
+    elif plan in ("ab", "static"):
+        for cond in (["W-static"] if plan == "static" else conditions):
             for i, order in enumerate(L.abba_pairs("A", "B_proj", pairs)):
                 for arm in order:
                     add(arm, cond, pair=f"{cond}-p{i:02d}", order="AB" if order[0] == "A" else "BA")
@@ -510,25 +510,35 @@ def lock_fd_inherited() -> bool:
 
 
 async def main_async(args: argparse.Namespace) -> int:
+    """Run each requested plan in order inside this one session (one quiet-lane lock acquisition)."""
+    rc = 0
+    for plan in args.plan:
+        rc = await run_plan(args, plan)
+        if rc != 0:
+            break
+    return rc
+
+
+async def run_plan(args: argparse.Namespace, plan: str) -> int:
     out = Path(args.out)
     (out / "trials").mkdir(parents=True, exist_ok=True)
-    manifest: dict[str, Any] = {"plan_kind": args.plan, "lock_label": args.lock_label, "utc_start": utc(),
+    manifest: dict[str, Any] = {"plan_kind": plan, "lock_label": args.lock_label, "utc_start": utc(),
                                 "started_mono_ns": now(), "loadavg_start": loadavg(), "psi_start": L.pressure(),
                                 "lock_fd_inherited": lock_fd_inherited(), "provider": "mock",
                                 "chooser": "choose_mock_for_task", "binaries": args.shas, "pairs": args.pairs,
                                 "conditions": args.conditions}
     pre = L.trust_precondition()
     manifest["preflight"] = pre
-    if not pre["ok"] or args.plan == "preflight":
+    if not pre["ok"] or plan == "preflight":
         manifest["status"] = "infrastructure_blocked" if not pre["ok"] else "preflight_ok"
         manifest["utc_end"] = utc()
         manifest["network"] = dict(NETWORK)
-        (out / f"run-manifest-{args.plan}.json").write_text(json.dumps(manifest, indent=1))
+        (out / f"run-manifest-{plan}.json").write_text(json.dumps(manifest, indent=1))
         print(json.dumps({"event": manifest["status"], "preflight": pre}), flush=True)
         return 3 if not pre["ok"] else 0
     server = I107Server(("127.0.0.1", 0))
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    trials = build_plan(args.plan, args.pairs, args.conditions)
+    trials = build_plan(plan, args.pairs, args.conditions)
     manifest["trials"] = [t["name"] for t in trials]
     try:
         for spec in trials:
@@ -540,7 +550,7 @@ async def main_async(args: argparse.Namespace) -> int:
         manifest["loadavg_end"] = loadavg()
         manifest["network"] = dict(NETWORK)
         manifest["status"] = "ran"
-        (out / f"run-manifest-{args.plan}.json").write_text(json.dumps(manifest, indent=1))
+        (out / f"run-manifest-{plan}.json").write_text(json.dumps(manifest, indent=1))
         server.shutdown()
         server.server_close()
     return 0
@@ -551,8 +561,8 @@ def main() -> None:
     p.add_argument("--driver", required=True)
     p.add_argument("--ref-driver")
     p.add_argument("--out", required=True)
-    p.add_argument("--plan", choices=("preflight", "shakedown", "default_off", "distortion", "ab", "controls"),
-                   required=True)
+    p.add_argument("--plan", nargs="+", required=True,
+                   choices=("preflight", "shakedown", "default_off", "distortion", "ab", "static", "controls"))
     p.add_argument("--pairs", type=int, default=30)
     p.add_argument("--conditions", nargs="+", default=["W-quiet", "W-churn"])
     p.add_argument("--lock-label", required=True)
@@ -571,7 +581,7 @@ def main() -> None:
         args.shas["ref"] = file_sha256(args.ref_driver)
         if args.shas["ref"] != PINNED["ref"]:
             raise SystemExit("refusing: --ref-driver is not the pinned reference binary")
-    elif args.plan == "distortion":
+    elif "distortion" in args.plan:
         raise SystemExit("refusing: distortion needs --ref-driver")
     sys.exit(asyncio.run(main_async(args)))
 

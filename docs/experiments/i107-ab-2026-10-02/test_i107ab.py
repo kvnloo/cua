@@ -356,6 +356,9 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(Counter((t["control"], t["arm"]) for t in ctl)[("DC03", "B_proj")], 5)
         self.assertEqual(len(ctl), 30)
         self.assertTrue(all(t["excluded"] for t in R.build_plan("shakedown", 30, [])))
+        st = R.build_plan("static", 30, ["W-quiet", "W-churn"])
+        self.assertEqual({t["condition"] for t in st}, {"W-static"})
+        self.assertEqual(len(st), 60)
 
     def test_snapshot_facts_never_carry_token_or_refs(self) -> None:
         snap = {**SemanticEquivalenceTests.SNAP, "outline": "x" * 10}
@@ -439,6 +442,129 @@ class FixtureServerLoopbackTests(unittest.TestCase):
         th.join(timeout=2)
         self.assertEqual(got[0]["op"], "DC04")
         self.assertEqual([e["event"] for e in self.srv.bus.drain()], ["control_post", "control_ack"])
+
+
+def synthetic_trial(name: str, arm: str, pair: str, cond: str, resp_bytes: int, t_shift: int = 0,
+                    ax: int = 25) -> tuple[list[dict], list[dict]]:
+    """A plausible fill->submit trial (events + Driver trace) on one monotonic timeline (ns)."""
+    ms = 1_000_000
+    b = 10_000 * ms + t_shift
+    E: list[dict] = []
+    T: list[dict] = []
+    e = lambda t, n, **f: E.append({"event": n, "t_mono_ns": b + t * ms, **f})  # noqa: E731
+    m = lambda t, p, **d: T.append({"t_mono_ns": b + t * ms, "seq": len(T), "phase": p, "session": "", "detail": d or None})  # noqa: E731
+    e(0, "driver_spawn"); e(100, "call_send", label="navigate", tool="browser_navigate")
+    e(200, "call_return", label="navigate", tool="browser_navigate", ok=True)
+    seq = 0
+    for step, base in ((1, 300), (2, 400)):
+        e(base, "oracle_send", label=f"pre_step{step}"); e(base + 1, "oracle_return", label=f"pre_step{step}", outcome="unknown")
+        e(base + 2, "call_send", label=f"snapshot{step}", tool="get_browser_state")
+        m(base + 3, "mcp.line_read"); m(base + 4, "dispatch.enter"); m(base + 5, "snap.enter")
+        for k, meth in enumerate(("Target.attachToTarget", "DOM.getDocument", "DOMSnapshot.captureSnapshot",
+                                  "Page.getLayoutMetrics", "Accessibility.getFullAXTree")):
+            seq += 1
+            m(base + 6 + k, "cdp.send", id=seq, method=meth, on_session=k > 0, bytes=90)
+            m(base + 6.5 + k, "cdp.reply", id=seq, bytes=1000 * (k + 1), error=False)
+        m(base + 11, "snap.collected"); m(base + 11.2, "snap.acquired_dom", dom_nodes=40, layout_nodes=30)
+        m(base + 11.3, "snap.acquired_ax", ax_nodes=ax)
+        m(base + 12, "snap.oopif_done"); m(base + 13, "snap.paged"); m(base + 14, "snap.outcome")
+        m(base + 15, "snap.stored"); m(base + 16, "snap.serialized"); m(base + 17, "dispatch.exit")
+        m(base + 18, "mcp.handled"); m(base + 19, "mcp.serialized"); m(base + 20, "mcp.written")
+        e(base + 21, "parse_start"); e(base + 22, "parse_end", bytes=resp_bytes)
+        e(base + 23, "client_validate_start", tool="get_browser_state"); e(base + 24, "client_validate_end", tool="get_browser_state")
+        e(base + 25, "call_return", label=f"snapshot{step}", tool="get_browser_state", ok=True)
+        e(base + 26, "cand_start", step=step); e(base + 27, "cand_done", step=step, ids=[])
+        e(base + 28, "decide_start", step=step); e(base + 28.1, "decided", step=step, choice="x")
+        e(base + 29, "call_send", label=f"action{step}", tool="browser_type" if step == 1 else "browser_click")
+        m(base + 30, "mcp.line_read"); m(base + 31, "click.enter" if step == 2 else "type.enter")
+        if step == 1:
+            m(base + 31.2, "focus.settle_start", settle_ms=100); m(base + 31.8, "focus.settle_end")
+        m(base + 32, "click.cdp_send" if step == 2 else "type.insert_send")
+        m(base + 33, "click.cdp_response" if step == 2 else "type.insert_response"); m(base + 34, "mcp.written")
+        e(base + 35, "call_return", label=f"action{step}", tool="browser_type" if step == 2 else "browser_click", ok=True)
+    e(436, "oracle_send", label="verify0"); e(437, "oracle_return", label="verify0", outcome="verified")
+    e(440, "outcome_decided", outcome="verified"); e(450, "client_exited"); e(470, "browser_gone", ok=True, pids=3)
+    controls = {"textbox:verification value": {"count": 1, "frame": "main", "visibility": "in_viewport", "actions": ["type"],
+                                               "states": [], "value_is_token": False, "value_empty": True},
+                "button:Submit": {"count": 1, "frame": "main", "visibility": "in_viewport", "actions": ["click"],
+                                  "states": [], "value_is_token": False, "value_empty": True}}
+    steps = [{"step": 1, "candidates": ["type-verification-value", "reobserve", "abstain"], "selected_nodes": 9 if arm == "A" else 4,
+              "refs": 2, "outline_chars": 300 if arm == "A" else 120, "controls": controls},
+             {"step": 2, "candidates": ["submit-form", "reobserve", "abstain"], "selected_nodes": 9 if arm == "A" else 4,
+              "refs": 2, "outline_chars": 300 if arm == "A" else 120, "controls": controls}]
+    summary = {"event": "summary", "trial": name, "plan": "ab", "arm": arm, "condition": cond, "pair": pair, "order": "AB",
+               "cohort": "K1", "regime": "fresh-per-trial", "excluded": False, "outcome": "verified", "oracle_exact_match": True,
+               "completion_mutations": 1, "wrong_target_submits": 0, "routes": ["provider", "provider"],
+               "tools": ["browser_type", "browser_click"], "input_routes": [None, "dom_event"], "steps": steps,
+               "journal": [{"event": "submit", "t_mono_ns": b + 435 * ms, "submitter": "original"}],
+               "poller_first_ok_ns": b + 435 * ms + 1_500_000, "driver_env_trace_set": True, "query": None if arm == "A" else "q",
+               "driver_trace": f"trials/{name}.driver-trace.jsonl", "loadavg_before": "1.0 1.0 1.0",
+               "resources_at_outcome": {"clk_tck": 100, "driver_cpu_ticks": 12, "driver_status_kb": {"VmHWM": 9000},
+                                        "browser_tree": {"pids": 3, "cpu_ticks": 50, "rss_kb": 300000}},
+               "network": {"non_loopback_connect_attempts": 0}}
+    E.append(summary)
+    return E, T
+
+
+class AnalyzeTests(unittest.TestCase):
+    def test_build_from_synthetic_raw(self) -> None:
+        import analyze
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp)
+            (raw / "trials").mkdir()
+            for i in range(3):
+                for arm, rb in (("A", 5000), ("B_proj", 2000)):
+                    name = f"ab{i:03d}-W-quiet-{arm}-none"
+                    ev_, tr = synthetic_trial(name, arm, f"W-quiet-p{i:02d}", "W-quiet", rb)
+                    (raw / "trials" / f"{name}.jsonl").write_text("\n".join(json.dumps(x) for x in ev_) + "\n")
+                    (raw / "trials" / f"{name}.driver-trace.jsonl").write_text("\n".join(json.dumps(x) for x in tr) + "\n")
+            summary, rows = analyze.build(raw)
+        c = summary["cmp_ab"]["W-quiet"]
+        self.assertEqual(c["pairs"], 3)
+        self.assertTrue(c["acquisition"]["methods_equal_all_pairs"])
+        self.assertTrue(c["acquisition"]["nodes_exact_all_pairs"])
+        self.assertTrue(c["acquisition"]["equal"])
+        self.assertEqual(c["semantic_equivalence"]["equivalent_pairs"], 3)
+        self.assertEqual(c["savings_B_minus_A"]["response_bytes"]["median"], -6000)
+        self.assertEqual(c["savings_B_minus_A"]["T_oracle_ms"]["median"], 0)
+        d = summary["decomposition_A"]["W-quiet"]
+        self.assertEqual(d["n"], 3)
+        self.assertTrue(d["gate_named_coverage_gt_0_9"])
+        self.assertAlmostEqual(sum(d["spans_mean_ms"].values()), d["T_oracle_mean_ms"], places=2)
+        self.assertGreater(d["spans_mean_ms"]["observation acquisition"], 0)
+        self.assertAlmostEqual(d["cleanup_mean_ms"], 30.0)
+        self.assertEqual(len([r for r in rows if r["row_type"] == "trial"]), 6)
+        self.assertEqual(summary["required_zero"]["duplicate_effect"], 0)
+        self.assertEqual(summary["status"], "RAN")
+
+    def test_acquisition_difference_is_reported(self) -> None:
+        import analyze
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp)
+            (raw / "trials").mkdir()
+            for arm, ax in (("A", 25), ("B_proj", 24)):
+                name = f"ab000-W-quiet-{arm}-none"
+                ev_, tr = synthetic_trial(name, arm, "W-quiet-p00", "W-quiet", 100, ax=ax)
+                (raw / "trials" / f"{name}.jsonl").write_text("\n".join(json.dumps(x) for x in ev_) + "\n")
+                (raw / "trials" / f"{name}.driver-trace.jsonl").write_text("\n".join(json.dumps(x) for x in tr) + "\n")
+            summary, _ = analyze.build(raw)
+        acq = summary["cmp_ab"]["W-quiet"]["acquisition"]
+        self.assertFalse(acq["nodes_exact_all_pairs"])
+        self.assertFalse(acq["equal"])
+        self.assertTrue(acq["diff_examples"])
+
+    def test_blocked_build_without_trials(self) -> None:
+        import analyze
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp)
+            (raw / "run-manifest-preflight.json").write_text(json.dumps(
+                {"plan_kind": "preflight", "status": "infrastructure_blocked", "lock_label": "x",
+                 "preflight": {"ok": False, "checked": [{"candidate_index": 0, "reason": "uid_not_0"}]},
+                 "network": {"non_loopback_connect_attempts": 0}}))
+            summary, rows = analyze.build(raw)
+        self.assertEqual(summary["status"], "BLOCKED")
+        self.assertTrue(all(c["status"] == "BLOCKED" and c["trials"] == 0 for c in summary["cells"]))
+        self.assertTrue(rows and all(r["row_type"] == "cell" for r in rows))
 
 
 if __name__ == "__main__":
