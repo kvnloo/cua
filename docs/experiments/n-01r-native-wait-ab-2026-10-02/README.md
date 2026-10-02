@@ -7,12 +7,12 @@ Re-plan of N-01 (which hard-stopped with no evidence). Owners: kvnloo/cua#93 (R2
 On the canonical GTK3 task fixture, all 240 main trials verified against the app's own state file: 6 arms x 2 tasks x 20 Williams-balanced rounds, one fresh Driver and one fresh fixture per trial. Every route check passed and named-span coverage was 1.0. R2-04 had localized three native waits; this packet gives each one a causal verdict:
 
 - **Cursor reveal: OWNER_DECISION.** `set_agent_cursor_motion {glide_duration_ms: 1}` saves **1418.3 ms** on the text task (CI [-1432.1, -1389.4]). It also saves **1236.5 ms** on a warm-cursor checkbox (CI [-1246.7, -1222.7]). In a fresh Driver process the checkbox click has no glide to delete: the first reveal of a process is a pulse, so that cell is NOT_MATERIAL.
-- **Fixed 50 ms post-DoAction sleep: DELETED.** It saves 60.6 ms (checkbox) and 42.3 ms (text), both CIs excluding 0. The late-effect control showed 0 receipt-vs-oracle disagreements.
+- **Fixed 50 ms post-DoAction sleep: DELETED on GTK3 AT-SPI with background delivery** (the tested boundary). It saves 60.6 ms (checkbox) and 42.3 ms (text), both CIs excluding 0. The late-effect control showed 0 receipt-vs-oracle disagreements, but that is structural: the click receipt is always `effect: unverifiable`, so it can never claim success early. At base, the source comment on the sibling sleep (`native.rs:3530-3534`) says the sleep exists for WebKit/Chromium renderer lag. Those targets are NOT_RUN, and so is foreground delivery, where no focus guard runs and the sleep is the only post-action wait. Any reviewed default-change candidate must test them.
 - **Focus-guard settle watch: IRREDUCIBLE.** Dropping it saves about 237 ms. However, with the watch gone the Driver missed **10/10** focus steals that landed 100 ms after the effect, and its receipt reported nothing. With the watch (B), 20/20 steals were restored.
 
 The best composed arm whose gates hold is S0 for the checkbox (median T 307.9 ms, S = 1.19) and X = C+S0 for the text task (334.9 ms, S = 5.37). In both, about 72-78% of T is now the settle watch.
 
-The untested share of T falls from about 93.5% / 98.4% before this packet to **5.8%** (checkbox) and **10.3%** (text). What remains untested is exactly one component: MCP transport of the action calls. There is no native wait worth an event wake: the only R2-09 candidate is the settle watch's 30 ms poll rounding (220 ms configured, about 241 ms observed).
+In the best composed arm the untested share of T is **5.8%** (checkbox) and **10.3%** (text). Under the pre-registered rule, exactly one component remains untested: MCP transport of the action calls. A conservative reading also counts the observation transport as untested, which gives about 15% / 18% (see E2). On this GTK3 path no native wait is worth an event wake. The settle watch's configured 220 ms is IRREDUCIBLE. Its observed overshoot of about 21 ms (about 241 ms in total) comes from the final poll sleeping past the deadline. Clamping that sleep to the deadline would remove the overshoot without any event source (SOURCE, not measured).
 
 Evidence classes are given per row; runtime rows are REAL (real Driver, real GTK3 app, private AT-SPI bus, isolated X11 session), with no provider (scripted task steps).
 
@@ -24,9 +24,9 @@ Evidence classes are given per row; runtime rows are REAL (real Driver, real GTK
 | Tree check | `git diff --quiet 229b65b28 352507b6c -- libs/cua-driver` returns rc 0, so `libs/cua-driver` at the tested main equals upstream main `352507b6c03162ab286b21d5ed509125cc3daece`; the base differs only by the R2-04 marks |
 | Measurement commit (tested source) | `b9b357bc72fe0627b841f66a2d0812fafca8711f`: exactly one commit, two env-gated, default-off knobs (see [Knobs](#the-measurement-commit)) |
 | Pre-registration commit | `8ff42418df2390821d03fdd059ce5598652a77fc`, committed 05:37:49Z. The first measured trial started at 05:38:07Z (`n01r-d01`). `verify_artifacts.py` checks this order and that `PREREG.json` is unchanged |
-| Driver | `cua-driver-n01r-b9b357bc7`, sha256 `c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95`, `cua-driver 0.32.0` (read inside `cua-x11-session.sh`, `raw/build/driver-version.txt`). Built with `build-driver.sh` into `cua-release-n01r` under `flock -s` quiet + cargo-build lock (receipts in `raw/build/build-lock-receipts.jsonl`); logged `head=b9b357bc7`, 0 Fresh workspace units, 215 s. Every block's meta row records this sha256 |
+| Driver | `cua-driver-n01r-b9b357bc7`, sha256 `c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95`, `cua-driver 0.32.0` (read inside `cua-x11-session.sh`, `raw/driver-build/driver-version.txt`). Built with `build-driver.sh` into `cua-release-n01r` under `flock -s` quiet + cargo-build lock (receipts in `raw/driver-build/build-lock-receipts.jsonl`); logged `head=b9b357bc7`, 0 Fresh workspace units, 215 s. Every block's meta row records this sha256 |
 | Harness origin | R2-04 packet `exp/r2-04-atspi-profile-20261001` @ `9bfd437390571985870a66d941f43dbe417f31c0`, copied verbatim to `r2-04-harness/`. Blobs: profile_atspi.py `b3cfae3b9e62`, run_in_session.sh `79683b616942`, run_batch.sh `b554d43c6f34`, analyze.py `57d834e67e12`, verify_artifacts.py `7111bb10780c` (full SHAs in `provenance.json`) |
-| Live heads (gh read-only, 05:38:54Z) | upstream main `9ab9e890ac63`: 4 commits ahead of `352507b6c`, 0 files under `libs/cua-driver`. trycua/cua PR 4316 `a0bca7440` (open; not this source). kvnloo/cua#106 `c45845797b71` (packet-format reference). N-01R has no PR |
+| Live heads (gh read-only, refreshed 08:14:03Z; the first read at 05:38:54Z showed `9ab9e890ac63`, 4 ahead) | upstream main `ab628e0d1cf1`: 17 commits ahead of `352507b6c`, 255 files changed, 0 under `libs/cua-driver`, so the tested-tree claim still holds. trycua/cua PR 4316 `a0bca7440` (open; not this source). kvnloo/cua#106 `c45845797b71` (packet-format reference). N-01R has no PR |
 | Publication SHA | set by the Publish agent (`provenance.json: publication_sha`) |
 
 ## Environment
@@ -53,8 +53,8 @@ Evidence classes are given per row; runtime rows are REAL (real Driver, real GTK
 | Item | Finding (file:line at `28b915ae9`, under `libs/cua-driver/rust/crates/`) |
 |---|---|
 | Reveal path | The click route calls `reveal_pointer_action_for(..., click_pulse=true)` at `platform-linux/src/tools/impl_.rs:6364`, between the marks `placement_done` and `reveal_done`. `set_value` calls `position_named_session_keyboard_cursor(..., Some(idx), None, true)` at `impl_.rs:8916`, which also ends in `reveal_pointer_action_for`. `overlay_glide_to_for` (`impl_.rs:5272`) awaits `overlay::animate_cursor_to_for` (`platform-linux/src/overlay.rs:644`; arrival cap 5500 ms at `overlay.rs:714`). If the cursor has no prior position it sends a `ClickPulse` and does not wait (`impl_.rs:5287`). `glide_duration_ms` governs both spans: default 0 = speed-based, clamp [0, 5000] (`cursor-overlay/src/motion.rs:47, 84-87`), set through `set_agent_cursor_motion` |
-| Post-DoAction sleeps | `platform-linux/src/atspi/native.rs:3658` (`perform_action_ref`, the cached-ref route) is the site that executes on the checkbox click and on the Save note click: the phase marks `do_action_replied` and `post_sleep_done` fall inside every click. `native.rs:3535` (index re-walk fallback) has the same sleep but runs only if the cached ref fails, which the route check would mark invalid; it is unchanged. The set_value path (`atspi/mod.rs:491` -> `native.rs:5311` -> `5234` -> `5217`) has **no** post-action sleep. `native.rs:4212/4324` belong to other routes |
-| Focus guard | `platform-linux/src/input/focus_guard.rs:40` SETTLE_WATCH 220 ms; `:47` SETTLE_POLL 30 ms, so a quiet watch ends after 8 polls (about 240 ms); `:52` RESTORE_BUDGET 600 ms; `:53` RESTORE_POLL 50 ms; `:55` STABLE_POLLS 3. `:597` `watch_until = started + SETTLE_WATCH`. The guard runs only for background delivery (`impl_.rs:6431` `guard_pid = (!delivery.is_foreground())...`, `impl_.rs:6440`); set_value is not guarded |
+| Post-DoAction sleeps | `platform-linux/src/atspi/native.rs:3658` (`perform_action_ref`, the cached-ref route) is the site that executes on the checkbox click and on the Save note click: the phase marks `do_action_replied` and `post_sleep_done` fall inside every click. `native.rs:3535` (index re-walk fallback) has the same sleep but runs only if the cached ref fails, which the route check would mark invalid; it is unchanged. The source comment directly above it (`native.rs:3530-3534`) states the purpose of the 50 ms sleep: "AT-SPI's doAction acknowledgement can precede the renderer's queued DOM mutation. Give WebKit/Chromium one short event-loop turn before returning success so a caller's immediate external state read observes the action it was told was delivered." The executed site at `:3658` carries no comment of its own. This packet tests a GTK3 target only, so its sleep verdict does not reach the WebKit/Chromium case the comment names. The set_value path (`atspi/mod.rs:491` -> `native.rs:5311` -> `5234` -> `5217`) has **no** post-action sleep. `native.rs:4212/4324` belong to other routes |
+| Focus guard | `platform-linux/src/input/focus_guard.rs:40` SETTLE_WATCH 220 ms; `:47` SETTLE_POLL 30 ms, so a quiet watch ends after 8 polls (about 240 ms); `:52` RESTORE_BUDGET 600 ms; `:53` RESTORE_POLL 50 ms; `:55` STABLE_POLLS 3. `:597` `watch_until = started + SETTLE_WATCH`. The quiet-watch loop (`:609-610`) checks `Instant::now() < watch_until`, then sleeps a whole `SETTLE_POLL`, so its last sleep overshoots the deadline (8 x 30 = 240 ms against 220 ms). The guard runs only for background delivery (`impl_.rs:6431` `guard_pid = (!delivery.is_foreground())...`, `impl_.rs:6440`); set_value is not guarded |
 | `dwell_after_click_ms` | No Linux runtime reader. It is clamped and stored (`motion.rs:89-90`), set by the tool (`impl_.rs:12476`) or the overlay CLI (`cursor-overlay/src/lib.rs:146`) and echoed (`impl_.rs:12495, 12638`), but nothing waits on it |
 | C_off excluded | Every reveal re-enables the cursor: registry `set_enabled(true)` (`impl_.rs:5310`) and overlay `SetEnabled(true)` (`impl_.rs:5277`). So `set_agent_cursor_enabled(false)` only skips the glide wait if the render thread has not yet processed the re-enable (`overlay.rs:653`). It is race-only and was excluded |
 | Read once per process | `CUA_DRIVER_PHASE_TRACE_FILE` (`cua-driver-core/src/phase_trace.rs:25`) and both new knobs (OnceLock). ARRIVAL_DEGRADED latches per process (`overlay.rs:697/717`). Cursor motion is per session at runtime. Hence one fresh Driver per trial |
@@ -243,7 +243,7 @@ The protocol: observe fixture A, terminate it, start a fresh fixture B, then cli
 | H_C checkbox (fresh process) | B reveal 0.013 ms (< 5% of T and < 50 ms); C-B -1.0 [-12.1, 4.5] | **NOT_MATERIAL** |
 | H_C checkbox warm (supplementary W) | saving 1236.5 ms >= 0.5 x 1255.0; CI excludes 0 | **OWNER_DECISION** |
 | H_C text | saving 1418.3 ms >= 0.5 x 1421.1; CI excludes 0 | **OWNER_DECISION** (feedback default change, consistent with browser H_V) |
-| H_S checkbox / text | savings 60.6 / 42.3 ms, both >= 25 ms with CIs excluding 0; late control adds 0 disagreements | **DELETED** / **DELETED** (KEEP; a default change goes to a reviewed fix candidate) |
+| H_S checkbox / text (GTK3 AT-SPI, background delivery) | savings 60.6 / 42.3 ms, both >= 25 ms with CIs excluding 0; late control adds 0 disagreements (structural: click receipts are always `unverifiable`). Stronger GTK3 evidence: in X2, with no sleep and no settle, the effect was visible at return in 40/40 trials | **DELETED** / **DELETED** within the tested boundary (KEEP). A default change goes to a reviewed fix candidate, and that candidate must first test the WebKit/Chromium AT-SPI targets the sleep's source comment names (`native.rs:3530-3534`; Electron, WebKitGTK) and foreground delivery. Both are NOT_RUN here |
 | H_F checkbox / text | savings 236.8 / 236.1 ms, CIs exclude 0; B restored 10/10 in both variants; F0 missed 10/10 at 100 ms | **IRREDUCIBLE** / **IRREDUCIBLE** (background non-invasiveness contract) |
 | Composition | F0 and X2 excluded (H_F IRREDUCIBLE). Eligible: B, C, S0, X. Best: checkbox **S0** 307.9 ms, text **X** 334.9 ms | S_X 1.16 / 5.37; S_X2 4.34 / 19.30 (X2 not eligible) |
 
@@ -256,7 +256,7 @@ Median per-trial share of T. Verdicts are from this packet unless noted.
 | Component | Checkbox S0 (T 307.9 ms) | Text X (T 334.9 ms) | Verdict |
 |---|---|---|---|
 | Focus-guard settle | 241.1 ms, 78.2% | 241.1 ms, 71.7% | IRREDUCIBLE (H_F + decoy control) |
-| MCP transport, observation | 28.4 ms, 9.2% | 27.3 ms, 8.0% | IRREDUCIBLE by invariant (a fresh observation binds the token); screenshot not material (O) |
+| MCP transport, observation | 28.4 ms, 9.2% | 27.3 ms, 8.0% | IRREDUCIBLE by invariant (a fresh observation binds the token), as to its existence; screenshot not material (O). Its size is unexplained and load-sensitive: per O it does not depend on the payload (24-27 ms in both arms), and it is about 2x R2-04's quiet value. The conservative reading below counts it as untested |
 | Observation body | 16.9 ms, 5.5% | 16.9 ms, 5.2% | IRREDUCIBLE by invariant; screenshot delta 4.4-5.2 ms not material at T level (O) |
 | **MCP transport, action calls** | **15.5 ms, 5.05%** | **32.2 ms, 9.55%** | **untested (no verdict)** |
 | Reveal | 0.01 ms (fresh pulse) | 10.6 ms, 3.0% | OWNER_DECISION (H_C, H_C warm) |
@@ -269,7 +269,7 @@ Median per-trial share of T. Verdicts are from this packet unless noted.
 
 **Untested share** (pre-registered: components without a verdict, plus unattributed time, over T): **5.8%** checkbox and **10.3%** text.
 
-That is down from about 93.5% and 98.4%: the three waits, together about 292 ms of checkbox T and about 1713 ms of text T in B, now all have verdicts. The only component above the 5% / 50 ms threshold without a verdict is **MCP transport of the action calls**:
+The three waits, together about 292 ms of checkbox T and about 1713 ms of text T in B (the sums of the B component medians above), now all have verdicts. The only component above the 5% / 50 ms threshold without a verdict is **MCP transport of the action calls**. That departs from the spec, which asks for a verdict on every such component; it is listed under Deviations (11):
 
 - click: caller send to registry `dispatch_enter`, 3.1-3.6 ms; registry `dispatch_exit` to caller receipt, 11.3-12.4 ms;
 - set_value: 4.5 / 10.8 ms;
@@ -285,9 +285,11 @@ H_S is DELETED with no receipt degradation in both tasks. One fixed native wait 
 
 Exact wait: `focus_guard.rs:40` `SETTLE_WATCH` 220 ms, polled every 30 ms (`:47`), observed as 241.1 ms. The configured window is the safety net (H_F) and cannot be ended early by an event wake: under E4, event absence never mints authority, so a quiet window must still run its full 220 ms.
 
-The only part an event wake could touch is the poll rounding, from 220 ms configured to about 241 ms observed. Waking on the X focus/`_NET_ACTIVE_WINDOW` change instead of polling would save at most about 21 ms per guarded action, about 6-7% of T in the best composed arm. That figure is SOURCE arithmetic from this packet's spans, not measured.
+The only part an event wake could touch is the poll rounding: about 241 ms observed against 220 ms configured. Waking on the X focus/`_NET_ACTIVE_WINDOW` change instead of polling would save at most about 21 ms per guarded action, about 6-7% of T in the best composed arm. That figure is SOURCE arithmetic from this packet's spans, not measured.
 
-R2-09 input: no native wait is worth an event wake beyond that bounded ~21 ms poll-rounding candidate. The 50 ms post-DoAction sleep is DELETED, not event-replaceable.
+That rounding does not need an event source either (SOURCE). The quiet-watch loop (`focus_guard.rs:609-610` at base) checks the deadline and then sleeps a whole `SETTLE_POLL`. The final sleep therefore runs past `watch_until`: 8 x 30 = 240 ms against 220 ms. Clamping that last sleep to `watch_until - now` would remove the overshoot and keep the full 220 ms window. That would be a one-line fix candidate, not measured here.
+
+R2-09 input, scoped to GTK3 AT-SPI with background delivery: no native wait on this path is worth an event wake. The settle window is IRREDUCIBLE and cannot be shortened by events. Its ~21 ms overshoot is removable without events. The 50 ms post-DoAction sleep is DELETED on this path, so it is not an event-wake candidate here. This packet does not cover WebKit/Chromium AT-SPI targets or foreground delivery. On those, the sleep is the documented guard against renderer lag (`native.rs:3530-3534`), and with foreground delivery it is the only post-action wait. Whether an event wake could replace it there is NOT_RUN.
 
 ## Work deleted vs wall-clock saved
 
@@ -310,6 +312,9 @@ R2-09 input: no native wait is worth an event wake beyond that bounded ~21 ms po
 | STEP 0 file:line facts; R2-09 poll-rounding estimate; dispatch IRREDUCIBLE rationale | SOURCE |
 | Provider decisions | NOT_RUN (TypeSafe cap 0: 0 attempts, 0 reached; the harness refused 0 non-loopback connects in every block) |
 | Wayland, macOS, Windows | NOT_RUN |
+| Post-DoAction sleep removal on WebKit/Chromium AT-SPI targets (Electron, WebKitGTK), the case the sleep's source comment names (`native.rs:3530-3534`) | NOT_RUN (required before any default change) |
+| Post-DoAction sleep removal with foreground delivery (no focus guard runs, so the sleep is the only post-action wait) | NOT_RUN (required before any default change) |
+| Clamping the settle loop's final poll to the deadline (~21 ms overshoot) | SOURCE estimate; NOT_RUN |
 | Deleting action-call MCP transport | NOT_RUN (named untested) |
 
 ## Deviations
@@ -327,6 +332,16 @@ R2-09 input: no native wait is worth an event wake beyond that bounded ~21 ms po
 8. **Lock modes.** The default-off smoke `d01` ran under the shared lock as a control. The `e` blocks ran under the exclusive lock.
 9. **Focus receipt source.** The flat `focus_*` receipt fields are reduced away by the public action contract, so the Driver's focus outcome is taken from the click result text (`focus_outcome=...`).
 10. **Raw scrubbing.** Raw outputs are copied into `raw/` by `package.py`, which replaces local path prefixes and the host name with tokens (`<tmp>`, `<lanes>`, `<systmp>`, ...). No numeric field changes, and `analyze.py` reproduces the summary from the scrubbed raw.
+11. **E2 component above threshold without a verdict.** The spec asks for a verdict on every component of at least 5% of T or at least 50 ms. Action-call MCP transport is 5.05% (checkbox S0) and 9.55% (text X) and has none: no arm tests deleting it. PREREG pre-declared this as untested, and it is counted in the untested share rather than given a verdict.
+12. **Verifier fix round (no new trials).**
+    - The build and version evidence had been ignored by the repository-root `build/` rule, so it was never committed. Its directory under raw was renamed from `build` to `driver-build` (now `raw/driver-build/`), with the content unchanged. `verify_artifacts.py` now checks that every packet file, and every `raw/` path the README or `provenance.json` cites, is tracked in git.
+    - The H_S and R2-09 statements are scoped to GTK3 AT-SPI with background delivery. STEP 0 cites the sibling sleep's source comment (`native.rs:3530-3534`), and NOT_RUN rows cover WebKit/Chromium targets and foreground delivery.
+    - The SOURCE line on the settle loop's poll overshoot was added.
+    - The unsourced "93.5% / 98.4% before this packet" figures were dropped.
+    - The live heads were refreshed by a gh read.
+    - The privacy scan now derives local directory names from the checkout path instead of hard-coding them.
+    - PREREG.json, raw trial data and every number are unchanged.
+13. **Host-shell python3 with an empty program (near-miss, no effect).** During the fix round, one command ran `python3` in the plain host shell with an empty here-doc program. Nothing executed: no import, no file access, no display or bus contact. It is logged as a near-miss. All later edits used the editor tool, and every code-executing command ran under `hostless hostless-strict`.
 
 ## Limits
 
@@ -342,21 +357,21 @@ R2-09 input: no native wait is worth an event wake beyond that bounded ~21 ms po
 On the canonical GTK3 fixture task window, in X11 Xvfb/openbox/picom with a private AT-SPI bus, with Driver 0.32.0 at base `28b915ae9` plus the measurement knobs `b9b357bc7`, with scripted task steps (no provider) and a fresh Driver per trial:
 
 - the cursor reveal is deletable by a feedback setting (OWNER_DECISION);
-- the 50 ms post-DoAction sleep is deletable without receipt degradation (DELETED);
+- the 50 ms post-DoAction sleep is deletable on this GTK3 AT-SPI target with background delivery, without receipt degradation (DELETED; the receipt part is structural, since click receipts are `unverifiable`);
 - the focus-guard settle watch is required by the background non-invasiveness contract (IRREDUCIBLE).
 
-Not Wayland, macOS or Windows. No default change: the knobs are measurement-only and default-off, and dropping the sleep by default would be a separately reviewed fix.
+Not Wayland, macOS or Windows. Not the WebKit/Chromium AT-SPI targets (Electron, WebKitGTK) that the sleep's source comment names as its reason (`native.rs:3530-3534`). Not foreground delivery, where no focus guard runs. No default change: the knobs are measurement-only and default-off. Dropping the sleep by default would be a separately reviewed fix, which must test those targets and foreground delivery first.
 
 ## Disposition
 
 **N-01R: KEEP (terminal for N-01).**
 
 - H_C OWNER_DECISION (text; warm checkbox), NOT_MATERIAL on the fresh-process checkbox.
-- H_S DELETED (both tasks).
+- H_S DELETED (both tasks), scoped to GTK3 AT-SPI with background delivery. WebKit/Chromium targets and foreground delivery are NOT_RUN.
 - H_F IRREDUCIBLE (both tasks).
 - Native composed arm for R2-10: X = C+S0, with S_X 1.16 [1.12, 1.22] on the checkbox and 5.37 [5.22, 5.56] on text.
-- E2 untested share: 5.8% / 10.3%. The remainder is named: action-call MCP transport.
-- R2-09: the only remaining fixed native wait is the IRREDUCIBLE settle watch. An event wake could at most replace its ~21 ms poll rounding.
+- E2 untested share: 5.8% / 10.3%. The remainder is named: action-call MCP transport. Counting the observation transport as well gives about 15% / 18%.
+- R2-09 (GTK3, background delivery): the only remaining fixed native wait is the IRREDUCIBLE settle watch. Its ~21 ms poll overshoot can be removed by clamping the final sleep, with no event source (SOURCE). So no native wait on this path is worth an event wake.
 
 ## Files
 
@@ -368,8 +383,8 @@ Not Wayland, macOS or Windows. No default change: the knobs are measurement-only
 | `r2-04-harness/` | The R2-04 harness, verbatim (origin blobs above) |
 | `package.py` | Raw copy and scrub |
 | `analyze.py` | Recomputes `n01r-summary.json` and `n01r-trial-metrics.jsonl.gz` from `raw/` |
-| `verify_artifacts.py` | Recompute check, lock ledger, PREREG order, default-off smoke, stale control, README numbers, privacy |
+| `verify_artifacts.py` | Recompute check, lock ledger, PREREG order, default-off smoke, stale control, README numbers, privacy, every packet file and cited `raw/` path tracked in git |
 | `provenance.json` | Every SHA, binary, build and environment fact |
 | `raw/n01r-<block>[-rN]/trials.jsonl.gz`, `session.txt` | One ledger per block attempt: meta, every trial (caller stamps, oracle samples, marks, receipts, focus samples), end |
 | `raw/lock-ledger.jsonl` | quiet-timed (exclusive) and shared-lock receipts for every packaged label |
-| `raw/unit/`, `raw/build/` | Unit logs, build output, build lock receipts, Driver version |
+| `raw/unit/`, `raw/driver-build/` | Unit logs, build output, build lock receipts, Driver version |

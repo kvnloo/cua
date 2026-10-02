@@ -12,7 +12,10 @@ Checks:
  4. the default-off smoke passed; every block ran the provenance Driver sha256 and the committed plan;
  5. provider: 0 non-loopback connects in every block;
  6. README: headline numbers appear in the README;
- 7. privacy: no absolute local paths, host name or secret-like strings in any packet file.
+ 7. privacy: no absolute local paths, local directory names (derived from this checkout's path),
+    host name or secret-like strings in any packet file;
+ 8. tracked: when git is available, every packet file and every raw/ path cited by README.md or
+    provenance.json is tracked in git (so nothing the packet cites is lost to an ignore rule).
 """
 
 from __future__ import annotations
@@ -134,7 +137,11 @@ def main() -> None:
 
     # 7. privacy
     host = socket.gethostname()
-    bad = re.compile(r"(/home/|/mnt/|/root/|/tmp/(?!\.X11-unix)|zer0models|cua-lanes|sk-[A-Za-z0-9]{16,}|api[_-]?key\s*[:=]\s*\S{8,}|BEGIN [A-Z ]*PRIVATE KEY)", re.I)
+    bad = re.compile(r"(/home/|/mnt/|/root/|/tmp/(?!\.X11-unix)|sk-[A-Za-z0-9]{16,}|api[_-]?key\s*[:=]\s*\S{8,}|BEGIN [A-Z ]*PRIVATE KEY)", re.I)
+    # Local directory names: the components of the path above the repository root (not
+    # hard-coded, so the verifier itself carries no local names). Generic names are skipped.
+    generic = {"home", "mnt", "root", "tmp", "usr", "var", "opt", "srv", "github", "src", "repos", "work", "code"}
+    local_names = sorted({p for p in HERE.parents[2].parent.parts if len(p) >= 4 and p.lower() not in generic})
     hits = []
     for path in sorted(HERE.rglob("*")):
         if not path.is_file() or path.name == "verify_artifacts.py" or "__pycache__" in path.parts:
@@ -142,9 +149,36 @@ def main() -> None:
         data = gzip.open(path, "rt", encoding="utf-8", errors="replace").read() if path.suffix == ".gz" else path.read_text(encoding="utf-8", errors="replace")
         for m in bad.finditer(data):
             hits.append(f"{path.relative_to(HERE)}: {m.group(0)[:40]}")
+        for name in local_names:
+            if re.search(rf"(?<![\w-]){re.escape(name)}(?![\w-])", data):
+                hits.append(f"{path.relative_to(HERE)}: local directory name")
         if host and len(host) > 2 and re.search(rf"\b{re.escape(host)}\b", data):
             hits.append(f"{path.relative_to(HERE)}: host name")
-    check(not hits, f"privacy scan clean ({len(hits)} hits){': ' + '; '.join(hits[:8]) if hits else ''}")
+    check(not hits, f"privacy scan clean ({len(hits)} hits; {len(local_names)} local directory names checked)"
+          f"{': ' + '; '.join(hits[:8]) if hits else ''}")
+
+    # 8. tracked in git
+    try:
+        tracked = set(subprocess.run(["git", "-C", str(HERE), "ls-files", "-z", "--", "."], capture_output=True,
+                                     text=True, check=True).stdout.split("\0")) - {""}
+        on_disk = {str(p.relative_to(HERE)) for p in HERE.rglob("*") if p.is_file() and "__pycache__" not in p.parts}
+        untracked = sorted(on_disk - tracked)
+        check(not untracked, f"every packet file is tracked in git ({len(untracked)} untracked)"
+              f"{': ' + '; '.join(untracked[:8]) if untracked else ''}")
+        cited_text = readme + (HERE / "provenance.json").read_text(encoding="utf-8")
+        cited = sorted({c.rstrip("/.,);") for c in re.findall(r"raw/[A-Za-z0-9_./<>\[\]-]+", cited_text)})
+        missing = []
+        for ref in cited:
+            # A templated reference (raw/n01r-<block>[-rN]/...) is checked as a glob over the blocks.
+            pattern = re.sub(r"\*+", "*", re.sub(r"<[^>]+>", "*", re.sub(r"\[[^\]]*\]", "*", ref)))
+            matches = [p for p in HERE.glob(pattern) if p.is_file()] + \
+                      [q for p in HERE.glob(pattern) if p.is_dir() for q in p.rglob("*") if q.is_file()]
+            if not matches or any(str(m.relative_to(HERE)) not in tracked for m in matches):
+                missing.append(ref)
+        check(not missing, f"all {len(cited)} raw/ paths cited by README.md and provenance.json exist and are tracked"
+              f"{': ' + '; '.join(missing[:8]) if missing else ''}")
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        print(f"note git tracked-file checks skipped: {exc}")
     print(f"\n{'PASS' if not FAIL else 'FAIL'}: {len(FAIL)} failing checks")
     sys.exit(1 if FAIL else 0)
 
