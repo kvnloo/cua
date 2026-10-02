@@ -58,6 +58,8 @@ struct FixtureState {
     completed_key_pairs: usize,
     reject_editability: bool,
     drop_text_reply: bool,
+    download_trigger_count: usize,
+    drop_download_trigger_reply: bool,
     focused_nodes: BTreeMap<String, i64>,
     // Target-owned text, independent of the driver's result and request log.
     editable_text: BTreeMap<(String, i64), String>,
@@ -100,6 +102,8 @@ impl Default for FixtureState {
             completed_key_pairs: 0,
             reject_editability: false,
             drop_text_reply: false,
+            download_trigger_count: 0,
+            drop_download_trigger_reply: false,
             focused_nodes: BTreeMap::new(),
             editable_text: BTreeMap::new(),
             semantic_large_page: false,
@@ -734,6 +738,14 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                         .is_some_and(|code| code.contains("this.isContentEditable")) =>
             {
                 MockReply::ok(json!({ "result": { "value": false } }))
+            }
+            "Browser.setDownloadBehavior" => MockReply::ok(json!({})),
+            "Runtime.callFunctionOn"
+                if st.drop_download_trigger_reply
+                    && call.params["functionDeclaration"] == "function() { this.click(); }" =>
+            {
+                st.download_trigger_count += 1;
+                MockReply::disconnect()
             }
             "Runtime.callFunctionOn" => MockReply::ok(json!({ "result": { "value": true } })),
             other => MockReply::method_not_found(other),
@@ -2836,5 +2848,62 @@ async fn typing_pre_dispatch_refusal_preserves_target_text() {
             public.error.unwrap().code,
             "browser_input_trust_unavailable"
         );
+    }
+}
+
+#[tokio::test]
+async fn download_lost_trigger_reply_preserves_uncertainty_without_replay() {
+    use super::download::{BrowserDownloadTool, MCP_HOST_DOWNLOAD_APPROVAL_ARG};
+    let directory = tempfile::tempdir().unwrap();
+    let destination = std::fs::canonicalize(directory.path()).unwrap();
+    for approved in [false, true] {
+        let f = fixture_with(|state| state.drop_download_trigger_reply = true).await;
+        let (target, tab) = bind(&f).await;
+        let observed = snapshot(&f, &target, &tab).await;
+        let button = ref_of(&observed, "main", "main-btn");
+        let mut args = json!({"target_id": target, "tab_id": tab, "ref": button,
+            "session": SESSION, "destination_root": destination.to_str().unwrap()});
+        if approved {
+            args[MCP_HOST_DOWNLOAD_APPROVAL_ARG] = json!(true);
+        }
+        let result = BrowserDownloadTool::new(f.engine.clone())
+            .invoke(args)
+            .await;
+        let triggers = f.state.lock().unwrap().download_trigger_count;
+        assert_eq!(triggers, usize::from(approved));
+        assert!(
+            std::fs::read_dir(&destination).unwrap().next().is_none(),
+            "mock never downloads files"
+        );
+        if !approved {
+            assert_eq!(
+                structured(&result)["refusal"]["code"],
+                "browser_consent_required"
+            );
+            assert!(recorded_calls(&f, "Browser.setDownloadBehavior").is_empty());
+            continue;
+        }
+        let calls = recorded_calls(&f, "Runtime.callFunctionOn");
+        assert_eq!(
+            calls
+                .iter()
+                .filter(|call| call.1["functionDeclaration"] == "function() { this.click(); }")
+                .count(),
+            1
+        );
+        println!(
+            "DOWNLOAD_TRIGGER_OUTCOME:{}",
+            serde_json::to_string(&json!({"target_triggers": triggers, "wire": result})).unwrap()
+        );
+        assert_eq!(
+            result.is_error,
+            Some(true),
+            "trigger may have happened before reply loss"
+        );
+        assert!(result.structured_content.is_none());
+        assert!(result.content.iter().any(|content| matches!(content,
+            Content::Text { text, .. } if text.starts_with("Download trigger outcome is uncertain:")
+                && text.contains("do not replay this request")
+        )));
     }
 }

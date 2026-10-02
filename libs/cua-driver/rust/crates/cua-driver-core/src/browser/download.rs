@@ -446,9 +446,18 @@ impl Tool for BrowserDownloadTool {
                 }),
             )
             .await;
-        let trigger_failed = trigger
-            .as_ref()
-            .map_or(true, |result| result.get("exceptionDetails").is_some());
+        let trigger = match trigger {
+            Ok(result) => result,
+            Err(_) => {
+                reset_download_behavior(&validated.conn).await;
+                return ToolResult::error(
+                    "Download trigger outcome is uncertain: the command reply was unavailable. \
+                     The download may already have started. Inspect fresh browser/download state \
+                     before considering another action; do not replay this request.",
+                );
+            }
+        };
+        let trigger_failed = trigger.get("exceptionDetails").is_some();
         if trigger_failed {
             reset_download_behavior(&validated.conn).await;
             return BrowserRefusal::new(
