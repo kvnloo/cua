@@ -1,0 +1,117 @@
+{
+ "plan_kind": "controls",
+ "blocks": [
+  [
+   "c0000-fill-K0n-stale_ref",
+   "c0001-fill-K0-stale_ref",
+   "c0002-fill-K2-stale_ref",
+   "c0003-fill-K3-stale_ref",
+   "c0004-toggle-K0-stale_ref",
+   "c0005-toggle-K1-stale_ref",
+   "c0006-toggle-K4-stale_ref",
+   "c0007-modal-K0-stale_ref",
+   "c0008-modal-K2-stale_ref",
+   "c0009-modal-K4-stale_ref"
+  ],
+  [
+   "c1010-toggle-K0-first_only",
+   "c1011-modal-K4-first_only",
+   "c1012-fill-K0-guard_decline",
+   "c1013-fill-K4-guard_decline",
+   "c1014-fill-K0n-stale_ref",
+   "c1015-fill-K1-stale_ref",
+   "c1016-fill-K2-stale_ref",
+   "c1017-fill-K4-stale_ref",
+   "c1018-toggle-K0-stale_ref",
+   "c1019-toggle-K2-stale_ref"
+  ],
+  [
+   "c2020-toggle-K4-stale_ref",
+   "c2021-modal-K1-stale_ref",
+   "c2022-modal-K2-stale_ref",
+   "c2023-fill-K0-first_only",
+   "c2024-toggle-K4-first_only",
+   "c2025-fill-K0-guard_decline",
+   "c2026-fill-K4-guard_decline",
+   "c2027-fill-K0-stale_ref",
+   "c2028-fill-K1-stale_ref",
+   "c2029-fill-K3-stale_ref"
+  ],
+  [
+   "c3030-fill-K4-stale_ref",
+   "c3031-toggle-K1-stale_ref",
+   "c3032-toggle-K2-stale_ref",
+   "c3033-modal-K0-stale_ref",
+   "c3034-modal-K1-stale_ref",
+   "c3035-modal-K4-stale_ref",
+   "c3036-fill-K4-first_only",
+   "c3037-modal-K0-first_only",
+   "c3038-fill-K4-guard_decline",
+   "c3039-fill-K0-guard_decline"
+  ]
+ ],
+ "started_mono_ns": 214322800455337,
+ "loadavg_start": "2.81 2.60 3.42 3/2480 3114382",
+ "locks": [
+  {
+   "event": "lock_acquired",
+   "mode": "shared",
+   "t_request_ns": 214322800503764,
+   "t_mono_ns": 214322800507493,
+   "first": "c0000-fill-K0n-stale_ref"
+  },
+  {
+   "event": "lock_released",
+   "mode": "shared",
+   "t_mono_ns": 214377299010112,
+   "last": "c0009-modal-K4-stale_ref"
+  },
+  {
+   "event": "lock_acquired",
+   "mode": "shared",
+   "t_request_ns": 214377299028702,
+   "t_mono_ns": 214377299030553,
+   "first": "c1010-toggle-K0-first_only"
+  },
+  {
+   "event": "lock_released",
+   "mode": "shared",
+   "t_mono_ns": 214425771922259,
+   "last": "c1019-toggle-K2-stale_ref"
+  },
+  {
+   "event": "lock_acquired",
+   "mode": "shared",
+   "t_request_ns": 214425771976283,
+   "t_mono_ns": 214425771978116,
+   "first": "c2020-toggle-K4-stale_ref"
+  },
+  {
+   "event": "lock_released",
+   "mode": "shared",
+   "t_mono_ns": 214478621944998,
+   "last": "c2029-fill-K3-stale_ref"
+  },
+  {
+   "event": "lock_acquired",
+   "mode": "shared",
+   "t_request_ns": 214478621975760,
+   "t_mono_ns": 214478621976870,
+   "first": "c3030-fill-K4-stale_ref"
+  },
+  {
+   "event": "lock_released",
+   "mode": "shared",
+   "t_mono_ns": 214531900726393,
+   "last": "c3039-fill-K0-guard_decline"
+  }
+ ],
+ "provider": "mock",
+ "rounds": 20,
+ "t0_pairs": 20,
+ "ended_mono_ns": 214531900837352,
+ "loadavg_end": "13.03 6.38 4.62 16/2619 3153266",
+ "network": {
+  "non_loopback_connect_attempts": 0
+ }
+}

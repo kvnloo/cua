@@ -1,0 +1,74 @@
+[session] DISPLAY=:100 openbox=3157510 picom=3157511 dbus=unix:path=<tmp>/dbus-<id>,guid=bb922b614e0cc5f1b00e06f16abf1ee3
+== session env DISPLAY=:100 XDG_SESSION_TYPE=x11 trace_set= knob_set=
+cua-driver 0.32.0
+{"event": "lock_acquired", "mode": "shared"}
+Cua Driver sends content-free product telemetry by default. Run `cua-driver telemetry disable` to stop it; `cua-driver telemetry status` shows the current setting.
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.a11y.Bus' requested by ':1.0' (uid=1000 pid=3157663 comm="<lanes>/bin/cua-driver-b0")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='ca.desrt.dconf' requested by ':1.1' (uid=1000 pid=3157695 comm="/usr/lib/at-spi-bus-launcher")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'ca.desrt.dconf'
+[2m2026-10-02T03:03:02.838723Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 10, body: Str, fds: [] })
+[2m2026-10-02T03:03:02.847000Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.gtk.vfs.Daemon' requested by ':1.5' (uid=1000 pid=3157782 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.gtk.vfs.Daemon'
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.freedesktop.Notifications' requested by ':1.8' (uid=1000 pid=3157782 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.8' (uid=1000 pid=3157782 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.freedesktop.Notifications'
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.10' (uid=1000 pid=3157924 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.freedesktop.portal.Documents' requested by ':1.10' (uid=1000 pid=3157924 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.freedesktop.portal.Documents'
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.293: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.10' (uid=1000 pid=3157924 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+
+** (xdg-desktop-portal-gtk:3157996): WARNING **: 22:03:03.324: AT-SPI: Could not obtain desktop path or name
+
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.325: Choosing gtk.portal for org.freedesktop.impl.portal.Access as a last-resort fallback
+
+** (xdg-desktop-portal-gtk:3157996): WARNING **: 22:03:03.325: atk-bridge: GetRegisteredEvents returned message with unknown signature
+
+** (xdg-desktop-portal-gtk:3157996): WARNING **: 22:03:03.325: atk-bridge: get_device_events_reply: unknown signature
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.338: Choosing gtk.portal for org.freedesktop.impl.portal.Settings as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.338: Choosing gtk.portal for org.freedesktop.impl.portal.FileChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.339: Choosing gtk.portal for org.freedesktop.impl.portal.AppChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.339: Choosing gtk.portal for org.freedesktop.impl.portal.Print as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.339: Choosing gtk.portal for org.freedesktop.impl.portal.Notification as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.340: Choosing gtk.portal for org.freedesktop.impl.portal.Inhibit as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.341: Failed to connect to PipeWire: Couldn't connect to PipeWire
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.341: Choosing gtk.portal for org.freedesktop.impl.portal.Account as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.342: Choosing gtk.portal for org.freedesktop.impl.portal.Email as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3157924): xdg-desktop-portal-WARNING **: 22:03:03.342: Choosing gtk.portal for org.freedesktop.impl.portal.DynamicLauncher as a last-resort fallback
+dbus-daemon[3157508]: [session uid=1000 pid=3157508 pidfd=5] Successfully activated service 'org.freedesktop.portal.Desktop'
+{"trial": "smoke000-fill-K0-measured", "outcome": "verified", "oracle_exact_match": true, "completion_mutations": 1, "routes": ["provider", "guarded-completion"], "loadavg_before": "11.67 6.87 4.86 2/2509 3157661"}
+[2m2026-10-02T03:03:07.252044Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+[2m2026-10-02T03:03:07.258892Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+{"trial": "smoke001-fill-K0-measured", "outcome": "verified", "oracle_exact_match": true, "completion_mutations": 1, "routes": ["provider", "guarded-completion"], "loadavg_before": "10.97 6.80 4.85 2/2357 3158251"}
+[2m2026-10-02T03:03:11.633239Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+[2m2026-10-02T03:03:11.640280Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+{"trial": "smoke002-fill-K0-measured", "outcome": "verified", "oracle_exact_match": true, "completion_mutations": 1, "routes": ["provider", "guarded-completion"], "loadavg_before": "10.34 6.74 4.84 1/2543 3159159"}
+[2m2026-10-02T03:03:16.011349Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+[2m2026-10-02T03:03:16.018144Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+{"trial": "smoke003-fill-K0-measured", "outcome": "verified", "oracle_exact_match": true, "completion_mutations": 1, "routes": ["provider", "guarded-completion"], "loadavg_before": "9.59 6.64 4.82 3/2542 3159835"}
+[2m2026-10-02T03:03:20.378957Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+[2m2026-10-02T03:03:20.385680Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+{"trial": "smoke004-fill-K0-measured", "outcome": "verified", "oracle_exact_match": true, "completion_mutations": 1, "routes": ["provider", "guarded-completion"], "loadavg_before": "9.06 6.58 4.81 2/2539 3160557"}
+{"event": "lock_released", "mode": "shared"}
+rc_runner=0
+X connection to :100 broken (explicit kill or server shutdown).
+X connection to :100 broken (explicit kill or server shutdown).
+A connection to the bus can't be made
+[session] exit rc=0 run_dir=<tmp>/x11-session.<id>
+exit=0

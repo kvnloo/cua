@@ -1,0 +1,50 @@
+{
+ "schema": "b01.provenance.v1",
+ "tested_source": {
+  "driver_measurement_commit": "f5c991e5927513c8b94da4330c94276dc5f8ce22",
+  "merge_commit": "0c6a53237c1d42f35680afe3796113dd25b48e1b",
+  "base_r2_01_trace": "7d3a28b663a041b072b4be8aadb187a1eab5fd28",
+  "upstream_main_base": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "pr4316_head_merged": "a0bca744067d04f05904319d3d919be30c336556",
+  "branch": "exp/b-01-browser-critpath-20261002",
+  "prereg_commit": "2bc7d0f1d6c218d292927f13e0dff4e762e18d70",
+  "note": "packet commits after f5c991e59 touch docs/experiments only; Driver code tested = f5c991e59"
+ },
+ "live_heads": {
+  "trycua_cua_pr4316": {
+   "start_read_utc": "2026-10-02T01:50:11Z",
+   "end_read_utc": "2026-10-02T03:05:10Z",
+   "head": "a0bca744067d04f05904319d3d919be30c336556",
+   "state": "OPEN",
+   "unchanged": true
+  },
+  "upstream_main": {
+   "c4d0c6625b5c93849aa8bec610782410e9d45f69": "libs/cua-driver tree identical to 229b65b28 (git diff --quiet rc=0)",
+   "latest_read": "8d4e7a08618611453794035f7ff6187f99f0c1e9 at 2026-10-02T03:05:10Z (gh api + git fetch agree); libs/cua-driver identical to 229b65b28 (rc=0)"
+  }
+ },
+ "publication_sha": "set by the Publish agent; this lane did not push",
+ "driver_binary": {
+  "name": "cua-driver-b01-f5c991e59",
+  "sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3",
+  "version_in_session": "cua-driver 0.32.0",
+  "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> b01-f5c991e59 cua-release-r2-01; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; 0 Fresh workspace units; 92 s (raw/build-receipt.txt)",
+  "disclosure": "build-driver.sh runs '<bin> --version' outside the isolated session (no display use); the version was re-recorded inside the session (raw/session-*.log)",
+  "superseded_shakedown_only": [
+   "cua-driver-b01-56817bd72 (first measurement commit, shakedown 1)",
+   "cua-driver-b01-9e0267548 (adds transport marks, shakedown 2)"
+  ]
+ },
+ "browser": "Driver-chosen Google Chrome 151.0.7922.71 (read inside the session), isolated_new profile, sandbox on, no permission-mode override, no approval bypass, no *-e2e wrapper",
+ "environment": {
+  "os": "Linux 7.2.2 x86_64, 10 CPUs, 23 GiB",
+  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24, openbox, picom (xrender), private dbus, no AT-SPI bus, host Wayland/Hyprland variables scrubbed",
+  "python": "jev-use .venv (uv sync --frozen, Python 3.12, mcp 1.30.0, typesafe_sdk 0.6.0)",
+  "locks": "measured run (primary + K5 + T0 stress, 440 trials) in one EXCLUSIVE quiet-lane window; controls in 4 SHARED windows of <=10; smoke in 1 SHARED window"
+ },
+ "provider": {
+  "kind": "mock",
+  "typesafe_attempts": 0,
+  "typesafe_reached": 0
+ }
+}

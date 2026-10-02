@@ -1,0 +1,109 @@
+   Compiling cua-driver-contract v0.32.0 (<wt>/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling cua-driver-sdk v0.32.0 (<wt>/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cua-driver-core v0.32.0 (<wt>/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<wt>/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<wt>/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.85s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<targets>/cua-release-r2-01/debug/deps/cua_driver_sdk-55bff99a363dab12)
+
+running 95 tests
+test abi::tests::abi_layout_and_status_values_are_stable ... ok
+test embedded::tests::capability_manifest_aliases_must_not_conflict ... ok
+test abi::tests::panic_is_contained_as_status ... ok
+test embedded::tests::authorization_modes_require_explicit_acknowledgements ... ok
+test embedded::tests::environment_is_allowlisted_and_driver_controls_are_reserved ... ok
+test embedded::tests::generated_default_endpoint_is_short_and_unique ... ok
+test embedded::tests::managed_environment_is_inherited_case_insensitively_but_never_overridden ... ok
+test embedded::tests::interactive_linux_session_environment_is_inherited ... ok
+test embedded::tests::metadata_validation_requires_same_process_and_contract ... ok
+test embedded::tests::no_overlay_is_opt_in_on_the_owned_daemon ... ok
+test embedded::tests::telemetry_preferences_are_inherited_and_overridable ... ok
+test embedded::tests::endpoint_preflight_refuses_non_socket_paths ... ok
+test abi::tests::generated_header_exposes_the_exported_v1_contract ... ok
+test abi::tests::cancellation_completes_once_and_release_is_idempotent ... ok
+test remote::tests::rejected_bound_channels_close_before_returning ... ok
+test remote_foreign::tests::foreign_projection_preserves_null_absence_and_checks_deadline ... ok
+test embedded::tests::cancelled_stop_resets_state_and_cleans_its_endpoint ... ok
+test remote_mcp::tests::envelope_validation_preserves_null_and_sanitizes_guest_errors ... ok
+test authorization_host::tests::host_allow_and_deny_map_to_exact_core_decisions ... ok
+test remote_mcp::tests::session_headers_are_strict_and_never_rebound ... ok
+test remote_mcp::tests::close_during_initialize_reaps_late_session_without_receiver_open ... ok
+test remote_receiver::tests::close_after_completion_is_idempotent_and_isolated ... ok
+test remote_receiver::tests::in_flight_cancel_has_unknown_completion_and_closes_connection ... ok
+test remote_receiver::tests::preserves_native_tool_error_code_and_message ... ok
+test remote_receiver::tests::preserves_native_results_and_arguments_for_each_operation ... ok
+test remote_mcp::tests::lost_exchange_is_sanitized_and_never_replayed ... ok
+test remote_mcp::tests::cancellation_drains_before_receiver_close_and_rejects_late_result ... ok
+test remote_mcp::tests::dropped_exchange_future_keeps_wire_response_alive_until_drain ... ok
+test remote_receiver::tests::queued_cancel_proves_nonexecution_and_keeps_connection_open ... ok
+test remote_receiver::tests::stale_generation_cannot_exchange_or_cancel_current_request ... ok
+test remote_mcp::tests::malformed_negotiation_cleans_allocated_resources ... ok
+test remote_mcp::tests::canonical_driver_identity_no_reconnect_and_close_isolation ... ok
+test remote_mcp::tests::strict_parser_rejects_ambiguous_responses ... ok
+test remote_receiver::tests::early_cancel_prevents_delayed_exchange ... ok
+test remote_receiver::tests::dropping_an_in_flight_exchange_closes_only_its_session ... ok
+test remote_receiver::tests::duplicate_completed_request_is_not_replayed_and_completion_is_unknown ... ok
+test remote_receiver::tests::window_observation_is_advertised_and_dispatches_without_changing_results ... ok
+test service_session::tests::next_call_resumes_with_single_use_host_credential_after_disconnect ... ok
+test remote_receiver::tests::ledger_capacity_is_bounded_without_evicting_request_identities ... ok
+test remote_mcp::tests::invalid_deadline_and_oversized_request_never_reach_transport ... ok
+test remote_receiver::tests::invalid_envelopes_never_reach_executor ... ok
+test remote_mcp::tests::deadline_expiry_cancels_and_drains_without_replay ... ok
+test service_session::tests::response_reader_preserves_partial_utf8_across_poll_timeouts ... ok
+test tests::dropping_remote_action_future_cancels_its_request_identity ... ok
+test service_session::tests::transient_read_timeouts_are_poll_intervals_not_action_deadlines ... ok
+test tests::daemon_version_mismatch_is_refused_before_action_dispatch ... ok
+test tests::exported_typed_methods_cover_every_published_contract ... ok
+test runtime::tests::every_registered_tool_schema_matches_the_dispatch_argument_check ... ok
+test tests::legacy_remote_trait_implementors_compile_but_fail_closed_before_dispatch ... ok
+test remote_receiver::tests::timeout_after_dispatch_has_unknown_completion ... ok
+test tests::native_windows::invalid_typed_click_is_rejected_before_transport ... ok
+test runtime::tests::canonical_inventory_advertises_unavailable_perception_tool ... ok
+test tests::native_windows::typed_click_returns_action_facts_and_flat_native_arguments ... ok
+test tests::native_windows::typed_discovery_decodes_native_platform_variants ... ok
+test abi::tests::abi_can_own_two_runtime_handles_concurrently ... ok
+test tests::native_windows::typed_discovery_rejects_missing_and_malformed_success ... ok
+test tests::native_windows::typed_methods_preserve_both_native_refusal_shapes ... ok
+test tests::native_windows::typed_snapshot_preserves_all_images_and_observation_metadata ... ok
+test tests::native_windows::typed_discovery_requests_use_the_existing_daemon_transport ... ok
+test tests::native_windows::typed_snapshot_rejects_dropped_images_and_inconsistent_metadata ... ok
+test tests::native_windows::typed_snapshot_retains_capture_failure_and_file_only_states ... ok
+test tests::remote_action_transport_failures_never_look_safe_to_retry ... ok
+test tests::remote_carrier_negotiates_before_dispatch ... ok
+test tests::remote_carrier_uses_generated_envelopes_behind_the_typed_sdk ... ok
+test tests::native_windows::typed_snapshot_request_preserves_target_and_session ... ok
+test tests::result_normalization_fails_closed_on_legacy_or_missing_action_payloads ... ok
+test tests::result_normalization_exposes_typed_action_and_verification_views ... ok
+test tests::result_normalization_rejects_an_unsubstantiated_confirmation ... ok
+test tests::session_method_returns_the_canonical_typed_output ... ok
+test tests::tool_discovery_uses_the_shared_direct_daemon_protocol ... ok
+test runtime::tests::host_perception_registration_is_not_duplicated_in_inventory ... ok
+test abi::tests::owned_buffers_and_handles_are_idempotently_released ... ok
+test tests::native_windows::portable_inputs_match_the_in_process_native_registry ... ok
+test tests::typed_desktop_call_serializes_contract_and_normalizes_result ... ok
+test tests::visual_parse_call_preserves_success_and_error_dtos ... ok
+test worker::tests::managed_authorization_is_inherited_but_cannot_be_overridden ... ok
+test runtime::tests::authorized_dispatch_refreshes_only_the_runtime_private_activity_key ... ok
+test runtime::tests::idle_eviction_finalizes_the_owning_runtime_recording ... ok
+test runtime::tests::incomplete_end_keeps_trusted_authorization_live_for_cleanup_retry ... ok
+test runtime::tests::shutdown_stops_lifecycle_maintenance ... ok
+test remote_mcp::tests::initialization_finishing_after_bounded_close_still_reaps_session ... ok
+test remote_mcp::tests::drain_timeout_reports_unconfirmed_without_aborting_or_destroying_session ... ok
+test snapshot_lifecycle_tests::sdk_cancelled_capture_does_not_publish_after_shutdown ... ok
+test snapshot_lifecycle_tests::sdk_shutdown_drains_snapshot_publication_and_retires_the_result ... ok
+test tests::activity_observer_receives_only_content_free_authorization_metadata ... ok
+test tests::authorization_expiry_in_one_runtime_does_not_affect_another ... ok
+test tests::direct_runtimes_have_independent_sessions_and_shutdown ... ok
+test tests::embedded_runtime_enforces_authorization_before_platform_dispatch ... ok
+test tests::embedded_runtime_owns_tools_without_daemon_ipc_and_shuts_down_idempotently ... ok
+test tests::host_tool_inspection_does_not_acquire_runtime_ownership ... ok
+test tests::native_session_close_can_race_with_invoke_without_invalidating_the_handle ... ok
+test tests::shutdown_drains_an_already_admitted_call ... ok
+test tests::trusted_host_listing_spans_its_runtime_without_exposing_owner_keys ... ok
+test tests::trusted_session_idle_ttl_reaches_the_lifecycle_contract ... ok
+test tests::trusted_session_is_bound_in_memory_and_rejects_public_id_substitution ... ok
+
+test result: ok. 95 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 37.30s
+

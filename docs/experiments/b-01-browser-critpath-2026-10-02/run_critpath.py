@@ -592,7 +592,7 @@ def build_plan(kind: str, rounds: int, t0_pairs: int) -> list[list[dict[str, Any
     """Return blocks: list of (lock_mode, trials)."""
     blocks: list[list[dict[str, Any]]] = []
     if kind == "smoke":
-        return [[{"cls": "fill", "arm": "K0", "kind": "measured", "block": "smoke", "lock_mode": "none"}
+        return [[{"cls": "fill", "arm": "K0", "kind": "measured", "block": "smoke", "lock_mode": "shared"}
                  for _ in range(5)]]
     if kind == "shakedown":
         trials = []
