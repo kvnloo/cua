@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: form task reports common fields without a visual parse
+not ok 1 - form task reports common fields without a visual parse
+  ---
+  duration_ms: 4838.638097
+  type: 'test'
+  location: '<scratch>/M4-drop-scope-ts/jev-use/typescript/native_timing.test.ts:1:3548'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'parse_only'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'parse_only'
+  operator: 'strictEqual'
+  stack: |-
+    checkScenario (<scratch>/M4-drop-scope-ts/jev-use/typescript/native_timing.test.ts:74:12)
+    TestContext.<anonymous> (<scratch>/M4-drop-scope-ts/jev-use/typescript/native_timing.test.ts:108:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: visual fallback reports parse-only visual time and both observations
+not ok 2 - visual fallback reports parse-only visual time and both observations
+  ---
+  duration_ms: 711.122344
+  type: 'test'
+  location: '<scratch>/M4-drop-scope-ts/jev-use/typescript/native_timing.test.ts:1:3649'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'parse_only'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'parse_only'
+  operator: 'strictEqual'
+  stack: |-
+    checkScenario (<scratch>/M4-drop-scope-ts/jev-use/typescript/native_timing.test.ts:74:12)
+    TestContext.<anonymous> (<scratch>/M4-drop-scope-ts/jev-use/typescript/native_timing.test.ts:112:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5860.258937

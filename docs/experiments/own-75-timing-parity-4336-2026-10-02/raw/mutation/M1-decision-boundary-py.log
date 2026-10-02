@@ -1,0 +1,27 @@
+test_form_task_reports_common_fields_without_a_visual_parse (test_native_timing.NativeStepTimingTest.test_form_task_reports_common_fields_without_a_visual_parse) ... FAIL
+test_visual_fallback_reports_parse_only_visual_time_and_both_observations (test_native_timing.NativeStepTimingTest.test_visual_fallback_reports_parse_only_visual_time_and_both_observations) ... FAIL
+
+======================================================================
+FAIL: test_form_task_reports_common_fields_without_a_visual_parse (test_native_timing.NativeStepTimingTest.test_form_task_reports_common_fields_without_a_visual_parse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<scratch>/M1-decision-boundary-py/jev-use/python/tests/test_native_timing.py", line 95, in test_form_task_reports_common_fields_without_a_visual_parse
+    self.check_scenario("counter")
+  File "<scratch>/M1-decision-boundary-py/jev-use/python/tests/test_native_timing.py", line 91, in check_scenario
+    self.assertGreaterEqual(step["decision_ms"] + TOLERANCE, named)
+AssertionError: 0.22000000000000003 not greater than or equal to 28.8
+
+======================================================================
+FAIL: test_visual_fallback_reports_parse_only_visual_time_and_both_observations (test_native_timing.NativeStepTimingTest.test_visual_fallback_reports_parse_only_visual_time_and_both_observations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<scratch>/M1-decision-boundary-py/jev-use/python/tests/test_native_timing.py", line 98, in test_visual_fallback_reports_parse_only_visual_time_and_both_observations
+    self.check_scenario("canvas")
+  File "<scratch>/M1-decision-boundary-py/jev-use/python/tests/test_native_timing.py", line 91, in check_scenario
+    self.assertGreaterEqual(step["decision_ms"] + TOLERANCE, named)
+AssertionError: 0.33 not greater than or equal to 70.72999999999999
+
+----------------------------------------------------------------------
+Ran 2 tests in 6.773s
+
+FAILED (failures=2)

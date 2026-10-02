@@ -1,0 +1,29 @@
+test_form_task_reports_common_fields_without_a_visual_parse (test_native_timing.NativeStepTimingTest.test_form_task_reports_common_fields_without_a_visual_parse) ... ERROR
+test_visual_fallback_reports_parse_only_visual_time_and_both_observations (test_native_timing.NativeStepTimingTest.test_visual_fallback_reports_parse_only_visual_time_and_both_observations) ... ERROR
+
+======================================================================
+ERROR: test_form_task_reports_common_fields_without_a_visual_parse (test_native_timing.NativeStepTimingTest.test_form_task_reports_common_fields_without_a_visual_parse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<scratch>/M2-drop-act_ms-py/jev-use/python/tests/test_native_timing.py", line 95, in test_form_task_reports_common_fields_without_a_visual_parse
+    self.check_scenario("counter")
+  File "<scratch>/M2-drop-act_ms-py/jev-use/python/tests/test_native_timing.py", line 70, in check_scenario
+    self.assertIsInstance(step["act_ms"], (int, float))
+                          ~~~~^^^^^^^^^^
+KeyError: 'act_ms'
+
+======================================================================
+ERROR: test_visual_fallback_reports_parse_only_visual_time_and_both_observations (test_native_timing.NativeStepTimingTest.test_visual_fallback_reports_parse_only_visual_time_and_both_observations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<scratch>/M2-drop-act_ms-py/jev-use/python/tests/test_native_timing.py", line 98, in test_visual_fallback_reports_parse_only_visual_time_and_both_observations
+    self.check_scenario("canvas")
+  File "<scratch>/M2-drop-act_ms-py/jev-use/python/tests/test_native_timing.py", line 70, in check_scenario
+    self.assertIsInstance(step["act_ms"], (int, float))
+                          ~~~~^^^^^^^^^^
+KeyError: 'act_ms'
+
+----------------------------------------------------------------------
+Ran 2 tests in 6.495s
+
+FAILED (errors=2)

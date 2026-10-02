@@ -1,0 +1,61 @@
+test_form_task_reports_common_fields_without_a_visual_parse (test_native_timing.NativeStepTimingTest.test_form_task_reports_common_fields_without_a_visual_parse) ... FAIL
+test_visual_fallback_reports_parse_only_visual_time_and_both_observations (test_native_timing.NativeStepTimingTest.test_visual_fallback_reports_parse_only_visual_time_and_both_observations) ... FAIL
+
+======================================================================
+FAIL: test_form_task_reports_common_fields_without_a_visual_parse (test_native_timing.NativeStepTimingTest.test_form_task_reports_common_fields_without_a_visual_parse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<scratch>/M8-extra-driver-call-py/jev-use/python/tests/test_native_timing.py", line 95, in test_form_task_reports_common_fields_without_a_visual_parse
+    self.check_scenario("counter")
+  File "<scratch>/M8-extra-driver-call-py/jev-use/python/tests/test_native_timing.py", line 61, in check_scenario
+    self.assertEqual(calls, scenario["driver_calls"])
+AssertionError: Lists differ: ['lis[28 chars]e', 'get_window_state', 'click', 'get_window_s[79 chars]ick'] != ['lis[28 chars]e', 'click', 'get_window_state', 'click', 'get[19 chars]ick']
+
+First differing element 2:
+'get_window_state'
+'click'
+
+First list contains 3 additional elements.
+First extra element 7:
+'get_window_state'
+
+  ['list_windows',
+-  'get_window_state',
+   'get_window_state',
+   'click',
+   'get_window_state',
+-  'get_window_state',
+   'click',
+   'get_window_state',
+-  'get_window_state',
+   'click']
+
+======================================================================
+FAIL: test_visual_fallback_reports_parse_only_visual_time_and_both_observations (test_native_timing.NativeStepTimingTest.test_visual_fallback_reports_parse_only_visual_time_and_both_observations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<scratch>/M8-extra-driver-call-py/jev-use/python/tests/test_native_timing.py", line 98, in test_visual_fallback_reports_parse_only_visual_time_and_both_observations
+    self.check_scenario("canvas")
+  File "<scratch>/M8-extra-driver-call-py/jev-use/python/tests/test_native_timing.py", line 61, in check_scenario
+    self.assertEqual(calls, scenario["driver_calls"])
+AssertionError: Lists differ: ['lis[41 chars]ow_state', 'get_window_state', 'parse_visual_regions', 'click'] != ['lis[41 chars]ow_state', 'parse_visual_regions', 'click']
+
+First differing element 3:
+'get_window_state'
+'parse_visual_regions'
+
+First list contains 1 additional elements.
+First extra element 5:
+'click'
+
+  ['list_windows',
+-  'get_window_state',
+   'get_window_state',
+   'get_window_state',
+   'parse_visual_regions',
+   'click']
+
+----------------------------------------------------------------------
+Ran 2 tests in 5.641s
+
+FAILED (failures=2)
