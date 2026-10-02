@@ -58,6 +58,12 @@ struct FixtureState {
     completed_key_pairs: usize,
     reject_editability: bool,
     drop_text_reply: bool,
+    apply_text_input: bool,
+    observe_editable_text: bool,
+    reject_ax_tree: bool,
+    dom_value_witness: bool,
+    omit_witness_ax: bool,
+    omit_witness_input_value: bool,
     focused_nodes: BTreeMap<String, i64>,
     // Target-owned text, independent of the driver's result and request log.
     editable_text: BTreeMap<(String, i64), String>,
@@ -100,6 +106,12 @@ impl Default for FixtureState {
             completed_key_pairs: 0,
             reject_editability: false,
             drop_text_reply: false,
+            apply_text_input: true,
+            observe_editable_text: false,
+            reject_ax_tree: false,
+            dom_value_witness: false,
+            omit_witness_ax: false,
+            omit_witness_input_value: false,
             focused_nodes: BTreeMap::new(),
             editable_text: BTreeMap::new(),
             semantic_large_page: false,
@@ -524,11 +536,25 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                 } else if st.semantic_truncated_dom && depth == 8 {
                     MockReply::ok(truncated_semantic_document())
                 } else {
-                    MockReply::ok(if st.semantic_large_page {
+                    let mut document = if st.semantic_large_page {
                         large_semantic_document()
                     } else {
                         main_document()
-                    })
+                    };
+                    if st.dom_value_witness {
+                        document["root"]["children"][0]["children"][0]["attributes"] =
+                            json!(["id", "main-btn", "aria-label", "Submit"]);
+                        document["root"]["children"][0]["children"][1]["shadowRoots"][0]
+                            ["children"][0]["attributes"] = json!([
+                            "type",
+                            "text",
+                            "aria-label",
+                            "verification value",
+                            "value",
+                            "default-goal"
+                        ]);
+                    }
+                    MockReply::ok(document)
                 }
             }
             "DOM.describeNode" if is_tab && call.params["backendNodeId"] == 999 => {
@@ -539,7 +565,27 @@ fn fixture_handler(state: SharedState) -> MockHandler {
             "DOM.getDocument" if is_oopif => MockReply::ok(oopif_document()),
             "Accessibility.getFullAXTree" if is_tab => {
                 let frame_id = call.params["frameId"].as_str().unwrap_or("F_MAIN");
-                if st.semantic_large_page {
+                if st.reject_ax_tree {
+                    return MockReply::err(-32000, "fixture AX read unavailable");
+                }
+                if st.dom_value_witness && st.omit_witness_ax && frame_id == "F_MAIN" {
+                    return MockReply::ok(
+                        json!({"nodes": [{"nodeId": "typing-root", "ignored": false,
+                        "role": {"value": "RootWebArea"}, "childIds": []}]}),
+                    );
+                }
+                if st.observe_editable_text && frame_id == "F_MAIN" {
+                    MockReply::ok(json!({"nodes": [
+                        {"nodeId": "typing-root", "ignored": false,
+                         "role": {"value": "RootWebArea"}, "childIds": ["typing-input"]},
+                        {"nodeId": "typing-input", "parentId": "typing-root", "ignored": false,
+                         "backendDOMNodeId": 20, "role": {"value": "textbox"},
+                         "name": {"value": if st.dom_value_witness { "verification value" } else { "Shadow Input" }},
+                         "value": {"value": st.editable_text.get(&("T1".into(), 20))},
+                         "properties": [{"name": "editable", "value": {"value": "plaintext"}}],
+                         "childIds": []}
+                    ]}))
+                } else if st.semantic_large_page {
                     MockReply::ok(large_semantic_ax_tree(frame_id))
                 } else {
                     MockReply::ok(json!({"nodes": []}))
@@ -555,6 +601,20 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                  "childIds": []}
             ]})),
             "DOMSnapshot.captureSnapshot" if is_tab => {
+                if st.dom_value_witness {
+                    let mut layout = semantic_layout_snapshot(
+                        &[10, 20],
+                        &[[20.0, 80.0, 100.0, 36.0], [20.0, 20.0, 200.0, 30.0]],
+                    );
+                    let strings = layout["strings"].as_array_mut().unwrap();
+                    let index = strings.len();
+                    strings.push(json!(st.editable_text[&("T1".into(), 20)]));
+                    if !st.omit_witness_input_value {
+                        layout["documents"][0]["nodes"]["inputValue"] =
+                            json!({"index": [1], "value": [index]});
+                    }
+                    return MockReply::ok(layout);
+                }
                 if st.semantic_large_page {
                     let mut backends = vec![999, 2000, 2003, 2010, 2011];
                     let mut bounds = vec![
@@ -569,6 +629,11 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                         bounds.push([20.0, 2_000.0 + id as f64 * 40.0, 160.0, 30.0]);
                     }
                     MockReply::ok(semantic_layout_snapshot(&backends, &bounds))
+                } else if st.observe_editable_text {
+                    MockReply::ok(semantic_layout_snapshot(
+                        &[20],
+                        &[[20.0, 20.0, 120.0, 30.0]],
+                    ))
                 } else {
                     MockReply::ok(semantic_layout_snapshot(&[], &[]))
                 }
@@ -711,10 +776,12 @@ fn fixture_handler(state: SharedState) -> MockHandler {
             "Input.insertText" => {
                 let backend = st.focused_nodes[&sess];
                 let target = if is_oopif { "T_OOPIF" } else { "T1" };
-                st.editable_text
-                    .entry((target.into(), backend))
-                    .or_default()
-                    .push_str(call.params["text"].as_str().unwrap());
+                if st.apply_text_input {
+                    st.editable_text
+                        .entry((target.into(), backend))
+                        .or_default()
+                        .push_str(call.params["text"].as_str().unwrap());
+                }
                 if st.drop_text_reply {
                     MockReply::disconnect()
                 } else {
@@ -734,6 +801,16 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                         .is_some_and(|code| code.contains("this.isContentEditable")) =>
             {
                 MockReply::ok(json!({ "result": { "value": false } }))
+            }
+            "Runtime.callFunctionOn"
+                if st.dom_value_witness
+                    && call.params["functionDeclaration"]
+                        .as_str()
+                        .is_some_and(|code| code.contains("setSelectionRange")) =>
+            {
+                MockReply::ok(
+                    json!({"result": {"value": st.editable_text[&("T1".into(), 20)].chars().count()}}),
+                )
             }
             "Runtime.callFunctionOn" => MockReply::ok(json!({ "result": { "value": true } })),
             other => MockReply::method_not_found(other),
@@ -2837,4 +2914,324 @@ async fn typing_pre_dispatch_refusal_preserves_target_text() {
             "browser_input_trust_unavailable"
         );
     }
+}
+
+#[tokio::test]
+async fn fresh_semantic_value_corroborates_unknown_typing_without_replay() {
+    const BEFORE: &str = "seed";
+    const AFTER: &str = "seed-done";
+    for effect_present in [true, false] {
+        let f = fixture_with(|state| {
+            state.drop_text_reply = true;
+            state.apply_text_input = effect_present;
+            state.observe_editable_text = true;
+            state.editable_text.insert(("T1".into(), 20), BEFORE.into());
+        })
+        .await;
+        let (target, tab) = bind(&f).await;
+        let value_of = |state: &Value| {
+            let inputs: Vec<_> = state["refs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|entry| entry["name"] == "Shadow Input" && entry["frame"] == "main")
+                .collect();
+            assert_eq!(inputs.len(), 1, "one exact editable target");
+            inputs[0]["value"].as_str().unwrap().to_owned()
+        };
+        let before = semantic_snapshot(&f, &target, &tab).await;
+        assert_eq!(before["status"], "ok", "{before}");
+        assert_eq!(value_of(&before), BEFORE);
+        // Fresh reads can rotate ref authority; mint the action ref afterward.
+        let action_state = snapshot(&f, &target, &tab).await;
+        let input = ref_of(&action_state, "main", "Shadow Input");
+        let result = BrowserTypeTool::new(f.engine.clone())
+            .invoke(json!({
+                "target_id": target, "tab_id": tab, "ref": input,
+                "text": "-done", "session": SESSION
+            }))
+            .await;
+        let original = serde_json::to_value(
+            result
+                .action_record
+                .as_ref()
+                .unwrap()
+                .public_result()
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(original["effect"], "unverifiable");
+        assert_eq!(original["delivery"]["mode"], "unknown");
+        let input_calls = recorded_calls(&f, "Input.insertText");
+        assert_eq!(input_calls.len(), 1);
+        assert_eq!(input_calls[0].1["text"], "-done");
+        assert!(recorded_calls(&f, "Input.dispatchKeyEvent").is_empty());
+        let synthetic_before = recorded_calls(&f, "Runtime.callFunctionOn");
+        let (boundary, sessions_before) = {
+            let state = f.state.lock().unwrap();
+            let expected = if effect_present { AFTER } else { BEFORE };
+            assert_eq!(
+                state.editable_text,
+                BTreeMap::from([(("T1".into(), 20), expected.into())])
+            );
+            (state.calls.len(), state.tab_sessions)
+        };
+        let fresh = semantic_snapshot(&f, &target, &tab).await;
+        assert_eq!(fresh["status"], "ok", "{fresh}");
+        let observed = value_of(&fresh);
+        {
+            let state = f.state.lock().unwrap();
+            assert!(
+                state.tab_sessions > sessions_before,
+                "fresh scoped session after socket loss"
+            );
+            let reads = &state.calls[boundary..];
+            assert!(reads
+                .iter()
+                .any(|(_, method, _)| method == "DOM.getDocument"));
+            assert!(reads.iter().any(|(_, method, params)| method
+                == "Accessibility.getFullAXTree"
+                && params["frameId"] == "F_MAIN"));
+            assert_eq!(observed, state.editable_text[&("T1".into(), 20)]);
+        }
+        if effect_present {
+            assert_eq!(
+                observed, AFTER,
+                "fresh read matches the desired postcondition"
+            );
+        } else {
+            assert_eq!(observed, BEFORE, "unchanged-value control remains visible");
+            assert_ne!(observed, AFTER, "desired postcondition is not satisfied");
+        }
+        assert_eq!(
+            recorded_calls(&f, "Input.insertText"),
+            input_calls,
+            "fresh observation must not repeat text entry"
+        );
+        assert!(recorded_calls(&f, "Input.dispatchKeyEvent").is_empty());
+        assert_eq!(
+            recorded_calls(&f, "Runtime.callFunctionOn"),
+            synthetic_before,
+            "no synthetic mutation during reconciliation"
+        );
+        // Later state does not establish historical causation or upgrade the
+        // original action record into a general exactly-once guarantee.
+        assert_eq!(
+            serde_json::to_value(
+                result
+                    .action_record
+                    .as_ref()
+                    .unwrap()
+                    .public_result()
+                    .unwrap()
+            )
+            .unwrap(),
+            original
+        );
+    }
+}
+
+#[tokio::test]
+async fn failed_semantic_ax_read_does_not_reconcile_unknown_typing() {
+    let f = fixture_with(|state| {
+        state.drop_text_reply = true;
+        state.observe_editable_text = true;
+        state.editable_text.insert(("T1".into(), 20), "seed".into());
+    })
+    .await;
+    let (target, tab) = bind(&f).await;
+    let before = semantic_snapshot(&f, &target, &tab).await;
+    assert_eq!(before["status"], "ok", "{before}");
+    assert!(before["refs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|entry| entry["name"] == "Shadow Input" && entry["value"] == "seed"));
+    let action_state = snapshot(&f, &target, &tab).await;
+    let input = ref_of(&action_state, "main", "Shadow Input");
+    let result = BrowserTypeTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": input,
+            "text": "-done", "session": SESSION
+        }))
+        .await;
+    let original = serde_json::to_value(
+        result
+            .action_record
+            .as_ref()
+            .unwrap()
+            .public_result()
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(original["effect"], "unverifiable");
+    assert_eq!(original["delivery"]["mode"], "unknown");
+    let input_calls = recorded_calls(&f, "Input.insertText");
+    assert_eq!(input_calls.len(), 1);
+    let synthetic = recorded_calls(&f, "Runtime.callFunctionOn");
+    let boundary = {
+        let mut state = f.state.lock().unwrap();
+        assert_eq!(
+            state.editable_text,
+            BTreeMap::from([(("T1".into(), 20), "seed-done".into())])
+        );
+        state.reject_ax_tree = true;
+        state.calls.len()
+    };
+    let fresh = semantic_snapshot(&f, &target, &tab).await;
+    assert_eq!(
+        fresh["status"], "refused",
+        "failed AX read cannot claim fresh success: {fresh}"
+    );
+    assert_eq!(fresh["refusal"]["code"], "browser_route_unavailable");
+    assert!(fresh["refusal"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("Accessibility.getFullAXTree failed"));
+    assert!(
+        fresh.get("refs").is_none(),
+        "do not return cached value-bearing refs"
+    );
+    assert!(
+        fresh.get("outline").is_none(),
+        "do not return a cached successful outline"
+    );
+    {
+        let state = f.state.lock().unwrap();
+        assert!(state.calls[boundary..]
+            .iter()
+            .any(|(_, method, _)| method == "Accessibility.getFullAXTree"));
+        assert_eq!(state.editable_text[&("T1".into(), 20)], "seed-done");
+    }
+    assert_eq!(recorded_calls(&f, "Input.insertText"), input_calls);
+    assert!(recorded_calls(&f, "Input.dispatchKeyEvent").is_empty());
+    assert_eq!(recorded_calls(&f, "Runtime.callFunctionOn"), synthetic);
+    assert_eq!(
+        serde_json::to_value(
+            result
+                .action_record
+                .as_ref()
+                .unwrap()
+                .public_result()
+                .unwrap()
+        )
+        .unwrap(),
+        original
+    );
+}
+
+#[tokio::test]
+async fn dom_attribute_value_differs_from_live_property_after_unknown_typing() {
+    const LIVE: &str = "live-other";
+    const DEFAULT: &str = "default-goal";
+    let f = fixture_with(|state| {
+        state.dom_value_witness = true;
+        state.observe_editable_text = true;
+        state.apply_text_input = false;
+        state.drop_text_reply = true;
+        state.oopif_present = false;
+        state.editable_text.insert(("T1".into(), 20), LIVE.into());
+    })
+    .await;
+    let (target, tab) = bind(&f).await;
+    let before = semantic_snapshot(&f, &target, &tab).await;
+    let input = before["refs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["name"] == "verification value")
+        .unwrap();
+    assert_eq!(input["value"], LIVE);
+    let result = BrowserTypeTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": input["ref"],
+            "text": DEFAULT, "replace": true, "session": SESSION
+        }))
+        .await;
+    let action = serde_json::to_value(
+        result
+            .action_record
+            .as_ref()
+            .unwrap()
+            .public_result()
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(action["effect"], "unverifiable");
+    assert_eq!(action["delivery"]["mode"], "unknown");
+    assert_eq!(recorded_calls(&f, "Input.insertText").len(), 1);
+    {
+        let mut state = f.state.lock().unwrap();
+        assert_eq!(state.editable_text[&("T1".into(), 20)], LIVE);
+        state.omit_witness_ax = true;
+    }
+    let fallback = semantic_snapshot(&f, &target, &tab).await;
+    let fresh = fallback["refs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["name"] == "verification value")
+        .unwrap();
+    assert_eq!(
+        fresh["value"], LIVE,
+        "use the live snapshot property, never the default attribute"
+    );
+    assert_ne!(fresh["value"], DEFAULT);
+    assert_ne!(fresh["ref"], input["ref"]);
+    let mut value_controls = Vec::new();
+    for (label, value, missing) in [
+        ("exact", DEFAULT.to_owned(), false),
+        ("missing", DEFAULT.to_owned(), true),
+        ("empty", String::new(), false),
+        ("whitespace", format!(" {DEFAULT} "), false),
+        ("long", "x".repeat(1001), false),
+    ] {
+        {
+            let mut state = f.state.lock().unwrap();
+            state.editable_text.insert(("T1".into(), 20), value.clone());
+            state.omit_witness_input_value = missing;
+        }
+        let observation = semantic_snapshot(&f, &target, &tab).await;
+        let field = observation["refs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|node| node["name"] == "verification value")
+            .unwrap();
+        if label == "exact" {
+            assert_eq!(field["value"], DEFAULT);
+        } else {
+            assert!(field["value"].is_null(), "{label}: {field}");
+        }
+        value_controls
+            .push(json!({"label": label, "target_value": value, "snapshot": observation}));
+    }
+    {
+        let mut state = f.state.lock().unwrap();
+        state.omit_witness_ax = false;
+        state.omit_witness_input_value = false;
+        state.editable_text.insert(("T1".into(), 20), LIVE.into());
+    }
+    let restored = semantic_snapshot(&f, &target, &tab).await;
+    assert!(restored["refs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|node| node["name"] == "verification value" && node["value"] == LIVE));
+    assert_eq!(
+        f.state.lock().unwrap().editable_text[&("T1".into(), 20)],
+        LIVE
+    );
+    assert_eq!(recorded_calls(&f, "Input.insertText").len(), 1);
+    assert!(recorded_calls(&f, "Input.dispatchKeyEvent").is_empty());
+    println!(
+        "FIELD_VALUE_WITNESS:{}",
+        serde_json::to_string(&json!({
+            "session": SESSION, "before": before, "fallback": fallback, "restored": restored,
+            "action": action, "target_live_value": LIVE, "dom_default_attribute": DEFAULT,
+            "dom_snapshot_input_value": LIVE, "input_requests": 1, "input_effects": 0,
+        "value_controls": value_controls
+        }))
+        .unwrap()
+    );
 }

@@ -97,6 +97,7 @@ struct LayoutMeta {
     scroll_rect: Option<Rect>,
     styles: HashMap<String, String>,
     paint_order: Option<i64>,
+    input_value: Option<String>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -396,6 +397,39 @@ pub(crate) fn build_layout_index(snapshot: &Value) -> LayoutIndex {
         else {
             continue;
         };
+        // RareStringData indexes address the node table, not the layout order.
+        // Keep absent, malformed and duplicate entries unproven.
+        let mut input_values: HashMap<usize, Option<String>> = HashMap::new();
+        if let (Some(indices), Some(values)) = (
+            document
+                .pointer("/nodes/inputValue/index")
+                .and_then(Value::as_array),
+            document
+                .pointer("/nodes/inputValue/value")
+                .and_then(Value::as_array),
+        ) {
+            if indices.len() == values.len() {
+                for (index, value) in indices.iter().zip(values) {
+                    let Some(index) = index.as_u64().and_then(|index| usize::try_from(index).ok())
+                    else {
+                        continue;
+                    };
+                    if index >= backend_ids.len() {
+                        continue;
+                    }
+                    let current = value
+                        .as_u64()
+                        .and_then(|index| usize::try_from(index).ok())
+                        .and_then(|index| strings.get(index))
+                        .and_then(Value::as_str)
+                        .and_then(lossless_input_value);
+                    input_values
+                        .entry(index)
+                        .and_modify(|value| *value = None)
+                        .or_insert(current);
+                }
+            }
+        }
         let layout = document.get("layout").unwrap_or(&Value::Null);
         let node_indices = layout
             .get("nodeIndex")
@@ -454,6 +488,7 @@ pub(crate) fn build_layout_index(snapshot: &Value) -> LayoutIndex {
                     scroll_rect: scroll_rects.get(layout_idx).and_then(Rect::from_value),
                     styles: computed,
                     paint_order: paint_orders.get(layout_idx).and_then(Value::as_i64),
+                    input_value: input_values.get(&node_index).cloned().flatten(),
                 },
             );
         }
@@ -690,11 +725,23 @@ fn supplement_dom_actions(
             backend_node_id: Some(backend_node_id),
             role,
             name,
-            value: meta
-                .attrs
-                .get("value")
-                .cloned()
-                .and_then(clean_semantic_text),
+            // A content attribute is a default, not proof of the current field.
+            // Only expose ordinary text-entry inputs from this live snapshot;
+            // never expand password/file/hidden-field value exposure.
+            value: if meta.tag == "input"
+                && ["text", "search", "email", "url", "tel", "number"]
+                    .iter()
+                    .any(|kind| {
+                        meta.attrs
+                            .get("type")
+                            .map_or("text", String::as_str)
+                            .eq_ignore_ascii_case(kind)
+                    })
+            {
+                layout_meta.and_then(|layout| layout.input_value.clone())
+            } else {
+                None
+            },
             states,
             frame: frame.clone(),
             visibility,
@@ -937,6 +984,14 @@ fn ax_value_string(value: Option<&Value>) -> Option<String> {
         Value::Number(value) => Some(value.to_string()),
         _ => None,
     }
+}
+
+fn lossless_input_value(value: &str) -> Option<String> {
+    if value.chars().take(MAX_SEMANTIC_TEXT_CHARS + 1).count() > MAX_SEMANTIC_TEXT_CHARS {
+        return None;
+    }
+    let normalized = clean_semantic_text(value.to_owned())?;
+    (normalized == value).then_some(normalized)
 }
 
 fn clean_semantic_text(value: String) -> Option<String> {
@@ -1478,6 +1533,102 @@ mod tests {
         assert_eq!(
             clean_semantic_text("\u{e001} Reply\u{00a0}now \u{f8ff}".to_owned()).as_deref(),
             Some("Reply now")
+        );
+    }
+    #[test]
+    fn dom_input_values_require_current_lossless_backend_bound_evidence() {
+        fn observe(
+            kind: &str,
+            live: Option<&str>,
+            rare: Option<Value>,
+            ax_value: Option<&str>,
+        ) -> Option<String> {
+            let dom = build_dom_index(&json!({"nodeType": 9, "frameId": "F_MAIN", "children": [
+                {"nodeType": 1, "nodeName": "INPUT", "backendNodeId": 7,
+                 "attributes": ["type", kind, "aria-label", "field", "value", "default-goal"]}
+            ]}));
+            let mut snapshot = json!({"strings": ["block", "visible", "1", "auto", live.unwrap_or("unused")],
+                "documents": [{"nodes": {"backendNodeId": [99, 7]},
+                    "layout": {"nodeIndex": [1], "bounds": [[10, 10, 100, 30]],
+                    "styles": [[0, 1, 2, 3, 3]], "paintOrders": [1]}}]});
+            if let Some(rare) = rare {
+                snapshot["documents"][0]["nodes"]["inputValue"] = rare;
+            }
+            let ax = if let Some(value) = ax_value {
+                json!({"nodes": [{"nodeId": "field", "ignored": false,
+                "backendDOMNodeId": 7, "role": {"value": "textbox"}, "name": {"value": "field"}, "value": {"value": value}}]})
+            } else {
+                json!({"nodes": []})
+            };
+            let document = compose_accessibility_tree(
+                &ax,
+                &dom,
+                &build_layout_index(&snapshot),
+                &parse_viewport(
+                    &json!({"cssVisualViewport": {"pageX": 0,"pageY": 0,"clientWidth": 800,"clientHeight": 600}}),
+                ),
+                frame(),
+            );
+            document
+                .nodes
+                .iter()
+                .find(|node| node.backend_node_id == Some(7))
+                .and_then(|node| node.value.clone())
+        }
+        let exact = || Some(json!({"index": [1], "value": [4]}));
+        assert_eq!(
+            observe("text", Some("live-other"), exact(), None).as_deref(),
+            Some("live-other")
+        );
+        assert_eq!(
+            observe("TEXT", Some("default-goal"), exact(), None).as_deref(),
+            Some("default-goal")
+        );
+        for value in [
+            "",
+            " default-goal",
+            "default-goal ",
+            "default  goal",
+            "default\u{200b}goal",
+        ] {
+            assert_eq!(
+                observe("text", Some(value), exact(), None),
+                None,
+                "{value:?}"
+            );
+        }
+        let long = "x".repeat(MAX_SEMANTIC_TEXT_CHARS + 1);
+        assert_eq!(observe("text", Some(&long), exact(), None), None);
+        let bounded = "x".repeat(MAX_SEMANTIC_TEXT_CHARS);
+        assert_eq!(
+            observe("text", Some(&bounded), exact(), None),
+            Some(bounded)
+        );
+        assert_eq!(observe("text", None, None, None), None);
+        for rare in [
+            json!({"index": [], "value": []}),
+            json!({"index": [0], "value": [4]}),
+            json!({"index": [1], "value": [99]}),
+            json!({"index": [1], "value": [-1]}),
+            json!({"index": [1], "value": []}),
+            json!({"index": [1, 1], "value": [4, 4]}),
+            json!({"index": [1], "value": [true]}),
+        ] {
+            assert_eq!(
+                observe("text", Some("default-goal"), Some(rare), None),
+                None
+            );
+        }
+        for kind in ["password", "file", "hidden", "checkbox", "button"] {
+            assert_eq!(
+                observe(kind, Some("synthetic-private-marker"), exact(), None),
+                None,
+                "{kind}"
+            );
+        }
+        assert_eq!(
+            observe("text", Some("dom-current"), exact(), Some("ax-current")).as_deref(),
+            Some("ax-current")
         );
     }
 }
