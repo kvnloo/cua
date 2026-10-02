@@ -518,6 +518,14 @@ impl BrowserPlatform for LinuxBrowserPlatform {
                 cursor_overlay::OverlayCommand::SetEnabled(enabled),
             );
         }
+        // R2-01 measurement only (env-gated, default off).
+        cua_driver_core::phase_trace::mark_detail("platform.gate", &action.session, || {
+            serde_json::json!({
+                "tab_is_active": action.tab_is_active,
+                "cursor_enabled": cursor_enabled,
+                "has_screen_point": action.screen_x.is_some() && action.screen_y.is_some(),
+            })
+        });
         if !action.tab_is_active || !cursor_enabled {
             return;
         }
@@ -532,7 +540,9 @@ impl BrowserPlatform for LinuxBrowserPlatform {
             action.session.clone(),
             cursor_overlay::OverlayCommand::PinAbove(action.window_id),
         );
+        cua_driver_core::phase_trace::mark("platform.animate_start", &action.session);
         crate::overlay::animate_cursor_to_for(action.session.clone(), screen_x, screen_y).await;
+        cua_driver_core::phase_trace::mark("platform.animate_end", &action.session);
         self.cursor_registry
             .update_position(&action.session, screen_x, screen_y);
 

@@ -1196,7 +1196,8 @@ impl ToolRegistry {
         evidence: TrustedInvocationEvidence,
     ) -> ToolResult {
         let runtime_scope = context.runtime_scope_key();
-        DISPATCH_RUNTIME_SCOPE
+        crate::phase_trace::mark(name, "dispatch_enter");
+        let result = DISPATCH_RUNTIME_SCOPE
             .scope(runtime_scope, async {
                 DISPATCH_TRUSTED_INVOCATION_EVIDENCE
                     .scope(evidence.clone(), async {
@@ -1209,10 +1210,42 @@ impl ToolRegistry {
                     })
                     .await
             })
-            .await
+            .await;
+        crate::phase_trace::mark(name, "dispatch_exit");
+        result
     }
 
     async fn invoke_authorized(
+        &self,
+        name: &str,
+        args: Value,
+        context: &crate::session_authorization::EffectiveAuthorizationContext,
+        evidence: &TrustedInvocationEvidence,
+    ) -> ToolResult {
+        // R2-01 measurement only: env-gated, default off, result unchanged.
+        if !crate::phase_trace::enabled() {
+            return self
+                .invoke_authorized_untraced(name, args, context, evidence)
+                .await;
+        }
+        let session = args
+            .get("session")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_owned();
+        crate::phase_trace::mark_detail("dispatch.enter", &session, || {
+            serde_json::json!({ "tool": name })
+        });
+        let result = self
+            .invoke_authorized_untraced(name, args, context, evidence)
+            .await;
+        crate::phase_trace::mark_detail("dispatch.exit", &session, || {
+            serde_json::json!({ "tool": name, "is_error": result.is_error.unwrap_or(false) })
+        });
+        result
+    }
+
+    async fn invoke_authorized_untraced(
         &self,
         name: &str,
         mut args: Value,
@@ -1782,11 +1815,13 @@ impl ToolRegistry {
         // Desktop pixels read off a capped get_desktop_state image are mapped
         // back to the uncapped capture before any platform interprets them.
         crate::desktop_capture_scale::map_desktop_args(&mut args);
+        crate::phase_trace::mark(resolved_name, "invoke_start");
         let mut result = crate::recording::scope_dispatch_click_capture(
             pending_turn.as_ref(),
             tool.invoke(args.clone()),
         )
         .await;
+        crate::phase_trace::mark(resolved_name, "invoke_end");
         match resolved_name {
             "get_desktop_state" if result.is_error != Some(true) => {
                 crate::desktop_capture_scale::record_desktop_state(
