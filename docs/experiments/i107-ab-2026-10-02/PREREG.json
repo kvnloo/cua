@@ -1,0 +1,91 @@
+{
+ "schema": "cua.i107.lane-prereg.v1",
+ "issue": "kvnloo/cua#107",
+ "lane": "AB: establish A and B_proj (B is BLOCKED; B_proj is a diagnostic)",
+ "status": "FROZEN before any measured trial of this lane. Inherits every rule of the map pre-registration; this file adds only the harness details the map leaves to lanes. Any later change is an amendment committed before the affected trials and disclosed.",
+ "inherits": {
+  "file": "docs/experiments/i107-map-2026-10-02/PREREG.json",
+  "commit": "be68363bc38940d5560be55165ceaf6fd743437b",
+  "sha256": "8eeb837ffa24425cfc36ba2c72a8ea65df4207e1a39a7d261f1cda85496b2c53",
+  "precedence": "where this file and the map PREREG disagree, the map PREREG wins and the disagreement is a disclosed deviation"
+ },
+ "pins": {
+  "driver_binary": {"name": "cua-driver-i107-092b065d5", "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed", "rule": "every A and B_proj trial; never rebuilt by this lane"},
+  "reference_binary": {"name": "cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "rule": "CMP-distortion only"},
+  "tested_source": "exp/i107-map-20261002 at 092b065d5 (libs/cua-driver tree a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497); this lane's branch exp/i107-ab-20261002 changes no file under libs/",
+  "caller": "jev-use python/run.py loop at the tested source, re-implemented step-for-step by run_critpath.py (derived from kvnloo/cua 6689610d5 B-01 run_critpath.py) so caller phases can be stamped",
+  "chooser": "choose_mock_for_task (deterministic scripted chooser). Label FIXTURE/BENCHMARK. 0 provider HTTP; the runner refuses non-loopback sockets",
+  "provider_live": "BLOCKED (no TypeSafe request in this lane)"
+ },
+ "infrastructure_gate": {
+  "rule": "No REAL block starts until the orchestrator names an approved isolation wrapper. The runner checks, before spawning any Driver, that the Driver's isolated-launch precondition can hold (a root-owned, non-writable system Chromium as seen from inside the wrapper) and exits with infrastructure_blocked otherwise. The Driver's executable trust check is never bypassed or weakened, and the Driver never runs outside the approved wrapper.",
+  "status_at_freeze": "BLOCKED: under the current hostless wrapper host root files appear as uid 65534 (map PREREG infrastructure_blocker_at_freeze)",
+  "when_unblocked": "record the wrapper identity (path placeholder, sha256, approval reference) in provenance.json before the first REAL trial"
+ },
+ "fixed_settings": {
+  "feedback": "set_agent_cursor_enabled {enabled:false} before browser_prepare in every arm (map fixed_settings_all_arms.feedback); set_agent_cursor_motion is not called",
+  "guard": "none (no --guarded-completion) in A and B_proj",
+  "focus_settle": "Driver default; CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS never set (the runner refuses to start if it is set)",
+  "completion_poll": "20 oracle reads, 100 ms sleep (run.py default)",
+  "visual_observation": "auto (run.py default)",
+  "phase_trace": "CUA_DRIVER_PHASE_TRACE_FILE set per trial in every measured A/B_proj trial; unset in the default-off check and on the reference-binary side of CMP-distortion",
+  "session_regime": "fresh cua-driver mcp process + isolated_new browser per trial",
+  "fixture": "jev-use FixtureServer page and FixtureState subclass with a CLOCK_MONOTONIC journal, served in the runner process (B-01 deviation 5 applies identically to every arm and is disclosed)"
+ },
+ "arms": {
+  "A": "run.py loop: one get_browser_state {target_id, tab_id, snapshot_format:'semantic_v2'} per step, no scope_ref/query",
+  "B_proj": "identical loop; every semantic_v2 call adds query='verification value submit' = lowercase(FIELD_NAME + ' ' + SUBMIT_NAME) from the task-spec constants (never fixture answers)",
+  "A_ref": "arm A on the reference binary with the trace unset (CMP-distortion only)"
+ },
+ "workload_conditions": {
+  "W-quiet": "jev-use PAGE byte-for-byte",
+  "W-churn": "PAGE with an experiment-local region appended inside <main> after </form>: 500 element nodes (div/span/p/li/em), text drawn from a fixed vocabulary, mutated at 20 Hz by an inline script with a seeded mulberry32 RNG (seed = 20261002 + trial index). Each tick touches 10 random region nodes with one of: text change, attribute flip (data-k / class), insert-then-remove pair (net node count unchanged after each tick). No region node text or attribute contains 'submit', 'verification' or 'value' (stricter than the map's two words, so B_proj's query never matches churn). The form subtree is byte-identical to PAGE and is never touched. The script starts at parse time, before navigation completes, and runs through the trial",
+  "W-static": "secondary: the W-churn page with the interval never started (region rendered once from the same seed). May be NOT_RUN if the time box is exhausted (declared in the packet)"
+ },
+ "plans": {
+  "default_off": {"n": 5, "arm": "A", "binary": "i107", "trace": "unset", "condition": "W-quiet", "pass": "5/5 verified, no trace variable in the Driver environment, no trace file created in the run output or the session tmp"},
+  "CMP_distortion": {"pairs": 10, "order": "ABBA across pairs (A_trace_on first in even pairs)", "condition": "W-quiet", "kind": "DIAGNOSTIC", "metric": "paired T_oracle delta (A_trace_on - A_ref); A_ref has no Driver marks, so only caller-side T is compared"},
+  "CMP_AB": {"pairs_per_condition": 30, "conditions": ["W-quiet", "W-churn"], "secondary": {"W-static": 30}, "order": "ABBA across pairs; conditions in separate blocks; block order W-quiet, W-churn, W-churn, W-quiet when split, else W-quiet then W-churn, W-static last", "kind": "DIAGNOSTIC (B BLOCKED)"},
+  "controls": {"DC03": ">=5 per arm (A, B_proj), W-quiet", "DC04": ">=5 per arm (A, B_proj), W-quiet", "stale_ref": ">=5 per arm (A, B_proj): after the step-2 snapshot, browser_navigate to the same URL, then send the step-2 ref; expected browser_ref_stale before dispatch and no submit", "kind": "correctness, not timing; run under the quiet lock anyway"},
+  "shakedown": "<=4 trials per plan before the first measured block, flagged excluded=true and kept in raw/"
+ },
+ "control_details": {
+  "channel": "the page holds an EventSource to the fixture server (/events); the harness posts an operation to the server (/control), the page applies it and POSTs /ack; the server journals op receipt and ack on CLOCK_MONOTONIC. The Driver never carries a control mutation. The control script is added only on control trials (W-quiet measured trials serve PAGE byte-for-byte)",
+  "DC03": "after action1 returns and before the step-2 snapshot: insert <button type='submit' name='dc_submitter' value='competitor'>Submit</button> into the form BEFORE the original Submit (the adversarial position for a first-match candidate builder). The journal records the submitter; a competitor submit is a wrong-target effect (map DC03)",
+  "DC04": "after action1 returns and before the step-2 snapshot: remove the form's Submit button. Expected: no click, outcome abstained or budget_exhausted, 0 submits",
+  "ack_timeout_s": 2.0,
+  "ack_missing": "the trial is kept and labelled control_not_applied; it does not count toward the >=5"
+ },
+ "measurements": {
+  "T_oracle": "send of snapshot1 -> first independent 2 ms harness read showing submitted == token (primary)",
+  "T_runner": "send of snapshot1 -> the runner's verified oracle read",
+  "cold_startup": "Driver spawn (stdio client entered) -> browser_navigate returned; reported separately, never inside T",
+  "cleanup": "runner outcome decided -> stdio client context exited AND every process of the Driver-launched browser tree gone (polled every 20 ms from /proc, up to 10 s); reported separately",
+  "lifetime": "Driver spawn -> cleanup end",
+  "producer_ledger": "Driver trace marks cdp.send (id, method, bytes), cdp.reply (id, bytes, error), cdp.event (method, bytes), snap.acquired_dom (dom_nodes, layout_nodes), snap.acquired_ax (ax_nodes), attributed to each get_browser_state call by its caller call window; replies matched to methods by id",
+  "wire": "every MCP line the client receives: bytes and client JSON parse time (patched model_validate_json on the stdio reader only); client output-schema validation start/end (B-01 patch)",
+  "projection_costs": "Driver page projection (snap.oopif_done -> snap.paged), snapshot build/store (snap.paged -> snap.serialized), tool result -> MCP serialization (mcp.handled -> mcp.serialized), write (mcp.serialized -> mcp.written), transport+client receive, client parse, client validation, caller candidate building (cand_start -> cand_done)",
+  "resources": "per trial: /proc/loadavg and /proc/pressure/{cpu,memory} before and after; Driver utime+stime (/proc/<pid>/stat) and VmHWM/VmRSS (/proc/<pid>/status) read just before the stdio client exits; browser tree (descendants of the prepared pid, plus the prepared pid) summed utime+stime and VmRSS read at the same instant; all read-only",
+  "decomposition": "B-01 telescoping decomposition with ledger marks (cdp.*, snap.acquired_*) removed from the boundary set (they are measurement points, not phases), mapped to the #10 spans: observation acquisition = observation_cdp; projection/encoding/transport = observation_processing + driver_post_dispatch + transport + client_parse + client_validation; provider inference = decision; resolution/validation = resolution + revalidate + driver_pre_dispatch + input_prep + caller candidate build; dispatch = dispatch + dispatch_post; wait = visualization + settles + sleeps_polls + target_effect_lag; fresh verification = verification_reads; residual = runner_overhead + unattributed. Computed on two windows: [T0, the runner's verified read] and [T0, the first independent oracle observation]; in the oracle window the interval from the journal submit to the oracle observation is oracle_detect_lag (fresh verification). Cleanup is outside T and reported as its own span. Gate (B-01 rule): named coverage = 1 - unattributed/T > 90% of T_oracle per arm; the residual span (runner overhead + unattributed) is reported beside it"
+ },
+ "required_results_and_rules": {
+  "acquisition_equality": {
+   "unit": "per matched snapshot step (snapshotN of A vs snapshotN of B_proj, same pair)",
+   "methods": "CDP method multiset sent inside the call window must be identical on every pair (exact), excluding nothing",
+   "nodes_W_quiet": "dom_nodes, layout_nodes and ax_nodes identical on every pair (exact)",
+   "nodes_and_bytes_W_churn_and_bytes_W_quiet": "equal within noise: paired median delta within +/-2% of A's median and its 95% bootstrap CI contains 0",
+   "verdict": "if all hold in both primary conditions, the B BLOCKED verdict is confirmed REAL; any failure is reported and investigated, never assumed away"
+  },
+  "semantic_equivalence": "every B_proj trial must expose the same candidate ids per step as A's rule produces, and the same logical controls: (role, name, frame, visibility, actions, value==token flag, count of refs with that role+name) for the textbox 'verification value' and the button 'Submit'; a pair that differs is a semantic-equivalence failure and B_proj is reported not equivalent",
+  "savings": "B_proj - A paired deltas for MCP response bytes, Driver projection, Driver serialization, client parse, client validation, caller candidate build and T_oracle; B_proj is never a read-cost claim",
+  "denominators": "verified / refuted / abstained / unknown / timeout / budget_exhausted / error per arm, condition and plan",
+  "required_zero": "stale-ref dispatch that lands an effect; unauthorized action; wrong-target effect; duplicate effect (> 1 journal submit per trial); unverified success. Known Driver gap (no isConnected check) recorded per arm, not exercised by this lane's controls",
+  "statistics": "paired median of (B_proj - A) per condition; seeded percentile bootstrap over pairs (seed 20261002, 10000 resamples, 95%); arm medians and nearest-rank p95; sign counts; sensitivity re-analysis excluding pairs with either trial's 1-min loadavg > 8",
+  "minimum_useful_improvement": "max(5 ms, 5% of A's median T_oracle) per condition (map PREREG), applied to T_oracle for reporting only",
+  "continuation": "CMP-AB is a DIAGNOSTIC comparison; the map's continuation rule applies to primary comparisons, so CMP-AB runs exactly 30 pairs per condition and an INCONCLUSIVE result is reported as INCONCLUSIVE",
+  "harness_unit_tests": "test_i107ab.py under the hostless wrapper; the ledger, fixture, equivalence, /proc, preflight and statistics pieces were written test-first (red log kept); the runner/plan and loopback-server tests were added after the runner was written (disclosed)",
+  "exclusions": "only shakedown trials and trials whose Driver failed to start for an infrastructure reason recorded before step 1; every attempted trial stays in raw/ and the ledger"
+ },
+ "evidence_labels": "every row carries one of SOURCE / UNIT / FIXTURE / REAL / BENCHMARK / BLOCKED / NOT_RUN; timing from REAL trials with the scripted chooser is BENCHMARK (chooser named); A-vs-B read cost and live provider are BLOCKED",
+ "packet": "docs/experiments/i107-ab-2026-10-02/: README.md, PREREG.json, raw/, i107ab-summary.json, provenance.json, ledger.jsonl (#10 task x arm x trial rows), verify_artifacts.py; mirrored to <lanes>/artifacts/i107/ab/"
+}

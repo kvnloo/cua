@@ -1,28 +1,31 @@
-"""B-01 browser critical-path runner (measurement only, mock chooser, 0 provider HTTP).
+"""kvnloo/cua#107 lane AB runner: arm A vs B_proj (measurement only, scripted chooser, 0 provider HTTP).
 
-Run inside the isolated X11 session with the jev-use virtualenv:
+Adapted from B-01's run_critpath.py (kvnloo/cua 6689610d5, see the previous commit for the
+verbatim copy). Kept: a fresh ``cua-driver mcp`` process + isolated_new browser per trial,
+caller phases stamped with ``time.monotonic_ns()``, CUA_DRIVER_PHASE_TRACE_FILE per trial,
+the 2 ms independent oracle reader, the server-side fixture journal, timed client
+output-schema validation and the loopback-only socket guard. Added: set_agent_cursor_enabled
+(false) before browser_prepare in every arm, arm B_proj (query on every semantic_v2 call),
+wire capture (MCP line bytes + client parse time), per-step semantic facts, the W-churn /
+W-static fixture variants and the DC03 / DC04 control channel, a cleanup span and cold
+startup kept separate, per-trial loadavg / PSI / Driver CPU+VmHWM / browser-tree CPU+RSS
+(read-only /proc), and a preflight that refuses before any Driver spawn when the Driver's
+isolated-launch precondition cannot hold under the current wrapper.
 
-    JEV_USE_DIR=<jev-use> <jev-use>/.venv/bin/python run_critpath.py --driver <bin> \
-        --out <dir> --plan {shakedown|measured|controls|smoke} [--lock <quiet-lane.lock>]
+Run inside the approved isolation wrapper + private X11 session + quiet-timed lock:
 
-Each trial mirrors jev-use ``python/run.py`` (mock provider, ``--guarded-completion``
-where the arm says so) and reuses its functions: a fresh ``cua-driver mcp``
-process, the arm's cursor settings, ``browser_prepare`` isolated_new,
-``wait_for_window``, bind, navigate, then the run.py step loop (oracle read,
-semantic_v2 snapshot, ``task_candidates_for_step``, guarded resolve or
-``choose_mock_for_task``, action) and the completion poll. Every caller phase is
-stamped with ``time.monotonic_ns()``; the Driver writes CLOCK_MONOTONIC marks
-through CUA_DRIVER_PHASE_TRACE_FILE; the fixture servers journal every
-mutation on the same clock; an independent harness thread re-reads the server
-state every 2 ms. The server state is the oracle; the runner's outcome is
-logged but is not the oracle. Output paths are relative to --out.
+    JEV_USE_DIR=<jev-use> <jev-use>/.venv/bin/python run_critpath.py --driver <i107 bin> \\
+        [--ref-driver <reference bin>] --out <dir> --plan <plan> --lock-label <quiet-timed label>
+
+Output paths are relative to --out. The fixture's /state is the oracle; the runner's own
+outcome is logged but is not the oracle.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import fcntl
+import datetime
 import hashlib
 import json
 import os
@@ -31,11 +34,9 @@ import sys
 import threading
 import time
 import uuid
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 JEV = Path(os.environ.get("JEV_USE_DIR", "")).resolve()
@@ -55,7 +56,7 @@ def _check_address(sock: socket.socket, address: Any) -> None:
         host = address[0] if isinstance(address, tuple) and address else None
         if host not in _LOOPBACK:
             NETWORK["non_loopback_connect_attempts"] += 1
-            raise ConnectionRefusedError("B-01 runner: non-loopback network is disabled (mock chooser)")
+            raise ConnectionRefusedError("i107 AB runner: non-loopback network is disabled (scripted chooser)")
 
 
 def _guarded_connect(self: socket.socket, address: Any) -> None:
@@ -71,77 +72,22 @@ def _guarded_connect_ex(self: socket.socket, address: Any) -> int:
 socket.socket.connect = _guarded_connect  # type: ignore[method-assign]
 socket.socket.connect_ex = _guarded_connect_ex  # type: ignore[method-assign]
 
+import mcp.client.stdio as _mcp_stdio  # noqa: E402
+import mcp.types as _mcp_types  # noqa: E402
 from mcp import ClientSession, StdioServerParameters  # noqa: E402
-from mcp.client.stdio import stdio_client  # noqa: E402
 from mcp.client.session import ClientSession as _McpClientSession  # noqa: E402
+from mcp.client.stdio import stdio_client  # noqa: E402
 
-import fixture_server as jev_fixture_server  # noqa: E402
-from b01_fixtures import JournalServer, oracle_ok  # noqa: E402
-from b01_tasks import ModalTask, ToggleConfirmTask  # noqa: E402
+import i107ab_ledger as L  # noqa: E402
 from core import validate_choice  # noqa: E402
 from driver_env import driver_environment  # noqa: E402
-from fixture_server import FixtureServer, FixtureState  # noqa: E402
-from guarded_completion import plan_guarded_completion, resolve_guarded_completion  # noqa: E402
+from i107ab_fixtures import I107Server, sha16, wrong_target_submits  # noqa: E402
 from jev_adapter import choose_mock_for_task  # noqa: E402
-from run import (  # noqa: E402
-    Driver,
-    select_tab_id,
-    supports_capture_bound_click,
-    task_candidates_for_step,
-    wait_for_window,
-)
-from tasks import FixtureFormTask  # noqa: E402
-from verify_setup import DUPLICATE_SUBMIT_ON_INPUT  # noqa: E402
+from run import Driver, select_tab_id, supports_capture_bound_click, task_candidates_for_step, wait_for_window  # noqa: E402
+from tasks import FIELD_NAME, SUBMIT_NAME, FixtureFormTask  # noqa: E402
 
-# ── MCP client output-schema validation: timed in every arm; K5 compiles once ──
-# mcp 1.30 ClientSession._validate_tool_result calls jsonschema.validate() on
-# every tools/call result, which re-checks the schema against its metaschema
-# and builds a new validator each time. Every arm records its start/end; arm
-# K5 (caller-side, product code untouched) compiles one validator per output
-# schema at tools/list time (outside T) and validates each result with it,
-# with the same acceptance rule (validator_for + check_schema + best_match).
-CLIENT = {"rec": None, "compiled": None}
+CLIENT: dict[str, Any] = {"rec": None}
 _orig_validate_tool_result = _McpClientSession._validate_tool_result
-
-
-def _schema_key(schema: Any) -> str:
-    return hashlib.sha256(json.dumps(schema, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-
-
-def compile_output_validators(session: Any) -> int:
-    from jsonschema.validators import validator_for
-    from referencing import Registry
-
-    compiled: dict[str, Any] = {}
-    for schema in getattr(session, "_tool_output_schemas", {}).values():
-        if schema is None:
-            continue
-        key = _schema_key(schema)
-        if key not in compiled:
-            cls = validator_for(schema)
-            cls.check_schema(schema)
-            compiled[key] = cls(schema, registry=Registry())
-    CLIENT["compiled"] = compiled
-    return len(compiled)
-
-
-async def _compiled_validate(self: Any, name: str, result: Any) -> None:
-    from jsonschema.exceptions import best_match
-
-    if name not in self._tool_output_schemas:
-        await self.list_tools()
-    schema = self._tool_output_schemas.get(name)
-    if schema is None:
-        return
-    if result.structuredContent is None:
-        raise RuntimeError(f"Tool {name} has an output schema but did not return structured content")
-    validator = CLIENT["compiled"].get(_schema_key(schema))
-    if validator is None:  # not compiled at tools/list: fall back to the library path
-        await _orig_validate_tool_result(self, name, result)
-        return
-    error = best_match(validator.iter_errors(result.structuredContent))
-    if error is not None:
-        raise RuntimeError(f"Invalid structured content returned by tool {name}: {error}")
 
 
 async def _timed_validate_tool_result(self: Any, name: str, result: Any) -> None:
@@ -149,10 +95,7 @@ async def _timed_validate_tool_result(self: Any, name: str, result: Any) -> None
     if rec is not None:
         rec.add("client_validate_start", tool=name)
     try:
-        if CLIENT["compiled"] is not None:
-            await _compiled_validate(self, name, result)
-        else:
-            await _orig_validate_tool_result(self, name, result)
+        await _orig_validate_tool_result(self, name, result)
     finally:
         if rec is not None:
             rec.add("client_validate_end", tool=name)
@@ -160,48 +103,54 @@ async def _timed_validate_tool_result(self: Any, name: str, result: Any) -> None
 
 _McpClientSession._validate_tool_result = _timed_validate_tool_result  # type: ignore[method-assign]
 
+
+# ── wire capture: bytes and parse time of every MCP line the stdio client receives ──
+def _record_wire(t0: int, t1: int, bytes: int) -> None:  # noqa: A002
+    rec = CLIENT["rec"]
+    if rec is not None:
+        rec.add_at("parse_start", t0)
+        rec.add_at("parse_end", t1, bytes=bytes)
+
+
+class _TypesProxy:
+    """mcp.types for the stdio reader only, with a recording JSONRPCMessage.model_validate_json."""
+
+    class JSONRPCMessage:  # noqa: D106
+        model_validate_json = staticmethod(L.recording_parser(_mcp_types.JSONRPCMessage.model_validate_json, _record_wire))
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(_mcp_types, name)
+
+
+_mcp_stdio.types = _TypesProxy()  # type: ignore[assignment]
+
 TRACE_ENV = "CUA_DRIVER_PHASE_TRACE_FILE"
 KNOB_ENV = "CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS"
-POLL_DEADLINE_S = 2.0  # run.py: 20 x 0.1 s
+POLL_READS, POLL_MS = 20, 100  # run.py: 20 x 0.1 s
+QUERY = f"{FIELD_NAME} {SUBMIT_NAME}".lower()  # 'verification value submit' from task-spec constants
+PINNED = {"i107": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
+          "ref": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"}
+SEED_BASE = 20261002
 
 
 @dataclass(frozen=True)
 class Arm:
-    cursor: bool
-    fast_glide: bool
-    guard: bool
-    knob_zero: bool
-    poll_ms: int
-    compiled_validator: bool = False
+    binary: str        # "i107" | "ref"
+    query: str | None
+    trace: bool
 
 
-ARMS: dict[str, Arm] = {
-    "K0n": Arm(cursor=True, fast_glide=False, guard=False, knob_zero=False, poll_ms=100),
-    "K0": Arm(cursor=True, fast_glide=False, guard=True, knob_zero=False, poll_ms=100),
-    "K1": Arm(cursor=True, fast_glide=True, guard=True, knob_zero=False, poll_ms=100),
-    "K2": Arm(cursor=False, fast_glide=False, guard=True, knob_zero=False, poll_ms=100),
-    "K3": Arm(cursor=False, fast_glide=False, guard=True, knob_zero=True, poll_ms=100),
-    "K4": Arm(cursor=False, fast_glide=False, guard=True, knob_zero=True, poll_ms=10),
-    "K5": Arm(cursor=False, fast_glide=False, guard=True, knob_zero=True, poll_ms=10, compiled_validator=True),
-}
-CLASS_ARMS = {
-    "fill": ["K0n", "K0", "K1", "K2", "K3", "K4"],
-    "toggle": ["K0", "K1", "K2", "K4"],
-    "modal": ["K0", "K1", "K2", "K4"],
-}
-CLASSES = ["fill", "toggle", "modal"]
-EXPECTED_TOOLS = {"fill": ["browser_type", "browser_click"], "toggle": ["browser_click", "browser_click"],
-                  "modal": ["browser_click", "browser_click"]}
-DEFAULT_MOTION = {"glide_duration_ms": 0, "dwell_after_click_ms": 80}
-FAST_MOTION = {"glide_duration_ms": 1, "dwell_after_click_ms": 0}
+# A_off: arm A on the i107 binary with the trace unset (default-off check only).
+ARMS = {"A": Arm("i107", None, True), "B_proj": Arm("i107", QUERY, True), "A_ref": Arm("ref", None, False),
+        "A_off": Arm("i107", None, False)}
 
 
 def now() -> int:
     return time.monotonic_ns()
 
 
-def sha16(value: str | None) -> str | None:
-    return None if value is None else hashlib.sha256(value.encode()).hexdigest()[:16]
+def utc() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds")
 
 
 def loadavg() -> str:
@@ -211,93 +160,38 @@ def loadavg() -> str:
         return "unavailable"
 
 
-def williams(n: int) -> list[list[int]]:
-    """Williams design for even n: n sequences, first-order carryover balanced."""
-    first = [0]
-    lo, hi = 1, n - 1
-    take_lo = True
-    while len(first) < n:
-        first.append(lo if take_lo else hi)
-        if take_lo:
-            lo += 1
-        else:
-            hi -= 1
-        take_lo = not take_lo
-    return [[(x + i) % n for x in first] for i in range(n)]
+def file_sha256(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
-# ── fixtures with server-side journals ─────────────────────────────────────────
+def pid_gone(pid: int) -> bool:
+    try:
+        state = Path(f"/proc/{pid}/stat").read_text()
+    except OSError:
+        return True
+    return state[state.rindex(")") + 2:].split()[0] in ("Z", "X")
 
-class FillJournalState(FixtureState):
-    """jev-use FixtureState plus a CLOCK_MONOTONIC submit journal."""
 
+class Recorder:
     def __init__(self) -> None:
-        super().__init__()
-        self.journal: list[dict[str, Any]] = []
-        self._jlock = threading.Lock()
-        self.expected_sha16: str | None = None
+        self.events: list[dict[str, Any]] = []
 
-    def submit(self, value: str) -> None:
-        t = now()
-        super().submit(value)
-        with self._jlock:
-            self.journal.append({"event": "submit", "t_mono_ns": t, "value_sha16": sha16(value),
-                                 "value_len": len(value)})
+    def add(self, name: str, **fields: Any) -> None:
+        self.events.append({"event": name, "t_mono_ns": now(), **fields})
 
-    def reset(self) -> None:
-        t = now()
-        super().reset()
-        with self._jlock:
-            self.journal.append({"event": "reset", "t_mono_ns": t})
-
-    def drain(self) -> list[dict[str, Any]]:
-        with self._jlock:
-            out, self.journal = self.journal, []
-        return out
-
-
-class Fixtures:
-    def __init__(self) -> None:
-        self.fill = FixtureServer(("127.0.0.1", 0))
-        self.fill.state = FillJournalState()
-        self.i24 = JournalServer()
-        for server in (self.fill, self.i24):
-            threading.Thread(target=server.serve_forever, daemon=True).start()
-        self.fill_url = f"http://127.0.0.1:{self.fill.server_port}/"
-        self.i24_origin = f"http://127.0.0.1:{self.i24.server_port}/"
-
-    def state(self, cls: str) -> Any:
-        return self.fill.state if cls == "fill" else self.i24.state
-
-    def page_url(self, cls: str) -> str:
-        return self.fill_url if cls == "fill" else self.i24_origin + ("toggle-confirm" if cls == "toggle" else "modal")
-
-    def oracle_ok_direct(self, cls: str, token: str) -> bool:
-        snap = self.state(cls).snapshot()
-        if cls == "fill":
-            return snap.get("submitted") == token
-        return oracle_ok("toggle-confirm" if cls == "toggle" else "modal", snap, token)
-
-    def close(self) -> None:
-        for server in (self.fill, self.i24):
-            server.shutdown()
-            server.server_close()
-
-
-@contextmanager
-def duplicate_submit_page(enabled: bool):
-    if not enabled:
-        yield
-        return
-    with patch.object(jev_fixture_server, "PAGE", jev_fixture_server.PAGE + DUPLICATE_SUBMIT_ON_INPUT):
-        yield
+    def add_at(self, name: str, t: int, **fields: Any) -> None:
+        self.events.append({"event": name, "t_mono_ns": t, **fields})
 
 
 class OraclePoller:
     """Independent 2 ms re-read of the server state (no HTTP, no runner involvement)."""
 
-    def __init__(self, fixtures: Fixtures, cls: str, token: str) -> None:
-        self.fixtures, self.cls, self.token = fixtures, cls, token
+    def __init__(self, server: I107Server, token: str) -> None:
+        self.server, self.token = server, token
         self.first_ok_ns: int | None = None
         self.reads = 0
         self._stop = threading.Event()
@@ -305,7 +199,7 @@ class OraclePoller:
 
     def _run(self) -> None:
         while not self._stop.is_set():
-            ok = self.fixtures.oracle_ok_direct(self.cls, self.token)
+            ok = self.server.state.snapshot().get("submitted") == self.token
             t = now()
             self.reads += 1
             if ok:
@@ -319,14 +213,6 @@ class OraclePoller:
     def stop(self) -> None:
         self._stop.set()
         self._thread.join(timeout=2)
-
-
-class Recorder:
-    def __init__(self) -> None:
-        self.events: list[dict[str, Any]] = []
-
-    def add(self, name: str, **fields: Any) -> None:
-        self.events.append({"event": name, "t_mono_ns": now(), **fields})
 
 
 async def timed_call(rec: Recorder, driver: Driver, label: str, tool: str, args: dict[str, Any]) -> dict[str, Any]:
@@ -349,361 +235,327 @@ def oracle_read(rec: Recorder, task: Any, label: str, steps: int) -> str:
     return outcome
 
 
-def make_task(cls: str, token: str, fixtures: Fixtures) -> Any:
-    if cls == "fill":
-        return FixtureFormTask(token, fixtures.fill_url, 4)
-    if cls == "toggle":
-        return ToggleConfirmTask(token, fixtures.i24_origin, 4)
-    return ModalTask(token, fixtures.i24_origin, 4)
+def snapshot_facts(snap: dict[str, Any], token: str) -> dict[str, Any]:
+    meta = snap.get("snapshot") or {}
+    return {"scope": meta.get("scope"), "selected_nodes": meta.get("selected_nodes"),
+            "total_nodes": meta.get("total_nodes"), "omitted": meta.get("omitted"),
+            "refs": len(snap.get("refs") or []), "content_refs": len(snap.get("content_refs") or []),
+            "outline_chars": len(snap.get("outline") or ""), "controls": L.logical_controls(snap, token)}
 
 
-def completion_mutations(cls: str, journal: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    if cls == "fill":
-        return [e for e in journal if e["event"] == "submit"]
-    key = "checked" if cls == "toggle" else "modal"
-    return [e for e in journal if e["event"] == "update" and key in e.get("fields", {})]
+def sample_resources(driver_pid: int | None, browser_pid: int | None) -> dict[str, Any]:
+    out: dict[str, Any] = {"clk_tck": L.clk_tck(), "t_mono_ns": now()}
+    if driver_pid:
+        out["driver_cpu_ticks"] = L.cpu_ticks(driver_pid)
+        out["driver_status_kb"] = L.status_kb(driver_pid)
+    if browser_pid:
+        out["browser_tree"] = L.tree_usage(browser_pid)
+        out["browser_pids"] = sorted({browser_pid} | L.descendants(browser_pid))
+    return out
 
 
-async def run_trial(spec: dict[str, Any], args: argparse.Namespace, fixtures: Fixtures, trace_path: Path | None,
+async def run_trial(spec: dict[str, Any], args: argparse.Namespace, server: I107Server, trace_path: Path | None,
                     rec: Recorder, result: dict[str, Any]) -> None:
-    cls, kind, arm = spec["cls"], spec["kind"], ARMS[spec["arm"]]
-    token = f"jev-{uuid.uuid4().hex}{uuid.uuid4().hex}"[:64] if kind == "t0_stress" else f"jev-{uuid.uuid4().hex[:10]}"
-    label = f"jev-b01-{uuid.uuid4().hex[:8]}"
-    task = make_task(cls, token, fixtures)
-    result.update({"token_sha16": sha16(token), "token_len": len(token), "session_label": label,
-                   "outcome": "unknown", "routes": [], "tools": [], "input_routes": [], "candidates": []})
+    arm = ARMS[spec["arm"]]
+    control = spec.get("control")
+    token = f"jev-{uuid.uuid4().hex[:10]}"
+    label = f"jev-i107ab-{uuid.uuid4().hex[:8]}"
+    server.configure(spec["condition"], spec["seed"], control in ("DC03", "DC04"))
+    fixture_url = f"http://127.0.0.1:{server.server_port}/"
+    task = FixtureFormTask(token, fixture_url, 4)
+    result.update({"token_sha16": sha16(token), "token_len": len(token), "outcome": "unknown", "routes": [],
+                   "tools": [], "input_routes": [], "candidates": [], "steps": []})
     task.reset()
-    fixtures.state(cls).drain()
-    poller = OraclePoller(fixtures, cls, token)
+    server.state.drain()
+    poller = OraclePoller(server, token)
     result["_poller"] = poller
     env = driver_environment()
     env.pop(TRACE_ENV, None)
     env.pop(KNOB_ENV, None)
     if trace_path is not None:
         env[TRACE_ENV] = str(trace_path)
-    if arm.knob_zero and cls == "fill":
-        env[KNOB_ENV] = "0"
     result["driver_env_trace_set"] = TRACE_ENV in env
     result["driver_env_knob"] = env.get(KNOB_ENV)
-    rec.add("trial_start", cls=cls, arm=spec["arm"], kind=kind)
+    driver_bin = args.driver if arm.binary == "i107" else args.ref_driver
+    rec.add("trial_start", arm=spec["arm"], condition=spec["condition"], control=control)
     CLIENT["rec"] = rec
-    CLIENT["compiled"] = None
-    params = StdioServerParameters(command=args.driver, args=["mcp"], env=env)
+    params = StdioServerParameters(command=driver_bin, args=["mcp"], env=env)
+    rec.add("driver_spawn")
     async with stdio_client(params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
+            driver_pids = L.children_with_argv0(os.getpid(), driver_bin)
+            result["_driver_pid"] = driver_pids[-1] if driver_pids else None
+            result["driver_pid_found"] = bool(driver_pids)
             tools = (await session.list_tools()).tools
-            if arm.compiled_validator:
-                rec.add("compile_validators_start")
-                result["compiled_validators"] = compile_output_validators(session)
-                rec.add("compile_validators_end")
             available = {tool.name for tool in tools}
             capture_bound = supports_capture_bound_click(tools)
             driver = Driver(session, label)
-            await timed_call(rec, driver, "cursor_enabled", "set_agent_cursor_enabled", {"enabled": arm.cursor})
-            motion = await timed_call(rec, driver, "cursor_motion", "set_agent_cursor_motion",
-                                      FAST_MOTION if arm.fast_glide else DEFAULT_MOTION)
-            result["motion_ack"] = {k: motion.get(k) for k in ("glide_duration_ms", "dwell_after_click_ms")
-                                    if isinstance(motion, dict)}
-            prepared = await timed_call(rec, driver, "prepare", "browser_prepare",
-                                        {"allow_launch": True, "profile": {"mode": "isolated_new"}})
-            pid = int(prepared["prepared_pid"])
-            result["prepared_pid"] = pid
-            window = await wait_for_window(driver, pid)
-            rec.add("window_ready")
-            bound = await timed_call(rec, driver, "bind", "get_browser_state",
-                                     {"pid": pid, "window_id": window["window_id"]})
-            target_id = bound["target_id"]
-            tab_id = select_tab_id(bound["tabs"])
-            await timed_call(rec, driver, "navigate", "browser_navigate",
-                             {"target_id": target_id, "tab_id": tab_id, "url": fixtures.page_url(cls)})
-            poller.start()
-            history: list[dict[str, Any]] = []
-            pending = None
-            for step in range(1, task.max_steps + 1):
-                current = oracle_read(rec, task, f"pre_step{step}", step - 1)
-                if current in {"verified", "refuted"}:
-                    result["outcome"] = current
-                    return
-                snap = await timed_call(rec, driver, f"snapshot{step}", "get_browser_state",
-                                        {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"})
-                if args.save_snapshots and cls != "fill":
-                    out = Path(args.out) / "snapshots"
-                    out.mkdir(parents=True, exist_ok=True)
-                    (out / f"{cls}-step{step}.json").write_text(json.dumps(snap, indent=1, sort_keys=True))
-                rec.add("cand_start", step=step)
-                candidates, sources, visual_record = await task_candidates_for_step(
-                    driver, task, snap, pid, int(window["window_id"]), available, capture_bound,
-                    visual_mode="auto")
-                rec.add("cand_done", step=step, ids=[c.id for c in candidates],
-                        visual=visual_record.get("status") if isinstance(visual_record, dict) else None)
-                candidate = None
-                guard_tel = None
-                if arm.guard and pending is not None:
-                    rec.add("guard_start", step=step)
-                    resolution = resolve_guarded_completion(pending, task, sources, candidates, session=label)
-                    candidate, guard_tel = resolution.candidate, resolution.telemetry
-                    pending = None
-                    rec.add("guard_done", step=step, status=guard_tel.get("status"), reason=guard_tel.get("reason"))
-                if candidate is not None:
-                    route = "guarded-completion"
-                else:
-                    rec.add("decide_start", step=step)
-                    choice, _confidence, _probabilities = choose_mock_for_task(task, sources, candidates, history)
-                    rec.add("decided", step=step, choice=choice)
-                    if choice is None:
-                        result["outcome"] = "abstained"
-                        return
-                    candidate = validate_choice(choice, candidates, current_capture_id=None)
-                    route = "provider"
-                next_plan = (plan_guarded_completion(task, sources, candidate, session=label)
-                             if arm.guard and route == "provider" else None)
-                result["routes"].append(route)
-                result["candidates"].append(candidate.id)
-                result["tools"].append(candidate.tool)
-                result["input_routes"].append((candidate.arguments or {}).get("input_route"))
-                result.setdefault("guard", []).append(guard_tel)
-                result.setdefault("guard_plan_bound", []).append(next_plan is not None)
-                rec.add("routed", step=step, route=route, candidate=candidate.id, tool=candidate.tool,
-                        plan_bound=next_plan is not None)
-                if candidate.id == "reobserve":
-                    history.append(task.history_entry(step, candidate.id))
-                    continue
-                if candidate.id == "abstain":
-                    result["outcome"] = "abstained"
-                    return
-                if kind == "stale_ref" and step == 2:
-                    await timed_call(rec, driver, "renavigate", "browser_navigate",
-                                     {"target_id": target_id, "tab_id": tab_id, "url": fixtures.page_url(cls)})
-                    rec.add("call_send", label="stale_click", tool=candidate.tool)
-                    raw = await session.call_tool(candidate.tool, {**candidate.arguments, "session": label})
-                    structured = raw.structuredContent if isinstance(raw.structuredContent, dict) else {}
-                    rec.add("call_return", label="stale_click", tool=candidate.tool, is_error=bool(raw.isError),
-                            status=structured.get("status"), effect=structured.get("effect"))
-                    result["stale_envelope"] = structured
-                    result["stale_is_error"] = bool(raw.isError)
-                    await asyncio.sleep(1.0)
-                    result["outcome"] = oracle_read(rec, task, "stale_check", step)
-                    return
-                try:
-                    await timed_call(rec, driver, f"action{step}", candidate.tool, dict(candidate.arguments))
-                except Exception as error:
-                    result["outcome"] = "unknown"
-                    result["action_error"] = {"type": type(error).__name__, "code": getattr(error, "code", None)}
-                    return
-                pending = next_plan
-                history.append(task.history_entry(step, candidate.id))
-                if kind == "first_only" and step == 1:
-                    await asyncio.sleep(1.0)
-                    result["outcome"] = oracle_read(rec, task, "first_only_check", step)
-                    return
-                if candidate.id in task.completion_candidate_ids:
-                    polls = int(round(POLL_DEADLINE_S * 1000 / arm.poll_ms))
-                    for i in range(polls):
-                        outcome = oracle_read(rec, task, f"verify{i}", step)
-                        if outcome in {"verified", "refuted"}:
-                            result["outcome"] = outcome
-                            result["poll_reads"] = i + 1
-                            return
-                        rec.add("sleep_start", poll_ms=arm.poll_ms)
-                        await asyncio.sleep(arm.poll_ms / 1000)
-                        rec.add("sleep_end")
-            result["outcome"] = task.classify(task.read_oracle(), steps=task.max_steps)
+            try:
+                await timed_call(rec, driver, "cursor_enabled", "set_agent_cursor_enabled", {"enabled": False})
+                prepared = await timed_call(rec, driver, "prepare", "browser_prepare",
+                                            {"allow_launch": True, "profile": {"mode": "isolated_new"}})
+                pid = int(prepared["prepared_pid"])
+                result["_browser_pid"] = pid
+                window = await wait_for_window(driver, pid)
+                rec.add("window_ready")
+                bound = await timed_call(rec, driver, "bind", "get_browser_state",
+                                         {"pid": pid, "window_id": window["window_id"]})
+                target_id = bound["target_id"]
+                tab_id = select_tab_id(bound["tabs"])
+                await timed_call(rec, driver, "navigate", "browser_navigate",
+                                 {"target_id": target_id, "tab_id": tab_id, "url": fixture_url})
+                rec.add("startup_done")
+                poller.start()
+                await step_loop(spec, arm, server, task, driver, session, rec, result, label, pid, window,
+                                target_id, tab_id, fixture_url, available, capture_bound)
+            finally:
+                rec.add("outcome_decided", outcome=result.get("outcome"))
+                result["resources_at_outcome"] = sample_resources(result.get("_driver_pid"), result.get("_browser_pid"))
+    rec.add("client_exited")
 
 
-def pid_alive(pid: int | None) -> bool | None:
-    if not pid:
-        return None
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+async def step_loop(spec: dict[str, Any], arm: Arm, server: I107Server, task: Any, driver: Driver, session: Any,
+                    rec: Recorder, result: dict[str, Any], label: str, pid: int, window: dict[str, Any],
+                    target_id: str, tab_id: str, fixture_url: str, available: set[str], capture_bound: bool) -> None:
+    control = spec.get("control")
+    history: list[dict[str, Any]] = []
+    snap_args: dict[str, Any] = {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"}
+    if arm.query is not None:
+        snap_args["query"] = arm.query
+    for step in range(1, task.max_steps + 1):
+        current = oracle_read(rec, task, f"pre_step{step}", step - 1)
+        if current in {"verified", "refuted"}:
+            result["outcome"] = current
+            return
+        snap = await timed_call(rec, driver, f"snapshot{step}", "get_browser_state", dict(snap_args))
+        rec.add("cand_start", step=step)
+        candidates, sources, visual_record = await task_candidates_for_step(
+            driver, task, snap, pid, int(window["window_id"]), available, capture_bound, visual_mode="auto")
+        rec.add("cand_done", step=step, ids=[c.id for c in candidates],
+                visual=visual_record.get("status") if isinstance(visual_record, dict) else None)
+        result["steps"].append({"step": step, "candidates": [c.id for c in candidates],
+                                **snapshot_facts(snap, task.token)})
+        rec.add("decide_start", step=step)
+        choice, _confidence, _probabilities = choose_mock_for_task(task, sources, candidates, history)
+        rec.add("decided", step=step, choice=choice)
+        if choice is None:
+            result["outcome"] = "abstained"
+            return
+        candidate = validate_choice(choice, candidates, current_capture_id=None)
+        result["routes"].append("provider")
+        result["candidates"].append(candidate.id)
+        result["tools"].append(candidate.tool)
+        result["input_routes"].append((candidate.arguments or {}).get("input_route"))
+        rec.add("routed", step=step, candidate=candidate.id, tool=candidate.tool)
+        if candidate.id == "reobserve":
+            history.append(task.history_entry(step, candidate.id))
+            continue
+        if candidate.id == "abstain":
+            result["outcome"] = "abstained"
+            return
+        if control == "stale_ref" and step == 2:
+            await timed_call(rec, driver, "renavigate", "browser_navigate",
+                             {"target_id": target_id, "tab_id": tab_id, "url": fixture_url})
+            rec.add("call_send", label="stale_click", tool=candidate.tool)
+            raw = await session.call_tool(candidate.tool, {**candidate.arguments, "session": label})
+            structured = raw.structuredContent if isinstance(raw.structuredContent, dict) else {}
+            rec.add("call_return", label="stale_click", tool=candidate.tool, is_error=bool(raw.isError),
+                    status=structured.get("status"), effect=structured.get("effect"))
+            refusal = structured.get("refusal") if isinstance(structured.get("refusal"), dict) else {}
+            result["stale_envelope"] = {"status": structured.get("status"), "code": refusal.get("code"),
+                                        "is_error": bool(raw.isError)}
+            await asyncio.sleep(1.0)
+            result["outcome"] = oracle_read(rec, task, "stale_check", step)
+            return
+        try:
+            await timed_call(rec, driver, f"action{step}", candidate.tool, dict(candidate.arguments))
+        except Exception as error:
+            result["outcome"] = "unknown"
+            result["action_error"] = {"type": type(error).__name__, "code": getattr(error, "code", None)}
+            return
+        history.append(task.history_entry(step, candidate.id))
+        if control in ("DC03", "DC04") and step == 1:
+            op_id = server.bus.post(control)
+            rec.add("control_post", op=control)
+            acked = await asyncio.to_thread(server.bus.wait_ack, op_id, 2.0)
+            rec.add("control_ack" if acked else "control_ack_missing", op=control)
+            result["control_applied"] = acked
+        if candidate.id in task.completion_candidate_ids:
+            for i in range(POLL_READS):
+                outcome = oracle_read(rec, task, f"verify{i}", step)
+                if outcome in {"verified", "refuted"}:
+                    result["outcome"] = outcome
+                    result["poll_reads"] = i + 1
+                    return
+                rec.add("sleep_start", poll_ms=POLL_MS)
+                await asyncio.sleep(POLL_MS / 1000)
+                rec.add("sleep_end")
+    result["outcome"] = task.classify(task.read_oracle(), steps=task.max_steps)
 
 
-async def one(spec: dict[str, Any], args: argparse.Namespace, fixtures: Fixtures, out: Path) -> dict[str, Any]:
+async def one(spec: dict[str, Any], args: argparse.Namespace, server: I107Server, out: Path) -> dict[str, Any]:
     name = spec["name"]
-    trace_rel = None if args.plan == "smoke" else f"trials/{name}.driver-trace.jsonl"
+    arm = ARMS[spec["arm"]]
+    trace_rel = f"trials/{name}.driver-trace.jsonl" if arm.trace else None
     trace_path = None if trace_rel is None else out / trace_rel
-    (out / "trials").mkdir(parents=True, exist_ok=True)
     rec = Recorder()
-    record: dict[str, Any] = {"trial": name, **{k: spec[k] for k in ("cls", "arm", "kind", "block")},
-                              "round": spec.get("round"), "loadavg_before": loadavg(), "driver_trace": trace_rel,
-                              "lock_mode": spec.get("lock_mode")}
+    record: dict[str, Any] = {"trial": name, **{k: spec.get(k) for k in (
+        "plan", "arm", "condition", "pair", "order", "control", "seed", "excluded", "block")},
+        "cohort": "K1", "regime": "fresh-per-trial", "binary": arm.binary,
+        "binary_sha256": args.shas[arm.binary], "query": arm.query, "lock_label": args.lock_label,
+        "loadavg_before": loadavg(), "psi_before": L.pressure(), "utc_start": utc(), "driver_trace": trace_rel}
     res: dict[str, Any] = {}
     t0 = now()
-    with duplicate_submit_page(spec["kind"] == "guard_decline"):
-        try:
-            await asyncio.wait_for(run_trial(spec, args, fixtures, trace_path, rec, res), timeout=180)
-        except Exception as error:
-            res["outcome"] = "error"
-            res["error"] = f"{type(error).__name__}: {str(error)[:300]}"
-    record["trial_wall_ns"] = now() - t0
+    try:
+        await asyncio.wait_for(run_trial(spec, args, server, trace_path, rec, res), timeout=180)
+    except asyncio.TimeoutError:
+        res["outcome"] = "timeout"
+    except Exception as error:
+        res["outcome"] = res.get("outcome") if res.get("outcome") not in (None, "unknown") else "error"
+        res["error"] = f"{type(error).__name__}: {str(error)[:300]}"
     CLIENT["rec"] = None
-    CLIENT["compiled"] = None
+    # Cleanup span end: every process of the Driver-launched browser tree gone (20 ms polls, <= 10 s).
+    pids = (res.get("resources_at_outcome") or {}).get("browser_pids") or (
+        [res["_browser_pid"]] if res.get("_browser_pid") else [])
+    deadline = time.monotonic() + 10
+    while pids and not all(pid_gone(p) for p in pids) and time.monotonic() < deadline:
+        await asyncio.sleep(0.02)
+    rec.add("browser_gone", ok=all(pid_gone(p) for p in pids) if pids else None, pids=len(pids))
+    record["trial_wall_ns"] = now() - t0
     poller = res.pop("_poller", None)
     if poller is not None:
-        # Let a late effect land before the independent read loop gives up.
         deadline = time.monotonic() + 2.5
         while poller.first_ok_ns is None and time.monotonic() < deadline and poller._thread.is_alive():
             await asyncio.sleep(0.01)
         poller.stop()
         record["poller_first_ok_ns"] = poller.first_ok_ns
         record["poller_reads"] = poller.reads
-    pid = res.pop("prepared_pid", None)
-    alive = pid_alive(pid)
-    for _ in range(50):
-        if not alive:
-            break
-        await asyncio.sleep(0.1)
-        alive = pid_alive(pid)
-    record["browser_alive_after_close"] = alive
+    res.pop("_driver_pid", None)
+    res.pop("_browser_pid", None)
+    if isinstance(res.get("resources_at_outcome"), dict):
+        res["resources_at_outcome"]["browser_pids"] = len(res["resources_at_outcome"].get("browser_pids") or [])
     await asyncio.sleep(0.3)
-    cls = spec["cls"]
-    final_state = fixtures.state(cls).snapshot()
-    journal = fixtures.state(cls).drain()
+    final_state = server.state.snapshot()
+    journal = server.state.drain() + server.bus.drain()
     record.update(res)
     record["journal"] = journal
-    if cls == "fill":
-        record["final_state"] = {"submitted_sha16": sha16(final_state.get("submitted")),
-                                 "submitted_len": None if final_state.get("submitted") is None
-                                 else len(final_state["submitted"])}
-        record["oracle_exact_match"] = final_state.get("submitted") is not None and \
-            sha16(final_state["submitted"]) == res.get("token_sha16") and \
-            len(final_state["submitted"]) == res.get("token_len")
-    else:
-        record["final_state"] = {k: final_state.get(k) for k in ("checked", "opened", "modal")}
-        record["oracle_exact_match"] = oracle_ok("toggle-confirm" if cls == "toggle" else "modal", final_state, "")
-    record["completion_mutations"] = len(completion_mutations(cls, journal))
+    record["final_state"] = {"submitted_sha16": sha16(final_state.get("submitted")),
+                             "submitted_len": None if final_state.get("submitted") is None else len(final_state["submitted"]),
+                             "submitter": final_state.get("submitter")}
+    record["oracle_exact_match"] = final_state.get("submitted") is not None and \
+        sha16(final_state["submitted"]) == res.get("token_sha16") and len(final_state["submitted"]) == res.get("token_len")
+    record["completion_mutations"] = sum(1 for e in journal if e.get("event") == "submit")
+    record["wrong_target_submits"] = wrong_target_submits(journal)
+    record["trace_file_exists"] = bool(trace_path and trace_path.exists())
     record["network"] = dict(NETWORK)
     record["loadavg_after"] = loadavg()
+    record["psi_after"] = L.pressure()
+    record["utc_end"] = utc()
     with (out / f"trials/{name}.jsonl").open("w") as f:
         for ev in rec.events:
             f.write(json.dumps(ev, sort_keys=True) + "\n")
         f.write(json.dumps({"event": "summary", **record}, sort_keys=True, default=str) + "\n")
     print(json.dumps({k: record.get(k) for k in ("trial", "outcome", "oracle_exact_match", "completion_mutations",
-                                                  "routes", "loadavg_before")}), flush=True)
+                                                  "wrong_target_submits", "loadavg_before")}), flush=True)
     return record
 
 
-def build_plan(kind: str, rounds: int, t0_pairs: int) -> list[list[dict[str, Any]]]:
-    """Return blocks: list of (lock_mode, trials)."""
-    blocks: list[list[dict[str, Any]]] = []
-    if kind == "smoke":
-        return [[{"cls": "fill", "arm": "K0", "kind": "measured", "block": "smoke", "lock_mode": "shared"}
-                 for _ in range(5)]]
-    if kind == "shakedown":
-        trials = []
-        for cls in CLASSES:
-            for arm in CLASS_ARMS[cls]:
-                trials.append({"cls": cls, "arm": arm, "kind": "measured", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "fill", "arm": "K2", "kind": "stale_ref", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "toggle", "arm": "K2", "kind": "stale_ref", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "modal", "arm": "K2", "kind": "first_only", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "fill", "arm": "K3", "kind": "t0_stress", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "fill", "arm": "K0", "kind": "guard_decline", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "toggle", "arm": "K5", "kind": "measured", "block": "shake", "lock_mode": "none"})
-        trials.append({"cls": "fill", "arm": "K5", "kind": "measured", "block": "shake", "lock_mode": "none"})
-        return [trials]
-    if kind == "measured":
-        squares = {cls: williams(len(CLASS_ARMS[cls])) for cls in CLASSES}
-        trials = []
-        for r in range(rounds):
-            order = CLASSES[r % 3:] + CLASSES[:r % 3]
-            for cls in order:
-                row = squares[cls][r % len(squares[cls])]
-                for j in row:
-                    trials.append({"cls": cls, "arm": CLASS_ARMS[cls][j], "kind": "measured", "block": "m",
-                                   "round": r, "lock_mode": "exclusive"})
-        for k in range(rounds):
-            for cls in CLASSES[k % 3:] + CLASSES[:k % 3]:
-                for arm in (("K4", "K5") if k % 2 == 0 else ("K5", "K4")):
-                    trials.append({"cls": cls, "arm": arm, "kind": "measured", "block": "v", "round": k,
-                                   "lock_mode": "exclusive"})
-        for k in range(t0_pairs):
-            pair = ("K3", "K2") if k % 2 == 0 else ("K2", "K3")
-            for arm in pair:
-                trials.append({"cls": "fill", "arm": arm, "kind": "t0_stress", "block": "t", "round": k,
-                               "lock_mode": "exclusive"})
-        blocks.append(trials)
-        return blocks
-    if kind == "controls":
-        trials = []
-        for cls in CLASSES:
-            for arm in CLASS_ARMS[cls]:
-                for _ in range(2):
-                    trials.append({"cls": cls, "arm": arm, "kind": "stale_ref"})
-        for cls in CLASSES:
-            for arm in ("K0", "K4"):
-                trials.append({"cls": cls, "arm": arm, "kind": "first_only"})
-        for arm in ("K0", "K4", "K0", "K4", "K0", "K4"):
-            trials.append({"cls": "fill", "arm": arm, "kind": "guard_decline"})
-        # Interleave kinds/classes deterministically, then cut into shared-lock blocks of <= 10.
-        trials = trials[0::3] + trials[1::3] + trials[2::3]
-        for i in range(0, len(trials), 10):
-            chunk = trials[i:i + 10]
-            for t in chunk:
-                t.update({"block": f"c{i // 10}", "lock_mode": "shared"})
-            blocks.append(chunk)
-        return blocks
-    raise ValueError(kind)
+def build_plan(plan: str, pairs: int, conditions: list[str]) -> list[dict[str, Any]]:
+    trials: list[dict[str, Any]] = []
+
+    def add(arm: str, cond: str, **kw: Any) -> None:
+        trials.append({"plan": plan, "arm": arm, "condition": cond, "excluded": False, **kw})
+
+    if plan == "shakedown":
+        add("A", "W-quiet", excluded=True)
+        add("B_proj", "W-churn", excluded=True)
+        add("A", "W-quiet", control="DC03", excluded=True)
+        add("B_proj", "W-quiet", control="stale_ref", excluded=True)
+    elif plan == "default_off":
+        for _ in range(5):
+            add("A_off", "W-quiet")
+    elif plan == "distortion":
+        for i, order in enumerate(L.abba_pairs("A", "A_ref", 10)):
+            for arm in order:
+                add(arm, "W-quiet", pair=f"dist-p{i:02d}", order="AR" if order[0] == "A" else "RA")
+    elif plan == "ab":
+        for cond in conditions:
+            for i, order in enumerate(L.abba_pairs("A", "B_proj", pairs)):
+                for arm in order:
+                    add(arm, cond, pair=f"{cond}-p{i:02d}", order="AB" if order[0] == "A" else "BA")
+    elif plan == "controls":
+        for i in range(5):
+            for j, ctl in enumerate(("DC03", "DC04", "stale_ref")):
+                order = ("A", "B_proj") if (i + j) % 2 == 0 else ("B_proj", "A")
+                for arm in order:
+                    add(arm, "W-quiet", control=ctl, pair=f"{ctl}-p{i:02d}", order="AB" if order[0] == "A" else "BA")
+    else:
+        raise ValueError(plan)
+    for idx, t in enumerate(trials):
+        t["seed"] = SEED_BASE + idx
+        t["block"] = plan
+        t["name"] = f"{plan}{idx:03d}-{t['condition']}-{t['arm']}-{t.get('control') or 'none'}"
+    return trials
 
 
-async def main_async(args: argparse.Namespace) -> None:
+def lock_fd_inherited() -> bool:
+    for fd in Path("/proc/self/fd").iterdir():
+        try:
+            if os.readlink(fd).endswith("/locks/quiet-lane.lock"):
+                return True
+        except OSError:
+            continue
+    return False
+
+
+async def main_async(args: argparse.Namespace) -> int:
     out = Path(args.out)
     (out / "trials").mkdir(parents=True, exist_ok=True)
-    fixtures = Fixtures()
-    blocks = build_plan(args.plan, args.rounds, args.t0_pairs)
-    idx = 0
-    for block in blocks:
-        for spec in block:
-            spec["name"] = f"{spec['block']}{idx:03d}-{spec['cls']}-{spec['arm']}-{spec['kind']}"
-            idx += 1
-    manifest: dict[str, Any] = {"plan_kind": args.plan, "blocks": [[s["name"] for s in b] for b in blocks],
-                                "started_mono_ns": now(), "loadavg_start": loadavg(), "locks": [],
-                                "provider": "mock", "rounds": args.rounds, "t0_pairs": args.t0_pairs}
-    try:
-        for block in blocks:
-            mode = block[0]["lock_mode"]
-            fd = None
-            if mode in ("exclusive", "shared") and args.lock:
-                fd = os.open(args.lock, os.O_RDONLY | os.O_CREAT, 0o644)
-                t_req = now()
-                fcntl.flock(fd, fcntl.LOCK_EX if mode == "exclusive" else fcntl.LOCK_SH)
-                manifest["locks"].append({"event": "lock_acquired", "mode": mode, "t_request_ns": t_req,
-                                          "t_mono_ns": now(), "first": block[0]["name"]})
-                print(json.dumps({"event": "lock_acquired", "mode": mode}), flush=True)
-            elif mode in ("exclusive", "shared"):
-                raise SystemExit("refusing: this plan needs --lock")
-            try:
-                for spec in block:
-                    await one(spec, args, fixtures, out)
-            finally:
-                if fd is not None:
-                    fcntl.flock(fd, fcntl.LOCK_UN)
-                    os.close(fd)
-                    manifest["locks"].append({"event": "lock_released", "mode": mode, "t_mono_ns": now(),
-                                              "last": block[-1]["name"]})
-                    print(json.dumps({"event": "lock_released", "mode": mode}), flush=True)
-    finally:
-        manifest["ended_mono_ns"] = now()
-        manifest["loadavg_end"] = loadavg()
+    manifest: dict[str, Any] = {"plan_kind": args.plan, "lock_label": args.lock_label, "utc_start": utc(),
+                                "started_mono_ns": now(), "loadavg_start": loadavg(), "psi_start": L.pressure(),
+                                "lock_fd_inherited": lock_fd_inherited(), "provider": "mock",
+                                "chooser": "choose_mock_for_task", "binaries": args.shas, "pairs": args.pairs,
+                                "conditions": args.conditions}
+    pre = L.trust_precondition()
+    manifest["preflight"] = pre
+    if not pre["ok"] or args.plan == "preflight":
+        manifest["status"] = "infrastructure_blocked" if not pre["ok"] else "preflight_ok"
+        manifest["utc_end"] = utc()
         manifest["network"] = dict(NETWORK)
         (out / f"run-manifest-{args.plan}.json").write_text(json.dumps(manifest, indent=1))
-        fixtures.close()
+        print(json.dumps({"event": manifest["status"], "preflight": pre}), flush=True)
+        return 3 if not pre["ok"] else 0
+    server = I107Server(("127.0.0.1", 0))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    trials = build_plan(args.plan, args.pairs, args.conditions)
+    manifest["trials"] = [t["name"] for t in trials]
+    try:
+        for spec in trials:
+            await one(spec, args, server, out)
+    finally:
+        server.stopping = True
+        manifest["ended_mono_ns"] = now()
+        manifest["utc_end"] = utc()
+        manifest["loadavg_end"] = loadavg()
+        manifest["network"] = dict(NETWORK)
+        manifest["status"] = "ran"
+        (out / f"run-manifest-{args.plan}.json").write_text(json.dumps(manifest, indent=1))
+        server.shutdown()
+        server.server_close()
+    return 0
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description=__doc__)
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--driver", required=True)
+    p.add_argument("--ref-driver")
     p.add_argument("--out", required=True)
-    p.add_argument("--plan", choices=("shakedown", "measured", "controls", "smoke"), required=True)
-    p.add_argument("--rounds", type=int, default=20)
-    p.add_argument("--t0-pairs", type=int, default=20)
-    p.add_argument("--lock")
-    p.add_argument("--save-snapshots", action="store_true")
+    p.add_argument("--plan", choices=("preflight", "shakedown", "default_off", "distortion", "ab", "controls"),
+                   required=True)
+    p.add_argument("--pairs", type=int, default=30)
+    p.add_argument("--conditions", nargs="+", default=["W-quiet", "W-churn"])
+    p.add_argument("--lock-label", required=True)
     args = p.parse_args()
     if os.environ.get("WAYLAND_DISPLAY") or any(k.startswith("HYPRLAND") for k in os.environ):
         raise SystemExit("refusing: not inside the isolated X11 session")
@@ -712,7 +564,16 @@ def main() -> None:
     for name in (TRACE_ENV, KNOB_ENV):
         if name in os.environ:
             raise SystemExit(f"refusing: {name} must not be set in the runner environment")
-    asyncio.run(main_async(args))
+    args.shas = {"i107": file_sha256(args.driver)}
+    if args.shas["i107"] != PINNED["i107"]:
+        raise SystemExit("refusing: --driver is not the pinned i107 binary")
+    if args.ref_driver:
+        args.shas["ref"] = file_sha256(args.ref_driver)
+        if args.shas["ref"] != PINNED["ref"]:
+            raise SystemExit("refusing: --ref-driver is not the pinned reference binary")
+    elif args.plan == "distortion":
+        raise SystemExit("refusing: distortion needs --ref-driver")
+    sys.exit(asyncio.run(main_async(args)))
 
 
 if __name__ == "__main__":

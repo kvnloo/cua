@@ -1,8 +1,14 @@
-"""B-01 analysis: per-trial decomposition, validity, paired statistics and gates.
+"""i107 lane AB analysis core, adapted from B-01 (kvnloo/cua 6689610d5, b01_analysis.py).
 
 Pure standard-library Python so ``verify_artifacts.py`` can recompute every
-headline from ``raw/`` on any machine. The rules here are the ones written in
-PREREG.json (decomposition taxonomy, T definitions, bootstrap, gates).
+headline from ``raw/`` on any machine. Kept from B-01: the telescoping
+decomposition, mark taxonomy, windows, bootstrap and statistics. Changed for
+kvnloo/cua#107 lane AB (see PREREG.json in this directory): arms A / B_proj /
+A_ref replace the K arms; new components client_parse and candidate_build;
+sub-components for Driver projection and serialization; the decomposition can
+end at the runner's verified read (T_runner) or at the independent 2 ms
+oracle read (T_oracle); ledger marks are removed by the caller
+(i107ab_ledger.decomposable) before decomposition.
 """
 
 from __future__ import annotations
@@ -16,23 +22,16 @@ from typing import Any, Callable
 
 SEED = 20261002
 BOOT = 10000
-CLASS_ARMS = {
-    "fill": ["K0n", "K0", "K1", "K2", "K3", "K4"],
-    "toggle": ["K0", "K1", "K2", "K4"],
-    "modal": ["K0", "K1", "K2", "K4"],
-}
-CLASSES = ["fill", "toggle", "modal"]
-EXPECTED_TOOLS = {"fill": ["browser_type", "browser_click"], "toggle": ["browser_click", "browser_click"],
-                  "modal": ["browser_click", "browser_click"]}
-ON_ARMS = {"K0n", "K0", "K1"}
-KNOB_ARMS = {"K3", "K4", "K5"}
-POLL_MS = {"K0n": 100, "K0": 100, "K1": 100, "K2": 100, "K3": 100, "K4": 10, "K5": 10}
+ARMS = ("A", "B_proj", "A_ref")
+EXPECTED_TOOLS = ["browser_type", "browser_click"]
+POLL_MS = 100
+DEFAULT_SETTLE_MS = 100
 
 COMPONENTS = [
     "decision", "observation", "resolution", "revalidate", "visualization", "input_prep", "settles",
     "dispatch", "dispatch_post", "driver_pre_dispatch", "driver_post_dispatch", "transport",
-    "client_validation", "runner_overhead", "verification_reads", "sleeps_polls", "target_effect_lag",
-    "unattributed",
+    "client_validation", "client_parse", "candidate_build", "runner_overhead", "verification_reads",
+    "sleeps_polls", "target_effect_lag", "oracle_detect_lag", "unattributed",
 ]
 MCP_TRANSPORT = ["transport", "driver_pre_dispatch", "driver_post_dispatch", "client_validation"]
 
@@ -52,12 +51,20 @@ def classify_mark(left: str, tool: str) -> tuple[str, str | None]:
     if left in _PRE:
         sub = {"mcp.line_read": "pre_admission_validate", "mcp.admitted": "pre_inner_validate"}.get(left, "pre_other")
         return "driver_pre_dispatch", sub
+    if left == "mcp.handled":
+        return "driver_post_dispatch", "driver_serialize"
+    if left == "mcp.serialized":
+        return "driver_post_dispatch", "driver_write"
     if left in _POST:
         return "driver_post_dispatch", None
     if left == "mcp.written":
         return "transport", "client_receive_parse"
     if left == "dispatch.enter":
         return ("observation", "observation_processing") if tool == "get_browser_state" else ("resolution", None)
+    if left == "snap.oopif_done":
+        return "observation", "projection_page"
+    if left in ("snap.paged", "snap.outcome", "snap.stored"):
+        return "observation", "snapshot_build_store"
     if left.startswith("snap."):
         return "observation", ("observation_cdp" if left in _OBS_CDP else "observation_processing")
     if left in ("click.lock_acquired", "type.lock_acquired") or left.startswith("reval."):
@@ -148,16 +155,24 @@ def completion_effect_ns(cls: str, journal: list[dict[str, Any]]) -> int | None:
     return None
 
 
-def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
-    """Telescoping decomposition of T_runner; None when T is undefined (no T0 or no verified read)."""
+def decompose(trial: dict[str, Any], end: str = "runner") -> dict[str, Any] | None:
+    """Telescoping decomposition of T_runner (end="runner") or T_oracle (end="oracle");
+    None when T is undefined (no T0, or no verified read / no oracle observation)."""
     s, events, trace = trial["summary"], trial["events"], trial["trace"]
-    cls = s["cls"]
+    cls = s.get("cls", "fill")
     windows = _windows(events)
     snap1 = next((w for w in windows if w["label"] == "snapshot1"), None)
     verified = next((e for e in events if e["event"] == "oracle_return" and e.get("outcome") == "verified"), None)
-    if snap1 is None or verified is None:
+    if snap1 is None:
         return None
-    T0, T1 = snap1["t0"], verified["t_mono_ns"]
+    if end == "oracle":
+        if s.get("poller_first_ok_ns") is None:
+            return None
+        T0, T1 = snap1["t0"], s["poller_first_ok_ns"]
+    else:
+        if verified is None:
+            return None
+        T0, T1 = snap1["t0"], verified["t_mono_ns"]
     actions = [w for w in windows if w["label"].startswith("action") and T0 <= w["t0"] <= T1]
     last_action = actions[-1] if actions else None
     effect = completion_effect_ns(cls, s.get("journal", []))
@@ -165,6 +180,8 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
     sleeps = _pairs(events, "sleep_start", "sleep_end")
     decisions = _pairs(events, "decide_start", "decided")
     validations = _pairs(events, "client_validate_start", "client_validate_end")
+    parses = _pairs(events, "parse_start", "parse_end")
+    cands = _pairs(events, "cand_start", "cand_done")
     in_window = [w for w in windows if w["t1"] >= T0 and w["t0"] <= T1]
 
     points: list[tuple[int, str, str]] = []  # (t, source, name)
@@ -178,6 +195,10 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
     tail_start = last_action["t1"] if last_action else None
     if effect is not None and tail_start is not None and tail_start < effect < T1:
         points.append((effect, "J", "effect"))
+    if effect is not None and T0 < effect < T1 and not any(p[0] == effect for p in points):
+        points.append((effect, "J", "effect"))
+    points.append((T0, "C", "T0"))
+    points.append((T1, "C", "T1"))
     points.sort(key=lambda p: (p[0], 0 if p[1] == "C" else 1))
 
     comp = {c: 0.0 for c in COMPONENTS}
@@ -197,6 +218,9 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
         for a, b in decisions:
             if a <= mid <= b:
                 return "decision", None
+        for a, b in cands:
+            if a <= mid <= b:
+                return "candidate", None
         return "gap", None
 
     for (ta, src, name), (tb, _src2, _name2) in zip(points, points[1:]):
@@ -207,10 +231,16 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
         if tail_start is not None and effect is not None and ta >= tail_start and tb <= effect:
             comp["target_effect_lag"] += dt
             continue
+        if end == "oracle" and effect is not None and ta >= effect:
+            comp["oracle_detect_lag"] += dt
+            continue
         kind, w = region(mid)
         if kind == "call":
             in_val = any(a <= mid <= b for a, b in validations)
-            if in_val:
+            in_parse = any(a <= mid <= b for a, b in parses)
+            if in_parse:
+                c, sc = "client_parse", None
+            elif in_val:
                 c, sc = "client_validation", None
             elif src == "C" or src == "J":
                 c, sc = ("transport", "client_send" if name == "call_send" else "client_return")
@@ -222,6 +252,8 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
             c, sc = "sleeps_polls", None
         elif kind == "decision":
             c, sc = "decision", None
+        elif kind == "candidate":
+            c, sc = "candidate_build", None
         else:
             c, sc = "runner_overhead", None
         comp[c] += dt
@@ -233,6 +265,7 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
 
     T_ms = (T1 - T0) / 1e6
     poller = s.get("poller_first_ok_ns")
+    runner_T = None if verified is None else (verified["t_mono_ns"] - T0) / 1e6
     obs = [w for w in windows if w["label"].startswith("snapshot") and T0 <= w["t0"] <= T1]
     # Non-additive diagnostics.
     final_send = None
@@ -257,7 +290,9 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
                        "frames_over_50ms": (r or {}).get("detail", {}).get("frames_over_50ms") if r else None})
     return {
         "T0_ns": T0,
-        "T_runner_ms": T_ms,
+        "end": end,
+        "T_ms": T_ms,
+        "T_runner_ms": runner_T,
         "T_oracle_ms": None if poller is None else (poller - T0) / 1e6,
         "components": comp,
         "sub": sub,
@@ -274,43 +309,27 @@ def decompose(trial: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def forced_path(trial: dict[str, Any]) -> list[str]:
-    """Reasons the trial deviated from its arm's forced path (empty = as assigned)."""
+    """Reasons a measured trial deviated from the fixed i107 path (empty = as assigned)."""
     s, trace = trial["summary"], trial["trace"]
-    cls, arm, kind = s["cls"], s["arm"], s["kind"]
     bad = []
     tools = s.get("tools") or []
-    if kind in ("measured", "t0_stress") and tools != EXPECTED_TOOLS[cls]:
+    if tools != EXPECTED_TOOLS:
         bad.append(f"tools={tools}")
     for tool, route in zip(tools, s.get("input_routes") or []):
         if tool == "browser_click" and route != "dom_event":
             bad.append(f"input_route={route}")
-    routes = s.get("routes") or []
-    if kind in ("measured", "t0_stress"):
-        want = ["provider", "guarded-completion"] if (cls == "fill" and arm != "K0n") else ["provider", "provider"]
-        if routes != want:
-            bad.append(f"routes={routes}")
+    if (s.get("routes") or []) != ["provider", "provider"]:
+        bad.append(f"routes={s.get('routes')}")
     gates = [m for m in trace if m["phase"] == "platform.gate"]
     waits = [m for m in trace if m["phase"] == "overlay.arrival_wait_end"]
-    if kind in ("measured", "t0_stress"):
-        if arm in ON_ARMS:
-            want_glide = 1.0 if arm == "K1" else 0.0
-            if len(waits) < 2 or any(not (w.get("detail") or {}).get("arrived") for w in waits):
-                bad.append(f"arrival_waits={len(waits)}")
-            if any(((w.get("detail") or {}).get("glide") or {}).get("glide_duration_ms") != want_glide for w in waits):
-                bad.append("glide_setting")
-        else:
-            if waits or any((g.get("detail") or {}).get("cursor_enabled") for g in gates):
-                bad.append("feedback_not_off")
-        settles = [m["detail"]["settle_ms"] for m in trace if m["phase"] == "focus.settle_start"]
-        if cls == "fill":
-            want_settle = 0 if arm in KNOB_ARMS else 100
-            if not settles or any(v != want_settle for v in settles):
-                bad.append(f"settle={settles}")
-        elif settles:
-            bad.append("unexpected_type")
-        polls = {e.get("poll_ms") for e in trial["events"] if e["event"] == "sleep_start"}
-        if polls and polls != {POLL_MS[arm]}:
-            bad.append(f"poll={polls}")
+    if waits or any((g.get("detail") or {}).get("cursor_enabled") for g in gates):
+        bad.append("feedback_not_off")
+    settles = [m["detail"]["settle_ms"] for m in trace if m["phase"] == "focus.settle_start"]
+    if s.get("driver_env_trace_set") and (not settles or any(v != DEFAULT_SETTLE_MS for v in settles)):
+        bad.append(f"settle={settles}")
+    polls = {e.get("poll_ms") for e in trial["events"] if e["event"] == "sleep_start"}
+    if polls and polls != {POLL_MS}:
+        bad.append(f"poll={polls}")
     return bad
 
 
