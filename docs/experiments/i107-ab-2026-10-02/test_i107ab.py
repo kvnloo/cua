@@ -369,6 +369,13 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(facts["refs"], 2)
         self.assertEqual(facts["outline_chars"], 10)
 
+    def test_browser_isolation_reads_own_process_environment(self) -> None:
+        R = self.R
+        iso = R.browser_isolation(os.getpid())
+        self.assertIn("display_matches_session", iso)
+        self.assertTrue(iso["wayland_display_absent"])  # the hostless wrapper strips it
+        self.assertFalse(R.browser_isolation(2 ** 22 + 7)["ok"])
+
     def test_stdio_reader_parse_is_recorded(self) -> None:
         R = self.R
         rec = R.Recorder()

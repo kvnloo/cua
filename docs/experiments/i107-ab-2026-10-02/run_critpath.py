@@ -243,6 +243,24 @@ def snapshot_facts(snap: dict[str, Any], token: str) -> dict[str, Any]:
             "outline_chars": len(snap.get("outline") or ""), "controls": L.logical_controls(snap, token)}
 
 
+class IsolationAbort(RuntimeError):
+    """The Driver-launched browser is not confined to the private session: stop the whole run."""
+
+
+def browser_isolation(pid: int) -> dict[str, Any]:
+    """Read-only check of the launched browser's environment against this private session."""
+    try:
+        env = dict(kv.split("=", 1) for kv in Path(f"/proc/{pid}/environ").read_bytes().decode("utf-8", "replace").split("\0") if "=" in kv)
+    except OSError as error:
+        return {"ok": False, "reason": f"environ unreadable: {type(error).__name__}"}
+    checks = {"display_matches_session": env.get("DISPLAY") == os.environ.get("DISPLAY"),
+              "display_not_host_0": env.get("DISPLAY") not in (":0", ":0.0", None),
+              "wayland_display_absent": "WAYLAND_DISPLAY" not in env and "WAYLAND_SOCKET" not in env,
+              "hyprland_absent": not any(k.startswith("HYPRLAND") for k in env),
+              "runtime_dir_not_host": not str(env.get("XDG_RUNTIME_DIR", "")).startswith("/run/user/")}
+    return {"ok": all(checks.values()), **checks}
+
+
 def sample_resources(driver_pid: int | None, browser_pid: int | None) -> dict[str, Any]:
     out: dict[str, Any] = {"clk_tck": L.clk_tck(), "t_mono_ns": now()}
     if driver_pid:
@@ -297,6 +315,10 @@ async def run_trial(spec: dict[str, Any], args: argparse.Namespace, server: I107
                                             {"allow_launch": True, "profile": {"mode": "isolated_new"}})
                 pid = int(prepared["prepared_pid"])
                 result["_browser_pid"] = pid
+                iso = browser_isolation(pid)
+                result["browser_isolation"] = iso
+                if not iso["ok"]:
+                    raise IsolationAbort(json.dumps(iso))
                 window = await wait_for_window(driver, pid)
                 rec.add("window_ready")
                 bound = await timed_call(rec, driver, "bind", "get_browser_state",
@@ -411,6 +433,10 @@ async def one(spec: dict[str, Any], args: argparse.Namespace, server: I107Server
         await asyncio.wait_for(run_trial(spec, args, server, trace_path, rec, res), timeout=180)
     except asyncio.TimeoutError:
         res["outcome"] = "timeout"
+    except IsolationAbort as error:
+        res["outcome"] = "error"
+        res["error"] = f"IsolationAbort: {error}"
+        res["isolation_abort"] = True
     except Exception as error:
         res["outcome"] = res.get("outcome") if res.get("outcome") not in (None, "unknown") else "error"
         res["error"] = f"{type(error).__name__}: {str(error)[:300]}"
@@ -540,19 +566,30 @@ async def run_plan(args: argparse.Namespace, plan: str) -> int:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     trials = build_plan(plan, args.pairs, args.conditions)
     manifest["trials"] = [t["name"] for t in trials]
+    records = []
     try:
         for spec in trials:
-            await one(spec, args, server, out)
+            rec = await one(spec, args, server, out)
+            records.append(rec)
+            if rec.get("isolation_abort"):
+                manifest["aborted"] = "isolation"
+                break
     finally:
         server.stopping = True
         manifest["ended_mono_ns"] = now()
         manifest["utc_end"] = utc()
         manifest["loadavg_end"] = loadavg()
         manifest["network"] = dict(NETWORK)
-        manifest["status"] = "ran"
+        manifest["status"] = "ran" if not manifest.get("aborted") else "aborted"
         (out / f"run-manifest-{plan}.json").write_text(json.dumps(manifest, indent=1))
         server.shutdown()
         server.server_close()
+    if manifest.get("aborted"):
+        return 5
+    if plan == "shakedown" and any(r.get("outcome") != "verified" for r in records
+                                   if not r.get("control") and r.get("condition") in ("W-quiet", "W-churn")):
+        print(json.dumps({"event": "shakedown_failed", "next_plans": "not run"}), flush=True)
+        return 4
     return 0
 
 
