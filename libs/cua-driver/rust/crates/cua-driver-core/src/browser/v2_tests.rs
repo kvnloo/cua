@@ -2734,6 +2734,113 @@ async fn background_browser_receipts_keep_background_delivery() {
     assert_eq!(public["delivery"]["mode"], "background", "{public}");
 }
 
+/// CDP method names the fixture received after the first `before` calls.
+fn methods_since(f: &Fixture, before: usize) -> Vec<String> {
+    f.state.lock().unwrap().calls[before..]
+        .iter()
+        .map(|(_, method, _)| method.clone())
+        .collect()
+}
+
+/// Invoke `tool` with `delivery_mode` background and foreground in turn and
+/// return (CDP methods sent, producer delivery_mode, public delivery.mode).
+async fn trusted_delivery_rows(
+    f: &Fixture,
+    tool: &str,
+    base: Value,
+) -> Vec<(Vec<String>, Value, Value)> {
+    let mut rows = Vec::new();
+    for mode in ["background", "foreground"] {
+        let mut args = base.clone();
+        args["delivery_mode"] = json!(mode);
+        let before = f.state.lock().unwrap().calls.len();
+        let result = match tool {
+            "browser_click" => {
+                BrowserClickTool::new(f.engine.clone())
+                    .invoke(args.clone())
+                    .await
+            }
+            _ => {
+                BrowserPointerTool::new(f.engine.clone())
+                    .invoke(args.clone())
+                    .await
+            }
+        };
+        assert_eq!(
+            structured(&result)["status"],
+            "ok",
+            "{}",
+            structured(&result)
+        );
+        let public = public_receipt(tool, &args, &result);
+        assert_eq!(public["route"], "trusted_input", "{public}");
+        rows.push((
+            methods_since(f, before),
+            structured(&result)["delivery_mode"].clone(),
+            public["delivery"]["mode"].clone(),
+        ));
+    }
+    rows
+}
+
+async fn assert_foreground_request_without_activation_stays_background(f: Fixture) {
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+    for (tool, base) in [
+        (
+            "browser_click",
+            json!({ "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION }),
+        ),
+        (
+            "browser_pointer",
+            json!({
+                "target_id": target, "tab_id": tab, "ref": main_ref,
+                "action": "double_click", "session": SESSION
+            }),
+        ),
+    ] {
+        let rows = trusted_delivery_rows(&f, tool, base).await;
+        assert!(
+            rows[0].0.iter().any(|m| m == "Input.dispatchMouseEvent"),
+            "{tool}: {:?}",
+            rows[0].0
+        );
+        assert_eq!(
+            rows[0].0, rows[1].0,
+            "{tool}: both requests run the same dispatch"
+        );
+        for (methods, producer, public) in &rows {
+            assert_eq!(producer, "background", "{tool}: {methods:?}");
+            assert_eq!(public, "background", "{tool}: {methods:?}");
+        }
+    }
+}
+
+#[tokio::test]
+async fn foreground_request_on_a_platform_that_keeps_background_posture_reports_background() {
+    // No standalone limitation (the trait default, e.g. Windows): trusted CDP
+    // input keeps background posture, so a foreground request activates
+    // nothing and must not be published as foreground delivery.
+    let f = fixture_with_platform(|_| {}, false).await;
+    assert_foreground_request_without_activation_stays_background(f).await;
+}
+
+#[tokio::test]
+async fn foreground_request_on_an_embedded_route_reports_background() {
+    // No CDP window id (embedded/Electron route): the standalone limitation
+    // is never consulted, so a foreground request runs the background branch.
+    let f = fixture_with_platform(
+        |st| {
+            st.primary_window_error =
+                Some((-32601, "'Browser.getWindowForTarget' wasn't found".into()));
+        },
+        true,
+    )
+    .await;
+    assert_foreground_request_without_activation_stays_background(f).await;
+}
+
 // ── CDP session accumulation repro (BUG-01 part B) ──────────────────────────
 
 #[tokio::test]
