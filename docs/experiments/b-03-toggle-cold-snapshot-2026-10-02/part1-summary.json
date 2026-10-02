@@ -1,0 +1,1459 @@
+{
+ "classes": {
+  "fill": {
+   "T_oracle_median_ms": {
+    "K5": 156.5008105,
+    "K5E": 138.684929,
+    "K5EV": 115.858321,
+    "K5V": 148.25879500000002
+   },
+   "arms": {
+    "K5EV": {
+     "T_oracle_median_ms": 115.858321,
+     "T_runner_mean_ms": 126.77387215,
+     "first_snapshot_excess_mean_ms": 31.2213306,
+     "first_snapshot_excess_median_ms": 32.774854,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.0076432,
+       "parts": [],
+       "share": 6.029002562102462e-05,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 55.788753199999995,
+       "parts": [
+        {
+         "ms": 24.567422599999993,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 31.2213306,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "NOT DELETED",
+         "why": "NOT DELETED (amendment rule: per-process first use; a warm-up could only move it before T)"
+        }
+       ],
+       "share": 0.44006507219397883,
+       "verdict": "IRREDUCIBLE + NOT DELETED"
+      },
+      {
+       "component": "resolution",
+       "material": true,
+       "mean_ms": 8.1342225,
+       "parts": [
+        {
+         "ms": 8.1342225,
+         "part": "resolution",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "ref resolution before dispatch"
+        }
+       ],
+       "share": 0.06416324091115173,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 20.31143865,
+       "parts": [
+        {
+         "ms": 10.70665605,
+         "part": "owned-endpoint re-proof (bound check, E on)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: the remaining bound check is the reduced proof itself (E OWNER_DECISION)"
+        },
+        {
+         "ms": 9.6047826,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.16021786118489242,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": false,
+       "mean_ms": 4.904027350000001,
+       "parts": [],
+       "share": 0.03868326546180991,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 3.22887855,
+       "parts": [],
+       "share": 0.02546959002861064,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0521574,
+       "parts": [],
+       "share": 0.00041142073769180837,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 4.5646661,
+       "parts": [],
+       "share": 0.03600636331908397,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 1.7494265,
+       "parts": [],
+       "share": 0.013799582440221298,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": false,
+       "mean_ms": 2.99104725,
+       "parts": [],
+       "share": 0.023593562295399207,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 5.08621035,
+       "parts": [],
+       "share": 0.04012033602619591,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": false,
+       "mean_ms": 4.58958965,
+       "parts": [],
+       "share": 0.03620296179460035,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.5682304,
+       "parts": [],
+       "share": 0.004482235892642489,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.2901692,
+       "parts": [],
+       "share": 0.002288872265861448,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 4.21082775,
+       "parts": [],
+       "share": 0.03321526493264882,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": true,
+       "mean_ms": 7.9062887,
+       "parts": [
+        {
+         "ms": 7.9062887,
+         "part": "sleeps_polls",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "H_P: no material component (10 ms poll in K5)"
+        }
+       ],
+       "share": 0.06236528525882058,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 2.3902954,
+       "parts": [],
+       "share": 0.01885479523076948,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 2.3888790999999996,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.01884362337038547
+    },
+    "K5V": {
+     "T_oracle_median_ms": 148.25879500000002,
+     "T_runner_mean_ms": 155.05672865,
+     "first_snapshot_excess_mean_ms": 34.2457893,
+     "first_snapshot_excess_median_ms": 36.019200999999995,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.0081313,
+       "parts": [],
+       "share": 5.24408071213361e-05,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 55.254135350000006,
+       "parts": [
+        {
+         "ms": 21.008346050000007,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 34.2457893,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "NOT DELETED",
+         "why": "NOT DELETED (amendment rule: per-process first use; a warm-up could only move it before T)"
+        }
+       ],
+       "share": 0.35634787236303533,
+       "verdict": "IRREDUCIBLE + NOT DELETED"
+      },
+      {
+       "component": "resolution",
+       "material": false,
+       "mean_ms": 6.485329699999999,
+       "parts": [],
+       "share": 0.04182552899486829,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 51.93505475,
+       "parts": [
+        {
+         "ms": 40.69322365,
+         "part": "owned-endpoint re-proof (full proof)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: a cheaper ownership proof is a security policy call"
+        },
+        {
+         "ms": 11.241831099999999,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.3349422833963549,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": false,
+       "mean_ms": 3.4675568500000002,
+       "parts": [],
+       "share": 0.022363149798078758,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 2.4979449000000002,
+       "parts": [],
+       "share": 0.01610987747354362,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0558956,
+       "parts": [],
+       "share": 0.0003604848398818583,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 4.478748850000001,
+       "parts": [],
+       "share": 0.028884582365397406,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 1.5870241,
+       "parts": [],
+       "share": 0.010235119196808877,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": false,
+       "mean_ms": 3.1335867499999996,
+       "parts": [],
+       "share": 0.020209292284717628,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 4.792267900000001,
+       "parts": [],
+       "share": 0.030906545892744143,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": false,
+       "mean_ms": 4.8422411,
+       "parts": [],
+       "share": 0.03122883567942474,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.5880309,
+       "parts": [],
+       "share": 0.0037923597712894224,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.36080345,
+       "parts": [],
+       "share": 0.002326912563816688,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 3.7319417,
+       "parts": [],
+       "share": 0.02406823446162006,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": true,
+       "mean_ms": 8.65978165,
+       "parts": [
+        {
+         "ms": 8.65978165,
+         "part": "sleeps_polls",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "H_P: no material component (10 ms poll in K5)"
+        }
+       ],
+       "share": 0.05584911874122658,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 3.1782538000000002,
+       "parts": [],
+       "share": 0.020497361370070414,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 2.4928587999999996,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.016077075930235676
+    }
+   },
+   "best_b02_keep_only": "K5V",
+   "best_spec_literal": "K5EV",
+   "verdicts": {
+    "H_E": "OWNER_DECISION",
+    "H_V": "DELETED (KEEP)",
+    "H_W": "NOT DELETED (amendment rule: per-process first use; a warm-up could only move it before T)"
+   }
+  },
+  "modal": {
+   "T_oracle_median_ms": {
+    "K5": 127.69400949999999,
+    "K5E": 92.1570625,
+    "K5EV": 83.01822250000001,
+    "K5V": 109.8686795
+   },
+   "arms": {
+    "K5": {
+     "T_oracle_median_ms": 127.69400949999999,
+     "T_runner_mean_ms": 128.0842782,
+     "first_snapshot_excess_mean_ms": 18.0182581,
+     "first_snapshot_excess_median_ms": 19.158927,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.018078,
+       "parts": [],
+       "share": 0.00014114144416515906,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 31.4523142,
+       "parts": [
+        {
+         "ms": 13.4340561,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 18.0182581,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "IRREDUCIBLE (amendment rule: per-document / load timing)"
+        }
+       ],
+       "share": 0.24555952254255667,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "resolution",
+       "material": false,
+       "mean_ms": 4.199101150000001,
+       "parts": [],
+       "share": 0.032783892051475846,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 52.3373998,
+       "parts": [
+        {
+         "ms": 39.6315508,
+         "part": "owned-endpoint re-proof (full proof)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: a cheaper ownership proof is a security policy call"
+        },
+        {
+         "ms": 12.705849,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.40861689299819154,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": true,
+       "mean_ms": 6.4723352,
+       "parts": [
+        {
+         "ms": 6.4723352,
+         "part": "visualization",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "feedback off in every arm (K1 fast glide KEEP); residual overlay/platform-gate bookkeeping"
+        }
+       ],
+       "share": 0.05053184739733342,
+       "verdict": "OWNER_DECISION"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 2.62226945,
+       "parts": [],
+       "share": 0.020473000174973856,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 0.32368575,
+       "parts": [],
+       "share": 0.0025271309995952337,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": true,
+       "mean_ms": 19.67774715,
+       "parts": [
+        {
+         "ms": 18.94644435,
+         "part": "admission validation (two validations)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "NOT_MATERIAL",
+         "why": "H_V NOT_MATERIAL (saving not shown on T_oracle)"
+        },
+        {
+         "ms": 0.7313027999999981,
+         "part": "other pre-dispatch glue",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "MCP pre-dispatch bookkeeping"
+        }
+       ],
+       "share": 0.1536312451968051,
+       "verdict": "IRREDUCIBLE + NOT_MATERIAL"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 3.9948378,
+       "parts": [],
+       "share": 0.03118913465524764,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": false,
+       "mean_ms": 4.0751311,
+       "parts": [],
+       "share": 0.03181601330989895,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.56674515,
+       "parts": [],
+       "share": 0.004424783103473819,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.22787395,
+       "parts": [],
+       "share": 0.001779093837295013,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 2.0896697,
+       "parts": [],
+       "share": 0.016314802482917064,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 0.027089800000000004,
+       "parts": [],
+       "share": 0.0002114998060706564,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 0.0,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.0
+    },
+    "K5EV": {
+     "T_oracle_median_ms": 83.01822250000001,
+     "T_runner_mean_ms": 82.5649431,
+     "first_snapshot_excess_mean_ms": 23.9692059,
+     "first_snapshot_excess_median_ms": 23.688288999999997,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.01693415,
+       "parts": [],
+       "share": 0.0002051009709955217,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 37.77684835,
+       "parts": [
+        {
+         "ms": 13.807642450000003,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 23.9692059,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "IRREDUCIBLE (amendment rule: per-document / load timing)"
+        }
+       ],
+       "share": 0.4575410208209785,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "resolution",
+       "material": false,
+       "mean_ms": 3.8926495500000002,
+       "parts": [],
+       "share": 0.047146517684695174,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 19.452584,
+       "parts": [
+        {
+         "ms": 10.264065,
+         "part": "owned-endpoint re-proof (bound check, E on)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: the remaining bound check is the reduced proof itself (E OWNER_DECISION)"
+        },
+        {
+         "ms": 9.188519000000001,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.23560343251783822,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": true,
+       "mean_ms": 4.1698780499999994,
+       "parts": [
+        {
+         "ms": 4.1698780499999994,
+         "part": "visualization",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "feedback off in every arm (K1 fast glide KEEP); residual overlay/platform-gate bookkeeping"
+        }
+       ],
+       "share": 0.0505042199926133,
+       "verdict": "OWNER_DECISION"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 2.27124915,
+       "parts": [],
+       "share": 0.02750863822735439,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 0.2955156,
+       "parts": [],
+       "share": 0.003579189773583215,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": false,
+       "mean_ms": 2.90954285,
+       "parts": [],
+       "share": 0.035239445953182034,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 3.99343025,
+       "parts": [],
+       "share": 0.048367141065709766,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": true,
+       "mean_ms": 4.280339,
+       "parts": [
+        {
+         "ms": 4.280339,
+         "part": "transport",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "stdio JSON-RPC (E2 row: stdio + driver post-dispatch)"
+        }
+       ],
+       "share": 0.05184208744401109,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.5390478,
+       "parts": [],
+       "share": 0.006528773348116072,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.21091864999999999,
+       "parts": [],
+       "share": 0.0025545787604376122,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 2.6727425,
+       "parts": [],
+       "share": 0.0323713963777927,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 0.0832632,
+       "parts": [],
+       "share": 0.0010084570626925074,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 2.2983116,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.02783640990603432
+    },
+    "K5V": {
+     "T_oracle_median_ms": 109.8686795,
+     "T_runner_mean_ms": 110.37465535,
+     "first_snapshot_excess_mean_ms": 22.789815,
+     "first_snapshot_excess_median_ms": 23.346751500000003,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.01758075,
+       "parts": [],
+       "share": 0.00015928249057042243,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 33.9881332,
+       "parts": [
+        {
+         "ms": 11.1983182,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 22.789815,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "IRREDUCIBLE (amendment rule: per-document / load timing)"
+        }
+       ],
+       "share": 0.3079342181610717,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "resolution",
+       "material": false,
+       "mean_ms": 3.70829485,
+       "parts": [],
+       "share": 0.033597340243019844,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 51.48473645,
+       "parts": [
+        {
+         "ms": 39.755156,
+         "part": "owned-endpoint re-proof (full proof)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: a cheaper ownership proof is a security policy call"
+        },
+        {
+         "ms": 11.72958045,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.4664543348900251,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": false,
+       "mean_ms": 4.0699329,
+       "parts": [],
+       "share": 0.03687379939800646,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 2.4200591,
+       "parts": [],
+       "share": 0.02192585872477653,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 0.28665995,
+       "parts": [],
+       "share": 0.0025971537495722745,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": false,
+       "mean_ms": 3.0001066499999998,
+       "parts": [],
+       "share": 0.027181119075630252,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 4.02175955,
+       "parts": [],
+       "share": 0.03643734639303677,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": false,
+       "mean_ms": 4.4404812,
+       "parts": [],
+       "share": 0.04023098587188476,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.5777,
+       "parts": [],
+       "share": 0.005233991428268591,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.2291894,
+       "parts": [],
+       "share": 0.0020764676389995176,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 2.11732145,
+       "parts": [],
+       "share": 0.0191830401941998,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 0.0126999,
+       "parts": [],
+       "share": 0.00011506174093797521,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 2.3805791999999997,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.021568168819654662
+    }
+   },
+   "best_b02_keep_only": "K5",
+   "best_spec_literal": "K5EV",
+   "verdicts": {
+    "H_E": "OWNER_DECISION",
+    "H_V": "NOT_MATERIAL (saving not shown on T_oracle)",
+    "H_W": "IRREDUCIBLE (amendment rule: per-document / load timing)"
+   }
+  },
+  "toggle": {
+   "T_oracle_median_ms": {
+    "K5": 119.2052995,
+    "K5E": 97.2018255,
+    "K5EV": 79.84007700000001,
+    "K5V": 108.251819
+   },
+   "arms": {
+    "K5EV": {
+     "T_oracle_median_ms": 79.84007700000001,
+     "T_runner_mean_ms": 86.08937785,
+     "first_snapshot_excess_mean_ms": 25.47623785,
+     "first_snapshot_excess_median_ms": 25.916479499999998,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.0199967,
+       "parts": [],
+       "share": 0.00023227836580305821,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 36.74375515,
+       "parts": [
+        {
+         "ms": 11.267517299999998,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 25.47623785,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "UNDECIDED",
+         "why": "UNDECIDED (amendment rules)"
+        }
+       ],
+       "share": 0.4268093935354186,
+       "verdict": "IRREDUCIBLE + UNDECIDED"
+      },
+      {
+       "component": "resolution",
+       "material": false,
+       "mean_ms": 4.12614755,
+       "parts": [],
+       "share": 0.04792864872585439,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 21.9086524,
+       "parts": [
+        {
+         "ms": 9.96398055,
+         "part": "owned-endpoint re-proof (bound check, E on)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: the remaining bound check is the reduced proof itself (E OWNER_DECISION)"
+        },
+        {
+         "ms": 11.94467185,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.2544872892236844,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": true,
+       "mean_ms": 4.740045100000001,
+       "parts": [
+        {
+         "ms": 4.740045100000001,
+         "part": "visualization",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "feedback off in every arm (K1 fast glide KEEP); residual overlay/platform-gate bookkeeping"
+        }
+       ],
+       "share": 0.055059581313956496,
+       "verdict": "OWNER_DECISION"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 2.57493645,
+       "parts": [],
+       "share": 0.029910036688690043,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 0.3115567,
+       "parts": [],
+       "share": 0.00361899119009605,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": false,
+       "mean_ms": 3.0918283499999997,
+       "parts": [],
+       "share": 0.035914167661742484,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 4.2871082,
+       "parts": [],
+       "share": 0.04979834106211977,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": true,
+       "mean_ms": 4.44831085,
+       "parts": [
+        {
+         "ms": 4.44831085,
+         "part": "transport",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "stdio JSON-RPC (E2 row: stdio + driver post-dispatch)"
+        }
+       ],
+       "share": 0.05167084443043167,
+       "verdict": "IRREDUCIBLE"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.6096941,
+       "parts": [],
+       "share": 0.007082106006879454,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.27077755000000003,
+       "parts": [],
+       "share": 0.0031453073162149704,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 2.9565687499999997,
+       "parts": [],
+       "share": 0.034343014479108584,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 2.44043805,
+      "first_snapshot_cold_excess": 25.47623785,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.3242754982924993
+    },
+    "K5V": {
+     "T_oracle_median_ms": 108.251819,
+     "T_runner_mean_ms": 111.5214265,
+     "first_snapshot_excess_mean_ms": 22.3248037,
+     "first_snapshot_excess_median_ms": 22.7328755,
+     "n_valid": 20,
+     "rows": [
+      {
+       "component": "decision",
+       "material": false,
+       "mean_ms": 0.021095350000000002,
+       "parts": [],
+       "share": 0.00018915961409442697,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "observation",
+       "material": true,
+       "mean_ms": 33.27993815,
+       "parts": [
+        {
+         "ms": 10.95513445,
+         "part": "one fresh semantic_v2 snapshot per action (base cost)",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "refs are never durable authority (#73); one fresh observation per action"
+        },
+        {
+         "ms": 22.3248037,
+         "part": "cold-first-snapshot excess (snapshot1 - snapshot2)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "UNDECIDED",
+         "why": "UNDECIDED (amendment rules)"
+        }
+       ],
+       "share": 0.29841743595343984,
+       "verdict": "IRREDUCIBLE + UNDECIDED"
+      },
+      {
+       "component": "resolution",
+       "material": false,
+       "mean_ms": 4.2210733000000005,
+       "parts": [],
+       "share": 0.0378498861830825,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "revalidate",
+       "material": true,
+       "mean_ms": 53.8150239,
+       "parts": [
+        {
+         "ms": 40.6302485,
+         "part": "owned-endpoint re-proof (full proof)",
+         "source": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+         "verdict": "OWNER_DECISION",
+         "why": "H_E: a cheaper ownership proof is a security policy call"
+        },
+        {
+         "ms": 13.1847754,
+         "part": "remaining per-mutation binding re-proof steps",
+         "source": "B-01R 0cd63f786 (exp/b-01r-browser-critpath-textfix-20261002)",
+         "verdict": "IRREDUCIBLE",
+         "why": "per-mutation re-proof (#73)"
+        }
+       ],
+       "share": 0.48255322397620154,
+       "verdict": "IRREDUCIBLE + OWNER_DECISION"
+      },
+      {
+       "component": "visualization",
+       "material": false,
+       "mean_ms": 4.08523385,
+       "parts": [],
+       "share": 0.03663182922072827,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "input_prep",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "settles",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch",
+       "material": false,
+       "mean_ms": 1.8653662,
+       "parts": [],
+       "share": 0.016726527435514824,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "dispatch_post",
+       "material": false,
+       "mean_ms": 0.27173664999999997,
+       "parts": [],
+       "share": 0.0024366317624174216,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_pre_dispatch",
+       "material": false,
+       "mean_ms": 2.96096305,
+       "parts": [],
+       "share": 0.02655062029716774,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "driver_post_dispatch",
+       "material": false,
+       "mean_ms": 3.53480215,
+       "parts": [],
+       "share": 0.03169617051123355,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "transport",
+       "material": false,
+       "mean_ms": 4.3984307000000005,
+       "parts": [],
+       "share": 0.03944022990057431,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "client_validation",
+       "material": false,
+       "mean_ms": 0.5598948499999999,
+       "parts": [],
+       "share": 0.005020513703705179,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "runner_overhead",
+       "material": false,
+       "mean_ms": 0.27774495,
+       "parts": [],
+       "share": 0.0024905075079899555,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "verification_reads",
+       "material": false,
+       "mean_ms": 2.1608941,
+       "parts": [],
+       "share": 0.01937649264197674,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "sleeps_polls",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "target_effect_lag",
+       "material": false,
+       "mean_ms": 0.0692293,
+       "parts": [],
+       "share": 0.0006207712918736741,
+       "verdict": "below threshold"
+      },
+      {
+       "component": "unattributed",
+       "material": false,
+       "mean_ms": 0.0,
+       "parts": [],
+       "share": 0.0,
+       "verdict": "below threshold"
+      }
+     ],
+     "untested_ms": {
+      "admission_residual_after_V": 2.3395722,
+      "first_snapshot_cold_excess": 22.3248037,
+      "unattributed": 0.0
+     },
+     "untested_share": 0.22116266509557245
+    }
+   },
+   "best_b02_keep_only": "K5V",
+   "best_spec_literal": "K5EV",
+   "verdicts": {
+    "H_E": "OWNER_DECISION",
+    "H_V": "DELETED (KEEP)",
+    "H_W": "UNDECIDED (amendment rules)"
+   }
+  }
+ },
+ "evidence_class": "BENCHMARK (re-analysis of B-02 raw/measured, no new trials)",
+ "rule_b02_keep_only": "best arm = lowest median T_oracle among arms whose knobs are all DELETED (KEEP) (B-02 E2 rule)",
+ "rule_spec_literal": "best arm = lowest median T_oracle among arms whose validity gates held (no knob-verdict filter)",
+ "schema": "cua.r2.b03.part1.v1",
+ "source_packet": "B-02 b282ff389 (exp/b-02-browser-driver-sites-20261002)",
+ "trials": 240,
+ "valid": 240
+}

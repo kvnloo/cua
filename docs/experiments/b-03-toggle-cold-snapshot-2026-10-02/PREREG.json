@@ -1,0 +1,74 @@
+{
+ "schema": "cua.r2.b03.prereg.v1",
+ "lane": "B-03 (wave 3, experiment)",
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#73"],
+ "branch": "exp/b-03-toggle-cold-snapshot-20261002",
+ "base": "b282ff3894fa85a7b82257cb1edd5088c2f0ac37 (exp/b-02-browser-driver-sites-20261002 head)",
+ "tested_driver_source": "f5c991e5927513c8b94da4330c94276dc5f8ce22 + 560bd8247c36c9d249f481b509a073c131e93620 (B-02 tested source); no Driver code change, no rebuild",
+ "driver_binary": {"name": "cua-driver-b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0",
+                   "rehash": "at lane start (2026-10-02T17:21:53Z, matched) and at lane end",
+                   "note": "this binary predates FIX-01 (dom_event isConnected refusal); no arm here re-renders or replaces a node between snapshot and dispatch, so the detached-node path is not exercised"},
+ "provider": {"chooser": "scripted mock (choose_mock_for_task)", "typesafe_cap": 0, "typesafe_attempts": 0, "typesafe_reached": 0},
+ "part1": {
+  "evidence_class": "BENCHMARK re-analysis of B-02 raw/measured (240 trials); no new trials",
+  "script": "analyze_part1.py -> part1-summary.json",
+  "best_arm_rules": {
+   "spec_literal": "lowest median T_oracle among arms whose validity gates held, no knob-verdict filter (K5EV in every class)",
+   "b02_keep_only": "B-02 E2 rule (arms whose knobs are all DELETED (KEEP)): K5V fill/toggle, K5 modal"
+  },
+  "component_rules": "B-02 analyze_browser.trial_row/arm_block + B-01 decompose (unchanged); material = mean component >= 5% of mean T_runner or >= 50 ms",
+  "verdict_sources": {"H_P, H_T, H_C, visualization, IRREDUCIBLE E2 rows": "B-01R 0cd63f786", "H_E, H_V, H_W": "B-02 b282ff389"},
+  "untested_share_rule": "B-02 rule: admission residual in V arms + unattributed + cold-first-snapshot excess where H_W is UNDECIDED, over mean T_runner; reported for K5V and K5EV in every class"
+ },
+ "part2": {
+  "evidence_class": "REAL + BENCHMARK",
+  "harness": "run_b03.py: B-01 run_critpath step loop (K5 base knobs as in B-02) with three marked insertions (P warm-up, D delay, nc pre-snapshot); B-02 run_b02 knob plumbing; rc.one bookkeeping; scripted chooser",
+  "environment": "hostless v2 + cua-x11-session.sh (private Xvfb/openbox/picom, private dbus), CUA_SESSION_EXTRA_ENV='CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1'; system Chrome via browser_prepare {allow_launch, isolated_new}",
+  "factors": {
+   "P": {"cold": "fresh Driver + fresh browser per trial (B-02 default)",
+         "warm": "same fresh Driver/browser, then one throwaway browser_navigate + semantic_v2 snapshot of a different document on the same owned fixture origin before task start (toggle: <i24 origin>/modal; fill: <fill origin>/state), then the task navigate"},
+   "D": {"0": "first observation sent as soon as the step-1 pre-observation oracle read returns (B-02 timing)",
+         "80": "the harness sleeps 80 ms after navigate returns (after the step-1 pre-observation oracle read) before the first observation send"},
+   "K": {"K5V": "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1", "K5EV": "+ CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound"}
+  },
+  "design": {
+   "toggle": "2x2x2 P x D x K, n=20 per cell (160 trials); 20 rounds; within a round the 8 cells run in Williams row r mod 8 (williams(8)); rows 0-3 are used 3 times and rows 4-7 twice (20 is not a multiple of 8)",
+   "fill_positive_replication": "2x2 P x D under K5V, n=10 per cell (40 trials), in even rounds, Williams row (r/2) mod 4 of williams(4)",
+   "negative_control": "toggle, K5V, P=cold, D=0, variant nc: one extra semantic_v2 snapshot of the task document right after the task navigate, so the task's snapshot1 is a re-snapshot of the same document with no navigation; n=20, one per round",
+   "round_layout": "toggle cells 1-4, fill cells 1-2 (even rounds), nc, toggle cells 5-8, fill cells 3-4 (even rounds)",
+   "chunks": "two quiet-timed EXCLUSIVE windows: rounds 0-9 and rounds 10-19 (each about 110 trials, well under 15 minutes); R2-10 has lock priority",
+   "shakedown": "7 SHARED-lock trials before the measured block, excluded from every number (kept in raw/)"
+  },
+  "forced_path": "dom_event clicks through the CDP engine (B-01 forced_path: tools, routes, input_route=dom_event, feedback off, 10 ms poll, settle 0 on fill) and the B-02 knob path from the Driver's own marks (V: every tools/call in T shows mcp.inner_validation_skipped; E: ep.bound_stored at bind and one ep.bound_hit per mutation in T)",
+  "producer_attribution": "Driver snap.* marks of snapshot1 and snapshot2: attach (snap.enter->snap.attached), DOM.getDocument (->snap.document), Page.getFrameTree (->snap.frame_tree), DOMSnapshot.captureSnapshot + Page.getLayoutMetrics (->snap.layout_cdp_done), Accessibility.getFullAXTree (snap.indexed->snap.ax_cdp_done), total (snap.enter->snap.serialized)",
+  "oracle": "independent target-owned server state (fixture JournalState / FixtureState), re-read every 2 ms by a harness thread (OraclePoller), plus the CLOCK_MONOTONIC server journal of every mutation",
+  "measures": {
+   "first_snapshot_span_ms": "snapshot1 call window (client send -> return)",
+   "cold_excess_ms": "snapshot1 span - snapshot2 span (the warm same-document re-snapshot; B-02 definition, analyze_browser first_snapshot_excess_ms)",
+   "T_oracle_ms": "task_start (stamped immediately before the D wait; equal to the first observation send for D=0) -> first oracle-confirmed 2 ms read; includes the 80 ms wait for D=80",
+   "T_runner_ms": "task_start -> the runner's verified read",
+   "warmup_ms": "warm_navigate send -> warm_snapshot return (P=warm only)",
+   "bind_end_to_oracle_ms": "bind return -> first oracle-confirmed read (secondary moved-work view)",
+   "loadavg": "1-minute loadavg per trial (before and after)"
+  },
+  "statistics": "paired within round (each round holds every toggle cell once); median of round differences with B-01's seeded percentile bootstrap (10000 resamples, seed 20261002); one-sample medians use the same bootstrap over trials; ms accounting for the untested share uses means (additive), verdicts use medians and CIs",
+  "verdict_rules_per_K": {
+   "excess": "E = median cold_excess(cold, D0)",
+   "per_process": "PP = paired median of cold_excess(cold, D80) - cold_excess(warm, D80)",
+   "per_document": "PD = paired median of cold_excess(warm, D0) - cold_excess(warm, D80) (reported; the spec's definition)",
+   "per_process_rule": "if PP CI excludes 0 (lower bound > 0) and PP >= 0.5 * E: the PP part is per-process first-document work, verdict NOT DELETED (moved only: pre-warming moves it before task start), UNLESS warm-process T_oracle including the warm-up (warmup_ms + T_oracle(warm, D0)) is lower than T_oracle(cold, D0) with a paired CI excluding 0, in which case OWNER_DECISION (the product would need a warm pool). If PP's CI excludes 0 but PP < 0.5 * E, or PP's CI includes 0 while PP's mean is > 0, the PP part is UNDECIDED and counts as untested",
+   "per_document_rule": "evaluated at P=cold (the B-02 default path; primary) and reported at P=warm. dT = paired median of T_oracle(D80, incl. the wait) - T_oracle(D0). If dT >= -2 ms: the delay-removable part is IRREDUCIBLE (document readiness; the delay only moves the wait). If T_oracle(D0) - T_oracle(D80) has a CI excluding 0 (lower bound > 0) and its median > 2 ms: H_W DELETED candidate (snapshot after readiness), KEEP. Otherwise UNDECIDED (counts as untested)",
+   "accounting_partition": "mean cold_excess(cold, D0) = doc_cold [mean(cold D0 - cold D80), verdict = per_document_rule] + per_process [mean(cold D80 - warm D80), verdict = per_process_rule] + floor [mean cold_excess(warm, D80)]. floor counts as untested only if its one-sample CI excludes 0 and it is > 0; a negative part is reported and not counted",
+   "toggle_untested_share": "for K5V and K5EV: (admission residual after V + unattributed + every UNDECIDED part above) / mean T_runner of the (cold, D0) cell of this block. Also restated on B-02's E2 rows by replacing B-02's UNDECIDED cold excess with its untested fraction from this block"
+  },
+  "positive_replication": "fill under K5V: PP CI excludes 0 and PP >= 0.5 * E(fill) reproduces B-02 fill's 'moved only'. If it fails, the toggle per_process verdict is reported but counted UNDECIDED (the probe did not discriminate)",
+  "gates": {
+   "validity": ">= 95% valid per cell: toggle >= 19/20, fill 10/10, negative control >= 19/20 (B-02 trial_row validity: oracle exact match, exactly 1 completion mutation, runner verified, B-01 forced path, B-02 knob path, T defined)",
+   "invariants": "0 stale dispatches (no action with effect refused/unverifiable or a browser_ref_stale code), 0 duplicate completion mutations, 0 unverified successes (runner verified while the oracle disagrees), 0 non-loopback connects from the runner",
+   "negative_control": "median cold_excess of the nc variant has a CI that includes 0",
+   "failing_gate": "a failed validity or invariant gate makes the affected verdicts UNDECIDED; every failure stays in the denominator and in raw/"
+  },
+  "claim_boundary": "binary 7e6c0609 only, jev-use toggle/fill, X11 Xvfb under hostless v2, scripted chooser. A component verdict transfers to R2-10's source by mechanism only; it is never added to R2-10 numbers"
+ },
+ "invariants": "no new service; no Driver change; knobs env-gated and default off (unchanged from B-02); events are hints only; no authority from passive state; the oracle is the target-owned server state"
+}
