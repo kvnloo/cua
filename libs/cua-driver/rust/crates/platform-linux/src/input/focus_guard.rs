@@ -37,7 +37,7 @@ use x11rb::COPY_DEPTH_FROM_PARENT;
 
 /// How long the guard watches for a late focus change after delivery (a
 /// transient dialog is mapped and focused by the WM a beat after the action).
-const SETTLE_WATCH: Duration = Duration::from_millis(220);
+const SETTLE_WATCH: Duration = Duration::from_millis(120);
 /// Longer watch once a new top-level appeared during the short one while the
 /// focus belonged to *another* application: a dialog (LibreOffice's take
 /// ~1 s to build) is focused by the WM only when mapped, and that steal must
