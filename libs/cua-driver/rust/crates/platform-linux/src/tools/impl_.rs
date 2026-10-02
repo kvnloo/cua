@@ -1101,6 +1101,17 @@ impl Tool for GetWindowStateTool {
 
     async fn invoke(&self, args: Value) -> ToolResult {
         use cua_driver_core::tool_args::ArgsExt;
+        // The modality selectors are booleans. Refuse any other value (such
+        // as the string "false", which would otherwise read as the default
+        // `true`) before window lookup or any producer runs.
+        for field in ["include_screenshot", "include_accessibility_tree"] {
+            if args.get(field).is_some_and(|value| !value.is_boolean()) {
+                return ToolResult::error(format!(
+                    "get_window_state.{field} must be a boolean (true or false)."
+                ))
+                .with_structured(json!({ "code": "invalid_arguments" }));
+            }
+        }
         let pid = match args.require_u32("pid") {
             Ok(v) => v,
             Err(e) => return e,
@@ -1772,6 +1783,8 @@ fn surface_identity_unproven_error(xid: u64, reason: String) -> Value {
 
 #[cfg(test)]
 mod get_window_state_actions_tests;
+#[cfg(test)]
+mod get_window_state_selector_tests;
 
 pub struct LaunchAppTool;
 static LAUNCH_DEF: std::sync::OnceLock<ToolDef> = std::sync::OnceLock::new();
