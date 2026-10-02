@@ -1,0 +1,8 @@
+# Cn' = 0f1955d2f + cherry-picks of 7d6cbe377 and 8f3a646b4 only (git -c rerere.enabled=false)
+# step | source commit | Cn' commit | conflict hunks | stable patch-id vs R2-10 Cn commit
+7' | 7d6cbe377 | a4cda75bd | 1 (browser/tools.rs, click.cdp_response mark context from B-01 step 3 absent on Cn') | equal to 9d8880855 (R2-10 Cn FIX-01 Part A) 3e66c304480f
+8' | 8f3a646b4 | 8a2362770 | 0 (run.py/run.ts auto-merged) | equal to 1381014a3 (R2-10 Cn FIX-01 Part B) a289f67df1e5
+# Resolution of the one hunk: browser/tools.rs := blob d1a074ca734d (= 1381014a3:browser/tools.rs; trycua/cua PR 4375 and
+# PR 3489 do not touch browser/tools.rs). Before: cn-7d6cbe377-conflict-markers.diff. After: cn-7d6cbe377-tools.rs-resolved.diff
+# (the diff vs 0f1955d2f), identical to the R2-10 Cn diff of the same file apart from the a/ b/ prefix spelling.
+# download.rs, pointer.rs, v2_tests.rs staged clean and equal to the 1381014a3 blobs.

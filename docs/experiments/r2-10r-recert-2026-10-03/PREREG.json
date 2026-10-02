@@ -1,0 +1,118 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "R2-10R",
+ "wave": 4,
+ "experiment": "R2-10 recertification on upstream main 0f1955d2f: rebuilt R' (0f1955d2f + R2-10 steps 1-8), Phase 0 on R', scripted browser and native BASE/composed re-measure, and a new drift row D1 (first-snapshot timeout grace)",
+ "owners": ["kvnloo/cua#93 (R2-10)", "kvnloo/cua#10 (whole-task accounting)", "kvnloo/cua#73 (E6 freshness for every R2-10 claim)"],
+ "written_before_first_measured_trial": true,
+ "written_before_first_phase0_row": true,
+ "hypothesis": "Upstream drift 989cc76ce..0f1955d2f is additive for the R2-10 claims: on R' = 0f1955d2f + R2-10 steps 1-8 every scripted and native verdict reproduces (direction of S, component verdict mapping, 100% validity, 0 E4 violations), and the first-snapshot grace (trycua/cua PR 4375) leaves the native observation's element set unchanged.",
+ "drift": {
+  "range": "989cc76cec262ff8bcf6968b637820340fb9caaa..0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (6 commits, 41 files, 8 under libs/cua-driver)",
+  "driver_files": ["rust/Skills/cua-driver/EMBEDDING.md", "cua-driver-core/src/key_pacing.rs", "cua-driver-core/src/lib.rs", "cua-driver-core/src/snapshot_store.rs", "cua-driver-core/src/tool_schema.rs", "cua-driver-sdk/src/embedded.rs", "platform-linux/src/tools/impl_.rs", "platform-macos/src/input/keyboard.rs"],
+  "upstream_items": "trycua/cua PR 4375 (first Linux snapshot budget: tool_schema.rs resolve_timeout_ms_with_first_snapshot_grace, snapshot_store.rs semantic-window bookkeeping, platform-linux get_window_state walk timeout + description text) and trycua/cua PR 3489 (macOS key gap: key_pacing.rs, lib.rs, sdk embedded.rs env allowlist, platform-macos keyboard.rs, EMBEDDING.md)",
+  "files_touched_by_both_sides": ["libs/cua-driver/rust/crates/cua-driver-core/src/lib.rs", "libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs"]
+ },
+ "source": {
+  "base": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (upstream main; gh read 2026-10-02T22:01Z: main = 0f1955d2f, committer date 2026-10-02T20:27:54Z; trycua/cua PR 4316 head = a0bca744067d04f05904319d3d919be30c336556, open, unchanged since 2026-10-01T17:03Z, 1 commit)",
+  "branch": "exp/r2-10r-recert-0f1955d2f-20261003",
+  "tested_head": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a",
+  "tested_rust_tree": "3ae6bd4408628fa098760e4886e3b2e45f89d807",
+  "steps": [
+   "1 cherry-pick f3f7ff473 -> 258619036 (clean; lib.rs auto-merged)",
+   "2 git merge --no-ff a0bca7440 -> 6f438492b (trycua/cua PR 4316 head re-read with gh: unchanged; clean)",
+   "3 cherry-pick c7e9c2a06 -> ddf87c681 (clean)",
+   "4 cherry-pick 96195e3b7 -> 770a715ed (clean)",
+   "5 cherry-pick 0cc03fbed -> cbbddea55 (clean; platform-linux impl_.rs auto-merged)",
+   "6 cherry-pick 8f5ec81bc -> 8f4f8b542 (clean)",
+   "7 cherry-pick 7d6cbe377 -> 8fbfa8e36 (clean)",
+   "8 cherry-pick 8f3a646b4 -> 45dff8f32 (clean)"
+  ],
+  "rerere": "every step ran with git -c rerere.enabled=false; the shared rr-cache was not used",
+  "conflict_hunks": "R': 0. Cn': 1 (raw/rebase/control-steps.txt)",
+  "range_diff": "git range-diff 989cc76ce..8f3a646b4 0f1955d2f..45dff8f32: all 8 patches '=' (raw/rebase/range-diff.txt); every step has an equal stable patch-id (raw/rebase/steps.txt); the whole-step added/removed line sets under libs/cua-driver are identical (raw/rebase/steps-interdiff.txt); the two files both sides touched differ only in hunk offsets (raw/rebase/*.r2-10.diff vs *.rprime.diff)",
+  "control": {"branch": "exp/r2-10r-control-20261003", "head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f", "rust_tree": "c609a7b606013fee2b2e0da9086a8555eea852f4",
+              "recipe": "0f1955d2f + cherry-picks of 7d6cbe377 (-> a4cda75bd, one conflict hunk in browser/tools.rs resolved to the R2-10 Cn blob d1a074ca734d) and 8f3a646b4 (-> 8a2362770, clean); both patches have the stable patch-id of the R2-10 Cn commits 9d8880855 / 1381014a3"}
+ },
+ "binaries": {
+  "R_prime": {"label": "r2-10r-45dff8f32", "sha256": "d830ee779b5681496dd35c7ba524580684dbd1430fea82a836e8f977fb658f9a", "version": "cua-driver 0.32.0 (read inside a private session, raw/provenance/versions.txt)", "build": "hostless flock cargo-build.lock build-driver.sh <wt> r2-10r-45dff8f32 cua-release-r2-10 (0 Fresh workspace units, 103 s)"},
+  "Cn_prime": {"label": "r2-10r-ctl-8a2362770", "sha256": "97dfc91e953132daa4ceb49056f1ac5a5ae046c9b6473acaaaca1496fd2b1c79", "version": "cua-driver 0.32.0", "build": "same command and family (0 Fresh workspace units, 94 s)", "use": "Phase 0 (d) default-off smoke only"},
+  "U": {"label": "b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version": "cua-driver 0.32.0", "use": "Phase 0 (b)/(c) positive control only, never timing"}
+ },
+ "harness": {
+  "reuse": "R2-10 harness copied byte-identical from exp/r2-10-composition-20261002 030f6bdbf (commit caf3d68a7 on this branch); the diff from caf3d68a7 to the PREREG commit is the complete list of edits",
+  "edits_disclosed_as_deviations": [
+   "run_chunk.sh: lock order cargo-build lock first, then quiet-timed (loop rule; R2-10 took the quiet lock first); lane label R2-10R in lane-ledger lines",
+   "phase0_unit.sh: two added steps for the drift files, cargo test ... -- tool_schema:: and -- snapshot_store::",
+   "package_raw.py: packages the D1 blocks (raw/drift/), the d1k shakedown, the in-session version reads and the two added unit steps; the global lock-ledger filter uses the r2-10r- label prefix",
+   "analyze_r2_10.py: a layer with no trials (L-live) is skipped instead of failing the per-class rule; S is also reported on T_land (S_land, same pairing/bootstrap, no training charge); Phase 0 (a) also requires the named FIX-01 and drift tests to be listed 'ok'; default output name r2-10r-summary.json"
+  ],
+  "new_files": ["harness/d1_drift.py (drift row D1)", "analyze_d1.py -> d1-summary.json", "recert_gates.py -> recert-summary.json (verdict comparison only)", "reference/r2-10-reference.json (verdict reference extracted by recert_gates.py --make-reference from the accepted R2-10 summary blob 5fe2549a54ed)"],
+  "unchanged": "r2_10_browser.py, r2_10_native.py, phase0_fix01.py, in_session.sh, native-plan.json (sha256 6974fc679572e63fa5441470fbb5aab2414cfd65a5b439c2205500a26fa16070) and everything under harness/src/"
+ },
+ "environment": "one Linux host; bin/hostless v2 for every code-executing command (including every python3); native and D1 additionally nested in bin/hostless-strict with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV carrying CUA_SESSION_ATSPI=1; private Xvfb session cua-x11-session.sh; Driver telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); TMPDIR under the lane tmp root; 1-minute loadavg recorded per trial; provider cap 0 (no key forwarded; every chooser is the scripted mock; non-loopback connects refused and counted)",
+ "phase0_gate": {
+  "rule": "All rows must pass before any measured trial. Any failure means STOP: no measured trial, disposition RECERT_FAIL (Phase 0) with a diagnosis.",
+  "a_unit": "R' tree: cargo test -p cua-driver-core --lib browser:: (>= 187 passed, 0 failed, the 4 FIX-01 detached-node tests listed ok), tool_schema:: (first_snapshot_grace_never_overrides_an_explicit_timeout ok), snapshot_store:: (semantic_membership_ignores_capture_only_publication ok), phase_trace; jev-use python unittest discover, test_runner_refusal.py, test_guarded_runner.py; npm test, run_refusal.test.ts, npm run typecheck; every step rc 0. Cargo-build lock taken before the SHARED quiet lock.",
+  "b_fix01_c1": "FIX-01 harness phase c1 on R' n=20: first Submit click refused browser_ref_stale 20/20, 0 old-node page events, rebind + verify 20/20. U positive control n=5: first click accepted 5/5.",
+  "c_b02_nw2": "B-02 N-W2 (plan nw2gate) on R', toggle and modal n=20 each: stale action refused 20/20 per class, 0 detached-handler server effects; U n=5 per class: the stale action fires the server effect 5/5.",
+  "d_default_off": "R' with no CUA_DRIVER_EXP_* and no CUA_DRIVER_PHASE_TRACE_FILE vs Cn': tools/list reply byte-identical over 3 raw reads each; fill/toggle/modal (BASE) and native checkbox/text (BASE) 5/5 verified each on both with identical receipt shapes; no trace-like file (browser) and every pre-created native trace file empty.",
+  "e_r2_07b": "on R', n=5: verified training executions, compile with a clean authority check, clean-reset admission replays verified, fresh binding before every compiled mutation; N4a refuse+rebind = (b); reconcile rows applied_ack_lost / delayed_after_first_unchanged_read (verified_by_reconcile 5/5 each) and withheld_unresolved (unknown 5/5), 0 duplicates, 0 dispatches after unknown."
+ },
+ "drift_row_D1": {
+  "class": "REAL+BENCHMARK (FIXTURE)",
+  "fixture": "canonical GTK3 fixture (libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py on R'), checkbox task window",
+  "arms": {"G": "first get_window_state of a fresh window with timeout_ms omitted (grace path: Driver must report timeout_ms 2000)", "E": "first get_window_state of a fresh window with explicit timeout_ms=1000 (Driver must report timeout_ms 1000)"},
+  "design": "20 AB/BA pairs (pair p: G then E for even p, E then G for odd p) = 40 trials in one block d1 under bin/quiet-timed (EXCLUSIVE, cargo lock first); fresh fixture and fresh Driver per trial; phase trace on; pre-T calls list_windows and set_agent_cursor_motion {} (as native BASE); T = send -> return of that one observation call (caller CLOCK_MONOTONIC)",
+  "recorded": "Driver-reported timeout_ms, walk_elapsed_ms, truncated, truncation_reason, nodes_visited, nodes_pending, element_count, elements_complete, elements digest (sha256 of canonical JSON of elements with token/snapshot keys removed), tree_markdown digest, T, Driver span (get_window_state dispatch_enter -> dispatch_exit marks), app state before/after; control outside T: a second get_window_state with timeout_ms omitted must report 1000 (no grace once a semantic snapshot exists)",
+  "gate": "elements digests identical 40/40 and truncated=false 40/40 (the recertification gate is the digest row); valid 40/40 (no failure, forced path G 2000 / E 1000, second call 1000, app state unchanged)",
+  "report": "paired difference G - E of T (and of the Driver span and walk_elapsed_ms): median with seeded paired bootstrap 95% CI (seed 20261002, 10000 resamples); expected ~0 because the GTK3 walk takes ~11 ms, far below either budget",
+  "browser_path": "SOURCE: the only call site of resolve_timeout_ms_with_first_snapshot_grace and contains_semantic_window is platform-linux GetWindowStateTool::invoke; no browser tool reaches it. Trace mark count: dispatch_enter marks per tool over every browser trial trace in this packet (scripted, controls, Phase 0 bundles); the prediction is 0 get_window_state dispatches (positive control: 2 per D1 trial)"
+ },
+ "arms": {
+  "binary_rule": "R' in every measured arm; phase trace on (CUA_DRIVER_PHASE_TRACE_FILE per trial) in every arm",
+  "browser": {
+   "BASE": "product default: feedback ON with the Driver default glide (set_agent_cursor_enabled true + set_agent_cursor_motion {glide_duration_ms:0, dwell_after_click_ms:80}), ordinary runner, 100 ms completion poll / 2.0 s deadline, library MCP output validation, no CUA_DRIVER_EXP_* variable",
+   "COMP": "feedback OFF (set_agent_cursor_enabled false) [OWNER_DECISION]; CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS=0 on fill [OWNER_DECISION]; 10 ms poll; caller-compiled output validators compiled at tools/list outside T; CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1; guarded completion on fill; compiled replay on fill with the guarded continuation as fallback; the first COMP-arm fill invocation runs training, compile and a clean-reset admission replay, all counted",
+   "COMP_E": "COMP + CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound [OWNER_DECISION]",
+   "COMP_K": "COMP minus the OWNER_DECISION knobs (feedback default ON, focus settle default)",
+   "lifecycle": "fresh Driver, fresh isolated Chromium and fresh token per trial; setup outside T"
+  },
+  "native": {"BASE": "defaults", "S0": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0 [KEEP]", "X": "S0 + set_agent_cursor_motion {glide_duration_ms:1} [OWNER_DECISION]", "lifecycle": "fresh Driver and fresh fixture per trial, scripted chooser (N-01R harness unchanged)"},
+  "live_layer": "NOT re-run: BLOCKED on paid budget (BASE needs 2 TypeSafe decisions per trial, >= 180 reached for 30 pairs x 3 classes; 58 remain in the loop and this lane's cap is 0). SOURCE argument in README: the drift touches no file on the caller-side provider decision path (jev-use runners and provider adapters unchanged); its Driver portion is shared with L-scripted and is recertified there."
+ },
+ "design": {
+  "L_scripted": "scripted chooser; arms BASE, COMP, COMP_K, COMP_E; 32 rounds; round r: classes rotated (r mod 3), the 4 arms in Williams row (r mod 4) (r2_10_browser.py build_plan, unchanged). Run as 4 chunks S1..S4 of 8 rounds each (start rounds 0, 8, 16, 24) so each EXCLUSIVE acquisition stays under 25 min; the trial sequence equals R2-10's S1/S2 sequence. Chunk S1 holds the training invocation for COMP, COMP_E and COMP_K; later chunks read the routines written by S1.",
+  "controls_excluded_from_T": "chunk N1 (plan controls, 5 rounds): N4a inside COMP 5 per class; OOD 5 (fill routine on the toggle/modal page); N-W2 inside COMP 5; native focus steal block nd1 (5 per task per arm, ~100 ms after the state change); fallback counts in COMP fill from the measured rows",
+  "native": "native-plan.json (unchanged): blocks nm1 and nm2 (12 rounds each, 24 rounds per task, Williams 3-treatment design), nd1 focus steal",
+  "lock": "every measured chunk (D1, S1-S4, N1, nm1, nm2, nd1): cargo-build lock, then bin/quiet-timed EXCLUSIVE, at most 25 min per acquisition, each background job < 2 h; Phase 0 rows and shakedowns: SHARED quiet lock (unit tests: cargo lock first, then SHARED)",
+  "order_of_work": "Phase 0 (a)-(e) -> D1 -> S1..S4 -> N1 -> nm1 -> nm2 -> nd1; every trial and failure kept",
+  "failed_session_rule": "a chunk whose private session fails to start (every trial an error at session level) is kept in raw/, counted, excluded from row evaluation and re-run under a new label"
+ },
+ "forced_paths": "as R2-10 PREREG forced_paths and arm_configuration_checks_browser (unchanged): browser clicks dom_event (receipt route dom, click.cdp_send inside the call), typing browser_type (route recorded, identical across arms); native AT-SPI DoAction / set_value (route accessibility, R2-04 mark sequence in order, knob marks and cursor motion as the arm sets them). A row whose route or arm-configuration marks mismatch is refused (invalid, kept in the denominator).",
+ "oracle": "independent, target-owned, read every 2 ms by a harness thread (not the runner): browser = jev-use fixture server state with its CLOCK_MONOTONIC mutation journal; native = the GTK3 task state file (CUA_GTK3_TASK_STATE, fresh per trial). D1 has no task outcome; its oracle is the app state file (unchanged by the observation) and the Driver-reported walk fields.",
+ "metrics": "as R2-10: T0 = send of the first observation; T_oracle (gating) = T0 -> first 2 ms oracle sample at/after the last accepted mutation's return showing the expected final state; T_land = T0 -> first oracle sample showing it; T_runner as R2-10; decomposition as R2-10 (B-01 decompose + B-02 taxonomy; native N-01R boundaries)",
+ "statistics": {
+  "S": "per class/task and arm: S = median T_oracle BASE / median T_oracle arm over rounds where both trials are valid; seeded paired bootstrap over rounds (seed 20261002, 10000 resamples, percentile 95% CI). Reported: S_COMP, S_COMP_K, S_COMP_E (scripted); fill S_all (training round charged with compile + admission), amortized ratio of means and warm-only; native S_S0 and S_X; and the same S on T_land next to each.",
+  "decomposition": "per component on every arm: mean ms, share of mean T, verdict (R2-10 e2_verdicts_preregistered, unchanged), above-threshold flag (>= 5% or >= 50 ms), floor ratio, untested share; work deleted (BASE - arm component means) separate from wall-clock saved (median paired T_oracle difference)",
+  "denominators": "every trial kept; failures stay in validity denominators",
+  "never_compared": "R' numbers are never ratioed against R2-10's R numbers; only verdicts are compared"
+ },
+ "gates": {
+  "RECERTIFIED_iff_all": [
+   "phase0: Phase 0 (a)-(e) pass in full",
+   "validity_100: verified share 1.0 in every arm (scripted 4 arms x 3 classes, native 3 arms x 2 tasks)",
+   "e4_zero: 0 E4 violations (stale dispatch, duplicate, unverified success, refusal returned as success, blind replay) in every arm, admission replay and control",
+   "S_direction: every R2-10 scripted/native S whose CI excluded 1 again excludes 1 in the same direction (reference/r2-10-reference.json: S_COMP, S_COMP_E, S_COMP_K per class, fill amortized and warm-only, native S_S0 and S_X per task; all 15 R2-10 CIs were above 1)",
+   "verdict_mapping: every component keeps its verdict mapping (same verdict label per component and unit) and every component with R2-10 work deleted of magnitude >= 5 ms keeps its sign (deleted stays deleted)",
+   "d1_digests: D1 element digests identical 40/40"
+  ],
+  "on_failure": "RECERT_FAIL naming each claim that changed (recert_gates.py changed_claims)",
+  "flagged_not_hidden": "a component whose share crosses 5% or 50 ms relative to R2-10 (above_threshold flips) and any change of the E2 untested < 5% status are listed in recert-summary.json and the README"
+ },
+ "e2_verdicts_preregistered": "unchanged from the R2-10 PREREG (analyze_r2_10.py BROWSER_VERDICTS / NATIVE_VERDICTS)",
+ "provider_budget": {"provider": "TypeSafe", "lane_cap_reached": 0, "lane_cap_attempts": 0, "expected": "0 attempts, 0 reached"},
+ "shakedowns_before_prereg": "browser shake1 (plan shakedown), native nshake1 (block nk1), D1 d1k1 (block d1k, 2 trials); SHARED quiet lock with receipts; not measured or analysed; kept in raw/shakedown/",
+ "claim_boundary": "one Linux host, private Xvfb, jev-use fixture and the kvnloo/cua#24 toggle/modal pages, canonical GTK3 fixture, scripted chooser; binary R' built from 0f1955d2f + R2-10 steps 1-8; the live layer stays certified at 989cc76ce only (budget); only verdicts are compared with R2-10, never numbers; OWNER_DECISION components labelled, no default change claimed",
+ "evidence_classes": "UNIT (Phase 0 a), REAL (Phase 0 b-e, controls), REAL+BENCHMARK (FIXTURE) (scripted, native, D1), SOURCE (rebase range-diff, call graph, live-layer argument), BLOCKED (live layer), NOT_RUN (anything pre-registered that does not run)"
+}
