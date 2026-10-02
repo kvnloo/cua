@@ -10,6 +10,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
+use crate::action_record::{
+    ActionEffect, ActionExecutionRecord, ActionTransport, ActualDelivery, RequestedDelivery,
+};
 use crate::protocol::{Content, ToolResult};
 use crate::tool::{ProtectedResourceOwnership, Tool, ToolDef, ToolRegistry};
 use crate::tool_args::ArgsExt;
@@ -893,6 +896,30 @@ impl Tool for BrowserNavigateTool {
 
 // ── browser_click ────────────────────────────────────────────────────────────
 
+/// Keep the producer's uncertain result authoritative at public projection.
+/// The legacy refusal envelope alone would otherwise become a proven refusal.
+fn uncertain_trusted_click(message: String, foreground: bool) -> ToolResult {
+    let mut record = ActionExecutionRecord::new(
+        ActionEffect::Unverifiable,
+        ActionTransport::BrowserCdpInputMouse,
+        if foreground {
+            RequestedDelivery::Foreground
+        } else {
+            RequestedDelivery::Background
+        },
+    );
+    record.actual_delivery = Some(ActualDelivery::Unknown);
+    let refusal = BrowserRefusal::new(BrowserRefusalCode::BrowserInputTrustUnavailable, message)
+        .with_detail(json!({ "delivery": "unknown", "retryable": false }));
+    ToolResult::text(format!(
+        "unverifiable ({}): {}",
+        refusal.code.as_str(),
+        refusal.message
+    ))
+    .with_structured(json!({ "status": "refused", "refusal": refusal }))
+    .with_action_record(record)
+}
+
 pub struct BrowserClickTool {
     def: ToolDef,
     engine: Arc<BrowserEngine>,
@@ -1298,26 +1325,22 @@ impl Tool for BrowserClickTool {
             .await
             .err();
         if let Some(error) = delivery_error {
-            // Trusted input is the contract; we never silently fall back to
-            // synthetic events. Focus emulation has already been unwound.
-            return BrowserRefusal::new(
-                BrowserRefusalCode::BrowserInputTrustUnavailable,
+            // Input may have taken effect before its reply was lost. Cleanup
+            // was attempted above; another delivery route could duplicate it.
+            return uncertain_trusted_click(
                 format!(
-                    "trusted Input route failed ({error}) — re-run with \
-                     input_route=\"dom_event\" to explicitly request a synthetic click"
+                    "trusted Input delivery could not be confirmed ({error}); delivery is unknown and must not be retried automatically"
                 ),
-            )
-            .to_tool_result();
+                foreground,
+            );
         }
         if let Some(error) = cleanup_error {
-            return BrowserRefusal::new(
-                BrowserRefusalCode::BrowserInputTrustUnavailable,
+            return uncertain_trusted_click(
                 format!(
                     "trusted click was acknowledged but CDP focus emulation could not be restored ({error}); delivery is unknown and must not be retried automatically"
                 ),
-            )
-            .with_detail(json!({ "delivery": "unknown", "retryable": false }))
-            .to_tool_result();
+                foreground,
+            );
         }
         ToolResult::text(format!("clicked ({x:.0}, {y:.0}) in {tab_id}")).with_structured(json!({
             "status": "ok",

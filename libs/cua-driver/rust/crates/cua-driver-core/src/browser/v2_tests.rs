@@ -55,6 +55,10 @@ struct FixtureState {
     oopif_sessions: u64,
     fail_key_down_after: Option<usize>,
     completed_key_pairs: usize,
+    reject_focus_emulation: bool,
+    drop_mouse_release_reply: bool,
+    drop_focus_cleanup_reply: bool,
+    completed_clicks: usize,
     semantic_large_page: bool,
     semantic_full_dom_fails: bool,
     semantic_full_dom_times_out: bool,
@@ -92,6 +96,10 @@ impl Default for FixtureState {
             oopif_sessions: 0,
             fail_key_down_after: None,
             completed_key_pairs: 0,
+            reject_focus_emulation: false,
+            drop_mouse_release_reply: false,
+            drop_focus_cleanup_reply: false,
+            completed_clicks: 0,
             semantic_large_page: false,
             semantic_full_dom_fails: false,
             semantic_full_dom_times_out: false,
@@ -682,10 +690,28 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     MockReply::ok(json!({}))
                 }
             }
-            "DOM.focus"
-            | "Emulation.setFocusEmulationEnabled"
-            | "Input.dispatchMouseEvent"
-            | "Input.insertText" => MockReply::ok(json!({})),
+            "Emulation.setFocusEmulationEnabled"
+                if st.reject_focus_emulation && call.params["enabled"] == true =>
+            {
+                MockReply::err(-32601, "fixture focus emulation unavailable")
+            }
+            "Emulation.setFocusEmulationEnabled"
+                if st.drop_focus_cleanup_reply && call.params["enabled"] == false =>
+            {
+                MockReply::disconnect()
+            }
+            "Input.dispatchMouseEvent" => {
+                if call.params["type"] == "mouseReleased" {
+                    st.completed_clicks += 1;
+                    if st.drop_mouse_release_reply {
+                        return MockReply::disconnect();
+                    }
+                }
+                MockReply::ok(json!({}))
+            }
+            "DOM.focus" | "Emulation.setFocusEmulationEnabled" | "Input.insertText" => {
+                MockReply::ok(json!({}))
+            }
             "DOM.resolveNode" => MockReply::ok(json!({
                 "object": { "objectId": format!("obj-{}", call.params["backendNodeId"]) }
             })),
@@ -2610,4 +2636,121 @@ async fn method_unsupported_keeps_the_electron_none_path() {
     let tabs = s["tabs"].as_array().expect("tabs");
     assert_eq!(tabs.len(), 1, "{s}");
     assert_eq!(tabs[0]["url"], "https://fixture.test/");
+}
+
+#[tokio::test]
+async fn trusted_click_setup_refusal_prevents_mouse_dispatch() {
+    let f = fixture_with(|state| state.reject_focus_emulation = true).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+
+    let result = BrowserClickTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION
+        }))
+        .await;
+    let output = structured(&result);
+    assert_eq!(output["refusal"]["code"], "browser_input_trust_unavailable");
+    assert_eq!(f.state.lock().unwrap().completed_clicks, 0);
+    assert!(
+        recorded_calls(&f, "Input.dispatchMouseEvent").is_empty(),
+        "setup refusal must happen before mouse dispatch"
+    );
+    let public = result
+        .action_record
+        .clone()
+        .or_else(|| ActionExecutionRecord::from_legacy("browser_click", &json!({}), output))
+        .unwrap()
+        .public_result()
+        .unwrap();
+    assert_eq!(public.effect, cua_driver_contract::ActionEffect::Refused);
+    assert!(
+        public.delivery.is_none(),
+        "setup refusal proves no dispatch"
+    );
+}
+
+#[tokio::test]
+async fn trusted_click_lost_reply_is_unknown_and_not_retryable() {
+    for lost_reply in ["release", "cleanup"] {
+        let f = fixture_with(|state| {
+            state.drop_mouse_release_reply = lost_reply == "release";
+            state.drop_focus_cleanup_reply = lost_reply == "cleanup";
+        })
+        .await;
+        let (target, tab) = bind(&f).await;
+        let snap = snapshot(&f, &target, &tab).await;
+        let main_ref = ref_of(&snap, "main", "main-btn");
+        let synthetic_before = recorded_calls(&f, "Runtime.callFunctionOn").len();
+
+        let result = BrowserClickTool::new(f.engine.clone())
+            .invoke(json!({
+                "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION
+            }))
+            .await;
+        // Fixture effect is recorded before closing the actual mock socket. The
+        // missing reply cannot turn that observed effect into proven non-delivery.
+        assert_eq!(f.state.lock().unwrap().completed_clicks, 1);
+        let mouse = recorded_calls(&f, "Input.dispatchMouseEvent");
+        assert_eq!(mouse.len(), 2, "no automatic mouse replay");
+        assert_eq!(mouse[0].1["type"], "mousePressed");
+        assert_eq!(mouse[1].1["type"], "mouseReleased");
+        assert_eq!(
+            recorded_calls(&f, "Runtime.callFunctionOn").len(),
+            synthetic_before,
+            "no automatic synthetic replay"
+        );
+
+        let output = structured(&result);
+        let refusal = &output["refusal"];
+        assert_eq!(refusal["code"], "browser_input_trust_unavailable");
+        assert_eq!(
+            refusal["detail"]["delivery"], "unknown",
+            "the fixture click completed before its reply was lost: {refusal}"
+        );
+        assert_eq!(refusal["detail"]["retryable"], false);
+        let message = refusal["message"].as_str().unwrap();
+        assert!(
+            !message.contains("dom_event"),
+            "must not suggest synthetic replay: {message}"
+        );
+
+        // Exercise the same closed public projection used at dispatch, rather
+        // than treating the private legacy detail object as the wire contract.
+        let public = result
+            .action_record
+            .clone()
+            .or_else(|| ActionExecutionRecord::from_legacy("browser_click", &json!({}), output))
+            .unwrap()
+            .public_result()
+            .unwrap();
+        assert_eq!(
+            public.effect,
+            cua_driver_contract::ActionEffect::Unverifiable
+        );
+        assert_eq!(
+            public.delivery.as_ref().unwrap().mode,
+            cua_driver_contract::ActionDeliveryMode::Unknown
+        );
+        assert!(public.delivery.as_ref().unwrap().delivered_count.is_none());
+        assert!(
+            public.error.is_none(),
+            "unknown execution is not proven refusal"
+        );
+        assert!(
+            public.escalation.is_none(),
+            "do not recommend an alternative action route"
+        );
+        cua_driver_contract::validate_success_output(
+            "browser_click",
+            serde_json::to_value(public).unwrap(),
+        )
+        .unwrap();
+        assert!(
+            result.content.iter().all(|content| !matches!(content,
+        Content::Text { text, .. } if text.starts_with("refused ("))),
+            "the producer summary must preserve the uncertain outcome too"
+        );
+    }
 }
