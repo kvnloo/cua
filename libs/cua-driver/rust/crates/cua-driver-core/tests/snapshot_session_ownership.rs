@@ -110,3 +110,68 @@ fn anonymous_and_named_snapshots_do_not_resolve_for_each_other() {
     assert!(cache.resolve(PID, &args(&anonymous, None)).is_ok());
     assert!(cache.resolve(PID, &args(&named, Some("session-a"))).is_ok());
 }
+
+// trycua/cua PR 4375 added a capture-only publication path
+// (`publish_capture_for_session`, used by screenshot-only observations). Its
+// snapshots carry a token-bearing id like any other, so F1 must bind them to
+// their session too.
+#[test]
+fn a_capture_only_publication_resolves_only_for_its_session() {
+    let cache = SnapshotStore::new();
+    let id = cache
+        .publish_capture_for_session(PID, 7, Payload(vec![10, 20]), Some("session-a"), Some(1.0))
+        .expect("live session publishes")
+        .0;
+    let token = token_for(id, 1);
+
+    let refused = refusal(&cache, &token, Some("session-b"));
+    assert_eq!(refused["refusal"]["code"], "stale_element_token");
+    assert_eq!(refused["current_snapshots"], json!([]));
+    assert!(matches!(
+        cache.resolve(PID, &args(&token, Some("session-a"))).unwrap(),
+        ResolvedElement::Element {
+            window_id: 7,
+            element: 20,
+            ..
+        }
+    ));
+    // The capture-only flag still does not claim a semantic walk.
+    assert!(!cache.contains_semantic_window(PID, 7));
+}
+
+// Two windows of one process (kvnloo/cua#36 same-process two-window row):
+// tokens are per session and retirement is per window.
+#[test]
+fn two_windows_of_one_process_keep_tokens_per_window_and_per_session() {
+    let cache = SnapshotStore::new();
+    let a_window1 = token_for(publish(&cache, 7, Some("session-a")), 0);
+    publish(&cache, 8, Some("session-b"));
+
+    // B cannot act through A's window-1 token on the same pid.
+    assert_eq!(
+        refusal(&cache, &a_window1, Some("session-b"))["refusal"]["code"],
+        "stale_element_token"
+    );
+    // One session observing window 1 then window 2 keeps its window-1 token.
+    let own_window2 = token_for(publish(&cache, 8, Some("session-a")), 0);
+    assert!(cache.resolve(PID, &args(&a_window1, Some("session-a"))).is_ok());
+    assert!(cache.resolve(PID, &args(&own_window2, Some("session-a"))).is_ok());
+    // Removing window 1's snapshot retires only window 1.
+    cache.remove(PID, 7);
+    assert_eq!(
+        refusal(&cache, &a_window1, Some("session-a"))["refusal"]["code"],
+        "stale_element_token"
+    );
+    assert!(cache.resolve(PID, &args(&own_window2, Some("session-a"))).is_ok());
+    // A window-1 token presented with window 2's id conflicts instead of
+    // resolving inside window 2.
+    let again = token_for(publish(&cache, 7, Some("session-a")), 0);
+    let mut cross = args(&again, Some("session-a"));
+    cross["window_id"] = json!(8);
+    let conflict = cache
+        .resolve(PID, &cross)
+        .expect_err("window mismatch must be refused")
+        .structured_content
+        .unwrap();
+    assert_eq!(conflict["refusal"]["code"], "conflicting_element_target");
+}
