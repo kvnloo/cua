@@ -3675,6 +3675,203 @@ mod exp_post_action_sleep_tests {
     }
 }
 
+/// Measurement-only (research experiment R2-09, not for upstream): when set to
+/// `event`, [`perform_action_ref`] replaces its post-`DoAction` sleep with a
+/// wait for the first AT-SPI event emitted by the acted object itself
+/// (`object:state-changed` other than `defunct`, `object:text-changed` or
+/// `object:property-change` from the same bus name and object path), bounded
+/// by the same deadline as the sleep. The event is a wake hint only: the
+/// return value, the receipt and every claim are unchanged. Unset (the
+/// default) or any other value keeps the sleep. Read once per process.
+const EXP_POST_ACTION_WAKE_ENV: &str = "CUA_DRIVER_EXP_NATIVE_POST_ACTION_WAKE";
+
+fn exp_post_action_wake_event() -> bool {
+    static VALUE: OnceLock<bool> = OnceLock::new();
+    *VALUE.get_or_init(|| {
+        let on = wake_knob_is_event(std::env::var(EXP_POST_ACTION_WAKE_ENV).ok().as_deref());
+        if on {
+            cua_driver_core::phase_trace::mark("exp_knob", "post_action_wake=event");
+        }
+        on
+    })
+}
+
+fn wake_knob_is_event(raw: Option<&str>) -> bool {
+    raw.map(str::trim) == Some("event")
+}
+
+/// Which acted-object event kinds count as a wake. `defunct` is excluded: the
+/// object being destroyed is not a change the action made to it.
+fn wake_kind_for(
+    kind: &str,
+    state: Option<State>,
+    bus: Option<&str>,
+    path: &str,
+    target: &ObjectRef,
+) -> Option<String> {
+    if bus != Some(target.bus.as_str()) || path != target.path {
+        return None;
+    }
+    match (kind, state) {
+        ("state-changed", Some(State::Defunct)) => None,
+        ("state-changed", Some(state)) => Some(format!("state-changed:{state:?}").to_lowercase()),
+        ("text-changed", _) => Some("text-changed".to_owned()),
+        ("property-change", _) => Some("property-change".to_owned()),
+        _ => None,
+    }
+}
+
+/// [`wake_kind_for`] applied to one decoded bus event.
+fn acted_object_wake(event: &atspi::Event, target: &ObjectRef) -> Option<String> {
+    use atspi::ObjectEvents;
+    let atspi::Event::Object(object) = event else {
+        return None;
+    };
+    let (kind, state, item) = match object {
+        ObjectEvents::StateChanged(e) => ("state-changed", Some(e.state), &e.item),
+        ObjectEvents::TextChanged(e) => ("text-changed", None, &e.item),
+        ObjectEvents::PropertyChange(e) => ("property-change", None, &e.item),
+        _ => return None,
+    };
+    wake_kind_for(kind, state, item.name_as_str(), item.path_as_str(), target)
+}
+
+/// Match rules the event wake needs beyond the shared connection's
+/// state-changed rule. Added once per process, only when the knob is set.
+async fn ensure_wake_match_rules(conn: &AccessibilityConnection) {
+    static RULES: tokio::sync::OnceCell<()> = tokio::sync::OnceCell::const_new();
+    RULES
+        .get_or_init(|| async {
+            if let Err(error) = conn
+                .add_match_rule::<atspi::events::object::TextChangedEvent>()
+                .await
+            {
+                dlog!("AT-SPI text-changed match rule failed: {error}");
+            }
+            if let Err(error) = conn
+                .add_match_rule::<atspi::events::object::PropertyChangeEvent>()
+                .await
+            {
+                dlog!("AT-SPI property-change match rule failed: {error}");
+            }
+        })
+        .await;
+}
+
+/// Wait for the acted object's first event, at most until `deadline`. A
+/// closed stream (bus or registry gone) falls back to the deadline. Writes one
+/// phase mark naming how the wait ended; returns nothing the caller may use.
+async fn wait_for_acted_object_event(
+    stream: &mut (impl futures_util::Stream<Item = std::result::Result<atspi::Event, atspi::AtspiError>>
+              + Unpin),
+    target: &ObjectRef,
+    deadline: tokio::time::Instant,
+) {
+    use futures_util::StreamExt;
+    let first = tokio::time::timeout_at(deadline, async {
+        while let Some(event) = stream.next().await {
+            if let Some(kind) = event.ok().and_then(|e| acted_object_wake(&e, target)) {
+                return Some(kind);
+            }
+        }
+        None
+    })
+    .await;
+    match first {
+        Ok(Some(kind)) => {
+            cua_driver_core::phase_trace::mark("atspi_action", &format!("post_wake_event {kind}"))
+        }
+        Ok(None) => {
+            cua_driver_core::phase_trace::mark("atspi_action", "post_wake_stream_closed");
+            tokio::time::sleep_until(deadline).await;
+        }
+        Err(_) => cua_driver_core::phase_trace::mark("atspi_action", "post_wake_deadline"),
+    }
+}
+
+#[cfg(test)]
+mod exp_post_action_wake_tests {
+    use super::*;
+
+    fn target() -> ObjectRef {
+        ObjectRef {
+            bus: ":1.42".to_owned(),
+            path: "/org/a11y/atspi/accessible/7".to_owned(),
+        }
+    }
+
+    #[test]
+    fn only_the_exact_value_event_turns_the_wake_on() {
+        assert!(wake_knob_is_event(Some("event")));
+        assert!(wake_knob_is_event(Some(" event ")));
+        for raw in [
+            None,
+            Some(""),
+            Some("1"),
+            Some("Event"),
+            Some("events"),
+            Some("sleep"),
+        ] {
+            assert!(!wake_knob_is_event(raw), "{raw:?}");
+        }
+    }
+
+    #[test]
+    fn acted_object_events_wake() {
+        let t = target();
+        let (bus, path) = (Some(":1.42"), "/org/a11y/atspi/accessible/7");
+        assert_eq!(
+            wake_kind_for("state-changed", Some(State::Checked), bus, path, &t).as_deref(),
+            Some("state-changed:checked")
+        );
+        assert_eq!(
+            wake_kind_for("text-changed", None, bus, path, &t).as_deref(),
+            Some("text-changed")
+        );
+        assert_eq!(
+            wake_kind_for("property-change", None, bus, path, &t).as_deref(),
+            Some("property-change")
+        );
+    }
+
+    #[test]
+    fn foreign_defunct_or_other_events_do_not_wake() {
+        let t = target();
+        let path = "/org/a11y/atspi/accessible/7";
+        // Same path on another application's bus.
+        assert!(wake_kind_for(
+            "state-changed",
+            Some(State::Checked),
+            Some(":1.43"),
+            path,
+            &t
+        )
+        .is_none());
+        // Another object of the same application (a recreated node, a decoy).
+        assert!(wake_kind_for(
+            "state-changed",
+            Some(State::Checked),
+            Some(":1.42"),
+            "/org/a11y/atspi/accessible/8",
+            &t
+        )
+        .is_none());
+        // No sender.
+        assert!(wake_kind_for("text-changed", None, None, path, &t).is_none());
+        // The acted object being destroyed is not a wake.
+        assert!(wake_kind_for(
+            "state-changed",
+            Some(State::Defunct),
+            Some(":1.42"),
+            path,
+            &t
+        )
+        .is_none());
+        // Kinds outside the wake set.
+        assert!(wake_kind_for("children-changed", None, Some(":1.42"), path, &t).is_none());
+    }
+}
+
 /// [`perform_action`] on a snapshot-cached element identity. Same contract:
 /// `Ok((action_name, suspected_noop))`. Errors when the object no longer
 /// exists so the caller can fall back to resolving the index afresh.
@@ -3699,6 +3896,19 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
             let suspected_noop = actions.is_empty() || is_passive_role(&role);
             let chosen = activation_index(&role, &actions)
                 .ok_or_else(|| anyhow!("element does not advertise a safe activation action"))?;
+            // R2-09 (measurement only): subscribe before DoAction so an event
+            // the toolkit emits while handling the call is not missed.
+            let mut wake_stream = if exp_post_action_wake_event() {
+                ensure_wake_match_rules(conn).await;
+                let stream = Box::pin(conn.event_stream());
+                cua_driver_core::phase_trace::mark(
+                    "atspi_action",
+                    &format!("post_wake_open {} {}", object_ref.bus, object_ref.path),
+                );
+                Some(stream)
+            } else {
+                None
+            };
             // See `perform_action`'s `unacknowledged`: an unanswered doAction
             // is unknown, not dispatched-implies-success, and must not be
             // folded into `rejected`/`suspected_noop` (which would claim the
@@ -3719,7 +3929,10 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
             };
             cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
             let post_action_sleep = exp_post_action_sleep();
-            if !post_action_sleep.is_zero() {
+            if let Some(stream) = wake_stream.as_mut() {
+                let deadline = tokio::time::Instant::now() + post_action_sleep;
+                wait_for_acted_object_event(stream, object_ref, deadline).await;
+            } else if !post_action_sleep.is_zero() {
                 tokio::time::sleep(post_action_sleep).await;
             }
             cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
