@@ -1,0 +1,67 @@
+{
+ "schema": "cua.r2-08.prereg.v1",
+ "experiment": "R2-08 one matched cross-surface equivalence test: GUI (Driver browser_type + browser_click) vs the jev-use fixture's existing HTTP form endpoint",
+ "owners": ["kvnloo/cua#93 (R2-08; original E4/E5)", "kvnloo/cua#10", "kvnloo/cua#73"],
+ "registered_utc": "2026-10-02T02:00Z",
+ "registered_before_first_measured_trial": true,
+ "pilot": {
+  "declared": true,
+  "trials": 10,
+  "purpose": "harness mechanics only (one trial per arm/variant plus one N2 valid-value GUI trial); run under the shared quiet-lane lock before this file existed; kept in raw/pilot; never used for any gate or reported number except as pilot",
+  "observed_mechanics": "all 10 pilot trials matched their predicted outcomes; G_on T about 3.2 s, G_off about 185 ms, API about 2-3 ms (single trials, loadavg about 9, not measurements)"
+ },
+ "source": {
+  "tested_source": "upstream main c4d0c6625b5c93849aa8bec610782410e9d45f69 (jev-use examples at that commit)",
+  "driver_binary": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+  "driver_sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+  "driver_version": "cua-driver 0.32.0",
+  "binary_validity": "built from 229b65b2849c3a595ddbc85200d7181b18bd2e47; valid for c4d0c6625 because `git diff --quiet 229b65b28 c4d0c6625 -- libs/cua-driver/rust` exits 0 (recorded in source-head.txt)",
+  "driver_change": "none (policy-neutral; unmodified main binary, default safety settings)"
+ },
+ "hypothesis": "For the jev-use fill->submit task, the fixture's existing HTTP form endpoint is semantically equivalent to the GUI route: same initial state, same final /state, same journal shape (exactly one submit with the exact token), no missing intermediate effects or constraints. It is therefore an eligible, faster route for THIS task. Equivalence and authorization do not transfer: per-task evidence is required, as the negatives show.",
+ "arms": {
+  "G_on": "GUI, Driver default feedback (no cursor toggle call): semantic_v2 get_browser_state, mock choice (choose_mock_for_task), browser_type replace=true, semantic_v2 get_browser_state, mock choice, browser_click {ref, input_route: dom_event}",
+  "G_off": "identical to G_on after set_agent_cursor_enabled {enabled:false} immediately after MCP initialize",
+  "API": "after the same initial page load: eligibility read (caller HTTP GET / of the target page), contract check (action, method, field name vs DOCUMENTED_CONTRACT), then one caller POST /submit built from the documented contract only (urlencoded {value: token}); never retried"
+ },
+ "documented_contract": {"action": "/submit", "method": "post", "field": "value", "enctype": "application/x-www-form-urlencoded", "source": "fixture_server.py PAGE and python/tests/test_fixture_server.py (POST /submit with urlencode({'value': ...})); never captured traffic"},
+ "per_trial_procedure": "fresh fixture server (port 0), fresh cua-driver mcp process, fresh isolated_new Chrome; [G_off: cursor toggle]; browser_prepare; wait_for_window; bind; browser_navigate to the fixture; wait for the browser's own GET / receipt in the fixture journal; initial /state read. All of that is before T. Unique value per trial: valid = 'r2-08-' + 12 hex; N2 invalid = 'r2-08-INVALID-' + 6 hex.",
+ "T_definition": "T starts at the send of the first observation (GUI: get_browser_state semantic_v2) or of the first eligibility read (API: GET /). T ends at the return of the first fixture GET /state read showing the trial's value. After the final action returns (browser_click / POST response), /state is polled every 2 ms up to 2000 ms (bounded re-read in every arm). Clock: time.monotonic_ns().",
+ "base": {
+  "rounds": 20,
+  "order": "round r runs the 3 arms in rotation r mod 3 of [G_on, G_off, API]: (G_on,G_off,API), (G_off,API,G_on), (API,G_on,G_off), ...",
+  "lock": "flock EXCLUSIVE quiet-lane.lock for all 60 base trials (one session)",
+  "equivalence_signature": "per trial: initial /state, final /state (value normalized to <value>), list of POST /submit receipts (method, path, content type, sorted field-name set, value == trial value, HTTP status, effect, refusal reason), list of state mutations (event, value == trial value), sorted list of side-effecting requests (every non-GET request other than the harness /reset), count of /validate events. GET reads (page renders, favicon) and transport headers (Origin, Referer, User-Agent) are excluded from the signature and reported descriptively.",
+  "constraint_check": "from the API eligibility read in every API trial: the base form field constraints enumerated (type, required, pattern, maxlength, minlength); expected {type text, required true, pattern null, maxlength null, minlength null}; the trial value must satisfy them (hence irrelevant for valid values); no extra form fields.",
+  "round_status": "equivalent iff G_on and G_off of the round are oracle-confirmed with forced path, the API trial is oracle-confirmed with forced path, the constraint check holds, and signature(API) == signature(G_off) == signature(G_on). not_established iff a GUI arm of the round failed. differs otherwise."
+ },
+ "negatives": {
+  "lock": "flock SHARED quiet-lane.lock, at most 10 trials per acquisition (one session per 10-trial chunk)",
+  "gui_arm_used": "G_off (route under test is GUI vs API; R2-01 showed feedback changes timing, not route or outcome)",
+  "plan": "per variant 2 chunks of 10 alternating trials (chunk 0 starts G_off, chunk 1 starts API): n = 10 GUI + 10 API per variant",
+  "N1_authorization": {"variant": "page embeds a fresh server nonce per render (hidden field 'nonce'); POST /submit without the current nonce is refused with HTTP 403 and journaled (effect refused)", "predicted_GUI": "oracle-confirmed; exactly one accepted submit with fields [nonce, value]; one mutation", "predicted_API": "not confirmed; final /state {submitted: null}; exactly one submit with fields [value], status 403, effect refused, reason missing_nonce or stale_nonce; zero mutations"},
+  "N2_constraint_bypass": {"variant": "field carries client-side pattern 'r2-08-[0-9a-f]{12}'; server keeps the base handler (no server-side check); probe script beacons the browser 'invalid' event to /probe (instrumentation only)", "value": "invalid ('r2-08-INVALID-' + 6 hex)", "predicted_GUI": "forced path executed (type and click accepted by Driver); not confirmed; final /state {submitted: null}; zero submits; zero mutations", "predicted_API": "oracle-confirmed with the invalid value; exactly one accepted submit with fields [value]; one mutation"},
+  "N3_intermediate_effect": {"variant": "page script POSTs the field value to /validate on every input event; server journals each validate as a server-side task effect; /state keeps the base shape", "predicted_GUI": "oracle-confirmed; exactly one accepted submit; at least one validate event carrying the trial value before the submit", "predicted_API": "oracle-confirmed (same final /state shape); exactly one accepted submit; zero validate events"},
+  "discriminating": "a variant discriminates iff G1 holds (base API arm passes) AND 10/10 GUI and 10/10 API trials show the predicted outcome. Any error/unknown outcome counts as a failure in the denominator.",
+  "secondary_descriptive_not_gates": ["N2 valid-value GUI control on the N2 page (n = 3, shared lock): predicted oracle-confirmed with one accepted submit (shows the N2 GUI block is the constraint, not a broken page)", "N2 GUI trials with a probe 'invalid' beacon", "per API trial: contract-check verdict (expected eligible_by_contract on all variants, showing the spec's action/method/field check does not detect authorization, constraints or intermediate effects) plus extra fields, constraints, script count"]
+ },
+ "statistics": {"paired": "D_r = T(API)_r - T(G_off)_r over base rounds with both confirmed; median D; percentile bootstrap 95% CI, 10000 resamples, seed 20261002", "also_reported": "T(API) - T(G_on) paired, per-arm median/p95, per-component medians, loadavg per trial, work-in-T counts"},
+ "gates": {
+  "G1": "base equivalence holds in 20/20 rounds (status equivalent)",
+  "G2": "N1, N2, N3 each discriminating (10/10 GUI and 10/10 API predicted)",
+  "G3": "paired median T(API) - T(G_off) bootstrap 95% CI excludes 0"
+ },
+ "disposition_rule": "KEEP iff G1 and G2 and G3. KILL iff any base round status is 'differs' (equivalence fails on the base fixture) or any negative fails to discriminate. Otherwise REVISE (e.g. a round not_established because a GUI arm failed, or G3 fails).",
+ "keep_claim": "eligible and faster only with per-task equivalence and authorization evidence; Driver policy-neutral; caller chooses",
+ "accounting": "work deleted (Driver calls, observations, decisions, visualized actions inside T) reported separately from wall-clock saved; every failure in the denominator",
+ "invariants": ["no Driver change; Driver stays policy-neutral; caller chooses the route", "no new service, router, route miner, shadow state, second verifier", "no production credential capture; no arbitrary request replay; programmatic request built from the documented contract only", "fixture /state is the only success oracle; Driver results are never the success signal", "a possibly landed effect is never replayed: no POST or click retries; transport errors are resolved by the oracle"],
+ "claim_boundary": "one resettable owned fixture, loopback HTTP, X11 Xvfb, Chrome 151, Driver 0.32.0 8b037961, mock chooser. No claim for real sites, credentials, other tasks or other surfaces (CLI/AT-SPI). Adoption into the composed configuration is an OWNER_DECISION through #73/#74.",
+ "provider": {"live_provider": "none (mock chooser only)", "cap_requests_reaching_TypeSafe": 0},
+ "files_at_registration_sha256": {
+  "run_cross_surface.py": "0cc42c3e8e66a37f3d293b1232305dc4fc245c9b5cda449fb09e99e5a6432ae3",
+  "variants.py": "9761866d5fd1b72d7862909f743c50623a1005411367f6b24e548ee3bed6c3c3",
+  "analyze.py": "e0b15d60d4777b8378950dd69db79f33274adb5f85420dc26a0671739662dfb4",
+  "run_in_session.sh": "63b9fd80e0c356ab43393820c3588586e77cc3adcd42e0f4c099b911e21ba075",
+  "test_variants.py": "f263f6851d7c0591f01380a613ea108e85806f17efedcb99a043600874d62b73"
+ }
+}
