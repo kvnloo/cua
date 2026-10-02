@@ -1,0 +1,75 @@
+{
+ "schema": "cua.i107.cshadow.erratum.v1",
+ "kind": "POST-DATA corrections after the lane verifier's review of commit ecfea4733. No new trial was run, no raw data changed, and PREREG.json and PREREG_AMENDMENT_1.json are unchanged. analyze_cshadow.py was updated only to emit the corrected fields named below; cshadow-summary.json and raw/ledger.jsonl were regenerated from the same raw/ and verify_artifacts.py reproduces them.",
+ "verdict_effect": "None. The disposition stays 'park' by the map PREREG row 'C shadow fidelity holds (false-current 0) and C_active NOT_ADMISSIBLE'. That row does not depend on any item here.",
+ "items": [
+  {
+   "id": "E1-1",
+   "severity": "BLOCKING (wrong technical claim)",
+   "was": "Existing-profile routes are BLOCKED because their CDP allowlist excludes Page.enable / Inspector.enable.",
+   "correction": "False as stated. EXISTING_PROFILE_METHODS (cdp_ws.rs) includes Page.enable, Page.getFrameTree, DOM.getDocument, Target.attachToTarget and Target.detachFromTarget. Of the mirror's calls, only Inspector.enable and DOM.requestChildNodes are missing, and the mirror ignores failures of both (best-effort `let _ =`). The mirror never runs on those routes because ensure_for_tab refuses CdpMethodPolicy::ExistingProfile up front (i107_mirror.rs, mark i107.mirror.blocked reason existing_profile_cdp_allowlist). The reason recorded in that mark is also inexact.",
+   "status_basis": "BLOCKED stands on the map PREREG's frozen ground (supported_scope.unsupported and blocked_and_not_run_cells): a persistent event session on a user's approved profile is broader observation than the existing-profile contract grants, so it is a permission change. Running it would need a #73/#74 decision. Not measured here."
+  },
+  {
+   "id": "E1-2",
+   "severity": "BLOCKING (undisclosed departure from the PREREG)",
+   "was": "README: 'no continuation block was needed'. PREREG_AMENDMENT_1 schedule.continuation: 'unchanged'.",
+   "correction": "The map PREREG continuation_rule requires one extra 30-pair block when the result is INCONCLUSIVE under minimum_useful_improvement OR budget_C is straddled. Both CMP-C-overhead conditions are INCONCLUSIVE under minimum_useful_improvement (W-quiet: median -2.32 ms, CI [-19.12, 4.37], CI lower bound below -11.06; W-churn: median -5.28 ms, CI [-41.13, 13.56], CI lower bound below -25.80). analyze_cshadow.py as written before the data (9dbd2f966 / 9014f640b) implemented only the straddle clause. The budget was not straddled, so no block ran.",
+   "disclosure": "DEPARTURE: only the budget clause of the continuation rule was applied to CMP-C-overhead. The extra block per condition was not run. The improvement verdict is reported as INCONCLUSIVE at 30 pairs (cshadow-summary.json comparisons.CMP-C-overhead/*.t_minimum_useful_improvement, disposition.disclosed_departures). No improvement is claimed. The mirror deletes no work, so a wall-clock improvement would be noise. The resource-budget verdict (within budget, not straddled) is unaffected. The block can still be run as a disclosed extension if the owner wants the frozen rule applied in full; it would be reported as an extension, not as pre-registered data."
+  },
+  {
+   "id": "E1-3",
+   "severity": "BLOCKING (verdict-supporting claim overstated)",
+   "was": "The lane's REAL cross-check found 0 reads outside (a)-(d); 60 'reads followed by a re-observe' and 35 'reads with no admissible target' were labelled (a).",
+   "correction": "Under classify_reads.py's definition, (a) is a snapshot whose minted ref the next mutation resolves. The 95 reads (60 followed by a re-observe decision, 35 with no admissible candidate, including the 5 refused fresh reads in DC11) are not (a). They are decision reads not followed by a mutation, outside strict (a)-(d). All 95 occur in perturbed controls (DC04 15, DC11 5, DC12 15, DC14a 15, DC16a 15, DC16b 15, DC17b 15) and 0 occur in unperturbed trials. They are not replaceable by the mirror, because the facts they decide on (role, name, visibility, enabled state) are never established by it.",
+   "verdict_basis": "NOT_ADMISSIBLE rests on the pre-registered B-01 classification: 600 reads, strictly 400 (a) and 200 (b), reproduced by verify_artifacts.py --b01-archive (archive sha256 3703af67...7bdf). The lane cross-check is supporting context only. No active-C arm can be registered from the 95 reads, because the mirror cannot supply the decision facts. That is why no amendment was made. This is disclosed rather than amended."
+  },
+  {
+   "id": "E1-4",
+   "severity": "BLOCKING (control result misreported)",
+   "was": "README DC10 row: mirror 'dropped with the session'.",
+   "correction": "The REAL traces show something else. The '-replaced' label is a second session label on the same MCP connection (same __cua_runtime id). The original session and its mirror carried on: coverage stayed current, the mirror was audited at step 2, and it stopped only at the frame_navigated after submit. The REAL DC10 result is that the old binding and ref were refused under the second label (authorization_host_failed / protected_resource_scope_invalid) in 5/5 per arm. Mirror drop at session end is evidenced only by UNIT (session_end_drops_the_mirror_and_detaches_its_event_session).",
+   "prereg_note": "The lane PREREG replaced the map's DC10 'new MCP session' with a new label on the same connection. That tests session-scope refusal, not Driver session replacement. Driver session replacement with a mirror present is NOT_RUN at REAL level."
+  },
+  {
+   "id": "E1-5",
+   "severity": "NON-BLOCKING (fidelity claim boundary)",
+   "correction": "Every compared audit is of a young mirror. W-quiet: median age 194 ms (max 414), median 1 event applied since bootstrap, so this is effectively bootstrap vs fresh read. W-churn: median 414 ms (max 487), median 125 events (max 138). All 225 un-faulted compared audits: median age 191 ms, max 487 ms, max 1,326 events (DC19 bursts). Idle and resident mirrors, the long-lived regime, were never audited, and every navigation re-bootstraps. '0 false-current in 90,659 checks' holds only within this age and event bound (cshadow-summary.json fidelity.*.compared_audit_age)."
+  },
+  {
+   "id": "E1-6",
+   "severity": "NON-BLOCKING",
+   "correction": "The 61.5% unknown share on action-relevant nodes is DEFINITIONAL, not measured: 8 of 13 fields per action-relevant node (i107_mirror.rs UNESTABLISHED_FIELDS) are never established by any subscribed event. The measured quantity is unknown checks on covered fields, which was 0 in all 385 un-faulted audits (fidelity.*.unknown_share_basis, unknown_checks_covered_fields)."
+  },
+  {
+   "id": "E1-7",
+   "severity": "NON-BLOCKING",
+   "correction": "The summary had DC18 expectation_met=true because it checked only the generic submit criteria. Judged against the map PREREG's frozen DC18 expectation ('each fault ends in unknown/resync, never false-current'), DC18 FAILS for drop:7 (10 fields) and delay:7:200 (7 fields). Amendment 1 re-scoped DC18 before data and the README text was already honest about this. The summary field is now expectation_met=false with faults_failing_map_expectation, and the generic result is kept as expectation_met_submit_criteria=true."
+  },
+  {
+   "id": "E1-8",
+   "severity": "NON-BLOCKING",
+   "correction": "Rows this lane did not cover, now declared in the README: W-static NOT_RUN (secondary; time box). DC20 is owned by arms A and D (lane AB/D), not run here. The separately recorded Accessibility.enable variant was NOT_RUN. CMP-distortion is owned by the map/AB lane and the owner, not run here. CMP-AB, CMP-D and CMP-D-K2 belong to other lanes."
+  },
+  {
+   "id": "E1-9",
+   "severity": "NON-BLOCKING",
+   "correction": "The fixture server (CshadowServer, ThreadingHTTPServer) and the 2 ms oracle poller run as threads inside the runner's own Python process, sharing its GIL. The setup is identical in every arm. The map PREREG fixed_settings_all_arms.fixture_reset requires this disclosure when in-process."
+  },
+  {
+   "id": "E1-10",
+   "severity": "NON-BLOCKING (provenance label)",
+   "correction": "The ledger caller_tree said 635a4f588 (jev-use at main). The runner imports from the tested source's jev-use 72bf8156 (the PR 4316 merge). The imported run.py functions (Driver, select_tab_id, supports_capture_bound_click, task_candidates_for_step, wait_for_window) are outside the merge's changed hunks, which are confined to the import block, run() and parse_args(). core.py, jev_adapter.py, tasks.py and driver_env.py are byte-identical, so behaviour is equivalent. caller_tree now names 72bf8156 with that note."
+  },
+  {
+   "id": "E1-11",
+   "severity": "NON-BLOCKING",
+   "correction": "The 10,000-event queue cap detects overflow and then drains. It is not a strict memory bound: the demux subscribe() channel is unbounded and can grow during bootstrap and requestChildNodes awaits. The REAL overflow path was exercised only by simulation (DC18 overflow:50) and UNIT tests. REAL high-water marks across un-faulted measured trials: 98 queued events and 534 nodes."
+  },
+  {
+   "id": "E1-12",
+   "severity": "NON-BLOCKING",
+   "correction": "The >90% accounting gate is met with sequential caller-level spans (MCP calls by tool, oracle reads, candidate building, decide, poll sleeps, control ops), which cover about 100% of T_oracle almost by construction. The PREREG's 10-span decomposition (acquisition, projection/encoding/transport, inference, resolution/validation, dispatch, wait, verification, cleanup, residual) is not reported for the C arms."
+  }
+ ]
+}

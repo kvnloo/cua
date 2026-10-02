@@ -38,15 +38,27 @@
   "driver_reads_after_last_mutation": 0,
   "lane_real_cross_check": {
    "driver_reads_after_last_mutation_in_verified_trials": 0,
+   "interpretation": "the reads outside strict (a)-(d) are decision reads not followed by a mutation, confined to perturbed controls; they are not replaceable by the mirror because the facts they decide on (role, name, visibility, enabled state) are never established by it. The NOT_ADMISSIBLE verdict rests on the pre-registered B-01 classification (600 reads: 400 strict (a), 200 (b)).",
    "lane_A_trials_checked": 165,
    "reads": {
     "a_ref_minting_before_mutation": 315,
-    "a_ref_minting_no_admissible_candidate": 35,
-    "a_ref_minting_then_reobserve": 60,
-    "b_binding": 165
+    "b_binding": 165,
+    "decision_read_no_admissible_candidate_not_a": 35,
+    "decision_read_then_reobserve_not_a": 60
    },
-   "reads_outside_a_d": {},
-   "trials_all_reads_in_a_d": 165
+   "reads_outside_strict_a_d": 95,
+   "reads_outside_strict_a_d_by_control": {
+    "DC04": 15,
+    "DC11": 5,
+    "DC12": 15,
+    "DC14a": 15,
+    "DC16a": 15,
+    "DC16b": 15,
+    "DC17b": 15
+   },
+   "reads_outside_strict_a_d_in_unperturbed_trials": 0,
+   "refused_reads_among_no_admissible_candidate": 5,
+   "unlabelled_reads": {}
   },
   "trials": 200,
   "verdict": "NOT_ADMISSIBLE"
@@ -692,6 +704,13 @@
     "threshold_ms": 25.798,
     "within_budget": true
    },
+   "t_minimum_useful_improvement": {
+    "continuation_block_run": false,
+    "continuation_required_by_frozen_rule": true,
+    "departure": "DEPARTURE (disclosed in ERRATUM_1.json): the frozen continuation rule required one extra 30-pair block because the improvement verdict is INCONCLUSIVE; only the budget-straddle clause was implemented, so the block was not run. The improvement verdict is reported as INCONCLUSIVE at 30 pairs.",
+    "threshold_ms": 25.798,
+    "verdict": "INCONCLUSIVE"
+   },
    "t_oracle_ms": {
     "a_median": 515.969,
     "a_p95": 846.284,
@@ -981,6 +1000,13 @@
     "straddled": false,
     "threshold_ms": 11.056,
     "within_budget": true
+   },
+   "t_minimum_useful_improvement": {
+    "continuation_block_run": false,
+    "continuation_required_by_frozen_rule": true,
+    "departure": "DEPARTURE (disclosed in ERRATUM_1.json): the frozen continuation rule required one extra 30-pair block because the improvement verdict is INCONCLUSIVE; only the budget-straddle clause was implemented, so the block was not run. The improvement verdict is reported as INCONCLUSIVE at 30 pairs.",
+    "threshold_ms": 11.056,
+    "verdict": "INCONCLUSIVE"
    },
    "t_oracle_ms": {
     "a_median": 221.115,
@@ -1805,6 +1831,7 @@
      "trials": 5
     }
    },
+   "claim_boundary": "tests session-scope refusal of an old binding/ref under a second session label on the SAME MCP connection, not Driver session replacement (the map PREREG's 'new MCP session'); the original session and its mirror continued; mirror drop at session end is UNIT evidence only",
    "expectation": "verified or refusal; zero wrong-target/duplicate effects",
    "expectation_met": true,
    "status": "MEASURED"
@@ -2805,8 +2832,14 @@
      }
     }
    },
-   "expectation": "verified or refusal; zero wrong-target/duplicate effects",
-   "expectation_met": true,
+   "expectation": "each fault ends in unknown/resync, never false-current; overflow and reconnect counted",
+   "expectation_met": false,
+   "expectation_met_submit_criteria": true,
+   "expectation_submit_criteria": "verified or refusal; zero wrong-target/duplicate effects",
+   "faults_failing_map_expectation": {
+    "delay:7:200": 7,
+    "drop:7": 10
+   },
    "status": "MEASURED"
   },
   "DC19a": {
@@ -3148,11 +3181,16 @@
   }
  },
  "disposition": {
+  "disclosed_departures": [
+   "CMP-C-overhead/W-quiet: improvement verdict INCONCLUSIVE at 30 pairs; DEPARTURE (disclosed in ERRATUM_1.json): the frozen continuation rule required one extra 30-pair block because the improvement verdict is INCONCLUSIVE; only the budget-straddle clause was implemented, so the block was not run. The improvement verdict is reported as INCONCLUSIVE at 30 pairs.",
+   "CMP-C-overhead/W-churn: improvement verdict INCONCLUSIVE at 30 pairs; DEPARTURE (disclosed in ERRATUM_1.json): the frozen continuation rule required one extra 30-pair block because the improvement verdict is INCONCLUSIVE; only the budget-straddle clause was implemented, so the block was not run. The improvement verdict is reported as INCONCLUSIVE at 30 pairs."
+  ],
   "open_items": [],
   "rows": [
    "C shadow fidelity holds (false-current 0) and C_active NOT_ADMISSIBLE -> park the persistent mirror (no deletable read on this fixture); keep the shadow evidence as qualification data"
   ],
-  "verdict": "park"
+  "verdict": "park",
+  "verdict_dependency": "the park row depends on fidelity (false-current 0) and C_active NOT_ADMISSIBLE, not on the CMP-C-overhead improvement verdict; the mirror deletes no work, so no wall-clock improvement is claimed either way"
  },
  "fidelity": {
   "W-churn": {
@@ -3163,6 +3201,14 @@
    "audits_bootstrap_coincident": 30,
    "audits_compared": 30,
    "audits_coverage_unknown": {},
+   "compared_audit_age": {
+    "age_ms_max": 486.57,
+    "age_ms_median": 413.632,
+    "boundary": "every compared audit is of a mirror this young; long-lived mirrors (idle, resident) were never audited, and every navigation re-bootstraps",
+    "events_applied_max": 138,
+    "events_applied_median": 125.0,
+    "n": 30
+   },
    "event_lag_ms": {
     "n": 0,
     "vs_ack_receipt_median": null,
@@ -3224,7 +3270,9 @@
    "status": "MEASURED",
    "trials": 30,
    "unknown_action_relevant": 5040,
-   "unknown_share_action_relevant": 0.615
+   "unknown_checks_covered_fields": 0,
+   "unknown_share_action_relevant": 0.615,
+   "unknown_share_basis": "DEFINITIONAL, not measured: 8 of 13 fields per action-relevant node are never established by any subscribed event (i107_mirror.rs UNESTABLISHED_FIELDS), so the share is 8/13 whenever coverage is current; the measured quantity is unknown_checks on covered fields"
   },
   "W-quiet": {
    "action_relevant_field_checks": 8190,
@@ -3234,6 +3282,14 @@
    "audits_bootstrap_coincident": 30,
    "audits_compared": 30,
    "audits_coverage_unknown": {},
+   "compared_audit_age": {
+    "age_ms_max": 413.808,
+    "age_ms_median": 193.938,
+    "boundary": "every compared audit is of a mirror this young; long-lived mirrors (idle, resident) were never audited, and every navigation re-bootstraps",
+    "events_applied_max": 1,
+    "events_applied_median": 1.0,
+    "n": 30
+   },
    "event_lag_ms": {
     "n": 0,
     "vs_ack_receipt_median": null,
@@ -3296,7 +3352,9 @@
    "status": "MEASURED",
    "trials": 30,
    "unknown_action_relevant": 5040,
-   "unknown_share_action_relevant": 0.615
+   "unknown_checks_covered_fields": 0,
+   "unknown_share_action_relevant": 0.615,
+   "unknown_share_basis": "DEFINITIONAL, not measured: 8 of 13 fields per action-relevant node are never established by any subscribed event (i107_mirror.rs UNESTABLISHED_FIELDS), so the share is 8/13 whenever coverage is current; the measured quantity is unknown_checks on covered fields"
   },
   "all_unfaulted_C_shadow_audit_trials": {
    "action_relevant_field_checks": 54860,
@@ -3306,6 +3364,14 @@
    "audits_bootstrap_coincident": 160,
    "audits_compared": 225,
    "audits_coverage_unknown": {},
+   "compared_audit_age": {
+    "age_ms_max": 486.57,
+    "age_ms_median": 191.113,
+    "boundary": "every compared audit is of a mirror this young; long-lived mirrors (idle, resident) were never audited, and every navigation re-bootstraps",
+    "events_applied_max": 1326,
+    "events_applied_median": 3,
+    "n": 225
+   },
    "event_lag_ms": {
     "n": 79,
     "vs_ack_receipt_median": -0.226,
@@ -3334,7 +3400,9 @@
    "status": "MEASURED",
    "trials": 155,
    "unknown_action_relevant": 33760,
-   "unknown_share_action_relevant": 0.615
+   "unknown_checks_covered_fields": 0,
+   "unknown_share_action_relevant": 0.615,
+   "unknown_share_basis": "DEFINITIONAL, not measured: 8 of 13 fields per action-relevant node are never established by any subscribed event (i107_mirror.rs UNESTABLISHED_FIELDS), so the share is 8/13 whenever coverage is current; the measured quantity is unknown_checks on covered fields"
   }
  },
  "injected_fault_false_current_action_relevant": 0,

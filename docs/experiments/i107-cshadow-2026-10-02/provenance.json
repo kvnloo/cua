@@ -8,6 +8,7 @@
   "map_branch_head": "be68363bc38940d5560be55165ceaf6fd743437b (exp/i107-map-20261002)",
   "map_prereg_sha256": "8eeb837ffa24425cfc36ba2c72a8ea65df4207e1a39a7d261f1cda85496b2c53",
   "caller_jev_use_tree_main": "635a4f588c6817ccb6cb6f5b7baacddbfc42f786",
+  "caller_jev_use_tree_imported": "72bf8156136771da9a767ec12ae7c364e426d910 (the tested source's jev-use = PR 4316 merge; the runner imports from it. The imported run.py functions and core.py / jev_adapter.py / tasks.py / driver_env.py are unchanged from 635a4f588; --guarded-completion is never used. ERRATUM_1.json E1-10)",
   "guarded_continuation_source": "trycua/cua PR 4316 head a0bca744067d04f05904319d3d919be30c336556 (OPEN, not merged; caller only; not exercised in this lane)"
  },
  "tested_source": {
@@ -26,6 +27,10 @@
   "committed_utc": "2026-10-02T08:12:28Z",
   "schedule_commit": "9014f640b014283cb870fee5f5674a5cd80e82e7 (2026-10-02T08:13:44Z)",
   "first_measured_lock_acquired_utc": "2026-10-02T08:13:56.728Z"
+ },
+ "erratum": {
+  "path": "ERRATUM_1.json",
+  "kind": "post-data corrections to claims and summary fields after verification; no new trial, PREREG.json and PREREG_AMENDMENT_1.json unchanged; one disclosed departure (continuation rule, E1-2)"
  },
  "binary": {
   "name": "cua-driver-i107-cshadow-904b249c1",
@@ -73,7 +78,7 @@
   "b01_traces": {
    "source": "kvnloo/cua branch exp/b-01-browser-critpath-20261002 at 6689610d5a2619cb45dd4328b2921c89f88967be, packet docs/experiments/b-01-browser-critpath-2026-10-02/raw/trials-measured.tar.gz",
    "sha256": "3703af67f2b236e5b4200e4a3b8e97a3e0210f850a1a04876d738a3e1e497bdf",
-   "status": "B-01 PENDING (rejected for text only; numbers reproduced by its verifier). Used only for the active-C read classification; this lane's own 165 lane-A REAL task trials (overhead, default-off, controls) show the same read sequence (bind + a fresh semantic_v2 snapshot before every decision, no Driver read after the last mutation of a verified trial): cshadow-summary.json active_c.lane_real_cross_check.",
+   "status": "B-01 PENDING (rejected for text only; numbers reproduced by its verifier). Used only for the active-C read classification (the verdict rests on it: 600 reads, strictly 400 (a) and 200 (b)). This lane's own 165 lane-A REAL task trials (overhead, default-off, controls) are a cross-check: 165 (b), 315 strict (a), and 95 decision reads not followed by a mutation (outside strict (a)-(d)), all in perturbed controls (DC04/DC11/DC12/DC14a/DC16a/DC16b/DC17b), 0 in unperturbed trials, and no Driver read after the last mutation of a verified trial: cshadow-summary.json active_c.lane_real_cross_check (ERRATUM_1.json E1-3).",
    "derived": "raw/admissibility.json (classify_reads.py)"
   }
  },

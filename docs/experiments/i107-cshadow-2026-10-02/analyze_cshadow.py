@@ -44,6 +44,16 @@ CONTROL_IDS = ["DC01", "DC02", "DC03", "DC04", "DC05a", "DC07", "DC10", "DC11", 
 NO_SUBMIT_EXPECTED = {"DC04", "DC12", "DC14a", "DC16a", "DC16b", "DC17b"}
 MIRROR_ONLY_METHODS = ("Page.enable", "Inspector.enable", "DOM.requestChildNodes", "Target.detachFromTarget")
 REF_SHA = "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed"  # map binary cua-driver-i107-092b065d5
+# ERRATUM_1.json E1-10: the runner imports from the tested source's jev-use tree (the PR 4316 merge),
+# not from the upstream-main tree. The imported functions are unchanged by that merge.
+CALLER_TREE = ("72bf8156136771da9a767ec12ae7c364e426d910 (jev-use tree of the tested source = PR 4316 merge; "
+               "imported run.py functions and core/jev_adapter/tasks are unchanged from "
+               "635a4f588c6817ccb6cb6f5b7baacddbfc42f786 at upstream main; --guarded-completion never used)")
+# Frozen in the map PREREG dependency_controls.
+DC18_MAP_EXPECTATION = "each fault ends in unknown/resync, never false-current; overflow and reconnect counted"
+# i107_mirror.rs COVERED_FIELDS (5) + UNESTABLISHED_FIELDS (8) per action-relevant node.
+ACTION_RELEVANT_FIELDS_TOTAL = 13
+ACTION_RELEVANT_FIELDS_UNESTABLISHED = 8
 
 
 # ── loading ─────────────────────────────────────────────────────────────────────
@@ -194,6 +204,29 @@ def audits(trial: dict[str, Any]) -> list[dict[str, Any]]:
     return [m["detail"] for m in trial["_trace"] if m.get("phase") == "i107.mirror.audit"]
 
 
+def audit_ages(trial: dict[str, Any]) -> list[dict[str, float]]:
+    """ERRATUM_1.json E1-5: for every compared audit (field_checks > 0), the mirror's age (audit mark
+    minus the latest successful bootstrap mark before it) and the events it applied since that
+    bootstrap (i107.mirror.stats 'applied' just after the audit minus the last value before the
+    bootstrap, same mirror instance)."""
+    marks = sorted((m for m in trial["_trace"] if str(m.get("phase", "")).startswith("i107.mirror.")
+                    and isinstance(m.get("detail"), dict)), key=lambda m: (m.get("t_mono_ns", 0), m.get("seq", 0)))
+    out, boot_t, boot_applied, last_applied, pending = [], None, 0, {}, None
+    for m in marks:
+        phase, d = m["phase"], m["detail"]
+        if phase == "i107.mirror.bootstrap" and d.get("ok"):
+            boot_t, boot_applied = m["t_mono_ns"], last_applied.get(m.get("session"), 0)
+        elif phase == "i107.mirror.audit" and d.get("field_checks", 0) > 0 and boot_t is not None:
+            pending = {"age_ms": round((m["t_mono_ns"] - boot_t) / 1e6, 3), "_base": boot_applied}
+        elif phase == "i107.mirror.stats":
+            applied = (d.get("stats") or {}).get("applied", 0)
+            if pending is not None:
+                out.append({"age_ms": pending["age_ms"], "events_applied_since_bootstrap": applied - pending["_base"]})
+                pending = None
+            last_applied[m.get("session")] = applied
+    return out
+
+
 def lags_ms(trial: dict[str, Any]) -> list[dict[str, float]]:
     applied = {m["detail"]["op"]: m["t_mono_ns"] for m in trial["_trace"]
                if m.get("phase") == "i107.mirror.op_applied" and isinstance(m.get("detail"), dict)}
@@ -255,7 +288,7 @@ def ledger_row(trial: dict[str, Any], binary_sha: str | None) -> dict[str, Any]:
         "pair_id": trial.get("pair"), "order": trial.get("order"), "arm": trial.get("arm"),
         "driver_kind": trial.get("driver_kind"),
         "binary_sha256": REF_SHA if ref else binary_sha,
-        "caller_tree": "635a4f588c6817ccb6cb6f5b7baacddbfc42f786 (jev-use at upstream main; runner mirrors run.py)",
+        "caller_tree": CALLER_TREE,
         "token_sha16": trial.get("token_sha16"), "outcome": trial.get("outcome"),
         "oracle_verified": trial.get("oracle_verified"), "route": "dom_event",
         "decision_routes": ["chooser:choose_mock_for_task"] * len(trial.get("candidates", [])), "guard": None,
@@ -272,6 +305,7 @@ def ledger_row(trial: dict[str, Any], binary_sha: str | None) -> dict[str, Any]:
         "resident_tasks": resident_tasks(trial) if plan == "resident" else None,
         "resident_oracle": trial.get("resident"),
         "mirror": mirror_stats(trial), "mirror_bootstraps": mirror_bootstraps(trial), "audits": audits(trial),
+        "audit_ages": audit_ages(trial),
         "lags": lags_ms(trial), "required_zero": required_zero(trial),
         "submits_main": trial.get("submits_main"), "submits_decoy": trial.get("submits_decoy"),
         "pressure_before": trial.get("pressure_before"), "pressure_after": trial.get("pressure_after"),
@@ -379,6 +413,32 @@ def t_budget(cmp: dict[str, Any]) -> dict[str, Any]:
             "continuation_block_required": straddled and cmp["pairs"] < 60}
 
 
+def improvement_verdict(cmp: dict[str, Any], budget: dict[str, Any]) -> dict[str, Any]:
+    """ERRATUM_1.json E1-2: the map PREREG minimum_useful_improvement verdict and the full continuation
+    rule (INCONCLUSIVE under it OR budget straddled). The original analysis applied only the straddle
+    clause; the extra block was not run and that departure is disclosed."""
+    if cmp.get("status") != "MEASURED":
+        return {"status": cmp.get("status")}
+    threshold = max(5.0, 0.05 * cmp["a_median"])
+    lo, hi = (cmp["ci95"] or [None, None])
+    if cmp["median_delta"] <= -threshold and hi is not None and hi < 0:
+        verdict = "MEANINGFUL"
+    elif lo is not None and lo > -threshold:
+        verdict = "NO_MEANINGFUL_BENEFIT"
+    else:
+        verdict = "INCONCLUSIVE"
+    required = verdict == "INCONCLUSIVE" or bool(budget.get("straddled"))
+    run = cmp["pairs"] >= 60
+    return {"threshold_ms": r3(threshold), "verdict": verdict,
+            "continuation_required_by_frozen_rule": required,
+            "continuation_block_run": run,
+            "departure": (None if run or not required else
+                          "DEPARTURE (disclosed in ERRATUM_1.json): the frozen continuation rule required one extra "
+                          "30-pair block because the improvement verdict is INCONCLUSIVE; only the budget-straddle "
+                          "clause was implemented, so the block was not run. The improvement verdict is reported "
+                          "as INCONCLUSIVE at 30 pairs.")}
+
+
 def cpu_budget(cmp: dict[str, Any]) -> dict[str, Any]:
     if cmp.get("status") != "MEASURED":
         return {"status": cmp.get("status")}
@@ -428,6 +488,17 @@ def mirror_costs(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def age_summary(ages: list[dict[str, float]]) -> dict[str, Any]:
+    if not ages:
+        return {"n": 0}
+    a = [g["age_ms"] for g in ages]
+    e = [g["events_applied_since_bootstrap"] for g in ages]
+    return {"n": len(ages), "age_ms_median": r3(median(a)), "age_ms_max": r3(max(a)),
+            "events_applied_median": r3(median(e)), "events_applied_max": max(e),
+            "boundary": "every compared audit is of a mirror this young; long-lived mirrors (idle, resident) "
+                        "were never audited, and every navigation re-bootstraps"}
+
+
 def fidelity_block(cell: list[dict[str, Any]]) -> dict[str, Any]:
     reports = [a for r in cell for a in r["audits"]]
     compared = [a for a in reports if a.get("field_checks", 0) > 0]
@@ -453,6 +524,13 @@ def fidelity_block(cell: list[dict[str, Any]]) -> dict[str, Any]:
         "unknown_action_relevant": sum(a.get("unknown_action_relevant", 0) for a in reports),
         "unknown_share_action_relevant": r3(sum(a.get("unknown_action_relevant", 0) for a in reports)
                                             / max(1, sum(a.get("action_relevant_field_checks", 0) for a in reports))),
+        "unknown_share_basis": (f"DEFINITIONAL, not measured: {ACTION_RELEVANT_FIELDS_UNESTABLISHED} of "
+                                f"{ACTION_RELEVANT_FIELDS_TOTAL} fields per action-relevant node are never established "
+                                "by any subscribed event (i107_mirror.rs UNESTABLISHED_FIELDS), so the share is "
+                                f"{ACTION_RELEVANT_FIELDS_UNESTABLISHED}/{ACTION_RELEVANT_FIELDS_TOTAL} whenever coverage "
+                                "is current; the measured quantity is unknown_checks on covered fields"),
+        "unknown_checks_covered_fields": sum(a.get("unknown_checks", 0) for a in reports),
+        "compared_audit_age": age_summary([g for r in cell for g in r.get("audit_ages", [])]),
         "match_set": {"mirror_status": dict(Counter(a.get("match_set", {}).get("mirror_status") for a in reports)),
                       "fresh_count": {str(k): v for k, v in fresh_counts.items()},
                       "dom_estimate_agrees_diagnostic": dict(ms)},
@@ -524,7 +602,21 @@ def control_summary(rows: list[dict[str, Any]], cid: str) -> dict[str, Any]:
     if cid == "DC10":
         met = met and all("accepted" not in key for a, v in by_arm.items() if a != "by_fault"
                           for key in v.get("dc10_refusals", {}))
-    return {"status": status, "expectation": expectation, "expectation_met": met if cell else None, "by_arm": by_arm}
+    out = {"status": status, "expectation": expectation, "expectation_met": met if cell else None, "by_arm": by_arm}
+    if cid == "DC18" and cell:
+        # ERRATUM_1.json E1-7: judge DC18 against the map PREREG's frozen expectation; the generic
+        # submit criteria are kept as a separate field.
+        failed = {f: v["false_current_total_detected_by_audit"] for f, v in by_arm.get("by_fault", {}).items()
+                  if v["false_current_total_detected_by_audit"]}
+        out.update({"expectation": DC18_MAP_EXPECTATION, "expectation_met": not failed,
+                    "faults_failing_map_expectation": failed,
+                    "expectation_submit_criteria": expectation, "expectation_met_submit_criteria": met})
+    if cid == "DC10" and cell:
+        out["claim_boundary"] = ("tests session-scope refusal of an old binding/ref under a second session label on "
+                                 "the SAME MCP connection, not Driver session replacement (the map PREREG's 'new MCP "
+                                 "session'); the original session and its mirror continued; mirror drop at session "
+                                 "end is UNIT evidence only")
+    return out
 
 
 def default_off(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -573,10 +665,15 @@ def accounting(rows: list[dict[str, Any]], comparison: str, condition: str) -> d
 
 
 def lane_read_sequence(trials: list[dict[str, Any]]) -> dict[str, Any]:
-    """Active-C cross-check on this lane's own REAL A trials: every get_browser_state call is the
-    bind (b) or a fresh semantic_v2 read whose refs the next mutation uses (a); none follows the
-    last mutation (verification is the fixture oracle, c)."""
-    checked, ok, reads, after_last, other = 0, 0, Counter(), 0, Counter()
+    """Active-C cross-check on this lane's own REAL A trials. ERRATUM_1.json E1-3: strict categories.
+    (a) is a fresh semantic_v2 read whose minted ref the next call (a mutation) uses (classify_reads.py
+    definition); (b) is the bind. A snapshot read NOT followed by a mutation (the chooser re-observes or
+    finds no admissible target, including refused reads) is a decision read outside strict (a)-(d) and
+    is reported as such, with the controls it occurs in. No Driver read follows the last mutation of a
+    verified trial (verification is the fixture oracle, c)."""
+    checked, reads, after_last, other = 0, Counter(), 0, Counter()
+    outside_by_control: Counter = Counter()
+    outside_unperturbed, refused = 0, 0
     for t in trials:
         if t.get("arm") != "A" or t.get("driver_kind") == "ref" or t.get("plan") not in ("overhead", "defaultoff", "controls"):
             continue
@@ -584,8 +681,8 @@ def lane_read_sequence(trials: list[dict[str, Any]]) -> dict[str, Any]:
         labels = [e.get("label") for e in calls]
         mut_idx = [i for i, e in enumerate(calls) if e.get("tool") in ("browser_type", "browser_click")]
         state_idx = [i for i, e in enumerate(calls) if e.get("tool") == "get_browser_state"]
+        err = t.get("snapshot_error") or {}
         checked += 1
-        good = True
         for i in state_idx:
             label = labels[i] or ""
             if label == "bind":
@@ -594,19 +691,34 @@ def lane_read_sequence(trials: list[dict[str, Any]]) -> dict[str, Any]:
                 nxt = calls[i + 1] if i + 1 < len(calls) else None
                 if nxt is not None and nxt.get("tool") in ("browser_type", "browser_click"):
                     reads["a_ref_minting_before_mutation"] += 1
-                elif nxt is None and t.get("outcome") in ("budget_exhausted", "abstained", "unknown"):
-                    reads["a_ref_minting_no_admissible_candidate"] += 1  # read, then the chooser declined
+                    continue
+                if nxt is None and t.get("outcome") in ("budget_exhausted", "abstained", "unknown"):
+                    reads["decision_read_no_admissible_candidate_not_a"] += 1
+                    if err and label == f"snapshot{err.get('step')}":
+                        refused += 1
                 else:
-                    reads["a_ref_minting_then_reobserve"] += 1
+                    reads["decision_read_then_reobserve_not_a"] += 1
+                if t.get("control"):
+                    outside_by_control[t["control"]] += 1
+                else:
+                    outside_unperturbed += 1
             else:
                 other[label] += 1
-                good = False
             if mut_idx and i > mut_idx[-1] and label.startswith("snapshot") and t.get("outcome") == "verified":
                 after_last += 1
-                good = False
-        ok += good
-    return {"lane_A_trials_checked": checked, "trials_all_reads_in_a_d": ok, "reads": dict(reads),
-            "reads_outside_a_d": dict(other), "driver_reads_after_last_mutation_in_verified_trials": after_last}
+    outside = reads["decision_read_no_admissible_candidate_not_a"] + reads["decision_read_then_reobserve_not_a"]
+    return {"lane_A_trials_checked": checked, "reads": dict(reads),
+            "reads_outside_strict_a_d": outside + sum(other.values()),
+            "reads_outside_strict_a_d_by_control": dict(sorted(outside_by_control.items())),
+            "reads_outside_strict_a_d_in_unperturbed_trials": outside_unperturbed,
+            "refused_reads_among_no_admissible_candidate": refused,
+            "unlabelled_reads": dict(other),
+            "driver_reads_after_last_mutation_in_verified_trials": after_last,
+            "interpretation": "the reads outside strict (a)-(d) are decision reads not followed by a mutation, "
+                              "confined to perturbed controls; they are not replaceable by the mirror because the "
+                              "facts they decide on (role, name, visibility, enabled state) are never established "
+                              "by it. The NOT_ADMISSIBLE verdict rests on the pre-registered B-01 classification "
+                              "(600 reads: 400 strict (a), 200 (b))."}
 
 
 def denominators(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -651,6 +763,7 @@ def main() -> int:
                         ("t_oracle_ms", "driver_cpu_ms", "driver_vmhwm_mib", "browser_rss_mib", "driver_rss_plus_swap_mib",
                          "attach_calls", "cdp_sends_total", "cdp_events_total", "cdp_reply_kib")}
                 cell["t_budget"] = t_budget(cell["t_oracle_ms"])
+                cell["t_minimum_useful_improvement"] = improvement_verdict(cell["t_oracle_ms"], cell["t_budget"])
                 cell["driver_cpu_budget"] = cpu_budget(cell["driver_cpu_ms"])
                 summary["accounting_gate"][f"{comparison}/{condition}"] = accounting(measured, comparison, condition)
                 cell["mirror_costs_C_shadow_M"] = mirror_costs([r for r in measured if r["comparison"] == comparison
@@ -704,7 +817,7 @@ def disposition(s: dict[str, Any]) -> dict[str, Any]:
     """Map PREREG decision table, applied mechanically."""
     if s["trials_measured"] == 0:
         return {"verdict": "BLOCKED", "rows": ["evidence incomplete"]}
-    rows, reasons = [], []
+    rows, reasons, departures = [], [], []
     fc = s["required_zero"]["mirror_false_current_action_relevant"]
     other_zero = {k: v for k, v in s["required_zero"].items() if k != "mirror_false_current_action_relevant" and v}
     fid_status = [s["fidelity"][c]["status"] for c in FIDELITY_CONDITIONS]
@@ -716,6 +829,9 @@ def disposition(s: dict[str, Any]) -> dict[str, Any]:
                 budget_flags.append(f"{key}: per-task T exceeds budget")
             if tb.get("continuation_block_required"):
                 reasons.append(f"{key}: continuation block required (budget straddled)")
+            dep = cell.get("t_minimum_useful_improvement", {}).get("departure")
+            if dep:
+                departures.append(f"{key}: improvement verdict INCONCLUSIVE at 30 pairs; {dep}")
             if cell["driver_cpu_budget"].get("within_budget") is False:
                 budget_flags.append(f"{key}: per-task Driver CPU over budget")
         if key.startswith("CMP-C-idle"):
@@ -742,7 +858,10 @@ def disposition(s: dict[str, Any]) -> dict[str, Any]:
             verdict = "park + narrow"
     if other_zero:
         rows.append(f"required-zero counts non-zero: {other_zero} -> no promotion")
-    return {"verdict": verdict, "rows": rows, "open_items": reasons}
+    return {"verdict": verdict, "rows": rows, "open_items": reasons, "disclosed_departures": departures,
+            "verdict_dependency": "the park row depends on fidelity (false-current 0) and C_active NOT_ADMISSIBLE, "
+                                  "not on the CMP-C-overhead improvement verdict; the mirror deletes no work, so "
+                                  "no wall-clock improvement is claimed either way"}
 
 
 if __name__ == "__main__":
