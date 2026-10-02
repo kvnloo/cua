@@ -13,7 +13,7 @@ LABEL="$1"; MODE="$2"; ATSPI="$3"; LIVE="$4"; WT="$5"; shift 5
 [ "${CUA_HOSTLESS:-}" = 1 ] || { echo "refusing: run through hostless" >&2; exit 96; }
 LANES="${R2_10_LANES:?}"; LOCKDIR="${R2_10_LOCKDIR:?}"; LEDGER="${R2_10_LEDGER:?}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-extra="R2_10_OUTER_HOSTLESS=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1"
+extra="R2_10_OUTER_HOSTLESS=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1 ${R2_10_SESSION_EXTRA:-}"
 envs=(env)
 if [ "$LIVE" = 1 ]; then envs+=(CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY); else envs=(env -u TYPESAFE_API_KEY -u CUA_SESSION_FORWARD_SECRETS); fi
 if [ "$ATSPI" = 1 ]; then envs+=(CUA_SESSION_ATSPI=1); extra="CUA_SESSION_ATSPI=1 $extra"; fi

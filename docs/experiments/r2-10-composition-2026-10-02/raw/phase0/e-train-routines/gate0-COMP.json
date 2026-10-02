@@ -1,0 +1,52 @@
+{
+ "admission_trial": "G000-fill-COMP-measured-r00-admission",
+ "admitted": true,
+ "artifact": {
+  "compiled_from": {
+   "learning_outcome": "verified",
+   "learning_provider_decisions": 1,
+   "trace_mutations": 2
+  },
+  "expected_outcome": {
+   "journal_submits": 1,
+   "oracle": "/state.submitted == token"
+  },
+  "fallback_points": [
+   "before each mutation: provider chooser"
+  ],
+  "routine_id": "r2-10-fill-submit-gate0-COMP",
+  "schema": "r2-07.compiled-routine.v1",
+  "steps": [
+   {
+    "action": "browser_type",
+    "logical_target": {
+     "name": "verification value",
+     "role": "textbox"
+    },
+    "param_slot": "token",
+    "precondition": {
+     "field_state": "empty",
+     "page_origin": "http://127.0.0.1:*",
+     "unique": true
+    }
+   },
+   {
+    "action": "browser_click",
+    "depends_on": 0,
+    "input_route": "dom_event",
+    "logical_target": {
+     "name": "Submit",
+     "role": "button"
+    },
+    "precondition": {
+     "unique": true
+    }
+   }
+  ],
+  "task_class": "fill_submit"
+ },
+ "compile_error": null,
+ "compile_ms": 0.153669,
+ "learning_verified": true,
+ "trained_by": "G000-fill-COMP-measured-r00"
+}
