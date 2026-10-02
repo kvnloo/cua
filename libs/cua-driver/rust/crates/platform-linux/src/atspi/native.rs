@@ -3504,7 +3504,7 @@ pub fn perform_action(pid: u32, idx: usize) -> Result<(String, bool, bool)> {
                 .map_err(|e| anyhow!("interface proxies unavailable: {e}"))?
                 .action()
                 .await
-                .map_err(|e| anyhow!("Action unavailable: {e}"))?;
+                .map_err(|e| anyhow!("Action interface unavailable: {e}"))?;
             let action = target.actions.get(chosen).cloned().unwrap_or_default();
             // `doAction` answers a bool: `false` is the toolkit declining the
             // request (LibreOffice VCL menus answer it for a closed menu), not
