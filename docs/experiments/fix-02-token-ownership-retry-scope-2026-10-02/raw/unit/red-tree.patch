@@ -1,0 +1,459 @@
+diff --git i/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py w/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
+index 3fb83c211..47d513e03 100644
+--- i/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
++++ w/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
+@@ -23,14 +23,28 @@ import run
+ from verify_setup import fixture
+ 
+ STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document"
++TRUST_UNKNOWN_TEXT = (
++    "refused (browser_input_trust_unavailable): trusted click was acknowledged but CDP focus "
++    "emulation could not be restored (x); delivery is unknown and must not be retried automatically"
++)
+ 
+ 
+-def refused_result():
++def refused_result(kind="stale"):
+     """An action result as the Driver's MCP boundary emits it: not an MCP error."""
++    if kind == "not_retryable":
++        return SimpleNamespace(
++            isError=False,
++            content=[SimpleNamespace(type="text", text="refused (browser_reconnect_exhausted): x")],
++            structuredContent={
++                "status": "refused",
++                "refusal": {"code": "browser_reconnect_exhausted", "detail": {"retryable": False}},
++            },
++        )
++    text = STALE_TEXT if kind == "stale" else TRUST_UNKNOWN_TEXT
+     return SimpleNamespace(
+         isError=False,
+-        content=[SimpleNamespace(type="text", text=STALE_TEXT)],
+-        structuredContent={"effect": "refused", "route": "dom"},
++        content=[SimpleNamespace(type="text", text=text)],
++        structuredContent={"effect": "refused", "route": "dom" if kind == "stale" else "trusted_input"},
+     )
+ 
+ 
+@@ -59,10 +73,11 @@ class OneResult(Session):
+ class FixtureSession(Session):
+     """In-memory Driver; the HTTP fixture is the outcome oracle."""
+ 
+-    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True):
++    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True, refusal="stale"):
+         self.url = url
+         self.value = ""
+         self.refuse_clicks = refuse_clicks
++        self.refusal = refusal
+         self.click_lands = click_lands
+         self.type_kept = type_kept
+         self.calls = []
+@@ -97,7 +112,7 @@ class FixtureSession(Session):
+         elif name == "browser_click":
+             if self.refuse_clicks > 0:
+                 self.refuse_clicks -= 1
+-                return refused_result()
++                return refused_result(self.refusal)
+             if self.click_lands:
+                 with urlopen(
+                     Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
+@@ -146,6 +161,13 @@ class DriverCallRefusalTest(unittest.TestCase):
+         )
+         self.assertEqual(self.call(result)["effect"], "unverifiable")
+ 
++    def test_retryable_is_read_from_the_refusal_detail(self):
++        with self.assertRaises(run.DriverToolError) as raised:
++            self.call(refused_result("not_retryable"))
++        self.assertTrue(raised.exception.refused)
++        self.assertEqual(raised.exception.code, "browser_reconnect_exhausted")
++        self.assertIs(raised.exception.retryable, False)
++
+     def test_mcp_error_is_not_marked_refused(self):
+         result = SimpleNamespace(isError=True, content=[], structuredContent={"code": "x"})
+         with self.assertRaises(run.DriverToolError) as raised:
+@@ -194,6 +216,18 @@ class RunnerRefusalTest(unittest.TestCase):
+         clicks = [i for i, name in enumerate(session.calls) if name == "browser_click"]
+         self.assertIn("get_browser_state", session.calls[clicks[0] + 1 : clicks[1]])
+ 
++    def test_refusal_with_unknown_delivery_ends_unknown_without_redispatch(self):
++        events, session = self.execute("unknown", refuse_clicks=1, refusal="trust_unknown")
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++        self.assertEqual(events[-1]["outcome"], "unknown")
++        self.assertEqual(events[-1]["action_refused"], "browser_input_trust_unavailable")
++
++    def test_refusal_marked_not_retryable_ends_unknown_without_redispatch(self):
++        events, session = self.execute("unknown", refuse_clicks=1, refusal="not_retryable")
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++        self.assertEqual(events[-1]["outcome"], "unknown")
++        self.assertEqual(events[-1]["action_refused"], "browser_reconnect_exhausted")
++
+     def test_second_refusal_stops_without_another_dispatch(self):
+         events, session = self.execute("unknown", refuse_clicks=2)
+         self.assertEqual(session.mutations(), ["browser_type", "browser_click", "browser_click"])
+diff --git i/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts w/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
+index 0bc121517..01fdb7652 100644
+--- i/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
++++ w/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
+@@ -12,13 +12,27 @@ import { FixtureFormTask } from './tasks.js';
+ const TOKEN = 'fix01-private-token';
+ const STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document";
+ 
+-type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean };
++type Refusal = 'stale' | 'trust_unknown' | 'not_retryable';
++type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean; refusal?: Refusal };
++
++const TRUST_UNKNOWN_TEXT =
++  'refused (browser_input_trust_unavailable): trusted click was acknowledged but CDP focus ' +
++  'emulation could not be restored (x); delivery is unknown and must not be retried automatically';
+ 
+ // An action result as the Driver's MCP boundary emits it: not an MCP error.
+-const refusedResult = () => ({
+-  content: [{ type: 'text', text: STALE_TEXT }],
+-  structuredContent: { effect: 'refused', route: 'dom' },
+-});
++const refusedResult = (kind: Refusal = 'stale') =>
++  kind === 'not_retryable'
++    ? {
++        content: [{ type: 'text', text: 'refused (browser_reconnect_exhausted): x' }],
++        structuredContent: {
++          status: 'refused',
++          refusal: { code: 'browser_reconnect_exhausted', detail: { retryable: false } },
++        },
++      }
++    : {
++        content: [{ type: 'text', text: kind === 'stale' ? STALE_TEXT : TRUST_UNKNOWN_TEXT }],
++        structuredContent: { effect: 'refused', route: kind === 'stale' ? 'dom' : 'trusted_input' },
++      };
+ 
+ async function runFixture(scenario: Scenario, log: string) {
+   let value = '';
+@@ -70,7 +84,7 @@ async function runFixture(scenario: Scenario, log: string) {
+       } else if (name === 'browser_click') {
+         if (refuseClicks > 0) {
+           refuseClicks -= 1;
+-          return refusedResult();
++          return refusedResult(scenario.refusal);
+         }
+         if (scenario.clickLands !== false) submitted = value;
+         data = { effect: 'unverifiable', route: 'dom' };
+@@ -179,6 +193,33 @@ if (process.argv[2] === '--fixture-run') {
+     assert.ok(calls.slice(clicks[0] + 1, clicks[1]).includes('get_browser_state'));
+   });
+ 
++  test('retryable is read from the refusal detail', async () => {
++    await assert.rejects(
++      driverFor(refusedResult('not_retryable')).call('browser_click', {}),
++      (error: unknown) =>
++        error instanceof DriverToolError &&
++        error.refused &&
++        error.code === 'browser_reconnect_exhausted' &&
++        error.retryable === false
++    );
++  });
++
++  test('a refusal whose delivery is unknown ends unknown without a re-dispatch', () => {
++    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'trust_unknown' });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++    assert.equal(events.at(-1)?.outcome, 'unknown');
++    assert.equal(events.at(-1)?.action_refused, 'browser_input_trust_unavailable');
++  });
++
++  test('a refusal marked not retryable ends unknown without a re-dispatch', () => {
++    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'not_retryable' });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++    assert.equal(events.at(-1)?.outcome, 'unknown');
++    assert.equal(events.at(-1)?.action_refused, 'browser_reconnect_exhausted');
++  });
++
+   test('second refusal stops without another dispatch', () => {
+     const { events, mutations, status } = runScenario({ refuseClicks: 2 });
+     assert.equal(status, 1);
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
+index 95bfc0e06..0db236a6f 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
+@@ -74,6 +74,8 @@ struct FixtureState {
+     /// Backend nodes the page has detached since the snapshot
+     /// (`Node.isConnected === false`); the node object still resolves.
+     detached_backends: Vec<i64>,
++    /// Backend nodes that describe as `<input type=file>`.
++    file_inputs: Vec<i64>,
+     /// Backend nodes on which a page-side click/event dispatch actually ran.
+     page_dispatches: Vec<i64>,
+     /// Every incoming CDP call: (sessionId, method, params).
+@@ -106,6 +108,7 @@ impl Default for FixtureState {
+             viewport_css_height: 600.0,
+             tab_visible: true,
+             detached_backends: Vec::new(),
++            file_inputs: Vec::new(),
+             page_dispatches: Vec::new(),
+             calls: Vec::new(),
+         }
+@@ -528,6 +531,22 @@ fn fixture_handler(state: SharedState) -> MockHandler {
+                     })
+                 }
+             }
++            "DOM.describeNode"
++                if call.params["backendNodeId"]
++                    .as_i64()
++                    .is_some_and(|backend| st.file_inputs.contains(&backend)) =>
++            {
++                MockReply::ok(json!({
++                    "node": { "nodeName": "INPUT", "attributes": ["type", "file"] }
++                }))
++            }
++            // Like Chromium: the files are assigned, and input/change fire, on
++            // the node even when the page has detached it.
++            "DOM.setFileInputFiles" => {
++                st.page_dispatches
++                    .extend(call.params["backendNodeId"].as_i64());
++                MockReply::ok(json!({}))
++            }
+             "DOM.describeNode" if is_tab && call.params["backendNodeId"] == 999 => {
+                 MockReply::ok(json!({
+                     "node": large_semantic_document()["root"]["children"][0].clone()
+@@ -718,7 +737,9 @@ fn fixture_handler(state: SharedState) -> MockHandler {
+                     .into_iter()
+                     .flatten()
+                     .any(|b| st.detached_backends.contains(&b));
+-                if detached && function.contains("if (!this.isConnected") {
++                if function.contains("return this.isConnected;") {
++                    MockReply::ok(json!({ "result": { "value": !detached } }))
++                } else if detached && function.contains("if (!this.isConnected") {
+                     let answer = if function.contains("return 'detached'") {
+                         json!("detached")
+                     } else {
+@@ -2851,3 +2872,50 @@ async fn download_activation_refuses_a_detached_node() {
+     );
+     assert!(page_dispatches(&f).is_empty());
+ }
++
++async fn set_input_files(f: &Fixture, target: &str, tab: &str, reference: &str) -> ToolResult {
++    let root = tempfile::tempdir().unwrap();
++    let upload = root.path().join("upload.txt");
++    std::fs::write(&upload, b"fixture upload").unwrap();
++    super::tools::BrowserSetInputFilesTool::new(f.engine.clone())
++        .invoke(json!({
++            "target_id": target, "tab_id": tab, "ref": reference, "session": SESSION,
++            "files": [upload.to_str().unwrap()],
++        }))
++        .await
++}
++
++#[tokio::test]
++async fn set_input_files_refuses_a_detached_file_input() {
++    let f = fixture_with(|st| st.file_inputs.push(10)).await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let input_ref = ref_of(&snap, "main", "main-btn");
++    detach(&f, 10);
++
++    let result = set_input_files(&f, &target, &tab, &input_ref).await;
++    assert_ne!(result.is_error, Some(true));
++    assert_eq!(structured(&result)["status"], "refused", "{result:?}");
++    assert_eq!(structured(&result)["refusal"]["code"], "browser_ref_stale");
++    assert!(recorded_calls(&f, "DOM.setFileInputFiles").is_empty());
++    assert!(page_dispatches(&f).is_empty(), "no file may be assigned");
++}
++
++#[tokio::test]
++async fn set_input_files_assigns_connected_and_reattached_file_inputs() {
++    let f = fixture_with(|st| st.file_inputs.push(10)).await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let input_ref = ref_of(&snap, "main", "main-btn");
++
++    let connected = set_input_files(&f, &target, &tab, &input_ref).await;
++    assert_eq!(structured(&connected)["status"], "ok", "{connected:?}");
++    assert_eq!(structured(&connected)["file_count"], 1);
++    assert_eq!(page_dispatches(&f), vec![10]);
++
++    detach(&f, 10);
++    reattach(&f, 10);
++    let reattached = set_input_files(&f, &target, &tab, &input_ref).await;
++    assert_eq!(structured(&reattached)["status"], "ok", "{reattached:?}");
++    assert_eq!(page_dispatches(&f), vec![10, 10]);
++}
+diff --git 1/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_runtime_generation.rs 2/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_runtime_generation.rs
+new file mode 100644
+index 000000000..81e33b994
+--- /dev/null
++++ 2/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_runtime_generation.rs
+@@ -0,0 +1,58 @@
++//! A Driver process restart is a new runtime generation: element tokens from
++//! the previous process must not resolve in the new one (kvnloo/cua#36 I5p).
++//!
++//! Each Driver generation is a separate process, so the test runs itself as
++//! child processes and compares the first snapshot each one mints.
++
++use cua_driver_core::element_token::{format_snapshot_id, parse_token, token_for};
++use cua_driver_core::snapshot_store::{SnapshotPayload, SnapshotStore};
++
++struct Payload;
++
++impl SnapshotPayload for Payload {
++    type Element = ();
++    fn len(&self) -> usize {
++        1
++    }
++    fn retain(&self, index: usize) -> Option<()> {
++        (index == 0).then_some(())
++    }
++}
++
++const CHILD: &str = "CUA_SNAPSHOT_GENERATION_CHILD";
++const TEST: &str = "a_restarted_process_does_not_reissue_its_predecessors_tokens";
++
++#[test]
++fn a_restarted_process_does_not_reissue_its_predecessors_tokens() {
++    if std::env::var_os(CHILD).is_some() {
++        // One Driver generation: the same pid, window and observation order.
++        let store = SnapshotStore::new();
++        let id = store.publish(4242, 7, Payload);
++        println!("FIRST_TOKEN={}", token_for(id, 0));
++        return;
++    }
++    let generation = || {
++        let output = std::process::Command::new(std::env::current_exe().unwrap())
++            .args(["--exact", TEST, "--nocapture", "--test-threads=1"])
++            .env(CHILD, "1")
++            .output()
++            .expect("child generation runs");
++        assert!(output.status.success(), "{output:?}");
++        let stdout = String::from_utf8(output.stdout).unwrap();
++        let token = stdout
++            .lines()
++            .find_map(|line| line.strip_prefix("FIRST_TOKEN="))
++            .expect("child printed its first token")
++            .to_owned();
++        let (id, index) = parse_token(&token).expect("wire shape s<8 hex>:<index>");
++        assert_eq!(token, token_for(id, index));
++        assert_eq!(format_snapshot_id(id).len(), 9);
++        token
++    };
++    let first = generation();
++    let second = generation();
++    assert_ne!(
++        first, second,
++        "two Driver generations minted the same first token for the same observation"
++    );
++}
+diff --git 1/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_session_ownership.rs 2/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_session_ownership.rs
+new file mode 100644
+index 000000000..783d6cd0e
+--- /dev/null
++++ 2/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_session_ownership.rs
+@@ -0,0 +1,112 @@
++//! Native element tokens are owned by the session that published their
++//! snapshot (kvnloo/cua#36 native token ownership rows I2 and I2d).
++
++use cua_driver_core::element_token::{format_snapshot_id, token_for, ResolvedElement};
++use cua_driver_core::snapshot_store::{SnapshotPayload, SnapshotStore};
++use serde_json::{json, Value};
++
++struct Payload(Vec<u32>);
++
++impl SnapshotPayload for Payload {
++    type Element = u32;
++    fn len(&self) -> usize {
++        self.0.len()
++    }
++    fn retain(&self, index: usize) -> Option<u32> {
++        self.0.get(index).copied()
++    }
++}
++
++const PID: i32 = 42;
++
++fn publish(cache: &SnapshotStore<Payload>, window: u64, session: Option<&str>) -> u32 {
++    cache
++        .publish_for_session(PID, window, Payload(vec![10, 20, 30]), session, None)
++        .expect("live session publishes")
++        .0
++}
++
++fn args(token: &str, session: Option<&str>) -> Value {
++    let mut args = json!({ "element_token": token });
++    if let Some(session) = session {
++        args["_session_id"] = json!(session);
++    }
++    args
++}
++
++fn refusal(cache: &SnapshotStore<Payload>, token: &str, session: Option<&str>) -> Value {
++    cache
++        .resolve(PID, &args(token, session))
++        .expect_err("token must be refused")
++        .structured_content
++        .unwrap()
++}
++
++#[test]
++fn another_sessions_token_is_refused_and_stays_live_for_its_owner() {
++    let cache = SnapshotStore::new();
++    let token = token_for(publish(&cache, 7, Some("session-a")), 2);
++
++    let refused = refusal(&cache, &token, Some("session-b"));
++    assert_eq!(refused["refusal"]["code"], "stale_element_token");
++
++    assert!(matches!(
++        cache.resolve(PID, &args(&token, Some("session-a"))).unwrap(),
++        ResolvedElement::Element {
++            window_id: 7,
++            element: 30,
++            ..
++        }
++    ));
++}
++
++#[test]
++fn a_token_minted_from_another_sessions_handle_is_refused() {
++    let cache = SnapshotStore::new();
++    let handle = format_snapshot_id(publish(&cache, 7, Some("session-a")));
++    publish(&cache, 8, Some("session-b"));
++    // B builds `<A's handle>:<index>` itself without ever receiving A's token.
++    let minted = format!("{handle}:1");
++    assert_eq!(
++        refusal(&cache, &minted, Some("session-b"))["refusal"]["code"],
++        "stale_element_token"
++    );
++}
++
++#[test]
++fn stale_refusal_names_only_the_callers_own_snapshots() {
++    let cache = SnapshotStore::new();
++    let theirs = format_snapshot_id(publish(&cache, 7, Some("session-a")));
++    let mine = format_snapshot_id(publish(&cache, 8, Some("session-b")));
++
++    let refused = refusal(&cache, "sffffffff:0", Some("session-b"));
++    assert_eq!(refused["refusal"]["code"], "stale_element_token");
++    assert_eq!(
++        refused["current_snapshots"],
++        json!([{ "snapshot_id": mine, "window_id": 8 }])
++    );
++    assert!(!refused.to_string().contains(&theirs));
++
++    let outsider = refusal(&cache, "sffffffff:0", Some("session-c"));
++    assert_eq!(outsider["current_snapshots"], json!([]));
++    assert!(!outsider.to_string().contains(&theirs));
++    assert!(!outsider.to_string().contains(&mine));
++}
++
++#[test]
++fn anonymous_and_named_snapshots_do_not_resolve_for_each_other() {
++    let cache = SnapshotStore::new();
++    let anonymous = token_for(publish(&cache, 7, None), 0);
++    let named = token_for(publish(&cache, 8, Some("session-a")), 0);
++
++    assert_eq!(
++        refusal(&cache, &anonymous, Some("session-a"))["refusal"]["code"],
++        "stale_element_token"
++    );
++    assert_eq!(
++        refusal(&cache, &named, None)["refusal"]["code"],
++        "stale_element_token"
++    );
++    assert!(cache.resolve(PID, &args(&anonymous, None)).is_ok());
++    assert!(cache.resolve(PID, &args(&named, Some("session-a"))).is_ok());
++}

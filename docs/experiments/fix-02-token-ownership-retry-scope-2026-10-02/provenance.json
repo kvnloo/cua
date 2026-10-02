@@ -1,0 +1,55 @@
+{
+ "schema": "fix02.provenance.v1",
+ "lane": "FIX-02",
+ "branch": "exp/fix-02-token-ownership-retry-scope-20261002",
+ "commits": {
+  "base_upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+  "fix01_part_a_cherry_pick": "35041124c23affe65f605da5418e339f6ff34100",
+  "fix01_part_b_cherry_pick_U_head": "bd0cc9de764369b6afa31aca1fc348a1e05a0abf",
+  "F1": "80e625acc5df939008b99e3fe74e0734c5f3d3b9",
+  "F2": "3930dd7d0b45cec49c7b45f91b9b880c2603e022",
+  "F3": "6e9f9dfff4ed23f44f623b3b0d0298a823974f0c",
+  "F4_F_head": "e8b1064f6802c4224e0c5bace25f3c017a78dcdb",
+  "prereg": "d0afd9b8e01a38bd16174f80a4fe9253011fe57b",
+  "shakedown_harness_fixes": "f2635fade091f2b5e85ab32e97e3aeefdba544f0"
+ },
+ "fix01_source_commits": {"part_a": "8cfa8c1dbd281da84f9acf8745dc8bea73da96e3", "part_b": "6eb9319fe785a7eb7d5e156a9221edf818a3697f", "packet": "4a301d32a"},
+ "trees": {
+  "U_rust": "fb828e03f0edfd182e804b50a4d78f12a510bfce",
+  "U_jev_use": "38020fbe07df2b6dbf617b64c5189fd89f3e299f",
+  "F_rust": "78b5949adc4d2754a8e0225f95e80a51f5265f4e",
+  "F_jev_use": "0a8df4374a591f734d04390409a3608e0e5e6b56",
+  "base_rust": "b9984f27ef0d8fca700a1e64f2ac29e42415c52a"
+ },
+ "prereg": {
+  "commit": "d0afd9b8e01a38bd16174f80a4fe9253011fe57b",
+  "committed_utc": "2026-10-02T17:47:51Z",
+  "first_commit_superseded": "c25b5b1563611b8ba2a1cff96bdde219e95ca1d7 (2026-10-02T17:44:19Z; SHAs updated before any trial, Deviation 1)",
+  "first_counted_native_attempt_utc": "2026-10-02T18:00:03.796858Z",
+  "first_counted_browser_block_utc": "2026-10-02T18:27:49Z"
+ },
+ "binaries": {
+  "U": {"label": "fix02-u-bd0cc9de7", "target_dir": "cua-release-fix02", "build_head": "bd0cc9de764369b6afa31aca1fc348a1e05a0abf", "build_seconds": 199, "fresh_workspace_units": 0, "sha256": "60745b994290032cd6432ad5fc0368fbc975e4a6fcc25c2677173601e8348917", "version": "cua-driver 0.32.0", "version_read": "inside the private session (native block headers, browser validity.json)"},
+  "F": {"label": "fix02-f-e8b1064f6", "target_dir": "cua-release-fix02", "build_head": "d0afd9b8e01a38bd16174f80a4fe9253011fe57b (Rust tree = e8b1064f6)", "build_seconds": 98, "fresh_workspace_units": 0, "sha256": "e373c33c47206a44bddc45687e974d4671344ccd82bb98a9ce5337eb4b47faac", "version": "cua-driver 0.32.0", "version_read": "inside the private session"}
+ },
+ "live_heads_read_utc": "2026-10-02T18:01:28Z",
+ "live_heads": {
+  "upstream_main": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (1 ahead of the base, 12 files, 0 under libs/cua-driver)",
+  "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 OPEN",
+  "trycua_cua_pr_4318": "merged as db55739146476d2a5f6b34c8ccde4da6eab1dc3a (in the base)",
+  "kvnloo_cua_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f OPEN"
+ },
+ "publication_sha": "set by the Publish agent (this lane pushed nothing)",
+ "environment": {
+  "isolation": "hostless v2 -> flock quiet-lane.lock (shared per correctness block; exclusive via bin/quiet-timed for timing) -> cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom, private dbus; native rows with private AT-SPI)",
+  "browser": "Google Chrome 151.0.7922.71 (in-session --version of the Driver's selected binary per SETUP)",
+  "python_jev_use": "3.12.13",
+  "node": "v22.23.2",
+  "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+  "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1"
+ },
+ "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "lane_cap": 0},
+ "timing_receipt": {"label": "fix02-timing-chunk1", "acquired": "2026-10-02T19:33:12.631Z", "released": "2026-10-02T19:34:27.462Z", "rc": 0, "ledger": "raw/timing/quiet-ledger.jsonl (copied from the loop-wide quiet-lane ledger)"},
+ "privacy": {"host_name_sha256": "c76d9da671ff244fa274ad83621cc1ae1c3a2a78b5baa590ad5ab0b5347ea1dd", "absolute_paths": "scrubbed to <scrubbedN>/<target>/<tmp> tokens"},
+ "breaches": {"hard_rule_breach": "", "near_miss": "one stdlib python3 string-replacement edit of snapshot_store.rs ran in the plain host shell instead of under hostless (file I/O only; nothing reached the host session)"}
+}
