@@ -268,6 +268,22 @@ def timing_mode(dirs: list[Path]) -> dict[str, Any]:
                                                 for k, s in split.items() if k.startswith(comp + ":")}
     out["wall_median_ms"] = {row: round(statistics.median(v), 3) for row, v in walls.items()}
     out["wall_p95_ms"] = {row: round(sorted(v)[max(0, int(0.95 * len(v) + 0.999999) - 1)], 3) for row, v in walls.items()}
+    # Deviation D2 addendum (descriptive only, no gate): per-row component medians from the marks.
+    comps: dict[str, dict[str, list[float]]] = {}
+    for d in dirs:
+        for r in load(calls_path(d)):
+            if r.get("event") != "call" or r.get("phase") != "timed" or "exception" in r:
+                continue
+            c = comps.setdefault(r["row"], {"dispatch_ms": [], "capture_span_ms": [], "walk_span_ms": [], "response_bytes": []})
+            pr = r.get("producers", {})
+            if pr.get("dispatch_ms") is not None:
+                c["dispatch_ms"].append(pr["dispatch_ms"])
+            c["capture_span_ms"].extend(pr.get("producer_ms", {}).get("capture_window", []))
+            c["walk_span_ms"].extend(pr.get("producer_ms", {}).get("atspi_walk", []))
+            if r.get("response_bytes") is not None:
+                c["response_bytes"].append(r["response_bytes"])
+    out["component_medians"] = {row: {k: (round(statistics.median(v), 3) if v else None) for k, v in c.items()}
+                                for row, c in comps.items()}
     return out
 
 
@@ -296,8 +312,11 @@ def smoke(d: Path) -> dict[str, Any]:
                             [p.get("type") for p in c.get("content", [])], bool(c.get("is_error"))])
         shapes.setdefault(c["tag"], {}).setdefault(c["row"], set()).add(shape)
     rows = sorted({c["row"] for c in calls})
-    same_u = {row: len(set().union(*(shapes.get(t, {}).get(row, set()) for t in ("off_unset", "off_empty", "on")))) == 1
-              for row in rows}
+    # Deviation D2 (README): compare each tag's per-row SET of shapes. The first call of every Driver
+    # session carries no "Invalidated snapshots" text part (no previous snapshot), so a row can show two
+    # positional shapes; the frozen version wrongly required a single shape across the union of tags.
+    same_u = {row: shapes.get("off_unset", {}).get(row) == shapes.get("off_empty", {}).get(row)
+              == shapes.get("on", {}).get(row) for row in rows}
     alt_same = {row: shapes.get("alt_unset", {}).get(row) == shapes.get("off_unset", {}).get(row) for row in rows}
     trace_ok = all((f["tag"] == "on") == f["trace_file_exists"] for f in files) and all(
         not f["new_files"] for f in files if f["tag"] != "on")
