@@ -371,10 +371,12 @@ class RunnerTests(unittest.TestCase):
 
     def test_browser_isolation_reads_own_process_environment(self) -> None:
         R = self.R
-        iso = R.browser_isolation(os.getpid())
-        self.assertIn("display_matches_session", iso)
-        self.assertTrue(iso["wayland_display_absent"])  # the hostless wrapper strips it
-        self.assertFalse(R.browser_isolation(2 ** 22 + 7)["ok"])
+        iso = R.browser_isolation(os.getpid(), os.getpid())
+        self.assertTrue(iso["driver_environ_readable"])
+        self.assertTrue(iso["driver_no_wayland_or_hyprland"])  # the hostless wrapper strips them
+        self.assertTrue(iso["browser_no_contradiction"])
+        self.assertEqual(iso["driver_display_is_session"], True)
+        self.assertFalse(R.browser_isolation(2 ** 22 + 7, None)["ok"])
 
     def test_stdio_reader_parse_is_recorded(self) -> None:
         R = self.R

@@ -212,7 +212,8 @@ class OraclePoller:
 
     def stop(self) -> None:
         self._stop.set()
-        self._thread.join(timeout=2)
+        if self._thread.ident is not None:  # never started when the trial failed before step 1
+            self._thread.join(timeout=2)
 
 
 async def timed_call(rec: Recorder, driver: Driver, label: str, tool: str, args: dict[str, Any]) -> dict[str, Any]:
@@ -247,18 +248,31 @@ class IsolationAbort(RuntimeError):
     """The Driver-launched browser is not confined to the private session: stop the whole run."""
 
 
-def browser_isolation(pid: int) -> dict[str, Any]:
-    """Read-only check of the launched browser's environment against this private session."""
+def _environ(pid: int) -> dict[str, str] | None:
     try:
-        env = dict(kv.split("=", 1) for kv in Path(f"/proc/{pid}/environ").read_bytes().decode("utf-8", "replace").split("\0") if "=" in kv)
-    except OSError as error:
-        return {"ok": False, "reason": f"environ unreadable: {type(error).__name__}"}
-    checks = {"display_matches_session": env.get("DISPLAY") == os.environ.get("DISPLAY"),
-              "display_not_host_0": env.get("DISPLAY") not in (":0", ":0.0", None),
-              "wayland_display_absent": "WAYLAND_DISPLAY" not in env and "WAYLAND_SOCKET" not in env,
-              "hyprland_absent": not any(k.startswith("HYPRLAND") for k in env),
-              "runtime_dir_not_host": not str(env.get("XDG_RUNTIME_DIR", "")).startswith("/run/user/")}
-    return {"ok": all(checks.values()), **checks}
+        raw = Path(f"/proc/{pid}/environ").read_bytes().decode("utf-8", "replace")
+    except OSError:
+        return None
+    return dict(kv.split("=", 1) for kv in raw.split("\0") if "=" in kv)
+
+
+def browser_isolation(browser_pid: int, driver_pid: int | None) -> dict[str, Any]:
+    """Read-only check that the Driver (whose environment the browser inherits unchanged) and the
+    browser point at this private session only. Chrome rewrites its own environ area for its process
+    title, so the browser's environ is used only to detect contradictions, never as the proof."""
+    denv = _environ(driver_pid) if driver_pid else None
+    benv = _environ(browser_pid) or {}
+    session_display = os.environ.get("DISPLAY")
+    host_vars = lambda e: any(k in e for k in ("WAYLAND_DISPLAY", "WAYLAND_SOCKET")) or any(k.startswith("HYPRLAND") for k in e)  # noqa: E731
+    checks = {
+        "driver_environ_readable": denv is not None,
+        "driver_display_is_session": denv is not None and denv.get("DISPLAY") == session_display,
+        "session_display_not_host_0": session_display not in (":0", ":0.0", None),
+        "driver_no_wayland_or_hyprland": denv is not None and not host_vars(denv),
+        "driver_runtime_dir_not_host": denv is not None and not str(denv.get("XDG_RUNTIME_DIR", "")).startswith("/run/user/"),
+        "browser_no_contradiction": not host_vars(benv) and benv.get("DISPLAY", session_display) == session_display,
+    }
+    return {"ok": all(checks.values()), "browser_environ_has_display": "DISPLAY" in benv, **checks}
 
 
 def sample_resources(driver_pid: int | None, browser_pid: int | None) -> dict[str, Any]:
@@ -315,7 +329,7 @@ async def run_trial(spec: dict[str, Any], args: argparse.Namespace, server: I107
                                             {"allow_launch": True, "profile": {"mode": "isolated_new"}})
                 pid = int(prepared["prepared_pid"])
                 result["_browser_pid"] = pid
-                iso = browser_isolation(pid)
+                iso = browser_isolation(pid, result.get("_driver_pid"))
                 result["browser_isolation"] = iso
                 if not iso["ok"]:
                     raise IsolationAbort(json.dumps(iso))
