@@ -254,6 +254,10 @@ def counts(trial: dict[str, Any]) -> dict[str, Any]:
         "journal_submits": sum(1 for e in journal if e["event"] == "submit"),
         "wrong_target_submits": sum(1 for e in journal if e["event"] == "wrong_target_submit"),
         "detached_clicks": sum(1 for e in journal if e["event"] == "note" and e.get("kind") == "detached_click"),
+        "mutation_refusals": [{"label": e.get("label"), "ok": e.get("ok"), "code": e.get("code"),
+                               "effect": (e.get("envelope") or {}).get("effect")}
+                              for e in rets if e["tool"] in MUTATION_TOOLS
+                              and (not e.get("ok") or (e.get("envelope") or {}).get("effect") == "refused")],
     }
 
 
@@ -418,6 +422,8 @@ def controls_table(trials: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "action_error_codes": dict(Counter(e.get("code") for t in ts for e in t["events"]
                                                if e["event"] == "call_return" and e.get("tool") in MUTATION_TOOLS
                                                and not e.get("ok"))),
+            "mutation_refusals": dict(Counter(f"{r['label']}:{r['code']}:{r['effect']}:ok={r['ok']}"
+                                              for c in cs for r in c["mutation_refusals"])),
             "probe_codes": dict(Counter((t["summary"].get("probe") or {}).get("code") for t in ts
                                         if t["summary"].get("probe"))),
             "fault_fired": sum(1 for t in ts if (t["summary"].get("fault") or {}).get("fired")),

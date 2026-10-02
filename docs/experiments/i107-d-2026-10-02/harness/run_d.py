@@ -372,10 +372,25 @@ def probe_env(ctx: TrialCtx) -> dict[str, str]:
 
 def _code(structured: dict[str, Any]) -> str | None:
     code = structured.get("code")
-    refusal = structured.get("refusal")
-    if not code and isinstance(refusal, dict):
-        code = refusal.get("code")
+    for key in ("refusal", "error"):
+        nested = structured.get(key)
+        if not code and isinstance(nested, dict):
+            code = nested.get("code")
     return code if isinstance(code, str) and code else None
+
+
+def envelope(structured: dict[str, Any]) -> dict[str, Any]:
+    """Content-free view of a mutation result: short scalars, and only codes/kinds one level down."""
+    out: dict[str, Any] = {"_keys": sorted(structured)}
+    for k, v in structured.items():
+        if isinstance(v, (bool, int, float)) or v is None or (isinstance(v, str) and len(v) <= 64):
+            out[k] = v
+        elif isinstance(v, dict):
+            sub = {kk: vv for kk, vv in v.items() if kk in ("code", "kind", "reason", "status")
+                   and (isinstance(vv, (bool, int, float)) or (isinstance(vv, str) and len(vv) <= 64))}
+            if sub:
+                out[k] = sub
+    return out
 
 
 class TimedSession:
@@ -422,6 +437,8 @@ class TimedSession:
                                "code": _code(structured), "bytes": len(json.dumps(structured, default=str)),
                                "status": structured.get("status"), "route": structured.get("route"),
                                "effect": structured.get("effect")}
+        if name in MUTATION_TOOLS:
+            ret["envelope"] = envelope(structured)
         if name == "get_browser_state" and args.get("snapshot_format"):
             ret["n_refs"] = len(structured.get("refs") or [])
             ret["n_content_refs"] = len(structured.get("content_refs") or [])
