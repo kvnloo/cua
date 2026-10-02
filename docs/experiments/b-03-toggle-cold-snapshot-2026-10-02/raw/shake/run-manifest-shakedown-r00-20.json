@@ -1,0 +1,49 @@
+{
+ "plan_kind": "shakedown",
+ "rounds": [
+  0,
+  20
+ ],
+ "arm_knobs": {
+  "K5V": {
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  },
+  "K5EV": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound",
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  }
+ },
+ "blocks": [
+  [
+   "shakex-toggle-K5V-cold-D0-task",
+   "shakex-toggle-K5EV-warm-D80-task",
+   "shakex-toggle-K5V-warm-D0-task",
+   "shakex-toggle-K5EV-cold-D80-task",
+   "shakex-fill-K5V-warm-D80-task",
+   "shakex-fill-K5V-cold-D0-task",
+   "shakex-toggle-K5V-cold-D0-nc"
+  ]
+ ],
+ "started_mono_ns": 266393062781003,
+ "started_utc": "2026-10-02T17:26:49.086Z",
+ "loadavg_start": "15.13 12.19 6.93 14/2882 129997",
+ "locks": [
+  {
+   "mode": "shared",
+   "requested_utc": "2026-10-02T17:26:49.086Z",
+   "acquired_utc": "2026-10-02T17:27:22.949Z",
+   "first": "shakex-toggle-K5V-cold-D0-task",
+   "last": "shakex-toggle-K5V-cold-D0-nc",
+   "trials": 7,
+   "released_utc": "2026-10-02T17:27:35.341Z"
+  }
+ ],
+ "provider": "mock",
+ "display": ":102",
+ "ended_mono_ns": 266439318955541,
+ "ended_utc": "2026-10-02T17:27:35.342Z",
+ "loadavg_end": "17.44 13.15 7.52 16/2597 137075",
+ "network": {
+  "non_loopback_connect_attempts": 0
+ }
+}

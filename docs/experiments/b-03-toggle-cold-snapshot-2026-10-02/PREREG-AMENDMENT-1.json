@@ -1,0 +1,21 @@
+{
+ "schema": "cua.r2.b03.prereg-amendment.v1",
+ "amends": "PREREG.json (commit 2edc0bee20ab1c354bf861c3686daba0189b3d5f); PREREG.json itself is not edited",
+ "timing": "committed after the 7-trial SHARED shakedown (excluded, raw/shake-trials.tar.gz) and before the first measured trial",
+ "changes": [
+  {
+   "item": "stale-dispatch invariant definition",
+   "why": "the shakedown showed that every dom_event browser_click (and the fill browser_type) returns effect=unverifiable in its normal envelope, in all 7 trials and in B-02's measured trials: the Driver does not verify dom_event effects, the target-owned oracle does. PREREG.json's clause 'no action with effect refused/unverifiable' would flag every trial and does not detect staleness",
+   "new_definition": "a stale dispatch is an action whose call is refused (effect=refused or a call error, e.g. browser_ref_stale) or whose dispatch does not come from the snapshot of the same step: in the trial's call order every actionN must directly follow snapshotN with no navigate or other snapshot in between. Gate unchanged: 0 stale dispatches"
+  },
+  {
+   "item": "analysis robustness",
+   "why": "the shakedown has no rounds, which exposed a None division in analyze_b03.py",
+   "change": "per_process_share_of_E is None when either median is None; no rule changes"
+  },
+  {
+   "item": "secondary descriptive measures (no verdict depends on them)",
+   "add": "per cell: snapshot1 + snapshot2 (observation total) and the action routes reported by the Driver (actual route: dom / trusted_input). Reason: one shakedown trial (toggle K5EV cold D80) had a negative excess (snapshot2 26.6 ms vs snapshot1 12.7 ms), so cost may move from snapshot1 to snapshot2 rather than vanish; the observation total shows whether it does"
+  }
+ ]
+}
