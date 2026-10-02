@@ -1,0 +1,58 @@
+ok   1 workload hash matches PREREG
+ok   1 oracle implementation hash matches PREREG
+ok   2 MANIFEST file hashes
+ok   2 MANIFEST content hash
+ok   2 MANIFEST workload hash == PREREG
+ok   3 runs.jsonl covers every task once, in order
+ok   3 RUN tasks are a prefix of the preregistered order
+ok   3 NOT_RUN only for the deadline
+ok   4 oracle verdicts re-derived from committed outputs (105 runs; mismatches [])
+ok   5 api examples rebuilt from frozen events
+ok   5 api join audit rebuilt
+ok   6 turn examples: state + label recomputed (105 examples; bad [])
+ok   6 turn request state carries no prompt/family/oracle/task field
+ok   7 api/scored-decider_2b.jsonl one-to-one with examples (235)
+ok   7 api/scored-decider_2b.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 api/scored-julia_1.jsonl one-to-one with examples (235)
+ok   7 api/scored-julia_1.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 api/scored-laya_421m.jsonl one-to-one with examples (235)
+ok   7 api/scored-laya_421m.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 api/scored-nanojev.jsonl one-to-one with examples (235)
+ok   7 api/scored-nanojev.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 api/scored-qwen_3b_baseline.jsonl one-to-one with examples (235)
+ok   7 api/scored-qwen_3b_baseline.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 turn/scored-decider_2b.jsonl one-to-one with examples (105)
+ok   7 turn/scored-decider_2b.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 turn/scored-failopen_ollama_deadport.jsonl one-to-one with examples (105)
+ok   7 turn/scored-failopen_ollama_deadport.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 turn/scored-julia_1.jsonl one-to-one with examples (105)
+ok   7 turn/scored-julia_1.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 turn/scored-laya_421m.jsonl one-to-one with examples (105)
+ok   7 turn/scored-laya_421m.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 turn/scored-nanojev.jsonl one-to-one with examples (105)
+ok   7 turn/scored-nanojev.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   7 turn/scored-qwen_3b_baseline.jsonl one-to-one with examples (105)
+ok   7 turn/scored-qwen_3b_baseline.jsonl evaluate_shadow reproduces (floats to 1e-9)
+ok   8 api analysis reproduces
+ok   8 turn analysis reproduces
+ok   9 ledger rc=0 for all 10 timed labels, after collection ended 2026-10-02T08:36:45.527Z
+ok   10 every run executed hermes 5d01f6089737 with a clean worktree (PREREG short prefix; erratum E1 in provenance.json)
+ok   10 mask receipts ok for every run (live home, real home, host runtime dir empty; GUI runs see only their private X socket)
+ok   10 live-home file stats unchanged except declared mtime-only auth.json refreshes by the live Hermes (4 of 105 runs; see README)
+ok   10 env.inside: no live paths/secret vars; HERMES_HOME private
+ok   10 no absolute local paths / private markers (0) / secret-looking strings ([])
+ok   11 cua-bridge-tally.json reproduces from committed logs, events, runs and tasks
+ok   11 private-home agent.log committed for every CUA run (12)
+ok   11 CUA: 0 completed tool calls, all 27 errors at tool_call {'bridge_self_invoke': 1, 'missing_calls_array': 23, 'unknown_tool_name': 3}, 0 computer_use dispatches
+ok   11 CUA: 0 approval / fail-close lines in agent.log, errors.log and replies
+ok   11 CUA: agent.log tool lines == errors.log == observer pre/post_tool_call, and API calls == observer attempts, per run
+ok   11 CUA: GUI state unchanged and argv '-t computer_use' in every run
+ok   11 README BLOCKED section does not list CUA input tasks (approval attribution withdrawn)
+ok   12 README tables byte-identical to make_tables.py (7 blocks; mismatched [])
+ok   12 summary.json byte-identical to a fresh make_summary.py run
+ok   13 MANIFEST counts recomputed {'tasks': 112, 'run': 105, 'not_run': 7, 'observer_rows': 1154}
+ok   13 MANIFEST lists every dataset file
+ok   13 MANIFEST identities == provenance identities
+ok   13 summary and README cite MANIFEST content hash 648e418ed1c4
+ok   14 unit log committed: hermes head, 25 passed / 2 skipped, 13 passed with z0int
+RESULT PASS

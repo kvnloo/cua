@@ -1,0 +1,10 @@
+TAMPER a_verdict rc=1 RESULT FAIL
+    FAIL 4 oracle verdicts re-derived from committed outputs (105 runs; mismatches ['t000-find_file-01'])
+TAMPER b_table_cell rc=1 RESULT FAIL
+    FAIL 12 README tables byte-identical to make_tables.py (7 blocks; mismatched ['turn'])
+TAMPER c_agent_log rc=1 RESULT FAIL
+    FAIL 11 cua-bridge-tally.json reproduces from committed logs, events, runs and tasks
+    FAIL 11 CUA: 0 completed tool calls, all 26 errors at tool_call {'bridge_self_invoke': 1, 'missing_calls_array': 22, 'unknown_tool_name': 3}, 0 computer_use dispatches
+    FAIL 11 CUA: agent.log tool lines == errors.log == observer pre/post_tool_call, and API calls == observer attempts, per run
+TAMPER d_manifest_count rc=1 RESULT FAIL
+    FAIL 13 MANIFEST counts recomputed {'tasks': 112, 'run': 105, 'not_run': 7, 'observer_rows': 1154}
