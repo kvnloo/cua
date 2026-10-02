@@ -1,0 +1,40 @@
+{
+ "schema": "cua.r2.prereg.amendment.v1",
+ "lane": "B-02",
+ "amends": "PREREG.json (commit 1a902e453, 2026-10-02T05:08:15Z); PREREG.json itself is not edited",
+ "written_utc": "2026-10-02T05:35:00Z",
+ "committed_before": "every browser trial of the fix round (shakedown, STEP 0 browser probes, measured block, controls, smoke)",
+ "reason": {
+  "what_changed": "The blocker recorded in PREREG.json was stale. The shared hostless wrapper was replaced by hostless v2 (file mtime 2026-10-02T05:06:31Z): Landlock scope plus desktop-variable scrub, no bwrap user namespace (v1 is kept as hostless-strict). Under v2, root-owned files keep uid 0, so the Driver's trusted_root_owned_installation check passes.",
+  "timeline": "STEP 0 (b02-step0, 05:02Z) and step0-dbg1 (05:03Z) ran under v1 and refused 18/18. Everything after 05:06:31Z (shake-vmicro2, PREREG commit 05:08:15Z, vmicro 05:10:51Z, nv 05:12:08Z) ran under v2. The PREREG text attributed vmicro/nv to v1 by mistake; the packet corrects it.",
+  "evidence": "hostless (v2) stat: /, /opt, /opt/google, /opt/google/chrome, /opt/google/chrome/chrome and google-chrome are uid 0:0, not group/other writable (re-checked 05:34Z). The infra smoke artifacts/r2/smoke/browser-hostless-v2.log (05:06:47-54Z) passed browser_prepare isolated_new + type + click with its fixture oracle; the fresh verifier's probe with this lane's binary (05:27:52Z) returned browser_prepare is_error=false in 3/3 trials and fired the new ep.* marks at bind."
+ },
+ "blocks_now_run_unchanged": {
+  "source": "PREREG.json -> blocked_blocks_as_specified: classes, arms (K5, K5E, K5V, K5EV), design (20 rounds, classes rotate per round, each class runs its 4 arms in a Williams row, fresh cua-driver mcp per trial, trace on, loadavg per trial, every trial kept), primary metric T_oracle, controls, gates and S. Status changes from BLOCKED to RUN; nothing in the design, metric, statistics or gates changes.",
+  "measured_block": "one quiet-timed EXCLUSIVE window (label b02-measured), taken before any Driver session opens; 240 trials (3 classes x 4 arms x 20 rounds).",
+  "controls_block": "run_b02.py --plan controls: N-E1 takeover 10/arm (K5, K5E, K5EV), N-E2 restart through the Driver 5/arm (K5, K5E, K5EV), N-W1 stale ref after re-navigation 5/arm/class (all 4 arms), N-W2 same-document DOM replacement 5/arm (all 4 arms), N-V 5/arm (K5, K5V; an extension of the nv block on the browser runner). Quiet lock SHARED, at most 10 trials per acquisition, receipts kept.",
+  "N-E3": "asserted from the marks of every K5E and K5EV trial (measured and controls): each fresh Driver process runs the full discovery (ep.family_scanned and ep.json_version) at bind before any ep.bound_hit.",
+  "smoke": "run_b02.py --plan smoke: 5 fill trials, all knobs unset, quiet lock SHARED; pass = 5/5 verified and 0 knob marks (ep.bound_*, mcp.inner_validation_skipped) in the traces."
+ },
+ "pre_specified_analysis_details": {
+  "taxonomy_extension": "B-01's b01_analysis.classify_mark is used unchanged except that the B-02 marks, which B-01's taxonomy does not know, are mapped so B-01's components keep their meaning: left mark ep.* -> revalidate / reval_endpoint; left mark mcp.parsed, mcp.session_validated, mcp.tools_list_built, mcp.admission_validated -> driver_pre_dispatch / pre_admission_validate; left mark mcp.identity_applied, mcp.session_begun, mcp.timer_started, mcp.inner_classified, mcp.inner_tools_list_built, mcp.inner_validation_skipped -> driver_pre_dispatch / pre_inner_validate. Finer B-02 sub-spans are reported beside them, never instead.",
+  "localized_components": "endpoint component = per trial, the sum over mutations inside T of the reval.native_window -> reval.endpoint interval (B-01 sub reval_endpoint); admission component = per trial, the sum over tools/calls inside T of mcp.line_read -> mcp.inner_validated (pre_admission_validate + pre_inner_validate). The gate denominators are the K5 medians of these per class.",
+  "saving_definition": "per class, paired K5 - K5X T_oracle within round (median, seeded bootstrap 10000, seed 20261002 as PREREG); E gate uses K5 vs K5E, V gate uses K5 vs K5V; S = median K5 / median K5EV (ratio bootstrap over rounds, same seed).",
+  "moved_work": "CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound adds bound-listener seeding (exp_bind_listener) at bind, before T. Every E arm is therefore also reported as bind + T_oracle end to end (bind call window + T_oracle) paired against K5; work moved before T is never counted as deleted.",
+  "trace_cost": "the per-mark trace write cost is inside every span in every arm; residual spans are reported as 'including trace overhead', not as Driver work."
+ },
+ "W_decision_rule_before_probes": {
+  "probes": "step0_probe.py, 5 trials per class, every knob unset, quiet-timed EXCLUSIVE (label b02-step0-r2), excluded from gates. Per trial: A1/A2 (first and second snapshot of a document), B1/B2 (same after re-navigation, same Driver process and connection), rawC (a second OS process with its own CDP connection and session snapshots the cold re-navigated document first) then Driver C1, D1 (snapshot 1 s after re-navigation), plus the second-Driver bind (E).",
+  "statistics": "per class medians of excess_A = A1 - A2, excess_B = B1 - B2, C1 - B2, D1 - B2, and of the attach sub-span excess.",
+  "rules": [
+   "per-process first use: median excess_B <= 25% of median excess_A -> a warm-up could only move the work to prepare/bind ('moved', not a deletion); no knob; W verdict NOT DELETED (moved only).",
+   "per-document (first observer pays): median excess_B >= 50% of median excess_A AND median (C1 - B2) <= 50% of median excess_B -> IRREDUCIBLE.",
+   "load timing: median excess_B >= 50% of median excess_A AND median (D1 - B2) <= 50% of median excess_B -> IRREDUCIBLE (any fresh observation right after navigation absorbs the document's pending work).",
+   "a W knob (per-target CDP session reuse) is built only if the attach sub-span excess plus the per-call attach cost is >= 50% of median excess_A in some class; otherwise not built, because it could not meet the >= 50% deletion gate. If built, it is added as a disclosed extension with its own amendment before its first measured trial."
+  ],
+  "otherwise": "if no rule fires, the W verdict is UNDECIDED and the remaining excess is named in E2."
+ },
+ "shakedown": "up to 12 trials SHARED, excluded from every gate and kept in raw/, before the measured block; harness fixes found there are committed before the measured block and disclosed.",
+ "unchanged": "vmicro and nv results, their gates and the measurement commit 560bd8247 (binary sha256 7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0). TypeSafe cap 0.",
+ "live_heads_at_amendment": {"trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (OPEN)", "upstream_main_gh": "9ab9e890ac63f5d2407fa59f5541a1e3ef9c9b65"}
+}

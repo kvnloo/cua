@@ -56,16 +56,28 @@ def devtools_ports_for_pid(pid: int) -> list[int]:
 
 
 def http_get_json(port: int, path: str, timeout: float = 2.0) -> Any:
+    """GET + JSON body, reading exactly Content-Length bytes (Chrome's DevTools HTTP
+    server keeps the connection open after the reply, so reading to EOF would block)."""
     with socket.create_connection(("127.0.0.1", port), timeout=timeout) as s:
         s.sendall(f"GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n".encode())
         data = b""
-        while True:
+        while b"\r\n\r\n" not in data:
             chunk = s.recv(65536)
             if not chunk:
                 break
             data += chunk
-    body = data.split(b"\r\n\r\n", 1)[1]
-    return json.loads(body)
+        head, _, body = data.partition(b"\r\n\r\n")
+        length = None
+        for line in head.split(b"\r\n")[1:]:
+            name, _, value = line.partition(b":")
+            if name.strip().lower() == b"content-length":
+                length = int(value.strip())
+        while length is None or len(body) < length:
+            chunk = s.recv(65536)
+            if not chunk:
+                break
+            body += chunk
+    return json.loads(body if length is None else body[:length])
 
 
 class CdpClient:
