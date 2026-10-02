@@ -300,8 +300,8 @@ def check_prereg_order(prereg, problems):
                 )
         if r["dirty_paths_under_libs_cua_driver"] != 0:
             problems.append(f"counted run {r['label']} had a dirty tree")
-    rel = os.path.relpath(os.path.join(PACKET, "PREREG.json"), git("rev-parse", "--show-toplevel").stdout.strip() or PACKET)
-    log = git("log", "--diff-filter=A", "--format=%H %cI", "--", rel)
+    # git runs with -C PACKET, so the pathspec is relative to the packet.
+    log = git("log", "--diff-filter=A", "--format=%H %cI", "--", "PREREG.json")
     if log.returncode == 0 and log.stdout.strip():
         sha, when = log.stdout.strip().splitlines()[-1].split()
         committed = datetime.datetime.fromisoformat(when).astimezone(datetime.timezone.utc)
@@ -348,8 +348,8 @@ def privacy_scan(problems, git_range):
     if git_range:
         shas = git("rev-list", git_range).stdout.split()
         for sha in shas:
-            # The verifier itself contains the patterns it scans for.
-            show = git("show", "--format=%an <%ae>%n%B", sha, "--", ".", ":(exclude)*verify_artifacts.py")
+            # Whole commit (message + full diff), every path in the repository.
+            show = git("show", "--format=%an <%ae>%n%B", sha, "--", ":(top)")
             privacy_scan_text(f"commit {sha[:12]}", show.stdout, problems)
 
 
