@@ -1,0 +1,66 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "lane": "B-02",
+ "wave": 2,
+ "written_utc": "2026-10-02T05:08:15Z",
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#73"],
+ "title": "Browser causal A/B of the three B-01 untested Driver sites: owned-endpoint re-proof, MCP admission validation, cold first snapshot",
+ "hypotheses": {
+  "H_E": "Within one Driver process and one browser session, a bound ownership check (cached port + same listening-socket inode held by the same Driver-launched pid with an unchanged /proc start time, else full rediscovery) removes most of the ~10 ms per-mutation discover_owned_endpoint cost and refuses every takeover the full proof refuses.",
+  "H_V": "Validating each tools/call once against the adapter's process-lifetime inventory by reference (instead of two validate_tool_call runs against two deep clones) removes most of the per-call admission cost, with identical error envelopes.",
+  "H_W": "The cold-first-snapshot excess can be removed by a minimal Driver change without serving stale DOM; IRREDUCIBLE if STEP 0 attributes it to per-document Chrome work any fresh observation must pay."
+ },
+ "source": {
+  "base": "f5c991e5927513c8b94da4330c94276dc5f8ce22 (B-01 tested Driver source)",
+  "measurement_commit": "560bd8247c36c9d249f481b509a073c131e93620 (exactly one commit on base; marks + CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound + CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1; both default off)",
+  "cdp_warm_knob": "NOT BUILT (STEP 0 browser probes blocked; see blocker)",
+  "binary": {"label": "cua-driver-b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version_in_session": "cua-driver 0.32.0", "target_family": "cua-release-r2-01"},
+  "harness_copied_from": "6689610d5a2619cb45dd4328b2921c89f88967be:docs/experiments/b-01-browser-critpath-2026-10-02/",
+  "harness_blobs": {
+   "run_critpath.py": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+   "b01_fixtures.py": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+   "b01_tasks.py": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+   "b01_analysis.py": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+   "analyze.py": "c70e622721439cc824dce1c5b94dec8cd3dd8d1a"
+  },
+  "live_heads_at_prereg": {"trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)", "upstream_main_gh": "bc55ff2d236a62075c981ebadf0ff97dd90d45be (13 commits ahead of 229b65b28, 0 files under libs/cua-driver)"}
+ },
+ "blocker_found_before_any_measured_trial": {
+  "what": "Under the mandatory hostless wrapper (bwrap user namespace mapping only uid 1000), every root-owned file appears owned by uid 65534. The Driver's isolated launch accepts only a root-owned, non-writable Chromium payload path (platform-linux browser_platform.rs trusted_root_owned_installation: metadata.uid() != 0 -> refuse), so browser_prepare {allow_launch, isolated_new} refuses with browser_route_unavailable.",
+  "evidence": "REAL: STEP 0 run (quiet-timed b02-step0, 15/15 trials) and the debug run (3/3) refused at browser_prepare; hostless stat shows /opt/google/chrome/chrome uid 65534. The stack track recorded the same blocker independently (artifacts/stack/SWAY_SETUP.json blockers[0]). /usr/bin/bwrap is not setuid, so no rule-compliant wrapper preserves root ownership.",
+  "consequence": "Every block that needs a Driver-launched browser is pre-registered below exactly as the spec defines it, with status BLOCKED. It runs unchanged if the owner rules on the isolation wrapper or the infrastructure is fixed. No workaround is attempted: no trust-check knob, no user-owned browser copy, no run outside hostless."
+ },
+ "blocked_blocks_as_specified": {
+  "classes": {"fill": "jev-use FixtureFormTask, oracle submitted == token", "toggle": "#24 page from kvnloo/cua 5474aa31f, oracle_ok", "modal": "#24 page, oracle_ok"},
+  "arms": {"K5": "B-01 K5 (feedback OFF, focus settle 0 on fill, 10 ms poll, compiled client validators, PR 4316 guard on fill)", "K5E": "K5 + CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound", "K5V": "K5 + CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1", "K5EV": "K5 + both (W not built)"},
+  "design": "20 rounds; per round classes rotate; each class runs the 4 arms in a Williams row (williams(4), each row 5 times); fresh cua-driver mcp per trial; trace on; loadavg per trial; every trial kept; the measured block under quiet-timed (EXCLUSIVE taken before any Driver session).",
+  "primary_metric": "T_oracle = first semantic_v2 send -> first 2 ms harness read confirming the outcome",
+  "controls": ["N-E1 takeover 10/arm (K5, K5E, K5EV)", "N-E2 restart through the Driver 5/arm", "N-E3 full proof first in every fresh process (all E trials)", "N-W1 stale ref after re-navigation 5/arm/class", "N-W2 same-document DOM replacement 5/arm", "default-off browser smoke 5"],
+  "gates": "as the lane spec: validity >= 19/20 per arm and class, 0 duplicate mutations, 0 unverified successes, 0 stale-ref dispatches; E -> OWNER_DECISION only if saving CI excludes 0, saving >= 50% of the K5 localized endpoint component and N-E1/N-E2/N-E3 discriminate, else IRREDUCIBLE; V -> DELETED (KEEP) if saving CI excludes 0, >= 50% of the K5 localized admission component ([mcp.line_read -> mcp.inner_validated] summed over tools/calls in T) and envelopes identical; W -> not built; S = median K5 / median K5EV with CI; E2 untested share < 5% or name what remains",
+  "status": "BLOCKED (infrastructure: hostless uid mapping vs Driver root-owned launch check)"
+ },
+ "runnable_blocks": {
+  "vmicro": {
+   "evidence_class": "BENCHMARK (REAL Driver process, non-browser tool)",
+   "question": "Per tools/call causal effect of CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1 on the Driver admission span, on the same binary.",
+   "design": "20 rounds, AB/BA pairs of K5 (knobs unset) and K5V; one fresh cua-driver mcp per trial inside cua-x11-session.sh under hostless; raw stdio JSON-RPC client; legacy initialize + tools/list; then 25 legacy-era and 25 modern-era tools/call get_config, sequential. Whole block under quiet-timed (EXCLUSIVE before any Driver starts). Phase trace on in both arms; loadavg before/after each trial; every trial kept.",
+   "metric_primary": "per trial: median over its 25 legacy-era tools/calls of the admission span mcp.line_read -> mcp.inner_validated (Driver marks, CLOCK_MONOTONIC). Legacy is the era of the jev-use MCP client used by B-01.",
+   "metric_secondary": ["the same over the 25 modern-era calls", "client round trip per call (send -> reply line)", "sub-spans: tools_list build (clone or borrow) and validate+drop, proxy and inner"],
+   "statistics": "paired difference K5 - K5V within round; median; seeded percentile bootstrap over rounds, 10000 resamples, seed 20261002",
+   "validity": "every one of the 50 calls in every trial returns a non-error result; forced path: K5V trials show mcp.inner_validation_skipped and no mcp.inner_tools_list_built on every tools/call; K5 trials show mcp.inner_tools_list_built and no mcp.inner_validation_skipped on every tools/call (this is also the default-off evidence for the V knob)",
+   "gate_V_call": "PASS if the paired legacy-era saving CI excludes 0 AND the median saving >= 50% of the K5 median per-call admission span; otherwise NOT_MATERIAL"
+  },
+  "nv": {
+   "evidence_class": "REAL",
+   "design": "5 trials per arm (K5, K5V), AB/BA; fresh cua-driver mcp per trial; legacy initialize; 8 invalid tools/calls per trial: V1 wrong argument type (browser_navigate target_id integer), V2 missing required arguments (browser_navigate with only session), V3 unknown tool, V4 arguments not an object (extra, beyond the spec's 3; it is the case validate_tool_call itself rejects); each in legacy and modern era. Quiet lock SHARED, at most 10 trials per acquisition, receipts kept.",
+   "gate": "PASS if, for every request, the reply line is byte-identical across all 10 trials (K5 vs K5V, and K5 vs K5)"
+  },
+  "verdict_rules": {
+   "V": "Whole-task V verdict needs the browser T_oracle gate: BLOCKED. If gate_V_call and nv both PASS, report 'per-call deletion confirmed (BENCHMARK+REAL); whole-task verdict BLOCKED'. A projection to the browser classes (per-call saving x tools/calls inside T, over B-01's composed mean T) is labelled PROJECTION and is not a gate.",
+   "E": "UNIT evidence only (no REAL path without a Driver-launched browser): BLOCKED.",
+   "W": "No knob built; STEP 0 browser probes blocked; SOURCE plus a read-only re-analysis of B-01's own REAL traces localize the excess but cannot decide per-document vs per-attach: BLOCKED (not IRREDUCIBLE)."
+  }
+ },
+ "provider": {"name": "TypeSafe", "cap_reached": 0, "note": "mock chooser only; runners refuse and count every non-loopback connect"},
+ "excluded_from_gates": ["STEP 0 runs (b02-step0, step0-dbg1)", "shakedowns (shake-vmicro, shake-vmicro2)"]
+}
