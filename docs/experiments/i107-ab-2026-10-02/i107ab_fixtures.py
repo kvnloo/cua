@@ -6,7 +6,8 @@
   the form subtree is byte-identical and never touched.
 - W-static: the W-churn region rendered once from the same seed, interval never started.
 - Control channel (control trials only): an EventSource on /events delivers one operation,
-  the page applies it and POSTs /ack; the server journals post and ack on CLOCK_MONOTONIC.
+  the page applies it and POSTs /ack with whether the op ran without throwing (each op checks
+  its own effect); the server journals post and ack on CLOCK_MONOTONIC.
   The Driver never carries a control mutation.
 """
 
@@ -41,6 +42,12 @@ CONTROL_OPS = {
              "b.setAttribute('value','competitor');b.textContent='Submit';f.insertBefore(b,o);"),
     # DC04: the form's Submit removed.
     "DC04": "document.querySelector('form button').remove();",
+    # DC01: page script changes the field's value property (no attribute, no event a mirror sees).
+    "DC01": ("var i=document.querySelector('form input');i.value='changed-by-page';"
+             "if(i.value!=='changed-by-page')throw 0;"),
+    # DC05a: benign same-looking re-render: a clone replaces Submit in the same form.
+    "DC05a": ("var o=document.querySelector('form button');var c=o.cloneNode(true);o.replaceWith(c);"
+              "if(o.isConnected||!c.isConnected)throw 0;"),
 }
 
 assert all(f not in w for w in VOCAB for f in FORBIDDEN)
@@ -87,8 +94,8 @@ def churn_script(seed: int, run: bool) -> str:
 def control_script() -> str:
     ops = json.dumps(CONTROL_OPS)
     return ("<script>(function(){var OPS=%s;var es=new EventSource('/events');"
-            "es.onmessage=function(m){var op=JSON.parse(m.data);try{(new Function(OPS[op.op]))();}catch(e){}"
-            "fetch('/ack',{method:'POST',body:op.id});};})();</script>") % ops
+            "es.onmessage=function(m){var op=JSON.parse(m.data);var ok=0;try{(new Function(OPS[op.op]))();ok=1;}catch(e){}"
+            "fetch('/ack',{method:'POST',body:op.id+' '+ok});};})();</script>") % ops
 
 
 def page_for(condition: str, *, seed: int, control: bool) -> bytes:
@@ -162,6 +169,7 @@ class ControlBus:
         self._cv = threading.Condition()
         self._queue: list[dict[str, Any]] = []
         self._acks: set[str] = set()
+        self._ok: dict[str, bool | None] = {}
         self.journal: list[dict[str, Any]] = []
         self.latest_conn = 0
 
@@ -190,11 +198,19 @@ class ControlBus:
                 return None
             return self._queue.pop(0)
 
-    def ack(self, op_id: str) -> None:
+    def ack(self, body: str) -> None:
+        """``body`` is ``<op id>`` or ``<op id> <1|0>`` (1 = the page applied the op without throwing)."""
+        op_id, _, flag = body.strip().partition(" ")
+        ok = {"1": True, "0": False}.get(flag)
         with self._cv:
             self._acks.add(op_id)
-            self.journal.append({"event": "control_ack", "id": op_id, "t_mono_ns": now()})
+            self._ok[op_id] = ok
+            self.journal.append({"event": "control_ack", "id": op_id, "ok": ok, "t_mono_ns": now()})
             self._cv.notify_all()
+
+    def ack_ok(self, op_id: str) -> bool | None:
+        with self._cv:
+            return self._ok.get(op_id)
 
     def wait_ack(self, op_id: str, timeout: float) -> bool:
         with self._cv:

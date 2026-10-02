@@ -7,7 +7,7 @@ the 2 ms independent oracle reader, the server-side fixture journal, timed clien
 output-schema validation and the loopback-only socket guard. Added: set_agent_cursor_enabled
 (false) before browser_prepare in every arm, arm B_proj (query on every semantic_v2 call),
 wire capture (MCP line bytes + client parse time), per-step semantic facts, the W-churn /
-W-static fixture variants and the DC03 / DC04 control channel, a cleanup span and cold
+W-static fixture variants and the DC01 / DC03 / DC04 / DC05a control channel, a cleanup span and cold
 startup kept separate, per-trial loadavg / PSI / Driver CPU+VmHWM / browser-tree CPU+RSS
 (read-only /proc), and a preflight that refuses before any Driver spawn when the Driver's
 isolated-launch precondition cannot hold under the current wrapper.
@@ -131,6 +131,10 @@ QUERY = f"{FIELD_NAME} {SUBMIT_NAME}".lower()  # 'verification value submit' fro
 PINNED = {"i107": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
           "ref": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"}
 SEED_BASE = 20261002
+PLANS = ("preflight", "shakedown", "default_off", "distortion", "ab", "static", "controls", "controls2", "controls3")
+# Page-applied dependency controls, posted after action1 returns and before the step-2 snapshot.
+CONTROL_OPS_USED = ("DC01", "DC03", "DC04", "DC05a")
+HARNESS_FILES = ("run_critpath.py", "i107ab_fixtures.py", "i107ab_ledger.py", "run_block.sh")
 
 
 @dataclass(frozen=True)
@@ -166,6 +170,23 @@ def file_sha256(path: str) -> str:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def harness_hashes() -> dict[str, str]:
+    """sha256 of the harness files this process runs (recorded in every run manifest)."""
+    return {name: file_sha256(str(HERE / name)) for name in HARNESS_FILES}
+
+
+def _submit_ref(snap: dict[str, Any] | None) -> str | None:
+    refs = (snap or {}).get("refs") or []
+    return next((r.get("ref") for r in refs if r.get("role") == "button" and r.get("name") == SUBMIT_NAME), None)
+
+
+def submit_ref_changed(prev: dict[str, Any] | None, snap: dict[str, Any]) -> bool | None:
+    """Whether the first Submit ref differs from the previous snapshot's (None if either has none).
+    Only the boolean is recorded; ref values never enter the trial record."""
+    a, b = _submit_ref(prev), _submit_ref(snap)
+    return None if a is None or b is None else a != b
 
 
 def pid_gone(pid: int) -> bool:
@@ -292,7 +313,7 @@ async def run_trial(spec: dict[str, Any], args: argparse.Namespace, server: I107
     control = spec.get("control")
     token = f"jev-{uuid.uuid4().hex[:10]}"
     label = f"jev-i107ab-{uuid.uuid4().hex[:8]}"
-    server.configure(spec["condition"], spec["seed"], control in ("DC03", "DC04"))
+    server.configure(spec["condition"], spec["seed"], control in CONTROL_OPS_USED)
     fixture_url = f"http://127.0.0.1:{server.server_port}/"
     task = FixtureFormTask(token, fixture_url, 4)
     result.update({"token_sha16": sha16(token), "token_len": len(token), "outcome": "unknown", "routes": [],
@@ -356,6 +377,7 @@ async def step_loop(spec: dict[str, Any], arm: Arm, server: I107Server, task: An
                     target_id: str, tab_id: str, fixture_url: str, available: set[str], capture_bound: bool) -> None:
     control = spec.get("control")
     history: list[dict[str, Any]] = []
+    prev_snap: dict[str, Any] | None = None
     snap_args: dict[str, Any] = {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"}
     if arm.query is not None:
         snap_args["query"] = arm.query
@@ -371,7 +393,9 @@ async def step_loop(spec: dict[str, Any], arm: Arm, server: I107Server, task: An
         rec.add("cand_done", step=step, ids=[c.id for c in candidates],
                 visual=visual_record.get("status") if isinstance(visual_record, dict) else None)
         result["steps"].append({"step": step, "candidates": [c.id for c in candidates],
+                                "submit_ref_changed": submit_ref_changed(prev_snap, snap),
                                 **snapshot_facts(snap, task.token)})
+        prev_snap = snap
         rec.add("decide_start", step=step)
         choice, _confidence, _probabilities = choose_mock_for_task(task, sources, candidates, history)
         rec.add("decided", step=step, choice=choice)
@@ -412,12 +436,13 @@ async def step_loop(spec: dict[str, Any], arm: Arm, server: I107Server, task: An
             result["action_error"] = {"type": type(error).__name__, "code": getattr(error, "code", None)}
             return
         history.append(task.history_entry(step, candidate.id))
-        if control in ("DC03", "DC04") and step == 1:
+        if control in CONTROL_OPS_USED and step == 1:
             op_id = server.bus.post(control)
             rec.add("control_post", op=control)
             acked = await asyncio.to_thread(server.bus.wait_ack, op_id, 2.0)
             rec.add("control_ack" if acked else "control_ack_missing", op=control)
             result["control_applied"] = acked
+            result["control_op_ok"] = server.bus.ack_ok(op_id)
         if candidate.id in task.completion_candidate_ids:
             for i in range(POLL_READS):
                 outcome = oracle_read(rec, task, f"verify{i}", step)
@@ -531,6 +556,12 @@ def build_plan(plan: str, pairs: int, conditions: list[str]) -> list[dict[str, A
                 order = ("A", "B_proj") if (i + j) % 2 == 0 else ("B_proj", "A")
                 for arm in order:
                     add(arm, "W-quiet", control=ctl, pair=f"{ctl}-p{i:02d}", order="AB" if order[0] == "A" else "BA")
+    elif plan == "controls3":  # map PREREG DC01 / DC05a on A and B_proj (disclosed extension)
+        for i in range(5):
+            for j, ctl in enumerate(("DC01", "DC05a")):
+                order = ("A", "B_proj") if (i + j) % 2 == 0 else ("B_proj", "A")
+                for arm in order:
+                    add(arm, "W-quiet", control=ctl, pair=f"{ctl}-p{i:02d}", order="AB" if order[0] == "A" else "BA")
     else:
         raise ValueError(plan)
     for idx, t in enumerate(trials):
@@ -567,7 +598,7 @@ async def run_plan(args: argparse.Namespace, plan: str) -> int:
                                 "started_mono_ns": now(), "loadavg_start": loadavg(), "psi_start": L.pressure(),
                                 "lock_fd_inherited": lock_fd_inherited(), "provider": "mock",
                                 "chooser": "choose_mock_for_task", "binaries": args.shas, "pairs": args.pairs,
-                                "conditions": args.conditions}
+                                "conditions": args.conditions, "harness_sha256": harness_hashes()}
     pre = L.trust_precondition()
     manifest["preflight"] = pre
     if not pre["ok"] or plan == "preflight":
@@ -614,8 +645,7 @@ def main() -> None:
     p.add_argument("--ref-driver")
     p.add_argument("--out", required=True)
     p.add_argument("--plan", nargs="+", required=True,
-                   choices=("preflight", "shakedown", "default_off", "distortion", "ab", "static", "controls",
-                            "controls2"))
+                   choices=PLANS)
     p.add_argument("--pairs", type=int, default=30)
     p.add_argument("--conditions", nargs="+", default=["W-quiet", "W-churn"])
     p.add_argument("--lock-label", required=True)

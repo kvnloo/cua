@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import statistics
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -140,7 +141,8 @@ def ledger_row(trial: dict[str, Any], m: dict[str, Any]) -> dict[str, Any]:
     return _r({
         "row_type": "trial", "lane": LANE, "issue": "kvnloo/cua#107", "task": "browser-fixture-form",
         "comparison": {"ab": "CMP-AB", "static": "CMP-AB", "distortion": "CMP-distortion", "default_off": "default-off",
-                       "controls": "controls", "controls2": "controls", "shakedown": "shakedown"}.get(s.get("plan"), s.get("plan")),
+                       "controls": "controls", "controls2": "controls", "controls3": "controls",
+                       "shakedown": "shakedown"}.get(s.get("plan"), s.get("plan")),
         "trial": s["trial"], "plan": s.get("plan"), "condition": s.get("condition"), "cohort": s.get("cohort"),
         "regime": s.get("regime"), "pair": s.get("pair"), "order": s.get("order"), "arm": s.get("arm"),
         "binary_sha256": s.get("binary_sha256"), "caller_tree": "72bf8156136771da9a767ec12ae7c364e426d910",
@@ -175,7 +177,56 @@ BLOCKED_CELLS = [
     ("CMP-distortion", "W-quiet", "A,A_ref", 20), ("default-off", "W-quiet", "A_off", 5),
     ("controls DC03", "W-quiet", "A,B_proj", 10), ("controls DC04", "W-quiet", "A,B_proj", 10),
     ("controls stale_ref", "W-quiet", "A,B_proj", 10),
+    ("controls DC01", "W-quiet", "A,B_proj", 10), ("controls DC05a", "W-quiet", "A,B_proj", 10),
 ]
+CONTROL_PLANS = ("controls", "controls2", "controls3")
+
+# Cells this lane does not run, with the reason (also written to ledger.jsonl as cell rows).
+STATIC_CELLS = [
+    ("A-vs-B read cost", "all", "A,B", "BLOCKED",
+     "no producer-side scoped fresh read is expressible through the existing contract (map section 4); B_proj acquires what A acquires (REAL); making B real needs a result-equal Driver optimisation or a #73/#74 contract change, neither authorised"),
+    ("live provider", "all", "A,B_proj", "BLOCKED", "no TypeSafe request in this track (budget reserved for R2-10); every timing row uses choose_mock_for_task"),
+    ("cohort K2", "all", "A,B_proj", "NOT_RUN", "map PREREG lists K2 as secondary; this lane ran K1 only"),
+    ("cohort K3", "all", "A,B_proj", "NOT_RUN", "NOT_RUN in the map PREREG"),
+    ("cohort K4", "all", "A,B_proj", "NOT_RUN", "NOT_RUN in the map PREREG"),
+    ("W-idle-quiet / W-idle-churn", "idle", "A", "NOT_RUN", "idle conditions belong to lane CSHADOW (CMP-C-idle)"),
+    ("arm E", "all", "E", "NOT_RUN", "NOT_RUN in the map PREREG"),
+]
+
+# Map PREREG dependency controls DC01-DC20 for arms A and B_proj: where each one is covered.
+# "RAN (this lane)" entries get trial counts from raw/; owner entries cite the owning lane's packet.
+_LANE_D = "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+_NA = "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+DC_COVERAGE: dict[str, dict[str, Any]] = {
+    "DC01": {"A": ("RAN (this lane)", {"plan": "controls3", "control": "DC01"}), "B_proj": ("RAN (this lane)", {"plan": "controls3", "control": "DC01"}),
+             "note": "disclosed extension: the lane PREREG omitted DC01 for A/B_proj although the map PREREG names both arms; lane D also ran A"},
+    "DC02": {"A": ("RAN (this lane)", {"plan": "ab", "condition": "W-churn"}), "B_proj": ("RAN (this lane)", {"plan": "ab", "condition": "W-churn"}),
+             "note": "DC02 is the CMP-AB W-churn condition (unrelated 500-node churn at 20 Hz throughout); outcome and candidate equivalence are the DC02 readout"},
+    "DC03": {"A": ("RAN (this lane)", {"plan": ("controls", "controls2"), "control": "DC03"}), "B_proj": ("RAN (this lane)", {"plan": ("controls", "controls2"), "control": "DC03"})},
+    "DC04": {"A": ("RAN (this lane)", {"plan": ("controls", "controls2"), "control": "DC04"}), "B_proj": ("RAN (this lane)", {"plan": ("controls", "controls2"), "control": "DC04"})},
+    "DC05a": {"A": ("RAN (this lane)", {"plan": "controls3", "control": "DC05a"}), "B_proj": ("RAN (this lane)", {"plan": "controls3", "control": "DC05a"}),
+              "note": "disclosed extension, as DC01; lane D also ran A"},
+    "DC05b": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC06": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC07": {"A": (_LANE_D, None), "B_proj": (_NA, None),
+             "note": "this lane's stale_ref control (browser_navigate to the same URL, then the old ref) is related but is not DC07 (location.replace)"},
+    "DC08": {"A": ("NOT_RUN (map: no admitted iframe fixture)", None), "B_proj": ("NOT_RUN (map)", None)},
+    "DC09": {"A": ("NOT_RUN (map: no authorized tab-creation path)", None), "B_proj": ("NOT_RUN (map)", None)},
+    "DC10": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC11": {"A": ("NOT_RUN here; OWNED: lane CSHADOW (arms A and C_shadow_audit on its own binary), BLOCKED there with 0 REAL trials", None),
+             "B_proj": (_NA, None),
+             "note": "lane D's PREREG points DC11 to 'lane CSHADOW/AB'; this lane's PREREG did not register it and its renderer-kill descent proof is CSHADOW's registered procedure, so arm A DC11 has no REAL result in any lane yet"},
+    "DC12": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC13": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC14": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC15": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC16": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC17": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+    "DC18": {"A": ("NOT_ASSIGNED (C_shadow_audit only)", None), "B_proj": (_NA, None)},
+    "DC19": {"A": ("COVERED per map: check-to-dispatch by DC01 (this lane, lane D), DC05b and DC07 (lane D); bootstrap/reconciliation parts are mirror-only (lane CSHADOW, BLOCKED)", None),
+             "B_proj": (_NA, None)},
+    "DC20": {"A": (_LANE_D, None), "B_proj": (_NA, None)},
+}
 
 
 def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -281,13 +332,22 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                         "evidence": "REAL/BENCHMARK (scripted chooser)"}
     summary["decomposition_A"] = decomp
     controls = {}
-    for ctl in ("DC03", "DC04", "stale_ref"):
+    for ctl in ("DC01", "DC03", "DC04", "DC05a", "stale_ref"):
         for arm in ("A", "B_proj"):
-            ts = by(plan="controls", control=ctl, arm=arm) + by(plan="controls2", control=ctl, arm=arm)
+            ts = [t for p in CONTROL_PLANS for t in by(plan=p, control=ctl, arm=arm)]
             if not ts:
                 continue
+            steps = lambda t: t["summary"].get("steps") or []  # noqa: E731
             controls[f"{ctl}|{arm}"] = {
                 "n": len(ts), "applied": sum(1 for t in ts if t["summary"].get("control_applied") or ctl == "stale_ref"),
+                "op_ok": sum(1 for t in ts if t["summary"].get("control_op_ok") is True),
+                "op_ok_unrecorded": sum(1 for t in ts if ctl != "stale_ref" and t["summary"].get("control_op_ok") is None),
+                "step_counts": {str(k): v for k, v in sorted(Counter(len(steps(t)) for t in ts).items())},
+                "step2_field_value_is_token": sum(1 for t in ts for x in steps(t) if x["step"] == 2
+                                                  and ((x.get("controls") or {}).get("textbox:verification value") or {}).get("value_is_token")),
+                "retyped": sum(1 for t in ts if (t["summary"].get("candidates") or []).count("type-verification-value") > 1),
+                "step2_submit_ref_changed": sum(1 for t in ts for x in steps(t) if x["step"] == 2 and x.get("submit_ref_changed") is True),
+                "step2_submit_ref_same": sum(1 for t in ts for x in steps(t) if x["step"] == 2 and x.get("submit_ref_changed") is False),
                 "outcomes": L.denominators([t["summary"].get("outcome") for t in ts]),
                 "submits": sum(t["summary"].get("completion_mutations") or 0 for t in ts),
                 "wrong_target_submits": sum(t["summary"].get("wrong_target_submits") or 0 for t in ts),
@@ -317,7 +377,7 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     summary["distortion"] = {"pairs": len(dpairs), **A.paired_diff([v["A"] for v in dpairs], [v["A_ref"] for v in dpairs])}
     all_m = measured
     summary["required_zero"] = {
-        "stale_ref_dispatch_with_effect": sum(1 for t in by(plan="controls", control="stale_ref") + by(plan="controls2", control="stale_ref")
+        "stale_ref_dispatch_with_effect": sum(1 for p in CONTROL_PLANS for t in by(plan=p, control="stale_ref")
                                               if t["summary"].get("completion_mutations")),
         "unauthorized_action": 0 if all_m else None,
         "wrong_target_effect_by_arm": {arm: sum(t["summary"].get("wrong_target_submits") or 0 for t in all_m if t["summary"].get("arm") == arm)
@@ -338,6 +398,30 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                          "trials": 0, "status": c["status"],
                          "reason": "infrastructure blocker: isolated launch refused under the hostless wrapper (no REAL trial)"
                          if c["status"] == "BLOCKED" else "not run"})
+    summary["blocked_and_not_run_cells"] = [{"cell": c, "condition": cond, "arms": arms, "status": st, "reason": why}
+                                            for c, cond, arms, st, why in STATIC_CELLS]
+    for c in summary["blocked_and_not_run_cells"]:
+        rows.append({"row_type": "cell", "lane": LANE, "issue": "kvnloo/cua#107", "task": "browser-fixture-form",
+                     "comparison": c["cell"], "condition": c["condition"], "arms": c["arms"], "trials": 0,
+                     "status": c["status"], "reason": c["reason"]})
+    coverage: dict[str, Any] = {}
+    for dc, spec in DC_COVERAGE.items():
+        entry: dict[str, Any] = {}
+        for arm in ("A", "B_proj"):
+            status, sel = spec[arm]
+            cell: dict[str, Any] = {"status": status}
+            if sel is not None:
+                ts = [t for t in measured if t["summary"].get("arm") == arm and all(
+                    (t["summary"].get(k) in v) if isinstance(v, tuple) else t["summary"].get(k) == v for k, v in sel.items())]
+                cell["trials"] = len(ts)
+                cell["outcomes"] = L.denominators([t["summary"].get("outcome") for t in ts])
+                if not ts:
+                    cell["status"] = "NOT_RUN (planned here, no trial in raw/)"
+            entry[arm] = cell
+        if spec.get("note"):
+            entry["note"] = spec["note"]
+        coverage[dc] = entry
+    summary["dependency_control_coverage"] = coverage
     return _r(summary), rows
 
 
@@ -345,7 +429,7 @@ def _cell_of(t: dict[str, Any]) -> tuple[str, str]:
     s = t["summary"]
     plan = s.get("plan")
     name = {"ab": "CMP-AB", "static": "CMP-AB", "distortion": "CMP-distortion", "default_off": "default-off"}.get(plan)
-    if plan in ("controls", "controls2"):
+    if plan in CONTROL_PLANS:
         name = f"controls {s.get('control')}"
     return name or str(plan), s.get("condition")
 

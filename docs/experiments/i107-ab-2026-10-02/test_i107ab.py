@@ -182,6 +182,35 @@ class FixtureTests(unittest.TestCase):
         self.assertIn("insertBefore", F.CONTROL_OPS["DC03"])
         self.assertIn("remove()", F.CONTROL_OPS["DC04"])
 
+    def test_control_ops_dc01_and_dc05a_self_check(self) -> None:
+        # DC01: page script sets the field's value property (no attribute), and proves it took.
+        self.assertIn(".value='changed-by-page'", F.CONTROL_OPS["DC01"])
+        self.assertNotIn("setAttribute", F.CONTROL_OPS["DC01"])
+        # DC05a: benign same-looking re-render of Submit (clone replaces the node, same form).
+        self.assertIn("cloneNode(true)", F.CONTROL_OPS["DC05a"])
+        self.assertIn("replaceWith", F.CONTROL_OPS["DC05a"])
+        self.assertIn("isConnected", F.CONTROL_OPS["DC05a"])
+        for op in ("DC01", "DC05a"):
+            self.assertIn("throw", F.CONTROL_OPS[op])
+            for word in ("submit'", "competitor", "dc_submitter"):
+                self.assertNotIn(word, F.CONTROL_OPS[op])
+
+    def test_control_script_acks_with_op_result(self) -> None:
+        js = F.control_script()
+        self.assertIn("ok=1", js)
+        self.assertIn("op.id+' '+ok", js)
+
+    def test_control_bus_records_op_result_from_ack(self) -> None:
+        bus = F.ControlBus()
+        ids = [bus.post("DC01") for _ in range(3)]
+        bus.ack(f"{ids[0]} 1")
+        bus.ack(f"{ids[1]} 0")
+        bus.ack(ids[2])
+        self.assertTrue(all(bus.wait_ack(i, timeout=0.1) for i in ids))
+        self.assertEqual([bus.ack_ok(i) for i in ids], [True, False, None])
+        acks = [e for e in bus.journal if e["event"] == "control_ack"]
+        self.assertEqual([e.get("ok") for e in acks], [True, False, None])
+
     def test_journal_records_submitter_and_wrong_target(self) -> None:
         st = F.JournalFormState()
         st.submit_form("tok", submitter="competitor")
@@ -359,6 +388,40 @@ class RunnerTests(unittest.TestCase):
         st = R.build_plan("static", 30, ["W-quiet", "W-churn"])
         self.assertEqual({t["condition"] for t in st}, {"W-static"})
         self.assertEqual(len(st), 60)
+
+    def test_controls3_plan_runs_dc01_and_dc05a_on_both_arms(self) -> None:
+        R = self.R
+        self.assertIn("controls3", R.PLANS)
+        plan = R.build_plan("controls3", 30, [])
+        self.assertEqual(len(plan), 20)
+        self.assertEqual(Counter((t["control"], t["arm"]) for t in plan),
+                         {("DC01", "A"): 5, ("DC01", "B_proj"): 5, ("DC05a", "A"): 5, ("DC05a", "B_proj"): 5})
+        self.assertEqual({t["condition"] for t in plan}, {"W-quiet"})
+        self.assertFalse(any(t["excluded"] for t in plan))
+        pairs: dict[str, list[str]] = {}
+        for t in plan:
+            pairs.setdefault(t["pair"], []).append(t["arm"])
+        self.assertEqual(len(pairs), 10)
+        self.assertTrue(all(sorted(v) == ["A", "B_proj"] for v in pairs.values()))
+        for ctl in ("DC01", "DC05a"):
+            self.assertEqual({t["order"] for t in plan if t["control"] == ctl}, {"AB", "BA"})
+        self.assertEqual(len({t["seed"] for t in plan}), 20)
+        self.assertTrue(set(R.CONTROL_OPS_USED) <= set(F.CONTROL_OPS))
+        self.assertEqual(set(R.CONTROL_OPS_USED), {"DC01", "DC03", "DC04", "DC05a"})
+
+    def test_submit_ref_changed_reports_identity_without_ref_values(self) -> None:
+        R = self.R
+        s1 = {"refs": [{"ref": "r2", "role": "button", "name": "Submit"}]}
+        s2 = {"refs": [{"ref": "r9", "role": "button", "name": "Submit"}]}
+        self.assertIsNone(R.submit_ref_changed(None, s1))
+        self.assertTrue(R.submit_ref_changed(s1, s2))
+        self.assertFalse(R.submit_ref_changed(s1, dict(s1)))
+        self.assertIsNone(R.submit_ref_changed(s1, {"refs": []}))
+
+    def test_harness_hashes_cover_runner_files(self) -> None:
+        h = self.R.harness_hashes()
+        self.assertEqual(set(h), {"run_critpath.py", "i107ab_fixtures.py", "i107ab_ledger.py", "run_block.sh"})
+        self.assertTrue(all(re.fullmatch(r"[0-9a-f]{64}", v) for v in h.values()))
 
     def test_snapshot_facts_never_carry_token_or_refs(self) -> None:
         snap = {**SemanticEquivalenceTests.SNAP, "outline": "x" * 10}
@@ -561,6 +624,35 @@ class AnalyzeTests(unittest.TestCase):
         self.assertFalse(acq["nodes_exact_all_pairs"])
         self.assertFalse(acq["equal"])
         self.assertTrue(acq["diff_examples"])
+
+    def test_controls3_trials_are_summarized_with_coverage_and_static_cells(self) -> None:
+        import analyze
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp)
+            (raw / "trials").mkdir()
+            for arm in ("A", "B_proj"):
+                name = f"controls3000-W-quiet-{arm}-DC01"
+                ev_, tr = synthetic_trial(name, arm, "DC01-p00", "W-quiet", 100)
+                ev_[-1].update({"plan": "controls3", "control": "DC01", "control_applied": True, "control_op_ok": True})
+                (raw / "trials" / f"{name}.jsonl").write_text("\n".join(json.dumps(x) for x in ev_) + "\n")
+                (raw / "trials" / f"{name}.driver-trace.jsonl").write_text("\n".join(json.dumps(x) for x in tr) + "\n")
+            summary, rows = analyze.build(raw)
+        c = summary["controls"]["DC01|A"]
+        self.assertEqual((c["n"], c["applied"], c["op_ok"]), (1, 1, 1))
+        self.assertEqual(c["outcomes"]["verified"], 1)
+        cov = summary["dependency_control_coverage"]
+        self.assertEqual(sorted(cov), sorted(analyze.DC_COVERAGE))
+        self.assertTrue({"DC01", "DC02", "DC05a", "DC11", "DC20"} <= set(cov))
+        self.assertEqual(cov["DC01"]["B_proj"]["status"], "RAN (this lane)")
+        self.assertEqual(cov["DC01"]["B_proj"]["trials"], 1)
+        statuses = {c["cell"]: c["status"] for c in summary["blocked_and_not_run_cells"]}
+        self.assertEqual(statuses["A-vs-B read cost"], "BLOCKED")
+        self.assertEqual(statuses["live provider"], "BLOCKED")
+        self.assertEqual(statuses["cohort K3"], "NOT_RUN")
+        cell_rows = [r for r in rows if r["row_type"] == "cell"]
+        self.assertEqual(len(cell_rows), len(summary["blocked_and_not_run_cells"]))
+        self.assertTrue(all(r["status"] in ("BLOCKED", "NOT_RUN") for r in cell_rows))
+        self.assertEqual([r["comparison"] for r in rows if r["row_type"] == "trial"], ["controls", "controls"])
 
     def test_blocked_build_without_trials(self) -> None:
         import analyze
