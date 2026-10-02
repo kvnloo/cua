@@ -323,7 +323,10 @@ mod tests {
         let second = counters.line("browser_click", 2.0);
         assert_eq!(second["events_delta"], 0);
         assert_eq!(second["events_total"], 2);
-        assert!(second["frames_by_session_delta"].as_object().unwrap().is_empty());
+        assert!(second["frames_by_session_delta"]
+            .as_object()
+            .unwrap()
+            .is_empty());
     }
 
     #[test]

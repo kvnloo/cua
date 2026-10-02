@@ -2659,7 +2659,12 @@ async fn foreground_trusted_browser_input_receipt_does_not_claim_background_deli
     let pointer = BrowserPointerTool::new(f.engine.clone())
         .invoke(pointer_args.clone())
         .await;
-    assert_eq!(structured(&pointer)["status"], "ok", "{}", structured(&pointer));
+    assert_eq!(
+        structured(&pointer)["status"],
+        "ok",
+        "{}",
+        structured(&pointer)
+    );
     let public = public_receipt("browser_pointer", &pointer_args, &pointer);
     assert_eq!(public["route"], "trusted_input", "{public}");
     assert_eq!(public["delivery"]["mode"], "foreground", "{public}");
@@ -2693,7 +2698,12 @@ async fn background_browser_receipts_keep_background_delivery() {
     let pointer = BrowserPointerTool::new(f.engine.clone())
         .invoke(pointer_args.clone())
         .await;
-    assert_eq!(structured(&pointer)["status"], "ok", "{}", structured(&pointer));
+    assert_eq!(
+        structured(&pointer)["status"],
+        "ok",
+        "{}",
+        structured(&pointer)
+    );
     let public = public_receipt("browser_pointer", &pointer_args, &pointer);
     assert_eq!(public["route"], "dom", "{public}");
     assert_eq!(public["delivery"]["mode"], "background", "{public}");
