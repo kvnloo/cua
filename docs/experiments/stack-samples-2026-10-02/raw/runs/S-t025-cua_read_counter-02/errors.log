@@ -1,0 +1,20 @@
+2026-10-02 06:24:53,249 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up ~/.hermes/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
+2026-10-02 06:24:55,329 WARNING cli: Background MCP discovery previously exited with no connected servers; retrying discovery thread
+2026-10-02 06:24:55,350 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 06:24:56,005 WARNING agent.context_pin: model.context_length pins qwen2.5:3b at 65,536 tokens but the provider advertises 131,072; the pin wins. Remove model.context_length from config.yaml to use the advertised window.
+2026-10-02 06:24:56,351 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 06:24:58,352 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 06:25:02,353 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 06:25:03,354 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 06:25:05,358 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 06:26:04,276 WARNING [20261002_062454_8aabc7] agent.tool_executor: Tool tool_call returned error (0.01s): {"error": "tool_call requires 'calls' (an array of {name, arguments})"}
+2026-10-02 06:26:10,972 WARNING [20261002_062454_8aabc7] agent.tool_executor: Tool tool_call returned error (0.00s): {"error": "tool_call requires 'calls' (an array of {name, arguments})"}
+
+[Tool loop warning: repeated_exact_failure_warning; count=2; tool_call has failed 2 times with identical arguments. This looks 
+2026-10-02 06:26:18,447 WARNING [20261002_062454_8aabc7] agent.tool_executor: Tool tool_call returned error (0.00s): {"error": "tool_call requires 'calls' (an array of {name, arguments})"}
+
+[Tool loop warning: repeated_exact_failure_warning; count=3; tool_call has failed 3 times with identical arguments. This looks 
+2026-10-02 06:26:39,792 WARNING [20261002_062454_8aabc7] agent.tool_executor: Tool tool_call returned error (0.00s): {"error": "tool_call requires 'calls' (an array of {name, arguments})"}
+
+[Tool loop warning: repeated_exact_failure_warning; count=4; tool_call has failed 4 times with identical arguments. This looks 
+2026-10-02 06:26:39,804 WARNING [20261002_062454_8aabc7] agent.chat_completion_helpers: ⚠️  Reached maximum iterations (4). Requesting summary...

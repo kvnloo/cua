@@ -46,6 +46,18 @@ def main() -> None:
             d["pass" if r.get("verified_success") is True else "fail" if r.get("verified_success") is False else "unknown"] += 1
         out["workload"]["exit_codes"][str(r["exit_code"])] = out["workload"]["exit_codes"].get(str(r["exit_code"]), 0) + 1
     events = jl(packet / "dataset" / "events.jsonl")
+    # SAMPLESFIX: exit reasons from the observer, timing label, CUA tool-bridge tally (errata E2, E4, E5)
+    reason = {(e.get("identity") or {}).get("session_id"): (e.get("fields") or {}).get("turn_exit_reason")
+              for e in events if e.get("event") == "on_session_end"}
+    exits: dict[str, int] = {}
+    for r in ran:
+        k = f"{r['exit_code']}|{reason.get(r['session_id'])}"
+        exits[k] = exits.get(k, 0) + 1
+    out["workload"]["exit_code_by_turn_exit_reason"] = dict(sorted(exits.items()))
+    out["workload"]["wall_s_median_note"] = "descriptive workload figure from unlocked collection; not a quiet-timed latency"
+    tally = packet / "raw" / "analysis" / "cua-bridge-tally.json"
+    if tally.exists():
+        out["cua_bridge"] = json.loads(tally.read_text())["totals"]
     posts = [e for e in events if e.get("event") == "post_api_request"]
     trunc = sum(1 for e in posts if int((e.get("usage") or {}).get("prompt_tokens") or 0) >= 4096)
     out["workload"]["api_attempts_post"] = len(posts)

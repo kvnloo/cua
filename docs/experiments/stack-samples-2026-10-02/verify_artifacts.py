@@ -15,6 +15,16 @@ Recomputes from committed data instead of trusting summaries:
   8  analysis re-run (seeded) reproduces raw/analysis/*.json
   9  quiet-lane ledger has an rc=0 entry for every latency-bearing scoring label, all after collection ended
  10  per-run isolation receipts ok; no local path markers or secret-looking strings in the packet
+ SAMPLESFIX (errata E2-E6):
+ 11  CUA attribution re-derived from the committed private-home agent.log/errors.log of every CUA run:
+     0 completed tool calls, every error at tool_call, 0 computer_use dispatches, 0 approval lines,
+     agent.log tool lines == observer pre/post_tool_call per run, GUI state unchanged, -t computer_use;
+     the tally file reproduces; the README's BLOCKED section no longer lists CUA input tasks
+ 12  every GENERATED table in README.md is byte-identical to harness/make_tables.py output, and
+     summary.json is byte-identical to a fresh harness/make_summary.py run
+ 13  MANIFEST counts recomputed from dataset/, MANIFEST identities == provenance identities, README and
+     summary cite the MANIFEST content hash
+ 14  the lab unit-test log is committed and shows 25 passed / 2 skipped and 13 passed
 """
 from __future__ import annotations
 
@@ -187,6 +197,57 @@ def main() -> None:
         if abs_path.search(text) or secret.search(text) or any(m in text for m in markers):
             hits.append(str(p.relative_to(HERE)))
     check(not hits, f"10 no absolute local paths / private markers ({len(markers)}) / secret-looking strings ({hits[:5]})")
+
+    # 11 CUA attribution (erratum E2)
+    cbt = load("cua_bridge_tally_v", HERE / "harness" / "cua_bridge_tally.py")
+    tally = cbt.tally(HERE)
+    check(tally == json.loads((HERE / "raw" / "analysis" / "cua-bridge-tally.json").read_text()),
+          "11 cua-bridge-tally.json reproduces from committed logs, events, runs and tasks")
+    cua_runs = [r for r in iso if r["kind"] == "cua"]
+    tr, tt = tally["runs"], tally["totals"]
+    check(len(tr) == len(cua_runs) == 12 and all((HERE / "raw" / "runs" / r["run_id"] / "agent.log").exists() for r in cua_runs),
+          f"11 private-home agent.log committed for every CUA run ({len(tr)})")
+    check(tt["tool_calls_completed"] == 0 and tt["tool_calls_failed"] == 0 and tt["tool_names_called"] == ["tool_call"]
+          and tt["computer_use_dispatches"] == 0 and tt["runs_with_driver_or_computer_use_logger"] == 0,
+          f"11 CUA: 0 completed tool calls, all {tt['tool_errors']} errors at tool_call {tt['tool_error_classes']}, 0 computer_use dispatches")
+    check(tt["approval_lines"] == 0, "11 CUA: 0 approval / fail-close lines in agent.log, errors.log and replies")
+    check(all(x["tool_errors"] == x["observer_pre_tool_call"] == x["observer_post_tool_call"] == x["tool_error_lines_errors_log"]
+              and x["api_calls_agent_log"] == x["api_attempts_observer"] for x in tr),
+          "11 CUA: agent.log tool lines == errors.log == observer pre/post_tool_call, and API calls == observer attempts, per run")
+    check(tt["runs_gui_state_unchanged"] == tt["runs_argv_toolset_computer_use"] == len(tr),
+          "11 CUA: GUI state unchanged and argv '-t computer_use' in every run")
+    readme = (HERE / "README.md").read_text(encoding="utf-8")
+    blocked = readme.split("- **BLOCKED:**", 1)[1].split("\n## ", 1)[0] if "- **BLOCKED:**" in readme else ""
+    check(bool(blocked) and "CUA" not in blocked, "11 README BLOCKED section does not list CUA input tasks (approval attribution withdrawn)")
+
+    # 12 generated tables and summary
+    mt = load("make_tables_v", HERE / "harness" / "make_tables.py")
+    bad_blocks = mt.check(HERE)
+    n_blocks = len(re.findall(r"<!-- BEGIN GENERATED ", readme))
+    check(not bad_blocks and n_blocks == len(mt.blocks(HERE)), f"12 README tables byte-identical to make_tables.py ({n_blocks} blocks; mismatched {bad_blocks})")
+    with tempfile.TemporaryDirectory() as tmp:
+        import shutil
+        cp = Path(tmp) / "p"
+        shutil.copytree(HERE, cp, ignore=shutil.ignore_patterns("__pycache__", "summary.json"))
+        subprocess.run([sys.executable, str(cp / "harness" / "make_summary.py"), str(cp)], check=True, capture_output=True)
+        check((cp / "summary.json").read_bytes() == (HERE / "summary.json").read_bytes(), "12 summary.json byte-identical to a fresh make_summary.py run")
+
+    # 13 manifest
+    events_lines = sum(1 for l in (ds / "events.jsonl").read_text(encoding="utf-8").splitlines() if l.strip())
+    want_counts = {"tasks": len(runs), "run": n_run, "not_run": len(runs) - n_run, "observer_rows": events_lines}
+    check(manifest["counts"] == want_counts, f"13 MANIFEST counts recomputed {want_counts}")
+    check(sorted(manifest["files"]) == sorted(p.name for p in ds.iterdir() if p.name != "MANIFEST.json"),
+          "13 MANIFEST lists every dataset file")
+    prov = json.loads((HERE / "provenance.json").read_text())
+    check(manifest["identities"] == prov["identities"], "13 MANIFEST identities == provenance identities")
+    check(summary["dataset_content_sha256"] == manifest["content_sha256"] and manifest["content_sha256"][:8] in readme,
+          f"13 summary and README cite MANIFEST content hash {manifest['content_sha256'][:12]}")
+
+    # 14 unit log
+    ulog = HERE / "raw" / "unit" / "unit-lab-5d01f608.log"
+    utext = ulog.read_text() if ulog.exists() else ""
+    check(head in utext and "25 passed, 2 skipped" in utext and "13 passed" in utext,
+          "14 unit log committed: hermes head, 25 passed / 2 skipped, 13 passed with z0int")
 
     print("RESULT", "PASS" if not FAIL else "FAIL")
     sys.exit(1 if FAIL else 0)

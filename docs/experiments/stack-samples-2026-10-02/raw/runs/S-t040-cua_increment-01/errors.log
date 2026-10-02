@@ -1,0 +1,16 @@
+2026-10-02 06:51:27,458 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up ~/.hermes/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
+2026-10-02 06:51:29,325 WARNING cli: Background MCP discovery previously exited with no connected servers; retrying discovery thread
+2026-10-02 06:51:29,327 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 06:51:29,915 WARNING agent.context_pin: model.context_length pins qwen2.5:3b at 65,536 tokens but the provider advertises 131,072; the pin wins. Remove model.context_length from config.yaml to use the advertised window.
+2026-10-02 06:51:30,328 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 06:51:32,328 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 06:51:36,330 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 06:51:37,330 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 06:51:39,331 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 06:52:43,980 WARNING [20261002_065128_2f9714] agent.tool_executor: Tool tool_call returned error (0.06s): {"error": "tool_call requires 'calls' (an array of {name, arguments})"}
+2026-10-02 06:53:04,326 WARNING [20261002_065128_2f9714] agent.tool_executor: Tool tool_call returned error (0.00s): {"error": "'increment_button' is not a known tool name. Deferred tools must be invoked through tool_call by the exact name tool_search returns (e.g. mcp__<server>__<tool>). Use tool_search to find the
+2026-10-02 06:53:28,536 WARNING [20261002_065128_2f9714] agent.tool_executor: Tool tool_call returned error (0.00s): {"error": "'clickCountButton' is not a known tool name. Deferred tools must be invoked through tool_call by the exact name tool_search returns (e.g. mcp__<server>__<tool>). Use tool_search to find the
+2026-10-02 06:53:54,811 WARNING [20261002_065128_2f9714] agent.tool_executor: Tool tool_call returned error (0.00s): {"error": "tool_call cannot invoke 'tool_search' (it is itself a bridge tool)"}
+
+[Tool loop warning: same_tool_failure_warning; count=4; tool_call has failed 4 times this turn. This looks like a loop.
+2026-10-02 06:53:54,817 WARNING [20261002_065128_2f9714] agent.chat_completion_helpers: ⚠️  Reached maximum iterations (4). Requesting summary...

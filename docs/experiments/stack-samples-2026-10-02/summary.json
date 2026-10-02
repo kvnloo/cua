@@ -24,6 +24,30 @@
       "n_without_session_id": 0
     }
   },
+  "cua_bridge": {
+    "api_attempts_observer": 35,
+    "api_calls_agent_log": 35,
+    "approval_lines": 0,
+    "computer_use_dispatches": 0,
+    "observer_post_tool_call": 27,
+    "observer_pre_tool_call": 27,
+    "oracle_pass": 2,
+    "runs_argv_toolset_computer_use": 12,
+    "runs_gui_state_unchanged": 12,
+    "runs_with_driver_or_computer_use_logger": 0,
+    "tool_calls_completed": 0,
+    "tool_calls_failed": 0,
+    "tool_error_classes": {
+      "bridge_self_invoke": 1,
+      "missing_calls_array": 23,
+      "unknown_tool_name": 3
+    },
+    "tool_error_lines_errors_log": 27,
+    "tool_errors": 27,
+    "tool_names_called": [
+      "tool_call"
+    ]
+  },
   "dataset_content_sha256": "648e418ed1c4ad20c915ffbdabef8b56a7652a144c8ad1c872c9325161ef3c16",
   "lanes": {
     "api.attempt_will_fail": {
@@ -814,6 +838,11 @@
         "unknown": 0
       }
     },
+    "exit_code_by_turn_exit_reason": {
+      "0|text_response(finish_reason=stop)": 97,
+      "1|max_iterations_reached(4/4)": 7,
+      "1|pending_tool_result": 1
+    },
     "exit_codes": {
       "0": 97,
       "1": 8
@@ -832,6 +861,7 @@
     "run": 105,
     "tasks": 112,
     "timeouts": 0,
-    "wall_s_median": 92.494
+    "wall_s_median": 92.494,
+    "wall_s_median_note": "descriptive workload figure from unlocked collection; not a quiet-timed latency"
   }
 }

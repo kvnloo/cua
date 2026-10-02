@@ -9,10 +9,45 @@
     "score_evaluate_analyze": "HOSTLESS=.. QUIET=.. HERMES_WT=.. Z0_WT=.. Z0_VENV=.. PACKET=.. COLLECT=.. RUNS=.. WORK=.. NANOJEV_CKPT=.. JULIA_PY=.. bash harness/run_scoring.sh",
     "scorer_env": "HF_HUB_OFFLINE=1 TMPDIR=$WORK/tmp Z0INT_HOME=$WORK/z0int-home Z0INT_NANOJEV_CHECKPOINT=<nanojev bundle> Z0INT_JULIA_PYTHON=<julia venv python> Z0INT_LAYA_DEVICE=cpu Z0INT_JULIA_DEVICE=cpu"
   },
+  "disclosures_samplesfix": [
+    "ollama_logprob_backend.py can return exactly p=0 or p=1 if only one of true/false is in the top-20 logprobs; not triggered here (turn p(true) 3.4e-5..9.1e-4, api 0.83..0.998, n_probability_exactly_0_or_1 = 0 for every row). Vendored copy left byte-identical.",
+    "harness/analyze.py, build_turn_examples.py, score_lane.py and run_scoring.sh are not in the PREREG commit (written 05:39-05:48Z, during the first runs and before any scoring).",
+    "raw/controls/failopen.log has 3 rc=0 lines (control re-appended on each re-freeze run)."
+  ],
   "errata": [
     {
       "id": "E1",
-      "what": "PREREG.json (726d6bf30) states the hermes commit as 5d01f608975ab1d32d6a07c6c19213d2d4c5d98f; the actual commit is 5d01f60897373e67f7a3af5a9150439760be93f9. The first 10 hex digits (5d01f60897) agree; the remainder was a hand-expansion error in the PREREG text. Every run's meta/worktree-head records 5d01f60897373e67f7a3af5a9150439760be93f9 with a clean worktree (105/105), checked by verify_artifacts.py. PREREG is left unmodified (no history rewrite); MANIFEST/provenance carry the correct hash."
+      "what": "PREREG.json (726d6bf30) states the hermes commit as 5d01f608975ab1d32d6a07c6c19213d2d4c5d98f; the actual commit is 5d01f60897373e67f7a3af5a9150439760be93f9. Only the first 10 hex digits (5d01f60897) are real; the other 30 were invented when the PREREG was written. Every run's meta/worktree-head records 5d01f60897373e67f7a3af5a9150439760be93f9 with a clean worktree (105/105, checked by verify_artifacts.py) and Hermes's agent.log says 'code changed to 5d01f6089737'. PREREG is left unmodified (no history rewrite); MANIFEST/provenance carry the correct hash. Wording corrected by SAMPLESFIX (was 'mis-expanded by hand')."
+    },
+    {
+      "by": "SAMPLESFIX",
+      "id": "E2",
+      "receipts": [
+        "raw/runs/<cua run>/agent.log",
+        "raw/runs/<cua run>/errors.log",
+        "raw/analysis/cua-bridge-tally.json"
+      ],
+      "what": "CUA attribution. The README blamed default -q approvals for the cua_increment/cua_agree failures, listed 'CUA input tasks under default -q approvals' as BLOCKED, and the lane result asked the owner for an approval bypass (approvals.single_query_mode). The committed private-home agent.logs of the 12 CUA runs show 0 completed tool calls and 27 tool_call errors refused by tools/tool_search_validation.py before dispatch (23 missing 'calls', 3 unknown tool names, 1 bridge self-invoke), 0 computer_use dispatches, 0 approval or fail-close lines, GUI state unchanged 12/12; observer pre/post_tool_call 27/27 agree run by run. The CUA failures are REAL tool-bridge failures; the approval expectation is SOURCE-only and was not exercised; the approval-bypass request is withdrawn. The verifier's '23 tool errors' is the largest class only. No label, verdict, score or metric changes."
+    },
+    {
+      "by": "SAMPLESFIX",
+      "id": "E3",
+      "what": "decider_2b turn-lane latency: the warm series has a 180,127 ms call at warm index 3; warm mean 1,755.8 ms; the first 4 calls hold 377.7 s of 380.2 s process scoring wall. The README table now has a warm max column and no longer calls the 197.5 s first call 'the true cold start'."
+    },
+    {
+      "by": "SAMPLESFIX",
+      "id": "E4",
+      "what": "'Median wall time 92 s per task' is relabelled as a descriptive workload figure from unlocked collection, not a quiet-timed latency measurement."
+    },
+    {
+      "by": "SAMPLESFIX",
+      "id": "E5",
+      "what": "Exit reasons: 7 of the 8 exit-1 runs are max_iterations_reached(4/4); t096-sum_numbers-10 ended with pending_tool_result (observer on_session_end)."
+    },
+    {
+      "by": "SAMPLESFIX",
+      "id": "E6",
+      "what": "The README's warm p50/p95 columns were the scorer wall-clock series (warm_wall_ms_*), not backend-reported latency_ms; the header now says so. No value changes."
     }
   ],
   "freeze_history": [
@@ -68,7 +103,27 @@
       "venv": "python 3.11.14, torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6, freeze sha256_16 05f5cce65b4265db"
     }
   },
-  "local_mirror": "raw receipts for all 105 runs + pilots are mirrored locally under the lanes artifacts dir stack/samples/ (not committed: private homes, stderr, env dumps)",
+  "local_mirror": "raw receipts for all 105 runs + pilots are mirrored locally under the lanes artifacts dir stack/samples/ (not committed: private homes, stderr, env dumps). SAMPLESFIX committed the sanitized agent.log and errors.log of the 12 CUA runs.",
+  "samplesfix": {
+    "branch": "kvnloo/cua exp/stack-samplesfix-20261002 (from exp/stack-samples-20261002 @ 4c1a4a95e)",
+    "commands": {
+      "cua_logs": "$HOSTLESS python3 harness/copy_cua_logs.py . $LANES/artifacts/stack/samples/runs <local sanitize.json>",
+      "cua_tally": "$HOSTLESS python3 harness/cua_bridge_tally.py . raw/analysis/cua-bridge-tally.json",
+      "summary": "$HOSTLESS python3 harness/make_summary.py .",
+      "tables": "$HOSTLESS python3 harness/make_tables.py . --write   (verify: --check)",
+      "unit": "$HOSTLESS env -i PATH=$VENV/bin:/usr/bin:/bin HOME=<private> HERMES_HOME=<private>/.hermes HTTP(S)_PROXY=http://127.0.0.1:9 $VENV/bin/python -m pytest -q -p no:cacheprovider -rs tests/lab/  (then the 3 shadow files with PYTHONPATH=$Z0_WT:$Z0_WT/src)"
+    },
+    "new_data_collected": false,
+    "prereg_commit": "c26ac5402bb0bab10cb36513dda1d151596b2235 (docs/experiments/stack2-samplesfix-2026-10-02/PREREG.json)",
+    "unit_identity": {
+      "hermes_commit": "5d01f60897373e67f7a3af5a9150439760be93f9 (fresh detached worktree, clean before and after)",
+      "log": "raw/unit/unit-lab-5d01f608.log",
+      "pytest": "9.1.1",
+      "python": "3.14.7",
+      "result": "25 passed, 2 skipped; 13 passed with z0int on PYTHONPATH",
+      "z0intelligence": "6764ae784f66b902bd6c07e4f7f76848a409423a"
+    }
+  },
   "schema": "stack.samples.provenance.v1",
   "timeline_utc": {
     "collection_deadline": "2026-10-02T08:35:00Z",
