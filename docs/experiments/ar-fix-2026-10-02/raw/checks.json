@@ -1,0 +1,122 @@
+{
+ "G2": {
+  "pass": true,
+  "reasons": []
+ },
+ "G3": true,
+ "G4": true,
+ "G5_false_keep_check": {
+  "alpha_i": 0.0012511306609107014,
+  "delta": 0.0023102148184232893,
+  "n_pairs": 48,
+  "p_value": 0.8162591870406479,
+  "pass": false,
+  "reasons": [
+   "not_significant:p=0.8163>alpha_i=0.001251",
+   "effect_below_tau:0.0023>-0.0198"
+  ]
+ },
+ "T_act": {
+  "ci95_ln": [
+   -0.002576349535887467,
+   0.007062015691523131
+  ],
+  "delta_aa_ln": 0.0023102148184232893,
+  "n_pairs_required": 8,
+  "pairs": 48,
+  "sigma_ln": 0.01734050935679649,
+  "tau": 0.02
+ },
+ "failures": [],
+ "guardrail_check": {
+  "limit_ln": 0.030626193541760837,
+  "pass": true,
+  "whole_task_delta_aa_ln": -0.014632499770704915
+ },
+ "live_F1": {
+  "every_session_has_binds": true,
+  "paired_sessions": [
+   0,
+   1
+  ],
+  "soak_dbus_differs": true,
+  "soak_rows_candidate_only": true,
+  "soak_sessions": [
+   2
+  ]
+ },
+ "loadavg_start": [
+  7.53,
+  8.82,
+  10.25,
+  10.79,
+  10.8,
+  11.45,
+  11.67,
+  11.77,
+  11.95,
+  12.0,
+  12.11,
+  12.26
+ ],
+ "median_ms": {
+  "T_act_base": 312.836121,
+  "T_act_rebuild": 313.58060750000004,
+  "T_base": 693.0507525,
+  "T_rebuild": 679.480726
+ },
+ "old_evaluator_G2": {
+  "evaluator": "2615af74f (git archive), same rows",
+  "pass": false,
+  "reasons": [
+   "new_file:gtk:/tmp/dbus-Aug#ZxvLaz"
+  ]
+ },
+ "per_session": {
+  "0": {
+   "ci95_ln": [
+    -0.05966263622457282,
+    0.007415057034779994
+   ],
+   "delta_ln": -0.028077058504038313,
+   "median_T_ms_base": 710.8447585,
+   "pairs": 24,
+   "sigma_ln": 0.08554170667007996
+  },
+  "1": {
+   "ci95_ln": [
+    -0.04284572788734437,
+    0.04058746346369896
+   ],
+   "delta_ln": -0.001187941037371515,
+   "median_T_ms_base": 643.533993,
+   "pairs": 24,
+   "sigma_ln": 0.10618625676779121
+  }
+ },
+ "primary_T_act_ci_includes_zero": true,
+ "soak_trials": 24,
+ "soak_verified": 24,
+ "task_trials_attempted": 96,
+ "task_trials_verified": 96,
+ "trace": {
+  "delta_off_ln": -0.034661142164556874,
+  "delta_on_ln": -0.009361804403901766,
+  "median_T_ms_off": 689.7596045,
+  "median_T_ms_on": 682.6632305,
+  "pairs_off": 10,
+  "pairs_on": 38,
+  "trace_cost_ln": -0.010341473579459779
+ },
+ "whole_task": {
+  "ci95_ln": [
+   -0.04038723594054473,
+   0.012971711455341721
+  ],
+  "ci_includes_zero": true,
+  "delta_aa_ln": -0.014632499770704915,
+  "pairs": 48,
+  "sigma_ln": 0.09634966284260105,
+  "tau": 0.04184092003108808
+ }
+}
