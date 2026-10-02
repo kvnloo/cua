@@ -1,0 +1,99 @@
+{
+ "arm": "off",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 6.33,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {},
+  "peak_prompt_tokens": null,
+  "rows": 0,
+  "session_ids": [],
+  "trace_ids": [],
+  "turn_exit_reason": null,
+  "turn_ids": []
+ },
+ "oracle": {
+  "detail": {
+   "agreed": true,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 2
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "pass"
+ },
+ "pair": 91,
+ "prompt_sha256": "efb1af5af77c9b39d9b6ae0f2ca458f6c99d903c145862ca428260db85f755ef",
+ "run_id": "pilot-08-gtk3-off",
+ "set": "pilot",
+ "shadow": {
+  "backend_load": null,
+  "full_rows": 0,
+  "receipt_capabilities": {},
+  "receipt_statuses": {},
+  "receipt_trace_ids": [],
+  "receipt_turn_ids": [],
+  "receipts": 0,
+  "sidecar_summary": null
+ },
+ "state_db": {
+  "final_text_head": "Verification of the 'I agree' checkbox state was not possible through re-capture due to the unverifiable input effect. Please manually re-check the window to co",
+  "final_text_sha256": "cc561789252e762804fe72878bf2ed8ca87d577b6f94beeaf6f5cb1c4d52e4f3",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 4,
+    "end_reason": "cli_close",
+    "id": "20261002_053844_5a7802",
+    "input_tokens": 1872,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 136,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 3
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "2cb5f094e9a39260",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "78c8012685b9829b",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "b7ac233a8f933ba9243f37e9bf1712415147ca1fcb5ec30289ab423fa97a5b92"
+ },
+ "task": "gtk3"
+}

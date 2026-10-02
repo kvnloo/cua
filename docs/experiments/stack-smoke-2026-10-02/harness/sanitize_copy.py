@@ -1,7 +1,7 @@
 """Copy the committable subset of each run dir into the packet's raw/, replacing local path prefixes.
 
 usage: sanitize_copy.py <mapping.json> <src runs dir> <dst raw/runs dir> <run_id> [...]
-mapping.json (local, never committed): {"replace": [["<local prefix>", "<placeholder>"], ...], "forbid": ["..."]}
+mapping.json (local, never committed): {"replace": [["<local prefix>", "<placeholder>"], ...], "forbid": ["<regex>", ...]}
 Copied per run: run.json, oracle.json, run_summary.json, join/*, meta/{timeline.log,exit_code,mask.inside,
 env.inside,session.env,stdout,stderr,live-home-stat.*,hermes.start,hermes.end}, fixture/state.*.json,
 observer events.jsonl, shadow/{decisions.full.jsonl,sidecar_summary.json,backend_load.json,sidecar.log},
@@ -9,7 +9,7 @@ shadow/z0int-home/receipts/*.jsonl. NOT copied: state.db (holds full tool result
 Fails if any forbidden string survives.
 """
 import json
-import shutil
+import re
 import sys
 from pathlib import Path
 
@@ -40,7 +40,7 @@ def main() -> None:
             d = dst / rid / ("observer/events.jsonl" if rel.endswith("events.jsonl") else rel)
             d.parent.mkdir(parents=True, exist_ok=True)
             d.write_text(text, encoding="utf-8")
-            bad += [f"{rid}/{rel}: {f}" for f in mp["forbid"] if f in text]
+            bad += [f"{rid}/{rel}: {m.group(0)}" for f in mp["forbid"] for m in re.finditer(f, text)][:3]
     if bad:
         print("FORBIDDEN STRINGS SURVIVED:\n" + "\n".join(bad[:50]))
         sys.exit(1)

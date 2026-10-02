@@ -1,0 +1,134 @@
+{
+ "backends": {
+  "decider_2b": {
+   "evidence": "BLOCKED",
+   "note": "GPU gate - 7340 MiB in use by the shared resident 6.5 GB chat model at 07:24:57Z and again at 07:42Z; decider would exceed the 12 GB budget"
+  },
+  "jev_reference": {
+   "evidence": "NOT_RUN",
+   "note": "paid TypeSafe"
+  },
+  "julia_1": {
+   "backend": "julia_1",
+   "cold_first_call_backend_latency_ms": 11480.171877978137,
+   "cold_first_call_wall_ms": 17610.73114798637,
+   "cold_ms": 17793.237447738647,
+   "errors": 0,
+   "evidence": "BENCHMARK",
+   "gpu_mem_after": "7340 MiB, 12288 MiB",
+   "gpu_mem_before": "7340 MiB, 12288 MiB",
+   "loadavg_after": [
+    13.232421875,
+    13.61083984375,
+    14.66357421875
+   ],
+   "loadavg_before": [
+    14.0126953125,
+    13.759765625,
+    14.73388671875
+   ],
+   "model": "julia_1",
+   "n_requests": 60,
+   "note": "CPU-worker",
+   "quiet_lane": [
+    {
+     "acquired": "2026-10-02T07:20:44.121Z",
+     "cmd_sha256": "a60a67b23ed06a2f",
+     "label": "stack-smoke-h5-julia_1",
+     "pid": 3389356,
+     "rc": 0,
+     "released": "2026-10-02T07:21:06.357Z"
+    }
+   ],
+   "revision": "a85b127321d580d65176c89ced8273f305745d85",
+   "warm_latency_ms_max": 147.2696560085751,
+   "warm_latency_ms_p50": 77.07939398824237,
+   "warm_latency_ms_p90": 91.40902118524536,
+   "warm_n": 59,
+   "warm_wall_ms_p50": 77.19329299288802
+  },
+  "laya_421m": {
+   "backend": "laya",
+   "cold_first_call_backend_latency_ms": 964.48540900019,
+   "cold_first_call_wall_ms": 17763.42163901427,
+   "cold_ms": 17899.10578727722,
+   "errors": 0,
+   "evidence": "BENCHMARK",
+   "gpu_mem_after": "7340 MiB, 12288 MiB",
+   "gpu_mem_before": "7340 MiB, 12288 MiB",
+   "loadavg_after": [
+    18.02783203125,
+    15.08447265625,
+    15.87353515625
+   ],
+   "loadavg_before": [
+    12.99365234375,
+    13.8125,
+    15.53662109375
+   ],
+   "model": "laya_421m",
+   "n_requests": 60,
+   "note": "CPU",
+   "quiet_lane": [
+    {
+     "acquired": "2026-10-02T07:10:36.741Z",
+     "cmd_sha256": "e841b35644e57b8a",
+     "label": "stack-smoke-h5-laya_421m",
+     "pid": 2834323,
+     "rc": 0,
+     "released": "2026-10-02T07:11:31.420Z"
+    }
+   ],
+   "revision": "7c76b622dfc5cac71b2dc1c29873efe2ce509a05",
+   "warm_latency_ms_max": 870.3687220113352,
+   "warm_latency_ms_p50": 554.9800480075646,
+   "warm_latency_ms_p90": 660.4063316131942,
+   "warm_n": 59,
+   "warm_wall_ms_p50": 555.0634840037674
+  },
+  "nanojev": {
+   "backend": "nanojev",
+   "cold_first_call_backend_latency_ms": 1207.0519410190172,
+   "cold_first_call_wall_ms": 23203.921469015768,
+   "cold_ms": 23311.113357543945,
+   "errors": 0,
+   "evidence": "BENCHMARK",
+   "gpu_mem_after": "10799 MiB, 12288 MiB",
+   "gpu_mem_before": "7340 MiB, 12288 MiB",
+   "loadavg_after": [
+    13.14794921875,
+    13.5166015625,
+    14.41650390625
+   ],
+   "loadavg_before": [
+    12.64453125,
+    13.47265625,
+    14.427734375
+   ],
+   "model": "nanojev_06b",
+   "n_requests": 60,
+   "note": "GPU-chat-model-resident",
+   "quiet_lane": [
+    {
+     "acquired": "2026-10-02T07:24:30.396Z",
+     "cmd_sha256": "28a5ab70c1c127b7",
+     "label": "stack-smoke-h5-nanojev",
+     "pid": 3919826,
+     "rc": 0,
+     "released": "2026-10-02T07:24:57.852Z"
+    }
+   ],
+   "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+   "warm_latency_ms_max": 68.77049501053989,
+   "warm_latency_ms_p50": 28.57643397874199,
+   "warm_latency_ms_p90": 29.496930190362036,
+   "warm_n": 59,
+   "warm_wall_ms_p50": 28.62464200006798
+  },
+  "qwen_ollama_logprob": {
+   "evidence": "NOT_RUN",
+   "note": "owned by the z0int lane (orchestrator decision 3)"
+  }
+ },
+ "schema": "stack_smoke.bench_summary.v1"
+}

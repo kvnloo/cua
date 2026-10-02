@@ -1,0 +1,156 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 25.28,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 7,
+   "post_tool_call": 6,
+   "pre_api_request": 7,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 6
+  },
+  "peak_prompt_tokens": 18932,
+  "rows": 30,
+  "session_ids": [
+   "20261002_073901_2e9ca5"
+  ],
+  "trace_ids": [
+   "c64cf6b6b98e4a5c765f6e454c480f57bcbdb8db462b713fcbdd463f188d63bc"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_073901_2e9ca5:d40dfea2-32bd-478b-a74f-0e2f779c1f6d:f420f786"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 23,
+ "prompt_sha256": "93ac3311b32372660f2acf4c4fd492f139bdb02e0915b7dc64235fe9aa1e3971",
+ "run_id": "r021-browser-on-p23",
+ "set": "replication",
+ "shadow": {
+  "backend_load": {
+   "at": 1790926738.874369,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 17646.75800301484
+  },
+  "full_rows": 8,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 7,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 8
+  },
+  "receipt_trace_ids": [
+   "c64cf6b6b98e4a5c765f6e454c480f57bcbdb8db462b713fcbdd463f188d63bc"
+  ],
+  "receipt_turn_ids": [
+   "20261002_073901_2e9ca5:d40dfea2-32bd-478b-a74f-0e2f779c1f6d:f420f786"
+  ],
+  "receipts": 8,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 8,
+    "opportunities": 8,
+    "rows": 30
+   },
+   "load_ms": 17646.75800301484
+  }
+ },
+ "state_db": {
+  "final_text_head": "DONE",
+  "final_text_sha256": "283e91eb85d58ffc2ad922884b644c41b54140660f6d1fda3c403d543eedd839",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 7,
+    "end_reason": "cli_close",
+    "id": "20261002_073901_2e9ca5",
+    "input_tokens": 15495,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 285,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 6
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "65630b1826fc6ef9",
+   "6a9b8aa5945b5575",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "65630b1826fc6ef9",
+   "8b7c20f7a8600579"
+  ],
+  "tool_result_sha256": [
+   "9d71e6595140494c",
+   "b6d830d60260d1d5",
+   "b1e56685508a8563",
+   "964fa59a7efd71fc",
+   "3d4c6ca2d706485e",
+   "e8b8e2cb29247aa2"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":36}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk23-8a6f51\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"capture_after\":true,\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"coordinate\":[278,434],\"delivery_mode\":\"background\",\"element\":36,\"mode\":\"som\",\"window_id\":null}"
+   ]
+  ],
+  "tool_sequence_sha256": "e238f165c54e392b59873e65b20ce871d12800f72476e47ff8a26cbe67b35dea"
+ },
+ "task": "browser"
+}

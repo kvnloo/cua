@@ -1,0 +1,104 @@
+{
+ "arm": "off",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 12.64,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {},
+  "peak_prompt_tokens": null,
+  "rows": 0,
+  "session_ids": [],
+  "trace_ids": [],
+  "turn_exit_reason": null,
+  "turn_ids": []
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 22,
+ "prompt_sha256": "37b4bbcf5eb82cb190cc728d2979b7c486e14afc3fec5fdac23268856ad2aec6",
+ "run_id": "r020-browser-off-p22",
+ "set": "replication",
+ "shadow": {
+  "backend_load": null,
+  "full_rows": 0,
+  "receipt_capabilities": {},
+  "receipt_statuses": {},
+  "receipt_trace_ids": [],
+  "receipt_turn_ids": [],
+  "receipts": 0,
+  "sidecar_summary": null
+ },
+ "state_db": {
+  "final_text_head": "DONE",
+  "final_text_sha256": "283e91eb85d58ffc2ad922884b644c41b54140660f6d1fda3c403d543eedd839",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_073816_92a356",
+    "input_tokens": 5342,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 171,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "361145314b86f376",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614"
+  ],
+  "tool_result_sha256": [
+   "9a5ec1300dafffcc",
+   "263bc3470dffe6df",
+   "b1e56685508a8563",
+   "0533265e52a0c2d0"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk22-2e6676\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ]
+  ],
+  "tool_sequence_sha256": "97443dd1dd1cf41a61105cbf45c7b1bdf279b5cb478a28ef407329cf343de7f3"
+ },
+ "task": "browser"
+}

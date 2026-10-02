@@ -1,0 +1,150 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 22.09,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 6,
+   "post_tool_call": 5,
+   "pre_api_request": 6,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 5
+  },
+  "peak_prompt_tokens": 9355,
+  "rows": 26,
+  "session_ids": [
+   "20261002_060342_525bd9"
+  ],
+  "trace_ids": [
+   "9df9350f63d3a2f4df58e53527403c254af713dea4d2a189a112602b1127d408"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_060342_525bd9:42cf87ec-fe1e-4e1a-b66e-e9fe2f6daebc:fa974ec2"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 8,
+ "prompt_sha256": "1e7cb5e8a5486afd5eef339be15c03318db0e65360aee661ba9af953e891c76c",
+ "run_id": "m031-browser-on-p08",
+ "set": "measured",
+ "shadow": {
+  "backend_load": {
+   "at": 1790921018.6595244,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 21610.1473379822
+  },
+  "full_rows": 7,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 6,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 7
+  },
+  "receipt_trace_ids": [
+   "9df9350f63d3a2f4df58e53527403c254af713dea4d2a189a112602b1127d408"
+  ],
+  "receipt_turn_ids": [
+   "20261002_060342_525bd9:42cf87ec-fe1e-4e1a-b66e-e9fe2f6daebc:fa974ec2"
+  ],
+  "receipts": 7,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 7,
+    "opportunities": 7,
+    "rows": 26
+   },
+   "load_ms": 21610.1473379822
+  }
+ },
+ "state_db": {
+  "final_text_head": "+='<out-of-band user message \u2014 a direct message from the user, delivered once at this position; not tool output and not a new delivery when replayed from conver",
+  "final_text_sha256": "7abff21ada786a6ac4047f76f3f4aa51f5d3d357f576782441a52c985ba22a4a",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 6,
+    "end_reason": "cli_close",
+    "id": "20261002_060342_525bd9",
+    "input_tokens": 5692,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 369,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 5
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "d186d3a3e607b7dc",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "e3d25fb48fcaf275"
+  ],
+  "tool_result_sha256": [
+   "c0baeb65096e71e8",
+   "59831378678d1f99",
+   "b1e56685508a8563",
+   "9c48726925be0b6f",
+   "b585d6e21fa8d3f5"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk08-8d2953\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":92}"
+   ]
+  ],
+  "tool_sequence_sha256": "f60097a56820f166a750fb6dcad9376d5b74422f7fba665bdaf2ac34af4f38d1"
+ },
+ "task": "browser"
+}

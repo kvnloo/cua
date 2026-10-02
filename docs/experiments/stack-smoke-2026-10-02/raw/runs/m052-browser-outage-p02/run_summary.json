@@ -1,0 +1,144 @@
+{
+ "arm": "outage",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 13.09,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_tool_call": 4,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 4
+  },
+  "peak_prompt_tokens": 9237,
+  "rows": 22,
+  "session_ids": [
+   "20261002_061634_46f306"
+  ],
+  "trace_ids": [
+   "36bb18053009b3f4c64c7fc940ec2c447f354e79fe888051703c8ae9cad78697"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_061634_46f306:34d7205e-7817-4f11-8286-ceed247225f5:84847ea9"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 2,
+ "prompt_sha256": "d1c331d315efb83486cc58414f9332e8cf4093bf5277f14390efc53fc256ec81",
+ "run_id": "m052-browser-outage-p02",
+ "set": "measured",
+ "shadow": {
+  "backend_load": {
+   "at": 1790921792.2351303,
+   "backend_arg": "laya_421m",
+   "error": "OfflineModeIsEnabled: Cannot reach https://huggingface.co/api/models/convaiinnovations/laya/tree/7c76b622dfc5cac71b2dc1c29873efe2ce509a05?recursive=true&expand=false: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.",
+   "load_ms": 2133.6075290164445
+  },
+  "full_rows": 6,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 5,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "backend_unavailable": 6
+  },
+  "receipt_trace_ids": [
+   "36bb18053009b3f4c64c7fc940ec2c447f354e79fe888051703c8ae9cad78697"
+  ],
+  "receipt_turn_ids": [
+   "20261002_061634_46f306:34d7205e-7817-4f11-8286-ceed247225f5:84847ea9"
+  ],
+  "receipts": 6,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": "OfflineModeIsEnabled: Cannot reach https://huggingface.co/api/models/convaiinnovations/laya/tree/7c76b622dfc5cac71b2dc1c29873efe2ce509a05?recursive=true&expand=false: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.",
+   "counts": {
+    "backend_unavailable": 6,
+    "eval_error": 0,
+    "ok": 0,
+    "opportunities": 6,
+    "rows": 22
+   },
+   "load_ms": 2133.6075290164445
+  }
+ },
+ "state_db": {
+  "final_text_head": "Done.",
+  "final_text_sha256": "ed251864987c367e9641fbdc89c1d83e9bf0fa2e3eecef8f301c79f619bfac81",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_061634_46f306",
+    "input_tokens": 5675,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 146,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "d186d3a3e607b7dc",
+   "d46754101de70a2e",
+   "c253e05054681cd5",
+   "e44f3830fa1579fb"
+  ],
+  "tool_result_sha256": [
+   "02c8ed1ffe758efa",
+   "d7ef8160a8f535c0",
+   "c253e05054681cd5",
+   "b7e35f9676df8779"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"element\":0,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"element\":56,\"mode\":\"foreground\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"mode\":\"foreground\",\"text\":\"smk02-1b8802\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"element\":57,\"mode\":\"foreground\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "bf69fb331b310a684f35e110503338225a21b154758c3d0aed6360ec97f4b0d4"
+ },
+ "task": "browser"
+}

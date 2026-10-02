@@ -1,0 +1,144 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 14.11,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_tool_call": 4,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 4
+  },
+  "peak_prompt_tokens": 9089,
+  "rows": 22,
+  "session_ids": [
+   "20261002_061152_fd4158"
+  ],
+  "trace_ids": [
+   "4fbe014388ad81a20e1ebdff3eb6f543f246b8a6ca5d7d6fd4c86533f1f3d53c"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_061152_fd4158:c1ec3d85-17b2-448a-bad3-e3e57660cede:6206f279"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 11,
+ "prompt_sha256": "51bf960e63bee63c9a19443afa58d825726b03b0619884fc6bb5fcb8de7b7d74",
+ "run_id": "m043-browser-on-p11",
+ "set": "measured",
+ "shadow": {
+  "backend_load": {
+   "at": 1790921509.7285826,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 17500.804734998383
+  },
+  "full_rows": 6,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 5,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 6
+  },
+  "receipt_trace_ids": [
+   "4fbe014388ad81a20e1ebdff3eb6f543f246b8a6ca5d7d6fd4c86533f1f3d53c"
+  ],
+  "receipt_turn_ids": [
+   "20261002_061152_fd4158:c1ec3d85-17b2-448a-bad3-e3e57660cede:6206f279"
+  ],
+  "receipts": 6,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 6,
+    "opportunities": 6,
+    "rows": 22
+   },
+   "load_ms": 17500.804734998383
+  }
+ },
+ "state_db": {
+  "final_text_head": "DONE",
+  "final_text_sha256": "283e91eb85d58ffc2ad922884b644c41b54140660f6d1fda3c403d543eedd839",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_061152_fd4158",
+    "input_tokens": 5538,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 149,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "65630b1826fc6ef9",
+   "6a9b8aa5945b5575",
+   "b1e56685508a8563",
+   "4fee08467df99614"
+  ],
+  "tool_result_sha256": [
+   "fe2a0244e59fedd9",
+   "305f22a8dde758c5",
+   "b1e56685508a8563",
+   "1658cb4404482218"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"delivery_mode\":\"foreground\",\"element\":36}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"delivery_mode\":\"foreground\",\"text\":\"smk11-891afe\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ]
+  ],
+  "tool_sequence_sha256": "2ee0d602adcea8a3278ffa5557cf10e9ebb45a1c98d85e49e74c008a82de137b"
+ },
+ "task": "browser"
+}

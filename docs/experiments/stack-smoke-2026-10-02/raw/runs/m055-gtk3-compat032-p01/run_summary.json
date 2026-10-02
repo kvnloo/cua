@@ -1,0 +1,181 @@
+{
+ "arm": "on",
+ "driver_key": "main_0_32_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 20.62,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 11,
+   "post_tool_call": 10,
+   "pre_api_request": 11,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 10
+  },
+  "peak_prompt_tokens": 9060,
+  "rows": 46,
+  "session_ids": [
+   "20261002_061805_bc6fcc"
+  ],
+  "trace_ids": [
+   "9ba40c2c662f28f910f0ece104c4ede792218f9c8cea361ab1ee77b78ec45af6"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_061805_bc6fcc:69fab805-7aac-4efe-b4a1-e20c6f19029a:d02a7fd7"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": false,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 1
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "fail"
+ },
+ "pair": 1,
+ "prompt_sha256": "efb1af5af77c9b39d9b6ae0f2ca458f6c99d903c145862ca428260db85f755ef",
+ "run_id": "m055-gtk3-compat032-p01",
+ "set": "compat",
+ "shadow": {
+  "backend_load": {
+   "at": 1790921882.470871,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 14749.47141399025
+  },
+  "full_rows": 12,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 11,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 12
+  },
+  "receipt_trace_ids": [
+   "9ba40c2c662f28f910f0ece104c4ede792218f9c8cea361ab1ee77b78ec45af6"
+  ],
+  "receipt_turn_ids": [
+   "20261002_061805_bc6fcc:69fab805-7aac-4efe-b4a1-e20c6f19029a:d02a7fd7"
+  ],
+  "receipts": 12,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 12,
+    "opportunities": 12,
+    "rows": 46
+   },
+   "load_ms": 14749.47141399025
+  }
+ },
+ "state_db": {
+  "final_text_head": "The checkbox labeled 'I agree' is still not checked, even after several attempts to interact with it. Given this outcome, it appears the checkbox may not be int",
+  "final_text_sha256": "9eef13dc6e2aa14bcc5a0f8dddb6b8f4018ddeb64708e8986dc8bc069a150566",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 11,
+    "end_reason": "cli_close",
+    "id": "20261002_061805_bc6fcc",
+    "input_tokens": 5144,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 603,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 10
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "9ea9b2aef7b23a21",
+   "4773b62f78caef02",
+   "6f90c4998a6fa6b9",
+   "4773b62f78caef02",
+   "da29e1e8056c7c70",
+   "6f90c4998a6fa6b9",
+   "4773b62f78caef02",
+   "6f90c4998a6fa6b9",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "9ea9b2aef7b23a21",
+   "4773b62f78caef02",
+   "6f90c4998a6fa6b9",
+   "4773b62f78caef02",
+   "da29e1e8056c7c70",
+   "6f90c4998a6fa6b9",
+   "4773b62f78caef02",
+   "6f90c4998a6fa6b9",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"coordinate\":[736,473],\"delivery_mode\":\"foreground\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"coordinate\":[736,473],\"delivery_mode\":\"foreground\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"coordinate\":[736,473],\"delivery_mode\":\"foreground\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "bcc30154130aad1f68df33b7b2ccd508d97429294a1bb5a88d266f9f104e1f34"
+ },
+ "task": "gtk3"
+}

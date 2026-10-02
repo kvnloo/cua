@@ -1,0 +1,110 @@
+{
+ "arm": "off",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 19.58,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {},
+  "peak_prompt_tokens": null,
+  "rows": 0,
+  "session_ids": [],
+  "trace_ids": [],
+  "turn_exit_reason": null,
+  "turn_ids": []
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 23,
+ "prompt_sha256": "93ac3311b32372660f2acf4c4fd492f139bdb02e0915b7dc64235fe9aa1e3971",
+ "run_id": "r022-browser-off-p23",
+ "set": "replication",
+ "shadow": {
+  "backend_load": null,
+  "full_rows": 0,
+  "receipt_capabilities": {},
+  "receipt_statuses": {},
+  "receipt_trace_ids": [],
+  "receipt_turn_ids": [],
+  "receipts": 0,
+  "sidecar_summary": null
+ },
+ "state_db": {
+  "final_text_head": "The form submission process did not yield a visible change or confirmation despite the individual actions appearing to succeed. Given the response, the form may",
+  "final_text_sha256": "38f75ac7d1f8da382e5624952783a46b5e1fb642a2f42f85a07a05403556139c",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 7,
+    "end_reason": "cli_close",
+    "id": "20261002_073946_90a979",
+    "input_tokens": 10186,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 441,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 5
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "65630b1826fc6ef9",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "65630b1826fc6ef9"
+  ],
+  "tool_result_sha256": [
+   "c193d011f2e6b3bb",
+   "6eb4d173d06165ba",
+   "b1e56685508a8563",
+   "c36951a45675f21a",
+   "04b2aa9be0d3b9ca"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk23-8a6f51\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "828f1c1728613cd1087d7a03417fb6c0f1e7b4987bddc98dc8a51e882cb5c73a"
+ },
+ "task": "browser"
+}

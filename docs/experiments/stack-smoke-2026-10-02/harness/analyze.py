@@ -32,6 +32,16 @@ def sign_test(b: int, c: int) -> float:
     return min(1.0, 2 * p)
 
 
+def fisher_two_sided(a, b, c, d):
+    """Exact two-sided Fisher p for [[a,b],[c,d]]."""
+    n = a + b + c + d
+    r1, c1 = a + b, a + c
+    def p(x):
+        return math.comb(r1, x) * math.comb(n - r1, c1 - x) / math.comb(n, c1)
+    obs = p(a)
+    return min(1.0, sum(p(x) for x in range(max(0, c1 - (n - r1)), min(r1, c1) + 1) if p(x) <= obs + 1e-12))
+
+
 def jl(p: Path) -> list[dict]:
     return [json.loads(x) for x in p.read_text().splitlines() if x.strip()] if p.exists() else []
 
@@ -67,7 +77,7 @@ def main() -> None:
         c["pass_wilson95"] = wilson(c["pass"], c["n"])
     out["outcomes"] = dict(sorted(cells.items()))
 
-    shadow_runs = [r for r in plan if r["arm"] in ("on", "outage") and r["run_id"] in S]
+    shadow_runs = [r for r in plan if r["arm"] in ("on", "outage", "onnowait") and r["run_id"] in S]
     # ---- H1 join ----
     h1 = []
     for r in shadow_runs:

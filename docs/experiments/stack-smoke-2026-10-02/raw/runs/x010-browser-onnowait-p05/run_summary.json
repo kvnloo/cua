@@ -1,0 +1,156 @@
+{
+ "arm": "onnowait",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 19.0,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 7,
+   "post_tool_call": 6,
+   "pre_api_request": 7,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 6
+  },
+  "peak_prompt_tokens": 14264,
+  "rows": 30,
+  "session_ids": [
+   "20261002_064827_522589"
+  ],
+  "trace_ids": [
+   "046dc95b85cfe46b0ec62399a9d1121e3b1bc8c7ed699811868d4b7ded46519e"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_064827_522589:e790945c-6f38-46da-9d7f-e3ab8a02e87a:ab2223d6"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 5,
+ "prompt_sha256": "7922ce3e39a47ab733b5f3d628ccb13b26df821e30c1bcef0a65f4eead4b3824",
+ "run_id": "x010-browser-onnowait-p05",
+ "set": "exploratory",
+ "shadow": {
+  "backend_load": {
+   "at": 1790923722.639547,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 17726.839486014796
+  },
+  "full_rows": 8,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 7,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 8
+  },
+  "receipt_trace_ids": [
+   "046dc95b85cfe46b0ec62399a9d1121e3b1bc8c7ed699811868d4b7ded46519e"
+  ],
+  "receipt_turn_ids": [
+   "20261002_064827_522589:e790945c-6f38-46da-9d7f-e3ab8a02e87a:ab2223d6"
+  ],
+  "receipts": 8,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 8,
+    "opportunities": 8,
+    "rows": 30
+   },
+   "load_ms": 17726.839486014796
+  }
+ },
+ "state_db": {
+  "final_text_head": "+='<img src=\"<stable>/home/.hermes/cache/images/computer_use_9b155fec068346d6a88f11e9742c4666.png\" alt=\"Google Chrome Form\" />",
+  "final_text_sha256": "be5b2ae2e139c9dec3ed71af723767d951dcfdd726b2e521bf8dc436bf5c8f33",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 7,
+    "end_reason": "cli_close",
+    "id": "20261002_064827_522589",
+    "input_tokens": 10460,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 324,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 6
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "08e45581c1654b41",
+   "6a9b8aa5945b5575",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "97a173c1df9b535f",
+   "4fee08467df99614"
+  ],
+  "tool_result_sha256": [
+   "89cdc3475784c231",
+   "49db39bce98551ed",
+   "b1e56685508a8563",
+   "32e3c5c73463cc52",
+   "05805304cde5ad36",
+   "32e3c5c73463cc52"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":36}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk05-4e9b2b\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"ax\",\"mode\":\"som\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ]
+  ],
+  "tool_sequence_sha256": "97896d79477f701491ea4fd0eddd4dd3d14b4b9ae1e921c349b1343a3b4f44d5"
+ },
+ "task": "browser"
+}

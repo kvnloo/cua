@@ -1,0 +1,162 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 37.87,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 9,
+   "post_tool_call": 7,
+   "pre_api_request": 9,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 7
+  },
+  "peak_prompt_tokens": 23637,
+  "rows": 36,
+  "session_ids": [
+   "20261002_073604_e0124a"
+  ],
+  "trace_ids": [
+   "8dcee88c88a74c70a8601b44f28f7715d3b8139c02209784b4ce65321dfbc1b7"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_073604_e0124a:b7e3dffd-a0de-499e-add9-ca9403fae0cf:96d572f6"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 21,
+ "prompt_sha256": "f61feff794f354cbf2c8219973d2a95db0461ef695c39926a17c5ae4b7e77468",
+ "run_id": "r017-browser-on-p21",
+ "set": "replication",
+ "shadow": {
+  "backend_load": {
+   "at": 1790926561.5131183,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 15501.77732098382
+  },
+  "full_rows": 10,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 9,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 10
+  },
+  "receipt_trace_ids": [
+   "8dcee88c88a74c70a8601b44f28f7715d3b8139c02209784b4ce65321dfbc1b7"
+  ],
+  "receipt_turn_ids": [
+   "20261002_073604_e0124a:b7e3dffd-a0de-499e-add9-ca9403fae0cf:96d572f6"
+  ],
+  "receipts": 10,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 10,
+    "opportunities": 10,
+    "rows": 36
+   },
+   "load_ms": 15501.77732098382
+  }
+ },
+ "state_db": {
+  "final_text_head": "The form on the web page still appears to be in the 'waiting for input' state. It seems the submission was not completed. Please ensure the form has been correc",
+  "final_text_sha256": "dd775e86899097b2b4af7d9b32f5c1686b06e9fa0da5caaad3e99475d85743e0",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 9,
+    "end_reason": "cli_close",
+    "id": "20261002_073604_e0124a",
+    "input_tokens": 21543,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 468,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 7
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "9fe1e193df0381f4",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "9fe1e193df0381f4",
+   "9fe1e193df0381f4",
+   "9fe1e193df0381f4"
+  ],
+  "tool_result_sha256": [
+   "9feba7857ec300d9",
+   "0b2bb2653117b0e9",
+   "b1e56685508a8563",
+   "081e5708e7dcf7e9",
+   "5769c2b189641be5",
+   "a6b45a06f9a61563",
+   "633c732a3864805e"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk21-75ba92\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "91ca071a9091de42d4bea70016edd8d4c660f0f34b59c04231ebe92fb3d8a7ad"
+ },
+ "task": "browser"
+}

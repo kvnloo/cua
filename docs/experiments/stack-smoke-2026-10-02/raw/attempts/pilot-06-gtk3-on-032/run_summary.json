@@ -1,0 +1,145 @@
+{
+ "arm": "on",
+ "driver_key": "main_0_32_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 13.0,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_tool_call": 4,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 4
+  },
+  "peak_prompt_tokens": 5995,
+  "rows": 22,
+  "session_ids": [
+   "20261002_053630_1972b6"
+  ],
+  "trace_ids": [
+   "d5ebdedbb58971c2519be7fb33ca106a2cfd4c691a2186fcffcdda2a509985ba"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_053630_1972b6:ad43552c-0292-455a-aa62-a289cadfacae:5cd784e3"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": false,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 1
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "fail"
+ },
+ "pair": 90,
+ "prompt_sha256": "d88b7d18a496fe465234cc0aee64a0eeec88855c9d445a726fc52f1c814d2ae9",
+ "run_id": "pilot-06-gtk3-on-032",
+ "set": "pilot",
+ "shadow": {
+  "backend_load": {
+   "at": 1790919387.9511187,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 14424.11440500291
+  },
+  "full_rows": 6,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 5,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 6
+  },
+  "receipt_trace_ids": [
+   "d5ebdedbb58971c2519be7fb33ca106a2cfd4c691a2186fcffcdda2a509985ba"
+  ],
+  "receipt_turn_ids": [
+   "20261002_053630_1972b6:ad43552c-0292-455a-aa62-a289cadfacae:5cd784e3"
+  ],
+  "receipts": 6,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 6,
+    "opportunities": 6,
+    "rows": 22
+   },
+   "load_ms": 14424.11440500291
+  }
+ },
+ "state_db": {
+  "final_text_head": "DONE",
+  "final_text_sha256": "283e91eb85d58ffc2ad922884b644c41b54140660f6d1fda3c403d543eedd839",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_053630_1972b6",
+    "input_tokens": 3972,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 213,
+    "system_prompt_hash": "92e0dc355b15b8c5ee7e0654d8eef2dcc8ef3ff87c97ceff1e3d5fba979bfb04",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "9ea9b2aef7b23a21",
+   "d0355859015e98f9",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "9ea9b2aef7b23a21",
+   "d0355859015e98f9",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"capture_after\":true,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"amount\":1,\"app\":\"Main.py\",\"button\":\"left\",\"coordinate\":[758,493],\"element\":2,\"modifiers\":[],\"pid\":3456,\"window_id\":7890}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"amount\":1,\"app\":\"Main.py\",\"button\":\"left\",\"coordinate\":[758,493],\"delivery_mode\":\"foreground\",\"pid\":3456,\"window_id\":7890}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "d214692f2e555fe53e99d411cc2eab9ad407ebf569cd972da8f354d26b03f2a0"
+ },
+ "task": "gtk3"
+}

@@ -1,0 +1,181 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 1,
+ "hermes_wall_s": 83.35,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 12,
+   "post_tool_call": 10,
+   "pre_api_request": 12,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 10
+  },
+  "peak_prompt_tokens": 4834,
+  "rows": 48,
+  "session_ids": [
+   "20261002_053049_dd6741"
+  ],
+  "trace_ids": [
+   "71f377ba9eecd83601d70be63258a2d0d86e6634e3040e4f2da9398f09eecaef"
+  ],
+  "turn_exit_reason": "pending_tool_result",
+  "turn_ids": [
+   "20261002_053049_dd6741:53b03d0c-f6ff-4788-9975-862670a67a55:152921e6"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": false,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 1
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "fail"
+ },
+ "pair": 90,
+ "prompt_sha256": "d88b7d18a496fe465234cc0aee64a0eeec88855c9d445a726fc52f1c814d2ae9",
+ "run_id": "pilot-01-gtk3-on",
+ "set": "pilot",
+ "shadow": {
+  "backend_load": {
+   "at": 1790919043.7055166,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 18470.17929100548
+  },
+  "full_rows": 13,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 12,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 13
+  },
+  "receipt_trace_ids": [
+   "71f377ba9eecd83601d70be63258a2d0d86e6634e3040e4f2da9398f09eecaef"
+  ],
+  "receipt_turn_ids": [
+   "20261002_053049_dd6741:53b03d0c-f6ff-4788-9975-862670a67a55:152921e6"
+  ],
+  "receipts": 13,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 13,
+    "opportunities": 13,
+    "rows": 48
+   },
+   "load_ms": 18470.17929100548
+  }
+ },
+ "state_db": {
+  "final_text_head": "\u26a0\ufe0f No reply: the turn stopped while a tool result was still pending and the model produced no follow-up text. Send `continue` to let it summarize.",
+  "final_text_sha256": "3489f2ff993bfc2fc6b1b68db1136707422ace249d7eb84ae53749622a781799",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 12,
+    "end_reason": "cli_close",
+    "id": "20261002_053049_dd6741",
+    "input_tokens": 4535,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 617,
+    "system_prompt_hash": "0f9e32072e1eb2cfbe13f576d769d9313af0b0f47af9a74c785b93a7400f45aa",
+    "tool_call_count": 10
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "45d506c3f101aa3a",
+   "b1481da8f6a91319",
+   "de4e450fdc3f4dec",
+   "32a9f4c4167efad5",
+   "6aa2e0c7645d3e10",
+   "96eeb3a36b4bb161",
+   "75ecc94147d26cab",
+   "75c769e5de4f9e05",
+   "7124592c76d23d9c",
+   "f7afe67b95f13eae"
+  ],
+  "tool_result_sha256": [
+   "45d506c3f101aa3a",
+   "b1481da8f6a91319",
+   "de4e450fdc3f4dec",
+   "32a9f4c4167efad5",
+   "6aa2e0c7645d3e10",
+   "96eeb3a36b4bb161",
+   "75ecc94147d26cab",
+   "75c769e5de4f9e05",
+   "7124592c76d23d9c",
+   "f7afe67b95f13eae"
+  ],
+  "tool_sequence": [
+   [
+    "tool_call",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"mode\":\"ax\"},\"name\":\"capture\"},{\"arguments\":{\"app\":\"Main.py\",\"element_index\":1},\"name\":\"click\"},{\"arguments\":{\"app\":\"Main.py\",\"mode\":\"ax\"},\"name\":\"capture\"}]}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"mode\":\"ax\"},\"name\":\"capture\"}]}"
+   ],
+   [
+    "tool_call",
+    "{\"queries\":[\"cua-driver capture\"]}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"mode\":\"ax\"},\"name\":\"mcp__captain__capture\"}]}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"element_index\":1},\"name\":\"mcp__captain__click\"}]}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"mode\":\"ax\"},\"name\":\"mcp__captain__capture\"}]}"
+   ],
+   [
+    "tool_call",
+    "{\"actions\":[{\"capture\":{\"app\":\"Main.py\",\"mode\":\"ax\"},\"click\":{\"app\":\"Main.py\",\"element_index\":1,\"mode\":\"ax\"}}]}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"element_index\":1},\"name\":\"click\"}]}"
+   ],
+   [
+    "tool_call",
+    "{\"calls\":[{\"arguments\":{\"app\":\"Main.py\",\"element_index\":1},\"name\":\"mcp__captain__click\"}]}"
+   ]
+  ],
+  "tool_sequence_sha256": "98ef2b9ba01b0766ea5c6cd6aac13b97b66e7982b66df4d0a01e804780e39ea6"
+ },
+ "task": "gtk3"
+}

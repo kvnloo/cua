@@ -1,0 +1,37 @@
+{
+ "schema": "cua.stack.provenance.v1",
+ "experiment": "stack-smoke-2026-10-02",
+ "commits": {
+  "packet_branch": "kvnloo/cua exp/stack-smoke-20261002 (base upstream main 352507b6c03162ab286b21d5ed509125cc3daece)",
+  "prereg_commit": "80174a1cf01a66b56e7666a99b3e2a9fbffe4d27 (PREREG.json, plan.json, run harness; committed 2026-10-02T05:45Z, before the first measured run)",
+  "exploratory_prereg_commit": "0de16d800 (EXPLORATORY_PREREG.json + analysis harness; before the x-runs)",
+  "replication_prereg_commit": "c496a11ba (REPLICATION_PREREG.json; before the r-runs)",
+  "hermes": "exp/stack-smoke-20261002 = 0d60437a3329448bb9d2992e34cec81b0afd36df (exp/stack-integration-20261002: fork main 4d3555e5ca + #385 ce5c027bb + #386 521d43548 + #387 b82038890). No source change; worktree clean before and after.",
+  "z0intelligence": "origin/dev 6764ae784f66b902bd6c07e4f7f76848a409423a (detached, clean)"
+ },
+ "binaries": {
+  "cua_driver_pinned": {"version": "0.21.0", "source": "official release cua-driver-rs-v0.21.0 linux-x86_64 tarball", "tarball_sha256": "cf29bfaad16737e31e72f38dad2a6424f24b21a4ac2edea885e83cb9d5034135", "binary_sha256": "43d926a1b938012379db57cf351530f81e75a574017676815f85d1e13aff23f7", "matches": "Hermes pm/lock.json packages.cua-driver linux-x64"},
+  "cua_driver_main": {"version": "0.32.0", "binary_sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "source": "upstream main 229b65b28 (r2 setup build); compat set only"},
+  "ollama": {"version": "0.35.0", "release_tarball_sha256": "1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525", "binary_sha256": "0b0650a962dda61ec0598141ea11e3b688d225e926c9c00bc2c299d0ed34c4f8", "listen": "127.0.0.1:11500", "note": "user-local stack server started by another stack lane; SMOKE pulled the model and added one derived tag"},
+  "chrome": "Google Chrome 151.0.7922.71 (system install, sandbox on, fresh profile per run)",
+  "python": {"hermes_venv": "CPython 3.14.7 (mcp 2.0.0)", "z0int_venv": "CPython 3.11.14 (torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6)", "fixtures": "system CPython 3.14.7 + PyGObject"}
+ },
+ "model": {"pulled": "qwen2.5:7b-instruct", "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e", "size_bytes": 4683087332, "quant": "Q4_K_M", "tag_used": "qwen2.5:7b-instruct-smoke-t0", "tag_digest": "77a5de209c159812c77a247142269a75acfdef0c1cbfbcb264ce2c85bbe0ada4", "tag_parameters": {"temperature": 0, "seed": 42}, "served_context_length": 32768, "gpu": "RTX 3080 Ti 12 GB, shared with other lanes (size_vram 6564274502)"},
+ "shadow_backends": {
+  "laya_421m": "convaiinnovations/laya@7c76b622dfc5cac71b2dc1c29873efe2ce509a05, CPU",
+  "julia_1": "SupersonicLabs/Julia-1@a85b127321d580d65176c89ced8273f305745d85, CPU worker",
+  "nanojev": "C-Tianyu/NanoJev bundle 4a19595eada0857133c0d2be024f879a4077054b (backbone Qwen3-0.6B@c1899de2), CUDA",
+  "decider_2b": "Mapika/decider-2b@1d96be0093133e194fe18105a521b3e69be931d2, CUDA"
+ },
+ "fixtures": {
+  "gtk3_main_py_sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+  "jev_use_fixture_server_sha256": "0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf",
+  "identical_at": "upstream main 229b65b28 and 352507b6c"
+ },
+ "session_infra": {
+  "cua_x11_session_sh_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+  "hostless_v2_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+  "landlock_scope_sha256": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8",
+  "kernel": "Linux 7.2.2-1-cachyos, 10 cpus, other agent lanes active (loadavg 14-23 during runs)"
+ }
+}

@@ -1,0 +1,116 @@
+{
+ "arm": "offdelay",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 22.03,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {},
+  "peak_prompt_tokens": null,
+  "rows": 0,
+  "session_ids": [],
+  "trace_ids": [],
+  "turn_exit_reason": null,
+  "turn_ids": []
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 2,
+ "prompt_sha256": "d1c331d315efb83486cc58414f9332e8cf4093bf5277f14390efc53fc256ec81",
+ "run_id": "x004-browser-offdelay-p02",
+ "set": "exploratory",
+ "shadow": {
+  "backend_load": null,
+  "full_rows": 0,
+  "receipt_capabilities": {},
+  "receipt_statuses": {},
+  "receipt_trace_ids": [],
+  "receipt_turn_ids": [],
+  "receipts": 0,
+  "sidecar_summary": null
+ },
+ "state_db": {
+  "final_text_head": "![](https://github.com/NousResearch/hermes-agent-webui-resources/assets/104529689/af5e3369-703a-4e55-9f52-8b3df8177ba8)\n\nThe form in the Chrome window has been ",
+  "final_text_sha256": "a5beb03c2b486cd97d7bdc1be7909d73e9a5b10a42440b7ff545ee2fc0f19f6b",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 7,
+    "end_reason": "cli_close",
+    "id": "20261002_064402_c7f0b4",
+    "input_tokens": 14974,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 404,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 6
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "9722a24b615a8ca8",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "9722a24b615a8ca8",
+   "9722a24b615a8ca8"
+  ],
+  "tool_result_sha256": [
+   "53738e6e128f1d02",
+   "874e7763986a81b7",
+   "b1e56685508a8563",
+   "1606cd0589a6400a",
+   "21ea060f75931064",
+   "47aaa04d95c2f1d8"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk02-1b8802\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"capture_after\":true,\"element\":46,\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "4ac5fedae46fb9423bff3d69042286602ff39eb9f31ede79dd92b6ec3d5cdf2e"
+ },
+ "task": "browser"
+}

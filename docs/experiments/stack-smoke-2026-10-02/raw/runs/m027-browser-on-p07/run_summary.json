@@ -1,0 +1,162 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 24.03,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 8,
+   "post_tool_call": 7,
+   "pre_api_request": 8,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 7
+  },
+  "peak_prompt_tokens": 19015,
+  "rows": 34,
+  "session_ids": [
+   "20261002_060059_86bb40"
+  ],
+  "trace_ids": [
+   "939560f6adc6126cc47b92c2899091e5118ac06a1917dbea6cc3164249ea3866"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_060059_86bb40:b95c4caa-3464-4d6e-b04a-48c6d9d6a058:f1c66301"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 7,
+ "prompt_sha256": "926a6ac1a03c0e63dc002c2eb831b935bee35b46794b4f1d412be4583bed06fc",
+ "run_id": "m027-browser-on-p07",
+ "set": "measured",
+ "shadow": {
+  "backend_load": {
+   "at": 1790920857.198314,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 15996.79501299397
+  },
+  "full_rows": 9,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 8,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 9
+  },
+  "receipt_trace_ids": [
+   "939560f6adc6126cc47b92c2899091e5118ac06a1917dbea6cc3164249ea3866"
+  ],
+  "receipt_turn_ids": [
+   "20261002_060059_86bb40:b95c4caa-3464-4d6e-b04a-48c6d9d6a058:f1c66301"
+  ],
+  "receipts": 9,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 9,
+    "opportunities": 9,
+    "rows": 34
+   },
+   "load_ms": 15996.79501299397
+  }
+ },
+ "state_db": {
+  "final_text_head": "-done",
+  "final_text_sha256": "ee5dc5889be761b8c18abc18a57ae9168a313d5f6b3c3a3edd39477e891c8874",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 8,
+    "end_reason": "cli_close",
+    "id": "20261002_060059_86bb40",
+    "input_tokens": 15421,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 382,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 7
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "08e45581c1654b41",
+   "6a9b8aa5945b5575",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "08e45581c1654b41",
+   "08e45581c1654b41",
+   "6a9b8aa5945b5575"
+  ],
+  "tool_result_sha256": [
+   "97652a85d6c83453",
+   "b0a4c87ce29713eb",
+   "b1e56685508a8563",
+   "5a65069cadca88fc",
+   "de26810adcfa01a3",
+   "990da670cc4c0037",
+   "b0a4c87ce29713eb"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":36}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk07-45e434\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"coordinate\":[313,452],\"delivery_mode\":\"background\",\"element\":36,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"coordinate\":[313,452],\"delivery_mode\":\"foreground\",\"element\":36,\"verdict\":{\"decision\":\"verify_fresh_state\",\"hint\":\"Input was delivered but not confirmed. Re-capture and check the result BEFORE any retry \u2014 do not repeat the input on an escalation recommendation alone.\"}}"
+   ]
+  ],
+  "tool_sequence_sha256": "5993de3d8c6f8dc67d35d146aabfe138232986117df415dcf04ae71279ddfc02"
+ },
+ "task": "browser"
+}

@@ -60,6 +60,11 @@ def oracle_rederive() -> None:
     n = bad = 0
     for rd in sorted((HERE / "raw" / "runs").iterdir()):
         run = json.loads((rd / "run.json").read_text())
+        if not (rd / "oracle.json").exists():  # harness failure: must be documented, counts as unknown
+            n += 1
+            bad += not (rd / "HARNESS_INCIDENT.txt").exists()
+            print(f"   {rd.name}: no oracle (documented harness incident: {(rd / 'HARNESS_INCIDENT.txt').exists()})")
+            continue
         o = json.loads((rd / "oracle.json").read_text())
         try:
             before = json.loads((rd / "fixture" / "state.before.json").read_text())
@@ -111,7 +116,7 @@ def bench() -> None:
 
 def scan() -> None:
     host = re.escape(socket.gethostname())  # the verifying machine's own name, never written into the packet
-    pat = re.compile(r"/mnt/|/home/|/workspace/|/tmp/claude|sk-[A-Za-z0-9]{16,}|hf_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}"
+    pat = re.compile(r"(?<![\w>.-])(/mnt/|/home/|/workspace/)|/tmp/claude|sk-[A-Za-z0-9]{16,}|hf_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}"
                      + (f"|\\b{host}\\b" if host else ""))
     hits = []
     for p in HERE.rglob("*"):

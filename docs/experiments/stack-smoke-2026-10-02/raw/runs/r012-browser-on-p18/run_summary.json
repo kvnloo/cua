@@ -1,0 +1,156 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 21.38,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 7,
+   "post_tool_call": 6,
+   "pre_api_request": 7,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 6
+  },
+  "peak_prompt_tokens": 18777,
+  "rows": 30,
+  "session_ids": [
+   "20261002_073232_d4da59"
+  ],
+  "trace_ids": [
+   "ee36e39018f280e4f07cee08e51c81bccd91e1b323a58f711dd7f56300f85d76"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_073232_d4da59:76d06a12-9154-4b53-9f98-cba1fa35c3dc:d21ec237"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 18,
+ "prompt_sha256": "64b3f8de832f2ced17a4cfb7ecbd7a475b4055bcd2b3a73d68ef7f20579c36de",
+ "run_id": "r012-browser-on-p18",
+ "set": "replication",
+ "shadow": {
+  "backend_load": {
+   "at": 1790926350.0413713,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 15267.898058984429
+  },
+  "full_rows": 8,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 7,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 8
+  },
+  "receipt_trace_ids": [
+   "ee36e39018f280e4f07cee08e51c81bccd91e1b323a58f711dd7f56300f85d76"
+  ],
+  "receipt_turn_ids": [
+   "20261002_073232_d4da59:76d06a12-9154-4b53-9f98-cba1fa35c3dc:d21ec237"
+  ],
+  "receipts": 8,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 8,
+    "opportunities": 8,
+    "rows": 30
+   },
+   "load_ms": 15267.898058984429
+  }
+ },
+ "state_db": {
+  "final_text_head": "<tool_response>\n{\"screenshot_path\": \"<stable>/home/.hermes/cache/computer_use/screenshot_83b89a768b5e430c9b0e3de8295d1b88.png\"",
+  "final_text_sha256": "91de51ea307e6ac79a860cbeb7a43e924f664f60d83b87a6fa260b5688a814f4",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 7,
+    "end_reason": "cli_close",
+    "id": "20261002_073232_d4da59",
+    "input_tokens": 14973,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 427,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 6
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "ec932fd14ef9c404",
+   "6a9b8aa5945b5575",
+   "b1e56685508a8563",
+   "4fee08467df99614",
+   "ec932fd14ef9c404",
+   "ec932fd14ef9c404"
+  ],
+  "tool_result_sha256": [
+   "30656f2388c5cae9",
+   "0126977d56867d30",
+   "b1e56685508a8563",
+   "96793339c5a43dae",
+   "2cf2cb619380c90b",
+   "91f72f001a6e6112"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":36}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk18-3f89c8\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"capture_after\":true,\"delivery_mode\":\"background\",\"element\":36,\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "8b8e0316b55d4f8f1e0e4dea294df580933fdfe6cb6eed75676e524076be70c0"
+ },
+ "task": "browser"
+}

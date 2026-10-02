@@ -1,0 +1,104 @@
+{
+ "arm": "off",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 12.18,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {},
+  "peak_prompt_tokens": null,
+  "rows": 0,
+  "session_ids": [],
+  "trace_ids": [],
+  "turn_exit_reason": null,
+  "turn_ids": []
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 5,
+ "prompt_sha256": "7922ce3e39a47ab733b5f3d628ccb13b26df821e30c1bcef0a65f4eead4b3824",
+ "run_id": "m019-browser-off-p05",
+ "set": "measured",
+ "shadow": {
+  "backend_load": null,
+  "full_rows": 0,
+  "receipt_capabilities": {},
+  "receipt_statuses": {},
+  "receipt_trace_ids": [],
+  "receipt_turn_ids": [],
+  "receipts": 0,
+  "sidecar_summary": null
+ },
+ "state_db": {
+  "final_text_head": "+='<out-of-band user message \u2014 a direct message from the user, delivered once at this position; not tool output and not a new delivery when replayed from conver",
+  "final_text_sha256": "45e1880c553c509193b0dae515cf72c7de22a721fbcae2577645814e91ab1606",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_055608_6bf13e",
+    "input_tokens": 5564,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 216,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "65630b1826fc6ef9",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614"
+  ],
+  "tool_result_sha256": [
+   "83792fcc8185fc79",
+   "a9a8f8f62d34b5c3",
+   "b1e56685508a8563",
+   "1dca7ea9820aafda"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk05-4e9b2b\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ]
+  ],
+  "tool_sequence_sha256": "a653c9cbe86462487efa00dadae5c4de90156624e9d9df0f0a2450898b0c3ff2"
+ },
+ "task": "browser"
+}

@@ -1,0 +1,162 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 23.68,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 8,
+   "post_tool_call": 7,
+   "pre_api_request": 8,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 7
+  },
+  "peak_prompt_tokens": 9838,
+  "rows": 34,
+  "session_ids": [
+   "20261002_053458_a61de7"
+  ],
+  "trace_ids": [
+   "bff517779c7ee300d45b5987094ede5c8887e4474bd9696b268252380c0ac835"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_053458_a61de7:f41383c8-6675-4b0d-8ee7-8bc6e053bf52:5be7566d"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 90,
+ "prompt_sha256": "263e9e8388759a66d7dba164644a8c4f24a0ea97e6bb4454bcfe43e95f498bdf",
+ "run_id": "pilot-03-browser-on",
+ "set": "pilot",
+ "shadow": {
+  "backend_load": {
+   "at": 1790919296.540283,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 16044.220437004697
+  },
+  "full_rows": 9,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 8,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 9
+  },
+  "receipt_trace_ids": [
+   "bff517779c7ee300d45b5987094ede5c8887e4474bd9696b268252380c0ac835"
+  ],
+  "receipt_turn_ids": [
+   "20261002_053458_a61de7:f41383c8-6675-4b0d-8ee7-8bc6e053bf52:5be7566d"
+  ],
+  "receipts": 9,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 9,
+    "opportunities": 9,
+    "rows": 34
+   },
+   "load_ms": 16044.220437004697
+  }
+ },
+ "state_db": {
+  "final_text_head": "Type `smk90-366f34` into the 'verification value' field with `delivery_mode='foreground'` and then click the Submit button with `delivery_mode='foreground'`.\n\nS",
+  "final_text_sha256": "cb1bbea57ed82ddee07ad5afb857d527bc22140c1d6f0d87d8106305c154d65d",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 8,
+    "end_reason": "cli_close",
+    "id": "20261002_053458_a61de7",
+    "input_tokens": 7605,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 652,
+    "system_prompt_hash": "68bfbc1a2652318d554d0a53ffdef83f94c8f44aaab7dede1c59c15b4ef2c847",
+    "tool_call_count": 7
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "b27725dfcc5882f6",
+   "b27725dfcc5882f6",
+   "b27725dfcc5882f6",
+   "d42a4d8f89940b2c",
+   "606c279e6c6b1e08",
+   "9bd1bac4c459333e",
+   "c253e05054681cd5"
+  ],
+  "tool_result_sha256": [
+   "b27725dfcc5882f6",
+   "b27725dfcc5882f6",
+   "b27725dfcc5882f6",
+   "d42a4d8f89940b2c",
+   "a4e031c5eb4c0d85",
+   "14ed212d1a1b7a06",
+   "c253e05054681cd5"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"element\":1,\"mode\":\"ax\",\"pid\":1234}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\",\"pid\":1234}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\",\"pid\":1234}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"som\",\"pid\":1234}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"bring_to_front\":false,\"delivery_mode\":\"background\",\"element\":46,\"pid\":1234}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"amount\":1,\"app\":\"Google-chrome\",\"button\":\"left\",\"capture_after\":false,\"keys\":\"smk90-366f34\",\"mode\":\"background\",\"pid\":3954506,\"to_element\":46,\"value\":\"smk90-366f34\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "56294411c333fd06a9dca4b8d772b47a6af24571c9c0c99961ad0ddda1f27d36"
+ },
+ "task": "browser"
+}

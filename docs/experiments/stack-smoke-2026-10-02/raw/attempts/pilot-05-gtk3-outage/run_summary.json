@@ -1,0 +1,140 @@
+{
+ "arm": "outage",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 11.73,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home",
+   "auth.json"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 4,
+   "post_tool_call": 3,
+   "pre_api_request": 4,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 3
+  },
+  "peak_prompt_tokens": 5569,
+  "rows": 18,
+  "session_ids": [
+   "20261002_053553_191459"
+  ],
+  "trace_ids": [
+   "1cbffb3baa62c6540b9cae9ea39aabfff6afab36cb193df1c91159dae067f5e6"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_053553_191459:f12c2277-8d03-4fca-9187-929b727f754c:9cbb23f5"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": true,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 2
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "pass"
+ },
+ "pair": 90,
+ "prompt_sha256": "d88b7d18a496fe465234cc0aee64a0eeec88855c9d445a726fc52f1c814d2ae9",
+ "run_id": "pilot-05-gtk3-outage",
+ "set": "pilot",
+ "shadow": {
+  "backend_load": {
+   "at": 1790919351.0973992,
+   "backend_arg": "laya_421m",
+   "error": "OfflineModeIsEnabled: Cannot reach https://huggingface.co/api/models/convaiinnovations/laya/tree/7c76b622dfc5cac71b2dc1c29873efe2ce509a05?recursive=true&expand=false: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.",
+   "load_ms": 3897.483837994514
+  },
+  "full_rows": 5,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 4,
+   "verification_needed": 2
+  },
+  "receipt_statuses": {
+   "backend_unavailable": 6
+  },
+  "receipt_trace_ids": [
+   "1cbffb3baa62c6540b9cae9ea39aabfff6afab36cb193df1c91159dae067f5e6"
+  ],
+  "receipt_turn_ids": [
+   "20261002_053553_191459:f12c2277-8d03-4fca-9187-929b727f754c:9cbb23f5"
+  ],
+  "receipts": 6,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": "OfflineModeIsEnabled: Cannot reach https://huggingface.co/api/models/convaiinnovations/laya/tree/7c76b622dfc5cac71b2dc1c29873efe2ce509a05?recursive=true&expand=false: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.",
+   "counts": {
+    "backend_unavailable": 5,
+    "eval_error": 0,
+    "ok": 0,
+    "opportunities": 5,
+    "rows": 18
+   },
+   "load_ms": 3897.483837994514
+  }
+ },
+ "state_db": {
+  "final_text_head": "portun\n{\"name\": \"computer_use\", \"arguments\": {\"action\":\"capture_after\", \"app\":\"Main.py\", \"capture_after\":true, \"mode\":\"ax\"}}\nporte\n.Done",
+  "final_text_sha256": "a53b81970bed07a0d19be62054aa4e8c9a0213adeb87d1eb8719a0fa4ae5d0db",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 4,
+    "end_reason": "cli_close",
+    "id": "20261002_053553_191459",
+    "input_tokens": 3568,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 145,
+    "system_prompt_hash": "21f2ea2a9d968b1ba526d7af0d08caef90e8de270551e4d5d0b3f35869e2bf5f",
+    "tool_call_count": 3
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "2cb5f094e9a39260",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "f16feeda8609baa3",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"delivery_mode\":\"background\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"capture_after\":true,\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "f1fcf591e68ef5dd78ef83f93411154b55e1c77570fb1458e398cb9fe69c3aaf"
+ },
+ "task": "gtk3"
+}

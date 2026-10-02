@@ -1,0 +1,140 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 10.75,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 4,
+   "post_auxiliary_call": 1,
+   "post_tool_call": 3,
+   "pre_api_request": 4,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 3
+  },
+  "peak_prompt_tokens": 5546,
+  "rows": 19,
+  "session_ids": [
+   "20261002_055756_2ce441"
+  ],
+  "trace_ids": [
+   "10a0ae155b6acc2f9b4d3c542a612a52b7a103e6e58bd5e46a034e18dd5b662e"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_055756_2ce441:c9249024-afcf-485e-a004-e9fe14b5a840:a086fd36"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": true,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 2
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "pass"
+ },
+ "pair": 6,
+ "prompt_sha256": "efb1af5af77c9b39d9b6ae0f2ca458f6c99d903c145862ca428260db85f755ef",
+ "run_id": "m022-gtk3-on-p06",
+ "set": "measured",
+ "shadow": {
+  "backend_load": {
+   "at": 1790920674.2844555,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 17616.012851998676
+  },
+  "full_rows": 5,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 4,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 5
+  },
+  "receipt_trace_ids": [
+   "10a0ae155b6acc2f9b4d3c542a612a52b7a103e6e58bd5e46a034e18dd5b662e"
+  ],
+  "receipt_turn_ids": [
+   "20261002_055756_2ce441:c9249024-afcf-485e-a004-e9fe14b5a840:a086fd36"
+  ],
+  "receipts": 5,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 5,
+    "opportunities": 5,
+    "rows": 19
+   },
+   "load_ms": 17616.012851998676
+  }
+ },
+ "state_db": {
+  "final_text_head": "-done",
+  "final_text_sha256": "ee5dc5889be761b8c18abc18a57ae9168a313d5f6b3c3a3edd39477e891c8874",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 4,
+    "end_reason": "cli_close",
+    "id": "20261002_055756_2ce441",
+    "input_tokens": 1874,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 101,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 3
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "2cb5f094e9a39260",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "7dfe96c1b50282a8",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "b7ac233a8f933ba9243f37e9bf1712415147ca1fcb5ec30289ab423fa97a5b92"
+ },
+ "task": "gtk3"
+}

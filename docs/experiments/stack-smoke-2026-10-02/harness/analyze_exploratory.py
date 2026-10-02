@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from analyze import sign_test, wilson  # noqa: E402
+from analyze import fisher_two_sided, sign_test, wilson  # noqa: E402
 
 raw, plan_p, xplan_p, out_p = map(Path, sys.argv[1:5])
 runs = json.loads(plan_p.read_text())["runs"] + json.loads(xplan_p.read_text())["runs"]
@@ -33,16 +33,6 @@ for r in runs:
 for c in cell.values():
     c["pass_rate"] = round(c["pass"] / c["n"], 4)
     c["pass_wilson95"] = wilson(c["pass"], c["n"])
-
-
-def fisher_two_sided(a, b, c, d):
-    """Exact two-sided Fisher p for [[a,b],[c,d]]."""
-    n = a + b + c + d
-    r1, c1 = a + b, a + c
-    def p(x):
-        return math.comb(r1, x) * math.comb(n - r1, c1 - x) / math.comb(n, c1)
-    obs = p(a)
-    return min(1.0, sum(p(x) for x in range(max(0, c1 - (n - r1)), min(r1, c1) + 1) if p(x) <= obs + 1e-12))
 
 
 def paired(arm_a, arm_b):

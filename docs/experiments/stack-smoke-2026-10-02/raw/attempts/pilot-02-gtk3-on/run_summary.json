@@ -1,0 +1,139 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 9.11,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 4,
+   "post_tool_call": 3,
+   "pre_api_request": 4,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 3
+  },
+  "peak_prompt_tokens": 5574,
+  "rows": 18,
+  "session_ids": [
+   "20261002_053344_fdd6f8"
+  ],
+  "trace_ids": [
+   "269942de125d5eaa06b69c9827d9d7c5620c340592246513bb6f2124bbd05a36"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_053344_fdd6f8:122649f0-eb7b-471a-a53e-e73622af76f3:f4fd947a"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": true,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 2
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "pass"
+ },
+ "pair": 90,
+ "prompt_sha256": "d88b7d18a496fe465234cc0aee64a0eeec88855c9d445a726fc52f1c814d2ae9",
+ "run_id": "pilot-02-gtk3-on",
+ "set": "pilot",
+ "shadow": {
+  "backend_load": {
+   "at": 1790919222.3305154,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 13128.728834009962
+  },
+  "full_rows": 5,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 4,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 5
+  },
+  "receipt_trace_ids": [
+   "269942de125d5eaa06b69c9827d9d7c5620c340592246513bb6f2124bbd05a36"
+  ],
+  "receipt_turn_ids": [
+   "20261002_053344_fdd6f8:122649f0-eb7b-471a-a53e-e73622af76f3:f4fd947a"
+  ],
+  "receipts": 5,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 5,
+    "opportunities": 5,
+    "rows": 18
+   },
+   "load_ms": 13128.728834009962
+  }
+ },
+ "state_db": {
+  "final_text_head": "Verification complete. The checkbox labeled 'I agree' has been successfully checked, and no other changes were made.  \nDONE",
+  "final_text_sha256": "de9c0652b9d86d10465f229aa585ce5f0442f99cb6a4e60115bd54cfcb0e4545",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 4,
+    "end_reason": "cli_close",
+    "id": "20261002_053344_fdd6f8",
+    "input_tokens": 3561,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 134,
+    "system_prompt_hash": "99dc196bc373ab0cd258776bc31dea2fe9f347e75c95af3cb0c5103fde3d048d",
+    "tool_call_count": 3
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "2cb5f094e9a39260",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "c280ba7b7706c922",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"capture_after\":true,\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"button\":\"left\",\"delivery_mode\":\"background\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"capture_after\":true,\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "8dac98bd6acee8e72f21c27e115ebd00d91c576c1ff273cf3af1807948031391"
+ },
+ "task": "gtk3"
+}

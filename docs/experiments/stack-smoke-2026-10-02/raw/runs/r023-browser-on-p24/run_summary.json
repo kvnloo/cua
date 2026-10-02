@@ -1,0 +1,145 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 15.55,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 5,
+   "post_auxiliary_call": 1,
+   "post_tool_call": 4,
+   "pre_api_request": 5,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 4
+  },
+  "peak_prompt_tokens": 9119,
+  "rows": 23,
+  "session_ids": [
+   "20261002_074038_6e8929"
+  ],
+  "trace_ids": [
+   "958b6156d41c8fdd28f3cd65994f32303fb0b1696fb8001e59c740eda9cbadc2"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_074038_6e8929:66ba51da-35ef-45e3-8659-8cbdaee9065a:9f5d8e3f"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "before_submitted": null,
+   "submitted_matches_token": false,
+   "submitted_present": false
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:jev_use_form_state",
+  "task": "browser",
+  "verdict": "fail"
+ },
+ "pair": 24,
+ "prompt_sha256": "f4e00650e188766933f2f05426f369ba79458bb390c7627a912f4a7ee198965b",
+ "run_id": "r023-browser-on-p24",
+ "set": "replication",
+ "shadow": {
+  "backend_load": {
+   "at": 1790926835.500959,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 17116.958977014292
+  },
+  "full_rows": 6,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 5,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 6
+  },
+  "receipt_trace_ids": [
+   "958b6156d41c8fdd28f3cd65994f32303fb0b1696fb8001e59c740eda9cbadc2"
+  ],
+  "receipt_turn_ids": [
+   "20261002_074038_6e8929:66ba51da-35ef-45e3-8659-8cbdaee9065a:9f5d8e3f"
+  ],
+  "receipts": 6,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 6,
+    "opportunities": 6,
+    "rows": 23
+   },
+   "load_ms": 17116.958977014292
+  }
+ },
+ "state_db": {
+  "final_text_head": "+='<div style=\"height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;\">DONE</div>'",
+  "final_text_sha256": "8662a1387c15437b2b4c0fdfa7bf76ba9fd2cec931a0bfcecf2dd6a2b4d3bcd7",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 5,
+    "end_reason": "cli_close",
+    "id": "20261002_074038_6e8929",
+    "input_tokens": 5519,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 208,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 4
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "d186d3a3e607b7dc",
+   "7c363b6343d2aea5",
+   "b1e56685508a8563",
+   "4fee08467df99614"
+  ],
+  "tool_result_sha256": [
+   "774d97860a44a2b2",
+   "bd5d09041a0f1de6",
+   "b1e56685508a8563",
+   "bdeb5a5e17c9c066"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Google-chrome\",\"delivery_mode\":\"background\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":46}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"type\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"text\":\"smk24-3a8a78\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Google-chrome\",\"delivery_mode\":\"foreground\",\"element\":56}"
+   ]
+  ],
+  "tool_sequence_sha256": "ea5a15b36477d269830f324740aa7a94840de2eeaf481b9b96589a0e12f70641"
+ },
+ "task": "browser"
+}

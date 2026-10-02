@@ -1,0 +1,139 @@
+{
+ "arm": "on",
+ "driver_key": "pinned_0_21_0",
+ "hermes_rc": 0,
+ "hermes_wall_s": 13.45,
+ "isolation": {
+  "all_masked_empty": true,
+  "env_inside_host_display_vars": 0,
+  "env_inside_live_refs": 0,
+  "live_home_entries_changed_during_run": [
+   "hermes-home"
+  ],
+  "mask_inside": {
+   "fixture_dir_entries": 0,
+   "live_hermes_home_entries": 0,
+   "real_home_entries": 0,
+   "shadow_dir_entries": 0
+  }
+ },
+ "observer": {
+  "dropped_rows": 0,
+  "events": {
+   "on_session_end": 1,
+   "on_session_start": 1,
+   "post_api_request": 4,
+   "post_tool_call": 3,
+   "pre_api_request": 4,
+   "pre_auxiliary_call": 1,
+   "pre_llm_call": 1,
+   "pre_tool_call": 3
+  },
+  "peak_prompt_tokens": 5546,
+  "rows": 18,
+  "session_ids": [
+   "20261002_061304_a3c8cc"
+  ],
+  "trace_ids": [
+   "0fb96b477762f507c8566f57ffb1e42a66436aef6fef9a37dc24b1b2cd00288c"
+  ],
+  "turn_exit_reason": "text_response(finish_reason=stop)",
+  "turn_ids": [
+   "20261002_061304_a3c8cc:5bc57ccd-8c89-4555-9c87-633c95de04ea:81fb9cb3"
+  ]
+ },
+ "oracle": {
+  "detail": {
+   "agreed": true,
+   "before_agreed": false,
+   "collateral": {},
+   "seq": 2
+  },
+  "schema": "stack_smoke.oracle.v1",
+  "source": "fixture_oracle:gtk3_task_state_v1",
+  "task": "gtk3",
+  "verdict": "pass"
+ },
+ "pair": 12,
+ "prompt_sha256": "efb1af5af77c9b39d9b6ae0f2ca458f6c99d903c145862ca428260db85f755ef",
+ "run_id": "m045-gtk3-on-p12",
+ "set": "measured",
+ "shadow": {
+  "backend_load": {
+   "at": 1790921581.1963801,
+   "backend_arg": "laya_421m",
+   "error": null,
+   "load_ms": 18918.98589700577
+  },
+  "full_rows": 5,
+  "receipt_capabilities": {
+   "api.attempt_will_fail": 4,
+   "verification_needed": 1
+  },
+  "receipt_statuses": {
+   "ok": 5
+  },
+  "receipt_trace_ids": [
+   "0fb96b477762f507c8566f57ffb1e42a66436aef6fef9a37dc24b1b2cd00288c"
+  ],
+  "receipt_turn_ids": [
+   "20261002_061304_a3c8cc:5bc57ccd-8c89-4555-9c87-633c95de04ea:81fb9cb3"
+  ],
+  "receipts": 5,
+  "sidecar_summary": {
+   "backend_arg": "laya_421m",
+   "backend_error": null,
+   "counts": {
+    "backend_unavailable": 0,
+    "eval_error": 0,
+    "ok": 5,
+    "opportunities": 5,
+    "rows": 18
+   },
+   "load_ms": 18918.98589700577
+  }
+ },
+ "state_db": {
+  "final_text_head": "verified: the 'I agree' checkbox is now checked in the 'CuaTestHarness GTK3 Tasks' window.\n\nDONE",
+  "final_text_sha256": "89a454fb1a66dff1e783fbdeb47bec596af6780275b4d9abab5647eaae9b748a",
+  "present": true,
+  "sessions": [
+   {
+    "api_call_count": 4,
+    "end_reason": "cli_close",
+    "id": "20261002_061304_a3c8cc",
+    "input_tokens": 1874,
+    "model": "qwen2.5:7b-instruct-smoke-t0",
+    "output_tokens": 125,
+    "system_prompt_hash": "bd2a0b009f6de7bf803a9c4257df646999966c2bbc538c4f57ad76687a8fa66b",
+    "tool_call_count": 3
+   }
+  ],
+  "tool_result_norm_sha256": [
+   "4773b62f78caef02",
+   "2cb5f094e9a39260",
+   "4773b62f78caef02"
+  ],
+  "tool_result_sha256": [
+   "4773b62f78caef02",
+   "237f71a6a23b645c",
+   "4773b62f78caef02"
+  ],
+  "tool_sequence": [
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"click\",\"app\":\"Main.py\",\"element\":2}"
+   ],
+   [
+    "computer_use",
+    "{\"action\":\"capture\",\"app\":\"Main.py\",\"mode\":\"ax\"}"
+   ]
+  ],
+  "tool_sequence_sha256": "b7ac233a8f933ba9243f37e9bf1712415147ca1fcb5ec30289ab423fa97a5b92"
+ },
+ "task": "gtk3"
+}
