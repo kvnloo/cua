@@ -83,6 +83,12 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
     // when CUA_DRIVER_PHASE_TRACE_FILE is set; otherwise one OnceLock read.
     let trace = cua_driver_core::phase_trace::enabled();
     let mut trace_scope = String::new();
+    // B-05 measurement knob (default off): read once per process.
+    let single_write =
+        exp_mcp_single_write_from(std::env::var(EXP_MCP_SINGLE_WRITE_ENV).ok().as_deref());
+    if single_write {
+        cua_driver_core::phase_trace::mark("exp_knob", "mcp_single_write=1");
+    }
     loop {
         line.clear();
         if reader.read_line(&mut line).await? == 0 {
@@ -209,8 +215,7 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
         if trace {
             cua_driver_core::phase_trace::mark(&trace_scope, "serialize_done");
         }
-        writer.write_all(serialized.as_bytes()).await?;
-        writer.write_all(b"\n").await?;
+        write_response_frame(&mut writer, serialized, single_write).await?;
         // B-05 measurement only (env-gated, default off): write_all done, before flush.
         cua_driver_core::phase_trace::mark("mcp.write_done", "");
         writer.flush().await?;
@@ -221,6 +226,35 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
     }
 
     sdk.shutdown().await.map_err(anyhow::Error::msg)
+}
+
+/// B-05 measurement-only knob (research experiment, default off).
+/// `CUA_DRIVER_EXP_MCP_SINGLE_WRITE=1` writes each direct-stdio response frame
+/// (serialized JSON plus the newline) with one `write_all` instead of two.
+/// Any other value, or unset, keeps the two writes. The bytes on stdout are
+/// identical either way; only the number of writes into the buffered stdout
+/// differs (for a frame larger than the buffer, the default issues two
+/// writes to the underlying stdout, the knob one).
+const EXP_MCP_SINGLE_WRITE_ENV: &str = "CUA_DRIVER_EXP_MCP_SINGLE_WRITE";
+
+fn exp_mcp_single_write_from(value: Option<&str>) -> bool {
+    value == Some("1")
+}
+
+/// Write one response frame (JSON text plus `\n`), without flushing.
+async fn write_response_frame<W: AsyncWrite + Unpin>(
+    writer: &mut W,
+    serialized: String,
+    single_write: bool,
+) -> std::io::Result<()> {
+    if single_write {
+        let mut frame = serialized.into_bytes();
+        frame.push(b'\n');
+        writer.write_all(&frame).await
+    } else {
+        writer.write_all(serialized.as_bytes()).await?;
+        writer.write_all(b"\n").await
+    }
 }
 
 /// Phase-trace scope for one direct-stdio request (measurement only):
@@ -1126,6 +1160,70 @@ mod tests {
             apply_direct_session_identity(&mut request, "mcp-transport");
             assert_eq!(before, decide(&request));
         }
+    }
+
+    #[test]
+    fn b05_single_write_knob_parses_only_one() {
+        assert!(exp_mcp_single_write_from(Some("1")));
+        for value in [None, Some(""), Some("0"), Some("true"), Some("yes"), Some(" 1")] {
+            assert!(!exp_mcp_single_write_from(value), "{value:?}");
+        }
+    }
+
+    /// Records every write that reaches the stdout under the BufWriter.
+    #[derive(Default)]
+    struct RecordingWriter {
+        writes: Vec<Vec<u8>>,
+    }
+
+    impl tokio::io::AsyncWrite for RecordingWriter {
+        fn poll_write(
+            mut self: std::pin::Pin<&mut Self>,
+            _cx: &mut std::task::Context<'_>,
+            buf: &[u8],
+        ) -> std::task::Poll<std::io::Result<usize>> {
+            self.writes.push(buf.to_vec());
+            std::task::Poll::Ready(Ok(buf.len()))
+        }
+        fn poll_flush(
+            self: std::pin::Pin<&mut Self>,
+            _cx: &mut std::task::Context<'_>,
+        ) -> std::task::Poll<std::io::Result<()>> {
+            std::task::Poll::Ready(Ok(()))
+        }
+        fn poll_shutdown(
+            self: std::pin::Pin<&mut Self>,
+            _cx: &mut std::task::Context<'_>,
+        ) -> std::task::Poll<std::io::Result<()>> {
+            std::task::Poll::Ready(Ok(()))
+        }
+    }
+
+    async fn frame_writes(serialized: &str, single_write: bool) -> Vec<Vec<u8>> {
+        let mut writer = tokio::io::BufWriter::new(RecordingWriter::default());
+        write_response_frame(&mut writer, serialized.to_owned(), single_write)
+            .await
+            .unwrap();
+        writer.flush().await.unwrap();
+        writer.into_inner().writes
+    }
+
+    #[tokio::test]
+    async fn b05_single_write_keeps_bytes_and_merges_large_frame_writes() {
+        let large = format!(r#"{{"jsonrpc":"2.0","id":3,"result":"{}"}}"#, "x".repeat(20_000));
+        let small = r#"{"jsonrpc":"2.0","id":4,"result":{}}"#.to_owned();
+        for text in [&large, &small] {
+            let default = frame_writes(text, false).await;
+            let single = frame_writes(text, true).await;
+            let expected = format!("{text}\n").into_bytes();
+            assert_eq!(default.concat(), expected);
+            assert_eq!(single.concat(), expected);
+            assert_eq!(single.len(), 1);
+        }
+        // Default path: a frame larger than the buffer reaches stdout as the
+        // JSON text and then the newline; a small frame as one buffered write.
+        assert_eq!(frame_writes(&large, false).await.len(), 2);
+        assert_eq!(frame_writes(&small, false).await.len(), 1);
     }
 
     #[test]
