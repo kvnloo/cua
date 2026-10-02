@@ -15,8 +15,9 @@ use cua_driver_core::browser::platform::{
 use cua_driver_core::browser::refusal::{BrowserRefusal, BrowserRefusalCode};
 use cua_driver_core::browser::types::{
     BrowserClassification, BrowserEngineFamily, BrowserProcessRole, BrowserProduct,
-    EndpointOwnershipMethod, EndpointOwnershipProof, EndpointTransport, NativeOwnershipMethod,
-    NativeOwnershipProof, NativeWindowInfo, OwnedEndpoint, ProcessFingerprint, Rect,
+    EndpointOwnershipMethod, EndpointOwnershipProof, EndpointTransport, ExpBoundListener,
+    NativeOwnershipMethod, NativeOwnershipProof, NativeWindowInfo, OwnedEndpoint,
+    ProcessFingerprint, Rect,
 };
 use cua_driver_core::browser::{
     existing_profile_setup_descriptor, is_firefox, loopback_websocket_port,
@@ -255,6 +256,10 @@ fn process_family_pids(root: i64) -> Result<HashSet<i64>, BrowserRefusal> {
 
 fn socket_inodes_for_process_tree(pid: i64) -> Result<HashSet<u64>, BrowserRefusal> {
     let process_family = process_family_pids(pid)?;
+    // B-02 measurement only (env-gated, default off): endpoint proof steps.
+    cua_driver_core::phase_trace::mark_detail("ep.family_scanned", "", || {
+        serde_json::json!({ "family": process_family.len() })
+    });
     let mut inodes = HashSet::new();
     for owner_pid in process_family {
         let Ok(directory) = std::fs::read_dir(format!("/proc/{owner_pid}/fd")) else {
@@ -273,6 +278,7 @@ fn socket_inodes_for_process_tree(pid: i64) -> Result<HashSet<u64>, BrowserRefus
                 }),
         );
     }
+    cua_driver_core::phase_trace::mark("ep.fds_scanned", "");
     Ok(inodes)
 }
 
@@ -295,6 +301,7 @@ fn loopback_ports_for_pid(pid: i64) -> Result<Vec<u16>, BrowserRefusal> {
     }
     listeners.sort_unstable();
     listeners.dedup();
+    cua_driver_core::phase_trace::mark("ep.net_parsed", "");
     Ok(listeners)
 }
 
@@ -417,6 +424,88 @@ fn process_identity(pid: i64) -> Result<(u64, Option<String>), BrowserRefusal> {
         .ok()
         .map(|path| path.to_string_lossy().into_owned());
     Ok((started, executable))
+}
+
+// ── B-02 EXPERIMENT ONLY (CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound; default off) ──
+// A bound listener is the exact socket one full proof attributed to the
+// browser pid. The bound check accepts only when that same socket inode is
+// still a loopback LISTEN socket on the same port, still held at the same
+// descriptor by the same pid, and the pid still has the same /proc start
+// time. Anything else returns false and core runs the full discovery.
+
+fn exp_socket_link(inode: u64) -> String {
+    format!("socket:[{inode}]")
+}
+
+/// Pure decision used by the bound check (unit-tested without `/proc`).
+pub(crate) fn exp_bound_listener_matches(
+    bound: &ExpBoundListener,
+    fd_link: Option<&str>,
+    net_tables: &[String],
+    start_time_now: Option<u64>,
+) -> bool {
+    fd_link == Some(exp_socket_link(bound.inode).as_str())
+        && net_tables.iter().any(|table| {
+            parse_proc_net_loopback_listeners(table).contains(&(bound.port, bound.inode))
+        })
+        && start_time_now == Some(bound.pid_start_time)
+}
+
+fn exp_net_tables() -> Vec<String> {
+    ["/proc/net/tcp", "/proc/net/tcp6"]
+        .iter()
+        .filter_map(|path| std::fs::read_to_string(path).ok())
+        .collect()
+}
+
+fn exp_start_time(pid: i64) -> Option<u64> {
+    let stat = std::fs::read_to_string(format!("/proc/{pid}/stat")).ok()?;
+    crate::proc_fs::process_start_time_from_stat(&stat)
+}
+
+fn exp_bind_listener_blocking(pid: i64, port: u16) -> Option<ExpBoundListener> {
+    let pid_start_time = exp_start_time(pid)?;
+    let mut inodes = exp_net_tables()
+        .iter()
+        .flat_map(|table| parse_proc_net_loopback_listeners(table))
+        .filter(|(listener_port, _)| *listener_port == port)
+        .map(|(_, inode)| inode)
+        .collect::<Vec<_>>();
+    inodes.sort_unstable();
+    inodes.dedup();
+    let [inode] = inodes.as_slice() else {
+        return None;
+    };
+    let link = exp_socket_link(*inode);
+    let mut fds = std::fs::read_dir(format!("/proc/{pid}/fd"))
+        .ok()?
+        .flatten()
+        .filter(|entry| {
+            std::fs::read_link(entry.path())
+                .is_ok_and(|target| target.to_string_lossy() == link.as_str())
+        })
+        .filter_map(|entry| entry.file_name().to_string_lossy().parse::<u64>().ok())
+        .collect::<Vec<_>>();
+    fds.sort_unstable();
+    let fd = *fds.first()?;
+    // The process instance must not have changed while it was inspected.
+    (exp_start_time(pid)? == pid_start_time).then_some(ExpBoundListener {
+        pid,
+        pid_start_time,
+        port,
+        inode: *inode,
+        fd,
+    })
+}
+
+fn exp_listener_still_bound_blocking(bound: &ExpBoundListener) -> bool {
+    let fd_link = std::fs::read_link(format!("/proc/{}/fd/{}", bound.pid, bound.fd))
+        .ok()
+        .map(|target| target.to_string_lossy().into_owned());
+    let tables = exp_net_tables();
+    // Start time last, so a pid reused while the socket was inspected fails.
+    let start = exp_start_time(bound.pid);
+    exp_bound_listener_matches(bound, fd_link.as_deref(), &tables, start)
 }
 
 async fn browser_websocket_url(port: u16) -> Option<String> {
@@ -884,7 +973,11 @@ impl BrowserPlatform for LinuxBrowserPlatform {
                 )
             })??;
         for port in ports {
-            if let Some(ws_url) = browser_websocket_url(port).await {
+            let ws_url = browser_websocket_url(port).await;
+            cua_driver_core::phase_trace::mark_detail("ep.json_version", "", || {
+                serde_json::json!({ "ok": ws_url.is_some() })
+            });
+            if let Some(ws_url) = ws_url {
                 return Ok(Some(OwnedEndpoint {
                     ws_url,
                     http_port: Some(port),
@@ -1303,6 +1396,20 @@ impl BrowserPlatform for LinuxBrowserPlatform {
         })
     }
 
+    async fn exp_bind_listener(&self, pid: i64, port: u16) -> Option<ExpBoundListener> {
+        tokio::task::spawn_blocking(move || exp_bind_listener_blocking(pid, port))
+            .await
+            .ok()
+            .flatten()
+    }
+
+    async fn exp_listener_still_bound(&self, bound: &ExpBoundListener) -> bool {
+        let bound = bound.clone();
+        tokio::task::spawn_blocking(move || exp_listener_still_bound_blocking(&bound))
+            .await
+            .unwrap_or(false)
+    }
+
     async fn prepare_endpoint(
         &self,
         request: PrepareRequest,
@@ -1462,6 +1569,39 @@ mod tests {
             parse_proc_net_loopback_listeners(input),
             vec![(9222, 12345)]
         );
+    }
+
+    /// B-02: every guard of the experiment-only bound check refuses alone.
+    #[test]
+    fn exp_bound_listener_check_requires_same_socket_port_fd_and_process_instance() {
+        let header = "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\n";
+        let table = |line: &str| format!("{header}{line}\n");
+        let bound = ExpBoundListener {
+            pid: 4242,
+            pid_start_time: 900,
+            port: 9222,
+            inode: 12345,
+            fd: 31,
+        };
+        let same = table("   0: 0100007F:2406 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1000 0 12345");
+        assert!(exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[same.clone()], Some(900)));
+        // A decoy bound the same port after the browser listener closed.
+        let decoy = table("   0: 0100007F:2406 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1000 0 55555");
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[decoy], Some(900)));
+        // The listener is gone.
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[table("")], Some(900)));
+        // The same socket inode is no longer LISTEN (state 01 = established).
+        let established = table("   0: 0100007F:2406 0100007F:9999 01 00000000:00000000 00:00000000 00000000  1000 0 12345");
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[established], Some(900)));
+        // Same inode on a non-loopback address does not count.
+        let public = table("   0: 00000000:2406 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1000 0 12345");
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[public], Some(900)));
+        // The descriptor now points elsewhere, or is closed.
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[99]"), &[same.clone()], Some(900)));
+        assert!(!exp_bound_listener_matches(&bound, None, &[same.clone()], Some(900)));
+        // The pid was restarted or reused (new start time), or is gone.
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[same.clone()], Some(901)));
+        assert!(!exp_bound_listener_matches(&bound, Some("socket:[12345]"), &[same], None));
     }
 
     #[test]

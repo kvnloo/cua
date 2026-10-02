@@ -147,6 +147,12 @@ impl SdkAdapter {
         self.tools_list.clone()
     }
 
+    /// B-02 experiment only: the same inventory, borrowed. It is loaded once
+    /// in [`Self::load`] and never mutated afterwards.
+    pub fn tools_list_ref(&self) -> &Value {
+        &self.tools_list
+    }
+
     pub fn history(&self) -> Option<Arc<cua_driver_core::history::HistoryManager>> {
         self.driver.local_history_manager()
     }
