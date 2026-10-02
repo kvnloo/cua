@@ -1,0 +1,20 @@
+[2026-10-02T20:03:09.289Z] build
+{"examples": 418, "backend": null, "backend_errors": 0, "output": "<stable>ork/examples/api-examples.jsonl"}
+{"n_examples": 142, "n_label_known": 142, "n_negative": 94, "n_not_run": 0, "n_positive": 48, "n_run": 142, "n_session_id_from_observer": 1, "n_session_id_mismatch": 0, "n_tasks": 142, "n_unknown_label": 0, "n_without_api_rows": 0, "n_without_session_id": 0}
+[2026-10-02T20:03:09.500Z] score turn/laya_421m (laya_421m)
+[2026-10-02T20:06:42.691Z] score turn/julia_1 (julia_1)
+[2026-10-02T20:12:13.177Z] score api/laya_421m (laya_421m)
+[2026-10-02T20:17:16.428Z] score api/julia_1 (julia_1)
+[2026-10-02T20:20:35.456Z] score turn/qwen_7b_logprob (ollama:qwen2.5:7b-instruct)
+[2026-10-02T20:24:06.103Z] score api/qwen_7b_logprob (ollama:qwen2.5:7b-instruct)
+[2026-10-02T20:26:14.331Z] control: fail-open (dead-port Ollama adapter), turn lane
+[2026-10-02T20:26:14.455Z] unload chat model qwen2.5:7b-instruct on http://127.0.0.1:11500 (keep_alive=0) for the GPU scorers
+[2026-10-02T20:26:19.608Z] score turn/nanojev (nanojev)
+[2026-10-02T20:29:22.164Z] score api/nanojev (nanojev)
+[2026-10-02T20:31:38.898Z] score turn/decider_2b (decider_2b)
+[2026-10-02T20:40:09.071Z] score api/decider_2b (decider_2b)
+[2026-10-02T20:42:09.660Z] evaluate
+{"confirmatory": null, "degenerate": true, "lane": "api.attempt_will_fail", "n_labelled": 418, "positives": 0}
+{"confirmatory": "NOT_CONFIRMED", "degenerate": false, "lane": "verification_needed", "n_labelled": 142, "positives": 48}
+[2026-10-02T20:42:18.694Z] done
+exit 0

@@ -1,0 +1,1863 @@
+{
+  "G2": {
+    "degenerate": false,
+    "minority_rate_upper95_clopper_pearson": 0.40897471404347974,
+    "positive_rate": 0.3380281690140845,
+    "positive_rate_upper95_clopper_pearson": 0.40897471404347974
+  },
+  "confirmatory_test": {
+    "B": 10000,
+    "preconditions": {
+      "julia_coverage": 1.0,
+      "julia_missing_imputed_0_5": 0,
+      "met": true,
+      "n_labelled": 142,
+      "n_negative": 94,
+      "n_positive": 48
+    },
+    "primary": {
+      "brier": {
+        "julia_1": 0.2562744302469406,
+        "mean_diff": 0.009429548565366562,
+        "n": 142,
+        "one_sided_upper95": 0.04536508827559257,
+        "p_boot": 0.6695330466953304,
+        "reference": 0.24684488168157404,
+        "reject_h0": false
+      },
+      "log_loss": {
+        "julia_1": 0.7444416818699419,
+        "mean_diff": 0.05239336445899245,
+        "n": 142,
+        "one_sided_upper95": 0.15006604435735893,
+        "p_boot": 0.8053194680531947,
+        "reference": 0.6920483174109493,
+        "reject_h0": false
+      }
+    },
+    "seed": 20261012,
+    "sensitivity_complete_case": "identical (no missing julia_1 probability)",
+    "verdict": "NOT_CONFIRMED"
+  },
+  "disagreement": {
+    "all_model_rows_right": 71,
+    "all_model_rows_wrong": 31,
+    "all_model_rows_wrong_by_family": {
+      "browser_submit": 5,
+      "count_errors": 0,
+      "cua_agree": 2,
+      "cua_button_present": 0,
+      "cua_increment": 5,
+      "cua_note": 4,
+      "cua_size": 0,
+      "edit_config": 0,
+      "find_file": 1,
+      "json_field": 0,
+      "line_n": 0,
+      "no_tool_math": 0,
+      "read_code": 0,
+      "sum_numbers": 7,
+      "uppercase_copy": 7,
+      "write_token": 0
+    },
+    "model_rows": [
+      "decider_2b",
+      "julia_1",
+      "laya_421m",
+      "nanojev",
+      "qwen_7b_logprob"
+    ],
+    "n_labelled_scored_by_all_model_rows": 142,
+    "pairwise": {
+      "decider_2b|deterministic_loo_group_prior": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "decider_2b|julia_1": {
+        "disagree_rate_at_0_5": 0.28169014084507044,
+        "n": 142
+      },
+      "decider_2b|laya_421m": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "decider_2b|nanojev": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "decider_2b|qwen_7b_logprob": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "julia_1|deterministic_loo_group_prior": {
+        "disagree_rate_at_0_5": 0.28169014084507044,
+        "n": 142
+      },
+      "julia_1|laya_421m": {
+        "disagree_rate_at_0_5": 0.28169014084507044,
+        "n": 142
+      },
+      "julia_1|nanojev": {
+        "disagree_rate_at_0_5": 0.28169014084507044,
+        "n": 142
+      },
+      "julia_1|qwen_7b_logprob": {
+        "disagree_rate_at_0_5": 0.28169014084507044,
+        "n": 142
+      },
+      "laya_421m|deterministic_loo_group_prior": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "laya_421m|nanojev": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "laya_421m|qwen_7b_logprob": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "nanojev|deterministic_loo_group_prior": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "nanojev|qwen_7b_logprob": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      },
+      "qwen_7b_logprob|deterministic_loo_group_prior": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 142
+      }
+    }
+  },
+  "n_examples": 142,
+  "n_labelled": 142,
+  "n_negative": 94,
+  "n_positive": 48,
+  "n_unknown_label": 0,
+  "question_id": "verification_needed",
+  "rows": {
+    "decider_2b": {
+      "accuracy_at_0_5": 0.6619718309859155,
+      "backend": "decider",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.2841026232394366,
+      "brier_improvement": -0.060337497272366564,
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.09032624113475177,
+          "n": 141,
+          "observed_rate": 0.3333333333333333
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.2398,
+          "n": 1,
+          "observed_rate": 1.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.24664929577464784,
+      "latency": {
+        "backend_create_ms": 63.61230701440945,
+        "cold_total_ms": 240712.06992701627,
+        "first_call_wall_ms": 240648.45762000186,
+        "n_calls": 142,
+        "warm_reported_latency_ms_max": 183221.73232695786,
+        "warm_reported_latency_ms_p50": 28.400052979122847,
+        "warm_reported_latency_ms_p95": 28.82687997771427,
+        "warm_wall_ms_max": 183221.7793969903,
+        "warm_wall_ms_p50": 28.43632601434365,
+        "warm_wall_ms_p95": 28.87364599155262
+      },
+      "log_loss": 0.8746783842113778,
+      "mean_latency_ms": 2724.2228641325582,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.838512995,
+          "log_loss": 2.4738374568148735,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.3990003611764706,
+          "log_loss": 1.2150492344619817,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.20068456259999998,
+          "log_loss": 0.6310195693178928,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.57790404,
+          "log_loss": 1.4279500363887232,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.2820189252482269,
+          "log_loss": 0.8707544717845881,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.838512995,
+          "log_loss": 2.4738374568148735,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.09114216299999998,
+          "log_loss": 0.3325493853538481,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.21566553375000003,
+          "log_loss": 0.6889796423257409,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.007844905,
+          "log_loss": 0.09272082962759931,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.73670482375,
+          "log_loss": 2.1892743408309823,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.8398352683333333,
+          "log_loss": 2.483022604342408,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.14349473,
+          "log_loss": 0.47186358377225796,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.007436845,
+          "log_loss": 0.09017711654983848,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.09084587999999999,
+          "log_loss": 0.33057803058088747,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.010736471,
+          "log_loss": 0.10934112054017228,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.010825262999999998,
+          "log_loss": 0.10983049978401296,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.25870848999999996,
+          "log_loss": 0.8181898651842362,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.010193298,
+          "log_loss": 0.10638847770670656,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.709930604,
+          "log_loss": 2.0139820984070047,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.808688362,
+          "log_loss": 2.3034172739213195,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.00833825,
+          "log_loss": 0.0957418251509019,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.48271705333333337,
+          "log_loss": 1.4548184196720564,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.20068456259999998,
+          "log_loss": 0.6310195693178928,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          0.0022201594074895844,
+          0.0745018690248408
+        ],
+        "brier_diff": 0.037257741557862586,
+        "log_loss_ci95": [
+          0.06488847336286414,
+          0.30888755531125267
+        ],
+        "log_loss_diff": 0.18263006680042843,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    },
+    "deterministic_constant_0_5": {
+      "accuracy_at_0_5": 0.3380281690140845,
+      "backend": "deterministic_constant_0_5",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.25,
+      "brier_improvement": -0.026234874032929983,
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5,
+          "n": 142,
+          "observed_rate": 0.3380281690140845
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.1619718309859155,
+      "log_loss": 0.6931471805599453,
+      "mean_latency_ms": 0.0,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          -0.024406477065561743,
+          0.029955988023926974
+        ],
+        "brier_diff": 0.0031551183184259754,
+        "log_loss_ci95": [
+          -0.0567155282748613,
+          0.057487647846520835
+        ],
+        "log_loss_diff": 0.0010988631489959127,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    },
+    "deterministic_loo_group_prior": {
+      "accuracy_at_0_5": 0.6619718309859155,
+      "backend": "deterministic_loo_group_prior",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.24684488168157404,
+      "brier_improvement": -0.02307975571450402,
+      "calibration_bins": [
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.3404377632451415,
+          "n": 142,
+          "observed_rate": 0.3380281690140845
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.0024095942310570218,
+      "log_loss": 0.6920483174109493,
+      "mean_latency_ms": 0.0,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.48999999999999994,
+          "log_loss": 1.2039728043259361,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.28406566046908777,
+          "log_loss": 0.7683045632526415,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.2147374074283453,
+          "log_loss": 0.6251672348715751,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.49421957148510365,
+          "log_loss": 1.2140484563146776,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.24509045125743553,
+          "log_loss": 0.6883461887662421,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.48999999999999994,
+          "log_loss": 1.2039728043259361,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.15612244897959182,
+          "log_loss": 0.5006114187692512,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.19641975308641973,
+          "log_loss": 0.5831597862796889,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.12532633597954074,
+          "log_loss": 0.43697837381424104,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.4315363511659809,
+          "log_loss": 1.078047850069528,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.4757978581703874,
+          "log_loss": 1.1704768498977538,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.17130640950503492,
+          "log_loss": 0.5313271195873509,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.13297812199672113,
+          "log_loss": 0.45359759385862564,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.15612244897959182,
+          "log_loss": 0.5006114187692512,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.13297812199672113,
+          "log_loss": 0.45359759385862564,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.13297812199672113,
+          "log_loss": 0.45359759385862564,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.21177285318559558,
+          "log_loss": 0.6148882750801842,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.13297812199672113,
+          "log_loss": 0.45359759385862564,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.4536180677257051,
+          "log_loss": 1.127882379875921,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.5048476454293629,
+          "log_loss": 1.2396908869280152,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.13297812199672113,
+          "log_loss": 0.45359759385862564,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.32329124895116623,
+          "log_loss": 0.8512889901237453,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.2147374074283453,
+          "log_loss": 0.6251672348715751,
+          "n": 100,
+          "positives": 24
+        }
+      }
+    },
+    "deterministic_samples_prior": {
+      "accuracy_at_0_5": 0.3380281690140845,
+      "backend": "deterministic_samples_prior",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.2657200344926703,
+      "brier_improvement": -0.04195490852560027,
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5428571428571428,
+          "n": 142,
+          "observed_rate": 0.3380281690140845
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.20482897384305832,
+      "log_loss": 0.7246691115561138,
+      "mean_latency_ms": 0.0,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.20897959183673473,
+          "log_loss": 0.6109090823229733,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.2543577430972389,
+          "log_loss": 0.7018886301076752,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.2741224489795918,
+          "log_loss": 0.7415152775872342,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.20897959183673473,
+          "log_loss": 0.6109090823229733,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.2661224489795918,
+          "log_loss": 0.7254759202740793,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.20897959183673473,
+          "log_loss": 0.6109090823229733,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.2861224489795918,
+          "log_loss": 0.7655743135569665,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.273265306122449,
+          "log_loss": 0.7397967750179676,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.2946938775510204,
+          "log_loss": 0.7827593392496324,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.21969387755102043,
+          "log_loss": 0.6323903644388056,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.20897959183673473,
+          "log_loss": 0.6109090823229733,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.2804081632653061,
+          "log_loss": 0.7541176297618559,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.2946938775510204,
+          "log_loss": 0.7827593392496324,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.2861224489795918,
+          "log_loss": 0.7655743135569665,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.2946938775510204,
+          "log_loss": 0.7827593392496324,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.2946938775510204,
+          "log_loss": 0.7827593392496324,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.2689795918367347,
+          "log_loss": 0.7312042621716346,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.2946938775510204,
+          "log_loss": 0.7827593392496324,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.2175510204081633,
+          "log_loss": 0.6280941080156393,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.2089795918367347,
+          "log_loss": 0.6109090823229733,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.2946938775510204,
+          "log_loss": 0.7827593392496324,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.24571428571428572,
+          "log_loss": 0.6845591924343986,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.2741224489795918,
+          "log_loss": 0.7415152775872342,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          -0.015955559061290293,
+          0.05322762877022771
+        ],
+        "brier_diff": 0.018875152811096287,
+        "log_loss_ci95": [
+          -0.03984041490795635,
+          0.10430264899608765
+        ],
+        "log_loss_diff": 0.032620794145164424,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    },
+    "failopen_ollama_deadport": {
+      "backend_error_kinds": {
+        "create:URLError": 142
+      },
+      "denominators": {
+        "coverage": 0.0,
+        "n_backend_error": 142,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 0,
+        "n_unknown_label": 0
+      },
+      "ece": null,
+      "latency": {
+        "backend_create_ms": 35.35118297440931,
+        "cold_total_ms": null,
+        "first_call_wall_ms": null,
+        "n_calls": 0,
+        "warm_reported_latency_ms_max": null,
+        "warm_reported_latency_ms_p50": null,
+        "warm_reported_latency_ms_p95": null,
+        "warm_wall_ms_max": null,
+        "warm_wall_ms_p50": null,
+        "warm_wall_ms_p95": null
+      },
+      "n": 0,
+      "n_probability_exactly_0_or_1": 0,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {}
+    },
+    "julia_1": {
+      "accuracy_at_0_5": 0.6197183098591549,
+      "backend": "julia_1",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.2562744302469406,
+      "brier_improvement": -0.03250930427987056,
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.13322624908612438,
+          "n": 42,
+          "observed_rate": 0.2857142857142857
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.28669744068222697,
+          "n": 48,
+          "observed_rate": 0.25
+        },
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.47523963689977955,
+          "n": 17,
+          "observed_rate": 0.6470588235294118
+        },
+        {
+          "hi": 0.8,
+          "lo": 0.6,
+          "mean_probability": 0.7184009717370411,
+          "n": 19,
+          "observed_rate": 0.21052631578947367
+        },
+        {
+          "hi": 1.0,
+          "lo": 0.8,
+          "mean_probability": 0.9136794167628929,
+          "n": 16,
+          "observed_rate": 0.5625
+        }
+      ],
+      "calibration_bins_10": [
+        {
+          "hi": 0.1,
+          "lo": 0.0,
+          "mean_probability": 0.07140566495131632,
+          "n": 9,
+          "observed_rate": 0.6666666666666666
+        },
+        {
+          "hi": 0.2,
+          "lo": 0.1,
+          "mean_probability": 0.15008640839561746,
+          "n": 33,
+          "observed_rate": 0.18181818181818182
+        },
+        {
+          "hi": 0.3,
+          "lo": 0.2,
+          "mean_probability": 0.25311189439328363,
+          "n": 31,
+          "observed_rate": 0.1935483870967742
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.3,
+          "mean_probability": 0.34794167215030014,
+          "n": 17,
+          "observed_rate": 0.35294117647058826
+        },
+        {
+          "hi": 0.5,
+          "lo": 0.4,
+          "mean_probability": 0.45859219779844773,
+          "n": 12,
+          "observed_rate": 0.5833333333333334
+        },
+        {
+          "hi": 0.6,
+          "lo": 0.5,
+          "mean_probability": 0.515193490742976,
+          "n": 5,
+          "observed_rate": 0.8
+        },
+        {
+          "hi": 0.7,
+          "lo": 0.6,
+          "mean_probability": 0.6496451988909413,
+          "n": 5,
+          "observed_rate": 0.0
+        },
+        {
+          "hi": 0.8,
+          "lo": 0.7,
+          "mean_probability": 0.7429566048963625,
+          "n": 14,
+          "observed_rate": 0.2857142857142857
+        },
+        {
+          "hi": 0.9,
+          "lo": 0.8,
+          "mean_probability": 0.830928470055004,
+          "n": 8,
+          "observed_rate": 0.125
+        },
+        {
+          "hi": 1.0,
+          "lo": 0.9,
+          "mean_probability": 0.9964303634707817,
+          "n": 8,
+          "observed_rate": 1.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.18560133799326398,
+      "ece_10bin": 0.18720061497465337,
+      "latency": {
+        "backend_create_ms": 37.552777968812734,
+        "cold_total_ms": 10802.542120974977,
+        "first_call_wall_ms": 10764.989343006164,
+        "n_calls": 142,
+        "warm_reported_latency_ms_max": 109.47927099186927,
+        "warm_reported_latency_ms_p50": 69.0695290104486,
+        "warm_reported_latency_ms_p95": 104.86671200487763,
+        "warm_wall_ms_max": 109.62920298334211,
+        "warm_wall_ms_p50": 69.15250298334286,
+        "warm_wall_ms_p95": 104.96823000721633
+      },
+      "log_loss": 0.7444416818699419,
+      "mean_latency_ms": 121.32811166295244,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.4725054021246947,
+          "log_loss": 1.4360788770203288,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.3141317533485181,
+          "log_loss": 0.8736763878808743,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.2193044626421839,
+          "log_loss": 0.6451709062141938,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 6.731957757389666e-11,
+          "log_loss": 8.204884516258876e-06,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.2580919793971506,
+          "log_loss": 0.7497213519194839,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.4725054021246947,
+          "log_loss": 1.4360788770203288,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.0734936762490113,
+          "log_loss": 0.2962284100273851,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.3158858049856258,
+          "log_loss": 0.8339492296063596,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.22892502881381357,
+          "log_loss": 0.6498030560951255,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.4063585055989755,
+          "log_loss": 1.1000990705924785,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.45652623573659,
+          "log_loss": 1.3086181268022796,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.13163625697839734,
+          "log_loss": 0.4136806148290983,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.6556315187129476,
+          "log_loss": 1.6766264872910075,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.13887898800803064,
+          "log_loss": 0.46052794748300857,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.046558870975215105,
+          "log_loss": 0.23916564151854458,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.025169897178397772,
+          "log_loss": 0.16545440710414797,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.40330100589055534,
+          "log_loss": 1.032506398752965,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.02695721898729612,
+          "log_loss": 0.17479809054253287,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.47807084951330553,
+          "log_loss": 1.4080311373944627,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.2826455409713469,
+          "log_loss": 0.7139755728618099,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.0623370599357328,
+          "log_loss": 0.28439496916607404,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.3442981626392184,
+          "log_loss": 0.9808006715264848,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.2193044626421839,
+          "log_loss": 0.6451709062141938,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          -0.03377416103059972,
+          0.05282424742003124
+        ],
+        "brier_diff": 0.009429548565366562,
+        "log_loss_ci95": [
+          -0.06470525352949232,
+          0.16697624506757966
+        ],
+        "log_loss_diff": 0.05239336445899245,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    },
+    "laya_421m": {
+      "accuracy_at_0_5": 0.6619718309859155,
+      "backend": "laya",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.22806609704225353,
+      "brier_improvement": -0.004300971075183513,
+      "calibration_bins": [
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.3839409523809524,
+          "n": 105,
+          "observed_rate": 0.3523809523809524
+        },
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.4208702702702703,
+          "n": 37,
+          "observed_rate": 0.2972972972972973
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.05553521126760562,
+      "latency": {
+        "backend_create_ms": 37.03322698129341,
+        "cold_total_ms": 13451.966687978711,
+        "first_call_wall_ms": 13414.933460997418,
+        "n_calls": 142,
+        "warm_reported_latency_ms_max": 695.3857290209271,
+        "warm_reported_latency_ms_p50": 420.48243997851387,
+        "warm_reported_latency_ms_p95": 451.3247339637019,
+        "warm_wall_ms_max": 695.4370699822903,
+        "warm_wall_ms_p50": 420.55095301475376,
+        "warm_wall_ms_p95": 451.39501901576295
+      },
+      "log_loss": 0.6489106303081246,
+      "mean_latency_ms": 425.42926958453853,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.38542755625,
+          "log_loss": 0.9700585958318086,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.25507714029411765,
+          "log_loss": 0.7036025594660184,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.20629342560000002,
+          "log_loss": 0.604623537152546,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.3059196099999999,
+          "log_loss": 0.8054204230427312,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.22751394446808512,
+          "log_loss": 0.6478006317780919,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.38542755625,
+          "log_loss": 0.9700585958318086,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.18250011400000002,
+          "log_loss": 0.5565443564690622,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.20071241125,
+          "log_loss": 0.5924656385437143,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.13814123,
+          "log_loss": 0.4646477997510574,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.36113490625,
+          "log_loss": 0.9208253001430817,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.37492974333333334,
+          "log_loss": 0.9475849776281685,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.1832363983333333,
+          "log_loss": 0.557127141345817,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.178765517,
+          "log_loss": 0.5495608840323641,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.190280297,
+          "log_loss": 0.5726334775869415,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.155011402,
+          "log_loss": 0.5003963308135724,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.150278657,
+          "log_loss": 0.49045946354603265,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.21840889,
+          "log_loss": 0.6291386798519396,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.152093978,
+          "log_loss": 0.4942763336241729,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.335188966,
+          "log_loss": 0.8659312098644447,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.350257066,
+          "log_loss": 0.8971155125179011,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.150149369,
+          "log_loss": 0.49017912321902884,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.27990579095238094,
+          "log_loss": 0.7543560902023594,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.20629342560000002,
+          "log_loss": 0.604623537152546,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          -0.030459047743245832,
+          -0.0076330642648594176
+        ],
+        "brier_diff": -0.018778784639320506,
+        "log_loss_ci95": [
+          -0.0688547456969009,
+          -0.018586602217724426
+        ],
+        "log_loss_diff": -0.04313768710282478,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    },
+    "nanojev": {
+      "accuracy_at_0_5": 0.6619718309859155,
+      "backend": "nanojev",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.22312146705211594,
+      "brier_improvement": 0.0006436589149540761,
+      "calibration_bins": [
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.34703769917998994,
+          "n": 140,
+          "observed_rate": 0.3357142857142857
+        },
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.4070993810892105,
+          "n": 2,
+          "observed_rate": 0.5
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.012472388190282922,
+      "latency": {
+        "backend_create_ms": 13.739202986471355,
+        "cold_total_ms": 17262.376161990687,
+        "first_call_wall_ms": 17248.636959004216,
+        "n_calls": 142,
+        "warm_reported_latency_ms_max": 36.5312960348092,
+        "warm_reported_latency_ms_p50": 27.784915000665933,
+        "warm_reported_latency_ms_p95": 29.520515992771834,
+        "warm_wall_ms_max": 36.814443999901414,
+        "warm_wall_ms_p50": 27.831692015752196,
+        "warm_wall_ms_p95": 29.564876982476562
+      },
+      "log_loss": 0.6383820255636988,
+      "mean_latency_ms": 34.41457271790722,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.41983467572079947,
+          "log_loss": 1.0446180272095267,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.2661115622053785,
+          "log_loss": 0.7275103087182465,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.19276777800651196,
+          "log_loss": 0.5755795291594864,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.4531870199838437,
+          "log_loss": 1.1183814163308587,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.22148979646394765,
+          "log_loss": 0.6349777745653502,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.41983467572079947,
+          "log_loss": 1.0446180272095267,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.15084601451409982,
+          "log_loss": 0.48879984006040295,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.19663150814330066,
+          "log_loss": 0.5835660998928835,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.13418525015331895,
+          "log_loss": 0.45608203876635883,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.37417737583004584,
+          "log_loss": 0.9495069472638136,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.4172387010894722,
+          "log_loss": 1.0393502294956791,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.19546305595655852,
+          "log_loss": 0.5830287515990962,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 0.09831924473123817,
+          "log_loss": 0.3758826698022968,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.15585737475480715,
+          "log_loss": 0.5000106968875817,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 0.10452179618347364,
+          "log_loss": 0.3903928895758827,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 0.11819139321784347,
+          "log_loss": 0.4206217731614288,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.21281892659241422,
+          "log_loss": 0.6171941860180822,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 0.12691921829644662,
+          "log_loss": 0.44043946615504864,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.38119853094294126,
+          "log_loss": 0.9647826022149255,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.46461683801098885,
+          "log_loss": 1.1449264483588855,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 0.11438844282086631,
+          "log_loss": 0.4127447193603292,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.29539215525593493,
+          "log_loss": 0.7879117789070618,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.19276777800651196,
+          "log_loss": 0.5755795291594864,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          -0.03000978982303149,
+          -0.01791582714136525
+        ],
+        "brier_diff": -0.023723414629458105,
+        "log_loss_ci95": [
+          -0.06774860897239011,
+          -0.04067067120631821
+        ],
+        "log_loss_diff": -0.05366629184725053,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    },
+    "qwen_7b_logprob": {
+      "accuracy_at_0_5": 0.6619718309859155,
+      "backend": "ollama:qwen2.5:7b-instruct",
+      "backend_error_kinds": {},
+      "base_rate_brier": 0.22376512596707002,
+      "brier": 0.3379954617559895,
+      "brier_improvement": -0.11423033578891947,
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 2.3524626635002406e-05,
+          "n": 142,
+          "observed_rate": 0.3380281690140845
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 142,
+        "n_missing_probability": 0,
+        "n_rows": 142,
+        "n_scored": 142,
+        "n_unknown_label": 0
+      },
+      "ece": 0.3380046443874495,
+      "latency": {
+        "backend_create_ms": 81.67069603223354,
+        "cold_total_ms": 536.9625780149363,
+        "first_call_wall_ms": 455.29188198270276,
+        "n_calls": 142,
+        "warm_reported_latency_ms_max": 79.0816230000928,
+        "warm_reported_latency_ms_p50": 52.395528997294605,
+        "warm_reported_latency_ms_p95": 57.51432600663975,
+        "warm_wall_ms_max": 79.12697701249272,
+        "warm_wall_ms_p50": 52.44164797477424,
+        "warm_wall_ms_p95": 57.55327397491783
+      },
+      "log_loss": 3.7538548697514194,
+      "mean_latency_ms": 51.16565639159681,
+      "n": 142,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.3380281690140845,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "slices": {
+        "app=browser": {
+          "brier": 0.9999620231933419,
+          "log_loss": 10.973212044765999,
+          "n": 8,
+          "positives": 8
+        },
+        "app=gtk3": {
+          "brier": 0.470568651211921,
+          "log_loss": 5.150807330385745,
+          "n": 34,
+          "positives": 16
+        },
+        "app=none": {
+          "brier": 0.2399632524259846,
+          "log_loss": 2.701342459134582,
+          "n": 100,
+          "positives": 24
+        },
+        "execution_completed=False": {
+          "brier": 0.996943321209181,
+          "log_loss": 6.482808448366517,
+          "n": 1,
+          "positives": 1
+        },
+        "execution_completed=True": {
+          "brier": 0.3333220726818534,
+          "log_loss": 3.734500589052021,
+          "n": 141,
+          "positives": 47
+        },
+        "family=browser_submit": {
+          "brier": 0.9999620231933419,
+          "log_loss": 10.973212044765999,
+          "n": 8,
+          "positives": 8
+        },
+        "family=count_errors": {
+          "brier": 0.09999586456263924,
+          "log_loss": 1.0786539078633202,
+          "n": 10,
+          "positives": 1
+        },
+        "family=cua_agree": {
+          "brier": 0.24998981391919972,
+          "log_loss": 2.7080992031574405,
+          "n": 8,
+          "positives": 2
+        },
+        "family=cua_button_present": {
+          "brier": 2.9018855793369735e-10,
+          "log_loss": 1.6563021004713374e-05,
+          "n": 6,
+          "positives": 0
+        },
+        "family=cua_increment": {
+          "brier": 0.8749749007455132,
+          "log_loss": 9.802873508776436,
+          "n": 8,
+          "positives": 7
+        },
+        "family=cua_note": {
+          "brier": 0.9999454552206748,
+          "log_loss": 10.760288641443237,
+          "n": 6,
+          "positives": 6
+        },
+        "family=cua_size": {
+          "brier": 0.1666572818037383,
+          "log_loss": 1.7463060518098092,
+          "n": 6,
+          "positives": 1
+        },
+        "family=edit_config": {
+          "brier": 1.931971553247321e-10,
+          "log_loss": 1.311355047065656e-05,
+          "n": 10,
+          "positives": 0
+        },
+        "family=find_file": {
+          "brier": 0.09999791368856548,
+          "log_loss": 1.1470711018435997,
+          "n": 10,
+          "positives": 1
+        },
+        "family=json_field": {
+          "brier": 2.8842443787717702e-11,
+          "log_loss": 5.097076285869892e-06,
+          "n": 10,
+          "positives": 0
+        },
+        "family=line_n": {
+          "brier": 2.6915313202333746e-11,
+          "log_loss": 4.856247784135075e-06,
+          "n": 10,
+          "positives": 0
+        },
+        "family=no_tool_math": {
+          "brier": 0.29999246001815444,
+          "log_loss": 3.396207024247218,
+          "n": 10,
+          "positives": 3
+        },
+        "family=read_code": {
+          "brier": 2.7342600990276002e-11,
+          "log_loss": 5.003613350320384e-06,
+          "n": 10,
+          "positives": 0
+        },
+        "family=sum_numbers": {
+          "brier": 0.8996655450317407,
+          "log_loss": 9.778413788351534,
+          "n": 10,
+          "positives": 9
+        },
+        "family=uppercase_copy": {
+          "brier": 0.9999807405747128,
+          "log_loss": 11.613040948503397,
+          "n": 10,
+          "positives": 10
+        },
+        "family=write_token": {
+          "brier": 1.0773589822766069e-10,
+          "log_loss": 9.750048860384464e-06,
+          "n": 10,
+          "positives": 0
+        },
+        "kind=cua": {
+          "brier": 0.5714054839702869,
+          "log_loss": 6.259836799791508,
+          "n": 42,
+          "positives": 24
+        },
+        "kind=file": {
+          "brier": 0.2399632524259846,
+          "log_loss": 2.701342459134582,
+          "n": 100,
+          "positives": 24
+        }
+      },
+      "vs_reference_descriptive": {
+        "brier_ci95": [
+          0.04263278941654343,
+          0.13931424930207398
+        ],
+        "brier_diff": 0.09115058007441547,
+        "log_loss_ci95": [
+          2.284315128486152,
+          3.8448100811171515
+        ],
+        "log_loss_diff": 3.0618065523404696,
+        "n_common": 142,
+        "note": "two-sided descriptive interval; no claim"
+      }
+    }
+  },
+  "schema": "stack2.confirm.lane_analysis.v1"
+}

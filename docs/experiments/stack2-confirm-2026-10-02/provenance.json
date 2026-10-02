@@ -1,0 +1,83 @@
+{
+ "cua_commits": {
+  "analysis_code": "821d895a4d12adcb9212e1381d47505e91b91275",
+  "base": "2013aa364 (exp/stack-addr-20261002)",
+  "freeze": "fa8399e145f3fc04f961c426b568038b494eb4cc",
+  "prereg": "f11cd9d83381f2bc9a69da3bbfced3eb682fe6e2"
+ },
+ "dataset": {
+  "content_sha256": "281a20e46c5b01ad62e1cfc682b251b758e86923457a68dee56962093bb0bdbe"
+ },
+ "gpu": "RTX 3080 Ti 12 GB shared; a foreign process held ~0.9 GB and 18-32% utilisation during scoring; the 11500 chat model (6.56 GB) was unloaded before nanojev and decider_2b",
+ "hermes_commits": {
+  "7dc9ea033c": "cherry-pick of 5d01f608 (SAMPLES harness hygiene)",
+  "b51c7a222e7a0fb29d1da8933a6c08b956b86f61": "Ollama logprob adapter refuses single-label top-k (measured and scoring build)",
+  "base": "d39e1175f36ab0dcdc552c2eb128f30efdfa4a1f (exp/stack-addr-20261002)"
+ },
+ "identities": {
+  "cua_driver": {
+   "binary": "cua-driver-r2-main-229b65b28",
+   "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+   "version": "0.32.0"
+  },
+  "cua_packet_commits": {
+   "analysis_code": "821d895a4",
+   "prereg": "f11cd9d83"
+  },
+  "executor_model": {
+   "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+   "model": "qwen2.5:7b-instruct",
+   "native_context": 32768,
+   "parameter_size": "7.6B",
+   "quantization": "Q4_K_M",
+   "server": "user-local Ollama 0.35.0 127.0.0.1:11500"
+  },
+  "fixtures": {
+   "gtk3_main_py_sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+   "jev_use_fixture_server_sha256": "0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf"
+  },
+  "hermes": {
+   "branch": "exp/stack-confirm-20261002",
+   "commit": "b51c7a222e7a0fb29d1da8933a6c08b956b86f61",
+   "runtime_identical_to": "d39e1175f36ab0dcdc552c2eb128f30efdfa4a1f (exp/stack-addr-20261002 head; diff touches only lab offline scripts and tests/lab)"
+  },
+  "session_kits": {
+   "cua_x11_session_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+   "hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b"
+  },
+  "workload": {
+   "fixtures_tree_sha256": "d3febae7403a202170a7bbabaf0312fcb005b4301c7d5bb25a922450b2246fe1",
+   "tasks_sha256": "f192ff16d66e280acd8572b3fd166d512ecbd4bc704338c5f50ce0fd4bac7ec2"
+  },
+  "z0intelligence": {
+   "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a",
+   "ref": "origin/dev (detached worktree)"
+  }
+ },
+ "model_server": "shared user-local Ollama 0.35.0 on 127.0.0.1:11500 (OLLAMA_CONTEXT_LENGTH=65536, NUM_PARALLEL=2, flash attention, q8_0 KV, KEEP_ALIVE 30m), not started/stopped/reconfigured by this lane; no tag created; nothing pulled",
+ "schema": "stack2.confirm.provenance.v1",
+ "timeline_utc": {
+  "chat_model_unloaded": "20:26:14",
+  "collection": "19:29:47-20:00:54",
+  "freeze_commit": "20:02:56",
+  "pilots": "19:22-19:27",
+  "prereg_commit": "before 19:29:41",
+  "scoring": "20:03:09-20:42:18"
+ },
+ "vendor_sha256": {
+  "evaluate_shadow.py": "ec407eb65371127eccd594f90904b5975e743bfb10ef537c7ff82a3a218235e9",
+  "ollama_logprob_backend.py": "8cf79efd4dbb185206dd89c17e548af7e97b17daf2b28d1a83b068eec430bafc",
+  "shadow_api_failure.py": "2ac24fbc15a1de2edd50fdd4b0ad28651d0cb3616314246c95de15a209c342db"
+ },
+ "z0int": {
+  "backend_identities": {
+   "decider_2b": "Mapika/decider-2b@1d96be0093133e194fe18105a521b3e69be931d2",
+   "julia_1": "SupersonicLabs/Julia-1@a85b127321d580d65176c89ced8273f305745d85 (model.safetensors sha256 df853bf7...)",
+   "laya_421m": "convaiinnovations/laya@7c76b622dfc5cac71b2dc1c29873efe2ce509a05",
+   "nanojev": "C-Tianyu/NanoJev@4a19595eada0857133c0d2be024f879a4077054b, best.safetensors sha256 fff62d1412685c1714eaa386acb603f9690371fb3cc8ad03dc41319302597c28",
+   "qwen_7b_logprob": "ollama:qwen2.5:7b-instruct digest 845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e on 127.0.0.1:11500"
+  },
+  "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a",
+  "venv_python": "3.11.14"
+ }
+}

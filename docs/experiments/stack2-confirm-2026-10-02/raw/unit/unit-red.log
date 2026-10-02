@@ -1,0 +1,44 @@
+.......FF                                                                [100%]
+=================================== FAILURES ===================================
+________ test_ollama_backend_refuses_when_only_one_label_has_mass[top0] ________
+
+top = [{'token': 'true', 'logprob': -0.01}, {'token': 'Sure', 'logprob': -5.0}]
+
+    @pytest.mark.parametrize("top", [
+        [{"token": "true", "logprob": -0.01}, {"token": "Sure", "logprob": -5.0}],
+        [{"token": " False", "logprob": -0.02}, {"token": "maybe", "logprob": -4.0}],
+    ])
+    def test_ollama_backend_refuses_when_only_one_label_has_mass(top):
+        # Renormalising a single present label would emit exactly p=0 or p=1 (one-hot); refuse instead.
+        pytest.importorskip("z0int.backends.base")
+        module = _load("ollama_logprob_backend")
+        from z0int.backends.base import request_from_mapping
+        backend = module.OllamaLogprobBackend("m", post=_FakeOllama(top), revision="d")
+>       with pytest.raises(ValueError, match="absent from the top"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/lab/test_z0_hermes_shadow_denominators.py:194: Failed
+________ test_ollama_backend_refuses_when_only_one_label_has_mass[top1] ________
+
+top = [{'token': ' False', 'logprob': -0.02}, {'token': 'maybe', 'logprob': -4.0}]
+
+    @pytest.mark.parametrize("top", [
+        [{"token": "true", "logprob": -0.01}, {"token": "Sure", "logprob": -5.0}],
+        [{"token": " False", "logprob": -0.02}, {"token": "maybe", "logprob": -4.0}],
+    ])
+    def test_ollama_backend_refuses_when_only_one_label_has_mass(top):
+        # Renormalising a single present label would emit exactly p=0 or p=1 (one-hot); refuse instead.
+        pytest.importorskip("z0int.backends.base")
+        module = _load("ollama_logprob_backend")
+        from z0int.backends.base import request_from_mapping
+        backend = module.OllamaLogprobBackend("m", post=_FakeOllama(top), revision="d")
+>       with pytest.raises(ValueError, match="absent from the top"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/lab/test_z0_hermes_shadow_denominators.py:194: Failed
+=========================== short test summary info ============================
+FAILED tests/lab/test_z0_hermes_shadow_denominators.py::test_ollama_backend_refuses_when_only_one_label_has_mass[top0]
+FAILED tests/lab/test_z0_hermes_shadow_denominators.py::test_ollama_backend_refuses_when_only_one_label_has_mass[top1]
+2 failed, 7 passed in 1.44s
