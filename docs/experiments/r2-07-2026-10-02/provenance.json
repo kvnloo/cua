@@ -7,7 +7,8 @@
   "trycua_cua_pr_4316_head_merged": "a0bca744067d04f05904319d3d919be30c336556",
   "tested_source_merge_commit": "031ee5f58c222ea60ca0fcaf0a7858535a73c75b",
   "prereg_commit": "ba264324b (PREREG.json + harness; committed 2026-10-02T02:12:57Z, first measured trial 2026-10-02T02:15:40Z)",
-  "publication_sha": "the commit on this branch that adds this file and README (see git log); the worker does not push",
+  "publication_sha": "the latest commit on this branch touching this file and README (see git log); the worker does not push",
+  "disposition": "KILL under the binding spec (N4a Driver-accepted stale dispatch); REVISE only under the proposed PREREG attribution amendment, which is not in force",
   "rust_tree_identity": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 031ee5f58 -- libs/cua-driver/rust succeeds (rust_identical_to_229b65b28=true in every validity.json)",
   "examples_identity": "libs/cua-driver/examples/jev-use at HEAD identical to 031ee5f58 in every phase (examples_identical_to_tested_sha=true)"
  },
@@ -20,7 +21,7 @@
  "provider": {"name": "TypeSafe (live)", "model_reported": "jev-1.13.0", "key": "forwarded by name only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY); never printed or recorded", "lane_cap_reached": 80, "attempts": 68, "reached": 68},
  "environment": {
   "display": "private rootless Xvfb 1920x1080x24 via cua-x11-session.sh (sha256 de01a439...), openbox + picom xrender, private dbus; env -i scrubbed; no WAYLAND_DISPLAY/HYPRLAND_*/host XDG_RUNTIME_DIR",
-  "browser": "Google Chrome 151.0.7922.71 selected by the Driver (isolated_new profile per trial)",
+  "browser": "Google Chrome 151.0.7922.71 selected by the Driver (isolated_new profile per trial); version from the installed google-chrome 151.0.7922.71-1 package, not captured in raw/",
   "python": "3.12.13 (jev-use .venv via lane-deps.sh)",
   "host": "Linux 7.2.2 x86_64, 10 cores (SETUP.json); loadavg recorded per trial",
   "atspi": "not started (browser-only lane); harmless Driver WARN about the AT-SPI listener"

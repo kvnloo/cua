@@ -73,18 +73,23 @@ def receipt_components(rows: list[dict]) -> dict:
     last_mut_end = None
     fresh_ok, fresh_total = 0, 0
     latest_snap, latest_snap_start = None, None
+    first_obs_end, first_prov_start = None, None
     for r in rec:
         if r.get("kind") == "driver_call" and r.get("t_start_ns", 0) >= t0 and r["t_start_ns"] <= end:
             span = (r["t_end_ns"] - r["t_start_ns"]) / 1e6
             if r.get("tool") == "get_browser_state" and r.get("arg_snapshot_format") == "semantic_v2":
                 obs += span
                 last_obs_end = r["t_end_ns"]
+                if first_obs_end is None:
+                    first_obs_end = r["t_end_ns"]
             elif r.get("tool") in ("browser_type", "browser_click"):
                 mut += span
                 if last_obs_end:
                     windows.append(round((r["t_start_ns"] - last_obs_end) / 1e6, 3))
         if r.get("kind") == "provider_response" and r.get("t_start_ns", 0) >= t0 and r["t_start_ns"] <= end:
             prov += (r["t_end_ns"] - r["t_start_ns"]) / 1e6
+            if first_prov_start is None:
+                first_prov_start = r["t_start_ns"]
         # G3 freshness (whole trial)
         if r.get("kind") == "driver_call" and r.get("tool") == "get_browser_state" and r.get("arg_snapshot_format") == "semantic_v2" and r.get("ok"):
             latest_snap, latest_snap_start = r.get("snapshot_id"), r["t_start_ns"]
@@ -97,7 +102,11 @@ def receipt_components(rows: list[dict]) -> dict:
     T = cell.get("T_ms")
     return {"observe_ms": round(obs, 3), "provider_ms": round(prov, 3), "mutation_ms": round(mut, 3),
             "other_ms": round(T - obs - prov - mut, 3) if T is not None else None,
-            "obs_to_dispatch_windows_ms": windows, "fresh_dispatch": [fresh_ok, fresh_total]}
+            "obs_to_dispatch_windows_ms": windows, "fresh_dispatch": [fresh_ok, fresh_total],
+            # caller-side time between the end of the first observation and the first provider request:
+            # live-provider setup inside "other" (absent in C, which never calls a provider)
+            "first_obs_end_to_first_provider_ms": (round((first_prov_start - first_obs_end) / 1e6, 3)
+                                                   if first_obs_end is not None and first_prov_start is not None else None)}
 
 
 def cell_valid(cell: dict) -> bool:
@@ -161,12 +170,25 @@ def analyze() -> dict:
             "models": sorted({d.get("model") for c, _ in cells for d in c.get("provider_responses", []) if d.get("model")}),
             "decision_routes": sorted({"/".join(str(x) for x in c.get("decision_routes", [])) for c, _ in cells}),
             "components_median": {k: med([x.get(k) for x in comps]) for k in ("observe_ms", "provider_ms", "mutation_ms", "other_ms")},
+            "first_obs_end_to_first_provider_ms_median": med([x.get("first_obs_end_to_first_provider_ms") for x in comps]),
             "obs_to_dispatch_window_ms_median": [med([x["obs_to_dispatch_windows_ms"][i] for x in comps if len(x["obs_to_dispatch_windows_ms"]) > i]) for i in range(2)],
             "fresh_dispatch": [sum(x["fresh_dispatch"][0] for x in comps), sum(x["fresh_dispatch"][1] for x in comps)],
             "loadavg_spawn_1m": [float(c["loadavg_at_spawn"][0]) for c, _ in cells],
             "T_by_position": {str(p): med([c["T_ms"] for c in ok if c["position"] == p]) for p in (1, 2, 3)},
         }
+    for arm in "ABC":
+        a = arms[arm]
+        T, pv, gap = a["T_ms"]["median"], a["components_median"]["provider_ms"] or 0.0, a["first_obs_end_to_first_provider_ms_median"] or 0.0
+        a["provider_share_of_T"] = {"decision_calls_only": round(pv / T, 3) if T else None,
+                                    "incl_first_request_setup": round((pv + gap) / T, 3) if T else None}
     S["warm"] = arms
+    # informational control (mock provider, shakedown smoke2, never a measured trial): same gap with no live client
+    mock_gap = {}
+    for arm in "AB":
+        vals = [receipt_components(rows).get("first_obs_end_to_first_provider_ms") for c, rows in trial_rows(RAW / "shakedown" / "smoke2")
+                if c.get("arm") == arm and c.get("independently_verified")]
+        mock_gap[arm] = {"n": len([v for v in vals if v is not None]), "median_ms": med(vals)}
+    S["provider_setup_gap_mock_shakedown_informational"] = mock_gap
     rounds = sorted({r for (r, a) in by})
     paired = {}
     for name, (x, y) in {"C_minus_B": ("C", "B"), "C_minus_A": ("C", "A"), "B_minus_A": ("B", "A")}.items():
@@ -330,7 +352,9 @@ def analyze() -> dict:
     sub_fresh = [sum(x[0] for x in c_fresh), sum(x[1] for x in c_fresh)]
     all_fresh = [sub_fresh[0] + neg_fresh[0] + p6_fresh[0], sub_fresh[1] + neg_fresh[1] + p6_fresh[1]]
     G3 = all_fresh[0] == all_fresh[1] and all_fresh[1] > 0
-    S["g3_fresh_dispatch"] = {"subprocess_receipts": sub_fresh, "negatives": neg_fresh, "reconcile": p6_fresh, "all": all_fresh}
+    S["g3_fresh_dispatch"] = {"subprocess_receipts": sub_fresh, "negatives": neg_fresh, "reconcile": p6_fresh, "all": all_fresh,
+                              "independence": {"launcher_driver_call_receipts_P3_P4_P7": sub_fresh,
+                                               "routine_self_record_P5_P6": [neg_fresh[0] + p6_fresh[0], neg_fresh[1] + p6_fresh[1]]}}
 
     # ---------------- costs
     n8 = [c for c in negs if c["row"] == "N8" and not c.get("_setup_failed")]
@@ -338,25 +362,51 @@ def analyze() -> dict:
     for c in n8:
         end = next((e["t_ms"] for e in c.get("events", []) if e["kind"] == "replay_end"), None)
         n8_stop.append(end)
+    # Every compiled-routine invocation gets exactly one class (mutually exclusive):
+    #   verified        - ended with a success outcome AND the journal confirmed it while the run was live
+    #                     (P6: journal_before_release, so a withheld submit applied by the exit-time release
+    #                     does not count)
+    #   stop_or_unknown - ended as an explicit stop or unknown
+    #   setup_failed    - the routine never started (environment failure, P5 block b1)
+    #   other           - anything else (must be 0)
+    SUCCESS = ("verified", "fallback_verified", "verified_by_reconcile")
+    def klass(phase, outcome, journal_ok):
+        if phase.endswith("-setup-failed"):
+            return "setup_failed"
+        if outcome in SUCCESS and journal_ok:
+            return "verified"
+        if outcome in ("stopped", "unknown"):
+            return "stop_or_unknown"
+        return "other"
     all_c = []  # every compiled-routine invocation
-    all_c.append({"phase": "P3", "outcome": p3c["reported_outcome"], "verified": p3c["independently_verified"], "wall_ms": p3c["process_wall_ms"], "reached": 0})
+    def add(phase, outcome, journal_ok, wall_ms, wall_kind, reached):
+        all_c.append({"phase": phase, "outcome": outcome, "class": klass(phase, outcome, journal_ok),
+                      "wall_ms": wall_ms, "wall_kind": wall_kind, "reached": reached})
+    add("P3", p3c["reported_outcome"], p3c["independently_verified"], p3c["process_wall_ms"], "subprocess_process_wall", 0)
     for (r, a), (c, _) in by.items():
         if a == "C":
-            all_c.append({"phase": "P4", "outcome": c.get("reported_outcome"), "verified": c.get("independently_verified"), "wall_ms": c.get("process_wall_ms"), "reached": c.get("http_reached", 0)})
+            add("P4", c.get("reported_outcome"), c.get("independently_verified"), c.get("process_wall_ms"), "subprocess_process_wall", c.get("http_reached", 0))
     for c in negs:
         if c["row"] != "N4a_ord":
-            all_c.append({"phase": "P5" + ("-setup-failed" if c.get("_setup_failed") else ""), "outcome": c["outcome"], "verified": c["independently_verified"], "wall_ms": c.get("wall_ms_informational"), "reached": 0})
+            add("P5" + ("-setup-failed" if c.get("_setup_failed") else ""), c["outcome"], c["independently_verified"],
+                c.get("wall_ms_informational"), "in_process_informational", 0)
     for f in sorted(glob.glob(str(RAW / "p6" / "*" / "cells" / "*.jsonl"))):
         c = jl(Path(f))[0]
-        all_c.append({"phase": "P6", "outcome": c["outcome"], "verified": c["independently_verified"], "wall_ms": c.get("wall_ms_informational"), "reached": 0})
+        jb = c.get("journal_before_release") or {}
+        add("P6", c["outcome"], jb.get("applied") == 1 and bool(jb.get("state_matches_token")),
+            c.get("wall_ms_informational"), "in_process_informational", 0)
     for x in p7:
-        all_c.append({"phase": "P7", "outcome": x["outcome"], "verified": False, "wall_ms": x["process_wall_ms"], "reached": x["http_reached"] or 0})
-    totals = {"invocations": len(all_c), "independently_verified": sum(1 for x in all_c if x["verified"]),
-              "explicit_stop_or_unknown": sum(1 for x in all_c if x["outcome"] in ("stopped", "unknown")),
-              "other": sum(1 for x in all_c if not x["verified"] and x["outcome"] not in ("stopped", "unknown")),
-              "wall_ms_sum": round(sum(x["wall_ms"] or 0 for x in all_c), 3),
-              "provider_reached": sum(x["reached"] for x in all_c),
-              "by_phase": {ph: sum(1 for x in all_c if x["phase"] == ph) for ph in ("P3", "P4", "P5", "P5-setup-failed", "P6", "P7")}}
+        add("P7", x["outcome"], False, x["process_wall_ms"], "subprocess_process_wall", x["http_reached"] or 0)
+    classes = ("verified", "stop_or_unknown", "setup_failed", "other")
+    totals = {"invocations": len(all_c),
+              "by_class": {k: sum(1 for x in all_c if x["class"] == k) for k in classes},
+              "by_phase": {ph: sum(1 for x in all_c if x["phase"] == ph) for ph in ("P3", "P4", "P5", "P5-setup-failed", "P6", "P7")},
+              "by_phase_and_class": {ph: {k: sum(1 for x in all_c if x["phase"] == ph and x["class"] == k) for k in classes}
+                                     for ph in ("P3", "P4", "P5", "P5-setup-failed", "P6", "P7")},
+              "wall_ms_sum_by_kind": {kind: round(sum(x["wall_ms"] or 0 for x in all_c if x["wall_kind"] == kind), 3)
+                                      for kind in ("subprocess_process_wall", "in_process_informational")},
+              "provider_reached": sum(x["reached"] for x in all_c)}
+    assert sum(totals["by_class"].values()) == totals["invocations"]
     saving_B = (arms["B"]["T_ms"]["median"] - arms["C"]["T_ms"]["median"]) if arms["C"]["T_ms"]["median"] is not None and arms["B"]["T_ms"]["median"] is not None else None
     saving_A = (arms["A"]["T_ms"]["median"] - arms["C"]["T_ms"]["median"]) if arms["C"]["T_ms"]["median"] is not None and arms["A"]["T_ms"]["median"] is not None else None
     overhead_incr = compile_info["compile_ms"] + (p3c["T_ms"] or 0)
@@ -415,19 +465,24 @@ def analyze() -> dict:
                       for f in arms["C"]["failures"])
     keep = (all(gates.values()) and paired["C_minus_B"].get("upper_below_0") and paired["C_minus_A"].get("upper_below_0")
             and arms["C"]["verified"] >= 19 and c_fail_safe)
-    if any(kill.values()):
-        disposition = "KILL"
-    elif keep:
-        disposition = "KEEP"
-    else:
-        disposition = "REVISE"
-    literal = "KILL" if (any(kill.values()) or stale_driver_node > 0) else disposition
+    # Spec-binding disposition (the lane spec is binding; a lane PREREG cannot amend it): the spec's KILL list
+    # says "any stale ... dispatch" and its N4 row says "the Driver must refuse the stale ref", so every
+    # Driver-accepted stale-node dispatch (N4a) is a stale dispatch for KILL.
+    kill_spec = dict(kill)
+    kill_spec["stale_dispatch_any"] = stale_routine > 0 or stale_driver_node > 0 or not G3
+    def decide(k):
+        return "KILL" if any(k.values()) else ("KEEP" if keep else "REVISE")
     S["gates"] = gates
-    S["kill_checks"] = kill
+    S["kill_checks_spec"] = kill_spec
+    S["kill_checks_proposed_amendment"] = kill
     S["duplicates_any_phase"] = duplicates_any
     S["unverified_success_any_phase"] = unverified_any
-    S["disposition"] = disposition
-    S["disposition_if_literal_stale_rule"] = literal
+    S["disposition"] = decide(kill_spec)
+    S["disposition_basis"] = "lane spec (binding): KILL list 'any stale or ambiguous dispatch'; N4 'the Driver must refuse the stale ref'"
+    S["disposition_under_proposed_amendment"] = decide(kill)
+    S["proposed_amendment"] = ("PREREG stale_dispatch_attribution (written after the mock shakedown had shown the N4a behaviour, "
+                               "so not blind): apply KILL only to routine-attributable stale dispatches; Driver-accepted "
+                               "stale-node dispatches fail G4 instead. For the planner to accept or reject; not in force.")
     S["budget"] = json.loads((RAW / "budget.json").read_text())
     return S
 

@@ -3,6 +3,7 @@
   "T_ms": 179.008,
   "cell": "learn-P3-r000-1-C",
   "components": {
+   "first_obs_end_to_first_provider_ms": null,
    "fresh_dispatch": [
     2,
     2
@@ -387,6 +388,12 @@
    "vs_B": 268.347
   },
   "totals_all_compiled_invocations": {
+   "by_class": {
+    "other": 0,
+    "setup_failed": 9,
+    "stop_or_unknown": 24,
+    "verified": 40
+   },
    "by_phase": {
     "P3": 1,
     "P4": 20,
@@ -395,12 +402,50 @@
     "P6": 13,
     "P7": 3
    },
-   "explicit_stop_or_unknown": 24,
-   "independently_verified": 43,
+   "by_phase_and_class": {
+    "P3": {
+     "other": 0,
+     "setup_failed": 0,
+     "stop_or_unknown": 0,
+     "verified": 1
+    },
+    "P4": {
+     "other": 0,
+     "setup_failed": 0,
+     "stop_or_unknown": 0,
+     "verified": 20
+    },
+    "P5": {
+     "other": 0,
+     "setup_failed": 0,
+     "stop_or_unknown": 18,
+     "verified": 9
+    },
+    "P5-setup-failed": {
+     "other": 0,
+     "setup_failed": 9,
+     "stop_or_unknown": 0,
+     "verified": 0
+    },
+    "P6": {
+     "other": 0,
+     "setup_failed": 0,
+     "stop_or_unknown": 3,
+     "verified": 10
+    },
+    "P7": {
+     "other": 0,
+     "setup_failed": 0,
+     "stop_or_unknown": 3,
+     "verified": 0
+    }
+   },
    "invocations": 73,
-   "other": 9,
    "provider_reached": 6,
-   "wall_ms_sum": 208138.418
+   "wall_ms_sum_by_kind": {
+    "in_process_informational": 169386.545,
+    "subprocess_process_wall": 38751.873
+   }
   },
   "wall_basis": {
    "break_even_vs_A_conservative": 8,
@@ -439,14 +484,25 @@
    ]
   }
  },
- "disposition": "REVISE",
- "disposition_if_literal_stale_rule": "KILL",
+ "disposition": "KILL",
+ "disposition_basis": "lane spec (binding): KILL list 'any stale or ambiguous dispatch'; N4 'the Driver must refuse the stale ref'",
+ "disposition_under_proposed_amendment": "REVISE",
  "duplicates_any_phase": 0,
  "g3_fresh_dispatch": {
   "all": [
    110,
    110
   ],
+  "independence": {
+   "launcher_driver_call_receipts_P3_P4_P7": [
+    45,
+    45
+   ],
+   "routine_self_record_P5_P6": [
+    65,
+    65
+   ]
+  },
   "negatives": [
    39,
    39
@@ -468,7 +524,7 @@
   "G5": true,
   "G6": true
  },
- "kill_checks": {
+ "kill_checks_proposed_amendment": {
   "C_minus_B_ci_not_below_0": false,
   "ambiguous_dispatch": false,
   "authority_in_artifact": false,
@@ -478,10 +534,22 @@
   "routine_attributable_stale_dispatch": false,
   "unverified_success": false
  },
+ "kill_checks_spec": {
+  "C_minus_B_ci_not_below_0": false,
+  "ambiguous_dispatch": false,
+  "authority_in_artifact": false,
+  "duplicate_any_phase": false,
+  "failed_admission": false,
+  "n8_dispatched": false,
+  "routine_attributable_stale_dispatch": false,
+  "stale_dispatch_any": true,
+  "unverified_success": false
+ },
  "learning": {
   "T_ms": 675.408,
   "cell": "learn-P1-r000-1-A",
   "components": {
+   "first_obs_end_to_first_provider_ms": 65.983,
    "fresh_dispatch": [
     2,
     2
@@ -1214,6 +1282,17 @@
    "upper_below_0": true
   }
  },
+ "proposed_amendment": "PREREG stale_dispatch_attribution (written after the mock shakedown had shown the N4a behaviour, so not blind): apply KILL only to routine-attributable stale dispatches; Driver-accepted stale-node dispatches fail G4 instead. For the planner to accept or reject; not in force.",
+ "provider_setup_gap_mock_shakedown_informational": {
+  "A": {
+   "median_ms": 0.206,
+   "n": 1
+  },
+  "B": {
+   "median_ms": 0.287,
+   "n": 1
+  }
+ },
  "reconcile": {
   "dispatch_after_unknown": 0,
   "duplicates": 0,
@@ -1364,6 +1443,7 @@
    "duplicates": 0,
    "failures": [],
    "feedback_invalid": 0,
+   "first_obs_end_to_first_provider_ms_median": 49.377,
    "fresh_dispatch": [
     40,
     40
@@ -1405,6 +1485,10 @@
    "output_tokens": 1960,
    "process_wall_ms_median": 2015.361,
    "process_wall_ms_sum_all": 41698.972,
+   "provider_share_of_T": {
+    "decision_calls_only": 0.638,
+    "incl_first_request_setup": 0.712
+   },
    "reported_verified": 20,
    "unverified_success": 0,
    "verified": 20
@@ -1437,6 +1521,7 @@
    "duplicates": 0,
    "failures": [],
    "feedback_invalid": 0,
+   "first_obs_end_to_first_provider_ms_median": 49.637,
    "fresh_dispatch": [
     40,
     40
@@ -1478,6 +1563,10 @@
    "output_tokens": 1060,
    "process_wall_ms_median": 1814.776,
    "process_wall_ms_sum_all": 37044.051,
+   "provider_share_of_T": {
+    "decision_calls_only": 0.465,
+    "incl_first_request_setup": 0.574
+   },
    "reported_verified": 20,
    "unverified_success": 0,
    "verified": 20
@@ -1510,6 +1599,7 @@
    "duplicates": 0,
    "failures": [],
    "feedback_invalid": 0,
+   "first_obs_end_to_first_provider_ms_median": null,
    "fresh_dispatch": [
     40,
     40
@@ -1549,6 +1639,10 @@
    "output_tokens": 0,
    "process_wall_ms_median": 1515.468,
    "process_wall_ms_sum_all": 30942.636,
+   "provider_share_of_T": {
+    "decision_calls_only": 0.0,
+    "incl_first_request_setup": 0.0
+   },
    "reported_verified": 20,
    "unverified_success": 0,
    "verified": 20

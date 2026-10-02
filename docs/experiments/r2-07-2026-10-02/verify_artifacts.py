@@ -55,8 +55,14 @@ def main() -> int:
         f"{S['paired_T']['C_minus_A']['median']}", f"{S['paired_T']['C_minus_A']['ci95'][0]}", f"{S['paired_T']['C_minus_A']['ci95'][1]}",
         f"{S['paired_T']['B_minus_A']['median']}",
         f"{S['learning']['T_ms']}", f"{S['admission']['T_ms']}", f"{S['compile']['compile_ms']}",
-        f"{S['budget']['reached']}", S["disposition"],
+        f"{S['budget']['reached']}", f"**Disposition: {S['disposition']}**", S["disposition_under_proposed_amendment"],
     ]
+    tot = S["costs"]["totals_all_compiled_invocations"]
+    bc = tot["by_class"]
+    check(sum(bc.values()) == tot["invocations"] and bc["other"] == 0,
+          f"all-invocation classes are exclusive and sum to {tot['invocations']} ({bc})")
+    needles += [f"{tot['invocations']}: P3", f"**{bc['verified']} independently verified**",
+                f"**{bc['stop_or_unknown']} explicit stop/unknown**", f"**{bc['setup_failed']} setup failures**"]
     for n in needles:
         check(n in readme, f"README contains headline {n!r}")
 
