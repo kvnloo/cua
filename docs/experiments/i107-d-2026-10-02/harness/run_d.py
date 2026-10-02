@@ -108,6 +108,11 @@ def now() -> int:
     return time.monotonic_ns()
 
 
+def utc_now() -> str:
+    t = time.time()
+    return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(t)) + f".{int(t * 1000) % 1000:03d}Z"
+
+
 def sha16(value: str | None) -> str | None:
     return None if value is None else hashlib.sha256(value.encode()).hexdigest()[:16]
 
@@ -696,13 +701,14 @@ async def run_block(block: dict[str, Any], opts: Options) -> dict[str, Any]:
     manifest: dict[str, Any] = {"block": block["block"], "plan": block["plan"], "lock_label": opts.lock_label,
                                 "trials": [t["name"] for t in block["trials"]], "provider": "mock", "chooser": CHOOSER,
                                 "binary_sha256": opts.binary_sha256, "caller_tree": opts.caller_tree,
-                                "started_mono_ns": now(), "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                                "loadavg_start": loadavg(), "fixture_pid_separate": proc.pid != os.getpid()}
+                                "started_mono_ns": now(), "started_utc": utc_now(),
+                                "loadavg_start": loadavg(), "fixture_pid_separate": proc.pid != os.getpid(),
+                                "isolation": None if opts.fake else isolation_record(dict(os.environ))}
     try:
         for spec in block["trials"]:
             await run_trial(spec, opts, url)
     finally:
-        manifest.update(ended_mono_ns=now(), ended_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        manifest.update(ended_mono_ns=now(), ended_utc=utc_now(),
                         loadavg_end=loadavg(), network=dict(NETWORK))
         (Path(opts.out) / "manifests").mkdir(parents=True, exist_ok=True)
         (Path(opts.out) / "manifests" / f"{block['block']}.json").write_text(json.dumps(manifest, indent=1))
@@ -711,16 +717,42 @@ async def run_block(block: dict[str, Any], opts: Options) -> dict[str, Any]:
     return manifest
 
 
-def refuse_unsafe_environment(env: dict[str, str]) -> None:
+def hostless_ancestor(pid: int) -> int | None:
+    """The nearest process (self included) whose environment carries CUA_HOSTLESS=1 (set by the lanes'
+    hostless wrapper). cua-x11-session.sh clears the environment, so the process tree is checked."""
+    while pid > 1:
+        try:
+            environ = Path(f"/proc/{pid}/environ").read_bytes().split(b"\0")
+        except OSError:
+            environ = []
+        if b"CUA_HOSTLESS=1" in environ:
+            return pid
+        st = _stat(pid)
+        if st is None:
+            return None
+        pid = st[0]
+    return None
+
+
+def refuse_unsafe_environment(env: dict[str, str], ancestor: Any = None) -> None:
+    find = ancestor or (lambda: hostless_ancestor(os.getpid()))
     if env.get("WAYLAND_DISPLAY") or any(k.startswith("HYPRLAND") for k in env):
         raise SystemExit("refusing: host Wayland/Hyprland variables present")
-    if env.get("CUA_HOSTLESS") != "1":
-        raise SystemExit("refusing: not under hostless")
-    if not env.get("DISPLAY"):
-        raise SystemExit("refusing: no DISPLAY (run inside cua-x11-session.sh)")
     for name in (TRACE_ENV, KNOB_ENV, "CUA_E2E_BROWSER_NO_SANDBOX"):
         if name in env:
             raise SystemExit(f"refusing: {name} must not be set in the runner environment")
+    if not env.get("DISPLAY") or env.get("DISPLAY") in (":0", ":0.0"):
+        raise SystemExit("refusing: no private DISPLAY (run inside cua-x11-session.sh)")
+    if find() is None:
+        raise SystemExit("refusing: no hostless ancestor (CUA_HOSTLESS=1) in the process tree")
+
+
+def isolation_record(env: dict[str, str], ancestor: Any = None) -> dict[str, Any]:
+    find = ancestor or (lambda: hostless_ancestor(os.getpid()))
+    return {"hostless_ancestor_found": find() is not None,
+            "uid_map": " ".join((read_text("/proc/self/uid_map") or "").split()),
+            "display_is_private": bool(env.get("DISPLAY")) and env.get("DISPLAY") not in (":0", ":0.0"),
+            "wayland_display_set": bool(env.get("WAYLAND_DISPLAY"))}
 
 
 def main() -> None:

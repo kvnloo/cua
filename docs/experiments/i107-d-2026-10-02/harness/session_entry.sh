@@ -15,7 +15,13 @@ WT="$(cd "$HERE/../../../.." && pwd)"
 JEV="$WT/libs/cua-driver/examples/jev-use"
 [ -n "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ] && [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] \
   || { echo "refusing: not inside the isolated X11 session" >&2; exit 97; }
-[ "${CUA_HOSTLESS:-}" = "1" ] || { echo "refusing: not under hostless" >&2; exit 98; }
+# cua-x11-session.sh clears the environment: look for the hostless wrapper's CUA_HOSTLESS=1 up the tree.
+p=$$; found=""
+while [ "$p" -gt 1 ]; do
+  if tr '\0' '\n' < "/proc/$p/environ" 2>/dev/null | grep -qx 'CUA_HOSTLESS=1'; then found="$p"; break; fi
+  p="$(awk '{print $4}' "/proc/$p/stat" 2>/dev/null || echo 1)"
+done
+[ -n "$found" ] || { echo "refusing: no hostless ancestor (CUA_HOSTLESS=1)" >&2; exit 98; }
 SHA="f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed"
 TREE="$(git -C "$WT" rev-parse HEAD:libs/cua-driver/examples/jev-use 2>/dev/null || echo unknown)"
 mkdir -p "$OUT"
