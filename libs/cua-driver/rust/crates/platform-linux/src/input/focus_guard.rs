@@ -44,7 +44,7 @@ const SETTLE_WATCH: Duration = Duration::from_millis(220);
 /// be undone. When the target app already owns the focus the new window is
 /// its own and there is nothing to wait for.
 const SETTLE_WATCH_NEW_WINDOW: Duration = Duration::from_millis(900);
-const SETTLE_POLL: Duration = Duration::from_millis(30);
+const SETTLE_POLL: Duration = Duration::from_micros(30_000);
 /// Bound on the restore loop: re-activation, verification, one re-send.
 // Together with the extended settle watch this bounds the guard at
 // ~1.5 s worst case (menubar clicks were spending 4-9 s here while a popup's
