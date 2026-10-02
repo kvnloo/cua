@@ -1,0 +1,125 @@
+{
+ "schema": "cua.ar.fixtures_v1",
+ "created_utc": "2026-10-02T05:00Z",
+ "phase": "Phase 0 fixtures and controls (evaluator side; proposers never see this)",
+ "git": {
+  "worktree": "<lanes>/ar-fixtures",
+  "branch": "exp/ar-harness-20261002-fixtures",
+  "base_sha": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "commit_sha": "930cdec0b121070c04ffbec9a1d56e52eddb018f",
+  "pushed": false,
+  "merge_into": "exp/ar-harness-20261002 (by the AA agent)",
+  "dir": "docs/experiments/ar-harness-2026-10-02/fixtures/",
+  "manifest": {"file": "MANIFEST.sha256", "sha256": "249473be10c32d5406ac61b962c342bf2b353ae023728ba1176bf70ce9d4e96a",
+               "covers": ["ar_external.py", "ar_gtk3_app.py", "ar_layout.py", "ar_oracle.py", "ar_sandbox.py", "ar_trial.py",
+                          "build_reference.py", "validate_fixtures.py", "run_in_session.sh", "tests/test_fixtures_pure.py",
+                          "champion_reference.json", "validation-summary.json", "README.md"]},
+  "privacy_scan": "no /mnt, /home, host name or secrets in the committed files (grep of the staged diff)"
+ },
+ "champion": {
+  "source": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (unmodified upstream main as pinned by the R2 setup)",
+  "binary": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+  "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+  "version": "cua-driver 0.32.0",
+  "note": "no rebuild; the R2-04 phase-mark build (28b915ae9) was not used for validation"
+ },
+ "interface_for_harness": {
+  "entry": "ar_trial.run_trial(Harness(wt, driver, run_root, bus_monitor=bool, driver_label=str), fixture, kind, seed, index) -> dict",
+  "fixtures_and_kinds": {
+   "gtk3_checkbox": ["reference", "negative_stale_token", "negative_no_action", "canary_absent", "canary_disabled", "delayed_effect", "focus_steal"],
+   "gtk3_text": ["text_save"],
+   "browser": ["fill_submit"],
+   "browser_selfcheck": ["xdotool_trusted", "js_untrusted"]
+  },
+  "T_definition": "T_ms = (caller.t_done_ns - caller.t_spawn_ns)/1e6, harness CLOCK_MONOTONIC; t_spawn_ns immediately before the Driver (bwrap) exec; t_done_ns when the app journal first shows the expected effect with this trial's nonce+pid; verdict also requires journal t_handler_ns >= t_spawn_ns and t_applied_ns <= t_done_ns. Set only when caller.outcome == verified. App startup is before spawn (not in T); fresh verification observation, Driver shutdown and 1 s linger are after done (not in T).",
+  "record_keys": ["trial", "fixture", "kind", "seed", "T_ms", "verdict{passed,reasons}", "caller{outcome,dispatch_count,error_code,calls[],t_spawn_ns,t_done_ns,sandbox}", "oracle{verified,mutation_count,duplicate_mutation,foreign_records,ts_ok,t_handler_ns,t_applied_ns,delay_ms_observed,unchanged}", "extra{do_action_on_bus,steal_observed,focus_back_with_user}", "external{during,leftover,driver_tree,signature}", "layout", "initial", "loadavg_start", "loadavg_end"],
+  "paired_design": "layout_for(task, seed, variant) is deterministic: give both arms of an AB/BA pair the same seed; use fresh seeds across pairs",
+  "timed_blocks": "pass bus_monitor=False (--no-bus-monitor) or keep it identical across arms; run each timed block via quiet-timed",
+  "G2_new_process_socket_file": "ar_external.extra_vs_reference(record.external.signature, champion_reference.json cells[<fixture:kind>].external_signature_union) must be empty",
+  "G2_no_unverified_success": "ar_oracle.unverified_success_claims (last action claims verified/applied/confirmed but target never changed or changed after the tool returned) is part of every GTK verdict",
+  "G2_duplicate_mutation": "oracle.mutation_count (journal records, one per handler invocation) + extra.do_action_on_bus",
+  "G2_provenance_matches_route": "champion route for every GTK action is 'accessibility' (champion_reference.json routes); stale token has no route (refused)",
+  "run_command": "cd <worktree> && <lanes>/bin/hostless env CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" <lanes>/cua-x11-session.sh docs/experiments/ar-harness-2026-10-02/fixtures/run_in_session.sh <worktree> validate_fixtures.py --wt <worktree> --driver <bin> --run-root <tmp>/ar-fixtures/<run> --n 10 [--cells fixture:kind ...] [--no-bus-monitor]",
+  "unit_tests": "<lanes>/bin/hostless libs/cua-driver/examples/jev-use/.venv/bin/python -m unittest discover -s docs/experiments/ar-harness-2026-10-02/fixtures/tests  (32 tests, OK)"
+ },
+ "reference_task": {
+  "name": "gtk3_checkbox:reference",
+  "app": "ar_gtk3_app.py --task checkbox (system /usr/bin/python3 + PyGObject, GTK 3.24); one process per trial",
+  "provenance": {
+   "nonce": "128-bit hex, harness -> app over an inherited pipe (--nonce-fd), read to EOF; never in the UI; the Driver is spawned without it (close_fds) and cannot read the state dir",
+   "ready": "app -> harness over a second inherited pipe (--ready-fd): pid, X window id, layout, initial state, CLOCK_MONOTONIC",
+   "journal": "<private>/trials/<id>/state/journal.jsonl, written ONLY by the toggle handler (delayed variant: by the GLib timeout the handler schedules); one O_APPEND write per handler invocation with nonce, pid, handler_calls, checked, t_handler_ns, t_applied_ns (host CLOCK_MONOTONIC)",
+   "oracle": "ar_oracle.evaluate_gtk, read by the harness outside the sandbox: verified iff exactly one own record, no foreign record, checked == not initial, spawn <= handler <= applied <= done"
+  },
+  "randomized_per_trial": ["target label (12-label pool)", "3 distractor checkbox labels + 2 distractor buttons", "target position among 6 controls", "GTK widget names (ids)", "spacing/border", "window size and position", "initial checked state", "window title"],
+  "frozen_caller": "R2-04 scripted path: list_windows -> get_window_state(tree+screenshot) -> jev-use eligible_controls label lookup -> click(element_token, delivery_mode=background) -> poll journal (0.5 ms, 3 s deadline); no retry, no redispatch, no trace marks, no model",
+  "driver_sandbox": "ar_sandbox.driver_argv: bwrap --ro-bind / / --dev-bind /dev /dev --bind <trial_home> --bind <session XDG_RUNTIME_DIR> --tmpfs <private_root> --remount-ro <private_root> --die-with-parent -- <driver> mcp; HOME/TMPDIR in a fresh per-trial home; no pid/net/time namespace (shared CLOCK_MONOTONIC)"
+ },
+ "controls": {
+  "negative_stale_token": "observe twice, click the replaced snapshot's token -> must be refused with a stale code, journal empty, 0 DoAction",
+  "negative_no_action": "observe only -> journal empty, 0 DoAction",
+  "canary_absent": "no control has the target label (tree size kept) -> caller refused/unknown, journal empty",
+  "canary_disabled": "target eligible at observation; harness tells the app (control socket) to make it insensitive; caller clicks the fresh token -> Driver dispatch reached, outcome refused/unknown, journal empty",
+  "delayed_effect": "effect applied 200-500 ms (seeded) after the handler -> verified once, done >= applied, observed delay >= 200 ms, 1 caller dispatch, 1 DoAction, no early Driver claim",
+  "focus_steal": "separate 'User notes' process holds focus; 30-200 ms after the toggle the app maps a 'Notice' toplevel and takes focus (fresh server timestamp) -> verified once, xprop -spy journal shows the steal, focus ends with the user window"
+ },
+ "spot_checks": {
+  "gtk3_text:text_save": "ar_gtk3_app.py --task text: seeded field + Save labels; caller set_value(unique value) then click Save; oracle = Save-handler journal record note_saved == value, exactly once",
+  "browser:fill_submit": "jev-use fixture_server PAGE + capture-phase listener journal + seeded padding; caller browser_prepare(isolated_new) -> navigate -> semantic_v2 refs -> browser_type token -> browser_click(foreground) -> poll /state; oracle evaluate_browser: /state.submitted == token, exactly one POST (server CLOCK_MONOTONIC stamp <= done), in-order trusted pointerdown->mousedown->pointerup->mouseup->click on Submit then submit, no untrusted click",
+  "browser_selfcheck": "Driver-free oracle validation: harness-launched Chrome (sandbox on, throwaway profile) filled+submitted via XTest (must verify) and page-script button.click() (isTrusted false, must NOT verify)"
+ },
+ "external_checks": {
+  "module": "ar_external.py",
+  "process_socket_file_diff": "inventories of the private session tree (from the xvfb-run ancestor) before spawn, before Driver shutdown, after exit + 1 s: processes (comm), listening sockets held by them (unix ACC, tcp LISTEN, udp bound), files under trial home / session runtime dir / /dev/shm; harness pids and descendants ignored; normalised (digits, hex, mktemp suffixes); flattened to a signature",
+  "duplicate_mutation_counter": "journal record count + dbus-monitor Action.DoAction count on the private AT-SPI bus",
+  "oracle_timestamps": "app CLOCK_MONOTONIC handler/applied stamps; browser server CLOCK_MONOTONIC receive stamps",
+  "focus_journal": "xprop -root -spy _NET_ACTIVE_WINDOW with CLOCK_MONOTONIC stamps",
+  "trace_marks_used": false
+ },
+ "validation": {
+  "evidence_class": "REAL (correctness only; no timing claim; not under the quiet-lane lock; nice 10; private sessions under hostless)",
+  "n_per_cell": 10,
+  "runs": {
+   "final2-A": {"session_log": "<lanes>/artifacts/ar/fixtures-validation/final2-A.log", "summary": "<lanes>/artifacts/ar/fixtures-validation/final2-A.summary.json", "ledger": "<tmp>/ar-fixtures/final2-A/private/ledger.jsonl", "seed_base": 50000, "loadavg_1m_range": [3.0, 12.53]},
+   "final2-B": {"session_log": "<lanes>/artifacts/ar/fixtures-validation/final2-B.log", "summary": "<lanes>/artifacts/ar/fixtures-validation/final2-B.summary.json", "ledger": "<tmp>/ar-fixtures/final2-B/private/ledger.jsonl", "seed_base": 60000, "loadavg_1m_range": [3.45, 5.76]}
+  },
+  "fixture_sha256_matches_commit": true,
+  "cells": {
+   "gtk3_checkbox:reference": {"passed": 10, "of": 10, "facts": "route accessibility, 1 DoAction, 1 record, fresh observation agrees 10/10"},
+   "gtk3_checkbox:negative_stale_token": {"passed": 10, "of": 10, "facts": "refused stale_element_token, 0 DoAction, journal empty"},
+   "gtk3_checkbox:negative_no_action": {"passed": 10, "of": 10, "facts": "0 DoAction, journal empty"},
+   "gtk3_checkbox:canary_absent": {"passed": 10, "of": 10, "facts": "caller unknown (target not found), journal empty"},
+   "gtk3_checkbox:canary_disabled": {"passed": 10, "of": 10, "facts": "1 DoAction on the now-insensitive target, effect unverifiable, caller unknown, journal empty"},
+   "gtk3_checkbox:delayed_effect": {"passed": 10, "of": 10, "facts": "delay 273-500 ms; tool returned before the effect in 9/10; done after effect 10/10; 1 DoAction, 1 record"},
+   "gtk3_checkbox:focus_steal": {"passed": 10, "of": 10, "facts": "steal observed 10/10, focus restored to user window 10/10, 1 record"},
+   "gtk3_text:text_save": {"passed": 10, "of": 10, "facts": "route accessibility, 2 DoAction (set_value activate commit + Save), 1 record, fresh value agrees 10/10"},
+   "browser_selfcheck:xdotool_trusted": {"passed": 10, "of": 10, "facts": "trusted sequence complete, 1 POST, verified"},
+   "browser_selfcheck:js_untrusted": {"passed": 10, "of": 10, "facts": "untrusted click + 1 POST, correctly not verified"},
+   "browser:fill_submit": {"passed": 0, "of": 10, "status": "BLOCKED", "facts": "browser_prepare refused browser_route_unavailable 10/10 under hostless"}
+  },
+  "earlier_runs_superseded": ["probe1-4 (development)", "val-A (70/70, before final normalisation fix)", "final-A (70/70) + final-B (text_save failed on an evaluator verdict bug: set_value's effect=confirmed was checked against the Save journal record; fixed by checking only the last action; all re-run as final2)"]
+ },
+ "champion_reference": {"file": "docs/experiments/ar-harness-2026-10-02/fixtures/champion_reference.json", "sha256": "0203f3a6d23676d74f3baca713ed52e3339ea0bcfce080372b9a65bc276dc9a9", "includes": "per cell: external_signature_union, error_codes, routes, do_action_on_bus, mutation_counts, outcomes"},
+ "champion_observations_worth_knowing": [
+  "the Driver omits insensitive controls from get_window_state entirely",
+  "a click on a control made insensitive after observation still sends DoAction, reports effect unverifiable, and changes nothing",
+  "the focus guard restores the first observed change (incl. a stacking_top change from a newly mapped window) and returns; a focus steal after that restore is not undone",
+  "the Driver forks pacman at startup (installation detection), does a network version check and default telemetry; all in the reference set",
+  "inside hostless every root-owned file is uid 65534, so the isolated browser launch is refused"
+ ],
+ "deviations": [
+  "browser spot check cannot run on any Driver under hostless (see blockers); its oracle is validated Driver-free",
+  "the browser Driver would run without bwrap even when unblocked (same root-ownership check); HOME/TMPDIR still per trial",
+  "delayed variant journal line is written by the GLib timeout the handler schedules",
+  "focus_steal timing chosen inside the champion's settle window (30-200 ms after the toggle)",
+  "canary_disabled disables after observation (champion omits insensitive controls)",
+  "Driver HOME/TMPDIR moved to a fresh per-trial home (R2-04 used one session HOME)",
+  "bus monitor on during validation; off or identical across arms for timed blocks"
+ ],
+ "n01_packet": "not present at writing (artifacts/r2/n-01 empty; w1-n01-native-ab at 28b915ae9); nothing duplicated",
+ "blockers": [
+  "browser:fill_submit spot check is blocked on the champion: hostless (bwrap user namespace) shows root-owned /opt/google/chrome as uid 65534 and the Driver's isolated launch requires a root-owned, non-writable Chromium (platform-linux browser_platform.rs trusted_root_owned_installation) -> browser_route_unavailable 10/10. The only alternative route (existing_profile) needs an explicit grant (safety relaxation), not used. Owner decision needed: an isolation that keeps host uid 0 as root, or accept browser_selfcheck + gtk3_text as the pre-keep spot checks."
+ ],
+ "hard_rule_breach": "none",
+ "near_miss": "host-shell python3 heredocs were used for file edits and to read JSON ledgers (no GUI import, no display/session access, no effect possible); all later code execution moved under hostless. All Driver/GTK/Chrome/test runs were under hostless + private session."
+}

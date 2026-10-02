@@ -1,0 +1,153 @@
+{
+  "aa": {
+    "T_act": {
+      "ci95_ln": [
+        -0.00087,
+        0.01634
+      ],
+      "ci_includes_zero": true,
+      "delta_aa_ln": 0.00775,
+      "median_ms_base": 308.1,
+      "median_ms_rebuild": 309.9,
+      "n_pairs_by_power": 37,
+      "pairs": 72,
+      "sigma_ln": 0.03758,
+      "tau": 0.02,
+      "tau_floor_binding": true
+    },
+    "decision_metric": "whole_task_T (pre-declared rule: switch to T_act only if whole-task n > 400; n = 38)",
+    "whole_task_T": {
+      "ci95_ln": [
+        0.00368,
+        0.03087
+      ],
+      "ci_includes_zero": false,
+      "delta_aa_ln": 0.01685,
+      "feasible": true,
+      "median_ms_base": 620.8,
+      "median_ms_rebuild": 632.4,
+      "n_pairs_by_power": 38,
+      "n_self_consistent": 20,
+      "pairs": 72,
+      "per_session_delta_ln": [
+        0.0234,
+        0.0185,
+        0.0086
+      ],
+      "q975_abs_delta_aa_ln_batch72": 0.03063,
+      "sigma_ln": 0.05922,
+      "tau": 0.03111,
+      "tau_self_consistent": 0.0429
+    }
+  },
+  "calibration": {
+    "diagnostic_g2_dbus_keeps": 8,
+    "overall": "FAIL",
+    "per_candidate_minutes": {
+      "full_pipeline_mean_observed_with_lock_contention": 18.5,
+      "full_pipeline_uncontended": 13.7,
+      "g0_reject": 0.01,
+      "screen_only_uncontended": 4.5
+    },
+    "r3_failed_gates": [
+      "G2",
+      "G5",
+      "G2",
+      "G2",
+      "G2",
+      "G2",
+      "G2",
+      "G2",
+      "G2",
+      "G2"
+    ],
+    "r3_keeps": 0,
+    "rows": {
+      "R1": "PASS",
+      "R2": "PASS",
+      "R3": "FAIL",
+      "R4": "PASS",
+      "R5a": "PASS",
+      "R5b": "PASS",
+      "R5c": "PASS",
+      "R6": "PASS",
+      "R7": "PASS",
+      "R8": "PASS"
+    },
+    "throughput": {
+      "calibration_wall": "07:44-11:46 UTC, 18 candidates, 27 evaluations + 2 control blocks",
+      "full_pipeline_per_hour_uncontended": 4.4,
+      "quiet_lane_held_minutes": 108.9,
+      "quiet_lane_receipts": 118,
+      "screen_only_per_hour": 13
+    }
+  },
+  "created_utc": "2026-10-02",
+  "keeps": [],
+  "n01r_citation": {
+    "local_branch": "exp/n-01r-native-wait-ab-20261002",
+    "local_head": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+    "packet": "docs/experiments/n-01r-native-wait-ab-2026-10-02/",
+    "post_action_sleep_work_deleted_ms": {
+      "checkbox/S0": 50.795,
+      "text/S0": 51.04
+    },
+    "published": false,
+    "readme_sha256": "a749726a73c17639e892dc4e34edc3076f79ac5c05df593a9d2928af0c30074c",
+    "relation": "Calibration R3 (delete50) is the same edit as N-01R's H_S; independent harnesses agree on direction and size (~-10.5% of ~505 ms quiet-host T vs 60.6 ms). Nothing duplicated: the AR track measured it only as a known-answer calibration row.",
+    "summary_sha256": "d57991a9b52e5a85442118fe373b5c158a2d469231456ee7cab4bae59f5018fa",
+    "track": "RFC loop N-01R (native causal wait A/B), not run by this track",
+    "verdicts_quoted": {
+      "cursor_reveal": "OWNER_DECISION (feedback, frozen here under D1/D13)",
+      "focus_guard_settle_watch": "IRREDUCIBLE (dropping it missed 10/10 late focus steals); ~21 ms overshoot from the final poll sleeping past the deadline (SOURCE, not measured)",
+      "post_action_sleep_50ms": "DELETED on GTK3 AT-SPI with background delivery (saves 60.6 ms checkbox, 42.3 ms text); WebKit/Chromium and foreground delivery NOT_RUN"
+    }
+  },
+  "pilot_evaluations": [],
+  "pilot_ledger": {
+    "file": "results.jsonl",
+    "fresh": true,
+    "rows": 0
+  },
+  "pilot_ran": false,
+  "preconditions_unmet": [
+    {
+      "effect": "every soaked candidate REJECT at G2",
+      "gate": "G2",
+      "id": "F1",
+      "what": "footprint normaliser does not collapse /tmp/dbus-<random>"
+    },
+    {
+      "effect": "after two non-rejections nothing can be kept",
+      "gate": "G5",
+      "id": "F2",
+      "what": "bootstrap p floor 1/4001 = 2.5e-4 >= LORD++ alpha_t 2.3e-4 from test 3"
+    },
+    {
+      "effect": "false-rejects under host load",
+      "gate": "G7",
+      "id": "F3",
+      "what": "trace-off agreement is a point comparison over ~8 pairs"
+    },
+    {
+      "effect": "about 10x too coarse for the quiet host (screen sigma_ln 0.005-0.015 vs 0.059)",
+      "gate": "G5/n_pairs",
+      "id": "F4",
+      "what": "tau 3.11% and n 38 come from a loaded-host A/A"
+    },
+    {
+      "effect": "owner decision: keep T or switch to T_act",
+      "gate": "decision metric",
+      "id": "AA",
+      "what": "A/A CI check fails for whole-task T (+1.7%, build startup bias)"
+    }
+  ],
+  "reason": "Phase 1 calibration FAILED its pre-registered acceptance (row R3: real 50 ms deletion kept 0/10, >= 8/10 required). As built, the evaluator cannot produce a KEEP for any candidate that reaches the soak (G2 new_file on the per-session /tmp/dbus-<random> socket), and LORD++ alpha falls below the bootstrap p floor after two non-rejections. Proposer candidates were therefore not submitted: every verdict would have been REVERT/REJECT by construction, and each G5 test would spend LORD++ wealth.",
+  "schema": "ar.pilot_status.v1",
+  "source_artifact_sha256_unsanitised": {
+    "AA.json": "1c297eac15a7e63478fce476e8532671f414f788c39bb6766071b98bdb5883e4",
+    "CALIBRATION.json": "6f6f69fbb877512096083b9a0d6c72142c299f530ae9142609b8033c30d6480b",
+    "FIXTURES.json": "8952bb5d0871841a3c287179d95baa93bce8cefb995b8480d9a2314b1df0958e",
+    "HARNESS.json": "c0da2a24adb1630a15fc6be0eb9780d0071d80254d46cba60b3f0e00c29c8adf"
+  }
+}

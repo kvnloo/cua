@@ -1,0 +1,174 @@
+{
+ "schema": "ar.harness.v1",
+ "created_utc": "2026-10-02T05:20Z",
+ "worker": "Phase 0 evaluator-core builder (Claude Code workflow subagent); proposers never see this work",
+ "pins": {
+  "upstream_main": {
+   "sha": "352507b6c03162ab286b21d5ed509125cc3daece",
+   "subject": "fix: post-launch CI follow-ups (#4405)",
+   "read_via": "git fetch upstream main + git rev-parse upstream/main at 2026-10-02T04:25Z",
+   "libs_cua_driver_vs_229b65b28": "identical (git diff --stat 229b65b28 352507b6c -- libs/cua-driver is empty), so the segment-1 line references at 229b65b28 still apply"
+  },
+  "r2_01_phase_trace": "7d3a28b663a041b072b4be8aadb187a1eab5fd28",
+  "r2_04_phase_marks": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49",
+  "n01_packet": "none: <lanes>/artifacts/r2/n-01 and <tmp>/n-01 were empty when the harness was built (2026-10-02T05:15Z); nothing duplicated. prereg field n01_reference is there to cite it once it exists"
+ },
+ "worktree": "<lanes>/ar-harness",
+ "branch": "exp/ar-harness-20261002",
+ "pushed": false,
+ "push_note": "Not pushed by this agent (only the Report agent writes to GitHub). Committed files contain no absolute paths, host name or secrets (checked with grep for /mnt/, <home>, zer0 and the host name).",
+ "commits": {
+  "champion_measurement_base": {
+   "sha": "457bc65d45b2a87ac080b281ea777f8914002c29",
+   "parent": "352507b6c03162ab286b21d5ed509125cc3daece",
+   "what": "cherry-pick -n 7d3a28b66 + cherry-pick -n 28b915ae9, one commit. The only conflict was the add/add of cua-driver-core/src/phase_trace.rs; all call sites (R2-01 browser/dispatch/overlay marks, R2-04 dispatch/click/focus_guard/atspi_action/set_value marks) merged textually and are verbatim. Unified module: CUA_DRIVER_PHASE_TRACE_FILE unset = one OnceLock read and return; each mark line is {t_mono_ns (CLOCK_MONOTONIC), wall_ns, seq, phase, session, detail}. R2-04 call sites pass (scope, mark) in the (phase, session) slots, so a mark key is phase/session, e.g. focus_guard/body_done, atspi_action/do_action_replied. Tests of both modules kept (unwritable path, line validity, disabled-mark closure).",
+   "tests": {
+    "where": "inside cua-x11-session.sh with private AT-SPI, under hostless; target dir <mnt>/cargo-targets/ar-test",
+    "cua_driver_core_lib": "817 passed, 0 failed",
+    "platform_linux_lib": "599 passed, 0 failed, 10 ignored",
+    "log": "<lanes>/artifacts/ar/unit/base-crate-tests-in-session.log"
+   }
+  },
+  "harness": {
+   "sha": "34530c6d8810c5c2b5238382eefef2e9af7bf035",
+   "full_sha_cmd": "git -C <lanes>/ar-harness rev-parse HEAD",
+   "files": 39
+  },
+  "dryrun_candidate_branch": "ar/dryrun/settle-watch-120 at f5533299d (local only, never pushed; SETTLE_WATCH 220->120 ms; used only for the CLI dry run; worktree removed)"
+ },
+ "champion_binary": {
+  "path": "<lanes>/bin/cua-driver-ar-base-457bc65d4",
+  "sha256": "8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209",
+  "build_cmd": "hostless nice -n 19 flock <tmp>/locks/cargo-build.lock <lanes>/build-driver.sh <lanes>/ar-harness ar-base-457bc65d4 cua-release-ar",
+  "head_logged": "457bc65d45b2a87ac080b281ea777f8914002c29",
+  "fresh_workspace_units": 0,
+  "build_seconds": 269,
+  "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+  "logs": ["<lanes>/logs/cargo-build-ar-base-457bc65d4.log", "<lanes>/artifacts/ar/unit/build-ar-base-457bc65d4.out"]
+ },
+ "paths": {
+  "harness": "<lanes>/ar-harness/harness/ar",
+  "ar_eval": "harness/ar/ar-eval",
+  "ar_submit": "harness/ar/ar-submit",
+  "gates": "harness/ar/areval/gates.py (G1-G8, GS, evaluate), harness/ar/areval/g0.py (G0)",
+  "stats_lord": "harness/ar/areval/stats.py, harness/ar/areval/lord.py",
+  "results_chain": "harness/ar/areval/results.py",
+  "schemas": "harness/ar/schema/{prereg,result,trial,request}.schema.json",
+  "allowlist": "harness/ar/allowlist.json",
+  "scanner_rules": "harness/ar/rules/scanner_rules.json",
+  "itemcheck_src": "harness/ar/itemcheck",
+  "itemcheck_bin": "<mnt>/cargo-targets/ar-itemcheck/release/itemcheck",
+  "manifest": "harness/ar/manifest.json",
+  "sandbox": "harness/ar/sandbox/sandbox-driver.sh, harness/ar/sandbox/session-pidns.sh, harness/ar/sandbox/probe.py",
+  "runner": "harness/ar/runner/{caller.py,session.py,plan.py,run_blocks.py,g1_rows.py}",
+  "results_file": "<tmp>/ar/eval-private/results.jsonl (does not exist yet; no evaluation has run)",
+  "request_inbox": "<tmp>/ar/requests (give proposers AR_REQUEST_DIR=<this>)",
+  "evidence": "<lanes>/artifacts/ar/{unit,sandbox,smoke-aa,dryrun}"
+ },
+ "sha256": {
+  "manifest.json": "18f1125f51e59f12ea17fddf7c4c215d539893e7b3a6e2a6032cc774a1cb2dca",
+  "allowlist.json": "2ee00e0893f0cf7ca38a28f1f11087fe29c6e482c48f32a6d01320d9adbf529f",
+  "scanner_rules.json": "e94a14c9cfcb108f715b5ec548dcf77ec89ac7099ff55102cc7c3ada380802dd",
+  "prereg.schema.json": "f74110811112ab13d80455c9e05a51609c5748ba0d88b9be33e6ea99837a770c",
+  "result.schema.json": "78bf2e7e621287842a91ec301eb44bffe5e89ac4e649ae7a90e0571c32a1ddd5",
+  "trial.schema.json": "4c5b7b3e5ef192eafcfb2d5d800f01f1ff5f517a7f0786ea7717a9b2049dde5f",
+  "request.schema.json": "e29ebb392cc735c2570b42b613a077743e114938f3e4cad3757e2e84dd068d06",
+  "itemcheck_bin": "9476f9bf1b4f5a1ec16296b68bc6bbe4e5b7ab2a8e179ee912207985af259b59"
+ },
+ "manifest_contents": "22 candidate_frozen files (all libs/cua-driver/rust Cargo.toml/Cargo.lock, phase_trace.rs, the GTK3 fixture, jev-use driver_env.py/native.py/run.py); test-item hashes for the 5 segment files (native.rs 118, foreground.rs 19, focus_guard.rs 13, input/mod.rs 28, targeted.rs 8); 36 harness files (self-check: ar-eval selfcheck)",
+ "commands": {
+  "env_prefix": "hostless env TMPDIR=<tmp> PYTHONDONTWRITEBYTECODE=1 (every code-executing step)",
+  "unit_python": "cd <wt> && hostless env AR_ITEMCHECK=<itemcheck_bin> python3 -m unittest discover -s harness/ar/tests -t harness/ar/tests",
+  "unit_itemcheck": "cd <wt>/harness/ar/itemcheck && hostless env CARGO_HOME=<mnt>/cargo-home-cua CARGO_TARGET_DIR=<mnt>/cargo-targets/ar-itemcheck nice -n 19 flock <cargo-build.lock> cargo test --offline --release",
+  "manifest": "harness/ar/ar-eval manifest --wt <wt> --champion 457bc65d45b2a87ac080b281ea777f8914002c29 --itemcheck <itemcheck_bin>",
+  "selfcheck": "harness/ar/ar-eval selfcheck --wt <wt>",
+  "submit_proposer": "AR_REQUEST_DIR=<tmp>/ar/requests harness/ar/ar-submit --branch ar/<tag>/<name> --hypothesis '...' [--mechanism-start phase/mark --mechanism-end phase/mark]",
+  "g0": "harness/ar/ar-eval g0 --repo <repo or worktree> --champion 457bc65d4... --candidate ar/<tag>/<name> --itemcheck <itemcheck_bin> --out g0-inputs.json",
+  "tau_aa": "runner/plan.py with --champion BIN --candidate BIN (same binary) -> run_blocks.py -> ar-eval tau --aa-rows raw/*.jsonl --batch <planned n_pairs> --out tau.json",
+  "prereg": "ar-eval prereg --request <req> --eval-id ar-YYYYMMDD-<slug> --champion-commit ... --candidate-commit ... --champion-bin ... --candidate-bin ... --tau tau.json --harness-commit <sha> --seed <int> --soak {300|1000} --out prereg.json (defaults: mechanism focus_guard/body_done -> focus_guard/restored, expected route 'accessibility', path null)",
+  "plan": "hostless python3 harness/ar/runner/plan.py --eval-id ID --champion BIN --candidate BIN --pairs N --seed S [--spot-pairs M] [--soak K] --out plan.json",
+  "trials": "hostless env AR_LANES=<lanes> TMPDIR=<tmp> python3 harness/ar/runner/run_blocks.py --plan plan.json --out-dir DIR --wt <wt> [--label L]  (each session = quiet-timed <L>-sNNN session-pidns.sh env CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV=CUA_SESSION_ATSPI=1 cua-x11-session.sh <jev-use venv python> runner/session.py ...)",
+  "g1_rows": "python3 harness/ar/runner/g1_rows.py --build-out <build-driver stdout> --test-log <in-session cargo test log> --out g1.jsonl",
+  "evaluate": "ar-eval evaluate --prereg prereg.json --rows DIR/raw/*.jsonl --build-rows g1.jsonl --g0-inputs g0-inputs.json --results <tmp>/ar/eval-private/results.jsonl",
+  "verify": "ar-eval verify --results <results.jsonl>  (hash chain + LORD++ replay)",
+  "sandbox_probe": "hostless quiet-timed ar-harness-sandbox-probe <wt>/harness/ar/sandbox/session-pidns.sh env CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV=CUA_SESSION_ATSPI=1 cua-x11-session.sh <venv python> <wt>/harness/ar/sandbox/probe.py --wt <wt> --driver <bin> --results-dir <dir> --work <dir> --out probe.json"
+ },
+ "definitions_implemented": {
+  "T": "CLOCK_MONOTONIC (time.monotonic_ns) from just before the sandboxed Driver is spawned to the caller's oracle-verified done (fixture state file: seq+1 and the expected field). The state file mtime (CLOCK_REALTIME) is mapped to monotonic with a back-to-back pair; row field journal_before_done must be true (G2).",
+  "effect": "Delta = mean over complete verified pairs of ln(T_candidate / T_champion); 95% percentile bootstrap CI (B=4000, seeded); one-sided p for H0 Delta >= 0 by null-shifted bootstrap",
+  "tau": "max(0.02, exp(q) - 1), q = 97.5th percentile of |mean ln ratio| over AA batches of the planned size resampled from AA calibration pairs (champion in both arms)",
+  "n_pairs": "ceil((z_.99 + z_.80)^2 (sigma/delta)^2), delta = ln(1 + tau); (z_.99 + z_.80)^2 = 10.04 (the plan's 10); floor --min-pairs (default 10)",
+  "lord_pp": "alpha 0.05, W0 0.025, gamma_j = 0.0722 log(max(j,2)) / (j exp(sqrt(log j))); state = ordered p-values in results.jsonl; an index is consumed only when G5 is evaluated",
+  "gate_order": ["G0 scope/tamper", "G1 build+tests", "G2 invariants every arm", "G3 controls", "G4 identical verified counts", "G5 LORD++ significance and Delta <= -ln(1+tau)", "G6 p90 guardrail ln(p90_c/p90_a) <= ln(1+tau)", "G7 mechanism share >= 0.7 and |Delta_off - Delta_on| <= ln(1+tau)", "G8 soak >= 300 (1000 if focus_guard.rs or targeted.rs changed), zero failures", "GS spot checks: equal verified counts, upper CI of Delta <= ln(1+tau)"],
+  "verdicts": "KEEP (all pass), REJECT (first failing gate), INCONCLUSIVE (G5 had fewer pairs than pre-registered; no LORD++ index consumed)"
+ },
+ "allowlist_interpretation": "focus_guard.rs: SETTLE_WATCH, SETTLE_WATCH_NEW_WINDOW, SETTLE_POLL, impl FocusSnapshot::fn restore_if_changed_opts. foreground.rs: impl ForegroundOptions::fn pointer/keyboard (the settle values), WINDOW_CHANGE_POLL/DEADLINE/TITLE_GRACE, fn confirm_phase, fn wait_for_window_change. targeted.rs: OCCLUSION_SETTLE, fn ensure_point_hits. input/mod.rs: EFFECT_SETTLE, fn pointer_effect. native.rs: fn perform_action (3535), perform_action_ref (3654), actuate_chain (4207), select_item_in_chain (4319), focus_element_ref (the 500 ms settle deadline at 3768). focus_element (identical deadline at 4894) is NOT included. Evaluator decision; recorded in allowlist.json.",
+ "itemcheck_rules": "item token hashes (recursive through mod/impl); test items never allowed; every changed line inside an allowed item's span (comments/blank lines between items rejected); phase_trace: identical ordered (item, line) list, identical syntactic nesting chain per call, a mark may not jump over an unchanged sibling statement (known limit: a jump over a statement that is itself modified is not caught by G0; T is external and G7 checks attribution); new or deleted .rs files rejected. 14 Rust unit tests + 5 integration tests on the real focus_guard.rs.",
+ "scanner_rules": ["fixture_strings", "evaluation_awareness", "clock_shims", "short_circuit_exits", "comparison_tricks", "new_threads", "new_sockets_listeners", "new_files", "new_registries_state", "removed_reread_reconcile", "browser_shortcuts", "signals", "unsafe_or_asm"],
+ "scanner_semantics": "per file, a rule fires on a net addition (added-side rules) or net removal (removed-side rules) of matching lines, so a modified line that keeps a re-read call does not fire",
+ "unit_tests": {
+  "python": "75 tests OK (every gate G0-G8 and GS has at least one pass and one fail case; evaluate pipeline KEEP/REJECT/INCONCLUSIVE; LORD++; stats; every scanner rule's planted example; results chain tamper; schemas; planner; ar-submit; g1 log parser; itemcheck on real files)",
+  "rust_itemcheck": "14 passed",
+  "logs": ["<lanes>/artifacts/ar/unit/areval-unittest.log", "<lanes>/artifacts/ar/unit/itemcheck-cargo-test.log"]
+ },
+ "sandbox": {
+  "design": "per trial: bwrap read-only root (/usr, /etc only, --remount-ro /), tmpfs /home/trial and /run/user/trial, only the session X socket, session D-Bus socket, private AT-SPI bus socket and the Xauthority file bound (each at its own path), --unshare-net --unshare-ipc --unshare-uts --new-session --die-with-parent, --clearenv then display/bus vars + trial HOME/XDG + CUA_DRIVER_* only; CUA_DRIVER_PHASE_TRACE_FILE remapped to a per-trial trace dir (the only writable bind). Champion and candidate run in the identical sandbox.",
+  "pid_namespace": "the private session runs under session-pidns.sh (its own pid namespace, fresh /proc); the Driver shares that namespace (AR_SANDBOX_PIDNS=session, enforced by checking pid 1)",
+  "probe_artifact": "<lanes>/artifacts/ar/sandbox/probe.json",
+  "probe_results": {
+   "shell_probe_session_mode": "results canary, fixture-state canary, fixture state file, harness file, harness dir, worktree: all ABSENT; /proc/<fixture>/root/<state canary> and /proc/<caller>/root/<results canary>: ABSENT (denied); /proc/<caller|fixture>/environ: exists but not readable; root read-only, /usr read-only, HOME writable and empty; 21 processes visible (session only); network devices: lo only",
+   "shell_probe_private_mode": "all canaries ABSENT, 5 processes visible, lo only",
+   "driver_view_from_outside": "real Driver (champion) running in the sandbox, inspected through /proc/<driver pid>/root: every canary absent; top level bin,dev,etc,home,lib,lib64,mnt,proc,run,sbin,tmp,usr; the only files under /mnt are the bound AT-SPI socket and Xauthority; /home holds only trial; Driver env keys = DBUS_SESSION_BUS_ADDRESS, DISPLAY, HOME, LANG, PATH, PWD, TMPDIR, XAUTHORITY, XDG_* only",
+   "atspi_across_namespace": {
+    "session_pidns_mode": "WORKS: list_windows found the task window; get_window_state element_count 9, not degraded, not truncated; background element click returned route 'accessibility' and the fixture's own state file flipped (seq 1->2, agreed False->True)",
+    "private_pidns_mode": "DOES NOT WORK: list_windows never finds the fixture window",
+    "exact_gap": "Not an AT-SPI transport problem: the Driver resolves the target app through /proc/<pid>. tools/impl_.rs:561 keeps only windows whose pid is live in the Driver's own /proc (proc_fs::is_process_live); it also reads process start times and /proc/<pid>/maps|exe for toolkit detection. Under --unshare-pid the fixture's pid (from _NET_WM_PID, from AT-SPI peer credentials, and passed by the caller) does not exist in the sandbox's /proc. A child pid namespace holding the fixture would not fix it either, because the AT-SPI bus reports peer pids in its own namespace.",
+    "fallback_used": "share the private SESSION's pid namespace (session-pidns.sh), never the host's. Weaker than a per-trial pid namespace: the Driver can list session processes (Xvfb, buses, openbox/picom, fixture, caller) and read their world-readable /proc files (cmdline: paths only), and could signal them (same uid); it cannot read their environ or reach their mount view through /proc/<pid>/root (denied from its child user namespace, probed). Mitigation: scanner rule 'signals' plus 'unsafe_or_asm'. An earlier probe with the HOST pid namespace showed 728 visible processes (also root/environ denied); that mode was dropped."
+   }
+  },
+  "quiet_lane_receipts": [
+   {"label": "ar-harness-sandbox-probe", "acquired": "2026-10-02T04:54:27.980Z", "released": "2026-10-02T04:55:24.408Z", "rc": 0, "note": "first probe (private pidns only, writable root found -> fixed)"},
+   {"label": "ar-harness-sandbox-probe", "acquired": "2026-10-02T05:02:26.811Z", "released": "2026-10-02T05:02:37.868Z", "rc": 0, "note": "final probe (probe.json)"}
+  ]
+ },
+ "trial_runner": {
+  "per_trial": "fresh sandboxed Driver; MCP initialize; list_windows; get_window_state (tree + screenshot); jev-use eligible_controls lookup 'I agree'; click(element_token, delivery_mode=background); poll the oracle (0.5 ms) to verified done; footprint snapshot (sandbox processes, Driver socket/fd counts, trial HOME/runtime/tmp files via /proc/<pid>/root) before exit; 0.3 s settle then seq re-read (duplicate mutation); raw JSONL row per trial with calls, journal, marks (trace on), PSI window, loadavg",
+  "kinds": "task, soak (candidate only), stale_negative, impossible_canary (fabricated token), spot_gtk3_text (set_value + Save note). spot_browser_fill_submit is NOT implemented yet (GS fails 'spot_not_run' until it is)",
+  "schedule": "AB/BA alternating pairs; exactly round(0.2 n) task pairs with the trace unset (half AB, half BA); pairs never straddle a session; each session <= 48 trials = 2 kept warm-ups + pairs + 1 stale negative and 1 impossible canary per arm; soak in own sessions; each session is one quiet-timed block (fresh Xvfb, AT-SPI bus, fixture = the restart every 48 trials); no new trial after 9 min (block < 10 min)",
+  "psi": "harness-side thread samples /proc/pressure/{cpu,io,memory} at 10 Hz; per trial: stall_us deltas over [spawn, exit], sample count, max cpu some avg10",
+  "smoke": {
+   "what": "AA plan (champion binary in both arms), 6 task pairs + 2 spot pairs + controls = 22 trials in 1 session, through run_blocks.py",
+   "receipt": {"label": "ar-harness-smoke-aa-s000", "acquired": "2026-10-02T05:10:14.174Z", "released": "2026-10-02T05:10:45.675Z", "rc": 0},
+   "outcome": "22/22 rows; every positive trial verified with seq_delta 1, journal_before_done true, route accessibility; 1 trace-off pair; both stale negatives refused (stale_element_token) and both canaries refused (invalid_element_token) with seq_delta 0; footprints identical (2 Driver processes, 7 sockets, 8 HOME/tmp entries incl. telemetry id files); 31 marks per traced click incl. focus_guard/* and atspi_action/*. Timing fields exist but are a smoke, not a measurement, and are not reported.",
+   "artifacts": "<lanes>/artifacts/ar/smoke-aa/"
+  }
+ },
+ "cli_dry_run": {
+  "what": "ar-submit -> ar-eval g0 on ar/dryrun/settle-watch-120 -> tau from the AA smoke -> g1_rows from the base build/test logs -> prereg -> evaluate into a SCRATCH results file -> verify",
+  "outcome": "G0 pass (changed item: const SETTLE_WATCH); G1-G4 pass; G5 INCONCLUSIVE (6 pairs < pre-registered n); hash chain ok; no real results.jsonl written, no LORD++ index consumed",
+  "artifacts": "<lanes>/artifacts/ar/dryrun/"
+ },
+ "returned_schema": {
+  "prereg": "harness/ar/schema/prereg.schema.json (ar.prereg.v1; example: harness/ar/tests/data/prereg-example.json)",
+  "result_line": "harness/ar/schema/result.schema.json (ar.result.v1)",
+  "trial_row": "harness/ar/schema/trial.schema.json (ar.trial.v1)",
+  "request": "harness/ar/schema/request.schema.json (ar.request.v1)"
+ },
+ "gaps_and_next": [
+  "spot_browser_fill_submit (jev-use browser fill->submit) has no runner kind yet; GS cannot pass until it exists. A separate worktree ar-fixtures (branch exp/ar-harness-20261002-fixtures, not created by this agent) may be building it; not touched.",
+  "AA calibration for tau (and sigma for n_pairs) has not been run at scale; the 6-pair smoke is not a calibration.",
+  "G1 for a candidate needs its own build-driver.sh run and in-session cargo test log (g1_rows.py parses both); the dry run reused the base logs.",
+  "itemcheck known limit: a phase_trace mark moved past a sibling statement that is itself modified is not caught by G0 (T is harness-external; G7 checks attribution).",
+  "Pinned upstream main moved since R2 (229b65b28 -> 352507b6c) but libs/cua-driver is byte-identical between them."
+ ],
+ "observations_for_orchestrator": [
+  "hostless masks /tmp/.X11-unix and /run/user/<uid> but does not unshare the network namespace, and /proc/net/unix lists abstract X sockets in the host namespace (@/tmp/.X11-unix/X0, X2, X99, X100). A process under hostless that set DISPLAY=:0 could therefore reach whichever server owns @/tmp/.X11-unix/X0 through the abstract socket. Not tested by connecting (that could touch the host). The per-trial Driver sandbox here closes it with --unshare-net; the GTK fixture and caller only use the private session DISPLAY. Consider --unshare-net (or a private netns) in hostless.",
+  "The private session's dbus activates gvfs, whose fuse mount fails ('fusermount3: mount failed: Operation not permitted'); harmless, same in every session."
+ ],
+ "near_misses": [
+  "git config user.name/user.email run in the worktree wrote the SHARED clone config (<clone>/.git/config). Values identical to the pre-existing [user] section (line 27); no other track affected.",
+  "Two trivial Python invocations ran in the plain host shell instead of under hostless (an empty heredoc 'python3 -' and 'python3 -c pass'); neither executed any statement, so neither could reach the session.",
+  "git rerere (enabled in the shared clone) recorded the phase_trace.rs resolution in the shared .git/rr-cache; harmless repository-internal state."
+ ],
+ "hard_rule_breach": "none"
+}

@@ -1,0 +1,519 @@
+{
+ "schema": "ar.calibration_artifact.v1",
+ "created_utc": "2026-10-02T11:55Z",
+ "worker": "Phase 1 calibration (evaluator agent; Claude Code workflow subagent). No provider of any kind; scripted caller only; evaluator code unchanged.",
+ "overall": "FAIL",
+ "overall_reason": "R3 (real 50 ms deletion) kept 0/10 vs >= 8/10 required: G2 rejects every soaked candidate because each candidate-only soak session's randomly named D-Bus socket (/tmp/dbus-<random>, bound into the sandbox) is not collapsed by gates._norm_file and is reported as new_file. All other 9 rows PASS.",
+ "rows": [
+  {
+   "row": "R1",
+   "candidate": "sleep20",
+   "expect": "REVERT",
+   "result": "PASS",
+   "detail": {
+    "verdicts": [
+     "REVERT"
+    ]
+   }
+  },
+  {
+   "row": "R2",
+   "candidate": "sleep50",
+   "expect": "REVERT",
+   "result": "PASS",
+   "detail": {
+    "verdicts": [
+     "REVERT"
+    ]
+   }
+  },
+  {
+   "row": "R3",
+   "candidate": "delete50",
+   "expect": "KEEP in >= 8 of 10",
+   "result": "FAIL",
+   "detail": {
+    "failed_gates": [
+     "G2",
+     "G5",
+     "G2",
+     "G2",
+     "G2",
+     "G2",
+     "G2",
+     "G2",
+     "G2",
+     "G2"
+    ],
+    "keeps": 0,
+    "repeats": 10,
+    "verdicts": [
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT",
+     "REJECT"
+    ]
+   }
+  },
+  {
+   "row": "R4",
+   "candidate": "success-early",
+   "expect": "G2 fail",
+   "result": "PASS",
+   "detail": {
+    "failed_gate": "G2",
+    "verdict": "REJECT"
+   }
+  },
+  {
+   "row": "R5a",
+   "candidate": "g0-frozen-item",
+   "expect": "G0 fail",
+   "result": "PASS",
+   "detail": {
+    "reasons": [
+     "itemcheck:item_changed_not_allowed:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn focus_element",
+     "itemcheck:line_outside_allowed_item:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn focus_element",
+     "itemcheck:line_outside_allowed_item:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn focus_element"
+    ]
+   }
+  },
+  {
+   "row": "R5b",
+   "candidate": "g0-test-item",
+   "expect": "G0 fail",
+   "result": "PASS",
+   "detail": {
+    "reasons": [
+     "itemcheck:test_item_changed:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:mod tests::fn quiet_report_is_silent",
+     "itemcheck:test_item_changed:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:mod tests::fn quiet_report_is_silent",
+     "test_item_hash_mismatch:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs"
+    ]
+   }
+  },
+  {
+   "row": "R5c",
+   "candidate": "g0-trace-line",
+   "expect": "G0 fail",
+   "result": "PASS",
+   "detail": {
+    "reasons": [
+     "itemcheck:phase_trace_moved:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn perform_action_ref"
+    ]
+   }
+  },
+  {
+   "row": "R6",
+   "candidate": "g0-scanner",
+   "expect": "G0 fail (scanner)",
+   "result": "PASS",
+   "detail": {
+    "reasons": [
+     "scanner:evaluation_awareness:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs"
+    ]
+   }
+  },
+  {
+   "row": "R7",
+   "candidate": "noop01..10",
+   "expect": "<= 1 false KEEP",
+   "result": "PASS",
+   "detail": {
+    "keeps": 0,
+    "n": 10,
+    "verdicts": {
+     "noop01": "REVERT",
+     "noop02": "REVERT",
+     "noop03": "REVERT",
+     "noop04": "REVERT",
+     "noop05": "REVERT",
+     "noop06": "REVERT",
+     "noop07": "REVERT",
+     "noop08": "REVERT",
+     "noop09": "REVERT",
+     "noop10": "REVERT"
+    }
+   }
+  },
+  {
+   "row": "R8",
+   "candidate": "feedback ON vs OFF",
+   "expect": "large effect, ON slower",
+   "result": "PASS",
+   "detail": {
+    "browser": {
+     "ci95": [
+      -1.4674079228214283,
+      -1.3675751879751483
+     ],
+     "complete_pairs": 9,
+     "delta_off_vs_on": -1.4197581299456898,
+     "failures": [
+      {
+       "arm": "candidate",
+       "failure": "verify_timeout",
+       "feedback": false,
+       "trial_id": 11
+      }
+     ],
+     "gate_marks_match_arm": true,
+     "median_T_ms": {
+      "off": 1067.323869,
+      "on": 4412.941609
+     },
+     "median_on_minus_off_ms": 3362.441623,
+     "on_slower_pairs": 9,
+     "trials": 20,
+     "verified": 19
+    },
+    "gtk_diagnostic": {
+     "ci95": [
+      -0.09749466576941712,
+      0.03141830635765187
+     ],
+     "complete_pairs": 12,
+     "delta_off_vs_on": -0.03025769125092948,
+     "failures": [],
+     "gate_marks_match_arm": true,
+     "median_T_ms": {
+      "off": 637.648572,
+      "on": 647.070788
+     },
+     "median_on_minus_off_ms": -2.207401,
+     "on_slower_pairs": 6,
+     "trials": 28,
+     "verified": 24
+    }
+   }
+  }
+ ],
+ "git": {
+  "harness_worktree": "<lanes>/ar-harness",
+  "branch": "exp/ar-harness-20261002",
+  "packet_commit": "65971b34e",
+  "pushed": false,
+  "packet": "docs/experiments/ar-calibration-2026-10-02/",
+  "candidate_worktree": "<lanes>/ar-calib (detached at champion)",
+  "candidate_branches": "ar/calib/{sleep20,sleep50,delete50,success-early,g0-frozen-item,g0-test-item,g0-trace-line,g0-scanner,noop01..noop10} (local only)",
+  "evaluated_harness_commit": "2615af74f3517200e86004ac924c06d07ddf2ae4",
+  "harness_manifest_sha256": "7f567a1a847730ef63fd6372d9ab2f75bfb71af52bcf338991ef4cf3440e95fc",
+  "selfcheck": "ok"
+ },
+ "prereg": {
+  "file": "raw/CALIB-PREREG.json",
+  "sha256": "a93d077b088dcfbd82c30cb9f842d9708b55cc936de5f4b42bf9d9a900a62cd4",
+  "hashed_utc": "2026-10-02T07:44:14Z"
+ },
+ "protocol": "ar-submit -> G0 -> G1 -> screen (24 pairs, 1 block; RANKS iff G1-G4 pass and Delta <= -ln(1+tau), CI95 hi < 0; no alpha) -> confirm (38 task + 10 gtk-text pairs; interim evaluate on scratch ledger copy) -> browser spot (10 pairs) + 300 soak -> ar-eval evaluate into calibration ledger raw/cal-results.jsonl",
+ "diagnostic_not_gate": {
+  "frozen": {
+   "keeps_delete50": 0,
+   "by_failed_gate": {
+    "G2": 9,
+    "G5": 1
+   }
+  },
+  "g2_dbus": {
+   "keeps_delete50": 8,
+   "by_failed_gate": {
+    "G7": 2,
+    "None": 0
+   }
+  },
+  "g2_dbus+g7ci": {
+   "keeps_delete50": 8,
+   "by_failed_gate": {
+    "G8": 1,
+    "GS": 1,
+    "None": 0
+   }
+  },
+  "g2_dbus+g7ci+T_act": {
+   "keeps_delete50": 8,
+   "by_failed_gate": {
+    "G8": 1,
+    "GS": 1,
+    "None": 0
+   }
+  }
+ },
+ "findings": [
+  "F1 blocker: G2 new_file on per-session /tmp/dbus-<random> -> no soaked candidate can ever be KEEP; with that normaliser rule r03-r10 are KEEP (Delta -10.3..-10.7%, G7 share 0.99-1.03, soak 300/300 each, spots non-inferior).",
+  "F2: bootstrap p floor 1/4001 = 2.5e-4 vs LORD++ alpha_t = 2.3e-4 from test 3 on without a prior rejection -> after two non-rejections nothing can be kept; the calibration ledger already holds one non-rejected test (r02, p 0.0015 > 0.00125). Start the pilot on a fresh ledger; raise B or use an exact p.",
+  "F3: G7 trace-off point check (8 off pairs) failed both loaded-host repeats that reached it (0.040, 0.074 > 0.0306); on the quiet host it agreed within 0.005 in all 8. A CI-based check passes them.",
+  "F4: host load decides sensitivity: screen sigma_ln 0.07-0.16 under the loaded host (to ~09:00 UTC) vs 0.005-0.015 after; tau 3.11% / n 38 come from the loaded A/A.",
+  "F5: GTK3 checkbox T does not exercise feedback (fresh Driver cursor first reveal is a pulse); browser ON adds ~3.4 s (two glides). One OFF browser trial claimed a trusted click that never reached the page (1/10).",
+  "F6: r01 ran its soak before the interim (soak sessions carry a task warm-up; selector fixed from r02) and so never ran its browser spot; verdicts unaffected."
+ ],
+ "cost": {
+  "delete50": {
+   "blocks": 103,
+   "eval_wall_s": 11103.8,
+   "evaluations": 10,
+   "g0_ms": 366,
+   "g1_s": 234.1,
+   "lock_wait_s": 5510.1,
+   "per_candidate_minutes_incl_g1": 22.41,
+   "per_evaluation_minutes_excl_g1": 18.51,
+   "timed_held_s": 5573.4
+  },
+  "g0-frozen-item": {
+   "blocks": 0,
+   "eval_wall_s": 0.2,
+   "evaluations": 1,
+   "g0_ms": 343,
+   "g1_s": 0.0,
+   "lock_wait_s": 0,
+   "per_candidate_minutes_incl_g1": 0.0,
+   "per_evaluation_minutes_excl_g1": 0.0,
+   "timed_held_s": 0
+  },
+  "g0-scanner": {
+   "blocks": 0,
+   "eval_wall_s": 0.2,
+   "evaluations": 1,
+   "g0_ms": 345,
+   "g1_s": 0.0,
+   "lock_wait_s": 0,
+   "per_candidate_minutes_incl_g1": 0.0,
+   "per_evaluation_minutes_excl_g1": 0.0,
+   "timed_held_s": 0
+  },
+  "g0-test-item": {
+   "blocks": 0,
+   "eval_wall_s": 0.1,
+   "evaluations": 1,
+   "g0_ms": 205,
+   "g1_s": 0.0,
+   "lock_wait_s": 0,
+   "per_candidate_minutes_incl_g1": 0.0,
+   "per_evaluation_minutes_excl_g1": 0.0,
+   "timed_held_s": 0
+  },
+  "g0-trace-line": {
+   "blocks": 0,
+   "eval_wall_s": 0.2,
+   "evaluations": 1,
+   "g0_ms": 342,
+   "g1_s": 0.0,
+   "lock_wait_s": 0,
+   "per_candidate_minutes_incl_g1": 0.0,
+   "per_evaluation_minutes_excl_g1": 0.0,
+   "timed_held_s": 0
+  },
+  "noop01": {
+   "blocks": 1,
+   "eval_wall_s": 52.4,
+   "evaluations": 1,
+   "g0_ms": 329,
+   "g1_s": 220.6,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.55,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.5
+  },
+  "noop02": {
+   "blocks": 1,
+   "eval_wall_s": 52.4,
+   "evaluations": 1,
+   "g0_ms": 191,
+   "g1_s": 218.9,
+   "lock_wait_s": 0.1,
+   "per_candidate_minutes_incl_g1": 4.52,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop03": {
+   "blocks": 1,
+   "eval_wall_s": 52.3,
+   "evaluations": 1,
+   "g0_ms": 209,
+   "g1_s": 219.1,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.52,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop04": {
+   "blocks": 1,
+   "eval_wall_s": 52.4,
+   "evaluations": 1,
+   "g0_ms": 262,
+   "g1_s": 226.9,
+   "lock_wait_s": 0.1,
+   "per_candidate_minutes_incl_g1": 4.66,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop05": {
+   "blocks": 1,
+   "eval_wall_s": 52.4,
+   "evaluations": 1,
+   "g0_ms": 277,
+   "g1_s": 235.3,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.79,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.5
+  },
+  "noop06": {
+   "blocks": 1,
+   "eval_wall_s": 52.3,
+   "evaluations": 1,
+   "g0_ms": 251,
+   "g1_s": 222.9,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.59,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop07": {
+   "blocks": 1,
+   "eval_wall_s": 52.3,
+   "evaluations": 1,
+   "g0_ms": 154,
+   "g1_s": 224.0,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.61,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop08": {
+   "blocks": 1,
+   "eval_wall_s": 52.3,
+   "evaluations": 1,
+   "g0_ms": 218,
+   "g1_s": 230.0,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.71,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop09": {
+   "blocks": 1,
+   "eval_wall_s": 52.3,
+   "evaluations": 1,
+   "g0_ms": 191,
+   "g1_s": 223.5,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 4.6,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "noop10": {
+   "blocks": 1,
+   "eval_wall_s": 52.3,
+   "evaluations": 1,
+   "g0_ms": 246,
+   "g1_s": 180.4,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 3.88,
+   "per_evaluation_minutes_excl_g1": 0.87,
+   "timed_held_s": 51.4
+  },
+  "sleep20": {
+   "blocks": 1,
+   "eval_wall_s": 129.7,
+   "evaluations": 1,
+   "g0_ms": 339,
+   "g1_s": 403.7,
+   "lock_wait_s": 67.6,
+   "per_candidate_minutes_incl_g1": 8.89,
+   "per_evaluation_minutes_excl_g1": 2.16,
+   "timed_held_s": 60.0
+  },
+  "sleep50": {
+   "blocks": 1,
+   "eval_wall_s": 178.3,
+   "evaluations": 1,
+   "g0_ms": 407,
+   "g1_s": 238.9,
+   "lock_wait_s": 111.3,
+   "per_candidate_minutes_incl_g1": 6.95,
+   "per_evaluation_minutes_excl_g1": 2.97,
+   "timed_held_s": 65.4
+  },
+  "success-early": {
+   "blocks": 1,
+   "eval_wall_s": 177.3,
+   "evaluations": 1,
+   "g0_ms": 329,
+   "g1_s": 223.7,
+   "lock_wait_s": 0.0,
+   "per_candidate_minutes_incl_g1": 6.68,
+   "per_evaluation_minutes_excl_g1": 2.96,
+   "timed_held_s": 176.4
+  }
+ },
+ "per_candidate_minutes": {
+  "g0_reject": 0.01,
+  "screen_only_uncontended": 4.5,
+  "full_pipeline_uncontended": 13.7,
+  "full_pipeline_mean_observed_with_lock_contention": 18.5
+ },
+ "throughput": {
+  "screen_only_per_hour": 13,
+  "full_pipeline_per_hour_uncontended": 4.4,
+  "calibration_wall": "07:44-11:46 UTC, 18 candidates, 27 evaluations + 2 control blocks",
+  "quiet_lane_receipts": 118,
+  "quiet_lane_held_minutes": 108.9
+ },
+ "feedback_control": {
+  "browser": {
+   "ci95": [
+    -1.4674079228214283,
+    -1.3675751879751483
+   ],
+   "complete_pairs": 9,
+   "delta_off_vs_on": -1.4197581299456898,
+   "failures": [
+    {
+     "arm": "candidate",
+     "failure": "verify_timeout",
+     "feedback": false,
+     "trial_id": 11
+    }
+   ],
+   "gate_marks_match_arm": true,
+   "median_T_ms": {
+    "off": 1067.323869,
+    "on": 4412.941609
+   },
+   "median_on_minus_off_ms": 3362.441623,
+   "on_slower_pairs": 9,
+   "trials": 20,
+   "verified": 19
+  },
+  "gtk": {
+   "ci95": [
+    -0.09749466576941712,
+    0.03141830635765187
+   ],
+   "complete_pairs": 12,
+   "delta_off_vs_on": -0.03025769125092948,
+   "failures": [],
+   "gate_marks_match_arm": true,
+   "median_T_ms": {
+    "off": 637.648572,
+    "on": 647.070788
+   },
+   "median_on_minus_off_ms": -2.207401,
+   "on_slower_pairs": 6,
+   "trials": 28,
+   "verified": 24
+  }
+ },
+ "verify": "python3 verify_artifacts.py (under hostless): 109 checks ok, 0 failing",
+ "artifacts": {
+  "packet": "<lanes>/ar-harness/docs/experiments/ar-calibration-2026-10-02/",
+  "run_dir": "<tmp>/ar-calib (evals/, evals-interrupted/ (first r04 attempt), evals-aborted-eid-schema/ (pre-trial eval-id schema refusal), g0/, g1/, feedback/, tools/)",
+  "binaries": "<lanes>/bin/cua-driver-ar-calib-<name>-<sha9> (14)"
+ },
+ "n01": "no N-01 packet at calibration time; nothing duplicated or cited"
+}

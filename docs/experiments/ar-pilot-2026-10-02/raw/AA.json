@@ -1,0 +1,74 @@
+{
+ "schema": "ar.aa_artifact.v1",
+ "created_utc": "2026-10-02T07:40Z",
+ "worker": "Start A/A and integration (evaluator builder; Claude Code workflow subagent). No provider of any kind; scripted caller only.",
+ "git": {
+  "worktree": "<lanes>/ar-harness",
+  "branch": "exp/ar-harness-20261002",
+  "pushed": false,
+  "commits": {
+   "merge_fixtures": "cfa1c41831a715b0e460b939db761afb2e6f7334 (merge of exp/ar-harness-20261002-fixtures 930cdec0b into 34530c6d8; only docs/experiments/ar-harness-2026-10-02/fixtures/ added)",
+   "harness_integration": "4b5195c0914c0d6fcbfb601967c9c2abeaa28e72 (spot_browser_fill_submit kind, 24-pair sessions, per-class G2 envelope, ar-eval aa, manifest incl. fixtures)",
+   "aa_packet": "2615af74f3517200e86004ac924c06d07ddf2ae4 (docs/experiments/ar-aa-2026-10-02/)"
+  },
+  "harness_manifest_sha256": "7f567a1a847730ef63fd6372d9ab2f75bfb71af52bcf338991ef4cf3440e95fc (54 evaluator files incl. the fixtures package, 22 frozen candidate files; selfcheck ok)",
+  "packet_manifest_sha256": "9b8f587a01aa30918941fdda5db561d35b983a8c1e4af540dc114180875da9a4",
+  "rebuild_worktree": "<lanes>/ar-champ-rebuild (detached at 457bc65d4, no branch)",
+  "privacy": "committed files scanned: no /mnt, /home/<user>, host name or secrets (verify_artifacts.py contains only a generic '/mnt/' regex literal)"
+ },
+ "binaries": {
+  "base": {"path": "<lanes>/bin/cua-driver-ar-base-457bc65d4", "sha256": "8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209", "built": "Phase 0, build-driver.sh, target cua-release-ar, no env padding"},
+  "rebuild": {"path": "<lanes>/bin/cua-driver-ar-champ-rebuild-457bc65d4", "sha256": "5ce01b3c580ac9b0c520d8ebbfd2bcb4e62b5a4fb1f014862a646aefd9599819",
+              "built": "hostless env AR_BUILD_ENV_PAD=<4096 bytes> nice -n 19 flock cargo-build.lock build-driver.sh <ar-champ-rebuild worktree at 457bc65d4> ar-champ-rebuild-457bc65d4 ar-champ-rebuild (target <mnt>/cargo-targets/ar-champ-rebuild), 228 s, 0 Fresh workspace units",
+              "log": "<lanes>/artifacts/ar/aa/build/build-ar-champ-rebuild-457bc65d4.out"},
+  "differ": true
+ },
+ "design": {
+  "task": "GTK3 checkbox toggle (libs/cua-driver/tests/fixtures/apps/linux/gtk3, CUA_GTK3_TASK_STATE oracle)",
+  "profile": "feedback OFF (frozen caller; no feedback code path exercised or edited)",
+  "sessions": "3 fresh private sessions x 24 AB/BA pairs (72 pairs), 14 pairs trace-off, + 2 warm-ups + 4 controls per session = 54 trials/session",
+  "blocks": "each session one quiet-timed block (exclusive lock): ar-aa-20261002-s000/s001/s002, 60.3/57.4/58.5 s held, rc 0",
+  "sandbox": "per-trial sandbox-driver.sh (bwrap, ro root, tmpfs HOME, --unshare-net); session-shared pid namespace via session-pidns.sh (Phase 0 fallback)",
+  "T": "whole-task T = CLOCK_MONOTONIC Driver spawn -> oracle-verified done (journal mtime <= done); T_act = first dispatch m0 -> done",
+  "extra_control": "same-binary A/A (base vs base), 2 sessions x 24 pairs, blocks ar-aa-same-20261002-s000/s001"
+ },
+ "results": {
+  "correctness": "144/144 task trials verified once (seq_delta 1, journal<=done, 1 dispatch, route accessibility); 12/12 controls refused without mutation; G2, G3, G4 pass on A/A rows; G5 does not keep (p=0.992)",
+  "whole_task_T": {"pairs": 72, "median_ms_base": 620.8, "median_ms_rebuild": 632.4, "sigma_ln": 0.05922, "delta_aa_ln": 0.01685, "ci95_ln": [0.00368, 0.03087], "ci_includes_zero": false,
+                   "q975_abs_delta_aa_ln_batch72": 0.03063, "tau": 0.03111, "n_pairs_by_power": 38, "feasible": true,
+                   "per_session_delta_ln": [0.0234, 0.0185, 0.0086], "tau_self_consistent": 0.0429, "n_self_consistent": 20},
+  "T_act": {"pairs": 72, "median_ms_base": 308.1, "median_ms_rebuild": 309.9, "sigma_ln": 0.03758, "delta_aa_ln": 0.00775, "ci95_ln": [-0.00087, 0.01634], "ci_includes_zero": true,
+            "tau": 0.02, "tau_floor_binding": true, "n_pairs_by_power": 37},
+  "decision_metric": "whole_task_T (pre-declared rule: switch to T_act only if whole-task n > 400; n = 38)",
+  "aa_ci_check": "FAIL for whole-task T: rebuild +1.7% (CI +0.4%..+3.1%), located in Driver startup (spawn->initialize +6.8 +- 2.9 ms on 229 ms; click phase +2.5 +- 1.4 ms on 308 ms). PASS for T_act. Same-binary control: whole-task +0.6% (CI -1.0%..+2.2%) and T_act +0.1% (CI -0.2%..+0.5%), both include 0, so the bias is between builds, not in the harness or order (position effect +0.8%, CI -0.6%..+2.2%).",
+  "psi_discard_threshold": {"value": 0.3485, "metric": "per pair max of cpu_some_stall_us/(t_exit - t_spawn), 10 Hz", "rule": "discard whole pair if > Q3 + 3 IQR of A/A pairs", "aa_pairs_discarded": 0, "spearman_psi_vs_abs_d": -0.09, "caveat": "regime-dependent: bimodal under background load (Q1 0.006, Q3 0.092); same-binary control later gave 0.012"},
+  "trace": {"median_cost_on_vs_off_ln": 0.0183, "delta_on_ln": 0.0096, "delta_off_ln": 0.0469, "pairs_off": 14, "note": "|on-off| 0.037 > ln(1+tau) 0.0306: G7's point comparison would false-reject this A/A"},
+  "same_binary_control": {"pairs": 48, "sigma_ln": 0.05756, "delta_aa_ln": 0.00597, "ci95_ln": [-0.00977, 0.02154], "ci_includes_zero": true, "tau": 0.0228, "n": 66, "T_act_sigma_ln": 0.01222}
+ },
+ "spot_checks": {
+  "browser_fill_submit_harness_kind": "12/12 on the champion under hostless v2 (2 warm-ups + 5 pairs, base binary both arms): oracle verified, 1 POST stamped <= done, trusted pointer sequence + submit, route trusted_input, 1 browser_click, 0 leftover processes, median T 3.93 s. Gate GS can now pass.",
+  "browser_fill_submit_fixture_runner": "0/10, exact error: browser_prepare refused browser_route_unavailable 'isolated browser exited before exposing DevTools (signal: 5 (SIGTRAP) (core dumped))'; minidump: FATAL process_singleton_posix.cc:313 'Socket path too long: <run-root>/driver-homes/<trial>/tmp/com.google.Chrome.XXXXXX/SingletonSocket'. Fixture-runner TMPDIR exceeds sun_path (harness path bug, not the Driver); the harness kind uses a short per-trial TMPDIR. The fixtures package itself stays frozen and unchanged.",
+  "fallback_used": false,
+  "fixture_controls": "100/100: all 10 cells x 5 on base and on rebuild (reference, stale token, no action, canary absent, canary disabled, delayed effect, focus steal, gtk3_text save, browser_selfcheck trusted/untrusted)"
+ },
+ "deviations": [
+  "Quiet lane not quiet: unrelated non-lane host processes (ollama ~8.5 cores, llama-server ~1.4 cores, lifetime averages) loaded the 10-core host for the whole run; loadavg 14-20 during the A/A blocks. They were not started by this track and were left alone. sigma is a loaded-host sigma; snapshots in artifacts/ar/aa/host-load-snapshots.txt.",
+  "Session cap reinterpreted as 48 paired trials (24 pairs) + 2 warm-ups + 4 controls (54), to run 3 x 24 pairs as asked; planner, block runner and README changed together.",
+  "Browser spot Driver runs without bwrap and without session-pidns.sh (user namespace hides Chromium root ownership); isolation = hostless v2 + private X11 session + fresh trial HOME + short trial TMPDIR. G2 compares browser rows only with champion browser rows.",
+  "Same-binary A/A (2 x 24 pairs) added beyond the requested design to separate build bias from harness bias.",
+  "Lock contention: exclusive waits of up to ~30 min behind other tracks' shared-mode holders; held block time <= 74 s."
+ ],
+ "owner_decisions": [
+  "Decision metric: the A/A CI check fails for whole-task T (rebuild startup bias +1.7%) and passes for T_act (unbiased in both A/As, lower sigma, contains every segment-1 wait). Keep whole-task T with tau 3.11% / n 38 (current, per the pre-declared rule), or switch to T_act with tau 2% / n 37 (needs G5/G6/GS to read T_act).",
+  "Re-run the A/A on an idle host (no ollama/llama-server load) before freezing tau for a campaign.",
+  "G7 trace-off agreement is a point comparison with about 8-14 off pairs; it would have false-rejected this A/A. Consider a CI-based agreement test or more trace-off pairs."
+ ],
+ "n01_reference": "no N-01 packet yet: artifacts/r2/n-01 is empty and artifacts/r2/N-01R holds only plans/pilots/runs/logs with no summary (checked 07:40Z). Nothing duplicated: this A/A changes no wait and measures champion against champion only.",
+ "paths": {
+  "packet": "<lanes>/ar-harness/docs/experiments/ar-aa-2026-10-02/",
+  "verify": "hostless python3 docs/experiments/ar-aa-2026-10-02/verify_artifacts.py -> PASS, 0 failing checks (log artifacts/ar/aa/verify_artifacts.log)",
+  "tau_for_prereg": "<lanes>/ar-harness/docs/experiments/ar-aa-2026-10-02/tau.json",
+  "raw_runs": "<tmp>/ar-aa/{aa1,aa-same,browser1,smoke,controls-base,controls-rebuild,browser-reval-champ}",
+  "unit_tests": "84 Python tests OK under hostless (artifacts/ar/aa/areval-unittest.log)"
+ }
+}
