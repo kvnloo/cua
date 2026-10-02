@@ -34,6 +34,7 @@ pub(crate) struct MockEvent {
 pub(crate) struct MockReply {
     pub events: Vec<MockEvent>,
     pub result: Result<Value, (i64, String)>,
+    close_without_reply: bool,
 }
 
 impl MockReply {
@@ -41,6 +42,7 @@ impl MockReply {
         Self {
             events: Vec::new(),
             result: Ok(result),
+            close_without_reply: false,
         }
     }
 
@@ -48,6 +50,16 @@ impl MockReply {
         Self {
             events: Vec::new(),
             result: Err((code, message.to_owned())),
+            close_without_reply: false,
+        }
+    }
+
+    /// Close the real mock socket after the handler runs, without a reply.
+    /// The handler may already have changed fixture state.
+    pub fn disconnect() -> Self {
+        Self {
+            close_without_reply: true,
+            ..Self::ok(json!({}))
         }
     }
 
@@ -107,6 +119,10 @@ impl MockCdpServer {
                                 .map(str::to_owned),
                         };
                         let reply = handler(&call);
+                        if reply.close_without_reply {
+                            let _ = ws.close(None).await;
+                            return;
+                        }
                         for event in reply.events {
                             let mut frame =
                                 json!({ "method": event.method, "params": event.params });

@@ -10,6 +10,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
+use crate::action_record::{
+    ActionEffect, ActionExecutionRecord, ActionTransport, ActualDelivery, RequestedDelivery,
+};
 use crate::protocol::{Content, ToolResult};
 use crate::tool::{ProtectedResourceOwnership, Tool, ToolDef, ToolRegistry};
 use crate::tool_args::ArgsExt;
@@ -2076,18 +2079,52 @@ impl Tool for BrowserTypeTool {
                 "replace": replace,
                 "replaced_chars": replaced_chars,
             })),
-            Err(e) => BrowserRefusal::new(
-                BrowserRefusalCode::BrowserInputIncomplete,
-                format!(
-                    "trusted Input typing stopped after {delivered_chars} of {requested_chars} character(s): {e}"
-                ),
-            )
-            .with_detail(json!({
-                "requested_chars": requested_chars,
-                "delivered_chars": delivered_chars,
-                "retryable": false,
-            }))
-            .to_tool_result(),
+            Err(e) => {
+                // These counts acknowledge replies, not all target-side effects.
+                // A lost first reply can follow text entry, so zero cannot prove
+                // refusal. Preserve known prefixes without replaying the tail.
+                let mut record = ActionExecutionRecord::new(
+                    if delivered_chars > 0 {
+                        ActionEffect::Partial
+                    } else {
+                        ActionEffect::Unverifiable
+                    },
+                    ActionTransport::BrowserCdpInputKey,
+                    RequestedDelivery::NotApplicable,
+                );
+                record.actual_delivery = Some(if delivered_chars > 0 {
+                    ActualDelivery::Background
+                } else {
+                    ActualDelivery::Unknown
+                });
+                if delivered_chars > 0 {
+                    record.delivered_count = u32::try_from(delivered_chars).ok();
+                }
+                let refusal = BrowserRefusal::new(
+                    BrowserRefusalCode::BrowserInputIncomplete,
+                    format!(
+                        "Input typing outcome is uncertain after {delivered_chars} acknowledged \
+                         character(s) of {requested_chars} requested: {e}"
+                    ),
+                )
+                .with_detail(json!({
+                    "requested_chars": requested_chars,
+                    "delivered_chars": delivered_chars,
+                    "retryable": false,
+                }));
+                let summary = if delivered_chars > 0 {
+                    "partial"
+                } else {
+                    "unverifiable"
+                };
+                ToolResult::text(format!(
+                    "{summary} ({}): {}",
+                    refusal.code.as_str(),
+                    refusal.message
+                ))
+                .with_structured(json!({ "status": "refused", "refusal": refusal }))
+                .with_action_record(record)
+            }
         }
     }
 }

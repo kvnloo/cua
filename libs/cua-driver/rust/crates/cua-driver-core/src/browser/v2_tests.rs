@@ -4,6 +4,7 @@
 //! revalidation, navigation invalidation, and unproven-capability
 //! omission/refusal.
 
+use std::collections::BTreeMap;
 use std::io::Cursor;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -55,6 +56,11 @@ struct FixtureState {
     oopif_sessions: u64,
     fail_key_down_after: Option<usize>,
     completed_key_pairs: usize,
+    reject_editability: bool,
+    drop_text_reply: bool,
+    focused_nodes: BTreeMap<String, i64>,
+    // Target-owned text, independent of the driver's result and request log.
+    editable_text: BTreeMap<(String, i64), String>,
     semantic_large_page: bool,
     semantic_full_dom_fails: bool,
     semantic_full_dom_times_out: bool,
@@ -92,6 +98,10 @@ impl Default for FixtureState {
             oopif_sessions: 0,
             fail_key_down_after: None,
             completed_key_pairs: 0,
+            reject_editability: false,
+            drop_text_reply: false,
+            focused_nodes: BTreeMap::new(),
+            editable_text: BTreeMap::new(),
             semantic_large_page: false,
             semantic_full_dom_fails: false,
             semantic_full_dom_times_out: false,
@@ -676,19 +686,55 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                 {
                     MockReply::err(-32000, "fixture key delivery failure")
                 } else {
+                    if event_type == "char" {
+                        let backend = st.focused_nodes[&sess];
+                        let target = if is_oopif { "T_OOPIF" } else { "T1" };
+                        st.editable_text
+                            .entry((target.into(), backend))
+                            .or_default()
+                            .push_str(call.params["text"].as_str().unwrap());
+                        if st.drop_text_reply {
+                            return MockReply::disconnect();
+                        }
+                    }
                     if event_type == "keyUp" {
                         st.completed_key_pairs += 1;
                     }
                     MockReply::ok(json!({}))
                 }
             }
-            "DOM.focus"
-            | "Emulation.setFocusEmulationEnabled"
-            | "Input.dispatchMouseEvent"
-            | "Input.insertText" => MockReply::ok(json!({})),
+            "DOM.focus" => {
+                st.focused_nodes
+                    .insert(sess.clone(), call.params["backendNodeId"].as_i64().unwrap());
+                MockReply::ok(json!({}))
+            }
+            "Input.insertText" => {
+                let backend = st.focused_nodes[&sess];
+                let target = if is_oopif { "T_OOPIF" } else { "T1" };
+                st.editable_text
+                    .entry((target.into(), backend))
+                    .or_default()
+                    .push_str(call.params["text"].as_str().unwrap());
+                if st.drop_text_reply {
+                    MockReply::disconnect()
+                } else {
+                    MockReply::ok(json!({}))
+                }
+            }
+            "Emulation.setFocusEmulationEnabled" | "Input.dispatchMouseEvent" => {
+                MockReply::ok(json!({}))
+            }
             "DOM.resolveNode" => MockReply::ok(json!({
                 "object": { "objectId": format!("obj-{}", call.params["backendNodeId"]) }
             })),
+            "Runtime.callFunctionOn"
+                if st.reject_editability
+                    && call.params["functionDeclaration"]
+                        .as_str()
+                        .is_some_and(|code| code.contains("this.isContentEditable")) =>
+            {
+                MockReply::ok(json!({ "result": { "value": false } }))
+            }
             "Runtime.callFunctionOn" => MockReply::ok(json!({ "result": { "value": true } })),
             other => MockReply::method_not_found(other),
         }
@@ -2455,6 +2501,40 @@ async fn partial_keystrokes_report_exact_delivered_prefix() {
     assert_eq!(refusal["detail"]["requested_chars"], 4);
     assert_eq!(refusal["detail"]["delivered_chars"], 2);
     assert_eq!(refusal["detail"]["retryable"], false);
+    assert_eq!(
+        f.state.lock().unwrap().editable_text,
+        BTreeMap::from([(("T1".into(), 20), "fo".into())])
+    );
+    let keys = recorded_calls(&f, "Input.dispatchKeyEvent");
+    assert_eq!(
+        keys.len(),
+        8,
+        "two complete triplets plus refused keyDown and keyUp cleanup"
+    );
+    assert_eq!(keys.iter().filter(|(_, p)| p["type"] == "char").count(), 2);
+    assert!(recorded_calls(&f, "Input.insertText").is_empty());
+    let public = result
+        .action_record
+        .clone()
+        .or_else(|| {
+            ActionExecutionRecord::from_legacy("browser_type", &json!({}), structured(&result))
+        })
+        .unwrap()
+        .public_result()
+        .unwrap();
+    assert_eq!(public.effect, cua_driver_contract::ActionEffect::Partial);
+    assert_eq!(public.delivery.as_ref().unwrap().delivered_count, Some(2));
+    assert_eq!(
+        public.delivery.as_ref().unwrap().mode,
+        cua_driver_contract::ActionDeliveryMode::Background
+    );
+    assert!(public.error.is_none());
+    assert!(public.escalation.is_none());
+    cua_driver_contract::validate_success_output(
+        "browser_type",
+        serde_json::to_value(public).unwrap(),
+    )
+    .unwrap();
 }
 
 #[tokio::test]
@@ -2610,4 +2690,151 @@ async fn method_unsupported_keeps_the_electron_none_path() {
     let tabs = s["tabs"].as_array().expect("tabs");
     assert_eq!(tabs.len(), 1, "{s}");
     assert_eq!(tabs[0]["url"], "https://fixture.test/");
+}
+
+// Lost replies are scripted after the target-owned text changes. This tests
+// producer uncertainty at the public projection, not native browser behavior.
+async fn assert_typing_lost_text_reply_is_unknown(mode: &str) {
+    {
+        let f = fixture_with(|state| state.drop_text_reply = true).await;
+        let (target, tab) = bind(&f).await;
+        let snap = snapshot(&f, &target, &tab).await;
+        let input = ref_of(&snap, "main", "Shadow Input");
+        let args = json!({
+            "target_id": target, "tab_id": tab, "ref": input,
+            "text": "xy", "mode": mode, "session": SESSION
+        });
+        let result = BrowserTypeTool::new(f.engine.clone())
+            .invoke(args.clone())
+            .await;
+        let expected = if mode == "insert_text" { "xy" } else { "x" };
+        let owned_text = f.state.lock().unwrap().editable_text.clone();
+        assert_eq!(
+            owned_text,
+            BTreeMap::from([(("T1".into(), 20), expected.into())]),
+            "the exact target changed before its reply was lost"
+        );
+        let inserts = recorded_calls(&f, "Input.insertText");
+        let keys = recorded_calls(&f, "Input.dispatchKeyEvent");
+        if mode == "insert_text" {
+            assert_eq!(inserts.len(), 1, "no automatic insert replay");
+            assert!(keys.is_empty(), "no fallback key replay");
+        } else {
+            assert!(inserts.is_empty(), "no fallback insert replay");
+            assert_eq!(
+                keys.len(),
+                2,
+                "only keyDown and the uncertain char reach the target"
+            );
+            assert_eq!(keys[0].1["type"], "keyDown");
+            assert_eq!(keys[1].1["type"], "char");
+            assert_eq!(
+                keys.iter().filter(|(_, p)| p["type"] == "char").count(),
+                1,
+                "do not replay the uncertain character or continue the suffix"
+            );
+        }
+        assert!(
+            recorded_calls(&f, "Runtime.callFunctionOn")
+                .iter()
+                .all(|(_, p)| {
+                    let code = p["functionDeclaration"].as_str().unwrap();
+                    !code.contains(".value =") && !code.contains(".textContent =")
+                }),
+            "no synthetic value-assignment fallback"
+        );
+        let output = structured(&result);
+        assert_eq!(output["refusal"]["code"], "browser_input_incomplete");
+        assert_eq!(output["refusal"]["detail"]["retryable"], false);
+        assert_eq!(
+            output["refusal"]["detail"]["delivered_chars"], 0,
+            "the existing count records acknowledgements, not target-owned text"
+        );
+        let public = result
+            .action_record
+            .clone()
+            .or_else(|| ActionExecutionRecord::from_legacy("browser_type", &args, output))
+            .unwrap()
+            .public_result()
+            .unwrap();
+        assert_eq!(
+            public.effect,
+            cua_driver_contract::ActionEffect::Unverifiable,
+            "{mode}: a lost reply after text entry cannot prove refusal"
+        );
+        assert_eq!(
+            public.delivery.as_ref().unwrap().mode,
+            cua_driver_contract::ActionDeliveryMode::Unknown
+        );
+        assert!(public.delivery.as_ref().unwrap().delivered_count.is_none());
+        assert!(public.error.is_none());
+        assert!(
+            public.escalation.is_none(),
+            "no alternative-route replay suggestion"
+        );
+        cua_driver_contract::validate_success_output(
+            "browser_type",
+            serde_json::to_value(public).unwrap(),
+        )
+        .unwrap();
+        assert!(
+            result.content.iter().all(|content| !matches!(content,
+            Content::Text { text, .. } if text.starts_with("refused ("))),
+            "the summary must preserve uncertainty too"
+        );
+    }
+}
+
+#[tokio::test]
+async fn typing_lost_insert_reply_is_unknown_without_replay() {
+    assert_typing_lost_text_reply_is_unknown("insert_text").await;
+}
+
+#[tokio::test]
+async fn typing_lost_char_reply_is_unknown_without_replay() {
+    assert_typing_lost_text_reply_is_unknown("keystrokes").await;
+}
+
+#[tokio::test]
+async fn typing_pre_dispatch_refusal_preserves_target_text() {
+    for mode in ["insert_text", "keystrokes"] {
+        let f = fixture_with(|state| {
+            state.reject_editability = true;
+            state
+                .editable_text
+                .insert(("T1".into(), 20), "existing".into());
+        })
+        .await;
+        let (target, tab) = bind(&f).await;
+        let snap = snapshot(&f, &target, &tab).await;
+        let input = ref_of(&snap, "main", "Shadow Input");
+        let args = json!({
+            "target_id": target, "tab_id": tab, "ref": input,
+            "text": "xy", "mode": mode, "session": SESSION
+        });
+        let result = BrowserTypeTool::new(f.engine.clone())
+            .invoke(args.clone())
+            .await;
+        let output = structured(&result);
+        assert_eq!(output["refusal"]["code"], "browser_input_trust_unavailable");
+        assert_eq!(
+            f.state.lock().unwrap().editable_text,
+            BTreeMap::from([(("T1".into(), 20), "existing".into())])
+        );
+        assert!(recorded_calls(&f, "Input.insertText").is_empty());
+        assert!(recorded_calls(&f, "Input.dispatchKeyEvent").is_empty());
+        let public = result
+            .action_record
+            .clone()
+            .or_else(|| ActionExecutionRecord::from_legacy("browser_type", &args, output))
+            .unwrap()
+            .public_result()
+            .unwrap();
+        assert_eq!(public.effect, cua_driver_contract::ActionEffect::Refused);
+        assert!(public.delivery.is_none());
+        assert_eq!(
+            public.error.unwrap().code,
+            "browser_input_trust_unavailable"
+        );
+    }
 }
