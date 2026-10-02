@@ -165,6 +165,7 @@ async fn read_loop(mut read: SplitStream<WsStream>, demux: Arc<Demux>) {
             Ok(v) => v,
             Err(_) => continue,
         };
+        super::cdp_counters::on_frame(&v);
         if let Some(id) = v.get("id").and_then(Value::as_u64) {
             let Some(tx) = demux.pending.lock().unwrap().remove(&id) else {
                 continue; // reply to a timed-out or unknown call
@@ -365,6 +366,11 @@ impl CdpConnection {
         if self.is_closed() {
             anyhow::bail!("CDP socket closed before {method}");
         }
+        // Measurement-only (BUG-01): None unless the counter variable is set.
+        let detach_session = (super::cdp_counters::enabled()
+            && method == "Target.detachFromTarget")
+            .then(|| params.get("sessionId").and_then(Value::as_str).map(str::to_owned))
+            .flatten();
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = oneshot::channel();
         self.demux.pending.lock().unwrap().insert(id, tx);
@@ -388,6 +394,7 @@ impl CdpConnection {
             self.demux.pending.lock().unwrap().remove(&id);
             anyhow::bail!("CDP send failed during {method}: {e}");
         }
+        super::cdp_counters::on_command_sent(method);
 
         match tokio::time::timeout(CALL_TIMEOUT, rx).await {
             Err(_) => {
@@ -395,7 +402,10 @@ impl CdpConnection {
                 anyhow::bail!("CDP {method} timed out after {CALL_TIMEOUT:?}")
             }
             Ok(Err(_)) => anyhow::bail!("CDP socket closed during {method}"),
-            Ok(Ok(CallOutcome::Result(v))) => Ok(v),
+            Ok(Ok(CallOutcome::Result(v))) => {
+                super::cdp_counters::on_command_ok(method, detach_session.as_deref(), &v);
+                Ok(v)
+            }
             Ok(Ok(CallOutcome::Error {
                 code: Some(code),
                 message,

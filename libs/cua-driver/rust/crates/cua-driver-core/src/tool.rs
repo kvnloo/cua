@@ -1945,6 +1945,9 @@ impl ToolRegistry {
             }
         }
 
+        // Measurement-only (BUG-01): no-op unless CUA_DRIVER_EXP_CDP_COUNTER_FILE is set.
+        crate::browser::cdp_counters::on_tool_call(name);
+
         result
     }
 

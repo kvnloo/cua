@@ -37,6 +37,7 @@
 
 mod adapter_support;
 pub mod binding;
+pub mod cdp_counters;
 pub mod cdp_ws;
 pub mod download;
 pub mod engine;
