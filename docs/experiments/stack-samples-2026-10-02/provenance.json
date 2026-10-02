@@ -1,0 +1,140 @@
+{
+  "branches": {
+    "cua_packet": "kvnloo/cua exp/stack-samples-20261002 (base 352507b6c; PREREG 726d6bf3094cb2b6bf6eecbcc7c6cc2ffec81762)",
+    "hermes": "kvnloo/hermes-agent exp/stack-samples-20261002 @ 5d01f608975ab1d32d6a07c6c19213d2d4c5d98f (local, not pushed)"
+  },
+  "commands": {
+    "collect": "STACK_LANE_DIR=$LANE_DIR STACK_X11_SESSION=$LANES/cua-x11-session.sh STACK_RUN_PREFIX=S $HOSTLESS harness/collect.sh workload/tasks.jsonl workload/fixtures $LANE_DIR/collect 2026-10-02T08:35:00Z",
+    "packet": "harness/build_packet.py ... <local sanitize.json>; harness/make_summary.py; verify_artifacts.py",
+    "score_evaluate_analyze": "HOSTLESS=.. QUIET=.. HERMES_WT=.. Z0_WT=.. Z0_VENV=.. PACKET=.. COLLECT=.. RUNS=.. WORK=.. NANOJEV_CKPT=.. JULIA_PY=.. bash harness/run_scoring.sh",
+    "scorer_env": "HF_HUB_OFFLINE=1 TMPDIR=$WORK/tmp Z0INT_HOME=$WORK/z0int-home Z0INT_NANOJEV_CHECKPOINT=<nanojev bundle> Z0INT_JULIA_PYTHON=<julia venv python> Z0INT_LAYA_DEVICE=cpu Z0INT_JULIA_DEVICE=cpu"
+  },
+  "freeze_history": [
+    {
+      "content_sha256": "54f5aa49bf64553eff26ccee57211c06f41364c1a453654bc480f86d9fe4f586",
+      "note": "first freeze; isolation receipt compared whole stat incl. live-home dir mtime"
+    },
+    {
+      "content_sha256": "3831e02eec6b4bb3efd93d8775f74276484c471ddb9d1129d74a48b8e0e06391",
+      "note": "receipt compares file entries only"
+    },
+    {
+      "content_sha256": "648e418ed1c4ad20c915ffbdabef8b56a7652a144c8ad1c872c9325161ef3c16",
+      "note": "final: adds live_home_changed_entries; events/examples/labels identical across all three"
+    }
+  ],
+  "identities": {
+    "cua_driver": {
+      "name": "cua-driver-r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "version": "0.32.0"
+    },
+    "executor_model": {
+      "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "name": "qwen2.5:3b",
+      "server": "ollama 0.16.1 on 127.0.0.1:11434 (system service, CPU inference, served context 4096)"
+    },
+    "gui_fixture_sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+    "hermes": {
+      "branch": "exp/stack-samples-20261002",
+      "commit": "5d01f608975ab1d32d6a07c6c19213d2d4c5d98f",
+      "observer_plugin_source": "lab/z0_hermes_observer/__init__.py unchanged from #385 head ce5c027b",
+      "observer_schema": "z0int.hermes_observer_event.v1",
+      "python": "3.14.7",
+      "venv_freeze_sha256_16_excluding_editable": "ad1bab85818d32cb (85 pkgs)"
+    },
+    "prereg_commit": "kvnloo/cua exp/stack-samples-20261002 726d6bf30",
+    "scorer_backends": {
+      "decider_2b": "Mapika/decider-2b@1d96be0093133e194fe18105a521b3e69be931d2 (CUDA bf16)",
+      "julia_1": "SupersonicLabs/Julia-1@a85b127321d580d65176c89ced8273f305745d85 (CPU worker, model.safetensors df853bf7...)",
+      "laya_421m": "convaiinnovations/laya@7c76b622dfc5cac71b2dc1c29873efe2ce509a05 (CPU)",
+      "nanojev": "C-Tianyu/NanoJev@4a19595eada0857133c0d2be024f879a4077054b bundle (best.safetensors sha256 fff62d1412685c1714eaa386acb603f9690371fb3cc8ad03dc41319302597c28; backbone Qwen3-0.6B@c1899de2)",
+      "qwen_3b_baseline": "ollama:qwen2.5:3b digest 357c53fb... via lab/z0_hermes_observer/ollama_logprob_backend.py (CPU)"
+    },
+    "session_kits_sha256": {
+      "cua-task.sh": "95971dd1bb0e43cb562a22b75b073d1d3c380a9a5d93052223ee0225814071d3",
+      "cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+      "hostless": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+      "run-hermes.sh": "cdaaee3fd73beb3a86d0d82ab062f16db3d25c7cd8cbe051edf2371da591bcd6"
+    },
+    "z0intelligence": {
+      "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a",
+      "venv": "python 3.11.14, torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6, freeze sha256_16 05f5cce65b4265db"
+    }
+  },
+  "local_mirror": "raw receipts for all 105 runs + pilots are mirrored locally under the lanes artifacts dir stack/samples/ (not committed: private homes, stderr, env dumps)",
+  "schema": "stack.samples.provenance.v1",
+  "timeline_utc": {
+    "collection_deadline": "2026-10-02T08:35:00Z",
+    "collection_done": "2026-10-02T08:36:45Z",
+    "collection_launched": "2026-10-02T05:38:58Z",
+    "prereg_commit": "2026-10-02T05:38Z (before launch)",
+    "scoring": [
+      {
+        "acquired": "2026-10-02T08:39:27.055Z",
+        "label": "samples-score-turn-laya_421m",
+        "rc": 0,
+        "released": "2026-10-02T08:40:32.903Z"
+      },
+      {
+        "acquired": "2026-10-02T08:45:15.165Z",
+        "label": "samples-score-turn-julia_1",
+        "rc": 0,
+        "released": "2026-10-02T08:45:33.633Z"
+      },
+      {
+        "acquired": "2026-10-02T08:50:28.479Z",
+        "label": "samples-score-turn-qwen_3b_baseline",
+        "rc": 0,
+        "released": "2026-10-02T08:54:04.209Z"
+      },
+      {
+        "acquired": "2026-10-02T08:59:00.858Z",
+        "label": "samples-score-api-laya_421m",
+        "rc": 0,
+        "released": "2026-10-02T09:00:30.521Z"
+      },
+      {
+        "acquired": "2026-10-02T09:06:19.325Z",
+        "label": "samples-score-api-julia_1",
+        "rc": 0,
+        "released": "2026-10-02T09:06:41.600Z"
+      },
+      {
+        "acquired": "2026-10-02T09:11:16.888Z",
+        "label": "samples-score-api-qwen_3b_baseline",
+        "rc": 0,
+        "released": "2026-10-02T09:16:49.450Z"
+      },
+      {
+        "acquired": "2026-10-02T09:21:23.853Z",
+        "label": "samples-score-turn-decider_2b",
+        "rc": 0,
+        "released": "2026-10-02T09:27:53.046Z"
+      },
+      {
+        "acquired": "2026-10-02T09:32:28.772Z",
+        "label": "samples-score-turn-nanojev",
+        "rc": 0,
+        "released": "2026-10-02T09:32:51.466Z"
+      },
+      {
+        "acquired": "2026-10-02T09:37:25.222Z",
+        "label": "samples-score-api-decider_2b",
+        "rc": 0,
+        "released": "2026-10-02T09:38:00.452Z"
+      },
+      {
+        "acquired": "2026-10-02T09:42:35.119Z",
+        "label": "samples-score-api-nanojev",
+        "rc": 0,
+        "released": "2026-10-02T09:42:58.850Z"
+      }
+    ]
+  },
+  "vendor_sha256": {
+    "evaluate_shadow.py": "ec407eb65371127eccd594f90904b5975e743bfb10ef537c7ff82a3a218235e9",
+    "ollama_logprob_backend.py": "d2b3eff1cfdb08675017d3ba69698ad022a56b942ba3a3714d244271ef9d3e00",
+    "shadow_api_failure.py": "2ac24fbc15a1de2edd50fdd4b0ad28651d0cb3616314246c95de15a209c342db"
+  }
+}

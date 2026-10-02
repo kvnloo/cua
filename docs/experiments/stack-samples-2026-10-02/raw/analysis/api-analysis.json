@@ -1,0 +1,520 @@
+{
+  "G2": {
+    "degenerate": true,
+    "minority_rate_upper95_clopper_pearson": 0.012666887914453973,
+    "positive_rate": 0.0,
+    "positive_rate_upper95_clopper_pearson": 0.012666887914453973
+  },
+  "disagreement": {
+    "all_model_rows_right": 0,
+    "all_model_rows_wrong": 0,
+    "model_rows": [
+      "decider_2b",
+      "julia_1",
+      "laya_421m",
+      "nanojev",
+      "qwen_3b_baseline"
+    ],
+    "n_labelled_scored_by_all_model_rows": 235,
+    "pairwise": {
+      "decider_2b|julia_1": {
+        "disagree_rate_at_0_5": 0.7829787234042553,
+        "n": 235
+      },
+      "decider_2b|laya_421m": {
+        "disagree_rate_at_0_5": 1.0,
+        "n": 235
+      },
+      "decider_2b|nanojev": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 235
+      },
+      "decider_2b|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 1.0,
+        "n": 235
+      },
+      "julia_1|laya_421m": {
+        "disagree_rate_at_0_5": 0.2170212765957447,
+        "n": 235
+      },
+      "julia_1|nanojev": {
+        "disagree_rate_at_0_5": 0.7829787234042553,
+        "n": 235
+      },
+      "julia_1|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 0.2170212765957447,
+        "n": 235
+      },
+      "laya_421m|nanojev": {
+        "disagree_rate_at_0_5": 1.0,
+        "n": 235
+      },
+      "laya_421m|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 235
+      },
+      "nanojev|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 1.0,
+        "n": 235
+      }
+    }
+  },
+  "n_examples": 235,
+  "n_labelled": 235,
+  "n_negative": 235,
+  "n_positive": 0,
+  "n_unknown_label": 0,
+  "question_id": "api.attempt_will_fail",
+  "rows": {
+    "decider_2b": {
+      "accuracy_at_0_5": 1.0,
+      "backend": "decider",
+      "base_rate_brier": 0.0,
+      "brier": 0.03886642863829787,
+      "brier_improvement": -0.03886642863829787,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 0.03474762314285714,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 0.039587219599999994,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.19098228571428572,
+          "n": 175,
+          "observed_rate": 0.0
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.21346333333333334,
+          "n": 60,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.19672212765957448,
+      "latency": {
+        "backend_create_ms": 29.65023901197128,
+        "first_call_wall_ms": 28893.786559987348,
+        "n_calls": 235,
+        "warm_reported_latency_ms_p50": 19.404796010348946,
+        "warm_reported_latency_ms_p95": 19.479852984659374,
+        "warm_wall_ms_p50": 19.445109996013343,
+        "warm_wall_ms_p95": 19.524803006788716
+      },
+      "log_loss": 0.21918373126542762,
+      "mean_latency_ms": 89.2385136894634,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.03886184292183059,
+        "ci95": [
+          0.038181396933353436,
+          0.03956399063705977
+        ],
+        "n_common": 235
+      }
+    },
+    "deterministic_constant_0_5": {
+      "accuracy_at_0_5": 0.0,
+      "backend": "deterministic_constant_0_5",
+      "base_rate_brier": 0.0,
+      "brier": 0.25,
+      "brier_improvement": -0.25,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 0.25,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 0.25,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5,
+          "n": 235,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.5,
+      "log_loss": 0.6931471805599453,
+      "mean_latency_ms": 0.0,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.24999541428353272,
+        "ci95": [
+          0.24999540702685707,
+          0.2499954220630643
+        ],
+        "n_common": 235
+      }
+    },
+    "deterministic_loo_group_prior": {
+      "accuracy_at_0_5": 1.0,
+      "backend": "deterministic_loo_group_prior",
+      "base_rate_brier": 0.0,
+      "brier": 4.585716467274166e-06,
+      "brier_improvement": -4.585716467274166e-06,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 4.6142523513123295e-06,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 4.5807226875674865e-06,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.0021414144330325416,
+          "n": 235,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.0021414144330325416,
+      "log_loss": 0.0021437105699259195,
+      "mean_latency_ms": 0.0,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1"
+    },
+    "julia_1": {
+      "accuracy_at_0_5": 0.2170212765957447,
+      "backend": "julia_1",
+      "base_rate_brier": 0.0,
+      "brier": 0.6284914291960575,
+      "brier_improvement": -0.6284914291960575,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 0.5717539149317012,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 0.6384204941923198,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.0895045972478294,
+          "n": 18,
+          "observed_rate": 0.0
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.3647192553898479,
+          "n": 30,
+          "observed_rate": 0.0
+        },
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5180511578060486,
+          "n": 6,
+          "observed_rate": 0.0
+        },
+        {
+          "hi": 0.8,
+          "lo": 0.6,
+          "mean_probability": 0.7370397809007297,
+          "n": 51,
+          "observed_rate": 0.0
+        },
+        {
+          "hi": 1.0,
+          "lo": 0.8,
+          "mean_probability": 0.9349384750003757,
+          "n": 130,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.7437957358935264,
+      "latency": {
+        "backend_create_ms": 31.146252003964037,
+        "first_call_wall_ms": 10408.654938015388,
+        "n_calls": 235,
+        "warm_reported_latency_ms_p50": 48.440387996379286,
+        "warm_reported_latency_ms_p95": 56.9837820075918,
+        "warm_wall_ms_p50": 48.52712599677034,
+        "warm_wall_ms_p95": 57.0691830071155
+      },
+      "log_loss": 2.1109992484551023,
+      "mean_latency_ms": 79.2087524760257,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.6284868434795903,
+        "ci95": [
+          0.5841641170688053,
+          0.6741933005811157
+        ],
+        "n_common": 235
+      }
+    },
+    "laya_421m": {
+      "accuracy_at_0_5": 0.0,
+      "backend": "laya",
+      "base_rate_brier": 0.0,
+      "brier": 0.30513114672340425,
+      "brier_improvement": -0.30513114672340425,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 0.320569204,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 0.30242948669999997,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5522774468085107,
+          "n": 235,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.5522774468085107,
+      "latency": {
+        "backend_create_ms": 38.90367498388514,
+        "first_call_wall_ms": 12884.354403009638,
+        "n_calls": 235,
+        "warm_reported_latency_ms_p50": 316.9675729877781,
+        "warm_reported_latency_ms_p95": 331.14473198656924,
+        "warm_wall_ms_p50": 317.013029998634,
+        "warm_wall_ms_p95": 331.19509901735
+      },
+      "log_loss": 0.8038849109137367,
+      "mean_latency_ms": 318.8336900639734,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.30512656100693697,
+        "ci95": [
+          0.3033137004868561,
+          0.30705944891568665
+        ],
+        "n_common": 235
+      }
+    },
+    "nanojev": {
+      "accuracy_at_0_5": 1.0,
+      "backend": "nanojev",
+      "base_rate_brier": 0.0,
+      "brier": 0.08640544612319624,
+      "brier_improvement": -0.08640544612319624,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 0.08005382356293408,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 0.08751698007124212,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.2934292144597845,
+          "n": 235,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.2934292144597845,
+      "latency": {
+        "backend_create_ms": 6.085315020754933,
+        "first_call_wall_ms": 15030.88037899579,
+        "n_calls": 235,
+        "warm_reported_latency_ms_p50": 27.40680199349299,
+        "warm_reported_latency_ms_p95": 28.3181160048116,
+        "warm_wall_ms_p50": 27.44887099834159,
+        "warm_wall_ms_p95": 28.35755201522261
+      },
+      "log_loss": 0.3476377811693798,
+      "mean_latency_ms": 31.68808860156903,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.08640086040672897,
+        "ci95": [
+          0.08509802321549888,
+          0.08765244713953656
+        ],
+        "n_common": 235
+      }
+    },
+    "qwen_3b_baseline": {
+      "accuracy_at_0_5": 0.0,
+      "backend": "ollama:qwen2.5:3b",
+      "base_rate_brier": 0.0,
+      "brier": 0.9705968010767451,
+      "brier_improvement": -0.9705968010767451,
+      "brier_slices": {
+        "kind=cua": {
+          "brier": 0.9662447392164127,
+          "n": 35
+        },
+        "kind=file": {
+          "brier": 0.9713584119023032,
+          "n": 200
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 1.0,
+          "lo": 0.8,
+          "mean_probability": 0.9850568126794437,
+          "n": 235,
+          "observed_rate": 0.0
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 235,
+        "n_missing_probability": 0,
+        "n_rows": 235,
+        "n_scored": 235,
+        "n_unknown_label": 0
+      },
+      "ece": 0.9850568126794437,
+      "latency": {
+        "backend_create_ms": 47.58367798058316,
+        "first_call_wall_ms": 8600.629923981614,
+        "n_calls": 235,
+        "warm_reported_latency_ms_p50": 1400.516316993162,
+        "warm_reported_latency_ms_p95": 1465.7313780044205,
+        "warm_wall_ms_p50": 1400.5514699965715,
+        "warm_wall_ms_p95": 1465.7674450136255
+      },
+      "log_loss": 4.5840392271251265,
+      "mean_latency_ms": 1414.363476578047,
+      "n": 235,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.0,
+      "promotion_ready": false,
+      "question_id": "api.attempt_will_fail",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.9705922153602778,
+        "ci95": [
+          0.9669193659643577,
+          0.9738391148473288
+        ],
+        "n_common": 235
+      }
+    }
+  },
+  "schema": "stack.samples.lane_analysis.v1"
+}

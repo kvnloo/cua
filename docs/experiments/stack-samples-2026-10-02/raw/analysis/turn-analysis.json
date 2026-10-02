@@ -1,0 +1,945 @@
+{
+  "G2": {
+    "degenerate": false,
+    "minority_rate_upper95_clopper_pearson": 0.5420007929848873,
+    "positive_rate": 0.5428571428571428,
+    "positive_rate_upper95_clopper_pearson": 0.6258620361656435
+  },
+  "disagreement": {
+    "all_model_rows_right": 32,
+    "all_model_rows_wrong": 19,
+    "model_rows": [
+      "decider_2b",
+      "julia_1",
+      "laya_421m",
+      "nanojev",
+      "qwen_3b_baseline"
+    ],
+    "n_labelled_scored_by_all_model_rows": 105,
+    "pairwise": {
+      "decider_2b|julia_1": {
+        "disagree_rate_at_0_5": 0.5142857142857142,
+        "n": 105
+      },
+      "decider_2b|laya_421m": {
+        "disagree_rate_at_0_5": 0.06666666666666667,
+        "n": 105
+      },
+      "decider_2b|nanojev": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 105
+      },
+      "decider_2b|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 105
+      },
+      "julia_1|laya_421m": {
+        "disagree_rate_at_0_5": 0.44761904761904764,
+        "n": 105
+      },
+      "julia_1|nanojev": {
+        "disagree_rate_at_0_5": 0.5142857142857142,
+        "n": 105
+      },
+      "julia_1|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 0.5142857142857142,
+        "n": 105
+      },
+      "laya_421m|nanojev": {
+        "disagree_rate_at_0_5": 0.06666666666666667,
+        "n": 105
+      },
+      "laya_421m|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 0.06666666666666667,
+        "n": 105
+      },
+      "nanojev|qwen_3b_baseline": {
+        "disagree_rate_at_0_5": 0.0,
+        "n": 105
+      }
+    }
+  },
+  "n_examples": 105,
+  "n_labelled": 105,
+  "n_negative": 48,
+  "n_positive": 57,
+  "n_unknown_label": 0,
+  "question_id": "verification_needed",
+  "rows": {
+    "decider_2b": {
+      "accuracy_at_0_5": 0.45714285714285713,
+      "backend": "decider",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.43484627257142855,
+      "brier_improvement": -0.1866830072653061,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.28648380333333334,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 0.5643824399999999,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.485093702,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.681601265,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.7126499266666667,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.4142072949999999,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.8324549429999999,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.092834617,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.21007614875,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.42986081,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.0993140988888889,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.661543234,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.826386187,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.12540167857142856,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.5879488083333333,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.4150911066666667,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.09365102040816325,
+          "n": 98,
+          "observed_rate": 0.5204081632653061
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.2534571428571429,
+          "n": 7,
+          "observed_rate": 0.8571428571428571
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.43855238095238097,
+      "latency": {
+        "backend_create_ms": 39.8866530158557,
+        "first_call_wall_ms": 197540.19711600267,
+        "n_calls": 105,
+        "warm_reported_latency_ms_p50": 24.26824701251462,
+        "warm_reported_latency_ms_p95": 24.506026005838066,
+        "warm_wall_ms_p50": 24.31355300359428,
+        "warm_wall_ms_p95": 24.554524978157133
+      },
+      "log_loss": 1.2799019600088284,
+      "mean_latency_ms": 3486.785696522011,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.16394265635672686,
+        "ci95": [
+          0.08104586874995905,
+          0.25018046571477215
+        ],
+        "n_common": 105
+      }
+    },
+    "deterministic_constant_0_5": {
+      "accuracy_at_0_5": 0.5428571428571428,
+      "backend": "deterministic_constant_0_5",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.25,
+      "brier_improvement": -0.0018367346938775453,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.25,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 0.25,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.25,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.25,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.25,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.25,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.25,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.25,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.25,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.25,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.25,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.25,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.25,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.25,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.25,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.25,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5,
+          "n": 105,
+          "observed_rate": 0.5428571428571428
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.042857142857142816,
+      "log_loss": 0.6931471805599453,
+      "mean_latency_ms": 0.0,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "beats",
+        "brier_diff": -0.020903616214701704,
+        "ci95": [
+          -0.03152164942178605,
+          -0.010741756465172607
+        ],
+        "n_common": 105
+      }
+    },
+    "deterministic_loo_group_prior": {
+      "accuracy_at_0_5": 0.3523809523809524,
+      "backend": "deterministic_loo_group_prior",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.2709036162147017,
+      "brier_improvement": -0.02274035090857926,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.27444468062493355,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 0.2174787352071006,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.24364768159984312,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.2174787352071006,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.22172212272598738,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.252197265625,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.25523546006944436,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.3286729600694444,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.2875624739691795,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.252197265625,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.32094861893458987,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.24586046006944443,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.25523546006944436,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.30550454035302527,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.229443309750465,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.276253333177829,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5430035997401716,
+          "n": 105,
+          "observed_rate": 0.5428571428571428
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.00014645688302883375,
+      "log_loss": 0.7353481490537297,
+      "mean_latency_ms": 0.0,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1"
+    },
+    "failopen_ollama_deadport": {
+      "brier_slices": {},
+      "denominators": {
+        "coverage": 0.0,
+        "n_backend_error": 105,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 0,
+        "n_unknown_label": 0
+      },
+      "ece": null,
+      "latency": {
+        "backend_create_ms": 61.881414003437385,
+        "first_call_wall_ms": null,
+        "n_calls": 0,
+        "warm_reported_latency_ms_p50": null,
+        "warm_reported_latency_ms_p95": null,
+        "warm_wall_ms_p50": null,
+        "warm_wall_ms_p95": null
+      },
+      "n": 0,
+      "n_probability_exactly_0_or_1": 0,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1"
+    },
+    "julia_1": {
+      "accuracy_at_0_5": 0.6666666666666666,
+      "backend": "julia_1",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.24657188896592636,
+      "brier_improvement": 0.001591376340196099,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.17554641830210896,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 1.4613325612993442e-10,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.3813758055889334,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.12527039375542046,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.13828804158401595,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.47739758932292775,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.09917776753118851,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.25289938849217475,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.2048820865143979,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.2514299206096038,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.19901367271139545,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.2658862624436774,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.36651150905523366,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.16780607359109503,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.21435699504165184,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.25072864947228435,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.10748208270395838,
+          "n": 4,
+          "observed_rate": 0.75
+        },
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.31788562913035434,
+          "n": 34,
+          "observed_rate": 0.29411764705882354
+        },
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.5173616657446695,
+          "n": 32,
+          "observed_rate": 0.53125
+        },
+        {
+          "hi": 0.8,
+          "lo": 0.6,
+          "mean_probability": 0.7210750500842942,
+          "n": 4,
+          "observed_rate": 1.0
+        },
+        {
+          "hi": 1.0,
+          "lo": 0.8,
+          "mean_probability": 0.9644836229315217,
+          "n": 31,
+          "observed_rate": 0.7419354838709677
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.1127362082507313,
+      "latency": {
+        "backend_create_ms": 39.42947101313621,
+        "first_call_wall_ms": 10814.704180986155,
+        "n_calls": 105,
+        "warm_reported_latency_ms_p50": 68.43111000489444,
+        "warm_reported_latency_ms_p95": 87.7316780097317,
+        "warm_wall_ms_p50": 68.505997012835,
+        "warm_wall_ms_p95": 87.82942598918453
+      },
+      "log_loss": 0.8518575210428466,
+      "mean_latency_ms": 139.2413389605714,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "no_detectable_difference",
+        "brier_diff": -0.024331727248775338,
+        "ci95": [
+          -0.07425691230436779,
+          0.031287676038438836
+        ],
+        "n_common": 105
+      }
+    },
+    "laya_421m": {
+      "accuracy_at_0_5": 0.5047619047619047,
+      "backend": "laya",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.2512612178095238,
+      "brier_improvement": -0.0030979525034013633,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.23602127333333334,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 0.11595249999999999,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.266928678,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.21884886499999998,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.2602488166666666,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.251446068,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.31327228900000004,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.217364735,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.2216114,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.25601530000000006,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.20088654444444445,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.275188958,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.33413968,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.2025862057142857,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.23208271416666662,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.25373586344086024,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.6000000000000001,
+          "lo": 0.4,
+          "mean_probability": 0.43712,
+          "n": 100,
+          "observed_rate": 0.53
+        },
+        {
+          "hi": 0.8,
+          "lo": 0.6,
+          "mean_probability": 0.6493800000000001,
+          "n": 5,
+          "observed_rate": 0.8
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.09562952380952383,
+      "latency": {
+        "backend_create_ms": 59.48843600344844,
+        "first_call_wall_ms": 16962.91747398209,
+        "n_calls": 105,
+        "warm_reported_latency_ms_p50": 433.69497399544343,
+        "warm_reported_latency_ms_p95": 465.3800369997043,
+        "warm_wall_ms_p50": 433.7540929846,
+        "warm_wall_ms_p95": 465.435346995946
+      },
+      "log_loss": 0.6955182524850123,
+      "mean_latency_ms": 440.4244134282982,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "no_detectable_difference",
+        "brier_diff": -0.019642398405177893,
+        "ci95": [
+          -0.042348425164243086,
+          0.0010977158771967668
+        ],
+        "n_common": 105
+      }
+    },
+    "nanojev": {
+      "accuracy_at_0_5": 0.45714285714285713,
+      "backend": "nanojev",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.290583128801232,
+      "brier_improvement": -0.04241986349510954,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.22404869152036966,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 0.38290491671772786,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.3127807455398317,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.42370205516531634,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.428899213596775,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.28442397290622284,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.4616006815514762,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.14753171663215764,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.2023316192219493,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.2906261671595317,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.13687861221274902,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.3971046422259671,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.4241716795662899,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.16083227486909596,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.371984609354631,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.28007971195563214,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.4,
+          "lo": 0.2,
+          "mean_probability": 0.33048981513295855,
+          "n": 105,
+          "observed_rate": 0.5428571428571428
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.21236732772418426,
+      "latency": {
+        "backend_create_ms": 12.28568798978813,
+        "first_call_wall_ms": 17168.66386498441,
+        "n_calls": 105,
+        "warm_reported_latency_ms_p50": 28.323406004346907,
+        "warm_reported_latency_ms_p95": 34.46801399695687,
+        "warm_wall_ms_p50": 28.367424994939938,
+        "warm_wall_ms_p95": 34.51830899575725
+      },
+      "log_loss": 0.7791093470734308,
+      "mean_latency_ms": 38.926533276181935,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "no_detectable_difference",
+        "brier_diff": 0.0196795125865303,
+        "ci95": [
+          -0.021551742698472747,
+          0.06332190698754651
+        ],
+        "n_common": 105
+      }
+    },
+    "qwen_3b_baseline": {
+      "accuracy_at_0_5": 0.45714285714285713,
+      "backend": "ollama:qwen2.5:3b",
+      "base_rate_brier": 0.24816326530612245,
+      "brier": 0.5425874027079391,
+      "brier_improvement": -0.2944241374018167,
+      "brier_slices": {
+        "family=count_errors": {
+          "brier": 0.33328254631873355,
+          "n": 9
+        },
+        "family=cua_agree": {
+          "brier": 0.9984092362026302,
+          "n": 2
+        },
+        "family=cua_button_present": {
+          "brier": 0.5997075707798787,
+          "n": 5
+        },
+        "family=cua_increment": {
+          "brier": 0.9992346421777567,
+          "n": 2
+        },
+        "family=cua_read_counter": {
+          "brier": 0.9991693027924692,
+          "n": 3
+        },
+        "family=edit_config": {
+          "brier": 0.49981592892397975,
+          "n": 10
+        },
+        "family=find_file": {
+          "brier": 0.9996758595047064,
+          "n": 10
+        },
+        "family=json_field": {
+          "brier": 0.09990095829443378,
+          "n": 10
+        },
+        "family=line_n": {
+          "brier": 0.24991993158445763,
+          "n": 8
+        },
+        "family=no_tool_math": {
+          "brier": 0.4997808948364922,
+          "n": 10
+        },
+        "family=read_code": {
+          "brier": 0.11109273879698402,
+          "n": 9
+        },
+        "family=sum_numbers": {
+          "brier": 0.8995083340579354,
+          "n": 10
+        },
+        "family=uppercase_copy": {
+          "brier": 0.9994964833332581,
+          "n": 10
+        },
+        "family=write_token": {
+          "brier": 0.14283173672440883,
+          "n": 7
+        },
+        "kind=cua": {
+          "brier": 0.8326111265864645,
+          "n": 12
+        },
+        "kind=file": {
+          "brier": 0.5051649867236133,
+          "n": 93
+        }
+      },
+      "calibration_bins": [
+        {
+          "hi": 0.2,
+          "lo": 0.0,
+          "mean_probability": 0.0001979641027522752,
+          "n": 105,
+          "observed_rate": 0.5428571428571428
+        }
+      ],
+      "denominators": {
+        "coverage": 1.0,
+        "n_backend_error": 0,
+        "n_labelled": 105,
+        "n_missing_probability": 0,
+        "n_rows": 105,
+        "n_scored": 105,
+        "n_unknown_label": 0
+      },
+      "ece": 0.5426591787543905,
+      "latency": {
+        "backend_create_ms": 72.66428900766186,
+        "first_call_wall_ms": 9356.23726400081,
+        "n_calls": 105,
+        "warm_reported_latency_ms_p50": 2057.758067996474,
+        "warm_reported_latency_ms_p95": 2290.547724987846,
+        "warm_wall_ms_p50": 2057.811603008304,
+        "warm_wall_ms_p95": 2290.5988430138677
+      },
+      "log_loss": 4.629884239193123,
+      "mean_latency_ms": 2052.293301154194,
+      "n": 105,
+      "n_probability_exactly_0_or_1": 0,
+      "note": "Shadow evidence only; no runtime authority or promotion implied.",
+      "positive_rate": 0.5428571428571428,
+      "promotion_ready": false,
+      "question_id": "verification_needed",
+      "schema": "z0int.hermes_shadow_eval.v1",
+      "vs_deterministic_loo_group_prior": {
+        "G3": "worse",
+        "brier_diff": 0.27168378649323743,
+        "ci95": [
+          0.16955430422417422,
+          0.37823231616492214
+        ],
+        "n_common": 105
+      }
+    }
+  },
+  "schema": "stack.samples.lane_analysis.v1"
+}

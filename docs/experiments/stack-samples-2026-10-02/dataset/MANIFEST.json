@@ -1,0 +1,64 @@
+{
+  "content_sha256": "648e418ed1c4ad20c915ffbdabef8b56a7652a144c8ad1c872c9325161ef3c16",
+  "counts": {
+    "not_run": 7,
+    "observer_rows": 1154,
+    "run": 105,
+    "tasks": 112
+  },
+  "files": {
+    "events.jsonl": "5a06c980824e1778e379388010b39fe71fdef2d8e001b9fd71d76b403dbd082d",
+    "runs.jsonl": "7ee9a357273d4cba11b0d247b6210307ae7429f57eeba1e3efa6d8b159ef5cfc"
+  },
+  "frozen_at": "2026-10-02T09:47:08Z",
+  "identities": {
+    "cua_driver": {
+      "name": "cua-driver-r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "version": "0.32.0"
+    },
+    "executor_model": {
+      "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+      "name": "qwen2.5:3b",
+      "server": "ollama 0.16.1 on 127.0.0.1:11434 (system service, CPU inference, served context 4096)"
+    },
+    "gui_fixture_sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+    "hermes": {
+      "branch": "exp/stack-samples-20261002",
+      "commit": "5d01f608975ab1d32d6a07c6c19213d2d4c5d98f",
+      "observer_plugin_source": "lab/z0_hermes_observer/__init__.py unchanged from #385 head ce5c027b",
+      "observer_schema": "z0int.hermes_observer_event.v1",
+      "python": "3.14.7",
+      "venv_freeze_sha256_16_excluding_editable": "ad1bab85818d32cb (85 pkgs)"
+    },
+    "prereg_commit": "kvnloo/cua exp/stack-samples-20261002 726d6bf30",
+    "scorer_backends": {
+      "decider_2b": "Mapika/decider-2b@1d96be0093133e194fe18105a521b3e69be931d2 (CUDA bf16)",
+      "julia_1": "SupersonicLabs/Julia-1@a85b127321d580d65176c89ced8273f305745d85 (CPU worker, model.safetensors df853bf7...)",
+      "laya_421m": "convaiinnovations/laya@7c76b622dfc5cac71b2dc1c29873efe2ce509a05 (CPU)",
+      "nanojev": "C-Tianyu/NanoJev@4a19595eada0857133c0d2be024f879a4077054b bundle (best.safetensors sha256 fff62d1412685c1714eaa386acb603f9690371fb3cc8ad03dc41319302597c28; backbone Qwen3-0.6B@c1899de2)",
+      "qwen_3b_baseline": "ollama:qwen2.5:3b digest 357c53fb... via lab/z0_hermes_observer/ollama_logprob_backend.py (CPU)"
+    },
+    "session_kits_sha256": {
+      "cua-task.sh": "95971dd1bb0e43cb562a22b75b073d1d3c380a9a5d93052223ee0225814071d3",
+      "cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+      "hostless": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+      "run-hermes.sh": "cdaaee3fd73beb3a86d0d82ab062f16db3d25c7cd8cbe051edf2371da591bcd6"
+    },
+    "z0intelligence": {
+      "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a",
+      "venv": "python 3.11.14, torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6, freeze sha256_16 05f5cce65b4265db"
+    }
+  },
+  "schema": "stack.samples.dataset_manifest.v1",
+  "schemas": {
+    "events": "z0int.hermes_observer_event.v1",
+    "oracle": "stack.samples.oracle_verdict.v1",
+    "runs": "stack.samples.run.v1"
+  },
+  "workload": {
+    "description": "see PREREG.json workload; one isolated one-shot Hermes turn per task",
+    "n_tasks": 112,
+    "tasks_sha256": "0e05d3c3b8d1044e63c1dc8e734e3d71f0a9ab39518a25fab057afc74012dfba"
+  }
+}
