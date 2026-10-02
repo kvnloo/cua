@@ -1,0 +1,16 @@
+# block phase arm code start-rep reps   (U/F interleaved; the arm that goes first alternates)
+b01 f3 U stale 1 10
+b02 f3 F stale 1 10
+b03 f3 F trust_unknown 1 10
+b04 f3 U trust_unknown 1 10
+b05 f3 U not_retryable 1 10
+b06 f3 F not_retryable 1 10
+b07 f3ctl F - 1 10
+b08 f3ctl F - 11 10
+b09 f4 U - 1 10
+b10 f4 F - 1 10
+b11 f4 F - 11 10
+b12 f4 U - 11 10
+# diagnostic (non-gating): the delivery-unknown refusal when the landed effect is already visible
+d01 f3 U trust_unknown_visible 1 5
+d02 f3 F trust_unknown_visible 1 5

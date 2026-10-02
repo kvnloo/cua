@@ -212,12 +212,26 @@ async def runner_trial(args, fixture, *, token: str, runner, injection: str | No
             "feedback_off": list(base.FEEDBACK_SINK)}
 
 
-def runner_cell(args, out: Path, *, phase: str, rep: int, injection: str | None, variant: str) -> dict:
-    cell_id = f"{phase}-{injection or 'none'}-{args.arm}-rep{rep:02d}"
+# --code -> (injection, journal hold mode for the FIRST submit). trust_unknown holds the landed
+# submit until the caller's first unchanged /state read (R2-07 mode after_unchanged:1): the effect
+# lands but is not yet visible when the caller decides whether to re-dispatch.
+# trust_unknown_visible (diagnostic) applies it at once.
+CODES = {
+    None: (None, "immediate"),
+    "stale": ("stale", "immediate"),
+    "not_retryable": ("not_retryable", "immediate"),
+    "trust_unknown": ("trust_unknown", "after_unchanged:1"),
+    "trust_unknown_visible": ("trust_unknown", "immediate"),
+}
+
+
+def runner_cell(args, out: Path, *, phase: str, rep: int, code: str | None, variant: str) -> dict:
+    injection, mode = CODES[code]
+    cell_id = f"{phase}-{code or 'none'}-{args.arm}-rep{rep:02d}"
     token = f"fix02-{uuid.uuid4().hex[:12]}"
     runner = load_runner(args, args.arm if phase == "f3" else "F")
     fixture = start_fixture()
-    fixture.configure(cell_id, token, variant=variant)
+    fixture.configure(cell_id, token, variant=variant, mode=mode)
     before = base.session_pids(os.environ["XDG_RUNTIME_DIR"])
     la = loadavg()
     result = asyncio.run(runner_trial(args, fixture, token=token, runner=runner, injection=injection))
@@ -236,8 +250,8 @@ def runner_cell(args, out: Path, *, phase: str, rep: int, injection: str | None,
     outcome_events = [e for e in result["runner_events"] if e.get("event") == "outcome"]
     summary = fix02_fixture.journal_summary(journal["events"])
     cell = {
-        "cell_id": cell_id, "phase": phase, "rep": rep, "arm": args.arm, "injection": injection,
-        "variant": variant, "loadavg_start": la, "loadavg_end": loadavg(),
+        "cell_id": cell_id, "phase": phase, "rep": rep, "arm": args.arm, "code": code, "injection": injection,
+        "journal_mode": mode, "variant": variant, "loadavg_start": la, "loadavg_end": loadavg(),
         "outcome": result["outcome"], "final_outcome_event": outcome_events[-1] if outcome_events else None,
         "injected": result["injected"],
         "click_dispatches_by_caller": len(clicks),
@@ -405,7 +419,7 @@ def main() -> int:
     ap.add_argument("--examples", type=Path, required=True)
     ap.add_argument("--driver", type=Path, required=True)
     ap.add_argument("--arm", required=True, choices=("U", "F"))
-    ap.add_argument("--code", default=None, choices=(None, *refusal_seam.INJECTIONS))
+    ap.add_argument("--code", default=None, choices=[c for c in CODES if c])
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--reps", type=int, default=10)
     ap.add_argument("--start-rep", type=int, default=1)
@@ -423,9 +437,9 @@ def main() -> int:
     cells_out = (args.out / "cells.jsonl").open("a", encoding="utf-8")
     for rep in range(args.start_rep, args.start_rep + args.reps):
         if args.phase == "f3":
-            cell = runner_cell(args, args.out, phase="f3", rep=rep, injection=args.code, variant="spa_submit")
+            cell = runner_cell(args, args.out, phase="f3", rep=rep, code=args.code, variant="spa_submit")
         elif args.phase == "f3ctl":
-            cell = runner_cell(args, args.out, phase="f3ctl", rep=rep, injection=None, variant="normal")
+            cell = runner_cell(args, args.out, phase="f3ctl", rep=rep, code=None, variant="normal")
         else:
             cell = file_cell(args, args.out, rep=rep)
         slim = {k: v for k, v in cell.items()
