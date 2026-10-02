@@ -1,0 +1,61 @@
+2026-10-02 19:33:54,430 INFO hermes_cli.boot_bootstrap: home maintenance: code changed to b51c7a222e7a, running steps
+2026-10-02 19:33:54,433 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up ~/.hermes/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
+2026-10-02 19:33:54,734 INFO hermes_cli.plugins: Plugin 'browser-browser-use' registered browser provider: browser-use
+2026-10-02 19:33:54,740 INFO hermes_cli.plugins: Plugin 'browser-browserbase' registered browser provider: browserbase
+2026-10-02 19:33:54,747 INFO hermes_cli.plugins: Plugin 'browser-firecrawl' registered browser provider: firecrawl
+2026-10-02 19:33:54,873 INFO hermes_cli.plugins: Plugin 'deepinfra' registered image_gen provider: deepinfra
+2026-10-02 19:33:54,874 INFO hermes_cli.plugins: Plugin 'fal' registered image_gen provider: fal
+2026-10-02 19:33:54,875 INFO hermes_cli.plugins: Plugin 'krea' registered image_gen provider: krea
+2026-10-02 19:33:54,876 INFO hermes_cli.plugins: Plugin 'meta-ai-image-gen' registered image_gen provider: meta-ai
+2026-10-02 19:33:54,877 INFO hermes_cli.plugins: Plugin 'openai' registered image_gen provider: openai
+2026-10-02 19:33:54,878 INFO hermes_cli.plugins: Plugin 'openai-codex' registered image_gen provider: openai-codex
+2026-10-02 19:33:54,879 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: openrouter
+2026-10-02 19:33:54,879 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: nous
+2026-10-02 19:33:54,880 INFO hermes_cli.plugins: Plugin 'xai' registered image_gen provider: xai
+2026-10-02 19:33:54,911 INFO hermes_cli.plugins: Plugin 'deepinfra' registered video_gen provider: deepinfra
+2026-10-02 19:33:54,912 INFO hermes_cli.plugins: Plugin 'fal' registered video_gen provider: fal
+2026-10-02 19:33:54,913 INFO hermes_cli.plugins: Plugin 'openrouter' registered video_gen provider: openrouter
+2026-10-02 19:33:54,914 INFO hermes_cli.plugins: Plugin 'xai' registered video_gen provider: xai
+2026-10-02 19:33:54,916 INFO hermes_cli.plugins: Plugin 'web-brave-free' registered web provider: brave-free
+2026-10-02 19:33:54,917 INFO hermes_cli.plugins: Plugin 'web-ddgs' registered web provider: ddgs
+2026-10-02 19:33:54,918 INFO hermes_cli.plugins: Plugin 'web-exa' registered web provider: exa
+2026-10-02 19:33:54,922 INFO hermes_cli.plugins: Plugin 'web-firecrawl' registered web provider: firecrawl
+2026-10-02 19:33:54,923 INFO hermes_cli.plugins: Plugin 'web-keenable' registered web provider: keenable
+2026-10-02 19:33:54,924 INFO hermes_cli.plugins: Plugin 'web-openai-native' registered web provider: openai-native
+2026-10-02 19:33:54,925 INFO hermes_cli.plugins: Plugin 'web-parallel' registered web provider: parallel
+2026-10-02 19:33:54,927 INFO hermes_cli.plugins: Plugin 'web-perplexity' registered web provider: perplexity
+2026-10-02 19:33:54,928 INFO hermes_cli.plugins: Plugin 'web-searxng' registered web provider: searxng
+2026-10-02 19:33:54,929 INFO hermes_cli.plugins: Plugin 'web-tavily' registered web provider: tavily
+2026-10-02 19:33:54,931 INFO hermes_cli.plugins: Plugin 'web-xai' registered web provider: xai
+2026-10-02 19:33:54,937 INFO hermes_cli.plugin_capabilities: capability_check plugin=z0-hermes-observer capability=tools.override decision=deny checked_by=plugin_capability_granted evidence=not granted
+2026-10-02 19:33:54,938 INFO hermes_cli.plugins: Plugin discovery complete: 59 found, 54 enabled
+2026-10-02 19:33:55,671 INFO run_agent: No .env file found. Using system environment variables.
+2026-10-02 19:33:56,108 INFO cli: tirith not ready (downloading or lazy installs off); pattern matching only
+2026-10-02 19:33:56,131 WARNING cli: Background MCP discovery previously exited with no connected servers; retrying discovery thread
+2026-10-02 19:33:56,173 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 19:33:56,605 INFO run_agent: OpenAI client created (agent_init, shared=True) thread=MainThread:139670565497792 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 19:33:56,637 WARNING agent.context_pin: model.context_length pins qwen2.5:7b-instruct at 65,536 tokens but the provider advertises 131,072; the pin wins. Remove model.context_length from config.yaml to use the advertised window.
+2026-10-02 19:33:56,785 INFO [20261002_193355_fd5c43] agent.turn_context: conversation turn: session=20261002_193355_fd5c43 model=qwen2.5:7b-instruct provider=custom platform=cli history=0 msg='numbers.txt contains one integer per line. Reply with only the sum of those inte...'
+2026-10-02 19:33:57,091 INFO run_agent: OpenAI client created (chat_completion_stream_request, shared=False) thread=Thread-5 (<lambda>):139669084796608 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 19:33:57,174 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 19:33:57,751 INFO [20261002_193355_fd5c43] agent.conversation_loop: API call #1: model=qwen2.5:7b-instruct provider=custom in=3440 out=31 total=3471 latency=0.7s cache=3418/3440 (99%) id=chatcmpl-353
+2026-10-02 19:33:57,814 INFO tools.file_tools: Creating new local environment for task default...
+2026-10-02 19:33:57,982 INFO tools.environments.base: Session snapshot created (session=ece3155bc604, cwd=<stable>/cwd)
+2026-10-02 19:33:57,982 INFO tools.file_tools: local environment ready for task default
+2026-10-02 19:33:57,984 INFO [20261002_193355_fd5c43] agent.tool_executor: tool read_file completed (0.18s, 156 chars)
+2026-10-02 19:33:58,481 INFO [20261002_193355_fd5c43] agent.conversation_loop: API call #2: model=qwen2.5:7b-instruct provider=custom in=3552 out=45 total=3597 latency=0.5s cache=3453/3552 (97%) id=chatcmpl-811
+2026-10-02 19:33:58,482 INFO [20261002_193355_fd5c43] agent.conversation_loop: Empty response after tool calls — nudging model to continue processing
+2026-10-02 19:33:59,151 INFO [20261002_193355_fd5c43] agent.conversation_loop: API call #3: model=qwen2.5:7b-instruct provider=custom in=3587 out=64 total=3651 latency=0.7s cache=3552/3587 (99%) id=chatcmpl-615
+2026-10-02 19:33:59,152 WARNING [20261002_193355_fd5c43] agent.conversation_loop: Empty response (no content or reasoning) — retry 1/3 in 6.6s (model=qwen2.5:7b-instruct)
+2026-10-02 19:33:59,174 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 19:34:03,175 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 19:34:04,175 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 19:34:06,176 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 19:34:06,299 INFO [20261002_193355_fd5c43] agent.conversation_loop: API call #4: model=qwen2.5:7b-instruct provider=custom in=3587 out=41 total=3628 latency=0.5s cache=3586/3587 (100%) id=chatcmpl-360
+2026-10-02 19:34:06,311 INFO agent.auxiliary_client: Auxiliary auto-detect: using main provider custom (qwen2.5:7b-instruct)
+2026-10-02 19:34:06,312 INFO agent.auxiliary_client: Auxiliary title_generation: using custom (qwen2.5:7b-instruct) at http://127.0.0.1:11500/v1/
+2026-10-02 19:34:06,312 INFO [20261002_193355_fd5c43] agent.conversation_loop: Turn ended: reason=text_response(finish_reason=stop) model=qwen2.5:7b-instruct api_calls=4/6 budget=4/6 tool_turns=1 last_msg_role=assistant response_len=103 session=20261002_193355_fd5c43
+2026-10-02 19:34:06,336 INFO [20261002_193355_fd5c43] cli: CLI cleanup calling memory shutdown for session 20261002_193355_fd5c43 with 4 message(s)
+2026-10-02 19:34:06,340 INFO [20261002_193355_fd5c43] tools.terminal_tool: Manually cleaned up environment for task: default
+2026-10-02 19:34:06,341 INFO [20261002_193355_fd5c43] tools.terminal_tool: Cleaned 1 environments
+2026-10-02 19:34:06,343 INFO [20261002_193355_fd5c43] cli: CLI cleanup calling memory shutdown for session 20261002_193355_fd5c43 with 4 message(s)

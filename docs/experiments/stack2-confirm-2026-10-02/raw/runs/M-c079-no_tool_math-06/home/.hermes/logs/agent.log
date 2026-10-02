@@ -1,0 +1,46 @@
+2026-10-02 19:49:17,450 INFO hermes_cli.boot_bootstrap: home maintenance: code changed to b51c7a222e7a, running steps
+2026-10-02 19:49:17,453 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up ~/.hermes/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
+2026-10-02 19:49:17,758 INFO hermes_cli.plugins: Plugin 'browser-browser-use' registered browser provider: browser-use
+2026-10-02 19:49:17,759 INFO hermes_cli.plugins: Plugin 'browser-browserbase' registered browser provider: browserbase
+2026-10-02 19:49:17,764 INFO hermes_cli.plugins: Plugin 'browser-firecrawl' registered browser provider: firecrawl
+2026-10-02 19:49:17,900 INFO hermes_cli.plugins: Plugin 'deepinfra' registered image_gen provider: deepinfra
+2026-10-02 19:49:17,903 INFO hermes_cli.plugins: Plugin 'fal' registered image_gen provider: fal
+2026-10-02 19:49:17,904 INFO hermes_cli.plugins: Plugin 'krea' registered image_gen provider: krea
+2026-10-02 19:49:17,905 INFO hermes_cli.plugins: Plugin 'meta-ai-image-gen' registered image_gen provider: meta-ai
+2026-10-02 19:49:17,906 INFO hermes_cli.plugins: Plugin 'openai' registered image_gen provider: openai
+2026-10-02 19:49:17,907 INFO hermes_cli.plugins: Plugin 'openai-codex' registered image_gen provider: openai-codex
+2026-10-02 19:49:17,909 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: openrouter
+2026-10-02 19:49:17,909 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: nous
+2026-10-02 19:49:17,910 INFO hermes_cli.plugins: Plugin 'xai' registered image_gen provider: xai
+2026-10-02 19:49:17,943 INFO hermes_cli.plugins: Plugin 'deepinfra' registered video_gen provider: deepinfra
+2026-10-02 19:49:17,945 INFO hermes_cli.plugins: Plugin 'fal' registered video_gen provider: fal
+2026-10-02 19:49:17,946 INFO hermes_cli.plugins: Plugin 'openrouter' registered video_gen provider: openrouter
+2026-10-02 19:49:17,947 INFO hermes_cli.plugins: Plugin 'xai' registered video_gen provider: xai
+2026-10-02 19:49:17,949 INFO hermes_cli.plugins: Plugin 'web-brave-free' registered web provider: brave-free
+2026-10-02 19:49:17,950 INFO hermes_cli.plugins: Plugin 'web-ddgs' registered web provider: ddgs
+2026-10-02 19:49:17,951 INFO hermes_cli.plugins: Plugin 'web-exa' registered web provider: exa
+2026-10-02 19:49:17,955 INFO hermes_cli.plugins: Plugin 'web-firecrawl' registered web provider: firecrawl
+2026-10-02 19:49:17,956 INFO hermes_cli.plugins: Plugin 'web-keenable' registered web provider: keenable
+2026-10-02 19:49:17,957 INFO hermes_cli.plugins: Plugin 'web-openai-native' registered web provider: openai-native
+2026-10-02 19:49:17,958 INFO hermes_cli.plugins: Plugin 'web-parallel' registered web provider: parallel
+2026-10-02 19:49:17,959 INFO hermes_cli.plugins: Plugin 'web-perplexity' registered web provider: perplexity
+2026-10-02 19:49:17,960 INFO hermes_cli.plugins: Plugin 'web-searxng' registered web provider: searxng
+2026-10-02 19:49:17,961 INFO hermes_cli.plugins: Plugin 'web-tavily' registered web provider: tavily
+2026-10-02 19:49:17,963 INFO hermes_cli.plugins: Plugin 'web-xai' registered web provider: xai
+2026-10-02 19:49:17,969 INFO hermes_cli.plugin_capabilities: capability_check plugin=z0-hermes-observer capability=tools.override decision=deny checked_by=plugin_capability_granted evidence=not granted
+2026-10-02 19:49:17,970 INFO hermes_cli.plugins: Plugin discovery complete: 59 found, 54 enabled
+2026-10-02 19:49:18,755 INFO run_agent: No .env file found. Using system environment variables.
+2026-10-02 19:49:19,172 INFO cli: tirith not ready (downloading or lazy installs off); pattern matching only
+2026-10-02 19:49:19,193 WARNING cli: Background MCP discovery previously exited with no connected servers; retrying discovery thread
+2026-10-02 19:49:19,270 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 19:49:19,634 INFO run_agent: OpenAI client created (agent_init, shared=True) thread=MainThread:139691948719040 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 19:49:19,660 WARNING agent.context_pin: model.context_length pins qwen2.5:7b-instruct at 65,536 tokens but the provider advertises 131,072; the pin wins. Remove model.context_length from config.yaml to use the advertised window.
+2026-10-02 19:49:19,783 INFO [20261002_194918_286f13] agent.turn_context: conversation turn: session=20261002_194918_286f13 model=qwen2.5:7b-instruct provider=custom platform=cli history=0 msg='What is 82 multiplied by 23? Reply with only the number.'
+2026-10-02 19:49:20,029 INFO run_agent: OpenAI client created (chat_completion_stream_request, shared=False) thread=Thread-5 (<lambda>):139691338671808 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 19:49:20,271 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 19:49:20,407 INFO [20261002_194918_286f13] agent.conversation_loop: API call #1: model=qwen2.5:7b-instruct provider=custom in=3440 out=5 total=3445 latency=0.4s cache=3421/3440 (99%) id=chatcmpl-366
+2026-10-02 19:49:20,466 INFO agent.auxiliary_client: Auxiliary auto-detect: using main provider custom (qwen2.5:7b-instruct)
+2026-10-02 19:49:20,467 INFO agent.auxiliary_client: Auxiliary title_generation: using custom (qwen2.5:7b-instruct) at http://127.0.0.1:11500/v1/
+2026-10-02 19:49:20,471 INFO [20261002_194918_286f13] agent.conversation_loop: Turn ended: reason=text_response(finish_reason=stop) model=qwen2.5:7b-instruct api_calls=1/6 budget=1/6 tool_turns=0 last_msg_role=assistant response_len=4 session=20261002_194918_286f13
+2026-10-02 19:49:20,491 INFO [20261002_194918_286f13] cli: CLI cleanup calling memory shutdown for session 20261002_194918_286f13 with 2 message(s)
+2026-10-02 19:49:20,498 INFO [20261002_194918_286f13] cli: CLI cleanup calling memory shutdown for session 20261002_194918_286f13 with 2 message(s)

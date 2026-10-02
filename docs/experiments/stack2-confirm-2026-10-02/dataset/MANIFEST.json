@@ -1,0 +1,65 @@
+{
+  "content_sha256": "281a20e46c5b01ad62e1cfc682b251b758e86923457a68dee56962093bb0bdbe",
+  "counts": {
+    "not_run": 0,
+    "observer_rows": 2039,
+    "run": 142,
+    "tasks": 142
+  },
+  "files": {
+    "events.jsonl": "2e1be5ca1a46fdefd7c65d8c044fe2639154b539089399564dc751e8eb329e59",
+    "runs.jsonl": "7f08f525f5057f1e5e45ca8cb557baaea2779d7507f6a88ddac0141e80255eb4"
+  },
+  "frozen_at": "2026-10-02T20:01:28Z",
+  "identities": {
+    "cua_driver": {
+      "binary": "cua-driver-r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "version": "0.32.0"
+    },
+    "cua_packet_commits": {
+      "analysis_code": "821d895a4",
+      "prereg": "f11cd9d83"
+    },
+    "executor_model": {
+      "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+      "model": "qwen2.5:7b-instruct",
+      "native_context": 32768,
+      "parameter_size": "7.6B",
+      "quantization": "Q4_K_M",
+      "server": "user-local Ollama 0.35.0 127.0.0.1:11500"
+    },
+    "fixtures": {
+      "gtk3_main_py_sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+      "jev_use_fixture_server_sha256": "0ba2978f0c9a0d9877e1639650625203ab0158baf095e5da72c310b93081eadf"
+    },
+    "hermes": {
+      "branch": "exp/stack-confirm-20261002",
+      "commit": "b51c7a222e7a0fb29d1da8933a6c08b956b86f61",
+      "runtime_identical_to": "d39e1175f36ab0dcdc552c2eb128f30efdfa4a1f (exp/stack-addr-20261002 head; diff touches only lab offline scripts and tests/lab)"
+    },
+    "session_kits": {
+      "cua_x11_session_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+      "hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b"
+    },
+    "workload": {
+      "fixtures_tree_sha256": "d3febae7403a202170a7bbabaf0312fcb005b4301c7d5bb25a922450b2246fe1",
+      "tasks_sha256": "f192ff16d66e280acd8572b3fd166d512ecbd4bc704338c5f50ce0fd4bac7ec2"
+    },
+    "z0intelligence": {
+      "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a",
+      "ref": "origin/dev (detached worktree)"
+    }
+  },
+  "schema": "stack2.confirm.dataset_manifest.v1",
+  "schemas": {
+    "events": "z0int.hermes_observer_event.v1",
+    "oracle": "stack2.confirm.oracle_verdict.v1",
+    "runs": "stack2.confirm.run.v1"
+  },
+  "workload": {
+    "description": "see PREREG.json workload; one isolated one-shot Hermes turn per task",
+    "n_tasks": 142,
+    "tasks_sha256": "f192ff16d66e280acd8572b3fd166d512ecbd4bc704338c5f50ce0fd4bac7ec2"
+  }
+}

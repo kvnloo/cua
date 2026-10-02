@@ -1,0 +1,113 @@
+2026-10-02 19:40:07,032 INFO hermes_cli.boot_bootstrap: home maintenance: code changed to b51c7a222e7a, running steps
+2026-10-02 19:40:07,036 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up ~/.hermes/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
+2026-10-02 19:40:07,363 INFO hermes_cli.plugins: Plugin 'browser-browser-use' registered browser provider: browser-use
+2026-10-02 19:40:07,366 INFO hermes_cli.plugins: Plugin 'browser-browserbase' registered browser provider: browserbase
+2026-10-02 19:40:07,368 INFO hermes_cli.plugins: Plugin 'browser-firecrawl' registered browser provider: firecrawl
+2026-10-02 19:40:07,516 INFO hermes_cli.plugins: Plugin 'deepinfra' registered image_gen provider: deepinfra
+2026-10-02 19:40:07,517 INFO hermes_cli.plugins: Plugin 'fal' registered image_gen provider: fal
+2026-10-02 19:40:07,518 INFO hermes_cli.plugins: Plugin 'krea' registered image_gen provider: krea
+2026-10-02 19:40:07,519 INFO hermes_cli.plugins: Plugin 'meta-ai-image-gen' registered image_gen provider: meta-ai
+2026-10-02 19:40:07,520 INFO hermes_cli.plugins: Plugin 'openai' registered image_gen provider: openai
+2026-10-02 19:40:07,522 INFO hermes_cli.plugins: Plugin 'openai-codex' registered image_gen provider: openai-codex
+2026-10-02 19:40:07,523 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: openrouter
+2026-10-02 19:40:07,523 INFO hermes_cli.plugins: Plugin 'openrouter' registered image_gen provider: nous
+2026-10-02 19:40:07,525 INFO hermes_cli.plugins: Plugin 'xai' registered image_gen provider: xai
+2026-10-02 19:40:07,560 INFO hermes_cli.plugins: Plugin 'deepinfra' registered video_gen provider: deepinfra
+2026-10-02 19:40:07,562 INFO hermes_cli.plugins: Plugin 'fal' registered video_gen provider: fal
+2026-10-02 19:40:07,563 INFO hermes_cli.plugins: Plugin 'openrouter' registered video_gen provider: openrouter
+2026-10-02 19:40:07,563 INFO hermes_cli.plugins: Plugin 'xai' registered video_gen provider: xai
+2026-10-02 19:40:07,567 INFO hermes_cli.plugins: Plugin 'web-brave-free' registered web provider: brave-free
+2026-10-02 19:40:07,568 INFO hermes_cli.plugins: Plugin 'web-ddgs' registered web provider: ddgs
+2026-10-02 19:40:07,569 INFO hermes_cli.plugins: Plugin 'web-exa' registered web provider: exa
+2026-10-02 19:40:07,574 INFO hermes_cli.plugins: Plugin 'web-firecrawl' registered web provider: firecrawl
+2026-10-02 19:40:07,575 INFO hermes_cli.plugins: Plugin 'web-keenable' registered web provider: keenable
+2026-10-02 19:40:07,576 INFO hermes_cli.plugins: Plugin 'web-openai-native' registered web provider: openai-native
+2026-10-02 19:40:07,578 INFO hermes_cli.plugins: Plugin 'web-parallel' registered web provider: parallel
+2026-10-02 19:40:07,579 INFO hermes_cli.plugins: Plugin 'web-perplexity' registered web provider: perplexity
+2026-10-02 19:40:07,580 INFO hermes_cli.plugins: Plugin 'web-searxng' registered web provider: searxng
+2026-10-02 19:40:07,581 INFO hermes_cli.plugins: Plugin 'web-tavily' registered web provider: tavily
+2026-10-02 19:40:07,583 INFO hermes_cli.plugins: Plugin 'web-xai' registered web provider: xai
+2026-10-02 19:40:07,590 INFO hermes_cli.plugin_capabilities: capability_check plugin=z0-hermes-observer capability=tools.override decision=deny checked_by=plugin_capability_granted evidence=not granted
+2026-10-02 19:40:07,592 INFO hermes_cli.plugins: Plugin discovery complete: 59 found, 54 enabled
+2026-10-02 19:40:08,383 INFO run_agent: No .env file found. Using system environment variables.
+2026-10-02 19:40:08,850 INFO cli: tirith not ready (downloading or lazy installs off); pattern matching only
+2026-10-02 19:40:08,874 WARNING cli: Background MCP discovery previously exited with no connected servers; retrying discovery thread
+2026-10-02 19:40:08,907 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 1s (attempt 2/4)
+2026-10-02 19:40:09,393 INFO run_agent: OpenAI client created (agent_init, shared=True) thread=MainThread:140584055937984 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 19:40:09,425 WARNING agent.context_pin: model.context_length pins qwen2.5:7b-instruct at 65,536 tokens but the provider advertises 131,072; the pin wins. Remove model.context_length from config.yaml to use the advertised window.
+2026-10-02 19:40:09,571 INFO [20261002_194008_5ba4c2] agent.turn_context: conversation turn: session=20261002_194008_5ba4c2 model=qwen2.5:7b-instruct provider=custom platform=cli history=0 msg="A GTK window titled 'CuaTestHarness GTK3 Tasks' is open on this desktop; its app..."
+2026-10-02 19:40:09,875 INFO run_agent: OpenAI client created (chat_completion_stream_request, shared=False) thread=Thread-5 (<lambda>):140582573803200 provider=custom base_url=http://127.0.0.1:11500/v1 model=qwen2.5:7b-instruct
+2026-10-02 19:40:09,911 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 2s (attempt 3/4)
+2026-10-02 19:40:10,818 INFO [20261002_194008_5ba4c2] agent.conversation_loop: API call #1: model=qwen2.5:7b-instruct provider=custom in=3602 out=33 total=3635 latency=1.0s cache=2225/3602 (62%) id=chatcmpl-102
+2026-10-02 19:40:11,687 INFO tools.computer_use.cua_backend: cua-driver session ready in 0.2s (manifest=0.0s, mcp_init=0.2s)
+2026-10-02 19:40:11,782 INFO [20261002_194008_5ba4c2] agent.tool_executor: tool computer_use completed (0.91s, 1803 chars)
+2026-10-02 19:40:11,912 WARNING pm.network: network request failed (<urlopen error [Errno 111] Connection refused>); retrying in 4s (attempt 4/4)
+2026-10-02 19:40:12,812 INFO [20261002_194008_5ba4c2] agent.conversation_loop: API call #2: model=qwen2.5:7b-instruct provider=custom in=4478 out=75 total=4553 latency=1.0s cache=3616/4478 (81%) id=chatcmpl-266
+2026-10-02 19:40:12,839 INFO [20261002_194008_5ba4c2] agent.tool_executor: tool computer_use completed (0.02s, 1377 chars)
+2026-10-02 19:40:13,152 INFO [20261002_194008_5ba4c2] agent.tool_executor: tool computer_use completed (0.31s, 469 chars)
+2026-10-02 19:40:13,892 INFO [20261002_194008_5ba4c2] agent.conversation_loop: API call #3: model=qwen2.5:7b-instruct provider=custom in=5025 out=41 total=5066 latency=0.7s cache=4492/5025 (89%) id=chatcmpl-247
+2026-10-02 19:40:13,923 INFO [20261002_194008_5ba4c2] agent.tool_executor: tool computer_use completed (0.02s, 1803 chars)
+2026-10-02 19:40:14,552 INFO [20261002_194008_5ba4c2] agent.conversation_loop: API call #4: model=qwen2.5:7b-instruct provider=custom in=5912 out=35 total=5947 latency=0.6s cache=5047/5912 (85%) id=chatcmpl-894
+2026-10-02 19:40:14,657 INFO tools.vision_tools: Analyzing image: <stable>/home/.hermes/c
+2026-10-02 19:40:14,657 INFO tools.vision_tools: User prompt: Describe what is visible in this desktop application screenshot in concise but specific terms. Menti
+2026-10-02 19:40:14,660 INFO tools.vision_tools: Image ready (18.6 KB)
+2026-10-02 19:40:14,660 INFO tools.vision_tools: Converting image to base64...
+2026-10-02 19:40:14,660 INFO tools.vision_tools: Image converted to base64 (24.8 KB)
+2026-10-02 19:40:14,660 INFO tools.vision_tools: Processing image with vision model...
+2026-10-02 19:40:14,681 WARNING agent.auxiliary_unavailable: Auxiliary Nous client unavailable: Nous Portal runtime credentials unavailable: Hermes is not logged into Nous Portal. Run `hermes model` to re-authenticate. (code: nous_auth_missing)
+2026-10-02 19:40:14,681 WARNING agent.auxiliary_client: Auxiliary Nous client unavailable: no Nous authentication found (run: hermes auth).
+2026-10-02 19:40:14,682 WARNING agent.auxiliary_client: resolve_provider_client: nous requested but Nous Portal not configured (run: hermes auth)
+2026-10-02 19:40:14,682 ERROR tools.vision_tools: Error analyzing image: No LLM provider configured for task=vision provider=auto. Run: hermes setup
+Traceback (most recent call last):
+  File "<hermes-wt>/stack2-confirm/tools/vision_tools.py", line 856, in _run_analysis
+    analysis, scale_note = await stage(user_prompt, debug_call_data, temp_paths)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<hermes-wt>/stack2-confirm/tools/vision_tools.py", line 910, in stage
+    response = await async_call_llm(**call_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<hermes-wt>/stack2-confirm/agent/auxiliary_client.py", line 2575, in wrapped
+    return await callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<hermes-wt>/stack2-confirm/agent/auxiliary_client.py", line 8193, in async_call_llm
+    return await _async_call_llm_impl(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "<hermes-wt>/stack2-confirm/agent/auxiliary_client.py", line 8213, in _async_call_llm_impl
+    req, retry_kwargs, candidate_kwargs = _plan_aux_call(
+                                          ~~~~~~~~~~~~~~^
+        task, async_mode=True, provider=provider, model=model, base_url=base_url,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        extra_headers=None, api_mode=None, route_info=route_info,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<hermes-wt>/stack2-confirm/agent/auxiliary_client.py", line 7959, in _plan_aux_call
+    req = _prepare_aux_request(
+        task, provider=provider, model=model, base_url=base_url, api_key=***
+    ...<3 lines>...
+        api_mode=api_mode, route_info=route_info, async_mode=async_mode,
+    )
+  File "<hermes-wt>/stack2-confirm/agent/auxiliary_client.py", line 7356, in _prepare_aux_request
+    client, final_model, resolved_provider, effective_provider = _resolve_call_client(
+                                                                 ~~~~~~~~~~~~~~~~~~~~^
+        task, provider=provider, model=model, base_url=base_url, api_key=***
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        resolved_api_mode=resolved_api_mode, main_runtime=main_runtime, async_mode=async_mode,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<hermes-wt>/stack2-confirm/agent/auxiliary_client.py", line 7326, in _resolve_call_client
+    raise AuxiliaryClientUnavailable(f"No LLM provider configured for task={task} "
+                                     f"provider={resolved_provider}. Run: hermes setup")
+agent.auxiliary_unavailable.AuxiliaryClientUnavailable: No LLM provider configured for task=vision provider=auto. Run: hermes setup
+2026-10-02 19:40:14,684 INFO [20261002_194008_5ba4c2] agent.tool_executor: tool computer_use completed (0.12s, 2313 chars)
+2026-10-02 19:40:15,713 INFO [20261002_194008_5ba4c2] agent.conversation_loop: API call #5: model=qwen2.5:7b-instruct provider=custom in=6969 out=67 total=7036 latency=1.0s cache=5925/6969 (85%) id=chatcmpl-266
+2026-10-02 19:40:15,728 INFO agent.auxiliary_client: Auxiliary auto-detect: using main provider custom (qwen2.5:7b-instruct)
+2026-10-02 19:40:15,728 INFO agent.auxiliary_client: Auxiliary title_generation: using custom (qwen2.5:7b-instruct) at http://127.0.0.1:11500/v1/
+2026-10-02 19:40:15,729 INFO [20261002_194008_5ba4c2] agent.conversation_loop: Turn ended: reason=text_response(finish_reason=stop) model=qwen2.5:7b-instruct api_calls=5/12 budget=5/12 tool_turns=4 last_msg_role=assistant response_len=298 session=20261002_194008_5ba4c2
+2026-10-02 19:40:15,749 INFO [20261002_194008_5ba4c2] cli: CLI cleanup calling memory shutdown for session 20261002_194008_5ba4c2 with 11 message(s)
+2026-10-02 19:40:15,757 INFO [20261002_194008_5ba4c2] cli: CLI cleanup calling memory shutdown for session 20261002_194008_5ba4c2 with 11 message(s)
