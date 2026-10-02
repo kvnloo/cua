@@ -187,6 +187,28 @@ pub fn walk_tree_bounded_within(
     max_depth: Option<usize>,
     timeout: std::time::Duration,
 ) -> AtspiTreeResult {
+    // Measurement-only invocation count (`CUA_DRIVER_PHASE_TRACE_FILE`).
+    static CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = cua_driver_core::phase_trace::enter("atspi_walk", &CALLS);
+    let result =
+        walk_tree_bounded_within_unmarked(pid, xid, query, max_elements, max_depth, timeout);
+    let mark = if result.trusted && result.degraded_reason.is_none() {
+        "exit_trusted"
+    } else {
+        "exit_degraded"
+    };
+    cua_driver_core::phase_trace::exit("atspi_walk", mark, n);
+    result
+}
+
+fn walk_tree_bounded_within_unmarked(
+    pid: u32,
+    xid: u64,
+    query: Option<&str>,
+    max_elements: Option<usize>,
+    max_depth: Option<usize>,
+    timeout: std::time::Duration,
+) -> AtspiTreeResult {
     // Native AT-SPI (most complete). On a COLD launch the Qt6 (and some GTK)
     // AT-SPI bridge registers lazily — the first walk against a freshly
     // launched app can come back with just the root window (element_count=1,
