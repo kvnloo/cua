@@ -82,6 +82,8 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
         if reader.read_line(&mut line).await? == 0 {
             break;
         }
+        // B-01 measurement only (env-gated, default off): MCP stdio boundary.
+        cua_driver_core::phase_trace::mark("mcp.line_read", "");
         let trimmed = line.trim();
         if trimmed.is_empty() {
             continue;
@@ -112,6 +114,7 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                     writer.flush().await?;
                     continue;
                 }
+                cua_driver_core::phase_trace::mark("mcp.admitted", "");
                 apply_direct_session_identity(&mut request, &transport_session);
                 let initialize_metadata = (!session_observed)
                     .then(|| request.initialize_metadata())
@@ -137,6 +140,7 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                     &transport_session,
                 )
                 .await;
+                cua_driver_core::phase_trace::mark("mcp.handled", "");
                 if let Some(metadata) = initialize_metadata {
                     observe_proxy_session_started(metadata);
                     session_observed = true;
@@ -156,9 +160,11 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
                 r#"{{"jsonrpc":"2.0","id":null,"error":{{"code":-32603,"message":"serialize error: {error}"}}}}"#
             )
         });
+        cua_driver_core::phase_trace::mark("mcp.serialized", "");
         writer.write_all(serialized.as_bytes()).await?;
         writer.write_all(b"\n").await?;
         writer.flush().await?;
+        cua_driver_core::phase_trace::mark("mcp.written", "");
     }
 
     sdk.shutdown().await.map_err(anyhow::Error::msg)

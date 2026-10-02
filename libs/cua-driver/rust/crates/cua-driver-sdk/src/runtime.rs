@@ -332,6 +332,8 @@ impl DriverRuntime {
             .registry
             .invoke_with_context_and_evidence(name, args, context, evidence)
             .await;
+        // B-01 measurement only (env-gated, default off).
+        cua_driver_core::phase_trace::mark("rt.registry_returned", "");
         if let Some(observer) = self.activity_observer.as_ref() {
             let refusal_code = result
                 .structured_content
@@ -392,6 +394,7 @@ impl DriverRuntime {
             let recording = self.registry.recording.clone();
             let _ = tokio::task::spawn_blocking(move || recording.stop_owner(Some(&session))).await;
         }
+        cua_driver_core::phase_trace::mark("rt.observed", "");
         Some(result)
     }
 
