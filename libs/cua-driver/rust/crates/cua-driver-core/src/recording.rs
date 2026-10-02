@@ -922,9 +922,15 @@ impl RecordingSession {
         use crate::tool_args::ArgsExt;
         let pid = args.opt_i64("pid");
         let element = pid.and_then(|pid| {
+            // Element tokens resolve only for the session that published
+            // them, so the lookup runs as the calling session.
+            let mut lookup = args.clone();
+            if let (Some(object), Some(session)) = (lookup.as_object_mut(), caller.session) {
+                object.insert("_session_id".to_owned(), Value::String(session.to_owned()));
+            }
             ELEMENT_BOUNDS_FN.get()?(
                 pid,
-                &args,
+                &lookup,
                 matches!(tool_name, "click" | "double_click" | "right_click"),
             )
         });
