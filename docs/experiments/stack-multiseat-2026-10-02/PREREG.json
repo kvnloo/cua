@@ -1,0 +1,90 @@
+{
+  "schema": "cua.stack.multiseat.prereg.v1",
+  "lane": "MULTISEAT (exp/stack-multiseat-20261002)",
+  "written_utc": "2026-10-02T06:05Z",
+  "status": "PREREGISTERED - committed before any measured run; everything run before this commit is shakedown and is reported as such",
+  "question": "Can 3-4 Hermes + cua-driver agents run concurrently on one machine, each on its own fixture instance, without cross-agent interference, and what does concurrency buy over running them one at a time? (kvnloo/cua#36-relevant multi-session evidence; compositor is headless sway, not Hyprland; kvnloo/cua#94 stays separate.)",
+  "scope_guard": "kvnloo/hermes-agent#319 directive: no new integration architecture, protocol, question family or active controller. No Hermes or Driver code change. Shadow/observer output never reaches Hermes (offline only). Hermes is the executor; success is judged only by the independent fixture oracle; no observer or agent self-credits success. CUA invariants (kvnloo/cua#73/#93): no new Driver services, fresh verification retained, no blind replay.",
+
+  "topology": {
+    "chosen": "one private headless sway 1.12 instance per agent (cua-sway-session.sh, CUA_SWAY_SEATS=1, 1280x800, private AT-SPI), N = 4 sessions at once",
+    "why_not_single_compositor_multiseat": "cua-driver 0.32.0 has no seat selection: SOURCE wayland/primary_seat.rs Seats::selected() takes the last advertised wl_seat; REAL (sway setup packet) every Driver event landed on seat1 of a 2-seat sway; the Driver's X11 path injects inside Xwayland, below sway's seats. Orchestrator decision 4: report single-compositor multi-seat Driver use as BLOCKED; replicated here as control SD.",
+    "why_sway_not_xvfb": "the sway kit passed its isolation canary (3/3) and is the compositor the spec names; Xvfb (cua-x11-session.sh) is the fallback only if sway sessions fail readiness",
+    "per_session": "fixture (upstream CuaTestHarness GTK3 TaskWindow, unmodified, as an X11 client of the session's private Xwayland, wrapped by harness/journaled_fixture.py which only adds an app-side append-only journal) + one Hermes process + the cua-driver MCP child Hermes spawns",
+    "shared": "one model server (Ollama 0.35.0 on 127.0.0.1:11500, started by another stack lane; observed 2 slots x 32768 ctx; also serving other lanes' requests), CPU, RAM, GPU",
+    "look_alike_property": "all instances have the same window title; because each session has its own PID namespace and X server, the fixture is pid 59 and the X window id 4194308 in every session (observed in shakedown), so identical (pid, window_id) handles name different windows"
+  },
+
+  "identities": {
+    "hermes": {"worktree_branch": "exp/stack-multiseat-20261002", "commit": "0d60437a3329448bb9d2992e34cec81b0afd36df", "content": "fork main 4d3555e5 + kvnloo/hermes-agent#385 (ce5c027b) + #386 (521d4354) + #387 (b8203889); no lane code change", "venv": "dedicated uv venv, python 3.14, -e .[computer-use] --group dev"},
+    "driver": {"version": "cua-driver 0.32.0", "build": "r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"},
+    "model": {"name": "qwen2.5:7b-instruct", "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e", "quant": "Q4_K_M", "server": "ollama 0.35.0 (release tarball sha256 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525)", "served_context": "32768 per slot, 2 slots (server log); Hermes is configured for 65536 - every request's prompt_tokens is recorded to show no request approaches 32768", "gpu": "RTX 3080 Ti 12 GB, shared"},
+    "sway_kit": "sway 1.12-4.1, wlroots0.20 0.20.2, xorg-xwayland 24.1.13 (see stack-sway packet, exp/stack-sway-20261002 d7317fd2); seatctl 2da9f12a, seatprobe 8179ca0a, landlock-scope d0416ddb",
+    "session_script_sha256": "fed58de9b208748ec6f6ec9a1bc11008c651eb68ddd103cb5200f7c368384c1f (adds CUA_SWAY_NO_NS vs the setup's c3e54bc4; not used here)",
+    "hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b (v2)",
+    "quiet_timed_sha256": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b",
+    "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py at this commit (GTK 3.24.52)",
+    "harness_sha256": "harness/SHA256SUMS (committed with this file)"
+  },
+
+  "declared_config_and_harness_choices": [
+    "Hermes config (private HERMES_HOME per agent): custom provider -> 127.0.0.1:11500/v1, observer plugin on (metadata only), updates/catalog/telemetry off, computer_use.permission_mode standard, native_wayland false.",
+    "tools.tool_search.defer = the product default list minus computer_use, so computer_use is an eager tool. Shakedown: with the default the 3B and 7B models had to reach computer_use through the tool_call bridge and failed (5/5 malformed bridge calls).",
+    "Approvals: no --yolo, no approvals.mode change, no bypass variable. command_allowlist holds the exact computer_use scopes the task needs (cua:click/type/key foreground+background, double_click/set_value/focus_app/scroll background) - the product's own permanent-grant mechanism (what an operator's 'always' answer writes). bring_to_front, drag, right/middle click stay ungranted.",
+    "Fixture window server-side border removed with a runtime per-window swaymsg command. Shakedown: with sway's title bar the Driver's AT-SPI element bounds and its window-local click frame differ by the decoration offset (+2, +27 px), so clicks at element centres miss (hermes-7b-3..5).",
+    "Pointer warm-up before each agent: xdotool motion only (two moves in blank window area, no button, no key). Shakedown: without it the first XTEST click the Driver sends into a fresh Xwayland is dropped (fgtype-3: 3 clicks -> counter 2; fgtype-4 with warm-up: 3 -> 3).",
+    "Prompt (identical across arms except the token): fixed 6-step procedure, text-only capture (mode=ax), coordinate clicks with delivery_mode=foreground, 'never pass the element argument'. Reason: Hermes (this stack and upstream main 5bba024d) always sends element_index on element clicks and cua-driver 0.32.0 (and upstream main 352507b6) refuses it ('click: unknown argument element_index', invalid_arguments) - every element-index click fails; recorded per run as element_index_refusals.",
+    "Task: type the agent's unique token into Note and click Save note once. The shakedown's richer task (plus Increment xK) gave 0/16 strict successes across the prompt iterations (hermes-7b-1..16; model confusion between controls), which would leave interference barely measurable; the simplified task gave 3/4 single-agent (hermes-7b-17..20) and 0/4 in one 4-agent concurrent shakedown (conc4-1).",
+    "Max 16 turns per agent, 900 s agent timeout, 1200 s session timeout."
+  ],
+
+  "runs": {
+    "M_main": {"what": "8 round pairs; each pair = one SEQ round (agents A1..A4 one after another, each in a fresh session) and one CONC round (A1..A4 at the same time, one session each); order seq-first in odd pairs, conc-first in even pairs", "agents_per_round": 4, "agent_runs": 64, "timing": "each round inside quiet-timed (label ms-main-<round>)", "evidence": "REAL + BENCHMARK"},
+    "L_lookalike": {"what": "5 rounds of 2 concurrent agents, identical prompts except the token, look-alike windows (same title, same pid, same X window id)", "agent_runs": 10, "evidence": "REAL", "timing": "none reported"},
+    "X_crosswire": {"what": "3 reps: session A (attacker) makes deliberate cross-session attempts against session B's idle look-alike fixture using B's published addresses: C0 own fill (sanity); X1 B's X display by number; X2 B's X socket by backing path (Driver); X3 same via xdotool/libX11; X4 raw X11 connection setup on B's backing path (reachability only); D1 own X display + B's D-Bus/AT-SPI bus by backing path (Driver); W1 B's Wayland socket by path (seatctl pointer+keyboard); S1 B's sway IPC by path (read-only get_version)", "evidence": "REAL"},
+    "SL_seat_lookalike": {"what": "3 reps in ONE 2-seat sway: two seatprobe windows with the same title; seat0 and seat1 concurrently click + type a seat-specific token into the left/right window, then swap (non-Driver: seatctl)", "evidence": "REAL"},
+    "SD_seat_driver": {"what": "2 reps in ONE 2-seat sway: two concurrent cua-driver processes (agent A -> left window, agent B -> right window), native Wayland arm, foreground pixel clicks", "evidence": "REAL"}
+  },
+
+  "oracle": {
+    "primary": "fixture journals (written by the app itself: every state publish, every Note text change, every focus change) and the final fixture state file; never the model's text, never Driver success messages",
+    "secondary": "per-session sway get_tree/get_seats before/after (foreign views, focused view); seatprobe per-seat event logs (the compositor names the seat of every event)",
+    "diagnostic_only": "lane-private Hermes transcript (stale-ref / refusal / element_index refusal counts), observer spool (API calls, prompt_tokens), shared server log (requests in the round window, to count other lanes' requests)",
+    "grader": "harness/grade.py",
+    "success_definition": "final note_saved == the agent's own token AND no other agent's token anywhere in its journal AND counter/agreed/size untouched"
+  },
+
+  "metrics": {
+    "per_agent": ["success", "save_presses (duplicate effect if > 1)", "foreign tokens in journal", "foreign views in its session after the run", "focused view after == own fixture", "unpaired focus-out events", "stale_ref results", "element_index refusals", "tool calls", "API calls, max prompt_tokens", "agent wall time"],
+    "interference": ["cross-session landings = any token of agent i found in the journal of agent j != i (all rounds, all journals)", "foreign views", "focus stolen (focused view after != own fixture, or unpaired focus-out)", "stale refs conc vs seq", "duplicate effects conc vs seq"],
+    "throughput": ["round makespan; per-pair speedup = seq makespan / conc makespan", "successes per minute and agent runs per minute per arm", "own model-call overlap seconds (do concurrent agents actually overlap at the model)"],
+    "resources": ["CPU % (mean over the round) and peak RSS of the round's process tree and of each session", "model server CPU % and RSS", "GPU memory used (peak, mean) and utilisation (nvidia-smi, 1 Hz)", "load average"],
+    "contamination": "requests on the shared model server in the round window minus this round's own API calls = other lanes' requests (model_requests_foreign)"
+  },
+
+  "hypotheses_and_gates": {
+    "H1_isolation_primary": "0 cross-session landings across all M and L journals (74 agent runs). GATE: one landing fails the no-interference claim.",
+    "H2_windows_focus": "every session tree after a run holds only its own fixture view, and its focused view is its own fixture (where the fixture is alive). GATE: one foreign view or foreign focus fails the claim.",
+    "H3_throughput": "CONC makespan < SEQ makespan (speedup > 1) in >= 6 of 8 pairs; median speedup reported with min/max. Expected well below 4x: the shared model server has 2 slots and also serves other lanes.",
+    "H4_success_parity": "descriptive: success rate CONC vs SEQ with Wilson 95% intervals and the difference; no equivalence claim at n = 32 per arm.",
+    "H5_stale_and_duplicates": "descriptive: stale-ref results and duplicate effects per run, CONC vs SEQ.",
+    "HX_crosswire_predictions": {"C0": "lands in A only", "X1": "blocked (Landlock abstract-socket scope + private /tmp)", "X2": "no landing (Driver cannot open a path display)", "X3": "no landing (libX11 path display not accepted)", "X4": "connection accepted at protocol level (the backing X socket is a same-uid path socket)", "D1": "lands in B (AT-SPI over B's bus; pid 59 names B's fixture there)", "W1": "lands in B", "S1": "reachable"},
+    "HX_gate": "if any of X4/D1/W1/S1 reaches B, the isolation claim is bounded to 'agents that only know their own session's addresses never interfere'; sibling sessions of the same uid are NOT isolated against a deliberately cross-wired client (path sockets under the session run dirs are reachable). The oracle must detect every landing that happens (sensitivity: C0 and any landing attempt must show up in the right journal).",
+    "HSL": "3/3 reps: each window receives exactly the tokens of the seat that targeted it, 0 cross-seat landings (non-Driver)",
+    "HSD": "2/2 reps: both Driver agents' events arrive on the same seat (no per-agent seat binding) -> single-compositor multi-seat Driver use BLOCKED"
+  },
+
+  "analysis": {
+    "denominators": "every launched agent run counts; a crashed session, non-zero rc, missing journal or timeout is a failure (success = false) and stays in the denominator; no run is dropped or re-run",
+    "contamination": "all rounds reported; rounds with model_requests_foreign > 0 are flagged; throughput is reported for all pairs and, as a sensitivity row, for pairs where both rounds had no foreign requests (if any exist)",
+    "timing_source": "round makespan = run_round.sh wall clock inside quiet-timed; ledger lines ms-main-* are the lock receipts"
+  },
+
+  "claim_boundary": [
+    "Compositor: headless sway 1.12 (wlroots 0.20, pixman), X11 fixture via Xwayland. Not Hyprland/Omarchy (#94 separate), not a physical seat, not Chromium/browser sessions (#36's browser row was covered upstream by trycua/cua#4317).",
+    "One fixture type, one task, text-only AX capture, one shared local 7B executor; success rates measure this executor + stack, not the Driver alone.",
+    "Single-compositor multi-seat with the Driver is BLOCKED (no seat selection); the multi-agent result is N separate compositors.",
+    "Throughput numbers are for this machine under concurrent load from other lanes, with a shared 2-slot model server; they are not a capacity benchmark.",
+    "Isolation evidence covers agents that only know their own session; cross-session reachability by a deliberately cross-wired same-uid client is measured separately (X runs)."
+  ]
+}

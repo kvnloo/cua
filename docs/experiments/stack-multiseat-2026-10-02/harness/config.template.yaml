@@ -1,0 +1,73 @@
+# MULTISEAT lane private Hermes profile (exp/stack-multiseat-20261002). Rendered per agent run into
+# <run>/home/.hermes/config.yaml; @MODEL@ / @BASE_URL@ are substituted by agent_hermes.sh.
+# Local model only; observer on (metadata only); nothing phones home or self-updates.
+model:
+  default: "@MODEL@"
+  provider: "custom"
+  base_url: "@BASE_URL@"
+  api_key: "ollama-local-no-key"
+  context_length: 65536
+  ollama_num_ctx: 65536
+
+plugins:
+  enabled:
+    - z0-hermes-observer
+  auto_update_check_hours: 0
+  auto_apply: false
+
+updates:
+  check: false
+  refresh_cua_driver: false
+  pre_update_backup: "off"
+model_catalog:
+  enabled: false
+
+# Computer use: Driver from HERMES_CUA_DRIVER_CMD; telemetry off; standard permission mode (no bypass,
+# no --yolo, approvals.mode untouched). The only grants are the product's own permanent-allowlist entries
+# (what an operator's "always" answer writes) for the exact computer_use input scopes the fixture task needs.
+# bring_to_front, drag and right/middle click stay ungranted (they fail closed in -q mode).
+computer_use:
+  cua_telemetry: false
+  permission_mode: "standard"
+  autostart: false
+  native_wayland: false
+bot_desktop:
+  auto_start: false
+command_allowlist:
+  - "cua:click:background"
+  - "cua:click:foreground"
+  - "cua:double_click:background"
+  - "cua:type:background"
+  - "cua:type:foreground"
+  - "cua:key:background"
+  - "cua:key:foreground"
+  - "cua:set_value:background"
+  - "cua:focus_app:background"
+  - "cua:scroll:background"
+
+# Hermes defers computer_use behind the tool_search/tool_call bridge by default (tools.tool_search.defer).
+# The local text-only executor then has to reach it through tool_call, which it cannot do reliably
+# (shakedown: 5/5 malformed bridge calls). Keep the product default list, minus computer_use, so the tool is
+# eager. Config only; no code change.
+tools:
+  tool_search:
+    defer:
+      - session_search
+      - image_generate
+      - todo_list
+      - process_manage
+      - cronjob_manage
+      - drive_preview
+      - gui_tour
+      - desktop_preview
+      - annotate_preview
+      - show_tip
+      - desktop_project
+      - close_terminal
+      - apply_layout
+      - read_terminal
+      - read_window_below
+      - focus_pane
+
+logging:
+  level: "INFO"
