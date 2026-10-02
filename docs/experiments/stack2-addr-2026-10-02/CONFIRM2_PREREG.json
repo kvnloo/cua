@@ -1,0 +1,16 @@
+{
+ "schema": "cua.stack.prereg.v1",
+ "id": "stack2-addr-2026-10-02/confirm2",
+ "committed_before_confirm2_runs": true,
+ "extension_of": "PREREG.json and CONFIRM_PREREG.json (both unchanged). This is a disclosed extension, not a replacement.",
+ "why": "Independent verification (round 1) showed that c3d96b04 dropped the ended session's element tokens only when the call that noticed the ended session itself carried element_token. When a token-free call (type_text, key, coordinate click) noticed it, Hermes revived, replayed that call and kept the dead tokens, and the next element action sent one (REAL probe: Driver refused 'element_token is stale ... pid has no current snapshot'). Fix d39e1175f36ab0dcdc552c2eb128f30efdfa4a1f: the transport-reset callback runs on every ended-session result before the revive, so tokens and target are dropped whichever call noticed the end. Unit red (c3d96b04 + new tests: 2 failed) / green (16/16; computer_use suites 310 passed, 0 failed) and a REAL probe for three triggers (element click, type_text, key) on c3d96b04 and d39e1175 were run before this set.",
+ "stack": "identical to CONFIRM_PREREG.json except Hermes = exp/stack-addr-20261002 d39e1175f36ab0dcdc552c2eb128f30efdfa4a1f (arm after3); Driver 0.32.0 sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3; model tag qwen2.5:7b-instruct-smoke-t0 recreated from blob 845dbda0 with temperature 0, seed 42 and required to have digest 77a5de20 (abort before any run otherwise); same config, prompts, fixtures, oracle and harness",
+ "runs": "plan_confirm2.json: 12 pairs (301-312) x {gtk3, browser}, arm after3 only = 24 runs; every run reported, failures and harness errors in the denominators",
+ "analysis": "harness/analyze_confirm.py raw plan_confirm2.json raw/drive-ledger.jsonl summary.json confirm2_summary.json (the committed confirmation analyzer, reused unchanged)",
+ "gates": {
+  "D1_contract": "PASS iff 0 addressing_refused results",
+  "D4_authority": "PASS iff 0 stale_token and 0 invalid_token results",
+  "D3_success": "descriptive: pass/n per task with Wilson 95% CI; no significance claim",
+  "D5_revive_path": "descriptive: number of runs whose private agent.log shows an ended-session revive; the revive path is not expected to trigger, so the fix's direct evidence remains UNIT plus the REAL probe"
+ }
+}
