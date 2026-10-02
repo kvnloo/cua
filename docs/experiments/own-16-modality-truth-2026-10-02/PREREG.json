@@ -1,0 +1,84 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "OWN-16",
+  "title": "Linux observation-modality selector truth table at the producer boundary (GTK3, AT-SPI)",
+  "owners": ["kvnloo/cua#16 (Linux row)", "kvnloo/cua#10 (accounting, consumer only)", "kvnloo/cua#73 (invariants)"],
+  "written_utc": "2026-10-02T02:15Z",
+  "tested_source": {
+    "base": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49 (R2-04 measurement-only phase marks on upstream trycua/cua main 229b65b2849c3a595ddbc85200d7181b18bd2e47)",
+    "tree_identity": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 c4d0c6625b5c93849aa8bec610782410e9d45f69 -- libs/cua-driver exits 0 (libs/cua-driver identical to that later main)",
+    "instrumentation_commit": "cd9d6d16929c29517d6aee4ea9c8c64d71c770f3 (counted enter/exit marks at screenshot_dispatch_for_pid, screenshot_root_region_png and walk_tree_bounded_within; env CUA_DRIVER_PHASE_TRACE_FILE, default off)",
+    "branch": "exp/own-16-modality-truth-20261002"
+  },
+  "binaries": {
+    "lane": "cua-driver-own16-cd9d6d169, sha256 c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5, cua-driver 0.32.0, built with build-driver.sh into cua-release-r2-04 (0 Fresh workspace units). Used for every measured, negative and smoke call; marks on except where the smoke says otherwise.",
+    "main_reference_shape_only": "cua-driver-r2-main-229b65b28, sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3: used ONLY in the default-off smoke to compare response SHAPE; never timed against the lane binary."
+  },
+  "pilot_disclosure": "Four pilot sessions ran the lane binary before this file was written, for feasibility only; excluded from all results and not copied into raw/: pilot1 measured (2 warm rounds, 1 oracle round), pilot2 negative (failed: list_windows did not report the task window within 60 attempts; cause not identified), pilot3 negative (4 window attempts; worked), pilot4 smoke. Pilot observations that shaped this file: (a) the oracle works: X RECORD saw exactly 1 ShmGetImage per capture call and 0 otherwise, dbus-monitor saw 142 AT-SPI calls to the fixture per walk and 0 otherwise; (b) in a session started without CUA_SESSION_ATSPI the session bus auto-activates org.a11y.Bus (at-spi-bus-launcher) when the GTK app starts, but org.a11y.atspi.Registry activation fails ('unit failed'), so the walk degrades with atspi_walk_failed; (c) include_screenshot:\"false\" (string) was accepted and a screenshot returned; (d) the neither row errors with code tool_invocation_failed; unknown_field is refused with invalid_arguments. After the pilots the harness gained a window-search diagnostic record and --window-attempts, and dropped a process-name probe that read system-wide /proc (not session-scoped).",
+  "hypothesis_16": "On Linux, an omitted modality means its producer did not run (invocation count exactly 0); the remaining modality stays truthful and usable; there is no silent accept-and-ignore; and the metadata distinguishes intentionally omitted from failed/unavailable where the contract supports it.",
+  "fixture": {
+    "path": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py",
+    "mode": "task window (CUA_GTK3_TASK_STATE=<scratch>/gtk3-task-state.json), title 'CuaTestHarness GTK3 Tasks'",
+    "interpreter": "/usr/bin/python3 (system PyGObject, GTK 3)"
+  },
+  "environment": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24, private session dbus, openbox + picom (xrender), scrubbed env, fresh HOME per session. Measured/smoke sessions: CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" (private AT-SPI bus + registryd). Negative session: neither variable set. Driver: jev-use driver_environment() plus CUA_DRIVER_PHASE_TRACE_FILE when marks are on; no permission-mode override, no approval bypass.",
+  "forced_selector_per_row": {
+    "both": {"include_accessibility_tree": true, "include_screenshot": true},
+    "screenshot_only": {"include_accessibility_tree": false},
+    "accessibility_only": {"include_screenshot": false},
+    "neither": {"include_accessibility_tree": false, "include_screenshot": false},
+    "legacy_omitted": {},
+    "unknown_field": {"include_tree": false},
+    "wrong_type_supplementary": {"include_screenshot": "false"}
+  },
+  "row_notes": {
+    "legacy_omitted": "older-schema client: no selector field at all. Contract: both default to true.",
+    "unknown_field": "a selector name the contract does not define. Contract: closed input schema (additionalProperties:false); the registry refuses unknown argument names before the tool runs.",
+    "wrong_type_supplementary": "SUPPLEMENTARY, outside the requested matrix: a defined selector with a non-boolean value. Reported and classified, but NOT counted in the overall #16 disposition."
+  },
+  "producer_invocation": "Every get_window_state call is attributed to its own marks: the harness drains the trace file before and after the call; capture count = 'enter' marks of capture_window + capture_root_region; walk count = 'enter' marks of atspi_walk. The ordinal n must be gap-free per scope across the session (no unmarked invocation) and every producer mark must lie between that call's get_window_state dispatch_enter and dispatch_exit.",
+  "independent_oracle": "Producer-boundary oracle that does not use Driver self-report: (1) X server RECORD extension client (python-xlib, temp venv outside the repo) intercepting core GetImage (73) and MIT-SHM ShmGetImage (minor 4) from ALL clients: the requests any window or root capture must send; (2) dbus-monitor --monitor on the private AT-SPI bus, counting method calls whose destination unique name belongs to the fixture pid (resolved via GetConnectionUnixProcessID) and calls sent by the Driver's pid. Run in a separate oracle block after the warm block (it perturbs timing, so it is never timed): 1 s idle window, then 3 rounds of all rows with 250 ms gaps; events attributed to [call start, call end + 30 ms].",
+  "matrix_and_n": {
+    "sessions": "2 isolated measured sessions S1 (rotation 0), S2 (rotation 3), run S1 -> N1 -> S2 -> D1",
+    "per_session": "cold: 1 call per row (rows in rotated order; only the session's first call is process-cold, the rest are first-of-row), recorded separately. warm: 20 rounds; round r calls every row once in order rotated by (rotation + r). oracle: 3 rounds. usability: 1 accessibility-only observation + 1 token click.",
+    "per_row_total": "per row: 2 cold + 40 warm + 6 oracle = 48 calls (42 cold+warm counted for the 21/21 rule, per session)",
+    "timing_lock": "warm block holds flock quiet-lane.lock EXCLUSIVE (the harness converts its SHARED lock); everything else SHARED; loadavg per call; every call kept"
+  },
+  "record_per_call": "capture and walk invocation counts and exit outcomes; producer spans and Driver dispatch/invoke span (from marks); structured key set; content parts (type, bytes, PNG sha256 prefix + IHDR dims); completeness/degraded/error metadata verbatim (META_KEYS); element/coordinate integrity (frames inside window_bounds, screenshot_frames inside the image and equal to (frame - window origin) x frame_scale within 1 px, screenshot dims == window_bounds x frame_scale within 1 px, PNG IHDR == reported dims); elements digest (index, role, label, value, frame); client wall time (monotonic, around session.call_tool); MCP response bytes (client re-serialization of the CallToolResult, compact JSON; disclosed as such); error text.",
+  "per_call_selector_outcome": {
+    "honored": "omission row: the omitted modality's fields are absent AND its producer count is 0, and the requested modality is present; default rows: both modalities present and both producers ran once",
+    "rejected": "is_error true",
+    "silently_ignored": "the request asked to omit a modality but its fields are present (and/or its producer ran)",
+    "schema_only": "the omitted modality's fields are absent but its producer count > 0"
+  },
+  "controls": {
+    "positive": "row both: capture == 1 and walk == 1 in every cold+warm call of every measured session. Otherwise the counters are broken and the lane STOPS (no disposition).",
+    "negative_distinguishability": "N1, session without CUA_SESSION_ATSPI: rows both, accessibility_only, screenshot_only; 1 cold + 5 warm rounds. PASS iff for every call that requests accessibility: walk == 1 (the attempt is counted), degraded == true with a non-empty degraded_reason, elements_complete == false; i.e. reported as degraded/unavailable, never as the omission shape (no elements fields).",
+    "default_off_smoke": "D1: the lane binary with CUA_DRIVER_PHASE_TRACE_FILE unset, then set to an empty string, then set to a file; then the unmodified main binary unset. 3 rounds x all rows each. PASS iff no trace file appears for unset/empty/main and the per-row (structured key set, content part types, is_error) shape sets are identical across all four."
+  },
+  "gates": {
+    "latency_real_selector": "row screenshot_only (omitted producer: walk) / accessibility_only (omitted: capture): omitted producer count == 0 in 21/21 cold+warm calls in EACH measured session, AND the remaining modality is complete in every such call, AND the warm wall-time difference of medians (row - both), pooled over both sessions, has a seeded stratified bootstrap 95% CI (10000 resamples, resampling within session, seed 1616) entirely below 0.",
+    "remaining_complete_screenshot": "image part present; PNG IHDR == screenshot_width x screenshot_height; screenshot_frame_valid true; no screenshot_error; screenshot dims == window_bounds x frame_scale (1 px); capture count == 1.",
+    "remaining_complete_accessibility": "elements present; elements_complete true; truncated false; no degraded; element_count and elements digest equal to the same session's modal both-row values; 0 frames outside window_bounds; walk count == 1.",
+    "schema_only": "field omitted from the response but producer count > 0 in any call: #16 FAILURE for that row.",
+    "unsupported_ambiguous": "refused or degraded without clear metadata, or accepted with the selector silently ignored.",
+    "rejected_explicit": "rows neither and unknown_field: is_error in every call, capture == walk == 0, and the error text names the offending field(s). Not a failure: the contract defines these as errors. A missing machine-readable code is reported, not gated.",
+    "default_honored": "row legacy_omitted: capture == 1 and walk == 1 in every call and the structured key set equals the same session's both-row key set.",
+    "oracle_corroboration": "every oracle call: X RECORD (GetImage + ShmGetImage) count == mark capture count, and (AT-SPI calls to the fixture > 0) iff mark walk == 1; idle window shows 0 of both. Any disagreement makes the counters untrusted: the affected rows are reported BLOCKED (oracle disagreement) instead of a disposition."
+  },
+  "decision_rules": {
+    "overall": "KEEP if the positive control passes, every supported omission row (screenshot_only, accessibility_only) is latency_real_selector, neither and unknown_field are rejected_explicit, legacy_omitted is default_honored, and the negative control and smoke pass. REVISE if any matrix row is schema_only or unsupported_ambiguous (list them), or a control other than the positive control fails. KILL only if the remaining modality becomes untruthful (an accessibility-only element set differing from the both-row set, or a screenshot-only image failing the screenshot completeness checks). STOP (no disposition) if the positive control fails.",
+    "metadata_distinguishability": "Reported per row, not gated: whether omission is signalled explicitly or only by absence, and how failure/unavailability is signalled (negative control).",
+    "supplementary": "wrong_type_supplementary is classified (honored / rejected / silently_ignored / schema_only) and reported as a separate finding with its own follow-up; it does not change the overall disposition."
+  },
+  "statistics": "medians and nearest-rank p95 per row (warm), per session and pooled; difference of medians with the stratified bootstrap above; cold calls reported separately and never pooled with warm; response bytes per row; work deleted (producer invocations avoided, oracle AT-SPI calls and X image reads avoided per call) reported separately from wall-clock saved.",
+  "claim_boundary": "Linux X11 (private Xvfb), private AT-SPI bus, GTK3 9-element task window, Driver 229b65b28 + R2-04 marks + these counting marks. No macOS/Windows parity (BLOCKED on hardware), no Wayland/Hyprland, no other toolkit, no Chromium/Electron, no provider. Timing is per get_window_state call on this fixture, not whole-task time.",
+  "invariants": "Instrumentation is measurement-only, env-gated, default off (smoke); no schema change, no new service, no observation skipping is introduced or recommended here; marks and events are never an oracle of success or freshness.",
+  "provider": "none (cap 0); attempts 0, reached 0",
+  "files_frozen_with_this_prereg": {
+    "modality_truth.py": "ead359ea7ecd24b6cf13033c15bb7777d69db1c5f012fae2ce1e20a36962d16a",
+    "run_in_session.sh": "cb8917fa0a41c8dbff7f7ac7b0983797e84bdb2c52a23aa7890e8af20d7b0e05",
+    "xrecord_capture.py": "247738cef5d55258e991162f7bdfed3d5d98be5e4896da4b3cd3f9d639dd58ed",
+    "run_batch.sh": "cee1c7cf03896790710d82243c4d3a745ed98588032ea60847dcaa99abc1e500"
+  }
+}
