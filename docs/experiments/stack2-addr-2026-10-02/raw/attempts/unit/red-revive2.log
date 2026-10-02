@@ -1,0 +1,144 @@
+▶ not activated — using HERMES_PYTHON: <hermes_after_venv>/bin/python
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~15 tests) under ['tests/tools/test_computer_use_element_token_contract.py']; running with -j 20
+[100.0% |    15/~15 | ✓14 | ✗ 2] ✗ tests/tools/test_computer_use_element_token_contract.py (14✓ 2✗, 8.4s)
+
+  ╔╍ Failed: tests/tools/test_computer_use_element_token_contract.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║     
+  ║         class Bridge:
+  ║             def run(self, value, timeout=None):
+  ║                 _, name, args = value
+  ║                 if name == "start_session":
+  ║                     state["ended"] = False
+  ║                     return {"data": "ok", "images": [], "structuredContent": None, "isError": False}
+  ║                 return dict(self.ended) if state["ended"] else fake_call(name, args)
+  ║     
+  ║         Bridge.ended = self.ENDED
+  ║         s, _ = self._session([])
+  ║         s._bridge, s._tool_schemas, s._capabilities = Bridge(), backend._session._tool_schemas, backend._session._capabilities
+  ║         s._timeout_suspect = False
+  ║         s.set_transport_reset_callback(backend._handle_transport_reset)
+  ║         backend._session = s
+  ║         state["ended"] = True  # the Driver session ends while the model is thinking
+  ║         assert backend.type_text("hello").ok  # token-free call: revive + replay once
+  ║         result = backend.click(element=2)
+  ║ >       assert not result.ok and "capture" in result.message  # refused locally: capture again first
+  ║         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E       AssertionError: assert (not True)
+  ║ E        +  where True = ActionResult(ok=True, action='click', message='ok', capture=None, meta={'verified': False}, verified=False, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+  ║ 
+  ║ tests/tools/test_computer_use_element_token_contract.py:264: AssertionError
+  ║ ------------------------------ Captured log call -------------------------------
+  ║ WARNING  tools.computer_use.cua_backend:cua_backend_session.py:516 cua-driver session hermes-label ended during type_text; reviving and retrying once
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestEndedSessionRevival::test_token_free_call_is_still_replayed_after_revival
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestEndedSessionRevival::test_token_free_revival_then_element_action_never_sends_a_dead_token
+  ║ ========================= 2 failed, 14 passed in 3.28s =========================
+  ║
+  ║  Repro: python -m pytest tests/tools/test_computer_use_element_token_contract.py
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 14 tests passed, 2 failed (100% complete) in 8.4s (20 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 8.4s  (runner wall: 8.4s, parallelism: 20x)
+  P50: 8.35s  P90: 8.35s  P95: 8.35s  P99: 8.35s  Max: 8.35s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+      8.35s  tests/tools/test_computer_use_element_token_contract.py
+
+=== Failure output ===
+
+--- tests/tools/test_computer_use_element_token_contract.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: <hermes_c3d96b04_wt>
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.15.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 16 items
+
+tests/tools/test_computer_use_element_token_contract.py .............FF. [100%]
+
+=================================== FAILURES ===================================
+_ TestEndedSessionRevival.test_token_free_call_is_still_replayed_after_revival _
+
+self = <tests.tools.test_computer_use_element_token_contract.TestEndedSessionRevival object at 0x7f37696a7d90>
+
+    def test_token_free_call_is_still_replayed_after_revival(self):
+        ok = {"data": "ok", "images": [], "structuredContent": None, "isError": False}
+        s, calls = self._session([dict(self.ENDED), dict(ok), dict(ok)])
+        args = {"pid": 1, "window_id": 2, "x": 3, "y": 4, "session": "hermes-label"}
+        result = s.call_tool("click", args)
+        assert [c[1] for c in calls] == ["click", "start_session", "click"]
+        assert result["isError"] is False
+>       s._transport_reset_callback.assert_called_once_with()  # the ended session's tokens are dropped anyway
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/tools/test_computer_use_element_token_contract.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock id='139875909769536'>, args = (), kwargs = {}
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'mock' to be called once. Called 0 times.
+
+/usr/lib/python3.14/unittest/mock.py:997: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  tools.computer_use.cua_backend:cua_backend_session.py:516 cua-driver session hermes-label ended during click; reviving and retrying once
+_ TestEndedSessionRevival.test_token_free_revival_then_element_action_never_sends_a_dead_token _
+
+self = <tests.tools.test_computer_use_element_token_contract.TestEndedSessionRevival object at 0x7f37696935c0>
+
+    def test_token_free_revival_then_element_action_never_sends_a_dead_token(self):
+        """The revive may be triggered by ANY call (type_text, key, a coordinate click). Every token cached from
+        the ended session is dead afterwards, so the next element action must not carry one."""
+        backend, driver = _captured(TOKEN_ONLY)  # snapshot 1 -> tokens s00000001:*
+        fake_call, state = driver.call_tool, {"ended": False}
+    
+        class Bridge:
+            def run(self, value, timeout=None):
+                _, name, args = value
+                if name == "start_session":
+                    state["ended"] = False
+                    return {"data": "ok", "images": [], "structuredContent": None, "isError": False}
+                return dict(self.ended) if state["ended"] else fake_call(name, args)
+    
+        Bridge.ended = self.ENDED
+        s, _ = self._session([])
+        s._bridge, s._tool_schemas, s._capabilities = Bridge(), backend._session._tool_schemas, backend._session._capabilities
+        s._timeout_suspect = False
+        s.set_transport_reset_callback(backend._handle_transport_reset)
+        backend._session = s
+        state["ended"] = True  # the Driver session ends while the model is thinking
+        assert backend.type_text("hello").ok  # token-free call: revive + replay once
+        result = backend.click(element=2)
+>       assert not result.ok and "capture" in result.message  # refused locally: capture again first
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert (not True)
+E        +  where True = ActionResult(ok=True, action='click', message='ok', capture=None, meta={'verified': False}, verified=False, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+
+tests/tools/test_computer_use_element_token_contract.py:264: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  tools.computer_use.cua_backend:cua_backend_session.py:516 cua-driver session hermes-label ended during type_text; reviving and retrying once
+=========================== short test summary info ============================
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestEndedSessionRevival::test_token_free_call_is_still_replayed_after_revival
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestEndedSessionRevival::test_token_free_revival_then_element_action_never_sends_a_dead_token
+========================= 2 failed, 14 passed in 3.28s =========================
+
+=== 1 file with test failures (2 tests failed) ===
+  tests/tools/test_computer_use_element_token_contract.py  (2 tests failed)
+rc=1

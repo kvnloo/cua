@@ -1,0 +1,139 @@
+{
+ "hermes_module": "tools/computer_use/cua_backend.py",
+ "hermes_wt": "stack2-addr-v2 (detached at c3d96b04)",
+ "driver": "cua-driver-r2-main-229b65b28",
+ "scenarios": [
+  {
+   "trigger": "click_element",
+   "tokens_before": 9,
+   "agreed_before": false,
+   "raw_end_session_isError": false,
+   "trigger_result": {
+    "ok": false,
+    "message": "cua-driver session ended before click ran; its element tokens were retired with it and the call was not replayed. Capture again and use an element index from that capture.",
+    "code": "element_token_session_ended"
+   },
+   "tokens_after_trigger": 0,
+   "agreed_after_old_token_path": false,
+   "fresh_click": {
+    "ok": true,
+    "message": "Clicked element [2] (pid 832768).",
+    "code": null
+   },
+   "agreed_final": true,
+   "sent": [
+    {
+     "tool": "click",
+     "element_token": "s00000001:2"
+    },
+    {
+     "tool": "start_session",
+     "element_token": null
+    },
+    {
+     "tool": "click",
+     "element_token": "s00000002:2"
+    }
+   ],
+   "stale_tokens_sent": []
+  },
+  {
+   "trigger": "type_text",
+   "tokens_before": 9,
+   "agreed_before": true,
+   "raw_end_session_isError": false,
+   "trigger_result": {
+    "ok": false,
+    "message": "Background delivery is not available: the requested target has no focus-free input backend; the remaining XTest/X11 route can only deliver to the globally focused widget. Retry this action with delivery_mode:\"foreground\"; Cua Driver will activate the target window, confirm it holds the input focus, and deliver real input to it.",
+    "code": "background_unavailable"
+   },
+   "tokens_after_trigger": 9,
+   "old_index_click": {
+    "ok": false,
+    "message": "element_token is stale; call get_window_state again to refresh; pid 832768 has no current snapshot",
+    "code": null
+   },
+   "agreed_after_old_token_path": true,
+   "fresh_click": {
+    "ok": true,
+    "message": "Clicked element [2] (pid 832768).",
+    "code": null
+   },
+   "agreed_final": false,
+   "sent": [
+    {
+     "tool": "type_text",
+     "element_token": null
+    },
+    {
+     "tool": "start_session",
+     "element_token": null
+    },
+    {
+     "tool": "type_text",
+     "element_token": null
+    },
+    {
+     "tool": "click",
+     "element_token": "s00000003:2"
+    },
+    {
+     "tool": "click",
+     "element_token": "s00000004:2"
+    }
+   ],
+   "stale_tokens_sent": [
+    "s00000003:2"
+   ]
+  },
+  {
+   "trigger": "key",
+   "tokens_before": 9,
+   "agreed_before": false,
+   "raw_end_session_isError": false,
+   "trigger_result": {
+    "ok": false,
+    "message": "Background delivery is not available: the requested target has no focus-free input backend; the remaining XTest/X11 route can only deliver to the globally focused widget. Retry this action with delivery_mode:\"foreground\"; Cua Driver will activate the target window, confirm it holds the input focus, and deliver real input to it.",
+    "code": "background_unavailable"
+   },
+   "tokens_after_trigger": 9,
+   "old_index_click": {
+    "ok": false,
+    "message": "element_token is stale; call get_window_state again to refresh; pid 832768 has no current snapshot",
+    "code": null
+   },
+   "agreed_after_old_token_path": false,
+   "fresh_click": {
+    "ok": true,
+    "message": "Clicked element [2] (pid 832768).",
+    "code": null
+   },
+   "agreed_final": true,
+   "sent": [
+    {
+     "tool": "press_key",
+     "element_token": null
+    },
+    {
+     "tool": "start_session",
+     "element_token": null
+    },
+    {
+     "tool": "press_key",
+     "element_token": null
+    },
+    {
+     "tool": "click",
+     "element_token": "s00000005:2"
+    },
+    {
+     "tool": "click",
+     "element_token": "s00000006:2"
+    }
+   ],
+   "stale_tokens_sent": [
+    "s00000005:2"
+   ]
+  }
+ ]
+}

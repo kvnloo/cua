@@ -1,0 +1,165 @@
+▶ not activated — using HERMES_PYTHON: <hermes_after_venv>/bin/python
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~11 tests) under ['tests/tools/test_computer_use_element_token_contract.py']; running with -j 20
+[100.0% |    11/~11 | ✓ 5 | ✗ 7] ✗ tests/tools/test_computer_use_element_token_contract.py (5✓ 7✗, 5.1s)
+
+  ╔╍ Failed: tests/tools/test_computer_use_element_token_contract.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║         result = backend.click(element=9, x=500, y=400)
+  ║         assert not result.ok
+  ║ >       assert result.code == "element_token_unavailable"
+  ║ E       AssertionError: assert None == 'element_token_unavailable'
+  ║ E        +  where None = ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).code
+  ║ 
+  ║ tests/tools/test_computer_use_element_token_contract.py:149: AssertionError
+  ║ _________ TestTokenOnlyDriver.test_no_snapshot_means_no_element_action _________
+  ║ 
+  ║ self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a2da250>
+  ║ 
+  ║     def test_no_snapshot_means_no_element_action(self):
+  ║         backend, driver = _captured(TOKEN_ONLY)
+  ║         backend._set_active_target({"pid": PID, "window_id": WINDOW})  # e.g. focus_app: retargets, drops tokens
+  ║         result = backend.set_value("abc", element=1)
+  ║ >       assert not result.ok and result.code == "element_token_unavailable"
+  ║ E       AssertionError: assert (not False and None == 'element_token_unavailable')
+  ║ E        +  where False = ActionResult(ok=False, action='set_value', message='set_value: unknown argument element_index', capture=None, meta={'s...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+  ║ E        +  and   None = ActionResult(ok=False, action='set_value', message='set_value: unknown argument element_index', capture=None, meta={'s...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).code
+  ║ 
+  ║ tests/tools/test_computer_use_element_token_contract.py:156: AssertionError
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_click_by_element_sends_current_token_not_index
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_set_value_by_element_sends_current_token_not_index
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_scroll_by_element_sends_current_token_not_index
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_element_wins_over_coordinates_and_coordinates_are_not_sent
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_recapture_uses_the_new_snapshot_token
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_unknown_index_is_refused_locally_without_coordinate_fallback
+  ║ FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_no_snapshot_means_no_element_action
+  ║ 7 failed, 5 passed in 1.29s
+  ║
+  ║  Repro: python -m pytest tests/tools/test_computer_use_element_token_contract.py -q
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 5 tests passed, 7 failed (100% complete) in 5.2s (20 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 5.1s  (runner wall: 5.2s, parallelism: 20x)
+  P50: 5.12s  P90: 5.12s  P95: 5.12s  P99: 5.12s  Max: 5.12s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+      5.12s  tests/tools/test_computer_use_element_token_contract.py
+
+=== Failure output ===
+
+--- tests/tools/test_computer_use_element_token_contract.py ---
+FFFFFFF.....                                                             [100%]
+=================================== FAILURES ===================================
+___ TestTokenOnlyDriver.test_click_by_element_sends_current_token_not_index ____
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a4ff250>
+
+    def test_click_by_element_sends_current_token_not_index(self):
+        backend, driver = _captured(TOKEN_ONLY)
+        result = backend.click(element=2)
+>       assert result.ok, result.message
+E       AssertionError: click: unknown argument element_index
+E       assert False
+E        +  where False = ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+
+tests/tools/test_computer_use_element_token_contract.py:112: AssertionError
+_ TestTokenOnlyDriver.test_set_value_by_element_sends_current_token_not_index __
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a4ff390>
+
+    def test_set_value_by_element_sends_current_token_not_index(self):
+        backend, driver = _captured(TOKEN_ONLY)
+        result = backend.set_value("abc", element=1)
+>       assert result.ok, result.message
+E       AssertionError: set_value: unknown argument element_index
+E       assert False
+E        +  where False = ActionResult(ok=False, action='set_value', message='set_value: unknown argument element_index', capture=None, meta={'s...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+
+tests/tools/test_computer_use_element_token_contract.py:122: AssertionError
+___ TestTokenOnlyDriver.test_scroll_by_element_sends_current_token_not_index ___
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a4f2d70>
+
+    def test_scroll_by_element_sends_current_token_not_index(self):
+        backend, driver = _captured(TOKEN_ONLY)
+        result = backend.scroll(direction="down", element=0)
+>       assert result.ok, result.message
+E       AssertionError: scroll: unknown argument element_index
+E       assert False
+E        +  where False = ActionResult(ok=False, action='scroll', message='scroll: unknown argument element_index', capture=None, meta={'status'...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+
+tests/tools/test_computer_use_element_token_contract.py:129: AssertionError
+_ TestTokenOnlyDriver.test_element_wins_over_coordinates_and_coordinates_are_not_sent _
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a4f2ea0>
+
+    def test_element_wins_over_coordinates_and_coordinates_are_not_sent(self):
+        backend, driver = _captured(TOKEN_ONLY)
+>       assert backend.click(element=2, x=500, y=400).ok
+E       AssertionError: assert False
+E        +  where False = ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+E        +    where ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None) = click(element=2, x=500, y=400)
+E        +      where click = <tools.computer_use.cua_backend.CuaDriverBackend object at 0x7f7536d9fbb0>.click
+
+tests/tools/test_computer_use_element_token_contract.py:135: AssertionError
+________ TestTokenOnlyDriver.test_recapture_uses_the_new_snapshot_token ________
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a2fa210>
+
+    def test_recapture_uses_the_new_snapshot_token(self):
+        backend, driver = _captured(TOKEN_ONLY)
+        backend.capture(mode="ax", app="Main.py")
+>       assert backend.click(element=2).ok
+E       AssertionError: assert False
+E        +  where False = ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+E        +    where ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None) = click(element=2)
+E        +      where click = <tools.computer_use.cua_backend.CuaDriverBackend object at 0x7f7536ce49d0>.click
+
+tests/tools/test_computer_use_element_token_contract.py:142: AssertionError
+_ TestTokenOnlyDriver.test_unknown_index_is_refused_locally_without_coordinate_fallback _
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a2da140>
+
+    def test_unknown_index_is_refused_locally_without_coordinate_fallback(self):
+        backend, driver = _captured(TOKEN_ONLY)
+        result = backend.click(element=9, x=500, y=400)
+        assert not result.ok
+>       assert result.code == "element_token_unavailable"
+E       AssertionError: assert None == 'element_token_unavailable'
+E        +  where None = ActionResult(ok=False, action='click', message='click: unknown argument element_index', capture=None, meta={'status': ...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).code
+
+tests/tools/test_computer_use_element_token_contract.py:149: AssertionError
+_________ TestTokenOnlyDriver.test_no_snapshot_means_no_element_action _________
+
+self = <tests.tools.test_computer_use_element_token_contract.TestTokenOnlyDriver object at 0x7f753a2da250>
+
+    def test_no_snapshot_means_no_element_action(self):
+        backend, driver = _captured(TOKEN_ONLY)
+        backend._set_active_target({"pid": PID, "window_id": WINDOW})  # e.g. focus_app: retargets, drops tokens
+        result = backend.set_value("abc", element=1)
+>       assert not result.ok and result.code == "element_token_unavailable"
+E       AssertionError: assert (not False and None == 'element_token_unavailable')
+E        +  where False = ActionResult(ok=False, action='set_value', message='set_value: unknown argument element_index', capture=None, meta={'s...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).ok
+E        +  and   None = ActionResult(ok=False, action='set_value', message='set_value: unknown argument element_index', capture=None, meta={'s...element_index'}}, verified=None, effect=None, escalation=None, path=None, degraded=None, delivery_mode=None, code=None).code
+
+tests/tools/test_computer_use_element_token_contract.py:156: AssertionError
+=========================== short test summary info ============================
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_click_by_element_sends_current_token_not_index
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_set_value_by_element_sends_current_token_not_index
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_scroll_by_element_sends_current_token_not_index
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_element_wins_over_coordinates_and_coordinates_are_not_sent
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_recapture_uses_the_new_snapshot_token
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_unknown_index_is_refused_locally_without_coordinate_fallback
+FAILED tests/tools/test_computer_use_element_token_contract.py::TestTokenOnlyDriver::test_no_snapshot_means_no_element_action
+7 failed, 5 passed in 1.29s
+
+=== 1 file with test failures (7 tests failed) ===
+  tests/tools/test_computer_use_element_token_contract.py  (7 tests failed)
+rc=1

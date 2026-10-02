@@ -2,7 +2,7 @@
 
 Checks
  1. manifest: every file listed in SHA256SUMS exists and matches.
- 2. PREREG / CONFIRM_PREREG commits precede the first run of their sets (git commit time vs drive ledger), when git is available.
+ 2. PREREG / CONFIRM_PREREG / CONFIRM2_PREREG commits precede the first run of their sets (git commit time vs drive ledger), when git is available.
  3. oracle independence: every run's verdict is re-derived from the fixture state files with the PREREG rule.
  4. tool metrics: each run_summary.json 'tools' block is recomputed from that run's tool_calls.jsonl.
  5. summary regrade: harness/analyze.py over raw/ reproduces summary.json's gates, cells and pair tables.
@@ -49,7 +49,7 @@ def manifest() -> None:
 
 def prereg_order() -> None:
     ledger = jl(HERE / "raw" / "drive-ledger.jsonl")
-    for name, prefixes in (("PREREG.json", "ml"), ("CONFIRM_PREREG.json", "c")):
+    for name, prefixes in (("PREREG.json", "ml"), ("CONFIRM_PREREG.json", "c"), ("CONFIRM2_PREREG.json", "d")):
         first = min(r["started"] for r in ledger if r["run_id"][0] in prefixes)
         try:
             out = subprocess.run(["git", "log", "--format=%ct", "--diff-filter=A", "--", name], cwd=HERE,
@@ -121,6 +121,13 @@ def regrade() -> None:
                         str(out)], check=True, capture_output=True, timeout=300)
         a, b = json.loads(out.read_text()), json.loads((HERE / "confirm_summary.json").read_text())
     check(a == b, f"regrade confirm_summary.json identical ({b['executed']}/{b['planned']} runs)")
+    with tempfile.TemporaryDirectory() as td:
+        out = Path(td) / "confirm2.json"
+        subprocess.run([sys.executable, str(HERE / "harness" / "analyze_confirm.py"), str(HERE / "raw"),
+                        str(HERE / "plan_confirm2.json"), str(HERE / "raw" / "drive-ledger.jsonl"), str(HERE / "summary.json"),
+                        str(out)], check=True, capture_output=True, timeout=300)
+        a, b = json.loads(out.read_text()), json.loads((HERE / "confirm2_summary.json").read_text())
+    check(a == b, f"regrade confirm2_summary.json identical ({b['executed']}/{b['planned']} runs)")
 
 
 def contract() -> None:
