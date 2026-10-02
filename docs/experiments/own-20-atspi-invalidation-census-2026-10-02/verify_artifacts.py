@@ -63,7 +63,7 @@ block_ids = [b["block_id"] for b in schedule]
 # 1. recompute
 census_raw = RAW / "blocks"
 rows, summary = analyze.run(census_raw)
-committed = json.loads((PKT / "own-20-summary.json").read_text())
+committed = json.loads((PKT / "summaries" / "own-20-summary.json").read_text())
 recomputed = json.loads(json.dumps(summary, sort_keys=True))
 for key in ("per_row", "classification", "listener_timing_retained", "mutations_attempted", "mutations_failed",
             "driver_sha256", "driver_versions", "blocks"):
@@ -141,7 +141,12 @@ if shown is not None:
 readme = (PKT / "README.md").read_text()
 for scope, c in summary["classification"].items():
     check(f"`{scope}`" in readme and c["verdict"] in readme, f"README states {scope} = {c['verdict']}")
-check("Disposition" in readme and "KEEP" in readme, "README states the disposition")
+check("Disposition" in readme and "**#20: KEEP.**" in readme, "README states the disposition")
+spec_r = importlib.util.spec_from_file_location("own20_render", PKT / "render_tables.py")
+render = importlib.util.module_from_spec(spec_r)
+spec_r.loader.exec_module(render)
+m = re.search(r"<!-- GENERATED:BEGIN[^>]*-->\n(.*?)<!-- GENERATED:END -->", readme, re.S)
+check(m is not None and m.group(1) == render.render(recomputed), "README generated tables equal render_tables.py output for the recomputed summary")
 
 # 6. privacy
 host = socket.gethostname().split(".")[0]

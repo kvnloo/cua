@@ -20,7 +20,8 @@ import re
 import subprocess
 import sys
 import time
-import urllib.parse
+import http.server
+import threading
 from pathlib import Path
 
 PAGE = ("<!doctype html><title>own20 probe</title><label><input type=checkbox id=agree>"
@@ -52,7 +53,36 @@ async def main() -> int:
     addr = subprocess.run(["gdbus", "call", "--session", "--dest", "org.a11y.Bus", "--object-path", "/org/a11y/bus",
                            "--method", "org.a11y.Bus.GetAddress"], capture_output=True, text=True).stdout
     address = re.search(r"'([^']+)'", addr).group(1)
-    rec: dict = {"env_extra": "none (driver_environment() only)"}
+    rec: dict = {"env_extra": "none (driver_environment() only)", "attempt": 2}
+
+    class Page(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            body = PAGE.encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_):
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Page)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{server.server_address[1]}/"
+
+    def chrome_names_now() -> dict:
+        found = {}
+        for raw in events.read_text().splitlines():
+            e = json.loads(raw)
+            if e.get("event") == "name_pid" and e.get("pid"):
+                try:
+                    exe = os.readlink(f"/proc/{e['pid']}/exe")
+                except OSError:
+                    continue
+                if "chrome" in exe or "chromium" in exe:
+                    found[e["name"]] = e["pid"]
+        return found
     params = StdioServerParameters(command=drv, args=["mcp"], env=driver_environment())
     async with stdio_client(params) as (read, write):
         async with ClientSession(read, write) as session:
@@ -87,13 +117,20 @@ async def main() -> int:
             tabs = bs.get("tabs") or []
             if tabs:
                 tab["tab_id"] = tabs[0].get("tab_id") or tabs[0].get("id")
-            res, nav = await call("browser_navigate", {**tab, "url": "data:text/html," + urllib.parse.quote(PAGE)})
+            res, nav = await call("browser_navigate", {**tab, "url": url})
             rec["navigate_is_error"] = bool(res.isError)
             rec["navigate_text"] = " ".join(getattr(c, "text", "") for c in res.content or [])[:300] if res.isError else None
-            await asyncio.sleep(2.0)
+            polls = []
+            for attempt in range(10):  # Chrome may enable its AT-SPI tree lazily after an AT query
+                await asyncio.sleep(1.0)
+                res, gws = await call("get_window_state", {"pid": pid, "window_id": wid, "include_screenshot": False})
+                els = gws.get("elements") or []
+                polls.append(len(els))
+                if any("own20 agree" in str(e.get("label")) for e in els):
+                    break
+            rec["gws_element_counts_per_poll"] = polls
+            rec["chrome_names_while_alive"] = chrome_names_now()
             m0 = time.monotonic_ns()
-            res, gws = await call("get_window_state", {"pid": pid, "window_id": wid, "include_screenshot": False})
-            els = gws.get("elements") or []
             rec["gws"] = {"is_error": bool(res.isError), "element_count": len(els), "degraded": gws.get("degraded"),
                           "degraded_reason": (gws.get("degraded_reason") or "")[:200],
                           "labels_sample": [e.get("label") for e in els][:40],
@@ -121,6 +158,7 @@ async def main() -> int:
             rec["m_gws"] = m0
     lst.terminate()
     lst.wait(5)
+    server.shutdown()
     names = {}
     sig = []
     for raw in events.read_text().splitlines():
@@ -143,7 +181,7 @@ async def main() -> int:
             exe = ""
         if "chrome" in exe or "chromium" in exe:
             chrome_pids.add(p)
-    chrome_names = {n for n, p in names.items() if p in chrome_pids}
+    chrome_names = {n for n, p in names.items() if p in chrome_pids} | set(rec.get("chrome_names_while_alive", {}))
     ev = [e for e in sig if e["sender"] in chrome_names and (e.get("interface") or "").startswith("org.a11y.atspi.Event.")]
     rec["chrome_bus_names"] = sorted(chrome_names)
     rec["chrome_atspi_events_total"] = len(ev)

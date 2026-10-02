@@ -1,0 +1,46 @@
+{
+ "schema": "cua.r2.provenance.v1",
+ "experiment": "OWN-20",
+ "branch": "exp/own-20-atspi-invalidation-census-20261002",
+ "sources": {
+  "upstream_main_tested": "352507b6c03162ab286b21d5ed509125cc3daece",
+  "tree_identity_check": {"cmd": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 352507b6c03162ab286b21d5ed509125cc3daece -- libs/cua-driver", "exit": 0},
+  "fixture_commit": "2d97f0bd373b387cc2d0d22f0c0181d4bfa1893b (test-only env-gated control channel in the GTK3 fixture; no Driver change)",
+  "tested_source": "bc2b47753acb2994010a69e0b6c8c79136f1e9c1 for every executed census path (fixture, census.py, atspi_listener.py, run_in_session.sh, default_off_smoke.py). 0aadf3bf2 (AMENDMENT-1) changes only run_batch.sh (lock mode argument), analyze.py (timing-block filter), verify_artifacts.py and AMENDMENT-1.json; git diff 0aadf3bf2 -- census.py atspi_listener.py libs/ is empty. chrome_atspi_probe.py attempt 2 (G1-chrome-gate-2) ran from the working tree with the http-page change that the packet commit contains; attempt 1 ran the bc2b47753 version.",
+  "live_upstream_main_at_analysis": {"sha": "091c6ee07469e193a1c07aa0cdcf74c60470a6b4", "read_utc": "2026-10-02T05:02:13Z", "read_via": "git ls-remote (read-only)", "commits_since_tested": 1, "libs_cua_driver_paths_changed": 0},
+  "owner_issue": "kvnloo/cua#20 (OPEN, read-only gh read 2026-10-02T05:02Z)",
+  "live_pr_heads": "none: this lane tests no pull request; its only input is upstream main 352507b6c",
+  "publication_sha": "not published by this lane; the Publish agent records the pushed branch head. The packet commit is the branch tip left for the verifier."
+ },
+ "prereg_commit": {"sha": "bc2b47753acb2994010a69e0b6c8c79136f1e9c1", "committer_epoch": 1790917206, "committer_iso": "2026-10-02T05:00:06Z"},
+ "amendment_commit": {"sha": "0aadf3bf2e3c76dea69888aba3431292ecf36bf0", "committer_epoch": 1790920415, "committer_iso": "2026-10-02T05:53:35Z", "first_affected_seq": 4},
+ "driver": {
+  "label": "r2-main-229b65b28",
+  "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+  "version_in_session": "cua-driver 0.32.0 (raw/blocks/*/session-env.txt, all 54 blocks)",
+  "source": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (libs/cua-driver tree identical to the tested 352507b6c); prebuilt shared loop binary, no rebuild in this lane",
+  "driver_env": "jev-use driver_environment() only; no CUA_DRIVER_* variable set by this lane"
+ },
+ "environment": {
+  "isolation": "every code-executing command of the measured run, the controls and the pilots ran under bin/hostless; every GUI/Driver/gi command additionally inside cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" (one private session per block)",
+  "hostless_version": "bin/hostless was replaced by the loop infrastructure at 2026-10-02T05:06:31Z: v1 (bwrap user namespace masking host socket dirs) -> v2 (env scrub + private XDG_RUNTIME_DIR + Landlock scope). Blocks b01-b03 ran inside a run_batch process launched under v1 (05:00:17Z); blocks b04-b54, D1, G1 and G1-2 ran under v2. Uncounted pilots ran under v1. No row compares v1 against v2 data; text_v1/text_v2/focus_v1 timings come from v1 blocks, all other timings from v2 blocks.",
+  "session": "private rootless Xvfb 1920x1080x24 (-nolisten tcp), private dbus-run-session, private at-spi-bus-launcher + at-spi2-registryd, openbox + picom, env -i scrubbed, fresh HOME per session; DISPLAY per block recorded (:99, :100, :101)",
+  "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py task window + control channel ('CuaTestHarness GTK3 Tasks', 480x460, 13 indexed elements); system python3 + PyGObject 3.56.3, GTK 3.24.52, at-spi2-core 2.60.6, dbus 1.16.2",
+  "listener": "atspi_listener.py, system python3 + Gio (no Gtk/Atk)",
+  "client": "jev-use .venv (uv sync --frozen, Python 3.12) mcp ClientSession over stdio",
+  "machine": "one Linux x86_64 workstation (host name withheld) shared with other lanes; 1-min loadavg per mutation 3.95-31.55 (median 17.26)"
+ },
+ "locks": {
+  "timing_blocks": "b01-b18 under bin/quiet-timed (EXCLUSIVE quiet-lane lock, receipts copied into raw/lock-ledger.jsonl from the live quiet-lane ledger)",
+  "count_only_blocks": "b19-b54 under flock -s on the same lock (AMENDMENT-1), one receipt each in raw/lock-ledger.jsonl",
+  "controls": "D1, G1, G1-2 under flock -s, receipts in raw/lock-ledger.jsonl",
+  "pilots": "uncounted; probes under flock -s without receipts, pilot blocks under flock -s with receipts in the lane's artifacts mirror (pilot-lock-ledger.jsonl)"
+ },
+ "unit_tests": {
+  "where": "bin/hostless, flock -s quiet-lane.lock (no display needed)",
+  "jev_use_native": "python -m unittest discover -s python/tests -p 'test_native_*.py': 89 tests OK (these parse and plan against the GTK3 fixture source)",
+  "rust_e2e_gtk3": "NOT_RUN: harness_gtk3_test drives the default HarnessWindow, which this change does not touch (D1 shows the harness and task windows identical without the env)"
+ },
+ "provider": {"name": "TypeSafe", "cap": 0, "attempts": 0, "reached": 0},
+ "mirror": "artifacts/r2/OWN-20/ in the lanes directory (full raw runs incl. session logs and listener stderr, pilots, unit-test log, lane-deps log)"
+}
