@@ -4218,7 +4218,7 @@ async fn actuate_chain(
                 dlog!("hit-test doAction declined; falling through to the pointer route");
                 return Ok(None);
             }
-            Some(Err(e)) => return Err(anyhow!("doAction failed: {e}")),
+            Some(Err(e)) => return Err(anyhow!("doAction call failed: {e}")),
             // Dispatched; the reply waits on a nested main loop.
             None => return Ok(Some(hit)),
         }
