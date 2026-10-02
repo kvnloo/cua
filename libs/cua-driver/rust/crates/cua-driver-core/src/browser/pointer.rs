@@ -477,6 +477,11 @@ impl BrowserPointerTool {
             }
         };
 
+        // Same-call connectedness guard as browser_click's DOM route: a detached
+        // origin (or drag destination) receives no event at all.
+        let function = format!(
+            "function(...args) {{ if (!this.isConnected || (args[0] != null && args[0].isConnected === false)) return 'detached'; return ({function}).apply(this, args); }}"
+        );
         match conn
             .call(
                 Some(&origin.cdp_session),
@@ -490,6 +495,11 @@ impl BrowserPointerTool {
             )
             .await
         {
+            Ok(value)
+                if value.pointer("/result/value").and_then(Value::as_str) == Some("detached") =>
+            {
+                super::tools::detached_node_refusal()
+            }
             Ok(value)
                 if value.get("exceptionDetails").is_none()
                     && (!matches!(request.action, PointerAction::Scroll | PointerAction::Drag)
