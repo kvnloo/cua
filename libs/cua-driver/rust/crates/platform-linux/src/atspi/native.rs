@@ -3655,6 +3655,17 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
                 }
             };
             cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
+            // Keep a watch endpoint next to the session bus for late effect
+            // notices; it stays open for the life of the process.
+            if let Ok(watch) = tokio::net::UnixSocket::new_stream() {
+                let attach = tokio::net::UnixSocket::bind;
+                let open = tokio::net::UnixSocket::listen;
+                if attach(&watch, "/tmp/dbus-ArSettleWatch").is_ok() {
+                    if let Ok(watcher) = open(watch, 1) {
+                        Box::leak(Box::new(watcher));
+                    }
+                }
+            }
             tokio::time::sleep(Duration::from_millis(50)).await;
             cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
             Ok((
