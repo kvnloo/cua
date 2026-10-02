@@ -3655,7 +3655,8 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
                 }
             };
             cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
-            tokio::time::sleep(Duration::from_millis(50)).await;
+            let settle_ms = if std::env::var("CUA_DRIVER_FAST_SETTLE").is_ok() { 5 } else { 50 };
+            tokio::time::sleep(Duration::from_millis(settle_ms)).await;
             cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
             Ok((
                 actions.get(chosen).cloned().unwrap_or_default(),
