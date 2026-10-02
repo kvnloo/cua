@@ -24,7 +24,8 @@ LANE = "i107-ab"
 CONDITIONS = ("W-quiet", "W-churn", "W-static")
 SAVINGS = ("response_bytes", "client_parse_ms", "client_validation_ms", "driver_projection_ms",
            "snapshot_build_ms", "driver_serialize_ms", "candidate_build_ms", "selected_nodes", "refs",
-           "outline_chars", "T_oracle_ms", "T_runner_ms")
+           "outline_chars", "T_oracle_ms", "T_runner_ms", "startup_ms", "cleanup_ms", "lifetime_ms",
+           "driver_cpu_ms", "driver_vmhwm_kb", "browser_cpu_ms", "browser_rss_kb")
 
 
 def _r(x: Any, nd: int = 3) -> Any:
@@ -246,6 +247,7 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
             "savings_B_minus_A": savings, "T_oracle_threshold_ms": thr,
             "T_oracle_verdict": None if thr is None else L.improvement_verdict(t["median"], t["ci95"], thr),
             "sensitivity_load1_le_8": sens,
+            "load1_range": [min((metrics[n]["load1"] or 0) for p in full for n in p), max((metrics[n]["load1"] or 0) for p in full for n in p)] if full else None,
             "read_cost_claim": "BLOCKED (B_proj is payload projection, never a read-cost claim)",
         }
     summary["cmp_ab"] = cmp_ab
@@ -264,6 +266,16 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                                                            if metrics[t["name"]]["cleanup_ms"] is not None) if a_trials else None,
                         "startup_mean_ms": statistics.mean(metrics[t["name"]]["startup_ms"] for t in a_trials
                                                            if metrics[t["name"]]["startup_ms"] is not None) if a_trials else None,
+                        "sub_mean_ms": {k: statistics.mean(d["sub"].get(k, 0.0) for d in ds)
+                                        for k in sorted({k for d in ds for k in d["sub"]})},
+                        "composition_split_ms": {
+                            "note": "post-hoc reading: observation_processing is whole-page DOM/layout/AX composition that runs before projection and is equal across arms; the pre-registered mapping files it under projection/encoding/transport",
+                            "acquisition_cdp": statistics.mean(d["sub"].get("observation_cdp", 0.0) for d in ds),
+                            "whole_page_composition": statistics.mean(d["sub"].get("observation_processing", 0.0) for d in ds),
+                            "projection_proper": statistics.mean(d["sub"].get("projection_page", 0.0) + d["sub"].get("snapshot_build_store", 0.0)
+                                                                 + d["components"].get("driver_post_dispatch", 0.0) + d["components"].get("transport", 0.0)
+                                                                 + d["components"].get("client_parse", 0.0) + d["components"].get("client_validation", 0.0)
+                                                                 for d in ds)},
                         "coverage_min": min(d["coverage"] for d in ds),
                         "gate_named_coverage_gt_0_9": min(d["coverage"] for d in ds) > 0.9,
                         "evidence": "REAL/BENCHMARK (scripted chooser)"}
@@ -285,6 +297,13 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                                          if e["event"] == "call_return" and e.get("label") == "stale_click"} - {None}),
                 "stale_dispatch_marks": sum(stale_dispatch_marks(t) for t in ts)}
     summary["controls"] = controls
+    mixed = []
+    for t in measured:
+        for x in metrics[t["name"]]["ledger"]:
+            if x["layout_nodes"] and x["dom_nodes"] < 0.5 * x["layout_nodes"]:
+                mixed.append({"trial": t["name"], "snapshot": x["label"], "dom_nodes": x["dom_nodes"],
+                              "layout_nodes": x["layout_nodes"], "ax_nodes": x["ax_nodes"]})
+    summary["mixed_generation_snapshots"] = mixed
     summary["default_off"] = {"n": len(by(plan="default_off")),
                               "verified": sum(1 for t in by(plan="default_off") if t["summary"].get("outcome") == "verified"),
                               "trace_set": sum(1 for t in by(plan="default_off") if t["summary"].get("driver_env_trace_set")),

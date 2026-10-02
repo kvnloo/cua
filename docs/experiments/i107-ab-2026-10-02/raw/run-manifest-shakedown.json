@@ -1,0 +1,57 @@
+{
+ "plan_kind": "shakedown",
+ "lock_label": "i107-ab-main2",
+ "utc_start": "2026-10-02T06:41:08.084+00:00",
+ "started_mono_ns": 227652061676797,
+ "loadavg_start": "15.85 18.19 18.56 14/2601 1981542",
+ "psi_start": {
+  "cpu": "some avg10=0.29 avg60=4.36 avg300=8.25 total=4594347209\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+  "memory": "some avg10=0.06 avg60=0.06 avg300=0.29 total=2704286064\nfull avg10=0.06 avg60=0.02 avg300=0.13 total=2359456741"
+ },
+ "lock_fd_inherited": true,
+ "provider": "mock",
+ "chooser": "choose_mock_for_task",
+ "binaries": {
+  "i107": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
+  "ref": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"
+ },
+ "pairs": 30,
+ "conditions": [
+  "W-quiet",
+  "W-churn"
+ ],
+ "preflight": {
+  "ok": true,
+  "checked": [
+   {
+    "candidate_index": 0,
+    "reason": "ok"
+   },
+   {
+    "candidate_index": 1,
+    "reason": "ok"
+   },
+   {
+    "candidate_index": 2,
+    "reason": "missing"
+   },
+   {
+    "candidate_index": 3,
+    "reason": "missing"
+   }
+  ]
+ },
+ "trials": [
+  "shakedown000-W-quiet-A-none",
+  "shakedown001-W-churn-B_proj-none",
+  "shakedown002-W-quiet-A-DC03",
+  "shakedown003-W-quiet-B_proj-stale_ref"
+ ],
+ "ended_mono_ns": 227663468458264,
+ "utc_end": "2026-10-02T06:41:19.491+00:00",
+ "loadavg_end": "15.33 18.00 18.49 13/2636 1992043",
+ "network": {
+  "non_loopback_connect_attempts": 0
+ },
+ "status": "ran"
+}
