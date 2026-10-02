@@ -1,0 +1,72 @@
+{
+  "schema": "cua.experiment.prereg.v1",
+  "id": "OWN-78",
+  "title": "Backend receipts and no replay after partial progress on the trycua/cua PR 4394 browser runners",
+  "owners": ["kvnloo/cua#78", "kvnloo/cua#10", "kvnloo/cua#74"],
+  "upstream": "trycua/cua PR 4394 (plain text; nothing is posted upstream)",
+  "registered_utc": "2026-10-02T01:56Z",
+  "registered_before": "every trial of this lane, smoke included",
+  "source": {
+    "tested_sha": "039257811e0bbb2348c616c52562409923d2856f",
+    "tested_sha_base": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
+    "pr_4394_live_head_at_start": "039257811e0bbb2348c616c52562409923d2856f",
+    "pr_4394_live_head_read_via": "gh pr view 4394 -R trycua/cua --json headRefOid,state (read-only), 2026-10-02T01:49Z",
+    "pr_scope": "libs/cua-driver/examples/jev-use only (browser_provider.py/.ts, run.py/.ts, two unit test files)",
+    "driver": {
+      "built_from": "039257811e0bbb2348c616c52562409923d2856f (own base; the PR does not touch libs/cua-driver/rust)",
+      "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> own78-4394-0392578 cua-release-4394",
+      "sha256": "19bad35248702fd42f6aa372f1f4bebe4ca3728d9be0f67287f1c186a0b47df9",
+      "version_in_session": "cua-driver 0.31.0",
+      "disclosure": "build-driver.sh runs '<bin> --version' once outside the isolated session at the end of the build (no display access); the version was re-recorded inside cua-x11-session.sh"
+    }
+  },
+  "hypothesis": "4394's browser provider parity emits a content-free backend field on decision-bearing records that names the backend that actually handled each request. After a mutation has landed, a provider failure ends in an explicit failure with a receipt and never replays the first mutation or restarts the routine.",
+  "source_observation_before_trials": "browser_provider.backend_name(provider) maps the configured --provider value to the backend string; it is not read from the provider response. There is no fallback between backends in choose_browser_provider (mock, s1 and typesafe each have one handler; a TypeSafe error raises RuntimeError). The receipts are therefore truthful only as long as no fallback exists. This is SOURCE evidence and is recorded as a claim-boundary item, not as a measured result.",
+  "harness": {
+    "python": "harness/receipt_launcher.py imports the unmodified python/run.py and calls run.main(); env-gated (OWN78_RECEIPT_LOG) wrappers on httpx2.Client.request (one http_attempt per provider HTTP attempt), typesafe_sdk.TypeSafeClient.system_one (provider_response: model, token usage, selected id, request-id sha256 prefix), browser_provider.choose_mock_for_task (mock provider_response) and run.Driver.call (driver_call). Pattern of the R2-03 receipt_launcher.py on exp/r2-03-guarded-live-20261001 (read-only).",
+    "typescript": "harness/ts_receipts.mjs is a node --import preload before the unmodified typescript/run.ts; env-gated wrappers on globalThis.fetch (the TypeSafe SDK calls globalThis.fetch per attempt; requests to the fixture origin are counted but not recorded as provider attempts; a 200 provider response is cloned and only model, usage token counts and answers.candidate.choice are extracted) and on the MCP SDK Client.prototype.callTool (driver_call).",
+    "never_recorded": "request or response headers (except presence + sha256 prefix of x-typesafe-request-id), bodies, typed text, the API key",
+    "r4_seam": "OWN78_SWITCH_BASE_URL: after the first browser_type driver call returns ok, the launcher sets TYPESAFE_BASE_URL in the runner process to a closed loopback port. Both runners construct a new TypeSafeClient per decision, which reads TYPESAFE_BASE_URL at construction, so step 2's decision targets the closed port. The runner code is unchanged.",
+    "budget_guard": "OWN78_PROVIDER_REACH_ALLOWANCE: the launcher refuses (before sending) any non-loopback provider attempt once the trial's allowance (cap minus loop usage so far) is used. Guard trips are recorded and counted as failures of that trial."
+  },
+  "fixture": {
+    "stock": "jev-use fixture_server.FixtureServer, unmodified page; the harness subclasses the handler only to count GET /, POST /reset, GET /state and POST /submit (behaviour identical). Used by R1 and R2.",
+    "journal_variant": "experiment-owned: the same page plus an inline script that POSTs every input event on the verification field to /event/input as {seq, value, trusted, input_type}. The server stores {seq, arrival_ns, length, equals_token, trusted, input_type}; it never stores the value. Used by R3 and R4 (and their smokes).",
+    "oracle": "fixture server state and journal (target-owned): /state submitted value, POST /submit count, GET / count (navigations), POST /reset count (routine starts), input-event journal. Runner outcome events and backend fields are under test, not oracles.",
+    "metric_definitions": {
+      "input_mutations": "number of token completions in the journal ordered by page seq: entries whose equals_token is true and whose predecessor (if any) is false. A replay of browser_type with replace=true re-enters the token state and counts again.",
+      "input_events": "journal length",
+      "submits": "POST /submit count on the server",
+      "navigations": "GET / count on the server",
+      "routine_starts": "POST /reset count on the server (each runner run() starts with task.reset())",
+      "decision": "a runner record carrying a provider-selected candidate: every event=step record, and event=outcome outcome=abstained records produced after a provider answer",
+      "reached": "a provider HTTP attempt that received any HTTP status from a non-loopback host",
+      "attempt": "every provider HTTP attempt, including loopback-refused ones"
+    }
+  },
+  "rows": {
+    "R1": {"what": "forced TypeSafe backend (--provider typesafe), stock fixture", "n_trials": {"python": 6, "typescript": 4}, "expected_decisions": 20, "class": "LIVE_PROVIDER+REAL", "pass_per_trial": "every decision record's backend == 'typesafe' and is matched, in order, to one provider response with HTTP 200 from the TypeSafe host whose selected id equals the record's candidate (Python also: request-id sha256 prefix of the HTTP attempt == that of the provider_response); count(decision records) == count(200 responses); fixture /state == {submitted: token}; submits == 1"},
+    "R2": {"what": "mock backend (--provider mock), stock fixture, TYPESAFE_API_KEY removed from the runner env", "n_trials": {"python": 5, "typescript": 5}, "class": "REAL", "pass_per_trial": "every decision record backend == 'mock'; 0 provider HTTP attempts; fixture verified; submits == 1"},
+    "R3": {"what": "provider unreachable before any mutation: TYPESAFE_BASE_URL = closed loopback port from the start, journal fixture, key present", "n_trials": {"python": 3, "typescript": 3}, "class": "REAL", "pass_per_trial": "input_events == 0, input_mutations == 0, submits == 0; 0 decision records; the runner ends with event=outcome outcome=unknown phase=decide; exit code != 0; 0 reached; the failure record carries no candidate, confidence or probabilities"},
+    "R4": {"what": "failure after partial progress: first decision live on TypeSafe, browser_type lands, then the seam switches the base URL to a closed loopback port; journal fixture", "n_trials": {"python": 12, "typescript": 8}, "class": "LIVE_PROVIDER+REAL", "precondition": "step 1 is a decision for type-verification-value matched to a 200 TypeSafe response, and the switch receipt exists", "pass_per_trial": "input_mutations == 1, submits == 0, browser_type driver calls == 1, navigations == 1, routine_starts == 1, browser_prepare calls == 1; decision records == 1 (step 1 only); the runner ends with event=outcome outcome=unknown phase=decide step=2; exit code != 0; every provider attempt after the switch is to loopback and fails without an HTTP status"},
+    "R5": {"what": "S1 backend", "disposition": "BLOCKED", "blocker": "adapter not local; non-TypeSafe provider not permitted"}
+  },
+  "unit": {"class": "UNIT", "suites": "run-unit.sh at the tested head: Python unittest discover, verify_choice_cli / verify_decision_cli (mock, v2, native), TypeScript npm test, npm run typecheck; the #4316-only guarded-focused steps are not applicable at this head", "pass": "every applicable step rc == 0 in a credential-free environment (the upstream 'CI: jev-use' workflow reads no secret)"},
+  "gates": {
+    "KEEP": "R1 backend field == HTTP evidence for 20/20 decisions with verified outcomes, R2 has 0 HTTP, R3 has 0 mutations, R4 has 0 replays and 20/20 failure receipts, and the suites pass.",
+    "KILL": "any decision-bearing receipt names a backend that did not handle the request, any decision is counted without a response, or any replay or restart happens after partial progress.",
+    "REVISE": "otherwise (including precondition misses, missing trials at the budget cap, harness failures, or failing suites); the revised claim is stated with what was measured.",
+    "interpretation_failure_receipts": "decide-phase failure records (outcome=unknown phase=decide) are not decision-bearing. Their backend value is classified as the configured/attempted backend and reported separately; it is checked to carry no candidate, confidence or probabilities and never to be counted as a decision. It does not by itself trigger KILL.",
+    "no_replacement": "every trial is kept and counted; a failed precondition or harness failure is not replaced by an extra trial",
+    "smoke": "smoke cells (mock, unreachable, and one live R4-shaped cell per runtime) check the harness only and are excluded from the gates; they are kept in raw/smoke and counted in the budget"
+  },
+  "budget": {"provider": "TypeSafe", "lane_cap_reached": 45, "plan_reached": {"smoke_live": 2, "R1": 20, "R4": 20}, "loop_used_before_lane": {"reached": 126, "attempts": 132}, "stop_rule": "no live cell starts unless lane reached + the cell's expected reached (R1: 2, R4: 1) stays within 45; the in-launcher guard stops any attempt beyond the cap; record raw/budget.json"},
+  "controls": {
+    "attribution_discrimination": "R2 (mock) must show backend=mock with 0 HTTP while R1 shows backend=typesafe with HTTP 200s: the field must change with the handler",
+    "pre_progress_failure": "R3 separates 'provider unreachable' from 'partial progress' so R4's single mutation is attributable to step 1",
+    "seam_check": "R4's switch receipt and post-switch loopback attempts prove the second decision targeted the closed port"
+  },
+  "locks": "every REAL block holds flock -s quiet-lane.lock (shared, correctness lane), <= 10 trials per acquisition",
+  "environment": "cua-x11-session.sh (private rootless Xvfb + private dbus, scrubbed env), Google Chrome launched by the Driver, default Driver safety settings, no permission/approval/sandbox overrides",
+  "claim_boundary": "PR 4394 code at 039257811 with its own-base Driver, TypeSafe and mock only, Python and TS runners, X11 Xvfb, Chrome. No timing claim. Not the PR 4316 runner and not S1."
+}
