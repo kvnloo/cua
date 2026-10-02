@@ -1,0 +1,159 @@
+{
+  "schema": "cua.rfc-loop.prereg.v1",
+  "lane": "OWN-36",
+  "wave": 2,
+  "owner_issue": "kvnloo/cua#36 (Linux native rows: capture ownership, native element-token / SnapshotStore ownership, session-end retirement)",
+  "not_in_scope": {
+    "browser_rows": "owned upstream by trycua/cua 4317 (merged 0ddf0f7a3); not re-run",
+    "cancellation_cross_session_row": "kvnloo/cua#9, handled by OWN-09 R5; referenced only",
+    "macOS_native_rows": "BLOCKED (hardware)",
+    "Windows_native_rows": "BLOCKED (hardware)"
+  },
+  "written_utc": "2026-10-02T04:58:00Z",
+  "hypothesis": "Capture IDs and native element tokens are owned by the session (and generation) that minted them. A different concurrent session cannot use them to mutate anything. Replacing or ending one session's state never retires another session's state.",
+  "tested_source": {
+    "upstream_main": "352507b6c03162ab286b21d5ed509125cc3daece",
+    "driver_tree_check": "git diff --quiet 229b65b28 352507b6c -- libs/cua-driver  => exit 0 (re-verified by the lane before the worktree was created)",
+    "binary": "<lanes>/bin/cua-driver-r2-main-229b65b28 (built from 229b65b2849c3a595ddbc85200d7181b18bd2e47, libs/cua-driver tree identical to 352507b6c)",
+    "binary_sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+    "binary_version": "cua-driver 0.32.0 (re-hashed and --version read inside every block's private session; recorded in each block header)",
+    "driver_code_changed": false,
+    "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py (TaskWindow mode, CUA_GTK3_TASK_STATE), sha256 547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059",
+    "harness_sha256": {
+      "harness/mcpclient.py": "32c8b39f5a44e0a2790a036cf9d782dec08144c22f0246b685990add684693a3",
+      "harness/run_block.py": "712e01dcfeab8fa1d6ea7a981a6296be566654f394b68e56d632c4f4fce98d67",
+      "harness/campaign.sh": "431867349cfc9a85483462261c98691f71e34a45ed8e15af7f46d1ba59a5c00e",
+      "harness/locked_block.sh": "b36352ae89f7abdc25a6c7919caaeb354c900f38f7369721e73c871d38533e55"
+    }
+  },
+  "environment": "every block: hostless -> flock -s quiet-lane.lock -> cua-x11-session.sh (private Xvfb, private dbus, AT-SPI bus via CUA_SESSION_ATSPI=1) -> run_block.py. DISPLAY recorded per block. Driver env DO_NOT_TRACK=1, CUA_DRIVER_RS_TELEMETRY_ENABLED=0 (no telemetry egress). TypeSafe/provider: 0 requests.",
+  "step0_topologies": {
+    "T1": {
+      "what": "one `cua-driver mcp` direct-runtime process; sessions A and B are distinct public `session` labels on one stdio connection",
+      "run": true,
+      "why_meaningful": "one SnapshotStore and one CaptureService serve both sessions (impl_.rs:213-216, tool.rs:1198, session_authorization.rs:201-203); each session gets its own _session_id (proxy.rs:167-187) and its own capture binding (capture_registry.rs:1123-1153)"
+    },
+    "T2": {
+      "what": "one `cua-driver serve` daemon; two `cua-driver mcp --socket` MCP clients; A and B are each client's implicit transport session (I5 adds a label on A's calls)",
+      "run": true,
+      "why_meaningful": "same shared runtime stores; per-client transport session ids (proxy.rs:65, serve.rs:454, tool_args.rs:100-129)"
+    },
+    "T3_concurrent": {
+      "what": "two concurrent separate `cua-driver mcp` processes",
+      "run_for_isolation_rows": false,
+      "disposition": "inapplicable for I1-I6 isolation claims: separate address spaces hold separate stores, so a refusal is structural, and token strings are per-process counters (element_token.rs:8,18) that collide across processes; inequality or refusal across processes is not isolation evidence. Only diagnostic X1 (token-string equality) runs."
+    },
+    "T3_sequential": {
+      "what": "Driver process generation 1 exits; generation 2 starts (same fixture pid)",
+      "run": true,
+      "rows": [
+        "I5p"
+      ]
+    },
+    "same_process_two_windows": {
+      "run": false,
+      "disposition": "NOT_RUN: the canonical fixture creates exactly one window per process (main.py:509-513); no fixture change in this lane"
+    }
+  },
+  "oracle": "each fixture instance (A, B) atomically rewrites its own JSON state file on every change (main.py:488-506: seq, agreed, note_saved, pid). The harness reads BOTH files before and after EVERY Driver call. Driver responses are never used as the outcome oracle.",
+  "definitions": {
+    "mutation": "post-call state of a fixture differs from its pre-call state (any field, incl. seq)",
+    "zero_mutation_call": "both fixtures' post == pre after a settle of 0.8 s",
+    "verified_action": "target fixture's agreed flipped and seq advanced by exactly 1 within 3.0 s (+0.2 s extra read), the other fixture unchanged",
+    "refused": "response isError (or JSON-RPC error) and zero_mutation_call",
+    "order": "attempt index even = AB, odd = BA (per-row meaning below); every attempt is kept"
+  },
+  "rows": {
+    "P": {
+      "n_per_topology": 20,
+      "gating": "control",
+      "what": "each attempt: A and B observe their own windows (order AB/BA) and each clicks its own fresh checkbox token (order AB/BA)",
+      "pass": "40/40 same-session uses verified per topology"
+    },
+    "I1": {
+      "n_per_topology": 20,
+      "gating": true,
+      "what": "B passes A's capture_id to click(pid_A, window_A, x, y, capture_id) (x,y = A's check indicator in A's capture); then A consumes its own capture (tail)",
+      "pass": "B's call refused with 0 mutation in A and B in 20/20 (refusal code recorded) AND A's own capture tail verified 20/20 (A's capture not retired by B's refused attempt)",
+      "kill": "any B call that mutates A or B, or returns success",
+      "source_prediction": "refused capture_generation_mismatch (capture_registry.rs:919-921)"
+    },
+    "I2": {
+      "n_per_topology": 20,
+      "gating": true,
+      "what": "B passes A's element_token in click (a) with pid_B and (b) with pid_A; then A uses its own token (tail)",
+      "pass": "both B calls refused with 0 mutation in 20/20 AND A tail verified 20/20",
+      "kill": "any B call that mutates A or B",
+      "source_prediction": "(a) stale_element_token; (b) NOT refused: SnapshotStore::resolve keys tokens by (target pid, snapshot id) with no session check (snapshot_store.rs:326-371, impl_.rs:6277), so B's call is expected to toggle A => KILL expected for I2 in T1 and T2"
+    },
+    "I3": {
+      "n_per_topology": 20,
+      "gating": true,
+      "what": "A and B observe (AB/BA order); A observes again (replaces its snapshot); B clicks its own pre-replacement token; A's own superseded token is presented (in-session negative)",
+      "pass": "B verified on B with A unchanged in 20/20 AND A's superseded token refused with 0 mutation in 20/20",
+      "kill": "B's token retired/refused or A mutated by B's action"
+    },
+    "I4": {
+      "n_per_topology": 20,
+      "gating": true,
+      "what": "A (fresh session per attempt: T1 label, T2 new client) and B observe (AB/BA); A ends its session; B clicks its own token; B presents A's ended token on pid_A; A presents its own ended token",
+      "pass": "B verified 20/20 AND both A-token presentations refused with 0 mutation 20/20",
+      "kill": "B's token refused (unrelated state retired) or any A-token presentation mutates"
+    },
+    "I5": {
+      "n_per_topology": 20,
+      "gating": true,
+      "what": "A (label own36-A-<block>-i5-<k>) and B observe; A end_session + start_session with the same label; A observes; A presents old-generation token and old-generation capture; A uses new token; B uses its token before (AB) or after (BA) A's restart",
+      "pass": "old token refused 20/20, old capture refused 20/20, new token verified 20/20, B verified 20/20, 0 mutation on every refused call",
+      "kill": "any old-generation token/capture mutates, or B's token refused"
+    },
+    "I6": {
+      "gating": true,
+      "what": "content-free envelopes. Each block first gives A and B a unique saved note marker (ALPHA<hex>/BRAVO<hex>, verified on the oracle). Scanned: every response returned to session X for a call that carried session Y's token/capture (I1, I2, I2d, I4 B-uses-ended-A-token, forged rows) and every refusal envelope in every row",
+      "pass": "0 occurrences of the other session's marker, of the PNG base64 signature iVBORw0KGgo, of image content items, or of base64 runs >= 256 chars; AND the scanner positive control finds each session's own marker in its own observe-with-marker envelope in every block",
+      "telemetry": "SOURCE only: tool-completion/session telemetry is a bounded property schema (telemetry.rs:340-420, 1024-1041, 2108-2145) posted only to the network (telemetry.rs:2220-2237); runtime telemetry is disabled here (no egress), so REAL telemetry inspection is NOT_RUN",
+      "disclosure_count_non_gating": "refusal envelopes listing another session's live snapshot handles (current_snapshots, snapshot_store.rs:81-107) are counted and reported; identifiers, not content under this row's definition"
+    },
+    "I5p": {
+      "n": 20,
+      "topology": "T3_sequential",
+      "gating": true,
+      "what": "gen1 observes A; gen1 exits; gen2 observes (arm 'same': A first; arm 'swapped': B first, then A); gen2 is handed gen1's token and capture for A. Arms alternate in pairs of attempts (0,1 same; 2,3 swapped; ...)",
+      "pass": "gen1 token refused with 0 mutation 20/20 AND gen1 capture refused 20/20",
+      "kill": "any gen1 token or capture that mutates A",
+      "source_prediction": "capture refused (per-registry random namespace, capture_registry.rs:687); token ACCEPTED in arm 'same' because the snapshot counter restarts at 1 per process and tokens carry no runtime generation (element_token.rs:8,18) => KILL expected for I5p"
+    }
+  },
+  "controls": {
+    "positive": "row P (20 attempts, 40 verified uses per topology) plus the verified tails in I1/I2/I2d/I3/I5",
+    "forged": "5 per row per topology for I1..I5: the row's cross-session or old artifact is replaced by forged value family[k]; tokens: garbage, s00000001, sffffffff:2, <live snapshot>:999, s0000000g:2; captures: garbage, capture_, capture_<32 zeros>_0000000000000000, A's capture with sequence+256, A's capture with one namespace hex digit flipped. Pass: refused with 0 mutation 5/5 per row (I3 forged replaces B's own token)",
+    "discriminating_in_session_negative": "row N (10 per topology): A observes, fixture A is destroyed and relaunched (new pid; the fixture cannot recreate a window in-process), A observes the new window, A presents the old token on the new pid (gating: refused, 0 mutation 10/10) and on the dead pid (reported)"
+  },
+  "diagnostics_non_gating": {
+    "I2d": "20 per topology: B probes pid_A with a stale token, reads current_snapshots from the refusal, builds <snapshot>:<B's own checkbox index>, and clicks pid_A. Reports whether a refusal envelope lets B mint a working token for A's window without ever receiving A's token.",
+    "I3s": "10 per topology: both sessions observe the SAME window (A's); reports whether the later observer's snapshot retires the earlier observer's token (snapshot_store.rs:161-163 replaces per (pid, window) regardless of session)",
+    "X1": "20 pairs: two concurrent Driver processes each observe only their own window first; reports token-string equality",
+    "N_dead_pid": "old token presented on the dead pid (reported only)"
+  },
+  "dispositions": {
+    "row": "per topology: KEEP if pass; KILL on any kill condition; NOT_RUN if the topology is unsupported (source cited). A row's overall verdict is KILL if any run topology is KILL.",
+    "lane": "KEEP if every gating row is KEEP; otherwise REVISE with the claim narrowed to the rows that held and the KILL rows stated as measured falsifications",
+    "macOS_Windows": "BLOCKED (hardware)"
+  },
+  "procedure": {
+    "lock": "every REAL block holds flock -s quiet-lane.lock for at most 10 attempts; receipt (acquired/released UTC, attempts recorded, rc) appended to raw/lock-ledger.jsonl",
+    "plan": "plan.txt (committed with this file); blocks interleave T1 and T2",
+    "denominator": "every attempt that reaches its first gating call is counted; a harness crash before that is recorded as a failed block and re-run under a NEW block id with disclosure; no attempt is dropped",
+    "timing": "no timing claims; counts only",
+    "block_completion": "a block is complete when its raw file ends with a block_end record; the wrapper rc is reported separately (xvfb-run teardown can return 1 after a complete block when Xvfb has already exited)"
+  },
+  "pilots_before_prereg": {
+    "count": "5 pilot runs (probe1-3, pilot4: 15 short blocks, pilot5: 2 one-attempt blocks) in a scratch dir outside the packet; not counted",
+    "observed": "pilots already showed I2(b) landing (B's use of A's token toggled A) in T1 and T2, I5p 'same' arm accepted, I1 refused. The gates above are the lane spec's gates, unchanged by the pilots; the pilots only fixed harness mechanics (setup records, capture click point)."
+  },
+  "provider": {
+    "typesafe_cap": 0,
+    "attempts": 0,
+    "reached": 0
+  }
+}
