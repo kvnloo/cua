@@ -1,0 +1,41 @@
+{
+  "schema": "ar.allowlist.v1",
+  "segment": "segment-1",
+  "note": "The only Rust items a segment-1 candidate may change (itemcheck item paths). Everything else in the repository is frozen: tests, phase_trace lines, Cargo files, contract/safety code, fixtures and the harness. Pre-registered interpretation of the plan's list: foreground.rs 'settle constants + wait loop' = the two ForegroundOptions constructors that set `settle`, the WINDOW_CHANGE_* constants, confirm_phase (activation settle loop) and wait_for_window_change (post-body settle loop); native.rs 'the 500 ms settle deadline' = the one inside focus_element_ref (the cached-ref route, between the listed sleeps); focus_element's identical deadline is NOT included. Changing this file is an evaluator decision, recorded in a new manifest.",
+  "items": {
+    "libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs": [
+      "const SETTLE_WATCH",
+      "const SETTLE_WATCH_NEW_WINDOW",
+      "const SETTLE_POLL",
+      "impl FocusSnapshot::fn restore_if_changed_opts"
+    ],
+    "libs/cua-driver/rust/crates/platform-linux/src/input/foreground.rs": [
+      "impl ForegroundOptions::fn pointer",
+      "impl ForegroundOptions::fn keyboard",
+      "const WINDOW_CHANGE_POLL",
+      "const WINDOW_CHANGE_DEADLINE",
+      "const WINDOW_CHANGE_TITLE_GRACE",
+      "fn confirm_phase",
+      "fn wait_for_window_change"
+    ],
+    "libs/cua-driver/rust/crates/platform-linux/src/input/targeted.rs": [
+      "const OCCLUSION_SETTLE",
+      "fn ensure_point_hits"
+    ],
+    "libs/cua-driver/rust/crates/platform-linux/src/input/mod.rs": [
+      "const EFFECT_SETTLE",
+      "fn pointer_effect"
+    ],
+    "libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs": [
+      "fn perform_action",
+      "fn perform_action_ref",
+      "fn focus_element_ref",
+      "fn actuate_chain",
+      "fn select_item_in_chain"
+    ]
+  },
+  "soak_1000_files": [
+    "libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs",
+    "libs/cua-driver/rust/crates/platform-linux/src/input/targeted.rs"
+  ]
+}

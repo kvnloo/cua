@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ar.prereg.v1",
+  "title": "Autoresearch evaluation pre-registration (one candidate)",
+  "description": "Written and committed to the evaluator's private store BEFORE any candidate trial runs. Every number the gates use comes from here; nothing is chosen after seeing candidate data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "eval_id", "created_utc", "request", "champion", "candidate", "task", "segment",
+               "frozen", "mechanism", "tau", "design", "fdr", "invariants", "soak", "spot_checks",
+               "spot_min_pairs", "g1_required_suites", "gates"],
+  "properties": {
+    "schema": {"const": "ar.prereg.v1"},
+    "eval_id": {"type": "string", "pattern": "^ar-[0-9]{8}-[0-9a-z-]+$"},
+    "created_utc": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T"},
+    "request": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch", "hypothesis", "submitted_utc", "request_sha256"],
+      "properties": {
+        "branch": {"type": "string", "pattern": "^ar/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+$"},
+        "hypothesis": {"type": "string"},
+        "submitted_utc": {"type": "string"},
+        "request_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "champion": {"$ref": "#/$defs/arm"},
+    "candidate": {"$ref": "#/$defs/arm"},
+    "task": {"const": "gtk3_checkbox_toggle"},
+    "segment": {"const": "segment-1"},
+    "frozen": {
+      "type": "object", "additionalProperties": false,
+      "required": ["manifest_sha256", "allowlist_sha256", "scanner_rules_sha256", "harness_commit"],
+      "properties": {
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "allowlist_sha256": {"$ref": "#/$defs/sha256"},
+        "scanner_rules_sha256": {"$ref": "#/$defs/sha256"},
+        "harness_commit": {"$ref": "#/$defs/sha1"}
+      }
+    },
+    "mechanism": {
+      "type": "object", "additionalProperties": false,
+      "required": ["start_mark", "end_mark", "min_share"],
+      "properties": {
+        "start_mark": {"type": "string", "pattern": "^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$"},
+        "end_mark": {"type": "string", "pattern": "^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$"},
+        "min_share": {"type": "number", "minimum": 0.7, "maximum": 1}
+      }
+    },
+    "tau": {
+      "type": "object", "additionalProperties": false,
+      "required": ["value", "floor", "q975_abs_delta_aa_ln", "aa_pairs", "batch", "aa_rows_sha256"],
+      "properties": {
+        "value": {"type": "number", "minimum": 0.02},
+        "floor": {"const": 0.02},
+        "q975_abs_delta_aa_ln": {"type": "number", "minimum": 0},
+        "aa_pairs": {"type": "integer", "minimum": 2},
+        "batch": {"type": "integer", "minimum": 2},
+        "aa_rows_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "design": {
+      "type": "object", "additionalProperties": false,
+      "required": ["n_pairs", "sigma_ln", "alpha_one_sided", "power", "order", "trace_off_fraction",
+                   "session_trials", "block_max_minutes", "seed", "fresh_driver_per_trial", "sandbox", "psi_hz"],
+      "properties": {
+        "n_pairs": {"type": "integer", "minimum": 2},
+        "sigma_ln": {"type": "number", "exclusiveMinimum": 0},
+        "alpha_one_sided": {"const": 0.01},
+        "power": {"const": 0.8},
+        "order": {"const": "AB/BA alternating"},
+        "trace_off_fraction": {"const": 0.2},
+        "session_trials": {"type": "integer", "minimum": 1, "maximum": 48},
+        "block_max_minutes": {"type": "number", "maximum": 10},
+        "seed": {"type": "integer"},
+        "fresh_driver_per_trial": {"const": true},
+        "sandbox": {"type": "string"},
+        "psi_hz": {"const": 10}
+      }
+    },
+    "fdr": {
+      "type": "object", "additionalProperties": false,
+      "required": ["procedure", "alpha", "w0", "gamma_constant"],
+      "properties": {
+        "procedure": {"const": "LORD++"},
+        "alpha": {"const": 0.05},
+        "w0": {"const": 0.025},
+        "gamma_constant": {"const": 0.0722}
+      }
+    },
+    "invariants": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_route", "expected_path"],
+      "properties": {
+        "expected_route": {"type": ["string", "null"]},
+        "expected_path": {"type": ["string", "null"]}
+      }
+    },
+    "soak": {
+      "type": "object", "additionalProperties": false,
+      "required": ["min_trials"],
+      "properties": {"min_trials": {"enum": [300, 1000]}}
+    },
+    "spot_checks": {"type": "array", "items": {"enum": ["spot_gtk3_text", "spot_browser_fill_submit"]}, "minItems": 2},
+    "spot_min_pairs": {"type": "integer", "minimum": 2},
+    "g1_required_suites": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "gates": {"type": "array", "items": {"enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "GS"]}, "minItems": 10},
+    "n01_reference": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sha1": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "arm": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit", "binary_sha256", "binary_label"],
+      "properties": {
+        "commit": {"$ref": "#/$defs/sha1"},
+        "binary_sha256": {"$ref": "#/$defs/sha256"},
+        "binary_label": {"type": "string"}
+      }
+    }
+  }
+}

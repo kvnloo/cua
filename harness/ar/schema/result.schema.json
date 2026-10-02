@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ar.result.v1",
+  "title": "One line of results.jsonl (append-only, hash-chained)",
+  "type": "object",
+  "required": ["schema", "eval_id", "prereg_sha256", "rows_sha256", "verdict", "failed_gate", "gates",
+               "not_evaluated", "delta", "ci95", "p_value", "power", "n_pairs", "tau", "lord",
+               "recorded_utc", "prev_sha256"],
+  "properties": {
+    "schema": {"const": "ar.result.v1"},
+    "eval_id": {"type": "string"},
+    "prereg_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "rows_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "verdict": {"enum": ["KEEP", "REJECT", "INCONCLUSIVE"]},
+    "failed_gate": {"type": ["string", "null"]},
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gate", "pass", "reasons", "metrics"],
+        "properties": {
+          "gate": {"enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "GS"]},
+          "pass": {"type": "boolean"},
+          "reasons": {"type": "array", "items": {"type": "string"}},
+          "metrics": {"type": "object"}
+        }
+      }
+    },
+    "not_evaluated": {"type": "array", "items": {"type": "string"}},
+    "delta": {"type": ["number", "null"], "description": "mean paired ln(T_candidate / T_champion)"},
+    "ci95": {"type": ["array", "null"], "items": {"type": "number"}},
+    "p_value": {"type": ["number", "null"], "description": "one-sided bootstrap p for H0: Delta >= 0"},
+    "power": {"type": ["number", "null"], "description": "achieved power at delta = ln(1+tau), alpha 0.01"},
+    "n_pairs": {"type": ["integer", "null"]},
+    "tau": {"type": "number"},
+    "lord": {
+      "type": ["object", "null"],
+      "description": "LORD++ decision when G5 was evaluated: index (alpha index), alpha_i, p_value, rejected, wealth_before, wealth_after",
+      "properties": {
+        "index": {"type": "integer", "minimum": 1},
+        "alpha_i": {"type": "number"},
+        "p_value": {"type": "number"},
+        "rejected": {"type": "boolean"},
+        "wealth_before": {"type": "number"},
+        "wealth_after": {"type": "number"}
+      }
+    },
+    "median_T_ms": {"type": "object"},
+    "recorded_utc": {"type": "string"},
+    "prev_sha256": {"type": "string", "pattern": "^([0-9a-f]{64}|genesis)$"}
+  }
+}

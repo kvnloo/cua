@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+"""ar-eval: the evaluator CLI (see areval/cli.py). Evaluator agents only; run under hostless."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from areval.cli import main  # noqa: E402
+
+sys.exit(main())

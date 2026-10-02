@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+"""ar-submit: the ONLY interface a proposer has to the autoresearch evaluator.
+
+    ar-submit --branch ar/<tag>/<name> --hypothesis "<one paragraph>" \
+              [--mechanism-start <phase/mark> --mechanism-end <phase/mark>]
+
+It writes one request file (ar.request.v1) into the request inbox and prints its path. It
+never reads results, the harness state, the manifest or other requests, and it never runs a
+build, a test or a trial. The candidate branch must be a local branch based on the champion
+measurement-base commit; the evaluator decides everything else.
+
+Inbox: $AR_REQUEST_DIR (required; the evaluator tells proposers its value). Write-only use.
+"""
+
+import argparse
+import json
+import os
+import re
+import secrets
+import sys
+import time
+
+BRANCH = re.compile(r"^ar/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+$")
+MARK = re.compile(r"^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$")
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--branch", required=True)
+    p.add_argument("--hypothesis", required=True)
+    p.add_argument("--mechanism-start")
+    p.add_argument("--mechanism-end")
+    a = p.parse_args()
+    if not BRANCH.match(a.branch):
+        p.error("branch must look like ar/<tag>/<name>")
+    if not a.hypothesis.strip():
+        p.error("hypothesis is empty")
+    if bool(a.mechanism_start) != bool(a.mechanism_end):
+        p.error("give both --mechanism-start and --mechanism-end, or neither")
+    for m in (a.mechanism_start, a.mechanism_end):
+        if m and not MARK.match(m):
+            p.error(f"mark {m!r} must look like <phase>/<mark>")
+    req = {"schema": "ar.request.v1", "branch": a.branch, "hypothesis": a.hypothesis.strip(),
+           "submitted_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+    if a.mechanism_start:
+        req["mechanism_start_mark"], req["mechanism_end_mark"] = a.mechanism_start, a.mechanism_end
+    inbox = os.environ.get("AR_REQUEST_DIR")
+    if not inbox:
+        p.error("AR_REQUEST_DIR is not set")
+    os.makedirs(inbox, exist_ok=True)
+    name = f"request-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}-{secrets.token_hex(4)}.json"
+    path = os.path.join(inbox, name)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    with os.fdopen(fd, "w", encoding="utf-8") as stream:
+        json.dump(req, stream, indent=1, sort_keys=True)
+        stream.write("\n")
+    print(path)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

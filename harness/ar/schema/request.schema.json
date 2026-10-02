@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ar.request.v1",
+  "title": "A proposer's evaluation request (the only thing ar-submit writes)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "branch", "hypothesis", "submitted_utc"],
+  "properties": {
+    "schema": {"const": "ar.request.v1"},
+    "branch": {"type": "string", "pattern": "^ar/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+$"},
+    "hypothesis": {"type": "string", "pattern": "\\S"},
+    "mechanism_start_mark": {"type": "string", "pattern": "^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$"},
+    "mechanism_end_mark": {"type": "string", "pattern": "^[A-Za-z0-9_.]+/[A-Za-z0-9_.]*$"},
+    "submitted_utc": {"type": "string"}
+  }
+}
