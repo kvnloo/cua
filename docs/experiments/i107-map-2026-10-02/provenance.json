@@ -1,0 +1,100 @@
+{
+ "schema": "cua.i107.provenance.v1",
+ "lane": "i107 pin and map (kvnloo/cua#107 execution step 1)",
+ "read_utc": "2026-10-02T04:2xZ (fetch) / 04:47Z (binary)",
+ "upstream_main": {
+  "sha": "352507b6c03162ab286b21d5ed509125cc3daece",
+  "read_via": [
+   "git fetch upstream main; git rev-parse upstream/main",
+   "gh api repos/trycua/cua/commits/main"
+  ],
+  "agree": true,
+  "libs_cua_driver_tree": "892fdddb07de3f12deb09c78619e043549ee06cd",
+  "equal_to": "229b65b2849c3a595ddbc85200d7181b18bd2e47"
+ },
+ "trycua_cua_pr_4316": {
+  "head": "a0bca744067d04f05904319d3d919be30c336556",
+  "state": "OPEN",
+  "merged": false,
+  "draft": false,
+  "updatedAt": "2026-10-01T17:03:24Z",
+  "base_parent": "345ff6d9db458a9d37b0f420dc4555553f4a4ce5",
+  "commits_behind_main": 40,
+  "read_via": "gh pr view 4316 -R trycua/cua --json (read-only)",
+  "merge_into_main": "conflict-free (git merge-tree tree 23bb7e9caf50f8f1ceba3da463459b8f9ba6e8d9)"
+ },
+ "branch": "exp/i107-map-20261002",
+ "commits": {
+  "2251da142": "merge --no-ff a0bca7440 (caller only)",
+  "fe424500d": "cherry-pick 7d3a28b66 (R2-01 phase trace)",
+  "a5e344291": "cherry-pick f5c991e59 (B-01 marks + focus-settle knob, unset in i107)",
+  "092b065d5": "i107 producer-RPC ledger + acquired-node counts (this lane)"
+ },
+ "trees": {
+  "libs_cua_driver_at_a5e344291": "5bdb3b61d49af90dd378448b7c58ab004f1abf75 (= B-01 tested source f5c991e59)",
+  "libs_cua_driver_at_092b065d5": "a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497",
+  "jev_use_at_092b065d5": "72bf8156136771da9a767ec12ae7c364e426d910 (= a0bca7440)",
+  "jev_use_at_main": "635a4f588c6817ccb6cb6f5b7baacddbfc42f786"
+ },
+ "driver_binary": {
+  "name": "cua-driver-i107-092b065d5",
+  "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
+  "version": "cua-driver 0.32.0 (read inside cua-x11-session under hostless)",
+  "build": {
+   "cmd": "hostless flock <tmp>/locks/cargo-build.lock build-driver.sh <worktree> i107-092b065d5 cua-release-i107",
+   "cargo": "cargo build -v --locked --release -p cua-driver --features portal-input",
+   "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+   "head_line": "092b065d5e1f6e0b9ba3abe4f5fbcd37c339303b",
+   "fresh_workspace_units": 0,
+   "seconds": 208,
+   "lock": {
+    "file": "cargo-build.lock (flock, exclusive)",
+    "requested": "2026-10-02T04:36:41.374Z",
+    "acquired": "2026-10-02T04:36:41.382Z",
+    "released": "2026-10-02T04:40:09.365Z"
+   }
+  }
+ },
+ "unit": {
+  "cmd": "hostless flock <tmp>/locks/cargo-build.lock cargo test --locked -p cua-driver-core --lib",
+  "red": "5 compile errors for the 3 new tests before implementation (missing ledger_*_detail, node_count)",
+  "green": "821 passed, 0 failed (818 existing + 3 new), 2026-10-02T04:35:58Z",
+  "class": "UNIT"
+ },
+ "smoke": {
+  "cmd": "hostless quiet-timed i107-map-smoke cua-x11-session.sh smoke.sh <worktree> <binary> <out>",
+  "quiet_lane_receipt": {
+   "label": "i107-map-smoke",
+   "acquired": "2026-10-02T04:44:40.999Z",
+   "released": "2026-10-02T04:44:49.677Z",
+   "rc": 0
+  },
+  "result": "BLOCKED: --version OK; trace sink created (MCP marks present); browser_prepare refused browser_route_unavailable (root-owned executable check fails because hostless remaps host root to uid 65534). rc_on=1, rc_off=1. No browser launched, no timing reported.",
+  "class": "REAL (blocked)"
+ },
+ "reused_traces": {
+  "B-01": {
+   "branch": "exp/b-01-browser-critpath-20261002",
+   "commit": "6689610d5a2619cb45dd4328b2921c89f88967be",
+   "status": "PENDING (rejected round 2 for text-only items; verifier reproduced numbers)",
+   "binary_sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3",
+   "valid_on_pinned_source": "yes: libs/cua-driver tree identical to this branch at a5e344291"
+  },
+  "R2-01": {
+   "commit": "2ca82efaedf0083c3732b7855c78a5d1442f9dce"
+  },
+  "R2-02": {
+   "commit": "8e751a75dd454ab396a4172c3ba98759323c01c2"
+  }
+ },
+ "provider": {
+  "typesafe_attempts": 0,
+  "typesafe_reached": 0
+ },
+ "github_writes": 0,
+ "environment": {
+  "kernel": "Linux 7.2.2 x86_64",
+  "nproc": 10,
+  "loadavg_note": "other tracks active; a ledger entry at 04:41Z recorded loadavg 22.4"
+ }
+}
