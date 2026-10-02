@@ -573,10 +573,11 @@ async def one(spec: dict[str, Any], args: argparse.Namespace, server: CshadowSer
     return record
 
 
-def abba(arms: tuple[str, str], pairs: int) -> list[tuple[int, int, str]]:
+def abba(arms: tuple[str, str], pairs: int, offset: int = 0) -> list[tuple[int, int, str]]:
+    """Local pair indices; the AB/BA order follows the global pair id (offset + p)."""
     out = []
     for p in range(pairs):
-        order = arms if p % 2 == 0 else arms[::-1]
+        order = arms if (offset + p) % 2 == 0 else arms[::-1]
         for position, arm in enumerate(order):
             out.append((p, position, arm))
     return out
@@ -596,29 +597,30 @@ def build_plan(args: argparse.Namespace) -> list[dict[str, Any]]:
                 specs.append({"plan": "defaultoff", "condition": "W-quiet", "arm": arm, "driver": drv, "pair": r})
     elif args.plan in ("overhead", "idle"):
         comparison = "CMP-C-overhead" if args.plan == "overhead" else "CMP-C-idle"
-        for p, position, arm in abba(("A", "C_shadow_M"), args.pairs):
+        for p, position, arm in abba(("A", "C_shadow_M"), args.pairs, args.pair_offset):
             specs.append({"plan": args.plan, "comparison": comparison, "condition": args.condition,
                           "arm": arm, "pair": p + args.pair_offset, "order": position})
     elif args.plan == "fidelity":
         specs = [{"plan": "fidelity", "comparison": "CMP-C-fidelity", "condition": args.condition,
-                  "arm": "C_shadow_audit", "pair": i} for i in range(args.trials)]
+                  "arm": "C_shadow_audit", "pair": i + args.pair_offset} for i in range(args.trials)]
     elif args.plan == "controls":
         ids = args.controls.split(",") if args.controls else list(CONTROLS)
-        for round_ in range(args.trials):
+        rounds = range(args.pair_offset, args.pair_offset + args.trials)  # one round per block
+        for round_ in rounds:
             for cid in ids:
                 for arm in (("A", "C_shadow_audit") if round_ % 2 == 0 else ("C_shadow_audit", "A")):
                     specs.append({"plan": "controls", "control": cid, "condition": "control", "arm": arm,
                                   "pair": round_})
         if not args.controls or "DC18" in ids:
-            for round_ in range(args.trials):
+            for round_ in rounds:
                 for fault in DC18_FAULTS:
                     specs.append({"plan": "controls", "control": "DC18", "fault": fault, "condition": "W-churn",
                                   "arm": "C_shadow_audit", "pair": round_})
         specs = [s for s in specs if s.get("control") != "DC18" or s.get("fault")]
     elif args.plan == "resident":
-        for p, position, arm in abba(("A", "C_shadow_M"), args.pairs):
+        for p, position, arm in abba(("A", "C_shadow_M"), args.pairs, args.pair_offset):
             specs.append({"plan": "resident", "comparison": "CMP-C-resident", "condition": "W-churn",
-                          "arm": arm, "pair": p, "order": position})
+                          "arm": arm, "pair": p + args.pair_offset, "order": position})
     for i, spec in enumerate(specs):
         spec["block"] = args.block
         suffix = "-ref" if spec.get("driver") == "ref" else ""
