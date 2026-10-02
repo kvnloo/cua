@@ -39,6 +39,9 @@ HERE = Path(__file__).resolve().parent
 R207 = HERE.parents[1] / "r2-07-2026-10-02" / "harness"
 sys.path.insert(0, str(R207))
 sys.path.insert(0, str(HERE))
+if "--examples" in sys.argv:  # the R2-07 fixture imports the jev-use fixture_server page
+    _ex = Path(sys.argv[sys.argv.index("--examples") + 1]).resolve()
+    sys.path[:0] = [str(_ex), str(_ex / "python")]
 
 BASE_SHA = "2d71548b46114cd1a1bc58ccdef323ce185c9965"
 FIX_A = "8cfa8c1dbd281da84f9acf8745dc8bea73da96e3"

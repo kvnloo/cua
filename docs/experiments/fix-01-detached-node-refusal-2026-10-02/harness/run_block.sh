@@ -6,14 +6,16 @@ set -uo pipefail
 WT="$1"; shift
 [ -n "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ] && [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] \
   || { echo "refusing: not inside the isolated X11 session" >&2; exit 97; }
-# hostless evidence: the host runtime dir is a private empty tmpfs and only our Xvfb socket exists.
-host_rt="/run/user/$(id -u)"
-if ls "$host_rt"/wayland-* "$host_rt"/bus "$host_rt"/hypr >/dev/null 2>&1; then echo "refusing: host runtime dir visible" >&2; exit 96; fi
-x11_sockets=$(ls /tmp/.X11-unix 2>/dev/null | tr '\n' ' ')
-echo "[fix01] host_runtime_entries=$(ls -A "$host_rt" 2>/dev/null | wc -l) x11_sockets=$x11_sockets"
+# hostless evidence (hostless v2 strips desktop variables, privatizes XDG_RUNTIME_DIR and applies a
+# Landlock scope; cua-x11-session.sh then scrubs the environment): the outer hostless marker must be
+# forwarded by the caller, and every session variable must point at this private session.
+[ "${FIX01_OUTER_HOSTLESS:-0}" = "1" ] || { echo "refusing: caller is not under hostless" >&2; exit 96; }
+case "${XDG_RUNTIME_DIR:-}" in "$(dirname "$TMPDIR")"/*) ;; *) echo "refusing: XDG_RUNTIME_DIR not private" >&2; exit 96 ;; esac
+case "${DBUS_SESSION_BUS_ADDRESS:-}" in *"/run/user/"*) echo "refusing: host session bus" >&2; exit 96 ;; esac
+echo "[fix01] outer_hostless=$FIX01_OUTER_HOSTLESS display=$DISPLAY xdg_runtime_private=yes"
 [ -z "${TYPESAFE_API_KEY:-}" ] || { echo "refusing: provider key present (lane cap 0)" >&2; exit 98; }
 EX="$WT/libs/cua-driver/examples/jev-use"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 export PYTHONDONTWRITEBYTECODE=1
-echo "[fix01] DISPLAY=$DISPLAY loadavg=$(cut -d' ' -f1-3 /proc/loadavg) args=$*"
+echo "[fix01] DISPLAY=$DISPLAY loadavg=$(cut -d' ' -f1-3 /proc/loadavg) phase_args=$(printf '%s ' "$@" | sed -E 's#[^ ]*/##g')"
 exec "$EX/.venv/bin/python" "$HERE/fix01_harness.py" --examples "$EX" "$@"
