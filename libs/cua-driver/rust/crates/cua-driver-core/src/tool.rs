@@ -108,6 +108,30 @@ where
     .await
 }
 
+tokio::task_local! {
+    static CALLER_CANCELLATION: Arc<std::sync::atomic::AtomicBool>;
+}
+
+/// Run `future` with its caller's cancellation flag visible to dispatch.
+///
+/// A host that answers a cancellation before the aborted future is actually
+/// dropped (the C ABI completes `Cancelled` while `work.abort()` is still
+/// pending on another worker) sets this flag first. Dispatch checks it after
+/// the last admission wait, so a call whose cancellation was already requested
+/// is never admitted into native work.
+pub async fn with_caller_cancellation<F: std::future::Future>(
+    cancelled: Arc<std::sync::atomic::AtomicBool>,
+    future: F,
+) -> F::Output {
+    CALLER_CANCELLATION.scope(cancelled, future).await
+}
+
+fn caller_cancellation_requested() -> bool {
+    CALLER_CANCELLATION
+        .try_with(|cancelled| cancelled.load(std::sync::atomic::Ordering::Acquire))
+        .unwrap_or(false)
+}
+
 fn active_text_input_pids() -> &'static Mutex<HashSet<i64>> {
     static ACTIVE: OnceLock<Mutex<HashSet<i64>>> = OnceLock::new();
     ACTIVE.get_or_init(|| Mutex::new(HashSet::new()))
@@ -1779,6 +1803,17 @@ impl ToolRegistry {
         } else {
             None
         };
+        // Admission point: every wait above (lifecycle, session, desktop
+        // permit) has completed. A caller whose cancellation was requested
+        // while this call waited is refused here, before native work starts,
+        // exactly as if the abort had landed during the wait.
+        if caller_cancellation_requested() {
+            crate::cursor_events::end_tool(cursor_event);
+            return protected_refusal(
+                "cancelled_before_admission",
+                "the caller cancelled this call before it was admitted; nothing was executed",
+            );
+        }
         let pending_turn = should_record
             .then(|| {
                 // Use the same trusted identities the recording owner was minted from.

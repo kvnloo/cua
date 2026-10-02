@@ -106,14 +106,17 @@ pub struct CuaDriverSessionHandle {
 }
 
 struct OperationState {
-    cancelled: AtomicBool,
+    /// Shared with the work future (`with_caller_cancellation`), so dispatch
+    /// refuses admission once cancellation is requested, before the
+    /// asynchronous `work.abort()` lands.
+    cancelled: Arc<AtomicBool>,
     changed: Notify,
 }
 
 impl OperationState {
     fn new() -> Self {
         Self {
-            cancelled: AtomicBool::new(false),
+            cancelled: Arc::new(AtomicBool::new(false)),
             changed: Notify::new(),
         }
     }
@@ -502,7 +505,10 @@ where
     executor.spawn(async move {
         // A nested task converts a native panic into a JoinError so it cannot
         // unwind through either the callback or the exported C function.
-        let mut work = tokio::spawn(future);
+        let mut work = tokio::spawn(cua_driver_core::tool::with_caller_cancellation(
+            state.cancelled.clone(),
+            future,
+        ));
         let completed = tokio::select! {
             joined = &mut work => match joined {
                 Ok(result) => result,
@@ -1605,6 +1611,10 @@ fn map_runtime_create_error(error: RuntimeCreateError) -> DriverError {
         RuntimeCreateError::Unavailable(reason) => DriverError::Protocol { reason },
     }
 }
+
+#[cfg(test)]
+#[path = "tests/own09r_cabi.rs"]
+mod own09r_cabi_tests;
 
 #[cfg(test)]
 mod tests {
