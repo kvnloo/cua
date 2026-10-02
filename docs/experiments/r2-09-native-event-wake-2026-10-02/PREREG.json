@@ -1,0 +1,76 @@
+{
+ "schema": "r209.prereg.v1",
+ "lane": "R2-09",
+ "title": "Native post-DoAction event wake on Chromium renderer AT-SPI and GTK3 foreground, with event-fidelity controls",
+ "owners": ["kvnloo/cua#93 (R2-09)", "kvnloo/cua#20 (event fidelity)", "kvnloo/cua#10 (accounting)", "kvnloo/cua#73 (canonical state)"],
+ "branch": "exp/r2-09-native-event-wake-20261002",
+ "base": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa (N-01R head; N-01R tested source b9b357bc72fe0627b841f66a2d0812fafca8711f)",
+ "measurement_commit": "bff61ddccfa2207abbaed43ece6b9ee95f7f36f6",
+ "driver_W": {"file": "cua-driver-r2-09-bff61ddcc", "sha256": "156338f75b4d6a55db0387b85c763061809e6cb7aa79fc9c1c8c5343de2e0e52"},
+ "knob": {
+  "name": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_WAKE=event (default off; read once per process)",
+  "behaviour": "In perform_action_ref, an AT-SPI event stream is opened BEFORE DoAction; after the DoAction reply the fixed sleep is replaced by a wait for the first object:state-changed (not defunct), object:text-changed or object:property-change whose sender bus name AND object path equal the acted object, bounded by the sleep deadline (50 ms). A closed stream sleeps to the deadline. Phase marks: post_wake_open <bus> <path>; post_wake_event <kind> | post_wake_deadline | post_wake_stream_closed.",
+  "claims": "none: the return value and receipt are unchanged; the event is a wake hint only; every verdict comes from the target-owned oracle"
+ },
+ "provider": {"name": "TypeSafe", "cap": 0},
+ "step0_pilot_facts": {
+  "class": "REAL (pilot, not measured; raw kept in the packet under raw/pilots/)",
+  "T1_exposure": "With --force-renderer-accessibility and org.a11y.Status IsEnabled=true on the private session bus, Chrome 151.0.7922.71 exposes the page through AT-SPI: check box 'I agree' [check], entry 'Note', push button 'Save note' (pilot1/pilot2). STEP 0 gate: T1 APPLICABLE.",
+  "T1_text_set_value": "set_value on the Chromium entry is refused in background: code set_value_unavailable, effect none, 'cached element exposes neither EditableText nor Value' (pilot2). The AT-SPI set_value path of the T1 text task is NOT_APPLICABLE.",
+  "foreground_X11": "With delivery_mode foreground on X11, element clicks on Chrome and on the GTK3 fixture take route global_input (XTest after window activation); no atspi_action do_action_replied mark: the post-DoAction sleep is not on the executed path (pilot1-3). Source: impl_.rs foreground_element_click.",
+  "T1_background_route": "Background element clicks on Chrome take route accessibility (perform_action_ref DoAction), inside the focus guard (220 ms settle watch after the body).",
+  "chromium_events": "DoAction on the native checkbox moves focus to it: the acted object emits state-changed:focused then state-changed:checked; on the button, state-changed:focused only (pilot3 listener)."
+ },
+ "targets": {
+  "T1": "system Chrome (version recorded per block), harness-launched, fresh --user-data-dir under the lane tmp dir, --force-renderer-accessibility, session a11y IsEnabled=true on the PRIVATE bus; owned page served by fixture_server.py whose journal/state file is the oracle; background delivery (the only X11 delivery whose element click reaches DoAction).",
+  "T2": "canonical GTK3 fixture libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py, checkbox and text, delivery_mode foreground on every action; actual route recorded from receipts.",
+  "T3": "WebKitGTK MiniBrowser: NOT_RUN. No WebKitGTK host package is installed (pacman -Qs webkit: none); the only MiniBrowser binaries are inside a flatpak GNOME 50 runtime, which is not a host install and would add the flatpak sandbox and its D-Bus/a11y proxies to the environment. No system packages are installed (rule)."
+ },
+ "tasks": {
+  "T1/checkbox": "get_window_state -> scripted lookup 'I agree' -> click(element_token, background). Oracle: agreed flips, seq+1.",
+  "T1/submit": "DEVIATION (replaces T1 text, whose set_value path is NOT_APPLICABLE): the page pre-fills Note with a per-trial token from the URL; get_window_state -> lookup 'Save note' -> click(element_token, background). Oracle: note_saved == token, seq+1.",
+  "T2/checkbox": "as N-01R, click(element_token, foreground).",
+  "T2/text": "as N-01R, set_value(Note, token, foreground) then click(Save note, foreground).",
+  "scripted_chooser": "jev-use NativeObservation + eligible_controls exact unique label match (N-01R). For T1 only, jev-use rule 5 (in_web_content -> browser source) is waived because T1 deliberately acts on web content through the native AT-SPI tools; rules 1-4 and the token requirement still apply."
+ },
+ "families": {
+  "M": "T1, background, arms B / S0 (CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0) / EW (CUA_DRIVER_EXP_NATIVE_POST_ACTION_WAKE=event); primary for T1",
+  "F": "T1, background, arms B_F0 / S0_F0 / EW_F0 = the same with CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS=0; SUPPLEMENTARY: isolates the post-DoAction wait as the only post-action wait (the shape of the unguarded AT-SPI action routes: X11 ax_fg for non-showing elements, Hyprland foreground semantic clicks; those routes themselves are not measured or claimed). The settle watch stays IRREDUCIBLE per N-01R; F is diagnostic only.",
+  "G": "T2, foreground, arms B / S0 / EW; primary for T2"
+ },
+ "design": "n = 20 per arm per task; 20 rounds; per round both tasks (first alternates), per task the 3 arms in Williams row (round mod 6) over all 6 orders; one fresh Driver and one fresh target (Chrome + server, or GTK3 fixture) per trial; phase trace on; loadavg per trial; every trial kept. Blocks: plan.json (make_plan.py), every block under bin/quiet-timed, each well under 15 minutes.",
+ "measures": {
+  "effect_visible_at_return": "the first oracle sample that STARTS at or after the last action's tool return shows the expected state",
+  "T_oracle": "first observation send -> read-end of the first oracle sample at/after return that shows the expected state (2 ms sampler)",
+  "T_land": "first oracle sample showing the expected state, regardless of return",
+  "T_return": "last action's tool return",
+  "wait": "Driver marks post_sleep_done - do_action_replied",
+  "effect_after_reply": "T1: page journal arrival (server wall clock) of the effect - do_action_replied (Driver wall clock); same host clock",
+  "event_latency": "EW with wake=event: wake mark (wall) - page journal arrival of the effect (wall). Negative = the event reached the Driver before the page's own report reached the oracle"
+ },
+ "statistics": "medians, nearest-rank p95; paired within-round differences T_B - T_X (B = the family base arm); percentile bootstrap over rounds, 10000 resamples, seed 909; S = median T_B / median T_X with the same bootstrap",
+ "hypotheses": {
+  "H1": "sleep need: on T1, S0 has the effect NOT visible at tool return in >= 10% of trials (>= 2/20 per task). Evaluated in M (primary, as specified) and in F (supplementary, S0_F0).",
+  "H2": "event wake: EW keeps B's correctness (verified and visible-at-return counts equal to B's) and the CI of median(T_B - T_EW) excludes 0 with the point estimate > 0. Evaluated per task in M (primary) and F (supplementary, EW_F0 vs B_F0).",
+  "H3": "GTK3 foreground: S0 has the effect visible at return 20/20 per task. Pre-registered expectation from STEP 0: the X11 foreground click never reaches DoAction, so the knobs do not touch the executed path; H3 is then vacuous and is recorded with the actual route."
+ },
+ "controls": {
+  "arm": "EW, T1, background, n = 10 each; an independent AT-SPI listener (atspi_listener.py, copied verbatim from OWN-20) records every bus signal for (a), (b), (c), (d)",
+  "a_replace": "page variant replace: ARIA checkbox (not focusable); 10 ms after the click the page replaces it with a NEW node of the same label, checks the new node 15 ms later and reports. PASS: 0 trials where EW woke on an event not from the acted object path (false_wake = wake=event without an acted-path wake-set event on the listener at or before wake + 5 ms); oracle verified 10/10.",
+  "b_decoy": "page variant decoy: acted ARIA checkbox (not focusable) changes its own state 30 ms after the click; an in-page decoy ARIA checkbox toggles every 4 ms and a separate GTK3 decoy app toggles every 5 ms. PASS: false-wake rate 0/10 (otherwise reported); listener shows foreign wake-set events inside the wait in >= 8/10 trials (discriminating); oracle verified 10/10.",
+  "c_reconnect": "page variant reconnect: as decoy without decoys; on the page's click report the harness SIGTERMs this session's at-spi2-registryd (pid from the private bus) and starts a new one. PASS: wait never exceeds the deadline + 5 ms; the click call completes without error; receipt effect stays unverifiable (no success claimed); every wake=event is backed by an acted-path event on the listener; oracle verified 10/10. Recorded: whether events still arrive after the restart.",
+  "c2_busdrop": "SUPPLEMENTARY, one trial per session: on the page's click report the harness SIGTERMs this session's private AT-SPI bus broker. PASS: wake reason stream_closed or deadline in 10/10 and wait >= 45 ms (fallback to the deadline), the click completes without error, receipt unverifiable, oracle verified 10/10.",
+  "d_noop": "page variant noop: role=button 'Do nothing' with no handler. PASS: wake reason deadline 10/10 with wait >= 45 ms; oracle shows no change (seq unchanged) 10/10; receipt claims nothing beyond unverifiable / suspected_noop.",
+  "smoke": "default-off: W with no CUA_DRIVER_EXP_* knob, T1 checkbox B, n = 5: no exp_knob marks, wait 50-53 ms, 5/5 verified."
+ },
+ "gates": "per arm: valid route (T1: click route accessibility, delivery background, do_action_replied + post_sleep_done marks, exp_knob marks exactly the arm's knobs, EW: post_wake_open + a wake-end mark; T2: click route global_input, delivery foreground, knob marks exactly the arm's) AND oracle verified in >= 95% (>= 19/20); 0 stale dispatches, 0 duplicate mutations (final seq exactly expected), 0 unverified successes (T always ends on the oracle; receipts are never the oracle); the success oracle is never the event.",
+ "disposition_rules": {
+  "KEEP (per target)": "H2 holds with correctness equal to B and all required controls (a, b, c, d) pass",
+  "KILL scoped to a target": "S0 already safe there (H1 false: effect visible at return in S0 >= 19/20 per task with correctness equal to B), so no wait is needed and the sleep-deletion scope extends; OR EW no better than B (H2 CI includes 0)",
+  "REVISE": "correctness holds only with named qualifications",
+  "primary": "T1 disposition from family M; T2 from family G. Family F and control c2 feed only the statement on whether any native wait remains that is worth an event wake.",
+  "inputs_cited_not_remeasured": "N-01R (exp/n-01r-native-wait-ab-20261002 @ 3bb4a7fc7): settle watch IRREDUCIBLE, sleep DELETED on GTK3 background; OWN-20 (exp/own-20-atspi-invalidation-census-20261002 @ 6da15bf35): event absence authorizes nothing"
+ },
+ "claim_boundary": "Linux X11 Xvfb (private session), Chrome version recorded per block, GTK3 canonical fixture, binary W (sha256 above). No Hyprland, native-Wayland, WebKitGTK, Electron or real-seat row is claimed.",
+ "invariants": "no new service; knob env-gated and default-off; event = wake hint, never the oracle; event absence authorizes nothing; no authority from passive state; provider 0 requests"
+}
