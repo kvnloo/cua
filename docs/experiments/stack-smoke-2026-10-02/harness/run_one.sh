@@ -6,6 +6,7 @@
 #   RUN TASK ARM PROMPT TOKEN DRIVER HERMES_WT HERMES_VENV Z0_WT Z0_VENV FIXTURE_GTK FIXTURE_SERVER
 #   SHADOW_BACKEND HERMES_TIMEOUT MAX_TURNS LIVE_HERMES_HOME REAL_HOME HF_HUB_DIR NANOJEV_CKPT JULIA_PY STABLE
 # Arms: on = observer plugin + shadow sidecar; off = no observer, no sidecar;
+#       offdelay/onnowait = exploratory delay controls (see EXPLORATORY_PREREG.json);
 #       outage = observer + sidecar whose backend weights are unavailable (residency miss).
 set -uo pipefail
 case "${XDG_RUNTIME_DIR:-}" in */x11-session.*/xdg-runtime) ;; *) echo "refusing: not inside the private X11 session" >&2; exit 97;; esac
@@ -51,7 +52,7 @@ log "fixture ready"
 
 # --- shadow sidecar (separate process; output dir is invisible to Hermes) ---
 SC=""
-if [ "$ARM" != off ]; then
+if [ "$ARM" != off ] && [ "$ARM" != offdelay ]; then
   # Private sidecar HOME exposing ONLY the HF model hub (no token files): z0int resolves weights under
   # ~/.cache/huggingface/hub. Outage arm = injected residency miss: the hub link is absent, hub offline.
   SC_HOME="$RUN/tmp/sc-home"; mkdir -p "$SC_HOME/.cache/huggingface"
@@ -65,8 +66,13 @@ if [ "$ARM" != off ]; then
       --stop-file "$RUN/meta/hermes.done" --hermes-lab "$HERMES_WT/lab/z0_hermes_observer" --z0-wt "$Z0_WT" \
       --arm "$ARM" --warm > "$RUN/shadow/sidecar.log" 2>&1 &
   SC=$!
-  for _ in $(seq 600); do [ -e "$RUN/shadow/sidecar_ready" ] && break; sleep 0.2; done
+  if [ "$ARM" != onnowait ]; then  # onnowait (exploratory): Hermes does not wait for the sidecar
+    for _ in $(seq 600); do [ -e "$RUN/shadow/sidecar_ready" ] && break; sleep 0.2; done
+  fi
   log "sidecar ready=$([ -e "$RUN/shadow/sidecar_ready" ] && echo yes || echo no)"
+fi
+if [ "$ARM" = offdelay ]; then  # exploratory: no shadow stack, but the same start delay the on arm incurs
+  sleep "${START_DELAY:-17.5}"; log "offdelay slept ${START_DELAY:-17.5}s"
 fi
 
 # --- Hermes (isolated runtime; live Hermes home, real home, shadow output and fixture state masked) ---

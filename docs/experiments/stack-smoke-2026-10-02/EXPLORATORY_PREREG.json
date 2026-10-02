@@ -1,0 +1,17 @@
+{
+ "schema": "cua.stack.prereg.v1",
+ "id": "stack-smoke-2026-10-02/exploratory-delay-control",
+ "status": "EXPLORATORY (added after the measured runs; not part of the PREREG gates)",
+ "committed_before_these_runs": true,
+ "trigger": "In the measured browser pairs every oracle-discordant pair passed only in the off arm, and the outage arm (short sidecar start-up) passed 1/3. The harness itself gives the on arm a confound: run_one.sh waits for the sidecar's warm model load before starting Hermes, so Hermes starts a median 17.5 s later after the fixture is ready (off arm 0.0 s, outage 2.2 s), with the CPU busy loading laya. This control separates 'shadow stack present' from 'start delay'.",
+ "harness_change": "run_one.sh/drive.py gain two arms: offdelay (no observer, no sidecar, sleep START_DELAY=17.5 s before Hermes) and onnowait (observer + sidecar, Hermes starts immediately without waiting for the sidecar). Arms on/off/outage are unchanged.",
+ "runs": "browser task only, pairs 1..12 (same tokens as the measured pairs), driver pinned_0_21_0, order inside each pair seeded (20261003); 24 runs listed in plan_exploratory.json",
+ "comparisons": {
+  "E1": "offdelay vs measured off (same pair): does the delay alone change the browser outcome / tool sequence?",
+  "E2": "onnowait vs measured on (same pair): does removing the delay with the shadow stack running change it?",
+  "E3": "onnowait vs offdelay are not compared (different delay); the 2x2 cell rates are reported descriptively"
+ },
+ "metrics": "oracle pass rate per arm with Wilson 95% CI; per-pair concordance with the measured arms; exact sign test on discordant pairs; tool-sequence identity",
+ "interpretation_rule": "If offdelay's pass rate falls toward the on arm's and onnowait's rises toward the off arm's, the discordance is attributed to the start-delay confound, not to shadow output. With n=12 per arm this is descriptive only; no significance claim unless the exact test gives p < 0.05.",
+ "claim_boundary": "Exploratory, post hoc, small n; does not alter H3 gates, only the interpretation of the H3b divergence."
+}

@@ -100,7 +100,7 @@ def prepare(lane: dict, run: dict) -> Path:
     (hermes / "plugins").mkdir(parents=True)
     for sub in (".config", ".cache", ".local/share", ".local/state"):
         (rd / "home" / sub).mkdir(parents=True, exist_ok=True)
-    observer = run["arm"] != "off"
+    observer = run["arm"] not in ("off", "offdelay")
     if observer:  # the plugin is only present (and enabled) in arms that run the shadow stack
         os.symlink(Path(lane["hermes_wt"]) / "lab" / "z0_hermes_observer", hermes / "plugins" / "z0-hermes-observer")
     (hermes / "config.yaml").write_text(config_yaml(lane["model"], lane["base_url"], observer))
@@ -113,7 +113,7 @@ def prepare(lane: dict, run: dict) -> Path:
         "FIXTURE_SERVER": lane["fixture_server"], "SHADOW_BACKEND": run.get("backend", lane["shadow_backend"]),
         "HERMES_TIMEOUT": str(lane["hermes_timeout"]), "MAX_TURNS": str(lane["max_turns"]),
         "LIVE_HERMES_HOME": lane["live_hermes_home"], "REAL_HOME": lane["real_home"],
-        "HF_HUB_DIR": lane["hf_hub_dir"], "NANOJEV_CKPT": lane["nanojev_ckpt"], "JULIA_PY": lane["julia_py"], "STABLE": lane["stable_dir"],
+        "HF_HUB_DIR": lane["hf_hub_dir"], "NANOJEV_CKPT": lane["nanojev_ckpt"], "JULIA_PY": lane["julia_py"], "STABLE": lane["stable_dir"], "START_DELAY": str(run.get("start_delay", 17.5)),
     }
     (rd / "run.env").write_text("".join(f"{k}={shlex.quote(v)}\n" for k, v in env.items()))
     (rd / "run.json").write_text(json.dumps({**run, "token": token, "prompt_sha256":
