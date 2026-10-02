@@ -1,0 +1,26 @@
+[session] DISPLAY=:101 openbox=2921845 picom=2921846 dbus=unix:path=<tmp>/dbus-…,guid=c4084178ee9614660b68c18d6abf195e
+[cargo-in-session] head=2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e dirty=1 rustc=rustc 1.97.1 (8bab26f4f 2026-07-14) DISPLAY=:101
+   Compiling cua-driver-contract v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling cua-driver-core v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.90s
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-r2-02/debug/deps/cua_driver_core-4f2d188a2089d4cb)
+
+running 1 test
+test browser::v2_tests::repeated_browser_calls_do_not_accumulate_cdp_tab_sessions ... FAILED
+
+failures:
+
+---- browser::v2_tests::repeated_browser_calls_do_not_accumulate_cdp_tab_sessions stdout ----
+
+thread 'browser::v2_tests::repeated_browser_calls_do_not_accumulate_cdp_tab_sessions' (2923617) panicked at crates/cua-driver-core/src/browser/v2_tests.rs:2754:5:
+10 snapshots left 10 live tab sessions (10 attached, 0 detached)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    browser::v2_tests::repeated_browser_calls_do_not_accumulate_cdp_tab_sessions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 819 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p cua-driver-core --lib`
+[session] exit rc=101 run_dir=<tmp>/x11-session.pQJlP4

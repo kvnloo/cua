@@ -1,0 +1,184 @@
+[session] DISPLAY=:101 openbox=2890171 picom=2890172 dbus=unix:path=<tmp>/dbus-…,guid=474af20587ac0f562c436d186abf185a
+== bug01 probe=probe_delivery.py DISPLAY=:101 lock_note=caller-held
+Cua Driver sends content-free product telemetry by default. Run `cua-driver telemetry disable` to stop it; `cua-driver telemetry status` shows the current setting.
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.a11y.Bus' requested by ':1.0' (uid=1000 pid=2890310 comm="<lanes>/bin/cua-driver-bu")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='ca.desrt.dconf' requested by ':1.1' (uid=1000 pid=2890327 comm="/usr/lib/at-spi-bus-launcher")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'ca.desrt.dconf'
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:35:09.598884Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 10, body: Str, fds: [] })
+2026-10-02T02:35:09.621531Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.gtk.vfs.Daemon' requested by ':1.5' (uid=1000 pid=2890414 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.gtk.vfs.Daemon'
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.Notifications' requested by ':1.8' (uid=1000 pid=2890414 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.8' (uid=1000 pid=2890414 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.10' (uid=1000 pid=2890596 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.freedesktop.Notifications'
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.portal.Documents' requested by ':1.10' (uid=1000 pid=2890596 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.freedesktop.portal.Documents'
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.399: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.10' (uid=1000 pid=2890596 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+
+** (xdg-desktop-portal-gtk:2890628): WARNING **: 21:35:10.436: AT-SPI: Could not obtain desktop path or name
+
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.437: Choosing gtk.portal for org.freedesktop.impl.portal.Access as a last-resort fallback
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+
+** (xdg-desktop-portal-gtk:2890628): WARNING **: 21:35:10.439: atk-bridge: GetRegisteredEvents returned message with unknown signature
+
+** (xdg-desktop-portal-gtk:2890628): WARNING **: 21:35:10.439: atk-bridge: get_device_events_reply: unknown signature
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.463: Choosing gtk.portal for org.freedesktop.impl.portal.Settings as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.464: Choosing gtk.portal for org.freedesktop.impl.portal.FileChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.465: Choosing gtk.portal for org.freedesktop.impl.portal.AppChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.466: Choosing gtk.portal for org.freedesktop.impl.portal.Print as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.467: Choosing gtk.portal for org.freedesktop.impl.portal.Notification as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.467: Choosing gtk.portal for org.freedesktop.impl.portal.Inhibit as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.469: Failed to connect to PipeWire: Couldn't connect to PipeWire
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.469: Choosing gtk.portal for org.freedesktop.impl.portal.Account as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.470: Choosing gtk.portal for org.freedesktop.impl.portal.Email as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:2890596): xdg-desktop-portal-WARNING **: 21:35:10.471: Choosing gtk.portal for org.freedesktop.impl.portal.DynamicLauncher as a last-resort fallback
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Successfully activated service 'org.freedesktop.portal.Desktop'
+{"trial": "fix-001-T-013f09", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-002-D-503aba", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-003-Y-c353c3", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-004-Y-2d1542", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-005-D-6b9f04", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-006-T-a7914e", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-007-D-38ef98", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-008-Y-b0c1de", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-009-T-ac1f87", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-010-Y-2ad97c", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:35:36.497204Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+2026-10-02T02:35:36.531742Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "fix-011-D-38de4a", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-012-Y-1bdd2e", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-013-T-c3606b", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-014-T-2393a6", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-015-Y-905578", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-016-D-5eac4c", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-017-Y-ae6537", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-018-T-d71166", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-019-D-b32f6a", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-020-T-6cd86c", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:36:03.577427Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+2026-10-02T02:36:03.593507Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "fix-021-Y-fa3fcb", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-022-T-b0efd5", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-023-D-fffebd", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-024-D-573a37", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-025-T-7e5d4b", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-026-Y-1c2662", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-027-T-2e3f6a", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-028-D-168735", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-029-Y-ecd745", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-030-D-851795", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:36:30.294646Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+2026-10-02T02:36:30.308742Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "fix-031-T-e08654", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-032-D-aa61b6", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-033-Y-768165", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-034-Y-bcddef", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-035-D-931920", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-036-T-84bc17", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-037-D-4b9899", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-038-Y-c41dae", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-039-T-791d0f", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-040-Y-792b73", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:36:56.352460Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+2026-10-02T02:36:56.368963Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "fix-041-D-e9dc82", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-042-Y-885ffb", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-043-T-4b668b", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-044-T-c5d13e", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-045-Y-e577ea", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-046-D-201990", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-047-Y-6fc184", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-048-T-1d8b69", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-049-D-93be21", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-050-T-d77208", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:37:22.914553Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+2026-10-02T02:37:22.923415Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "fix-051-Y-f12ce0", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-052-T-c2fe91", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-053-D-4faec7", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-054-D-0bec11", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-055-T-da3a1b", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-056-Y-46304a", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-057-T-a590c4", "click_delivery": "foreground", "click_route": "trusted_input", "type_delivery": "background", "verified": true}
+{"trial": "fix-058-D-9aaaf0", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-059-Y-3b80d1", "click_delivery": null, "click_route": null, "type_delivery": "background", "verified": false}
+{"trial": "fix-060-D-a65528", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+2026-10-02T02:37:49.420357Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+2026-10-02T02:37:49.436794Z  WARN platform_linux::overlay: X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=2890348 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2890169]: [session uid=1000 pid=2890169 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "fix-061-N_bg-4af212", "click_delivery": null, "click_route": "trusted_input", "type_delivery": "background", "verified": false}
+{"trial": "fix-062-N_domfg-a95c44", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-063-N_bg-b2099c", "click_delivery": null, "click_route": "trusted_input", "type_delivery": "background", "verified": false}
+{"trial": "fix-064-N_domfg-b58d9c", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-065-N_bg-31068a", "click_delivery": null, "click_route": "trusted_input", "type_delivery": "background", "verified": false}
+{"trial": "fix-066-N_domfg-6da45c", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-067-N_bg-c7732b", "click_delivery": null, "click_route": "trusted_input", "type_delivery": "background", "verified": false}
+{"trial": "fix-068-N_domfg-e32778", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+{"trial": "fix-069-N_bg-9350df", "click_delivery": null, "click_route": "trusted_input", "type_delivery": "background", "verified": false}
+{"trial": "fix-070-N_domfg-ae638e", "click_delivery": "background", "click_route": "dom", "type_delivery": "background", "verified": true}
+rc_probe=0
+A connection to the bus can't be made
+CRITICAL: [dbus_cb_name_lost:1438] Cannot connect to DBus.
+[session] exit rc=0 run_dir=<tmp>/x11-session.YwI5Xa

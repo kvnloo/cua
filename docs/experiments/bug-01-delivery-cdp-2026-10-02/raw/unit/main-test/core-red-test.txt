@@ -1,0 +1,24 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.49s
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-r2-02/debug/deps/cua_driver_core-4f2d188a2089d4cb)
+
+running 2 tests
+test browser::v2_tests::background_browser_receipts_keep_background_delivery ... ok
+test browser::v2_tests::foreground_trusted_browser_input_receipt_does_not_claim_background_delivery ... FAILED
+
+failures:
+
+---- browser::v2_tests::foreground_trusted_browser_input_receipt_does_not_claim_background_delivery stdout ----
+
+thread 'browser::v2_tests::foreground_trusted_browser_input_receipt_does_not_claim_background_delivery' (2589187) panicked at crates/cua-driver-core/src/browser/v2_tests.rs:2649:5:
+assertion `left != right` failed: a foreground trusted click must not be reported as background delivery: {"delivery":{"mode":"background"},"effect":"unverifiable","route":"trusted_input"}
+  left: String("background")
+ right: "background"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    browser::v2_tests::foreground_trusted_browser_input_receipt_does_not_claim_background_delivery
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 811 filtered out; finished in 0.10s
+
+error: test failed, to rerun pass `-p cua-driver-core --lib`
