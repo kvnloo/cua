@@ -637,6 +637,117 @@ fn seed_start_if_sentinel(key: &CursorKey, target_x: f64, target_y: f64) -> bool
     map.seed_start_if_sentinel(key, target_x, target_y, Some(frame))
 }
 
+// ── B-01 glide measurement (measurement only, env-gated, default off) ─────────
+
+/// Predicted traversal time of a planned path under `tick_motion`'s speed law
+/// at a fixed frame step. Pure; used only to annotate B-01 trace marks.
+fn predicted_glide_ms(path_len: f64, motion: &cursor_overlay::MotionConfig, frame_dt: f64) -> f64 {
+    let len = path_len.max(1.0);
+    let (mut dist, mut frames) = (0.0_f64, 0_u32);
+    while dist < len && frames < 1_000_000 {
+        let frac = (dist / len).clamp(0.0, 1.0);
+        let profile = 16.0 * frac * frac * (1.0 - frac) * (1.0 - frac);
+        let floor = if frac < 0.5 {
+            motion.min_start_speed
+        } else {
+            motion.min_end_speed
+        };
+        let speed = if motion.glide_duration_ms > 0.0 {
+            len / (motion.glide_duration_ms / 1000.0)
+        } else {
+            (floor + (motion.peak_speed - floor) * profile).max(floor)
+        };
+        dist += speed * frame_dt;
+        frames += 1;
+    }
+    f64::from(frames) * frame_dt * 1000.0
+}
+
+/// The glide this `MoveTo` will plan (start pose, target, planned length and
+/// the cursor's motion settings), read before the command is sent.
+fn glide_plan_detail(key: &CursorKey, x: f64, y: f64) -> serde_json::Value {
+    let state = RENDER.lock().ok().and_then(|guard| {
+        guard.as_ref().and_then(|map| {
+            map.cursors
+                .get(key)
+                .map(|rs| (rs.core.pos, rs.core.heading, rs.core.motion.clone()))
+        })
+    });
+    let Some(((x0, y0), heading, motion)) = state else {
+        return serde_json::json!({ "available": false });
+    };
+    let end = std::f64::consts::FRAC_PI_4;
+    let (tx, ty) = cursor_overlay::anchor_for_pointer(x, y, end);
+    let plan = cursor_overlay::PathPlanner::plan(
+        x0,
+        y0,
+        heading + std::f64::consts::PI,
+        tx,
+        ty,
+        end + std::f64::consts::PI,
+        end,
+        motion.turn_radius,
+    );
+    serde_json::json!({
+        "available": true,
+        "start_x": x0,
+        "start_y": y0,
+        "target_x": x,
+        "target_y": y,
+        "distance_px": (x - x0).hypot(y - y0),
+        "path_length_px": plan.length,
+        "glide_duration_ms": motion.glide_duration_ms,
+        "dwell_after_click_ms": motion.dwell_after_click_ms,
+        "peak_speed": motion.peak_speed,
+        "min_start_speed": motion.min_start_speed,
+        "min_end_speed": motion.min_end_speed,
+        "turn_radius": motion.turn_radius,
+        "predicted_glide_ms_16ms_frames": predicted_glide_ms(plan.length, &motion, 0.016),
+    })
+}
+
+/// Render-loop frame statistics accumulated while a glide is in flight.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+struct GlideFrameStats {
+    frames: u32,
+    wall_s: f64,
+    physics_s: f64,
+    max_frame_s: f64,
+    frames_over_cap: u32,
+}
+
+impl GlideFrameStats {
+    /// One ticked frame: `elapsed` is the wall time since the previous tick;
+    /// the motion law advances by at most 50 ms per tick.
+    fn record(&mut self, elapsed: f64) {
+        self.frames += 1;
+        self.wall_s += elapsed;
+        self.physics_s += elapsed.min(0.05);
+        self.max_frame_s = self.max_frame_s.max(elapsed);
+        if elapsed > 0.05 {
+            self.frames_over_cap += 1;
+        }
+    }
+
+    fn to_json(self) -> serde_json::Value {
+        serde_json::json!({
+            "frames": self.frames,
+            "frame_wall_ms": self.wall_s * 1000.0,
+            "frame_physics_ms": self.physics_s * 1000.0,
+            "max_frame_ms": self.max_frame_s * 1000.0,
+            "frames_over_50ms": self.frames_over_cap,
+        })
+    }
+}
+
+static GLIDE_FRAMES: Mutex<GlideFrameStats> = Mutex::new(GlideFrameStats {
+    frames: 0,
+    wall_s: 0.0,
+    physics_s: 0.0,
+    max_frame_s: 0.0,
+    frames_over_cap: 0,
+});
+
 pub async fn animate_cursor_to(x: f64, y: f64) {
     animate_cursor_to_for("default".to_owned(), x, y).await;
 }
@@ -660,6 +771,8 @@ pub async fn animate_cursor_to_for(key: CursorKey, x: f64, y: f64) {
     if !should_animate {
         return;
     }
+    // B-01 measurement only (env-gated, default off): read before MoveTo.
+    let glide_plan = cua_driver_core::phase_trace::enabled().then(|| glide_plan_detail(&key, x, y));
 
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
     arrival_register(key.clone(), tx);
@@ -695,10 +808,16 @@ pub async fn animate_cursor_to_for(key: CursorKey, x: f64, y: f64) {
         arrival_cancel(&key);
         return;
     }
-    cua_driver_core::phase_trace::mark("overlay.arrival_wait_start", &key);
+    cua_driver_core::phase_trace::mark_detail("overlay.arrival_wait_start", &key, || {
+        glide_plan.clone().unwrap_or(serde_json::Value::Null)
+    });
     let waited = tokio::time::timeout(ARRIVAL_WAIT_CAP, rx).await;
     cua_driver_core::phase_trace::mark_detail("overlay.arrival_wait_end", &key, || {
-        serde_json::json!({ "arrived": matches!(waited, Ok(Ok(()))), "timed_out": waited.is_err() })
+        serde_json::json!({
+            "arrived": matches!(waited, Ok(Ok(()))),
+            "timed_out": waited.is_err(),
+            "glide": glide_plan.clone().unwrap_or(serde_json::Value::Null),
+        })
     });
     match waited {
         Ok(_) => {}
@@ -1457,6 +1576,9 @@ fn run_overlay_thread(cfg: CursorConfig, rx: std::sync::mpsc::Receiver<OverlayMs
         let now = Instant::now();
         let elapsed_dt = now.duration_since(last_tick).as_secs_f64();
         last_tick = now;
+        // B-01 measurement only (env-gated, default off).
+        let trace_frames = cua_driver_core::phase_trace::enabled();
+        let parked_wake = first_msg.is_some() || maintenance_timeout;
         let hardware_pointer = conn
             .query_pointer(root)
             .ok()
@@ -1486,6 +1608,14 @@ fn run_overlay_thread(cfg: CursorConfig, rx: std::sync::mpsc::Receiver<OverlayMs
                     maintenance_timeout,
                     frame_tick_needed,
                 );
+                if trace_frames
+                    && !parked_wake
+                    && (!arrived.is_empty() || map.cursors.values().any(|rs| rs.core.path.is_some()))
+                {
+                    if let Ok(mut stats) = GLIDE_FRAMES.lock() {
+                        stats.record(elapsed_dt);
+                    }
+                }
                 let mut hover_changed = false;
                 for rs in map.cursors.values_mut() {
                     hover_changed |= rs.core.update_session_badge_hover(hardware_pointer);
@@ -1625,6 +1755,15 @@ fn run_overlay_thread(cfg: CursorConfig, rx: std::sync::mpsc::Receiver<OverlayMs
         pending_arrivals.extend(arrived);
         if !paint_deferred {
             for key in pending_arrivals.drain(..) {
+                if trace_frames {
+                    let stats = GLIDE_FRAMES
+                        .lock()
+                        .map(|mut stats| std::mem::take(&mut *stats))
+                        .unwrap_or_default();
+                    cua_driver_core::phase_trace::mark_detail("overlay.render_arrival", &key, || {
+                        stats.to_json()
+                    });
+                }
                 arrival_fire(&key);
             }
         }
@@ -2940,6 +3079,49 @@ fn bgra_and_visible_shape(
     }
 
     (bgra, rectangles)
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod b01_glide_measurement_tests {
+    use super::*;
+
+    #[test]
+    fn fixed_duration_glide_lands_within_one_frame_and_speed_based_grows_with_length() {
+        let fast = cursor_overlay::MotionConfig {
+            glide_duration_ms: 1.0,
+            ..cursor_overlay::MotionConfig::default()
+        };
+        assert!((predicted_glide_ms(800.0, &fast, 0.016) - 16.0).abs() < 1e-9);
+        let default = cursor_overlay::MotionConfig::default();
+        assert_eq!(default.glide_duration_ms, 0.0);
+        let short = predicted_glide_ms(200.0, &default, 0.016);
+        let long = predicted_glide_ms(800.0, &default, 0.016);
+        assert!(short > 0.0 && long > short);
+        // The speed law is bounded by its floor (200 px/s) and peak (900 px/s).
+        assert!(long <= 800.0 / 200.0 * 1000.0 + 16.0);
+        assert!(long >= 800.0 / 900.0 * 1000.0);
+    }
+
+    #[test]
+    fn frame_stats_separate_wall_time_from_the_clamped_motion_step() {
+        let mut stats = GlideFrameStats::default();
+        stats.record(0.016);
+        stats.record(0.080);
+        assert_eq!(stats.frames, 2);
+        assert!((stats.wall_s - 0.096).abs() < 1e-12);
+        assert!((stats.physics_s - 0.066).abs() < 1e-12);
+        assert!((stats.max_frame_s - 0.080).abs() < 1e-12);
+        assert_eq!(stats.frames_over_cap, 1);
+        let taken = std::mem::take(&mut stats);
+        assert_eq!(taken.frames, 2);
+        assert_eq!(stats, GlideFrameStats::default());
+    }
+
+    #[test]
+    fn glide_plan_detail_reports_unavailable_for_an_unknown_cursor() {
+        let detail = glide_plan_detail(&"b01-no-such-cursor".to_owned(), 10.0, 10.0);
+        assert_eq!(detail["available"], serde_json::json!(false));
+    }
 }
 
 #[cfg(all(test, target_os = "linux"))]

@@ -466,6 +466,8 @@ impl Tool for GetBrowserStateTool {
                     }
                     Err(refusal) => return refusal.to_tool_result(),
                 };
+                // B-01 measurement only (env-gated, default off).
+                crate::phase_trace::mark("snap.serialized", &session);
                 if include_screenshot {
                     return match self
                         .engine
@@ -1446,6 +1448,46 @@ async fn select_all_in_element(
     }
 }
 
+/// B-01 experiment knob (measurement only, env-gated, default off): the fixed
+/// settle after the focus-emulation readiness check in `browser_type`.
+/// EXPERIMENT ONLY, not a public contract.
+pub(crate) const EXP_TYPE_FOCUS_SETTLE_ENV: &str = "CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS";
+
+/// The settle the Driver ships with. An unset, empty or unparsable knob keeps
+/// exactly this value.
+const DEFAULT_TYPE_FOCUS_SETTLE_MS: u64 = 100;
+
+/// Parse the knob: unset/empty/unparsable keeps the default 100 ms; any
+/// integer is clamped to `[0, 100]`, so the knob can only shorten the settle.
+fn parse_type_focus_settle_ms(raw: Option<&str>) -> u64 {
+    raw.map(str::trim)
+        .filter(|value| !value.is_empty())
+        .and_then(|value| value.parse::<i64>().ok())
+        .map(|value| value.clamp(0, DEFAULT_TYPE_FOCUS_SETTLE_MS as i64) as u64)
+        .unwrap_or(DEFAULT_TYPE_FOCUS_SETTLE_MS)
+}
+
+/// The focus settle for this process (read once).
+fn type_focus_settle_ms() -> u64 {
+    static VALUE: std::sync::OnceLock<u64> = std::sync::OnceLock::new();
+    *VALUE.get_or_init(|| {
+        parse_type_focus_settle_ms(std::env::var(EXP_TYPE_FOCUS_SETTLE_ENV).ok().as_deref())
+    })
+}
+
+/// Sleep the focus settle, with B-01 trace marks. A 0 ms knob skips the sleep
+/// entirely (the deletion under test); the default sleeps exactly 100 ms.
+async fn type_focus_settle(session: &str, site: &'static str) {
+    let settle_ms = type_focus_settle_ms();
+    crate::phase_trace::mark_detail("focus.settle_start", session, || {
+        json!({ "settle_ms": settle_ms, "site": site })
+    });
+    if settle_ms > 0 {
+        tokio::time::sleep(std::time::Duration::from_millis(settle_ms)).await;
+    }
+    crate::phase_trace::mark("focus.settle_end", session);
+}
+
 /// Establish Chromium's trusted-input focus state for an inactive tab.
 ///
 /// Selection alone is not durable in a fully occluded window: without focus
@@ -1456,6 +1498,7 @@ async fn enter_focus_emulation(
     cdp: &str,
     backend_node_id: i64,
     object_id: &str,
+    session: &str,
 ) -> Result<(), String> {
     conn.call(
         Some(cdp),
@@ -1464,9 +1507,11 @@ async fn enter_focus_emulation(
     )
     .await
     .map_err(|error| error.to_string())?;
+    // B-01 measurement only (env-gated, default off).
+    crate::phase_trace::mark("focus.emulation_enabled", session);
 
     let mut focus_error = None;
-    for _ in 0..20 {
+    for iteration in 0..20 {
         if let Err(error) = conn
             .call(
                 Some(cdp),
@@ -1489,11 +1534,15 @@ async fn enter_focus_emulation(
                 }),
             )
             .await;
-        if matches!(
+        let is_ready = matches!(
             ready,
             Ok(ref value) if value["result"]["value"].as_bool() == Some(true)
-        ) {
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        );
+        crate::phase_trace::mark_detail("focus.poll", session, || {
+            json!({ "iteration": iteration, "ready": is_ready })
+        });
+        if is_ready {
+            type_focus_settle(session, "insert_text_replace").await;
             if let Err(error) = conn
                 .call(
                     Some(cdp),
@@ -1505,9 +1554,12 @@ async fn enter_focus_emulation(
                 focus_error = Some(error.to_string());
                 break;
             }
+            crate::phase_trace::mark("focus.refocused", session);
             return Ok(());
         }
+        crate::phase_trace::mark("focus.poll_sleep_start", session);
         tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        crate::phase_trace::mark("focus.poll_sleep_end", session);
     }
 
     let _ = conn
@@ -1628,6 +1680,10 @@ impl Tool for BrowserTypeTool {
             ));
         }
         let replace = args.opt_bool("replace").unwrap_or(false);
+        // B-01 measurement only (env-gated, default off).
+        crate::phase_trace::mark_detail("type.enter", &session, || {
+            json!({ "mode": mode, "replace": replace, "chars": text.chars().count() })
+        });
 
         let _mutation = match self
             .engine
@@ -1637,6 +1693,7 @@ impl Tool for BrowserTypeTool {
             Ok(guard) => guard,
             Err(refusal) => return refusal.to_tool_result(),
         };
+        crate::phase_trace::mark("type.lock_acquired", &session);
         let validated = match self
             .engine
             .revalidate_for_mutation(&session, &target_id, Some(&tab_id))
@@ -1645,6 +1702,7 @@ impl Tool for BrowserTypeTool {
             Ok(v) => v,
             Err(refusal) => return refusal.to_tool_result(),
         };
+        crate::phase_trace::mark("type.revalidated", &session);
 
         let ext_ref = match args.require_str("ref") {
             Ok(value) => value,
@@ -1677,6 +1735,7 @@ impl Tool for BrowserTypeTool {
         };
         let conn = &validated.conn;
         let cdp = cdp_session.as_str();
+        crate::phase_trace::mark("type.ref_resolved", &session);
 
         if let Err(_e) = conn
             .call(
@@ -1741,6 +1800,7 @@ impl Tool for BrowserTypeTool {
             )
             .to_tool_result();
         }
+        crate::phase_trace::mark("type.editable_checked", &session);
 
         // R2-01 measurement only (env-gated, default off).
         crate::phase_trace::mark("type.pre_visual", &session);
@@ -1780,8 +1840,14 @@ impl Tool for BrowserTypeTool {
         let mut replaced_chars = 0usize;
         let (typed, delivered_chars) = if mode == "insert_text" {
             if replace {
-                if let Err(detail) =
-                    enter_focus_emulation(conn, cdp, entry.backend_node_id, &object_id).await
+                if let Err(detail) = enter_focus_emulation(
+                    conn,
+                    cdp,
+                    entry.backend_node_id,
+                    &object_id,
+                    &session,
+                )
+                .await
                 {
                     return BrowserRefusal::new(
                         BrowserRefusalCode::BrowserInputTrustUnavailable,
@@ -1791,7 +1857,9 @@ impl Tool for BrowserTypeTool {
                     )
                     .to_tool_result();
                 }
-                match select_all_in_element(conn, cdp, &object_id).await {
+                let selected = select_all_in_element(conn, cdp, &object_id).await;
+                crate::phase_trace::mark("type.selected", &session);
+                match selected {
                     Ok(n) => replaced_chars = n,
                     Err(detail) => {
                         let _ = conn
@@ -1848,8 +1916,14 @@ impl Tool for BrowserTypeTool {
                     }
                 }
             } else {
-                conn.call(Some(cdp), "Input.insertText", json!({ "text": text }))
-                    .await
+                crate::phase_trace::mark("type.insert_send", &session);
+                let inserted = conn
+                    .call(Some(cdp), "Input.insertText", json!({ "text": text }))
+                    .await;
+                crate::phase_trace::mark_detail("type.insert_response", &session, || {
+                    json!({ "ok": inserted.is_ok() })
+                });
+                inserted
             };
             if replace {
                 if let Err(error) = conn
@@ -1862,6 +1936,7 @@ impl Tool for BrowserTypeTool {
                 {
                     call = Err(error);
                 }
+                crate::phase_trace::mark("type.emulation_disabled", &session);
             }
             match call {
                 Ok(_) => (Ok(()), requested_chars),
@@ -1884,9 +1959,10 @@ impl Tool for BrowserTypeTool {
                 )
                 .to_tool_result();
             }
+            crate::phase_trace::mark("key.emulation_enabled", &session);
             let mut focus_ready = false;
             let mut focus_error = None;
-            for _ in 0..20 {
+            for iteration in 0..20 {
                 if let Err(error) = conn
                     .call(
                         Some(cdp),
@@ -1909,14 +1985,20 @@ impl Tool for BrowserTypeTool {
                         }),
                     )
                     .await;
-                if matches!(
+                let is_ready = matches!(
                     ready,
                     Ok(ref value) if value["result"]["value"].as_bool() == Some(true)
-                ) {
+                );
+                crate::phase_trace::mark_detail("focus.poll", &session, || {
+                    json!({ "iteration": iteration, "ready": is_ready })
+                });
+                if is_ready {
                     focus_ready = true;
                     break;
                 }
+                crate::phase_trace::mark("focus.poll_sleep_start", &session);
                 tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+                crate::phase_trace::mark("focus.poll_sleep_end", &session);
             }
             if !focus_ready {
                 let _ = conn
@@ -1941,7 +2023,7 @@ impl Tool for BrowserTypeTool {
             // Chromium acknowledges focus emulation before every renderer's
             // trusted-input path is ready. Edge on Linux can otherwise drop
             // the first one or two characters while still returning success.
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+            type_focus_settle(&session, "keystrokes").await;
             if let Err(error) = conn
                 .call(
                     Some(cdp),
@@ -1987,6 +2069,7 @@ impl Tool for BrowserTypeTool {
                     }
                 }
             }
+            crate::phase_trace::mark("key.refocused", &session);
             let mut result = Ok(());
             let mut delivered = 0;
             // No characters to type means the selection has to go away by
@@ -2013,6 +2096,7 @@ impl Tool for BrowserTypeTool {
                     }
                 }
             }
+            crate::phase_trace::mark("key.loop_start", &session);
             for ch in text.chars() {
                 let (key, key_text) = if ch == '\n' {
                     ("Enter".to_string(), "\r".to_string())
@@ -2055,6 +2139,9 @@ impl Tool for BrowserTypeTool {
                 delivered += 1;
                 tokio::time::sleep(std::time::Duration::from_millis(15)).await;
             }
+            crate::phase_trace::mark_detail("key.loop_end", &session, || {
+                json!({ "delivered": delivered, "per_char_sleep_ms": 15 })
+            });
             if let Err(error) = conn
                 .call(
                     Some(cdp),
@@ -2516,6 +2603,38 @@ impl Tool for BrowserSetInputFilesTool {
                 format!("the browser refused the exact file input assignment: {error}"),
             )
             .to_tool_result(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod b01_focus_settle_knob_tests {
+    use super::*;
+
+    #[test]
+    fn unset_empty_or_invalid_knob_keeps_exactly_100_ms() {
+        assert_eq!(parse_type_focus_settle_ms(None), 100);
+        assert_eq!(parse_type_focus_settle_ms(Some("")), 100);
+        assert_eq!(parse_type_focus_settle_ms(Some("   ")), 100);
+        assert_eq!(parse_type_focus_settle_ms(Some("fast")), 100);
+        assert_eq!(parse_type_focus_settle_ms(Some("1.5")), 100);
+    }
+
+    #[test]
+    fn knob_is_clamped_to_0_through_100() {
+        assert_eq!(parse_type_focus_settle_ms(Some("0")), 0);
+        assert_eq!(parse_type_focus_settle_ms(Some(" 25 ")), 25);
+        assert_eq!(parse_type_focus_settle_ms(Some("100")), 100);
+        assert_eq!(parse_type_focus_settle_ms(Some("250")), 100);
+        assert_eq!(parse_type_focus_settle_ms(Some("-5")), 0);
+    }
+
+    #[test]
+    fn default_process_uses_the_shipped_settle() {
+        // The test environment never sets the knob; default behaviour must be
+        // the shipped 100 ms settle.
+        if std::env::var_os(EXP_TYPE_FOCUS_SETTLE_ENV).is_none() {
+            assert_eq!(type_focus_settle_ms(), 100);
         }
     }
 }

@@ -226,10 +226,14 @@ impl SdkAdapter {
             (session, marker, previous)
         });
 
+        // B-01 measurement only (env-gated, default off).
+        cua_driver_core::phase_trace::mark("sdk.call_start", "");
         let result = self
             .driver
             .call_tool_from_trusted_adapter(name, arguments)
-            .await
+            .await;
+        cua_driver_core::phase_trace::mark("sdk.call_end", "");
+        let result = result
             .map_err(|error| {
                 if let Some((session, marker, previous)) = ending_tombstone {
                     self.public_sessions
@@ -248,6 +252,7 @@ impl SdkAdapter {
             }
             format!("{name} returned invalid SDK result JSON: {error}")
         })?;
+        cua_driver_core::phase_trace::mark("sdk.parsed", "");
         let failed = value.get("isError").and_then(Value::as_bool) == Some(true);
         if failed {
             if let Some((session, marker, previous)) = ending_tombstone {
