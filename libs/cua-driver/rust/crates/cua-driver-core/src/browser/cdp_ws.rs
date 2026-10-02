@@ -136,6 +136,20 @@ struct Demux {
     closed: AtomicBool,
 }
 
+/// Own one pending reply registration for exactly the lifetime of its caller.
+/// Cancellation releases local bookkeeping only; a command already sent to the
+/// browser is neither replayed nor rolled back, and its late reply is ignored.
+struct PendingCallGuard<'a> {
+    demux: &'a Demux,
+    id: u64,
+}
+
+impl Drop for PendingCallGuard<'_> {
+    fn drop(&mut self) {
+        self.demux.pending.lock().unwrap().remove(&self.id);
+    }
+}
+
 impl Demux {
     fn close(&self) {
         self.closed.store(true, Ordering::SeqCst);
@@ -304,9 +318,15 @@ impl CdpConnection {
     /// command's reply is already queued here by the time [`Self::call`]
     /// for that command returns — callers can drain with `try_recv`
     /// deterministically (the Target.setAutoAttach pattern).
+    /// A subscription created after terminal closure is already disconnected.
     pub fn subscribe(&self) -> mpsc::UnboundedReceiver<CdpEvent> {
         let (tx, rx) = mpsc::unbounded_channel();
-        self.demux.subscribers.lock().unwrap().push(tx);
+        // Serialize the closed check and registration against close's clear:
+        // either close removes this sender, or we never retain it.
+        let mut subscribers = self.demux.subscribers.lock().unwrap();
+        if !self.is_closed() {
+            subscribers.push(tx);
+        }
         rx
     }
 
@@ -350,6 +370,8 @@ impl CdpConnection {
     /// `session_id` targets an attached (flattened) target session.
     /// Returns the `result` object, or an error carrying the CDP
     /// `error.code` (as `({code})`) and `error.message`.
+    /// Dropping the future removes its pending reply registration, but a command
+    /// already sent to the browser may still run; cancellation never replays it.
     pub async fn call(
         &self,
         session_id: Option<&str>,
@@ -368,11 +390,14 @@ impl CdpConnection {
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = oneshot::channel();
         self.demux.pending.lock().unwrap().insert(id, tx);
+        let _pending = PendingCallGuard {
+            demux: &self.demux,
+            id,
+        };
         // Close can race the initial check. If the reader cleared the
         // pending map just before this insertion, remove the orphaned
         // sender now instead of waiting for the call timeout.
         if self.is_closed() {
-            self.demux.pending.lock().unwrap().remove(&id);
             anyhow::bail!("CDP socket closed before {method}");
         }
 
@@ -385,13 +410,11 @@ impl CdpConnection {
             writer.send(Message::Text(msg.to_string())).await
         };
         if let Err(e) = sent {
-            self.demux.pending.lock().unwrap().remove(&id);
             anyhow::bail!("CDP send failed during {method}: {e}");
         }
 
         match tokio::time::timeout(CALL_TIMEOUT, rx).await {
             Err(_) => {
-                self.demux.pending.lock().unwrap().remove(&id);
                 anyhow::bail!("CDP {method} timed out after {CALL_TIMEOUT:?}")
             }
             Ok(Err(_)) => anyhow::bail!("CDP socket closed during {method}"),
@@ -965,5 +988,211 @@ mod tests {
             "pool must redial a closed connection"
         );
         second.call(None, "Ping.pong", json!({})).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn subscription_created_after_observed_close_is_disconnected() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut ws = tokio_tungstenite::accept_async(stream).await.unwrap();
+            let request = ws.next().await.unwrap().unwrap();
+            assert!(matches!(request, Message::Text(_)));
+            ws.close(None).await.unwrap();
+        });
+
+        let conn = CdpConnection::connect(&format!("ws://{addr}/devtools/browser/close"))
+            .await
+            .unwrap();
+        let mut early = conn.subscribe();
+        let result = conn.call(None, "Close.withoutReply", json!({})).await;
+        server.await.unwrap();
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "CDP socket closed during Close.withoutReply"
+        );
+        assert!(
+            conn.is_closed(),
+            "the real reader must have observed closure"
+        );
+        assert_eq!(
+            early.try_recv().unwrap_err(),
+            mpsc::error::TryRecvError::Disconnected,
+            "control: a pre-existing subscription closes with the reader"
+        );
+
+        let mut late = conn.subscribe();
+        let observed = late.try_recv().unwrap_err();
+        drop(late);
+        drop(conn);
+        assert_eq!(
+            observed,
+            mpsc::error::TryRecvError::Disconnected,
+            "contract: subscribing after terminal closure must not create an open empty stream"
+        );
+    }
+
+    #[tokio::test]
+    async fn cancelling_dispatched_call_removes_pending_sender_before_reply() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let (seen_tx, seen_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let (finish_tx, finish_rx) = oneshot::channel();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut ws = tokio_tungstenite::accept_async(stream).await.unwrap();
+            let Message::Text(text) = ws.next().await.unwrap().unwrap() else {
+                panic!("expected command")
+            };
+            let first: Value = serde_json::from_str(&text).unwrap();
+            assert_eq!(first["method"], "Cancel.afterDispatch");
+            let id = first["id"].as_u64().unwrap();
+            seen_tx.send(id).unwrap();
+            release_rx.await.unwrap();
+            ws.send(Message::Text(
+                json!({"id":id,"result":{"late":true}}).to_string(),
+            ))
+            .await
+            .unwrap();
+            let Message::Text(text) = ws.next().await.unwrap().unwrap() else {
+                panic!("expected follow-up")
+            };
+            let second: Value = serde_json::from_str(&text).unwrap();
+            assert_eq!(second["method"], "Control.nextCall");
+            ws.send(Message::Text(
+                json!({"id":second["id"],"result":{"control":true}}).to_string(),
+            ))
+            .await
+            .unwrap();
+            finish_rx.await.unwrap();
+        });
+
+        let conn = Arc::new(
+            CdpConnection::connect(&format!("ws://{addr}/devtools/browser/cancel"))
+                .await
+                .unwrap(),
+        );
+        let dispatched_conn = conn.clone();
+        let caller = tokio::spawn(async move {
+            dispatched_conn
+                .call(None, "Cancel.afterDispatch", json!({}))
+                .await
+        });
+        let id = seen_rx.await.unwrap();
+        assert!(
+            conn.demux.pending.lock().unwrap().contains_key(&id),
+            "control: the call was dispatched and registered"
+        );
+        caller.abort();
+        assert!(
+            caller.await.unwrap_err().is_cancelled(),
+            "cancellation must have completed before inspection"
+        );
+        let pending_after_abort = conn.demux.pending.lock().unwrap().len();
+
+        // Release a deliberately late reply, then use its wire ordering ahead of
+        // a normal reply as a barrier proving the reader has consumed that reply.
+        release_tx.send(()).unwrap();
+        let result = conn
+            .call(None, "Control.nextCall", json!({}))
+            .await
+            .unwrap();
+        assert_eq!(
+            result,
+            json!({"control":true}),
+            "late reply must not be misrouted"
+        );
+        assert!(
+            conn.demux.pending.lock().unwrap().is_empty(),
+            "control: late reply and following call drain the map"
+        );
+        finish_tx.send(()).unwrap();
+        server.await.unwrap();
+        drop(conn);
+
+        assert_eq!(pending_after_abort, 0,
+            "contract: cancellation must release the pending sender without relying on an eventual reply or disconnect");
+    }
+
+    #[tokio::test]
+    async fn cancelled_call_waiting_for_writer_releases_registration_without_dispatch() {
+        let calls = Arc::new(StdMutex::new(Vec::new()));
+        let recorded = calls.clone();
+        let server = MockCdpServer::start(Arc::new(move |call| {
+            recorded.lock().unwrap().push(call.method.clone());
+            MockReply::ok(json!({"control":true}))
+        }))
+        .await;
+        let conn = CdpConnection::connect(&server.ws_url()).await.unwrap();
+        let writer = conn.writer.lock().await;
+        let mut call = Box::pin(conn.call(None, "Cancel.beforeDispatch", json!({})));
+        assert!(futures_util::poll!(call.as_mut()).is_pending());
+        assert_eq!(
+            conn.demux.pending.lock().unwrap().len(),
+            1,
+            "control: the future reached the held writer after registering its reply"
+        );
+        drop(call);
+        let pending_after_drop = conn.demux.pending.lock().unwrap().len();
+        drop(writer);
+
+        assert_eq!(
+            conn.call(None, "Control.nextCall", json!({}))
+                .await
+                .unwrap(),
+            json!({"control":true})
+        );
+        assert_eq!(
+            *calls.lock().unwrap(),
+            vec!["Control.nextCall"],
+            "the cancelled writer waiter must not dispatch or be replayed"
+        );
+        drop(conn);
+        assert_eq!(
+            pending_after_drop, 0,
+            "cancellation before socket dispatch must also remove the pending sender"
+        );
+    }
+
+    #[tokio::test]
+    async fn subscriptions_racing_close_all_end_disconnected() {
+        let server = MockCdpServer::start(Arc::new(|_| MockReply::ok(json!({})))).await;
+        let conn = Arc::new(CdpConnection::connect(&server.ws_url()).await.unwrap());
+        const SUBSCRIBERS: usize = 16;
+        let barrier = Arc::new(std::sync::Barrier::new(SUBSCRIBERS + 2));
+        let receivers = std::thread::scope(|scope| {
+            let mut subscriptions = Vec::new();
+            for _ in 0..SUBSCRIBERS {
+                let conn = conn.clone();
+                let barrier = barrier.clone();
+                subscriptions.push(scope.spawn(move || {
+                    barrier.wait();
+                    conn.subscribe()
+                }));
+            }
+            let closing_conn = conn.clone();
+            let closing_barrier = barrier.clone();
+            let closer = scope.spawn(move || {
+                closing_barrier.wait();
+                closing_conn.demux.close();
+            });
+            barrier.wait();
+            let receivers = subscriptions
+                .into_iter()
+                .map(|thread| thread.join().unwrap())
+                .collect::<Vec<_>>();
+            closer.join().unwrap();
+            receivers
+        });
+        assert!(conn.is_closed());
+        for (index, mut receiver) in receivers.into_iter().enumerate() {
+            assert_eq!(
+                receiver.try_recv().unwrap_err(),
+                mpsc::error::TryRecvError::Disconnected,
+                "subscription {index} raced terminal close and must not retain an open sender"
+            );
+        }
     }
 }

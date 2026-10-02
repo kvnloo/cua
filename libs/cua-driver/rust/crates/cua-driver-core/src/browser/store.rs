@@ -673,4 +673,88 @@ mod tests {
         let b = store.mint_target("s2", record());
         assert_ne!(a, b, "capability ids must never collide across sessions");
     }
+    // EXPERIMENT ONLY. Insert inside browser/store.rs's existing tests module.
+    // Reuses store_with_ref() and BrowserStore; creates no second authority store.
+    // Reuses the original packet probe; execution status belongs in its receipt.
+    // Native DOM/AX equality and real actions remain unexecuted.
+    struct StitchedObservation {
+        session: String,
+        target: String,
+        tab: String,
+        page_ref: String,
+        dom_backend_id: i64,
+        ax_backend_id: i64,
+        ax_node_id: String,
+        runtime_object_id: String,
+    }
+
+    impl StitchedObservation {
+        fn resolved_handles<'a>(
+            &'a self,
+            store: &BrowserStore,
+            current_session: &str,
+        ) -> Result<(&'a str, &'a str), &'static str> {
+            // Never regard the attachment's cached fields as mutation authority.
+            if current_session != self.session {
+                return Err("session_mismatch");
+            }
+            let live = store
+                .resolve_ref(current_session, &self.target, &self.tab, &self.page_ref)
+                .map_err(|_| "authority_refused")?;
+            if live.backend_node_id != self.dom_backend_id
+                || self.dom_backend_id != self.ax_backend_id
+            {
+                return Err("object_identity_mismatch");
+            }
+            Ok((&self.ax_node_id, &self.runtime_object_id))
+        }
+    }
+
+    #[test]
+    fn experimental_stitched_metadata_retires_with_existing_authority() {
+        let (store, target, tab, page_ref) = store_with_ref();
+        let observation = StitchedObservation {
+            session: "sess-a".into(),
+            target: target.clone(),
+            tab,
+            page_ref,
+            dom_backend_id: 555,
+            ax_backend_id: 555,
+            ax_node_id: "fixture-ax-id".into(),
+            runtime_object_id: "fixture-runtime-id".into(),
+        };
+        let (snapshot_id, ref_index) = parse_ref(&observation.page_ref).unwrap();
+        let before = store.get_target("sess-a", &target).unwrap();
+        let generation = before.generation;
+        assert_eq!(
+            before.tabs[&observation.tab].snapshots[&snapshot_id].generation,
+            generation
+        );
+        let live = store
+            .resolve_ref("sess-a", &target, &observation.tab, &observation.page_ref)
+            .unwrap();
+        assert_eq!(live.backend_node_id, 555);
+        assert!(observation.resolved_handles(&store, "sess-a").is_ok());
+        assert_eq!(
+            observation.resolved_handles(&store, "sess-b"),
+            Err("session_mismatch")
+        );
+        store.update_target("sess-a", &target, |record| record.generation += 1);
+        let after = store.get_target("sess-a", &target).unwrap();
+        assert_eq!(after.generation, generation + 1);
+        let retained = &after.tabs[&observation.tab].snapshots[&snapshot_id];
+        assert_eq!(retained.generation, generation);
+        assert_eq!(retained.refs[&ref_index].backend_node_id, 555);
+        let refusal = store
+            .resolve_ref("sess-a", &target, &observation.tab, &observation.page_ref)
+            .unwrap_err();
+        assert_eq!(refusal.code, BrowserRefusalCode::BrowserRefStale);
+        assert_eq!(
+            observation.resolved_handles(&store, "sess-a"),
+            Err("authority_refused")
+        );
+        // The attachment lookup returns no fixture strings after invalidation.
+        // This is not live DOM/AX identity proof or revocation of copied handles.
+        // All mutations still go through existing Driver actions and frame reproof.
+    }
 }
