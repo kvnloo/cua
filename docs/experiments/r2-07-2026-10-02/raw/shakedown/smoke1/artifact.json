@@ -1,0 +1,44 @@
+{
+ "compiled_from": {
+  "learning_outcome": "verified",
+  "learning_provider_decisions": 2,
+  "trace_mutations": 2
+ },
+ "expected_outcome": {
+  "journal_submits": 1,
+  "oracle": "/state.submitted == token"
+ },
+ "fallback_points": [
+  "before each mutation: provider chooser"
+ ],
+ "routine_id": "r2-07-fill-submit-v1",
+ "schema": "r2-07.compiled-routine.v1",
+ "steps": [
+  {
+   "action": "browser_type",
+   "logical_target": {
+    "name": "verification value",
+    "role": "textbox"
+   },
+   "param_slot": "token",
+   "precondition": {
+    "field_state": "empty",
+    "page_origin": "http://127.0.0.1:*",
+    "unique": true
+   }
+  },
+  {
+   "action": "browser_click",
+   "depends_on": 0,
+   "input_route": "dom_event",
+   "logical_target": {
+    "name": "Submit",
+    "role": "button"
+   },
+   "precondition": {
+    "unique": true
+   }
+  }
+ ],
+ "task_class": "fill_submit"
+}

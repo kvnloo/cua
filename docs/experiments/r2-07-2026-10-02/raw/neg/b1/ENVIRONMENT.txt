@@ -1,0 +1,6 @@
+Block b1 (N1,N2,N3 x3) environment failure, kept as evidence and excluded from G4 row evaluation.
+In that private session the openbox log contained exactly: "Openbox-Message: A window manager is already running on screen 0".
+xvfb-run -a assigned DISPLAY :99, which another lane's private Xvfb/openbox already held (display-allocation race in the shared session script).
+The isolated browser launched but no on-screen window appeared within run.py wait_for_window (40 x 0.25 s): RuntimeError before the first routine observation; 0 dispatches; 0 target POSTs.
+The host desktop (Wayland) was not involved; :99 is a private rootless Xvfb. Re-run as block b1r in a fresh session (openbox log empty = started normally).
+Only b1 of the 16 lane sessions logged the collision (checked every session openbox.log).

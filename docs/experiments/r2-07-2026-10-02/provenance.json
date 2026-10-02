@@ -1,0 +1,47 @@
+{
+ "schema": "cua.r2.provenance.v1",
+ "lane": "R2-07",
+ "branch": "exp/r2-07-compiled-routine-20261002",
+ "shas": {
+  "upstream_main_base": "c4d0c6625b5c93849aa8bec610782410e9d45f69",
+  "trycua_cua_pr_4316_head_merged": "a0bca744067d04f05904319d3d919be30c336556",
+  "tested_source_merge_commit": "031ee5f58c222ea60ca0fcaf0a7858535a73c75b",
+  "prereg_commit": "ba264324b (PREREG.json + harness; committed 2026-10-02T02:12:57Z, first measured trial 2026-10-02T02:15:40Z)",
+  "publication_sha": "the commit on this branch that adds this file and README (see git log); the worker does not push",
+  "rust_tree_identity": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 031ee5f58 -- libs/cua-driver/rust succeeds (rust_identical_to_229b65b28=true in every validity.json)",
+  "examples_identity": "libs/cua-driver/examples/jev-use at HEAD identical to 031ee5f58 in every phase (examples_identical_to_tested_sha=true)"
+ },
+ "live_heads": {
+  "start_2026-10-02T01:50Z": {"trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (OPEN, updatedAt 2026-10-01T17:03:24Z)", "upstream_main": "8d4e7a08618611453794035f7ff6187f99f0c1e9"},
+  "end_2026-10-02T02:44Z": {"trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (unchanged)", "upstream_main": "8d4e7a08618611453794035f7ff6187f99f0c1e9 (unchanged)"},
+  "drift_vs_tested_base": "c4d0c6625..8d4e7a086 is one commit (chore(images): publish macOS 26 and 26-slim); git diff --stat c4d0c6625 8d4e7a086 -- libs/cua-driver is empty"
+ },
+ "driver": {"path": "<lanes>/bin/cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version": "cua-driver 0.32.0", "rebuilt": false, "built_from": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (SETUP.json)"},
+ "provider": {"name": "TypeSafe (live)", "model_reported": "jev-1.13.0", "key": "forwarded by name only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY); never printed or recorded", "lane_cap_reached": 80, "attempts": 68, "reached": 68},
+ "environment": {
+  "display": "private rootless Xvfb 1920x1080x24 via cua-x11-session.sh (sha256 de01a439...), openbox + picom xrender, private dbus; env -i scrubbed; no WAYLAND_DISPLAY/HYPRLAND_*/host XDG_RUNTIME_DIR",
+  "browser": "Google Chrome 151.0.7922.71 selected by the Driver (isolated_new profile per trial)",
+  "python": "3.12.13 (jev-use .venv via lane-deps.sh)",
+  "host": "Linux 7.2.2 x86_64, 10 cores (SETUP.json); loadavg recorded per trial",
+  "atspi": "not started (browser-only lane); harmless Driver WARN about the AT-SPI listener"
+ },
+ "reused_harness_sources": {
+  "fault_transport.py": "verbatim from exp/r2-05-ack-loss-real-20261001 @ 236e37e01 (sha256 6f32e4c1be9cdbdeedf060453c558e80fbfc12e8a47edf945cdf7c60b9410b71)",
+  "r2_07_launcher.py": "derived from exp/r2-03-guarded-live-20261001 @ 6bab214ab harness/receipt_launcher.py (sha256 67ea2d0f509d94eca6b35ed8dbc4641900cd288f407646738fa71bce76ac0976); adds label-scoped feedback-off, refs_logical receipts and the compiled mode",
+  "fixture.py": "journal technique adapted from exp/r2-05-ack-loss-real-20261001 @ 236e37e01 harness/ackloss_fixture.py; default page is the unchanged jev-use fixture_server.PAGE; toggle->confirm page verbatim from scripts/repro/issue24_battery_live.py @ 5474aa31f"
+ },
+ "commands": {
+  "step0_unit": "run-unit.sh <lanes>/w1-r2-07 <artifacts>/step0-unit",
+  "step0_smoke": "cua-x11-session.sh <packet>/harness/step0_smoke.sh <lanes>/w1-r2-07 <driver> <artifacts>/step0-smoke",
+  "unit_harness": "JEV_EXAMPLES=<examples> <examples>/.venv/bin/python -m unittest discover -s <packet>/harness -p 'test_*.py'",
+  "learn": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY flock <tmp>/locks/quiet-lane.lock cua-x11-session.sh <packet>/harness/run_phase.sh learn <wt> <driver> 8b037961... <artifacts>/learn <artifacts>/budget.json",
+  "warm": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY flock <tmp>/locks/quiet-lane.lock cua-x11-session.sh <packet>/harness/run_phase.sh warm ... --artifact <artifacts>/learn/artifact.json --rounds 20",
+  "negatives": "flock -s <tmp>/locks/quiet-lane.lock cua-x11-session.sh <packet>/harness/run_phase.sh negatives ... --rows <rows> --reps 3 (blocks b1 N1-N3 [environment-invalid], b1r N1-N3, b2 N4a/N4b/N5, b3 N6/N7/N8, b4 N4a_ord)",
+  "reconcile": "flock -s ... run_phase.sh reconcile ... --rows applied_ack_lost,delayed_after_first_unchanged_read --reps 5 (b1); --rows withheld_unresolved --reps 3 (b2)",
+  "livefallback": "CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY flock <tmp>/locks/quiet-lane.lock cua-x11-session.sh ... run_phase.sh livefallback ... --rounds 3",
+  "package": "python3 harness/package_raw.py <artifacts> <packet>",
+  "analyze": "python3 analyze.py --write",
+  "verify": "python3 verify_artifacts.py"
+ },
+ "mirror": "<lanes>/artifacts/r2/R2-07/ (full outputs incl. session logs; the packet raw/ keeps only content-free JSON/JSONL)"
+}
