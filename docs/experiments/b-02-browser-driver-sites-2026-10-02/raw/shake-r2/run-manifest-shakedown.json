@@ -1,0 +1,62 @@
+{
+ "plan_kind": "shakedown",
+ "arms": [
+  "K5",
+  "K5E",
+  "K5V",
+  "K5EV"
+ ],
+ "arm_knobs": {
+  "K5": {},
+  "K5E": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound"
+  },
+  "K5V": {
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  },
+  "K5EV": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound",
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  }
+ },
+ "blocks": [
+  [
+   "shake000-fill-K5-measured",
+   "shake001-toggle-K5E-measured",
+   "shake002-modal-K5V-measured",
+   "shake003-fill-K5EV-measured",
+   "shake004-toggle-K5E-ne1",
+   "shake005-fill-K5E-ne2",
+   "shake006-modal-K5EV-stale_ref",
+   "shake007-fill-K5-nw2",
+   "shake008-modal-K5V-nw2",
+   "shake009-none-K5V-nv"
+  ]
+ ],
+ "started_mono_ns": 223901461466740,
+ "started_utc": "2026-10-02T05:38:37.484Z",
+ "loadavg_start": "5.97 11.09 12.80 6/2421 3982322",
+ "locks": [
+  {
+   "mode": "shared",
+   "requested_utc": "2026-10-02T05:38:37.484Z",
+   "acquired_utc": "2026-10-02T05:38:37.484Z",
+   "t_request_ns": 223901461559338,
+   "t_acquired_ns": 223901461582847,
+   "first": "shake000-fill-K5-measured",
+   "last": "shake009-none-K5V-nv",
+   "trials": 10,
+   "released_utc": "2026-10-02T05:42:13.736Z",
+   "t_released_ns": 224117712975583
+  }
+ ],
+ "provider": "mock",
+ "rounds": 20,
+ "display": ":99",
+ "ended_mono_ns": 224117714244545,
+ "ended_utc": "2026-10-02T05:42:13.737Z",
+ "loadavg_end": "14.90 12.56 12.97 25/2827 4005428",
+ "network": {
+  "non_loopback_connect_attempts": 0
+ }
+}

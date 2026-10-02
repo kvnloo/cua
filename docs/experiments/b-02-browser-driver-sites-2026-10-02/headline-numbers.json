@@ -1,15 +1,859 @@
 {
  "numbers": [
-  {"name": "K5 per-call admission span (legacy era)", "path": ["vmicro", "K5", "legacy_span_median_of_trials"], "digits": 3, "shown": "1.573"},
-  {"name": "K5V per-call admission span (legacy era)", "path": ["vmicro", "K5V", "legacy_span_median_of_trials"], "digits": 3, "shown": "0.32"},
-  {"name": "paired saving per call (legacy)", "path": ["vmicro", "paired_saving_legacy_span_median", "median"], "digits": 3, "shown": "1.257"},
-  {"name": "paired saving CI low", "path": ["vmicro", "paired_saving_legacy_span_median", "ci95", 0], "digits": 3, "shown": "1.22"},
-  {"name": "paired saving CI high", "path": ["vmicro", "paired_saving_legacy_span_median", "ci95", 1], "digits": 3, "shown": "1.28"},
-  {"name": "saving as % of K5 span", "path": ["vmicro", "gate_V_call", "saving_fraction_of_k5"], "scale": 100, "digits": 1, "shown": "79.9"},
-  {"name": "paired saving per call (modern)", "path": ["vmicro", "paired_saving_modern_span_median", "median"], "digits": 3, "shown": "1.162"},
-  {"name": "paired client round-trip saving (legacy)", "path": ["vmicro", "paired_saving_legacy_rtt_median", "median"], "digits": 3, "shown": "1.338"},
-  {"name": "projection fill share", "path": ["projection_V_to_browser_classes", "fill", "share_of_b01_composed_mean_T"], "scale": 100, "digits": 1, "shown": "5.9"},
-  {"name": "projection toggle share", "path": ["projection_V_to_browser_classes", "toggle", "share_of_b01_composed_mean_T"], "scale": 100, "digits": 1, "shown": "9.5"},
-  {"name": "projection modal share", "path": ["projection_V_to_browser_classes", "modal", "share_of_b01_composed_mean_T"], "scale": 100, "digits": 1, "shown": "9.2"}
+  {
+   "name": "K5 per-call admission span (legacy era)",
+   "path": [
+    "vmicro",
+    "K5",
+    "legacy_span_median_of_trials"
+   ],
+   "digits": 3,
+   "shown": "1.573"
+  },
+  {
+   "name": "K5V per-call admission span (legacy era)",
+   "path": [
+    "vmicro",
+    "K5V",
+    "legacy_span_median_of_trials"
+   ],
+   "digits": 3,
+   "shown": "0.32"
+  },
+  {
+   "name": "paired saving per call (legacy)",
+   "path": [
+    "vmicro",
+    "paired_saving_legacy_span_median",
+    "median"
+   ],
+   "digits": 3,
+   "shown": "1.257"
+  },
+  {
+   "name": "paired saving CI low",
+   "path": [
+    "vmicro",
+    "paired_saving_legacy_span_median",
+    "ci95",
+    0
+   ],
+   "digits": 3,
+   "shown": "1.22"
+  },
+  {
+   "name": "paired saving CI high",
+   "path": [
+    "vmicro",
+    "paired_saving_legacy_span_median",
+    "ci95",
+    1
+   ],
+   "digits": 3,
+   "shown": "1.28"
+  },
+  {
+   "name": "saving as % of K5 span",
+   "path": [
+    "vmicro",
+    "gate_V_call",
+    "saving_fraction_of_k5"
+   ],
+   "scale": 100,
+   "digits": 1,
+   "shown": "79.9"
+  },
+  {
+   "name": "paired saving per call (modern)",
+   "path": [
+    "vmicro",
+    "paired_saving_modern_span_median",
+    "median"
+   ],
+   "digits": 3,
+   "shown": "1.162"
+  },
+  {
+   "name": "paired client round-trip saving (legacy)",
+   "path": [
+    "vmicro",
+    "paired_saving_legacy_rtt_median",
+    "median"
+   ],
+   "digits": 3,
+   "shown": "1.338"
+  },
+  {
+   "name": "fill E T_oracle saving",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "21.9"
+  },
+  {
+   "name": "fill E T_oracle saving CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "ci95",
+    0
+   ],
+   "digits": 1,
+   "shown": "11.2"
+  },
+  {
+   "name": "fill E T_oracle saving CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "ci95",
+    1
+   ],
+   "digits": 1,
+   "shown": "36.5"
+  },
+  {
+   "name": "fill V T_oracle saving",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "24.3"
+  },
+  {
+   "name": "fill V T_oracle saving CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "ci95",
+    0
+   ],
+   "digits": 1,
+   "shown": "6.0"
+  },
+  {
+   "name": "fill V T_oracle saving CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "ci95",
+    1
+   ],
+   "digits": 1,
+   "shown": "44.8"
+  },
+  {
+   "name": "fill S",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "S_K5_over_K5EV",
+    "S"
+   ],
+   "digits": 2,
+   "shown": "1.35"
+  },
+  {
+   "name": "fill S CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "S_K5_over_K5EV",
+    "ci95",
+    0
+   ],
+   "digits": 2,
+   "shown": "1.23"
+  },
+  {
+   "name": "fill S CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "S_K5_over_K5EV",
+    "ci95",
+    1
+   ],
+   "digits": 2,
+   "shown": "1.64"
+  },
+  {
+   "name": "fill K5 endpoint component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "arms",
+    "K5",
+    "endpoint_ms_median"
+   ],
+   "digits": 1,
+   "shown": "42.7"
+  },
+  {
+   "name": "fill K5E endpoint component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "arms",
+    "K5E",
+    "endpoint_ms_median"
+   ],
+   "digits": 1,
+   "shown": "10.6"
+  },
+  {
+   "name": "fill K5 admission component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "arms",
+    "K5",
+    "admission_ms_median"
+   ],
+   "digits": 1,
+   "shown": "18.2"
+  },
+  {
+   "name": "fill K5V admission component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "arms",
+    "K5V",
+    "admission_ms_median"
+   ],
+   "digits": 1,
+   "shown": "2.4"
+  },
+  {
+   "name": "fill K5 T_oracle median",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "arms",
+    "K5",
+    "T_oracle_ms",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "156.5"
+  },
+  {
+   "name": "fill K5EV T_oracle median",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "arms",
+    "K5EV",
+    "T_oracle_ms",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "115.9"
+  },
+  {
+   "name": "fill E2 untested share %",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "fill",
+    "E2",
+    "best",
+    "untested_share"
+   ],
+   "digits": 1,
+   "scale": 100,
+   "shown": "1.6"
+  },
+  {
+   "name": "toggle E T_oracle saving",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "25.4"
+  },
+  {
+   "name": "toggle E T_oracle saving CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "ci95",
+    0
+   ],
+   "digits": 1,
+   "shown": "13.8"
+  },
+  {
+   "name": "toggle E T_oracle saving CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "ci95",
+    1
+   ],
+   "digits": 1,
+   "shown": "35.6"
+  },
+  {
+   "name": "toggle V T_oracle saving",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "10.8"
+  },
+  {
+   "name": "toggle V T_oracle saving CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "ci95",
+    0
+   ],
+   "digits": 1,
+   "shown": "3.9"
+  },
+  {
+   "name": "toggle V T_oracle saving CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "ci95",
+    1
+   ],
+   "digits": 1,
+   "shown": "24.3"
+  },
+  {
+   "name": "toggle S",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "S_K5_over_K5EV",
+    "S"
+   ],
+   "digits": 2,
+   "shown": "1.49"
+  },
+  {
+   "name": "toggle S CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "S_K5_over_K5EV",
+    "ci95",
+    0
+   ],
+   "digits": 2,
+   "shown": "1.36"
+  },
+  {
+   "name": "toggle S CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "S_K5_over_K5EV",
+    "ci95",
+    1
+   ],
+   "digits": 2,
+   "shown": "1.76"
+  },
+  {
+   "name": "toggle K5 endpoint component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "arms",
+    "K5",
+    "endpoint_ms_median"
+   ],
+   "digits": 1,
+   "shown": "39.0"
+  },
+  {
+   "name": "toggle K5E endpoint component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "arms",
+    "K5E",
+    "endpoint_ms_median"
+   ],
+   "digits": 1,
+   "shown": "8.7"
+  },
+  {
+   "name": "toggle K5 admission component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "arms",
+    "K5",
+    "admission_ms_median"
+   ],
+   "digits": 1,
+   "shown": "17.5"
+  },
+  {
+   "name": "toggle K5V admission component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "arms",
+    "K5V",
+    "admission_ms_median"
+   ],
+   "digits": 1,
+   "shown": "2.4"
+  },
+  {
+   "name": "toggle K5 T_oracle median",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "arms",
+    "K5",
+    "T_oracle_ms",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "119.2"
+  },
+  {
+   "name": "toggle K5EV T_oracle median",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "arms",
+    "K5EV",
+    "T_oracle_ms",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "79.8"
+  },
+  {
+   "name": "toggle E2 untested share %",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "toggle",
+    "E2",
+    "best",
+    "untested_share"
+   ],
+   "digits": 1,
+   "scale": 100,
+   "shown": "22.1"
+  },
+  {
+   "name": "modal E T_oracle saving",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "33.0"
+  },
+  {
+   "name": "modal E T_oracle saving CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "ci95",
+    0
+   ],
+   "digits": 1,
+   "shown": "14.8"
+  },
+  {
+   "name": "modal E T_oracle saving CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "paired",
+    "K5-K5E",
+    "T_oracle",
+    "ci95",
+    1
+   ],
+   "digits": 1,
+   "shown": "42.3"
+  },
+  {
+   "name": "modal V T_oracle saving",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "18.9"
+  },
+  {
+   "name": "modal V T_oracle saving CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "ci95",
+    0
+   ],
+   "digits": 1,
+   "shown": "-0.3"
+  },
+  {
+   "name": "modal V T_oracle saving CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "paired",
+    "K5-K5V",
+    "T_oracle",
+    "ci95",
+    1
+   ],
+   "digits": 1,
+   "shown": "28.4"
+  },
+  {
+   "name": "modal S",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "S_K5_over_K5EV",
+    "S"
+   ],
+   "digits": 2,
+   "shown": "1.54"
+  },
+  {
+   "name": "modal S CI low",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "S_K5_over_K5EV",
+    "ci95",
+    0
+   ],
+   "digits": 2,
+   "shown": "1.33"
+  },
+  {
+   "name": "modal S CI high",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "S_K5_over_K5EV",
+    "ci95",
+    1
+   ],
+   "digits": 2,
+   "shown": "1.79"
+  },
+  {
+   "name": "modal K5 endpoint component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "arms",
+    "K5",
+    "endpoint_ms_median"
+   ],
+   "digits": 1,
+   "shown": "37.8"
+  },
+  {
+   "name": "modal K5E endpoint component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "arms",
+    "K5E",
+    "endpoint_ms_median"
+   ],
+   "digits": 1,
+   "shown": "8.9"
+  },
+  {
+   "name": "modal K5 admission component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "arms",
+    "K5",
+    "admission_ms_median"
+   ],
+   "digits": 1,
+   "shown": "17.4"
+  },
+  {
+   "name": "modal K5V admission component",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "arms",
+    "K5V",
+    "admission_ms_median"
+   ],
+   "digits": 1,
+   "shown": "2.3"
+  },
+  {
+   "name": "modal K5 T_oracle median",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "arms",
+    "K5",
+    "T_oracle_ms",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "127.7"
+  },
+  {
+   "name": "modal K5EV T_oracle median",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "arms",
+    "K5EV",
+    "T_oracle_ms",
+    "median"
+   ],
+   "digits": 1,
+   "shown": "83.0"
+  },
+  {
+   "name": "modal E2 untested share %",
+   "path": [
+    "browser",
+    "measured",
+    "classes",
+    "modal",
+    "E2",
+    "best",
+    "untested_share"
+   ],
+   "digits": 1,
+   "scale": 100,
+   "shown": "0.0"
+  },
+  {
+   "name": "measured valid",
+   "path": [
+    "browser",
+    "measured",
+    "valid"
+   ],
+   "digits": 0,
+   "shown": "240"
+  },
+  {
+   "name": "N-E1 pass",
+   "path": [
+    "browser",
+    "controls",
+    "N-E1",
+    "pass"
+   ],
+   "digits": 0,
+   "shown": "30"
+  },
+  {
+   "name": "N-E2 pass",
+   "path": [
+    "browser",
+    "controls",
+    "N-E2",
+    "pass"
+   ],
+   "digits": 0,
+   "shown": "15"
+  },
+  {
+   "name": "N-E3 full proof first",
+   "path": [
+    "browser",
+    "N-E3",
+    "full_proof_first"
+   ],
+   "digits": 0,
+   "shown": "190"
+  },
+  {
+   "name": "N-W1 pass",
+   "path": [
+    "browser",
+    "controls",
+    "N-W1",
+    "pass"
+   ],
+   "digits": 0,
+   "shown": "60"
+  },
+  {
+   "name": "N-W2 pass",
+   "path": [
+    "browser",
+    "controls",
+    "N-W2",
+    "pass"
+   ],
+   "digits": 0,
+   "shown": "20"
+  }
  ]
 }

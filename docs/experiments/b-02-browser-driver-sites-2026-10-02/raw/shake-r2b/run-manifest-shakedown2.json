@@ -1,0 +1,54 @@
+{
+ "plan_kind": "shakedown2",
+ "arms": [
+  "K5",
+  "K5E",
+  "K5V",
+  "K5EV"
+ ],
+ "arm_knobs": {
+  "K5": {},
+  "K5E": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound"
+  },
+  "K5V": {
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  },
+  "K5EV": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound",
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  }
+ },
+ "blocks": [
+  [
+   "shakeb000-toggle-K5E-ne1",
+   "shakeb001-fill-K5E-ne2"
+  ]
+ ],
+ "started_mono_ns": 224187541030423,
+ "started_utc": "2026-10-02T05:43:23.564Z",
+ "loadavg_start": "16.26 13.39 13.23 23/2575 4010555",
+ "locks": [
+  {
+   "mode": "shared",
+   "requested_utc": "2026-10-02T05:43:23.564Z",
+   "acquired_utc": "2026-10-02T05:43:23.564Z",
+   "t_request_ns": 224187541168112,
+   "t_acquired_ns": 224187541193263,
+   "first": "shakeb000-toggle-K5E-ne1",
+   "last": "shakeb001-fill-K5E-ne2",
+   "trials": 2,
+   "released_utc": "2026-10-02T05:43:32.060Z",
+   "t_released_ns": 224196036983513
+  }
+ ],
+ "provider": "mock",
+ "rounds": 20,
+ "display": ":99",
+ "ended_mono_ns": 224196037058035,
+ "ended_utc": "2026-10-02T05:43:32.060Z",
+ "loadavg_end": "17.21 13.69 13.33 14/2566 4011920",
+ "network": {
+  "non_loopback_connect_attempts": 0
+ }
+}

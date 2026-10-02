@@ -1,0 +1,57 @@
+{
+ "plan_kind": "smoke",
+ "arms": [
+  "K5",
+  "K5E",
+  "K5V",
+  "K5EV"
+ ],
+ "arm_knobs": {
+  "K5": {},
+  "K5E": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound"
+  },
+  "K5V": {
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  },
+  "K5EV": {
+   "CUA_DRIVER_EXP_ENDPOINT_REPROOF": "bound",
+   "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE": "1"
+  }
+ },
+ "blocks": [
+  [
+   "smoke000-fill-K5-measured",
+   "smoke001-fill-K5-measured",
+   "smoke002-fill-K5-measured",
+   "smoke003-fill-K5-measured",
+   "smoke004-fill-K5-measured"
+  ]
+ ],
+ "started_mono_ns": 225788643417082,
+ "started_utc": "2026-10-02T06:10:04.666Z",
+ "loadavg_start": "23.20 21.16 18.21 38/2808 611651",
+ "locks": [
+  {
+   "mode": "shared",
+   "requested_utc": "2026-10-02T06:10:04.666Z",
+   "acquired_utc": "2026-10-02T06:10:04.666Z",
+   "t_request_ns": 225788643572299,
+   "t_acquired_ns": 225788643597917,
+   "first": "smoke000-fill-K5-measured",
+   "last": "smoke004-fill-K5-measured",
+   "trials": 5,
+   "released_utc": "2026-10-02T06:10:15.937Z",
+   "t_released_ns": 225799913945464
+  }
+ ],
+ "provider": "mock",
+ "rounds": 20,
+ "display": ":101",
+ "ended_mono_ns": 225799914068612,
+ "ended_utc": "2026-10-02T06:10:15.937Z",
+ "loadavg_end": "23.61 21.32 18.30 21/2830 618839",
+ "network": {
+  "non_loopback_connect_attempts": 0
+ }
+}

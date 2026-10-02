@@ -8,7 +8,10 @@ Checks:
   3. Lock evidence: the vmicro block ran inside the quiet-timed EXCLUSIVE receipt 'b02-vmicro';
      the STEP 0 run inside 'b02-step0'; every SHARED acquisition held <= 10 trials; builds and
      unit runs carry a lane receipt with the cargo lock.
-  4. PREREG order: the PREREG commit (git, when available) precedes the first measured trial.
+  4. PREREG order: the PREREG commit (git, when available) precedes the first measured trial, and
+     PREREG-AMENDMENT-1's commit precedes the first browser trial of the fix round.
+  3b. Fix round: STEP 0 r2 inside the EXCLUSIVE receipt 'b02-step0-r2'; the measured block inside
+     'b02-measured'; controls/smoke/shakedown blocks one SHARED acquisition per block of <= 10.
   5. The five B-01 harness files are byte-identical to the recorded git blobs.
   6. 0 non-loopback connects in every runner manifest (TypeSafe attempts 0, reached 0).
   7. Privacy: no absolute local path, host name or secret-shaped value in any packet file.
@@ -95,6 +98,41 @@ def main() -> int:
         r = by_label.get(label, [])
         check(len(r) == 1 and r[0]["quiet_lock"] == "shared", f"{label}: excluded run receipted (SHARED, <= 10 trials)")
 
+    # 3b. fix-round locks
+    def session_window(block: str) -> tuple[datetime, datetime] | None:
+        log = RAW / block / "session.log"
+        if not log.exists():
+            return None
+        text = log.read_text()
+        a = re.search(r"\[b02\] DISPLAY=\S+ start_utc=(\S+)", text)
+        b = re.search(r"\[b02\] end_utc=(\S+) rc=", text)
+        return (ts(a.group(1)), ts(b.group(1))) if a and b else None
+
+    fix_starts = []
+    for block in ("shake-r2-step0", "shake-r2", "shake-r2b", "step0-r2", "measured", "controls", "smoke"):
+        w = session_window(block)
+        if w:
+            fix_starts.append(w[0])
+    w = session_window("step0-r2")
+    r = by_label.get("b02-step0-r2", [])
+    check(w is not None and len(r) == 1 and r[0]["rc"] == 0 and ts(r[0]["acquired"]) <= w[0] and w[1] <= ts(r[0]["released"]),
+          "STEP 0 r2 inside the quiet-timed EXCLUSIVE receipt b02-step0-r2")
+    mm = RAW / "measured" / "run-manifest-measured.json"
+    if mm.exists():
+        man = json.loads(mm.read_text())
+        r = by_label.get("b02-measured", [])
+        check(len(r) == 1 and r[0]["rc"] == 0 and ts(r[0]["acquired"]) <= ts(man["started_utc"])
+              and ts(man["ended_utc"]) <= ts(r[0]["released"]), "measured block inside the quiet-timed EXCLUSIVE receipt b02-measured")
+    for block in ("controls", "smoke", "shake-r2", "shake-r2b"):
+        f = RAW / block / f"run-manifest-{'shakedown' if block == 'shake-r2' else 'shakedown2' if block == 'shake-r2b' else block}.json"
+        if f.exists():
+            man = json.loads(f.read_text())
+            check(all(len(b) <= 10 for b in man["blocks"]) and len(man["locks"]) == len(man["blocks"])
+                  and all(l["mode"] == "shared" for l in man["locks"]),
+                  f"{block}: one SHARED acquisition per block of <= 10 trials")
+    r = by_label.get("b02-shake-r2-step0", [])
+    check(len(r) == 1 and r[0]["quiet_lock"] == "shared", "b02-shake-r2-step0: excluded run receipted (SHARED, 3 trials)")
+
     # 4. PREREG order
     first_measured = ts(vm["started_utc"])
     try:
@@ -105,6 +143,15 @@ def main() -> int:
         when = datetime.fromisoformat(first_commit[-1]) if first_commit else None
         check(when is not None and when < first_measured, f"PREREG committed ({first_commit[-1] if first_commit else None}) before the first measured trial ({vm['started_utc']})")
         check(bool(out), "PREREG has a commit")
+        am = subprocess.run(["git", "log", "--diff-filter=A", "--format=%cI", "--", str(HERE / "PREREG-AMENDMENT-1.json")],
+                            cwd=HERE, capture_output=True, text=True, check=True).stdout.split()
+        am_when = datetime.fromisoformat(am[-1]) if am else None
+        check(am_when is not None and bool(fix_starts) and am_when < min(fix_starts),
+              f"PREREG-AMENDMENT-1 committed ({am[-1] if am else None}) before the first fix-round browser trial "
+              f"({min(fix_starts).isoformat() if fix_starts else None})")
+        later = subprocess.run(["git", "log", "--format=%H", "--", str(HERE / "PREREG.json")],
+                               cwd=HERE, capture_output=True, text=True, check=True).stdout.split()
+        check(len(later) == 1, "PREREG.json was never edited after its commit")
     except (subprocess.CalledProcessError, FileNotFoundError, IndexError):
         check(ts(prereg["written_utc"]) < first_measured, "PREREG written_utc precedes the first measured trial (git unavailable)")
 

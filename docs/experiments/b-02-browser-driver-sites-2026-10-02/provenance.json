@@ -6,7 +6,10 @@
  "measurement_commit": "560bd8247c36c9d249f481b509a073c131e93620",
  "prereg_commit": "1a902e45320a199f1852c4d71ab197a1ca4cbd87",
  "prereg_commit_utc": "2026-10-02T05:08:15Z",
- "packet_commit": "the commit adding README.md on the branch (see git log)",
+ "prereg_amendment_1_commit": "0fedd5391bbeeb3b8d8a1a69c362388956e5456e",
+ "prereg_amendment_1_commit_utc": "2026-10-02T05:35:46Z",
+ "harness_fix_commit": "630eb22e7 (2026-10-02T05:43:58Z, before STEP 0 r2 and the measured block)",
+ "packet_commit": "the latest commit touching README.md on the branch (see git log)",
  "publication_sha": null,
  "tested_driver_source": "560bd8247c36c9d249f481b509a073c131e93620",
  "driver_binary": {
@@ -26,23 +29,27 @@
    "analyze.py": "c70e622721439cc824dce1c5b94dec8cd3dd8d1a"
   }
  },
- "b01_traces_reanalysed": {"commit": "6689610d5a2619cb45dd4328b2921c89f88967be", "path": "docs/experiments/b-01-browser-critpath-2026-10-02/raw/trials-measured.tar.gz", "binary_sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3", "status": "B-01 pending; read-only localization only"},
+ "b01_traces_reanalysed": {"commit": "6689610d5a2619cb45dd4328b2921c89f88967be", "path": "docs/experiments/b-01-browser-critpath-2026-10-02/raw/trials-measured.tar.gz", "binary_sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3", "status": "B-01 pending; read-only localization only (first round)"},
  "live_heads": {
-  "trycua_cua_pr_4316": {"start": {"utc": "2026-10-02T05:07:15Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}, "end": {"utc": "2026-10-02T05:18:06Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}},
-  "upstream_main_gh": {"start": "bc55ff2d236a62075c981ebadf0ff97dd90d45be (13 ahead of 229b65b28, 0 libs/cua-driver files)", "end": "6fbcdf97b6ed953e70ea5efad5a61d3ffb490a2f (14 ahead of 229b65b28, 0 libs/cua-driver files)"}
+  "trycua_cua_pr_4316": {"start": {"utc": "2026-10-02T05:07:15Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}, "amendment": {"utc": "2026-10-02T05:34:58Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}, "end": {"utc": "2026-10-02T06:33:20Z", "head": "a0bca744067d04f05904319d3d919be30c336556", "state": "open"}},
+  "upstream_main_gh": {"start": "bc55ff2d236a62075c981ebadf0ff97dd90d45be (13 ahead of 229b65b28, 0 libs/cua-driver files)", "amendment": "9ab9e890ac63f5d2407fa59f5541a1e3ef9c9b65", "end": "7b98efd35b50e1ffaa796385c1d35534f8cb5bb2 (20 ahead of 229b65b28, 0 libs/cua-driver files)"}
  },
  "environment": {
-  "kernel": "Linux 7.2.2 x86_64, 10 CPUs",
-  "isolation": "every code-executing command under hostless (bwrap user namespace: tmpfs over host X11/ICE dirs and the user runtime dir, desktop variables dropped); GUI/Driver work additionally inside cua-x11-session.sh (private rootless Xvfb 1920x1080x24, openbox, picom xrender, private dbus, env -i)",
-  "displays": {"step0": ":99", "step0-dbg1": ":100", "version_read": ":100", "vmicro": ":99", "nv": ":101"},
-  "python": "jev-use .venv (Python 3.12) for runners; system python3 for analysis",
-  "browser": "none launched: Driver refused isolated launch under hostless (uid mapping)",
-  "host_processes_during_lane": "about 660"
+  "kernel": "Linux 7.2.2 x86_64, 10 CPUs, shared with other tracks",
+  "isolation": {
+   "hostless_v1": "bwrap user namespace (tmpfs over host X11/ICE dirs and the user runtime dir, desktop variables dropped); root-owned files appear as uid 65534. Used ONLY for STEP 0 (b02-step0, 05:02Z) and step0-dbg1 (05:03Z), which the Driver refused (browser_route_unavailable).",
+   "hostless_v2": "Landlock scope (no connect to outside abstract unix sockets, no signals outside) + desktop/session variable scrub + private XDG_RUNTIME_DIR, no user namespace; file mtime 2026-10-02T05:06:31Z. Used for shake-vmicro2, vmicro, nv and every fix-round block (shake-r2-step0, shake-r2, shake-r2b, step0-r2, controls, smoke, measured).",
+   "session": "GUI/Driver/browser work additionally inside cua-x11-session.sh (private rootless Xvfb 1920x1080x24, openbox, picom xrender, private dbus, env -i)"
+  },
+  "displays": {"step0": ":99", "step0-dbg1": ":100", "version_read": ":100", "vmicro": ":99", "nv": ":101", "shake-r2-step0": ":102", "shake-r2": ":99", "shake-r2b": ":99", "step0-r2": ":100", "controls": ":101", "smoke": ":101", "measured": ":100"},
+  "python": "jev-use .venv (Python 3.12) for runners; system python3 (under hostless) for analysis",
+  "browser": "Driver-chosen system Google Chrome 151.0.7922.71 (root-owned /opt/google/chrome), browser_prepare {allow_launch, isolated_new}, sandbox on, fresh isolated profile per trial; first round: none launched (hostless v1)",
+  "host_load": "fix round: about 760 host processes, 2500-2800 threads; 1-minute loadavg 17.7-23.8 during the measured block (per trial in raw); vmicro 2.6-2.8"
  },
- "locks": "raw/lock-ledger.jsonl: quiet-timed EXCLUSIVE receipts b02-step0 and b02-vmicro (verbatim ledger lines); lane receipts (flock -s quiet [+ cargo-build]) for unit-compile-1, build-b02-560bd8247, unit-run-1, b02-step0-dbg1, b02-shake-vmicro, b02-shake-vmicro2; runner SHARED acquisition for N-V (10 trials)",
+ "locks": "raw/lock-ledger.jsonl: quiet-timed EXCLUSIVE receipts b02-step0, b02-vmicro, b02-step0-r2, b02-measured (verbatim ledger lines); lane receipts (flock -s quiet [+ cargo-build]) for unit-compile-1, build-b02-560bd8247, unit-run-1, b02-step0-dbg1, b02-shake-vmicro, b02-shake-vmicro2, b02-shake-r2-step0; runner SHARED acquisitions (<= 10 trials each) for nv, shake-r2, shake-r2b, controls (14), smoke (1)",
  "provider": {"TypeSafe": {"attempts": 0, "reached": 0}},
- "forced_path": "vmicro: K5V every tools/call skips the inner validation (mcp.inner_validation_skipped, 0 inner inventory builds); K5 every call builds and validates (0 skips). nv: identical invalid calls per arm.",
- "actual_producer": "Driver phase-trace marks in the direct stdio adapter (proxy::run_direct) and server::handle_request_inner of the tested binary",
- "oracle": "vmicro: Driver CLOCK_MONOTONIC marks of the deleted work itself and the client round trip; nv: byte-exact JSON-RPC reply lines. No target-owned browser oracle (no browser task could run).",
- "claim_boundary": "Linux X11 private Xvfb under hostless; binary 7e6c0609 (0.32.0); raw MCP stdio; get_config; legacy and modern MCP eras. Not a browser-task, LIVE_PROVIDER, Wayland, macOS or Windows claim; no default change."
+ "forced_path": "measured: from Driver marks per trial; V arms skip the inner validation on every tools/call in T (mcp.inner_validation_skipped, 0 inner builds), other arms build and validate; E arms seed at bind (ep.bound_stored) and hit the bound check on every mutation in T (ep.bound_hit, 0 misses), other arms have no ep.bound_* marks. vmicro and nv as in the first round.",
+ "actual_producer": "Driver phase-trace marks of the tested binary (proxy::run_direct, server::handle_request_inner, BrowserEngine revalidate/owned_endpoint, platform-linux discover_owned_endpoint, snapshot pipeline) and the runner's CLOCK_MONOTONIC events",
+ "oracle": "measured/controls: target-owned fixture server state (fill: submitted == token; toggle/modal: #24 oracle_ok) with a server-side CLOCK_MONOTONIC journal and an independent 2 ms re-read thread; T_oracle = first semantic_v2 send -> first confirming re-read. vmicro: Driver marks of the deleted work and the client round trip; nv: byte-exact JSON-RPC replies.",
+ "claim_boundary": "Linux X11 private Xvfb under hostless v2; binary 7e6c0609 (0.32.0); system Chrome 151 isolated_new, sandbox on; mock chooser; jev-use MCP client; B-01 K5 arm and classes. Not a LIVE_PROVIDER, Wayland, macOS or Windows claim; no default change."
 }
