@@ -1,0 +1,98 @@
+test_accepts_private_display_with_ancestor (test_isolation_guard.IsolationGuardTest.test_accepts_private_display_with_ancestor) ... ERROR
+test_hostless_ancestor_is_found_from_the_process_tree (test_isolation_guard.IsolationGuardTest.test_hostless_ancestor_is_found_from_the_process_tree) ... ERROR
+test_isolation_record (test_isolation_guard.IsolationGuardTest.test_isolation_record) ... ERROR
+test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) ... 
+  test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'WAYLAND_DISPLAY': 'wayland-1'}) ... ERROR
+  test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'HYPRLAND_INSTANCE_SIGNATURE': 'x'}) ... ERROR
+  test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'CUA_DRIVER_PHASE_TRACE_FILE': 't'}) ... ERROR
+  test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS': '0'}) ... ERROR
+  test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'CUA_E2E_BROWSER_NO_SANDBOX': '1'}) ... ERROR
+test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) ... ERROR
+test_refuses_without_a_hostless_ancestor (test_isolation_guard.IsolationGuardTest.test_refuses_without_a_hostless_ancestor) ... ERROR
+
+======================================================================
+ERROR: test_accepts_private_display_with_ancestor (test_isolation_guard.IsolationGuardTest.test_accepts_private_display_with_ancestor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 29, in test_accepts_private_display_with_ancestor
+    R.refuse_unsafe_environment(OK_ENV, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_hostless_ancestor_is_found_from_the_process_tree (test_isolation_guard.IsolationGuardTest.test_hostless_ancestor_is_found_from_the_process_tree)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 22, in test_hostless_ancestor_is_found_from_the_process_tree
+    self.assertIsNotNone(R.hostless_ancestor(os.getpid()))
+                         ^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'run_d' has no attribute 'hostless_ancestor'
+
+======================================================================
+ERROR: test_isolation_record (test_isolation_guard.IsolationGuardTest.test_isolation_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 43, in test_isolation_record
+    rec = R.isolation_record({"DISPLAY": ":99"}, ancestor=lambda: 7)
+          ^^^^^^^^^^^^^^^^^^
+AttributeError: module 'run_d' has no attribute 'isolation_record'
+
+======================================================================
+ERROR: test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'WAYLAND_DISPLAY': 'wayland-1'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 36, in test_refuses_host_session_variables_and_bypass_knobs
+    R.refuse_unsafe_environment({**OK_ENV, **extra}, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'HYPRLAND_INSTANCE_SIGNATURE': 'x'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 36, in test_refuses_host_session_variables_and_bypass_knobs
+    R.refuse_unsafe_environment({**OK_ENV, **extra}, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'CUA_DRIVER_PHASE_TRACE_FILE': 't'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 36, in test_refuses_host_session_variables_and_bypass_knobs
+    R.refuse_unsafe_environment({**OK_ENV, **extra}, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS': '0'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 36, in test_refuses_host_session_variables_and_bypass_knobs
+    R.refuse_unsafe_environment({**OK_ENV, **extra}, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) (extra={'CUA_E2E_BROWSER_NO_SANDBOX': '1'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 36, in test_refuses_host_session_variables_and_bypass_knobs
+    R.refuse_unsafe_environment({**OK_ENV, **extra}, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 38, in test_refuses_host_session_variables_and_bypass_knobs
+    R.refuse_unsafe_environment({}, ancestor=lambda: 123)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+======================================================================
+ERROR: test_refuses_without_a_hostless_ancestor (test_isolation_guard.IsolationGuardTest.test_refuses_without_a_hostless_ancestor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<wt>/docs/experiments/i107-d-2026-10-02/harness/tests/test_isolation_guard.py", line 26, in test_refuses_without_a_hostless_ancestor
+    R.refuse_unsafe_environment(OK_ENV, ancestor=lambda: None)
+TypeError: refuse_unsafe_environment() got an unexpected keyword argument 'ancestor'
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.005s
+
+FAILED (errors=10)
