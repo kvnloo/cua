@@ -18,11 +18,12 @@
 
 import json
 import os
+import time
 
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk  # noqa: E402
+from gi.repository import GLib, Gtk, Gdk  # noqa: E402
 
 
 def aid(widget, name):
@@ -415,6 +416,9 @@ class TaskWindow(Gtk.Window):
 
         root.pack_start(self.button("Exit", lambda *_: Gtk.main_quit()), False, False, 0)
         self.connect("destroy", Gtk.main_quit)
+        self.agree = agree
+        # Test-only AT-SPI census control channel; None unless CUA_GTK3_CONTROL_FIFO is set.
+        self.control = ControlChannel.from_env(self, root)
         self.publish()
 
     def add_distractors(self, root, density):
@@ -500,10 +504,164 @@ class TaskWindow(Gtk.Window):
         if self.density is not None:
             state["density"] = self.density
             state["distractor_actions"] = self.distractor_actions
+        if getattr(self, "control", None) is not None:
+            state["control"] = self.control.state()
         temporary = f"{self.state_path}.{os.getpid()}.tmp"
         with open(temporary, "w", encoding="utf-8") as stream:
             json.dump(state, stream, sort_keys=True)
         os.replace(temporary, self.state_path)
+
+
+CONTROL_FIFO_ENV = "CUA_GTK3_CONTROL_FIFO"
+CONTROL_ACK_ENV = "CUA_GTK3_CONTROL_ACK"
+AUX_WINDOW_TITLE = "CuaTestHarness GTK3 Aux"
+
+
+class ControlChannel:
+    """Opt-in, test-only control channel for the AT-SPI invalidation census
+    (kvnloo/cua#20). It exists only in task mode when CUA_GTK3_CONTROL_FIFO
+    names a FIFO; ordinary and task launches without it are unchanged.
+
+    It adds a selection list, a dynamic-children area and a re-creatable
+    button below the task controls, and applies one known mutation per JSON
+    command line read from the FIFO, from inside the app, so the census can
+    force a change whose producer is not the Driver. Each command is
+    acknowledged as one JSON line in CUA_GTK3_CONTROL_ACK with CLOCK_MONOTONIC
+    start/end times. The task state file gains a "control" object, so the
+    app stays the target-owned oracle for every forced change.
+    """
+
+    @classmethod
+    def from_env(cls, win, root):
+        fifo = os.environ.get(CONTROL_FIFO_ENV, "").strip()
+        if not fifo:
+            return None
+        return cls(win, root, fifo, os.environ.get(CONTROL_ACK_ENV, "").strip() or f"{fifo}.ack")
+
+    def __init__(self, win, root, fifo, ack_path):
+        self.win = win
+        self.generation = 0
+        self.added = 0
+        self.aux = None
+        self.buffer = b""
+        self.ack = open(ack_path, "a", encoding="utf-8")
+        self.choices = Gtk.ListBox()
+        self.choices.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.rows = {}
+        for value in ("Alpha", "Beta", "Gamma"):
+            row = aid(Gtk.ListBoxRow(), f"Choice {value}")
+            row.add(Gtk.Label(label=value, xalign=0))
+            self.choices.add(row)
+            self.rows[value] = row
+        root.pack_start(self.choices, False, False, 0)
+        self.dynamic = aid(Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6), "Dynamic area")
+        root.pack_start(self.dynamic, False, False, 0)
+        self.slot = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.recreatable = Gtk.Button(label="Recreatable")
+        self.slot.pack_start(self.recreatable, False, False, 0)
+        root.pack_start(self.slot, False, False, 0)
+        win.set_default_size(480, 460)
+        win.note.connect("changed", lambda *_: win.publish())
+        win.connect("set-focus", lambda *_: GLib.idle_add(self._publish_once))
+        self.choices.connect("selected-rows-changed", lambda *_: win.publish())
+        fd = os.open(fifo, os.O_RDWR | os.O_NONBLOCK)  # RDWR: no EOF between writers
+        GLib.io_add_watch(fd, GLib.PRIORITY_DEFAULT, GLib.IO_IN, self.on_readable)
+
+    def _publish_once(self):
+        self.win.publish()
+        return False
+
+    def state(self):
+        focus = self.win.get_focus()
+        row = self.choices.get_selected_row()
+        return {
+            "note_text": self.win.note.get_text(),
+            "focus": focus.get_accessible().get_name() if focus is not None else None,
+            "selection": row.get_child().get_text() if row is not None else None,
+            "dynamic": [child.get_label() for child in self.dynamic.get_children()],
+            "recreatable_generation": self.generation,
+            "aux_window": self.aux is not None,
+        }
+
+    def on_readable(self, fd, _condition):
+        try:
+            self.buffer += os.read(fd, 65536)
+        except BlockingIOError:
+            return True
+        while b"\n" in self.buffer:
+            line, self.buffer = self.buffer.split(b"\n", 1)
+            if line.strip():
+                self.apply(json.loads(line))
+        return True
+
+    def apply(self, command):
+        start = time.monotonic_ns()
+        error = None
+        try:
+            getattr(self, "op_" + command["op"])(command)
+        except Exception as exc:  # reported in the ack, never raised into GTK
+            error = f"{type(exc).__name__}: {exc}"
+        end = time.monotonic_ns()
+        self.ack.write(json.dumps({"id": command.get("id"), "op": command["op"], "m_start": start,
+                                   "m_end": end, "seq": self.win.sequence, "error": error}) + "\n")
+        self.ack.flush()
+
+    def op_noop(self, _command):
+        pass
+
+    def op_set_text(self, command):
+        self.win.note.set_text(command["value"])
+
+    def op_focus(self, command):
+        targets = {"Note": self.win.note, "I agree": self.win.agree, "Choice list": self.choices}
+        targets[command["target"]].grab_focus()
+
+    def op_select(self, command):
+        value = command.get("value")
+        if value is None:
+            self.choices.unselect_all()
+        else:
+            self.choices.select_row(self.rows[value])
+
+    def op_toggle_check(self, _command):
+        self.win.agree.set_active(not self.win.agree.get_active())
+
+    def op_add_child(self, command):
+        # "pack_then_show" is the common GTK3 order (add, then show/show_all);
+        # "show_then_pack" adds an already visible child.
+        self.added += 1
+        child = Gtk.Button(label=f"Dynamic item {self.added}")
+        if command.get("order", "pack_then_show") == "show_then_pack":
+            child.show()
+            self.dynamic.pack_start(child, False, False, 0)
+        else:
+            self.dynamic.pack_start(child, False, False, 0)
+            child.show()
+        self.win.publish()
+
+    def op_remove_child(self, _command):
+        self.dynamic.get_children()[-1].destroy()
+        self.win.publish()
+
+    def op_recreate(self, _command):
+        self.recreatable.destroy()
+        self.recreatable = Gtk.Button(label="Recreatable")
+        self.slot.pack_start(self.recreatable, False, False, 0)
+        self.recreatable.show()
+        self.generation += 1
+        self.win.publish()
+
+    def op_window_open(self, _command):
+        self.aux = Gtk.Window(title=AUX_WINDOW_TITLE)
+        self.aux.set_default_size(240, 120)
+        self.aux.add(Gtk.Label(label="AUX_WINDOW_MARKER_v1"))
+        self.aux.show_all()
+        self.win.publish()
+
+    def op_window_close(self, _command):
+        self.aux.destroy()
+        self.aux = None
+        self.win.publish()
 
 
 def main():
