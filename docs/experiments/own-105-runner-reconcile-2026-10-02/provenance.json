@@ -1,0 +1,42 @@
+{
+  "experiment": "OWN-105 runner reconciliation (kvnloo/cua#105)",
+  "captured_utc": "2026-10-02T02:31Z",
+  "base_unfixed_source": {
+    "sha": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+    "what": "kvnloo/cua#105 head (research/mutation-outcome-ack-loss-v0); parent ec83a3a807968782d82ec50cacf1759604ae1cc7",
+    "unfixed_runner_copy": "git archive of libs/cua-driver/examples/jev-use/python at 98a45e6c5 into the lane temp dir; python/run.py sha256 e22fa2461dc65655a7abd8557199ee0c3c83ab01fdb958461cd96bd16450e02e (equals git show 98a45e6c5:.../run.py)"
+  },
+  "tested_sources": {
+    "tests_commit": "feadb19659b5711589b08efaaa8e2fe0cea42420",
+    "fix_commit": "27386f3e34540e22218b704705e5238ef1316e85",
+    "prereg_commit": "b91bf93990a7a1447aedddda170970a41771de49 (committed 2026-10-02T02:31:06Z; measured run started 2026-10-02T02:31:19Z)",
+    "measured_tree": "worktree HEAD b91bf9399 for every block (session-env-bNN.txt: worktree_head, worktree_dirty_jev_use=0); its jev-use tree equals 27386f3e3",
+    "fixed_runner_sha256": {
+      "python/run.py": "dfc0352dbda1622f1064d7e71ceeb59f34ca11ab246303a1b4c3657bfa97c43a",
+      "typescript/run.ts": "f21ece75505de0e2b85ab9d2b546b5e5afacb865187e040c3e91f5de4090f011"
+    },
+    "red_record_note": "raw/unit/red-commit1-focused was recorded at c5610cea226a03479f26f98885540bb9ff03fae8, an earlier build of the tests commit whose tree differs from feadb1965 only by the added test_verify_setup.py case; raw/unit/red-commit1-full was recorded on the feadb1965 jev-use tree"
+  },
+  "live_pr_heads_gh": {
+    "kvnloo/cua#105": {"head": "98a45e6c528da9e2715288c20c2a0feeeef8e73f", "state": "OPEN", "draft": true, "read_utc": ["lane start, before 2026-10-02T01:50Z", "2026-10-02T02:31Z"]},
+    "trycua/cua PR 4316": {"head": "a0bca744067d04f05904319d3d919be30c336556", "state": "OPEN", "draft": false, "read_utc": "2026-10-02T02:31Z"}
+  },
+  "driver_source": {
+    "sha": "a0bca744067d04f05904319d3d919be30c336556",
+    "identity_check": "git diff --quiet a0bca744067d04f05904319d3d919be30c336556 98a45e6c528da9e2715288c20c2a0feeeef8e73f -- libs/cua-driver/rust -> rc 0 (SOURCE); the two trees differ only under libs/cua-driver/examples/jev-use"
+  },
+  "driver_binary": {
+    "path_label": "<lanes>/bin/cua-driver-4316-a0bca7440",
+    "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95",
+    "version": "cua-driver 0.31.0",
+    "build": "existing lane build of a0bca7440 used by R2-05; not rebuilt (no Driver code changed). Recomputed inside every session block (raw/measured/session-env-bNN.txt). Plain binary, not the -e2e wrapper.",
+    "driver_code_changed": false
+  },
+  "publication_sha": "not set in this packet: this lane only commits locally; the Publish agent records the publication SHA after any push",
+  "runtimes": "Python 3.12.13, mcp 1.30.0, anyio 4.15.1 (uv sync --frozen); Node v22.23.2, @modelcontextprotocol/sdk 1.30.0, tsx 4.20.3 (npm ci --ignore-scripts)",
+  "browser": "Google Chrome 151.0.7922.71 (installed package google-chrome 151.0.7922.71-1; the Driver launches it with a Driver-owned isolated_new profile)",
+  "environment": "Linux 7.2.2 x86_64, i9-10900KF, 10 cores. Private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox and picom, private dbus-run-session, scrubbed env (no WAYLAND_DISPLAY, HYPRLAND_* or host XDG_RUNTIME_DIR), no AT-SPI bus. Every block ran under flock -s quiet-lane.lock (shared, correctness lane); other agents shared the host and loadavg is recorded per trial.",
+  "session_script_sha256": {"cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b"},
+  "provider": {"name": "mock", "typesafe_attempts": 0, "typesafe_reached": 0},
+  "evidence_classes": "SOURCE (Driver identity, code-path statements), UNIT (red/green suites, harness self-tests), REAL (the measured matrix on real MCP stdio, Driver, Chrome and the owned fixture journal); see README for the per-row table"
+}
