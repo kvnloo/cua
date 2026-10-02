@@ -1,0 +1,36 @@
+   Compiling cua-driver-core v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cua-telemetry v0.1.0 (<lanes>/w1-bug01/libs/cua/crates/cua-telemetry)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling cua-driver-testkit v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver-testkit)
+   Compiling platform-linux v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/platform-linux)
+   Compiling cua-driver v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 53.82s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running tests/compatibility_contract_test.rs (<cargo-targets>/cua-release-r2-02/debug/deps/compatibility_contract_test-d13eec9e36e9785e)
+
+running 4 tests
+test prime_agent_connection_guidance_uses_the_skill_and_cli_path ... ok
+test released_cli_help_and_manifest_fields_remain_compatible ... ok
+test direct_mcp_runtime_matches_the_released_protocol_contract ... ok
+test released_mcp_initialize_tools_list_and_error_fields_remain_compatible ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests/protocol_tools_call_test.rs (<cargo-targets>/cua-release-r2-02/debug/deps/protocol_tools_call_test-381c243ee6bc1daf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/schema_consistency_test.rs (<cargo-targets>/cua-release-r2-02/debug/deps/schema_consistency_test-ac3809f14f51d9a6)
+
+running 4 tests
+test registered_tool_contracts_match_on_active_backend ... ok
+test portable_desktop_contracts_are_accepted_by_active_backend ... ok
+test canonical_cursor_contracts_match_active_backend ... ok
+test health_report_is_callable_through_authorized_mcp_surface ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.76s
+

@@ -5,7 +5,7 @@
  "sources": {
   "upstream_main_tested": "c4d0c6625b5c93849aa8bec610782410e9d45f69",
   "rust_tree_equal_to": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (git diff --quiet 229b65b28 c4d0c6625 -- libs/cua-driver/rust exit 0)",
-  "upstream_main_live_at_packet_time": "8d4e7a08618611453794035f7ff6187f99f0c1e9 (git ls-remote, 2026-10-02T02:4xZ); 1 commit ahead of c4d0c6625, 0 files under libs/cua-driver (gh api compare, read-only)",
+  "upstream_main_live_at_packet_time": "8d4e7a08618611453794035f7ff6187f99f0c1e9 (git ls-remote, re-checked 2026-10-02T03:2xZ); 1 commit ahead of c4d0c6625, 0 files under libs/cua-driver (gh api compare, read-only)",
   "commits": {
    "prereg": "d0d63f296c739fce110ede81a2d910aef4e6075c",
    "failing_test_main_plus_test": "147f2adec6efb3bf9604e2e34a1217fdc296ba9c",
@@ -13,16 +13,48 @@
    "fix": "2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e",
    "repro_ignored_test": "ec88394cd180e98da5753e4a9a94bcaa1cb1a322",
    "style_rustfmt_only": "8f52c55a7846d603dbfe66c8583f7eb07db4d966",
-   "packet": "the commit that adds this file (publication SHA is assigned by the Publish agent; see README 'Heads')"
+   "guard_tests_executed_branch": "7431f03d1b34d9a98934b4c7fbef19ecc01457c8",
+   "fix_executed_branch": "49a3adf0f0b33446e77c1413fec579090ff2f29a",
+   "packet": "the latest commit that touches this file (publication SHA is assigned by the Publish agent; see README 'Heads')"
   },
-  "fix_independence": "git merge-tree --write-tree --merge-base 2533db6d5^ 147f2adec 2533db6d5 succeeds: the fix commit cherry-picks cleanly onto main + failing test without the instrumentation"
+  "fix_independence": "git merge-tree --write-tree --merge-base 2533db6d5^ 147f2adec 2533db6d5 succeeds: the fix commit cherry-picks cleanly onto main + failing test without the instrumentation; and 49a3adf0f applies cleanly onto that result (git merge-tree). The guard-test commit 7431f03d1 conflicts there only by its insertion point in v2_tests.rs (before the part B repro section)",
+  "fix_candidate": "2533db6d5 + 49a3adf0f (2533db6d5 alone is superseded: its producers derived delivery_mode from the request; found by round-1 verification)"
  },
  "binaries": {
-  "baseline": {"path": "<lanes>/bin/cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version_in_session": "cua-driver 0.32.0", "source": "229b65b28 (wave-0 SETUP build, tree-equal to c4d0c6625 for libs/cua-driver/rust)", "used_for": "part A baseline matrix"},
-  "instrumented": {"path": "<lanes>/bin/cua-driver-bug01-instr-a99ee937a", "sha256": "75bd2d40b63813ae53d620b0e593a6824ec99f326b11b32642e649cfa9dac77e", "version_in_session": "cua-driver 0.32.0", "source": "a99ee937a", "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> bug01-instr-a99ee937a cua-release-r2-02; 100 s; Fresh workspace units 0; raw/build-instr.out", "used_for": "part B measured run, part B pilots, default-off smoke"},
-  "fix": {"path": "<lanes>/bin/cua-driver-bug01-fix-2533db6d5", "sha256": "ab75b36f29a103b16094df9e45e1a50fc66069ef494df4b44a556e10c64bc599", "version_in_session": "cua-driver 0.32.0", "source": "2533db6d5 (includes the default-off instrumentation; CUA_DRIVER_EXP_CDP_COUNTER_FILE unset, enforced by probe_delivery.py)", "build": "same command, label bug01-fix-2533db6d5; 91 s; Fresh workspace units 0; raw/build-fix.out", "used_for": "part A fix matrix"},
+  "baseline": {
+   "path": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+   "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+   "version_in_session": "cua-driver 0.32.0",
+   "source": "229b65b28 (wave-0 SETUP build, tree-equal to c4d0c6625 for libs/cua-driver/rust)",
+   "used_for": "part A baseline matrix and decoy control (raw/part-a-activation/baseline)"
+  },
+  "instrumented": {
+   "path": "<lanes>/bin/cua-driver-bug01-instr-a99ee937a",
+   "sha256": "75bd2d40b63813ae53d620b0e593a6824ec99f326b11b32642e649cfa9dac77e",
+   "version_in_session": "cua-driver 0.32.0",
+   "source": "a99ee937a",
+   "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> bug01-instr-a99ee937a cua-release-r2-02; 100 s; Fresh workspace units 0; raw/build-instr.out",
+   "used_for": "part B measured run, part B pilots, default-off smoke"
+  },
+  "fix": {
+   "path": "<lanes>/bin/cua-driver-bug01-fix-2533db6d5",
+   "sha256": "ab75b36f29a103b16094df9e45e1a50fc66069ef494df4b44a556e10c64bc599",
+   "version_in_session": "cua-driver 0.32.0",
+   "source": "2533db6d5 (includes the default-off instrumentation; CUA_DRIVER_EXP_CDP_COUNTER_FILE unset, enforced by probe_delivery.py)",
+   "build": "same command, label bug01-fix-2533db6d5; 91 s; Fresh workspace units 0; raw/build-fix.out",
+   "used_for": "part A fix matrix with the superseded fix 2533db6d5 (raw/part-a/fix-*)",
+   "status": "superseded by fix2"
+  },
   "build_disclosure": "build-driver.sh runs '<bin> --version' outside the isolated session (prints only the version); versions above were re-recorded inside the session by the probes",
-  "cargo": "cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1 (8bab26f4f 2026-07-14); target dir <cargo-targets>/cua-release-r2-02"
+  "cargo": "cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1 (8bab26f4f 2026-07-14); target dir <cargo-targets>/cua-release-r2-02",
+  "fix2": {
+   "path": "<lanes>/bin/cua-driver-bug01-fix-49a3adf0f",
+   "sha256": "c61e8fc6a2814fe944ec491ff84f84299d6e0435e86b49ab3d8c47ba000c1ac5",
+   "version_in_session": "cua-driver 0.32.0",
+   "source": "49a3adf0f (final fix candidate; includes the default-off instrumentation; CUA_DRIVER_EXP_CDP_COUNTER_FILE unset, enforced by probe_delivery.py and probe_activation.py)",
+   "build": "same command, label bug01-fix-49a3adf0f; 88 s; Fresh workspace units 0; raw/build-fix2.out",
+   "used_for": "part A fix matrix re-run (raw/part-a/fix2-*) and decoy control (raw/part-a-activation/fix2)"
+  }
  },
  "scripts": {
   "cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
@@ -38,7 +70,7 @@
  },
  "runs_utc": {
   "unit_main_plus_test": "head 147f2adec, inside session, shared quiet lock + cargo lock (raw/unit/main-test)",
-  "part_a_pilot": "1 block x 10 trials, baseline binary, excluded (raw/pilot/part-a-pilot)",
+  "part_a_pilot": "1 block x 10 trials, baseline binary, excluded (raw/pilot/part-a-pilot); ran 02:08:10Z after the PREREG commit, no lockinfo (log says lock_note=caller-held)",
   "part_a_baseline": "2026-10-02T02:08:53Z..02:12:05Z, quiet-lane.lock SHARED (raw/part-a-baseline.lockinfo)",
   "unit_instr": "head a99ee937a (raw/unit/instr)",
   "default_off_smoke": "2026-10-02T02:15Z, instrumented binary, variable unset (raw/default-off-check.txt)",
@@ -46,7 +78,12 @@
   "part_b_measured": "2026-10-02T02:19:54Z..02:22:44Z, quiet-lane.lock EXCLUSIVE (raw/part-b-measured.lockinfo)",
   "unit_fix": "head 2533db6d5 (raw/unit/fix)",
   "part_a_fix": "2026-10-02T02:35:03Z..02:38:13Z, quiet-lane.lock SHARED (raw/part-a-fix.lockinfo)",
-  "repro_ignored": "working tree = 2533db6d5 + the repro test, which was then committed unchanged as ec88394cd (raw/unit/repro-ignored.txt)"
+  "repro_ignored": "working tree = 2533db6d5 + the repro test, which was then committed unchanged as ec88394cd (raw/unit/repro-ignored.txt)",
+  "unit_guard_tests_red": "head 7431f03d1, inside session, shared quiet lock + cargo lock (raw/unit/guard-red)",
+  "unit_fix2": "head 49a3adf0f, inside session, shared quiet lock + cargo lock (raw/unit/fix2, incl. history-rerun.txt)",
+  "part_a_fix2": "2026-10-02T03:17:13Z..03:20:20Z, quiet-lane.lock SHARED (raw/part-a-fix2.lockinfo); extension after round-1 verification",
+  "activation_baseline": "2026-10-02T03:20:42Z..03:21:45Z, quiet-lane.lock SHARED (raw/part-a-activation-baseline.lockinfo); extension, not pre-registered",
+  "activation_fix2": "2026-10-02T03:21:45Z..03:22:48Z, quiet-lane.lock SHARED (raw/part-a-activation-fix2.lockinfo); extension, not pre-registered"
  },
  "packet_format_reference": "kvnloo/cua#106 head c45845797b714ccfd76a9569d3238a0724107a83 (docs/experiments/latency-2026-10-01/)"
 }

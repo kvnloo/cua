@@ -1,0 +1,86 @@
+[session] DISPLAY=:99 openbox=3258485 picom=3258486 dbus=unix:path=<tmp>/dbus-…,guid=d8cfe651e938f37fd062f9166abf230d
+== bug01 probe=probe_activation.py DISPLAY=:99 lock_note=caller-held
+Cua Driver sends content-free product telemetry by default. Run `cua-driver telemetry disable` to stop it; `cua-driver telemetry status` shows the current setting.
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.a11y.Bus' requested by ':1.0' (uid=1000 pid=3258614 comm="<lanes>/bin/cua-driver-r2")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.a11y.Bus'
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='ca.desrt.dconf' requested by ':1.1' (uid=1000 pid=3258625 comm="/usr/lib/at-spi-bus-launcher")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'ca.desrt.dconf'
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[2m2026-10-02T03:20:48.103188Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 10, body: Str, fds: [] })
+[2m2026-10-02T03:20:48.114356Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.gtk.vfs.Daemon' requested by ':1.5' (uid=1000 pid=3258729 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.gtk.vfs.Daemon'
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.Notifications' requested by ':1.8' (uid=1000 pid=3258729 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.portal.Desktop' requested by ':1.8' (uid=1000 pid=3258729 comm="/opt/google/chrome/chrome --remote-debugging-port=")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.impl.portal.PermissionStore' requested by ':1.10' (uid=1000 pid=3258923 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.freedesktop.Notifications'
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.freedesktop.impl.portal.PermissionStore'
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.portal.Documents' requested by ':1.10' (uid=1000 pid=3258923 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.freedesktop.portal.Documents'
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.534: Choosing gtk.portal for org.freedesktop.impl.portal.Lockdown as a last-resort fallback
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.impl.portal.desktop.gtk' requested by ':1.10' (uid=1000 pid=3258923 comm="/usr/lib/xdg-desktop-portal")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.freedesktop.impl.portal.desktop.gtk'
+
+** (xdg-desktop-portal-gtk:3258953): WARNING **: 22:20:48.560: AT-SPI: Could not obtain desktop path or name
+
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.561: Choosing gtk.portal for org.freedesktop.impl.portal.Access as a last-resort fallback
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+
+** (xdg-desktop-portal-gtk:3258953): WARNING **: 22:20:48.561: atk-bridge: GetRegisteredEvents returned message with unknown signature
+
+** (xdg-desktop-portal-gtk:3258953): WARNING **: 22:20:48.561: atk-bridge: get_device_events_reply: unknown signature
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.568: Choosing gtk.portal for org.freedesktop.impl.portal.Settings as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.568: Choosing gtk.portal for org.freedesktop.impl.portal.FileChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.568: Choosing gtk.portal for org.freedesktop.impl.portal.AppChooser as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.569: Choosing gtk.portal for org.freedesktop.impl.portal.Print as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.569: Choosing gtk.portal for org.freedesktop.impl.portal.Notification as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.570: Choosing gtk.portal for org.freedesktop.impl.portal.Inhibit as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.571: Failed to connect to PipeWire: Couldn't connect to PipeWire
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.571: Choosing gtk.portal for org.freedesktop.impl.portal.Account as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.572: Choosing gtk.portal for org.freedesktop.impl.portal.Email as a last-resort fallback
+
+(/usr/lib/xdg-desktop-portal:3258923): xdg-desktop-portal-WARNING **: 22:20:48.572: Choosing gtk.portal for org.freedesktop.impl.portal.DynamicLauncher as a last-resort fallback
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Successfully activated service 'org.freedesktop.portal.Desktop'
+{"trial": "act-100-T-a6e53e", "receipt_delivery": "background", "route": "trusted_input", "decoy_active_pre": true, "active_post_is_browser": true, "active_post_is_decoy": false, "verified": true}
+{"trial": "act-101-D-da608e", "receipt_delivery": "background", "route": "dom", "decoy_active_pre": true, "active_post_is_browser": false, "active_post_is_decoy": true, "verified": true}
+{"trial": "act-102-T-e256eb", "receipt_delivery": "background", "route": "trusted_input", "decoy_active_pre": true, "active_post_is_browser": true, "active_post_is_decoy": false, "verified": true}
+{"trial": "act-103-D-6dcf7f", "receipt_delivery": "background", "route": "dom", "decoy_active_pre": true, "active_post_is_browser": false, "active_post_is_decoy": true, "verified": true}
+{"trial": "act-104-T-8b8cab", "receipt_delivery": "background", "route": "trusted_input", "decoy_active_pre": true, "active_post_is_browser": true, "active_post_is_decoy": false, "verified": true}
+{"trial": "act-105-D-06643f", "receipt_delivery": "background", "route": "dom", "decoy_active_pre": true, "active_post_is_browser": false, "active_post_is_decoy": true, "verified": true}
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[2m2026-10-02T03:21:16.794685Z[0m [33m WARN[0m [2mcua_driver_sdk::runtime[0m[2m:[0m could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 9, body: Str, fds: [] })
+[2m2026-10-02T03:21:16.801758Z[0m [33m WARN[0m [2mplatform_linux::overlay[0m[2m:[0m X11 overlay: root reads cannot see this window's own pixels; save-unders will be served without readback confirmation
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.4' (uid=1000 pid=3258653 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3258483]: [session uid=1000 pid=3258483 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+{"trial": "act-200-D-e13cb9", "receipt_delivery": "background", "route": "dom", "decoy_active_pre": true, "active_post_is_browser": false, "active_post_is_decoy": true, "verified": true}
+{"trial": "act-201-T-11202e", "receipt_delivery": "background", "route": "trusted_input", "decoy_active_pre": true, "active_post_is_browser": true, "active_post_is_decoy": false, "verified": true}
+{"trial": "act-202-D-0e9dd8", "receipt_delivery": "background", "route": "dom", "decoy_active_pre": true, "active_post_is_browser": false, "active_post_is_decoy": true, "verified": true}
+{"trial": "act-203-T-da83e7", "receipt_delivery": "background", "route": "trusted_input", "decoy_active_pre": true, "active_post_is_browser": true, "active_post_is_decoy": false, "verified": true}
+{"trial": "act-204-D-4e97c7", "receipt_delivery": "background", "route": "dom", "decoy_active_pre": true, "active_post_is_browser": false, "active_post_is_decoy": true, "verified": true}
+{"trial": "act-205-T-8f68b7", "receipt_delivery": "background", "route": "trusted_input", "decoy_active_pre": true, "active_post_is_browser": true, "active_post_is_decoy": false, "verified": true}
+rc_probe=0
+A connection to the bus can't be made
+CRITICAL: [dbus_cb_name_lost:1438] Cannot connect to DBus.
+[session] exit rc=0 run_dir=<tmp>/x11-session.Vv5LNh

@@ -1,0 +1,35 @@
+   Compiling cua-driver-core v0.32.0 (<lanes>/w1-bug01/libs/cua-driver/rust/crates/cua-driver-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.42s
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-r2-02/debug/deps/cua_driver_core-dc164b2820e669ff)
+
+running 4 tests
+test browser::v2_tests::background_browser_receipts_keep_background_delivery ... ok
+test browser::v2_tests::foreground_request_on_a_platform_that_keeps_background_posture_reports_background ... FAILED
+test browser::v2_tests::foreground_request_on_an_embedded_route_reports_background ... FAILED
+test browser::v2_tests::foreground_trusted_browser_input_receipt_does_not_claim_background_delivery ... ok
+
+failures:
+
+---- browser::v2_tests::foreground_request_on_a_platform_that_keeps_background_posture_reports_background stdout ----
+
+thread 'browser::v2_tests::foreground_request_on_a_platform_that_keeps_background_posture_reports_background' (3212668) panicked at crates/cua-driver-core/src/browser/v2_tests.rs:2814:13:
+assertion `left == right` failed: browser_click: ["Target.getTargets", "Browser.getWindowForTarget", "Browser.getWindowBounds", "Target.attachToTarget", "Page.getFrameTree", "DOM.scrollIntoViewIfNeeded", "DOM.getBoxModel", "Runtime.evaluate", "Page.getLayoutMetrics", "Emulation.setFocusEmulationEnabled", "Input.dispatchMouseEvent", "Input.dispatchMouseEvent", "Emulation.setFocusEmulationEnabled"]
+  left: String("foreground")
+ right: "background"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- browser::v2_tests::foreground_request_on_an_embedded_route_reports_background stdout ----
+
+thread 'browser::v2_tests::foreground_request_on_an_embedded_route_reports_background' (3212694) panicked at crates/cua-driver-core/src/browser/v2_tests.rs:2814:13:
+assertion `left == right` failed: browser_click: ["Target.getTargets", "Browser.getWindowForTarget", "Target.attachToTarget", "Page.getFrameTree", "DOM.scrollIntoViewIfNeeded", "DOM.getBoxModel", "Runtime.evaluate", "Page.getLayoutMetrics", "Emulation.setFocusEmulationEnabled", "Input.dispatchMouseEvent", "Input.dispatchMouseEvent", "Emulation.setFocusEmulationEnabled"]
+  left: String("foreground")
+ right: "background"
+
+
+failures:
+    browser::v2_tests::foreground_request_on_a_platform_that_keeps_background_posture_reports_background
+    browser::v2_tests::foreground_request_on_an_embedded_route_reports_background
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 818 filtered out; finished in 0.35s
+
+error: test failed, to rerun pass `-p cua-driver-core --lib`

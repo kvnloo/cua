@@ -142,11 +142,65 @@ def field_dist(rows: list[dict[str, Any]], which: str) -> dict[str, dict[str, di
     return dict(out)
 
 
+def activation_row(rec: dict[str, Any]) -> dict[str, Any]:
+    win, decoy = rec.get("browser_window_id"), rec.get("decoy_window_id")
+    samples = rec.get("active_samples_after_click") or []
+    page = rec.get("journal") or []
+    clicks = [j for j in page if j.get("kind") == "click" and is_submit(j.get("target"))]
+    structured = (rec.get("click") or {}).get("structured") or {}
+    return {
+        "arm": rec["arm"],
+        "receipt_delivery_mode": str((structured.get("delivery") or {}).get("mode")),
+        "receipt_route": str(structured.get("route")),
+        "decoy_active_pre": (rec.get("focus_pre") or {}).get("active_window") == decoy,
+        "browser_active_first_sample": bool(samples) and samples[0][1] == win,
+        "browser_active_post": (rec.get("focus_post") or {}).get("active_window") == win,
+        "decoy_active_post": (rec.get("focus_post") or {}).get("active_window") == decoy,
+        "page_click_trusted": bool(clicks) and clicks[0].get("is_trusted") is True,
+        "page_has_focus_at_click": bool(clicks) and clicks[0].get("has_focus") is True,
+        "verified": (rec.get("final_state") or {}).get("submitted") == rec.get("token"),
+    }
+
+
+def activation(packet: Path) -> dict[str, Any]:
+    """Decoy-window control (disclosed extension, not pre-registered)."""
+    out: dict[str, Any] = {}
+    base = packet / "raw" / "part-a-activation"
+    for label in ("baseline", "fix2"):
+        d = base / label
+        if not d.exists():
+            continue
+        rows = [activation_row(json.loads(p.read_text())) for p in sorted(d.glob("act-*-[TD]-*.json")) if "harness-error" not in p.name]
+        errors = len(list(d.glob("*harness-error*")))
+        env = json.loads((d / "session-env.json").read_text())
+        arms: dict[str, Any] = {}
+        for arm in ("T", "D"):
+            rs = [r for r in rows if r["arm"] == arm]
+            arms[arm] = {"n": len(rs)}
+            for key in ("decoy_active_pre", "browser_active_first_sample", "browser_active_post", "decoy_active_post", "page_click_trusted", "page_has_focus_at_click", "verified"):
+                arms[arm][key] = sum(1 for r in rs if r[key])
+            arms[arm]["receipt_delivery_mode"] = dict(Counter(r["receipt_delivery_mode"] for r in rs))
+            arms[arm]["receipt_route"] = dict(Counter(r["receipt_route"] for r in rs))
+        out[label] = {"driver_sha256": env.get("driver_sha256"), "driver_version_in_session": env.get("driver_version_in_session"), "chrome": env.get("chrome"), "t_start_utc": env.get("t_start_utc"), "t_end_utc": env.get("t_end_utc"), "harness_errors": errors, "arms": arms}
+    return out
+
+
+def changes(dists: dict[str, Any], a: str, b: str) -> list[dict[str, Any]]:
+    changed: list[dict[str, Any]] = []
+    for which in ("click", "type"):
+        for arm, fields in dists[a][which].items():
+            for f, dist in fields.items():
+                other = dists[b][which].get(arm, {}).get(f)
+                if other != dist:
+                    changed.append({"receipt": which, "arm": arm, "field": f, a: dist, b: other})
+    return changed
+
+
 def main(packet: Path) -> dict[str, Any]:
     raw = packet / "raw" / "part-a"
     summary: dict[str, Any] = {"schema": "cua.bug01.part_a.summary.v1"}
     dists = {}
-    for label in ("baseline", "fix"):
+    for label in ("baseline", "fix", "fix2"):
         rows, errors = load(raw, label)
         if not rows and not errors:
             continue
@@ -162,15 +216,15 @@ def main(packet: Path) -> dict[str, Any]:
         }
         dists[label] = {"click": field_dist(rows, "click_receipt"), "type": field_dist(rows, "type_receipt")}
     if "baseline" in dists and "fix" in dists:
-        changed: list[dict[str, Any]] = []
-        for which in ("click", "type"):
-            for arm, fields in dists["baseline"][which].items():
-                for f, dist in fields.items():
-                    other = dists["fix"][which].get(arm, {}).get(f)
-                    if other != dist:
-                        changed.append({"receipt": which, "arm": arm, "field": f, "baseline": dist, "fix": other})
+        changed = changes(dists, "baseline", "fix")
         summary["receipt_field_changes_baseline_to_fix"] = changed
         summary["only_delivery_mode_changed"] = all(c["field"] == "delivery_mode" for c in changed)
+    if "baseline" in dists and "fix2" in dists:
+        changed = changes(dists, "baseline", "fix2")
+        summary["receipt_field_changes_baseline_to_fix2"] = changed
+        summary["only_delivery_mode_changed_fix2"] = all(c["field"] == "delivery_mode" for c in changed)
+        summary["receipt_field_changes_fix_to_fix2"] = changes(dists, "fix", "fix2")
+    summary["activation_decoy_control"] = activation(packet)
     summary["field_distributions"] = dists
     return summary
 
