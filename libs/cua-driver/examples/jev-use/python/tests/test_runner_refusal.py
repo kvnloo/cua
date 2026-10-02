@@ -23,14 +23,28 @@ import run
 from verify_setup import fixture
 
 STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document"
+TRUST_UNKNOWN_TEXT = (
+    "refused (browser_input_trust_unavailable): trusted click was acknowledged but CDP focus "
+    "emulation could not be restored (x); delivery is unknown and must not be retried automatically"
+)
 
 
-def refused_result():
+def refused_result(kind="stale"):
     """An action result as the Driver's MCP boundary emits it: not an MCP error."""
+    if kind == "not_retryable":
+        return SimpleNamespace(
+            isError=False,
+            content=[SimpleNamespace(type="text", text="refused (browser_reconnect_exhausted): x")],
+            structuredContent={
+                "status": "refused",
+                "refusal": {"code": "browser_reconnect_exhausted", "detail": {"retryable": False}},
+            },
+        )
+    text = STALE_TEXT if kind == "stale" else TRUST_UNKNOWN_TEXT
     return SimpleNamespace(
         isError=False,
-        content=[SimpleNamespace(type="text", text=STALE_TEXT)],
-        structuredContent={"effect": "refused", "route": "dom"},
+        content=[SimpleNamespace(type="text", text=text)],
+        structuredContent={"effect": "refused", "route": "dom" if kind == "stale" else "trusted_input"},
     )
 
 
@@ -59,10 +73,11 @@ class OneResult(Session):
 class FixtureSession(Session):
     """In-memory Driver; the HTTP fixture is the outcome oracle."""
 
-    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True):
+    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True, refusal="stale"):
         self.url = url
         self.value = ""
         self.refuse_clicks = refuse_clicks
+        self.refusal = refusal
         self.click_lands = click_lands
         self.type_kept = type_kept
         self.calls = []
@@ -97,7 +112,7 @@ class FixtureSession(Session):
         elif name == "browser_click":
             if self.refuse_clicks > 0:
                 self.refuse_clicks -= 1
-                return refused_result()
+                return refused_result(self.refusal)
             if self.click_lands:
                 with urlopen(
                     Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
@@ -146,6 +161,13 @@ class DriverCallRefusalTest(unittest.TestCase):
         )
         self.assertEqual(self.call(result)["effect"], "unverifiable")
 
+    def test_retryable_is_read_from_the_refusal_detail(self):
+        with self.assertRaises(run.DriverToolError) as raised:
+            self.call(refused_result("not_retryable"))
+        self.assertTrue(raised.exception.refused)
+        self.assertEqual(raised.exception.code, "browser_reconnect_exhausted")
+        self.assertIs(raised.exception.retryable, False)
+
     def test_mcp_error_is_not_marked_refused(self):
         result = SimpleNamespace(isError=True, content=[], structuredContent={"code": "x"})
         with self.assertRaises(run.DriverToolError) as raised:
@@ -193,6 +215,18 @@ class RunnerRefusalTest(unittest.TestCase):
         # The retry used a ref from an observation taken after the refusal.
         clicks = [i for i, name in enumerate(session.calls) if name == "browser_click"]
         self.assertIn("get_browser_state", session.calls[clicks[0] + 1 : clicks[1]])
+
+    def test_refusal_with_unknown_delivery_ends_unknown_without_redispatch(self):
+        events, session = self.execute("unknown", refuse_clicks=1, refusal="trust_unknown")
+        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
+        self.assertEqual(events[-1]["outcome"], "unknown")
+        self.assertEqual(events[-1]["action_refused"], "browser_input_trust_unavailable")
+
+    def test_refusal_marked_not_retryable_ends_unknown_without_redispatch(self):
+        events, session = self.execute("unknown", refuse_clicks=1, refusal="not_retryable")
+        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
+        self.assertEqual(events[-1]["outcome"], "unknown")
+        self.assertEqual(events[-1]["action_refused"], "browser_reconnect_exhausted")
 
     def test_second_refusal_stops_without_another_dispatch(self):
         events, session = self.execute("unknown", refuse_clicks=2)

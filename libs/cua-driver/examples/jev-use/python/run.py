@@ -69,12 +69,46 @@ class DriverToolError(RuntimeError):
         code: str | None = None,
         recommended_delivery: str | None = None,
         refused: bool = False,
+        retryable: bool | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.recommended_delivery = recommended_delivery
-        # True only for a structured Driver refusal: nothing was dispatched.
+        # True for a structured Driver refusal. Only the codes in
+        # PRE_DISPATCH_REFUSALS prove that nothing was dispatched.
         self.refused = refused
+        # The refusal's own ``retryable`` flag when it carries one.
+        self.retryable = retryable
+
+
+# Refusal codes the Driver returns for browser_click / browser_type only before
+# any input reaches the page: binding, tab, ref, consent and origin checks, and
+# the ref-node checks that precede dispatch. A refusal with any other code, for
+# example browser_input_trust_unavailable (delivery may be partial or unknown)
+# or browser_input_incomplete, may have landed and is never re-dispatched.
+PRE_DISPATCH_REFUSALS = frozenset(
+    {
+        "browser_ref_stale",
+        "browser_action_unavailable",
+        "browser_binding_stale",
+        "browser_binding_ambiguous",
+        "browser_wrong_target_refused",
+        "browser_tab_required",
+        "browser_tab_not_found",
+        "browser_route_unavailable",
+        "browser_requires_setup",
+        "browser_endpoint_owner_mismatch",
+        "browser_consent_required",
+        "browser_consent_revoked",
+        "browser_reconnect_exhausted",
+        "browser_origin_outside_scope",
+    }
+)
+
+
+def may_redispatch_after(error: "DriverToolError") -> bool:
+    """A refusal earns a fresh dispatch only when it proves nothing was dispatched."""
+    return error.code in PRE_DISPATCH_REFUSALS and error.retryable is not False
 
 
 def refusal_code_from_content(content: Any) -> str | None:
@@ -119,11 +153,14 @@ class Driver:
             code = refusal.get("code") if isinstance(refusal, dict) else data.get("code")
             if not (isinstance(code, str) and code):
                 code = refusal_code_from_content(getattr(result, "content", None))
+            detail = refusal.get("detail") if isinstance(refusal, dict) else None
+            retryable = detail.get("retryable") if isinstance(detail, dict) else data.get("retryable")
             # DriverToolError is a RuntimeError, so existing handlers still match.
             raise DriverToolError(
                 f"{name} refused: {data.get('refusal', data)}",
                 code if isinstance(code, str) and code else None,
                 refused=True,
+                retryable=retryable if isinstance(retryable, bool) else None,
             )
         return data
 
@@ -579,7 +616,10 @@ async def run(args: argparse.Namespace) -> str:
                                 "action_refused": code,
                                 "visual": visual_record,
                             }
-                            if refusal_retried:
+                            # Only a refusal that proves nothing was dispatched earns
+                            # one fresh observation and decision; any other may have
+                            # landed and stays unknown.
+                            if refusal_retried or not may_redispatch_after(error):
                                 write_event(log_path, {"event": "outcome", "outcome": "unknown", **refused})
                                 return "unknown"
                             refusal_retried = True
