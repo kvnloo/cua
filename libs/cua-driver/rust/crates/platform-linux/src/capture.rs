@@ -1026,6 +1026,20 @@ pub(crate) fn screenshot_display_bytes_x11() -> Result<Vec<u8>> {
 /// for a window whose own drawable would hide the menu or dialog open over
 /// it. The rectangle is clipped to the screen.
 pub fn screenshot_root_region_png(x: i32, y: i32, width: u32, height: u32) -> Result<Vec<u8>> {
+    // Measurement-only invocation count (`CUA_DRIVER_PHASE_TRACE_FILE`).
+    static CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = cua_driver_core::phase_trace::enter("capture_root_region", &CALLS);
+    let result = screenshot_root_region_png_unmarked(x, y, width, height);
+    let mark = if result.is_ok() {
+        "exit_ok"
+    } else {
+        "exit_err"
+    };
+    cua_driver_core::phase_trace::exit("capture_root_region", mark, n);
+    result
+}
+
+fn screenshot_root_region_png_unmarked(x: i32, y: i32, width: u32, height: u32) -> Result<Vec<u8>> {
     use x11rb::connection::Connection;
     use x11rb::protocol::xproto::*;
     use x11rb::rust_connection::RustConnection;
