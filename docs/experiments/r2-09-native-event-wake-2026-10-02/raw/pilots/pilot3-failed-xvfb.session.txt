@@ -1,0 +1,27 @@
+[session] DISPLAY=:99 openbox=319281 picom=319282 dbus=unix:path=<tmp>/dbus-x,guid=9cb4f359ee116f96aec859ed6abfee07
+Traceback (most recent call last):
+  File "<lanes>/w3-r2-09-event-wake/docs/experiments/r2-09-native-event-wake-2026-10-02/r209_harness.py", line 607, in <module>
+    main()
+  File "<lanes>/w3-r2-09-event-wake/docs/experiments/r2-09-native-event-wake-2026-10-02/r209_harness.py", line 603, in main
+    sys.exit(asyncio.run(run(args)))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "<lanes>/w3-r2-09-event-wake/docs/experiments/r2-09-native-event-wake-2026-10-02/r209_harness.py", line 255, in run
+    pre = xprobe.snapshot()
+          ^^^^^^^^^^^^^^^^^
+  File "<lanes>/w3-r2-09-event-wake/docs/experiments/r2-09-native-event-wake-2026-10-02/xprobe.py", line 162, in snapshot
+    conn = Conn()
+           ^^^^^^
+  File "<lanes>/w3-r2-09-event-wake/docs/experiments/r2-09-native-event-wake-2026-10-02/xprobe.py", line 98, in __init__
+    raise RuntimeError("cannot open the private DISPLAY")
+RuntimeError: cannot open the private DISPLAY
+<home>/.local/opt/cua-e2e-x11/root/usr/bin/xvfb-run: line 185: kill: (319126) - No such process
+[session] exit rc=1 run_dir=<tmp>/x11-session.zAUMX1

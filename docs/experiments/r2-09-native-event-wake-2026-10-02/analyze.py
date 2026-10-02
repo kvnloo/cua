@@ -28,6 +28,13 @@ from pathlib import Path
 from typing import Any
 
 FAMILY_BASE = {"M": "B", "F": "B_F0", "G": "B"}
+ARM_ENV = {
+    "B": {}, "S0": {"CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS": "0"},
+    "EW": {"CUA_DRIVER_EXP_NATIVE_POST_ACTION_WAKE": "event"},
+    "B_F0": {"CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS": "0"},
+    "S0_F0": {"CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS": "0", "CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS": "0"},
+    "EW_F0": {"CUA_DRIVER_EXP_NATIVE_POST_ACTION_WAKE": "event", "CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS": "0"},
+}
 ARM_KNOBS = {
     "B": set(), "S0": {"post_action_sleep_ms=0"}, "EW": {"post_action_wake=event"},
     "B_F0": {"focus_guard_settle_ms=0"}, "S0_F0": {"post_action_sleep_ms=0", "focus_guard_settle_ms=0"},
@@ -127,12 +134,22 @@ def trial_metrics(r: dict[str, Any]) -> dict[str, Any]:
                   and dar is not None and psd is not None and out["knobs_match_arm"])
             if "EW" in str(r.get("arm")):
                 ok = ok and opened is not None and wake_end is not None
+            out["valid_route_prereg"] = bool(ok) and click is not None and out["click_error"] is None
+            out["valid_route"] = out["valid_route_prereg"]
         else:
-            ok = (out["click_route"] == "global_input" and out["click_delivery"] == "foreground"
-                  and out["knobs_match_arm"])
+            base_ok = out["click_route"] == "global_input" and out["click_delivery"] == "foreground"
             if r.get("task") == "text":
-                ok = ok and out.get("set_value_route") is not None
-        out["valid_route"] = bool(ok) and click is not None and out["click_error"] is None
+                base_ok = base_ok and out.get("set_value_route") is not None
+            base_ok = base_ok and click is not None and out["click_error"] is None
+            # As pre-registered: knob marks exactly the arm's. The knobs are read (and
+            # marked) only when perform_action_ref runs, so on the XTest route S0/EW
+            # can never show their marks: this rule cannot hold by construction.
+            out["valid_route_prereg"] = bool(base_ok and out["knobs_match_arm"])
+            # Amended (post hoc, see README Deviations): the Driver env carries exactly the
+            # arm's CUA_DRIVER_EXP_* values, and no DoAction and no knob mark occurred.
+            out["env_match_arm"] = (r.get("driver_env_exp") or {}) == ARM_ENV.get(r.get("arm"), {})
+            out["valid_route"] = bool(base_ok and out["env_match_arm"] and out["do_action_marks"] == 0
+                                      and not knobs)
     if ss and last is not None:
         anchor = ss["anchor_ns"]
         ret_us = (last["m1"] - anchor) / 1000
@@ -269,6 +286,7 @@ def main() -> None:
                 ews = [m for m in rows if m.get("wake_reason")]
                 cells[f"{fam}/{task}/{arm}"] = {
                     "n": len(rows), "valid_route": sum(1 for m in rows if m.get("valid_route")),
+                    "valid_route_prereg": sum(1 for m in rows if m.get("valid_route_prereg")),
                     "verified": sum(1 for m in rows if m["verified"]),
                     "visible_at_return": sum(1 for m in rows if m.get("visible_at_return")),
                     "not_visible_at_return": sum(1 for m in rows if m.get("visible_at_return") is False),

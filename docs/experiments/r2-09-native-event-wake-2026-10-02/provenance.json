@@ -1,0 +1,53 @@
+{
+ "schema": "r209.provenance.v1",
+ "lane": "R2-09",
+ "branch": "exp/r2-09-native-event-wake-20261002",
+ "base_commit": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+ "base_note": "N-01R head (exp/n-01r-native-wait-ab-20261002); its Driver source is b9b357bc72fe0627b841f66a2d0812fafca8711f (N-01R knobs CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS / CUA_DRIVER_EXP_FOCUS_GUARD_SETTLE_MS on 28b915ae9 R2-04 marks on upstream main 229b65b28; libs/cua-driver at 229b65b28 equals 352507b6c)",
+ "measurement_commit": "bff61ddccfa2207abbaed43ece6b9ee95f7f36f6",
+ "tested_source": "bff61ddccfa2207abbaed43ece6b9ee95f7f36f6 = b9b357bc7 + the one env-gated default-off event-wake knob in platform-linux/src/atspi/native.rs (3bb4a7fc7 adds only N-01R docs)",
+ "prereg_commit": {"sha": "ede0320198731687a39bf268e6d004ac2b14ac83", "committed_utc": "2026-10-02T17:52:06Z"},
+ "driver": {
+  "file": "cua-driver-r2-09-bff61ddcc",
+  "sha256": "156338f75b4d6a55db0387b85c763061809e6cb7aa79fc9c1c8c5343de2e0e52",
+  "version": "cua-driver 0.32.0",
+  "version_read": "inside cua-x11-session.sh by run_block.sh (raw/<label>/driver-version.txt)",
+  "build": {
+   "command": "hostless flock <tmp>/locks/cargo-build.lock build-driver.sh <wt> r2-09-bff61ddcc cua-release-r2-09",
+   "head_logged": "bff61ddccfa2207abbaed43ece6b9ee95f7f36f6",
+   "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+   "fresh_workspace_units": 0,
+   "seconds": 213,
+   "evidence": "raw/driver-build/build-driver.txt (lock requested 17:27:48Z, acquired 17:36:05Z, released 17:39:38Z, rc 0)",
+   "target_artifact_sha256_matches": true
+  }
+ },
+ "pilot_driver": {
+  "file": "cua-driver-n01r-b9b357bc7",
+  "sha256": "c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95",
+  "use": "pilots 1-2 only (STEP 0 exposure and route checks; no knob of this lane involved); never compared with W"
+ },
+ "reused_harness_code": {
+  "xprobe.py": {"from": "exp/n-01r-native-wait-ab-20261002 @ 3bb4a7fc7, docs/experiments/n-01r-native-wait-ab-2026-10-02/xprobe.py", "blob": "f17d83691faacc9397dc4c91a1f4018622c0d75d", "verbatim": true},
+  "atspi_listener.py": {"from": "exp/own-20-atspi-invalidation-census-20261002 @ 6da15bf35, docs/experiments/own-20-atspi-invalidation-census-2026-10-02/atspi_listener.py", "blob": "374e7a1bdbcd29ead255f0c256c9cbce860942dc", "verbatim": true},
+  "r209_harness.py": "derived from n01r_harness.py (same oracle sampler, fresh Driver per trial, receipts never the oracle)"
+ },
+ "live_heads": {
+  "read_utc": "2026-10-02T17:54:01Z",
+  "method": "gh api (read-only)",
+  "upstream_main": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (committed 2026-10-02T17:25:37Z): 34 commits ahead of 352507b6c, 300 files in the compare listing, 18 under libs/cua-driver; none under platform-linux/src/atspi, platform-linux/src/tools, platform-linux/src/input (Linux changes only in platform-linux/src/wayland/{hyprland,mod}.rs, outside this X11 claim)",
+  "trycua_cua_PR_4316": "a0bca744067d04f05904319d3d919be30c336556 (open; not this source)",
+  "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83 (open; packet-format reference)",
+  "R2-09_PR": "none"
+ },
+ "publication_sha": null,
+ "publication_note": "set by the Publish agent",
+ "environment": {
+  "isolation": "every code-executing command ran as TMPDIR=<tmp>/w3-r2-09 hostless <cmd> (hostless v2: env scrub + Landlock scope); GUI/Driver/AT-SPI/Chrome inside cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, private dbus session, openbox + picom, env -i) with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV='CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1'",
+  "chrome": "system /opt/google/chrome/chrome, version read inside the session per block (block meta chrome_version); fresh --user-data-dir per trial under the lane tmp dir; flags --force-renderer-accessibility --no-first-run --no-default-browser-check --disable-background-networking --disable-component-update --disable-sync --disable-default-apps --disable-features=Translate,MediaRouter,OptimizationHints --password-store=basic --disable-gpu; sandbox left on; session a11y org.a11y.Status IsEnabled=true set on the private session bus (read back true in every block)",
+  "software": "GTK 3 fixture and fixture server on system python3 (+ PyGObject for GTK); harness on the jev-use venv python 3.12; Linux 7.2.2; 10 CPUs",
+  "driver_settings": "defaults apart from the arm knobs; no permission-mode override, no approval bypass, telemetry off, fresh HOME per session, no *-e2e wrapper, no CUA_E2E_BROWSER_NO_SANDBOX",
+  "machine_sharing": "other lanes ran concurrently; every measured block held the EXCLUSIVE quiet-lane lock via bin/quiet-timed (receipts in raw/lock-ledger.jsonl); loadavg recorded per trial"
+ },
+ "provider": {"provider": "TypeSafe", "cap": 0, "attempts": 0, "reached": 0}
+}
