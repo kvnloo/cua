@@ -713,7 +713,7 @@ impl FocusSnapshot {
         }
         if !report.restored {
             tracing::warn!(
-                "background focus guard: could not restore {:?}",
+                "background focus guard: could not restore focus {:?}",
                 report.changes
             );
         }
