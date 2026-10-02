@@ -134,7 +134,8 @@ def main() -> None:
 
     st = {k: v for k, v in summary["controls"].items() if k.startswith("stale_ref|")}
     if st:
-        check(all(v["stale_codes"] == ["browser_ref_stale"] and v["stale_dispatch_marks"] == 0 and v["submits"] == 0
+        check(all(v["stale_codes"] == ["browser_ref_stale"] and v["stale_effects"] == ["refused"]
+                  and v["stale_dispatch_marks"] == 0 and v["submits"] == 0
                   for v in st.values()), f"8 stale-ref controls refused before dispatch: {sorted(st)}")
     else:
         print("SKIP 8 stale-ref controls not run")

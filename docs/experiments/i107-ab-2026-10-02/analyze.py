@@ -139,7 +139,7 @@ def ledger_row(trial: dict[str, Any], m: dict[str, Any]) -> dict[str, Any]:
     return _r({
         "row_type": "trial", "lane": LANE, "issue": "kvnloo/cua#107", "task": "browser-fixture-form",
         "comparison": {"ab": "CMP-AB", "static": "CMP-AB", "distortion": "CMP-distortion", "default_off": "default-off",
-                       "controls": "controls", "shakedown": "shakedown"}.get(s.get("plan"), s.get("plan")),
+                       "controls": "controls", "controls2": "controls", "shakedown": "shakedown"}.get(s.get("plan"), s.get("plan")),
         "trial": s["trial"], "plan": s.get("plan"), "condition": s.get("condition"), "cohort": s.get("cohort"),
         "regime": s.get("regime"), "pair": s.get("pair"), "order": s.get("order"), "arm": s.get("arm"),
         "binary_sha256": s.get("binary_sha256"), "caller_tree": "72bf8156136771da9a767ec12ae7c364e426d910",
@@ -271,7 +271,7 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     controls = {}
     for ctl in ("DC03", "DC04", "stale_ref"):
         for arm in ("A", "B_proj"):
-            ts = by(plan="controls", control=ctl, arm=arm)
+            ts = by(plan="controls", control=ctl, arm=arm) + by(plan="controls2", control=ctl, arm=arm)
             if not ts:
                 continue
             controls[f"{ctl}|{arm}"] = {
@@ -280,6 +280,9 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 "submits": sum(t["summary"].get("completion_mutations") or 0 for t in ts),
                 "wrong_target_submits": sum(t["summary"].get("wrong_target_submits") or 0 for t in ts),
                 "stale_codes": sorted({(t["summary"].get("stale_envelope") or {}).get("code") for t in ts} - {None}),
+                "stale_code_missing": sum(1 for t in ts if ctl == "stale_ref" and not (t["summary"].get("stale_envelope") or {}).get("code")),
+                "stale_effects": sorted({e.get("effect") for t in ts for e in t["events"]
+                                         if e["event"] == "call_return" and e.get("label") == "stale_click"} - {None}),
                 "stale_dispatch_marks": sum(stale_dispatch_marks(t) for t in ts)}
     summary["controls"] = controls
     summary["default_off"] = {"n": len(by(plan="default_off")),
@@ -295,7 +298,8 @@ def build(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     summary["distortion"] = {"pairs": len(dpairs), **A.paired_diff([v["A"] for v in dpairs], [v["A_ref"] for v in dpairs])}
     all_m = measured
     summary["required_zero"] = {
-        "stale_ref_dispatch_with_effect": sum(1 for t in by(plan="controls", control="stale_ref") if t["summary"].get("completion_mutations")),
+        "stale_ref_dispatch_with_effect": sum(1 for t in by(plan="controls", control="stale_ref") + by(plan="controls2", control="stale_ref")
+                                              if t["summary"].get("completion_mutations")),
         "unauthorized_action": 0 if all_m else None,
         "wrong_target_effect_by_arm": {arm: sum(t["summary"].get("wrong_target_submits") or 0 for t in all_m if t["summary"].get("arm") == arm)
                                        for arm in ("A", "B_proj", "A_ref", "A_off")},
@@ -322,7 +326,7 @@ def _cell_of(t: dict[str, Any]) -> tuple[str, str]:
     s = t["summary"]
     plan = s.get("plan")
     name = {"ab": "CMP-AB", "static": "CMP-AB", "distortion": "CMP-distortion", "default_off": "default-off"}.get(plan)
-    if plan == "controls":
+    if plan in ("controls", "controls2"):
         name = f"controls {s.get('control')}"
     return name or str(plan), s.get("condition")
 

@@ -398,9 +398,10 @@ async def step_loop(spec: dict[str, Any], arm: Arm, server: I107Server, task: An
             structured = raw.structuredContent if isinstance(raw.structuredContent, dict) else {}
             rec.add("call_return", label="stale_click", tool=candidate.tool, is_error=bool(raw.isError),
                     status=structured.get("status"), effect=structured.get("effect"))
+            err = structured.get("error") if isinstance(structured.get("error"), dict) else {}
             refusal = structured.get("refusal") if isinstance(structured.get("refusal"), dict) else {}
-            result["stale_envelope"] = {"status": structured.get("status"), "code": refusal.get("code"),
-                                        "is_error": bool(raw.isError)}
+            result["stale_envelope"] = {"status": structured.get("status"), "effect": structured.get("effect"),
+                                        "code": err.get("code") or refusal.get("code"), "is_error": bool(raw.isError)}
             await asyncio.sleep(1.0)
             result["outcome"] = oracle_read(rec, task, "stale_check", step)
             return
@@ -524,7 +525,7 @@ def build_plan(plan: str, pairs: int, conditions: list[str]) -> list[dict[str, A
             for i, order in enumerate(L.abba_pairs("A", "B_proj", pairs)):
                 for arm in order:
                     add(arm, cond, pair=f"{cond}-p{i:02d}", order="AB" if order[0] == "A" else "BA")
-    elif plan == "controls":
+    elif plan in ("controls", "controls2"):
         for i in range(5):
             for j, ctl in enumerate(("DC03", "DC04", "stale_ref")):
                 order = ("A", "B_proj") if (i + j) % 2 == 0 else ("B_proj", "A")
@@ -613,7 +614,8 @@ def main() -> None:
     p.add_argument("--ref-driver")
     p.add_argument("--out", required=True)
     p.add_argument("--plan", nargs="+", required=True,
-                   choices=("preflight", "shakedown", "default_off", "distortion", "ab", "static", "controls"))
+                   choices=("preflight", "shakedown", "default_off", "distortion", "ab", "static", "controls",
+                            "controls2"))
     p.add_argument("--pairs", type=int, default=30)
     p.add_argument("--conditions", nargs="+", default=["W-quiet", "W-churn"])
     p.add_argument("--lock-label", required=True)
