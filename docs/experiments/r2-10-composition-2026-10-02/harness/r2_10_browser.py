@@ -856,6 +856,13 @@ def build_plan(kind: str, start: int, rounds: int, arms: list[str]) -> list[dict
             trials.append({"cls": "fill", "arm": "COMP", "kind": "measured", "layer": f"gate{k}", "round": k,
                            "block": "G"})
         return trials
+    if kind == "nw2gate":
+        # Phase 0 (c): B-02 N-W2 at the default path (no knobs), toggle and modal interleaved.
+        for k in range(start, start + rounds):
+            for cls in ("toggle", "modal"):
+                trials.append({"cls": cls, "arm": "K5", "kind": "nw2gate", "layer": "gate", "round": k,
+                               "block": "C"})
+        return trials
     if kind == "live_shake":
         for cls in CLASSES:
             trials.append({"cls": cls, "arm": "COMP" if cls == "fill" else "BASE", "kind": "measured",
@@ -921,9 +928,17 @@ def session_files() -> list[str]:
 
 async def nw2_one(spec: dict[str, Any], args: argparse.Namespace, fixtures: Any, out: Path) -> dict[str, Any]:
     """B-02 N-W2 control (run_b02.control_one, unchanged) with the COMP admission knob."""
-    rb.CURRENT["knobs"] = dict(ARMS["COMP"]["knobs"])
+    rb.CURRENT["knobs"] = dict(ARMS["COMP"]["knobs"]) if spec["kind"] == "nw2" else {}
     try:
-        return await rb.control_one({**spec, "arm": "K5"}, args, fixtures, out)
+        return await rb.control_one({**spec, "arm": "K5", "kind": "nw2"}, args, fixtures, out)
+    except Exception as error:  # run_b02.control_one cannot stop a poller it never started: keep the row
+        record = {"trial": spec["name"], "cls": spec["cls"], "arm": "K5", "kind": "nw2", "block": spec.get("block"),
+                  "outcome": "error", "error": f"{type(error).__name__}: {str(error)[:300]}",
+                  "harness_note": "control_one raised after a failed setup", "loadavg_before": loadavg()}
+        with (out / f"trials/{spec['name']}.jsonl").open("w") as f:
+            f.write(json.dumps({"event": "summary", **record}, sort_keys=True) + "\n")
+        print(json.dumps({"trial": spec["name"], "outcome": "error", "error": record["error"]}), flush=True)
+        return record
     finally:
         rb.CURRENT["knobs"] = {}
 
@@ -963,7 +978,7 @@ async def main_async(args: argparse.Namespace) -> None:
                     not_run = [s["name"] for s in trials[idx:]]
                     manifest["stopped_for_budget"] = {"at": spec["name"], "ledger": dict(LEDGER) | {"path": None}}
                     break
-            if spec["kind"] == "nw2":
+            if spec["kind"] in ("nw2", "nw2gate"):
                 await nw2_one(spec, args, fixtures, out)
             else:
                 await one(spec, args, fixtures, store, out)
@@ -985,7 +1000,7 @@ def main() -> None:
     p.add_argument("--out", required=True)
     p.add_argument("--plan", required=True,
                    choices=("live", "scripted", "controls", "smoke", "shakedown", "live_shake", "toolslist",
-                            "traingate"))
+                            "traingate", "nw2gate"))
     p.add_argument("--arms", default="BASE,COMP,COMP_K,COMP_E")
     p.add_argument("--start-round", type=int, default=0)
     p.add_argument("--rounds", type=int, default=1)
