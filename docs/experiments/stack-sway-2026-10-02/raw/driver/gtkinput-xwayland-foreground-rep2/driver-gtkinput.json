@@ -1,0 +1,161 @@
+{
+ "delivery": "foreground",
+ "gtk_pid": 726,
+ "wayland_display_for_driver": false,
+ "sway_views": [
+  [
+   726,
+   "xwayland",
+   "CuaTestHarness GTK3 Tasks"
+  ]
+ ],
+ "steps": [
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 726
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 21.8,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "Main.py",
+      "bounds": {
+       "height": 1051,
+       "width": 1916,
+       "x": 2,
+       "y": 27
+      },
+      "height": 1051,
+      "is_on_screen": true,
+      "pid": 726,
+      "title": "CuaTestHarness GTK3 Tasks",
+      "width": 1916,
+      "window_id": 4194308,
+      "x": 2,
+      "y": 27,
+      "z_index": 0
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=4194308 pid=726 \"CuaTestHarness GTK3 Tasks\" 1916x1051+2+27 app=Main.py"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 726,
+    "window_id": 4194308,
+    "x": 51,
+    "y": 45,
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 858.6,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (67.5, 59.5) \u00d7 1 (delivery_mode=foreground, path=x11_xtest_fg); not verified \u2014 confirm with a screenshot. [window_point=(67, 59) screen_point=(69, 87)]"
+   },
+   "text": "Clicked at (67.5, 59.5) \u00d7 1 (delivery_mode=foreground, path=x11_xtest_fg); not verified \u2014 confirm with a screenshot. [window_point=(67, 59) screen_point=(69, 87)]",
+   "label": "Increment"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 726,
+    "window_id": 4194308,
+    "x": 114,
+    "y": 124,
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 2157.4,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (150.8, 164.1) \u00d7 1 (delivery_mode=foreground, path=x11_xtest_fg); not verified \u2014 confirm with a screenshot. [window_point=(150, 164) screen_point=(153, 191)]"
+   },
+   "text": "Clicked at (150.8, 164.1) \u00d7 1 (delivery_mode=foreground, path=x11_xtest_fg); not verified \u2014 confirm with a screenshot. [window_point=(150, 164) screen_point=(153, 191)]",
+   "label": "Note"
+  },
+  {
+   "tool": "type_text",
+   "args": {
+    "pid": 726,
+    "window_id": 4194308,
+    "text": "sway",
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 891.9,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Typed 4 character(s) as real key events (delivery_mode=foreground, focus_after=target); not verified \u2014 confirm with a screenshot."
+   },
+   "text": "Typed 4 character(s) as real key events (delivery_mode=foreground, focus_after=target); not verified \u2014 confirm with a screenshot."
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 726,
+    "window_id": 4194308,
+    "x": 261,
+    "y": 124,
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 2290.5,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (345.4, 164.1) \u00d7 1 (delivery_mode=foreground, path=x11_xtest_fg); not verified \u2014 confirm with a screenshot. [window_point=(345, 164) screen_point=(347, 191)]"
+   },
+   "text": "Clicked at (345.4, 164.1) \u00d7 1 (delivery_mode=foreground, path=x11_xtest_fg); not verified \u2014 confirm with a screenshot. [window_point=(345, 164) screen_point=(347, 191)]",
+   "label": "Save note"
+  }
+ ],
+ "labels": [
+  "Exit",
+  "I agree",
+  "Increment",
+  "Large",
+  "Medium",
+  "Note",
+  "Reset",
+  "Save note",
+  "Small"
+ ],
+ "fixture_state": {
+  "agreed": false,
+  "counter": 0,
+  "note_saved": "sway",
+  "pid": 726,
+  "schema": "cua.gtk3_task_state_v1",
+  "seq": 2,
+  "size": "none"
+ },
+ "oracle": {
+  "counter_is_1": false,
+  "note_saved_is_sway": true
+ },
+ "result": "FAIL"
+}

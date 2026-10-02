@@ -1,0 +1,226 @@
+{
+ "mode": "inside",
+ "t": 1790915942.8535964,
+ "env": {
+  "WAYLAND_DISPLAY": "wayland-1",
+  "DISPLAY": ":1",
+  "SWAYSOCK": "<TMP>/sway-session.VoBhbx/xdg-runtime/sway-ipc.1000.5.sock",
+  "XDG_RUNTIME_DIR": "<TMP>/sway-session.VoBhbx/xdg-runtime",
+  "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/dbus-6Tlfw9uxCH,guid=ba4d4c41d88119ebc9e8f91a6abf3565",
+  "AT_SPI_BUS_ADDRESS": null,
+  "CUA_LANDLOCK_SCOPE": "abstract-unix,signal",
+  "CUA_HOSTLESS": "1",
+  "XDG_SESSION_TYPE": "wayland",
+  "HYPRLAND_vars": []
+ },
+ "env_checks": {
+  "no_HYPRLAND_vars": true,
+  "XDG_RUNTIME_DIR_private": true,
+  "WAYLAND_DISPLAY_socket_private": true,
+  "SWAYSOCK_private": true,
+  "DBUS_private": true,
+  "landlock_scope": true
+ },
+ "rows": [
+  {
+   "target": "@cua-canary-decoy-2817632466",
+   "kind": "decoy-abstract (bound outside session)",
+   "expect": "EPERM",
+   "result": "EPERM",
+   "pass": true,
+   "note": "Landlock LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET gate"
+  },
+  {
+   "target": "/run/user/1000/hypr/<host-hypr-sig>/.socket.sock",
+   "kind": "host-hyprland",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/hypr/<host-hypr-sig>/.socket2.sock",
+   "kind": "host-hyprland",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/wayland-0",
+   "kind": "host-wayland",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/wayland-1",
+   "kind": "host-wayland",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/wayland-2",
+   "kind": "host-wayland",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/bus",
+   "kind": "host-session-bus",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/at-spi/bus_1",
+   "kind": "host-atspi-bus",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/tmp/.X11-unix/X0",
+   "kind": "host-x11-path",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/tmp/.X11-unix/X1",
+   "kind": "host-x11-path",
+   "expect": "ENOENT",
+   "result": "REACHABLE",
+   "pass": false,
+   "note": ""
+  },
+  {
+   "target": "/tmp/.X11-unix/X2",
+   "kind": "host-x11-path",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "@/tmp/.X11-unix/X0",
+   "kind": "host-x11-abstract",
+   "expect": "EPERM",
+   "result": "EPERM",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "@/tmp/.X11-unix/X2",
+   "kind": "host-x11-abstract",
+   "expect": "EPERM",
+   "result": "EPERM",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "/run/user/1000/hypr/CUADECOY3655/.socket.sock",
+   "kind": "decoy-path",
+   "expect": "REACHABLE",
+   "result": "REACHABLE",
+   "pass": true,
+   "note": "exposed decoy: probe sensitivity"
+  },
+  {
+   "target": "/tmp/.X11-unix/X9",
+   "kind": "decoy-path",
+   "expect": "ENOENT",
+   "result": "ENOENT",
+   "pass": true,
+   "note": "hidden by private /tmp"
+  },
+  {
+   "target": "<TMP>/sway-session.VoBhbx/xdg-runtime/wayland-1",
+   "kind": "private-wayland",
+   "expect": "REACHABLE",
+   "result": "REACHABLE",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "<TMP>/sway-session.VoBhbx/xdg-runtime/sway-ipc.1000.5.sock",
+   "kind": "private-sway-ipc",
+   "expect": "REACHABLE",
+   "result": "REACHABLE",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "wayland client (seatprobe) mapped in private sway tree",
+   "kind": "private-client",
+   "expect": true,
+   "result": true,
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "X11 client (glxgears) mapped in private sway tree via Xwayland",
+   "kind": "private-client",
+   "expect": true,
+   "result": true,
+   "pass": true,
+   "note": ""
+  },
+  {
+   "target": "signal 0 to host Hyprland pid 12468",
+   "kind": "host-process",
+   "expect": "ESRCH",
+   "result": "ESRCH",
+   "pass": true,
+   "note": "private PID namespace (+ Landlock signal scope)"
+  }
+ ],
+ "listing": {
+  "/run/user/1000": [
+   "hypr"
+  ],
+  "/run/user/1000/hypr": [
+   "CUADECOY3655"
+  ]
+ },
+ "abstract_x11_listeners_visible_in_netns": [
+  "@/tmp/.X11-unix/X0",
+  "@/tmp/.X11-unix/X1",
+  "@/tmp/.X11-unix/X2"
+ ],
+ "private": {
+  "wayland_socket": "REACHABLE",
+  "sway_ipc": "REACHABLE",
+  "sway_version": "1.12",
+  "xdpyinfo_rc": 0,
+  "xdpyinfo_has_XWAYLAND": true,
+  "xdpyinfo_vendor": "The X.Org Foundation",
+  "clients_in_private_tree": [
+   {
+    "id": 5,
+    "pid": 32,
+    "shell": "xdg_shell",
+    "app_id": "cua-seatprobe",
+    "name": "canary-wayland-client"
+   },
+   {
+    "id": 6,
+    "pid": 33,
+    "shell": "xwayland",
+    "app_id": null,
+    "name": "glxgears"
+   }
+  ],
+  "wayland_client_mapped": true,
+  "x11_client_mapped_via_xwayland": true
+ },
+ "pass": false
+}

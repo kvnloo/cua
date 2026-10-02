@@ -1,0 +1,33 @@
+{
+ "schema": "cua.stack.sway.packet.v1",
+ "packet": "stack-sway-2026-10-02",
+ "question": "Can a user-local, headless, multi-seat sway session host CUA experiments while provably isolated from the host Hyprland desktop, and what does cua-driver (upstream main) do under it?",
+ "scope_note": "Environment kit + correctness receipts only. No latency numbers are reported, so no quiet-lane timing and no PREREG; durations inside receipts (ms fields) are incidental and are not measurements.",
+ "rows": [
+  {"id": "kit", "class": "REAL", "result": "PASS",
+   "claim": "sway 1.12 + wlroots0.20 0.20.2 + libliftoff 0.5.0 + wtype 0.4 installed user-locally from Arch/CachyOS packages whose sha256 matched the sync-db %SHA256SUM% (5/5 incl. xorg-xwayland, whose Xwayland binary is byte-identical to the system one)."},
+  {"id": "isolation-canary", "class": "REAL", "result": "PASS", "denominator": "3/3 runs after the fix; 1 earlier run FAILED (see attempts)",
+   "claim": "Inside the session: host Hyprland sockets, host Wayland sockets, host session bus, host AT-SPI bus and host X11 path sockets are absent (ENOENT); host abstract X11 sockets are refused (EPERM, Landlock scope) or unbound (ECONNREFUSED); the host Hyprland pid is invisible (ESRCH); a Wayland client and an X11 client launched inside map in the private sway tree; the session adds exactly one abstract X11 listener, at a display number the host does not use."},
+  {"id": "canary-sabotage", "class": "REAL", "result": "PASS", "denominator": "3/3",
+   "claim": "Decoys bound outside the session (inside hostless' private mounts, never the host): from outside the session all three are REACHABLE; from inside, the exposed hypr-layout decoy is REACHABLE (probe sensitivity), the abstract decoy is refused (EPERM) and the /tmp/.X11-unix decoy is hidden by the private /tmp. The decoys' own accept logs agree (control 1/1/1, inside 1/0/0)."},
+  {"id": "multiseat", "class": "REAL", "result": "PASS", "denominator": "5/5 reps with the final session script (16/16 checks each); 4 earlier exploratory runs failed on harness races/design and 5 reps ran before the display fix (see attempts)",
+   "claim": "With CUA_SWAY_SEATS=2, one virtual pointer + keyboard per seat (created against that wl_seat) gives independent cursor positions (surface-local coordinates per seat, two cursors in screenshots), independent keyboard focus (swaymsg get_seats focus per seat, swapped in phase D), and no cross-seat clicks or keys (concurrent typing 'left'/'right' then 'zero'/'one' land only in the seat's own focused window)."},
+  {"id": "driver-native-wayland", "class": "REAL", "result": "PARTIAL",
+   "claim": "Opt-in CUA_DRIVER_RS_ENABLE_WAYLAND=1: health_report sees all wlroots globals; list_windows/get_window_state (screencopy + AT-SPI tree, 15/15 named controls) work; foreground click and type_text are delivered through zwlr_virtual_pointer_v1 / zwp_virtual_keyboard_v1 (seatprobe oracle); default background delivery is refused (no libei/RemoteDesktop portal on sway). GTK3 task fixture 0/3: native element frames are the true window-local position scaled by original_width/screenshot_width (1.326), so clicks miss (GTK3 accepts held virtual-pointer clicks at the true position on seat0 and seat1). jev-use native AT-SPI smoke fails because native titles carry a ' [app_id]' suffix."},
+  {"id": "driver-xwayland", "class": "REAL", "result": "PARTIAL",
+   "claim": "GTK3 AT-SPI smoke (X11 via Xwayland, private AT-SPI bus) PASS (18 elements, 6/6 expected). Foreground XTEST input on the GTK3 task fixture 1/3 full PASS: the first click was lost in 2/3 runs, the later click + typing + save landed 3/3. Background: buttons via AT-SPI action work; pointer/keyboard to the entry fail (XI2 master-pointer route needs a uinput slave device)."},
+  {"id": "driver-seat-binding", "class": "SOURCE+REAL", "result": "NO",
+   "claim": "No caller-selectable seat. Source: wayland/primary_seat.rs picks the last advertised ordinary wl_seat (names Cua-Agent*, Cua-Test-Agent* excluded). Real: on 2-seat sway every Driver pointer/keyboard event arrived on seat1, not seat0. The Xwayland path injects inside the X server and bypasses sway seats."},
+  {"id": "driver-multicursor", "class": "SOURCE+REAL", "result": "PARTIAL",
+   "claim": "Overlay: one Driver process drew three per-session agent cursors (agentA, agentB, agentC) at once through the layer-shell overlay with session badges (keyed render map). Input: all sessions share the one implicit seat; parallel_mouse_drag on Wayland needs the cua-compositor inject socket (not stock sway). Source: with WAYLAND_DISPLAY set but no opt-in, neither the X11 nor the layer-shell overlay runs. Session B was refused a click until it took its own snapshot (per-session capture ownership)."},
+  {"id": "browser-smoke", "class": "BLOCKED", "result": "BLOCKED",
+   "claim": "jev-use browser smoke: browser_prepare refused 'no root-owned, non-writable system Chromium executable' in the xwayland and native arms and in an Xvfb control under hostless. hostless' user namespace maps only the invoking uid, so root-owned files (incl. /opt/google/chrome/chrome) appear owned by nobody; the Driver's isolated-launch policy is correct to refuse. Not sway-specific."}
+ ],
+ "findings_for_shared_infra": [
+  "hostless masks host path sockets but shares the network namespace: host abstract unix sockets (e.g. @/tmp/.X11-unix/X0 and X2) stay connectable from plain hostless (demonstrated with a decoy, never the real host). cua-sway-session.sh closes this with a Landlock abstract-unix + signal scope; cua-x11-session.sh under hostless does not.",
+  "A private X server in the shared network namespace must not take a display number the host serves through path sockets only (the host Hyprland Xwayland serves :1 via /tmp/.X11-unix/X1 + X1_, no abstract socket): libxcb tries the abstract name first, so host clients could land in the private session. cua-sway-session.sh seeds lock files for every host-used display and refuses on collision.",
+  "hostless' uid mapping blocks the Driver's isolated Chromium launch (browser smoke BLOCKED for every hostless session).",
+  "jev-use driver_environment() does not forward SWAYSOCK; the Driver still found native windows without it (synthetic window ids), so it is not the cause of the native smoke failure."
+ ],
+ "result": "kit + isolation + multi-seat PASS; Driver under sway PARTIAL (native and Xwayland), seat binding NO, multicursor overlay yes / input no, browser smoke BLOCKED by hostless"
+}

@@ -1,0 +1,658 @@
+{
+ "probe_pid": 31,
+ "steps": [
+  {
+   "tool": "health_report",
+   "args": {},
+   "session": "agentA",
+   "is_error": false,
+   "ms": 1062.4,
+   "structured": {
+    "build": {
+     "exe_sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+     "git_sha": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+     "version": "0.32.0"
+    },
+    "checks": [
+     {
+      "message": "cua-driver 0.32.0",
+      "name": "binary_version",
+      "status": "pass"
+     },
+     {
+      "data": {
+       "architecture": "x86_64",
+       "os_version": "CachyOS"
+      },
+      "message": "CachyOS (x86_64)",
+      "name": "platform_supported",
+      "status": "pass"
+     },
+     {
+      "message": "MCP session is active.",
+      "name": "session_active",
+      "status": "pass"
+     },
+     {
+      "message": "not applicable on Linux",
+      "name": "bundle_identity",
+      "status": "skip"
+     },
+     {
+      "message": "not applicable on Linux",
+      "name": "tcc_accessibility",
+      "status": "skip"
+     },
+     {
+      "message": "not applicable on Linux",
+      "name": "tcc_screen_recording",
+      "status": "skip"
+     },
+     {
+      "message": "Wayland session: org.a11y.Bus reachable on the session bus; AT-SPI inspection will work.",
+      "name": "ax_capability",
+      "status": "pass"
+     },
+     {
+      "message": "Wayland session: zwlr_screencopy_manager_v1 + wl_shm advertised; native output capture is functional.",
+      "name": "screen_capture_capability",
+      "status": "pass"
+     },
+     {
+      "message": "All wlroots manager globals advertised (foreign-toplevel=true, screencopy=true, ext-image-copy=true, ext-output-source=true, virtual-pointer=true, wl_shm=true).",
+      "name": "wayland_backend",
+      "status": "pass"
+     }
+    ],
+    "driver_version": "0.32.0",
+    "overall": "ok",
+    "platform": "linux",
+    "schema_version": "1"
+   },
+   "text": "\u2705 cua-driver 0.32.0 on linux \u2014 ok\n  \u2705 binary_version: cua-driver 0.32.0\n  \u2705 platform_supported: CachyOS (x86_64)\n  \u2705 session_active: MCP session is active.\n  \u23ed bundle_identity: not applicable on Linux\n  \u23ed tcc_accessibility: not applicable on Linux\n  \u23ed tcc_screen_recording: not applicable on Linux\n  \u2705 ax_capability: Wayland session: org.a11y.Bus reachable on the session bus; AT-SPI inspection will work.\n  \u2705 screen_capture_capability: Wayland session: zwlr_screencopy_manager_v1 + wl_shm advertised; native output capture is functional.\n  \u2705 wayland_backend: All wlroots manager globals advertised (foreign-toplevel=true, screencopy=true, ext-image-copy=true, ext-output-source=true, virtual-pointer=true, wl_shm=true)."
+  },
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 31
+   },
+   "session": "agentA",
+   "is_error": false,
+   "ms": 43.9,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "cua-seatprobe",
+      "bounds": {
+       "height": 693,
+       "width": 1280,
+       "x": 0,
+       "y": 27
+      },
+      "height": 693,
+      "is_on_screen": true,
+      "pid": 31,
+      "title": "T [cua-seatprobe]",
+      "width": 1280,
+      "window_id": 5,
+      "x": 0,
+      "y": 27,
+      "z_index": null
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=5 pid=31 \"T [cua-seatprobe]\" 1280x693+0+27 app=cua-seatprobe"
+  },
+  {
+   "tool": "get_window_state",
+   "args": {
+    "pid": 31,
+    "window_id": 5,
+    "include_screenshot": true,
+    "include_accessibility_tree": false
+   },
+   "session": "agentA",
+   "is_error": false,
+   "ms": 87.6,
+   "structured": {
+    "app_name": "cua-seatprobe",
+    "capture_id": "capture_75b575c2e0d144c9ab383421c84f0886_0000000000000000",
+    "coordinate_frame": "window",
+    "frame_note": "x/y for click / double_click / right_click / drag / scroll on this window are pixels of THIS screenshot (window-local, 0..screenshot_width x 0..screenshot_height), as are the element frames; the screenshot is kept at or below 1.15 megapixels so the image you read is the image these pixels index (frame_scale < 1 says the window was downsized to it). window_bounds is where it sits on the screen. Pass scope:\"desktop\" only for get_desktop_state pixels.",
+    "pid": 31,
+    "screenshot_frame_valid": true,
+    "screenshot_height": 693,
+    "screenshot_mime_type": "image/png",
+    "screenshot_width": 1280,
+    "window_bounds": {
+     "height": 693,
+     "width": 1280,
+     "x": 0,
+     "y": 27
+    },
+    "window_id": 5,
+    "window_title": "T [cua-seatprobe]"
+   },
+   "text": ""
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 31,
+    "window_id": 5,
+    "x": 100,
+    "y": 80
+   },
+   "session": "agentA",
+   "is_error": true,
+   "ms": 9.6,
+   "structured": {
+    "code": "background_unavailable",
+    "detail": "the requested target has no focus-free input backend; the remaining XTest/X11 route can only deliver to the globally focused widget",
+    "escalation": {
+     "reason": "background input is unavailable on this surface; retry this action with delivery_mode:\"foreground\".",
+     "recommended": "foreground"
+    },
+    "suggestion": "Retry this action with delivery_mode:\"foreground\"."
+   },
+   "text": "Background delivery is not available: the requested target has no focus-free input backend; the remaining XTest/X11 route can only deliver to the globally focused widget. Retry this action with delivery_mode:\"foreground\"; Cua Driver will activate the target window, confirm it holds the input focus, and deliver real input to it."
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 31,
+    "window_id": 5,
+    "x": 100,
+    "y": 80,
+    "delivery_mode": "foreground"
+   },
+   "session": "agentA",
+   "is_error": false,
+   "ms": 114.7,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (100.0, 80.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(100, 80) screen_point=(100, 107)]"
+   },
+   "text": "Clicked at (100.0, 80.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(100, 80) screen_point=(100, 107)]"
+  },
+  {
+   "tool": "get_window_state",
+   "args": {
+    "pid": 31,
+    "window_id": 5,
+    "include_screenshot": true,
+    "include_accessibility_tree": false
+   },
+   "session": "agentB",
+   "is_error": false,
+   "ms": 105.9,
+   "structured": {
+    "app_name": "cua-seatprobe",
+    "capture_id": "capture_75b575c2e0d144c9ab383421c84f0886_0000000000000001",
+    "coordinate_frame": "window",
+    "frame_note": "x/y for click / double_click / right_click / drag / scroll on this window are pixels of THIS screenshot (window-local, 0..screenshot_width x 0..screenshot_height), as are the element frames; the screenshot is kept at or below 1.15 megapixels so the image you read is the image these pixels index (frame_scale < 1 says the window was downsized to it). window_bounds is where it sits on the screen. Pass scope:\"desktop\" only for get_desktop_state pixels.",
+    "invalidated_snapshot_ids": [
+     "s00000001"
+    ],
+    "pid": 31,
+    "screenshot_frame_valid": true,
+    "screenshot_height": 693,
+    "screenshot_mime_type": "image/png",
+    "screenshot_width": 1280,
+    "window_bounds": {
+     "height": 693,
+     "width": 1280,
+     "x": 0,
+     "y": 27
+    },
+    "window_id": 5,
+    "window_title": "T [cua-seatprobe]"
+   },
+   "text": "Invalidated snapshots s00000001: their element_tokens are stale."
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 31,
+    "window_id": 5,
+    "x": 400,
+    "y": 300,
+    "delivery_mode": "foreground"
+   },
+   "session": "agentB",
+   "is_error": false,
+   "ms": 107.9,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (400.0, 300.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(400, 300) screen_point=(400, 327)]"
+   },
+   "text": "Clicked at (400.0, 300.0) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(400, 300) screen_point=(400, 327)]"
+  },
+  {
+   "tool": "type_text",
+   "args": {
+    "pid": 31,
+    "window_id": 5,
+    "text": "cua",
+    "delivery_mode": "foreground"
+   },
+   "session": "agentA",
+   "is_error": false,
+   "ms": 50.4,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Typed 3 character(s) (via Wayland virtual-keyboard)."
+   },
+   "text": "Typed 3 character(s) (via Wayland virtual-keyboard)."
+  },
+  {
+   "tool": "move_cursor",
+   "args": {
+    "x": 900,
+    "y": 150,
+    "cursor_id": "third"
+   },
+   "session": "agentC",
+   "is_error": false,
+   "ms": 26.0,
+   "structured": {
+    "delivery": {
+     "mode": "not_applicable"
+    },
+    "effect": "unverifiable",
+    "route": "synthetic_events",
+    "summary": "Agent cursor 'agentC' moved to (900.0, 150.0); the user pointer was unchanged."
+   },
+   "text": "Agent cursor 'agentC' moved to (900.0, 150.0); the user pointer was unchanged."
+  }
+ ],
+ "window": {
+  "app_name": "cua-seatprobe",
+  "bounds": {
+   "height": 693,
+   "width": 1280,
+   "x": 0,
+   "y": 27
+  },
+  "height": 693,
+  "is_on_screen": true,
+  "pid": 31,
+  "title": "T [cua-seatprobe]",
+  "width": 1280,
+  "window_id": 5,
+  "x": 0,
+  "y": 27,
+  "z_index": null
+ },
+ "mark_click_A": 1790916384.2568047,
+ "seats_after_click_A": [
+  {
+   "name": "seat1",
+   "capabilities": 0,
+   "focus": 5,
+   "devices": []
+  },
+  {
+   "name": "seat0",
+   "capabilities": 0,
+   "focus": 5,
+   "devices": []
+  }
+ ],
+ "mark_click_B": 1790916384.879695,
+ "mark_type": 1790916385.316083,
+ "mark_move_cursor": 1790916385.7666922,
+ "seats_end": [
+  {
+   "name": "seat1",
+   "capabilities": 0,
+   "focus": 5,
+   "devices": []
+  },
+  {
+   "name": "seat0",
+   "capabilities": 0,
+   "focus": 5,
+   "devices": []
+  }
+ ],
+ "tree_end": {
+  "id": 1,
+  "type": "root",
+  "orientation": "horizontal",
+  "percent": null,
+  "urgent": false,
+  "marks": [],
+  "focused": false,
+  "layout": "splith",
+  "border": "none",
+  "current_border_width": 0,
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "deco_rect": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "window_rect": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "geometry": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "name": "root",
+  "window": null,
+  "nodes": [
+   {
+    "id": 2147483647,
+    "type": "output",
+    "orientation": "horizontal",
+    "percent": null,
+    "urgent": false,
+    "marks": [],
+    "focused": false,
+    "layout": "output",
+    "border": "none",
+    "current_border_width": 0,
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "width": 1280,
+     "height": 720
+    },
+    "deco_rect": {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 0
+    },
+    "window_rect": {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 0
+    },
+    "geometry": {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 0
+    },
+    "name": "__i3",
+    "window": null,
+    "nodes": [
+     {
+      "id": 2147483646,
+      "type": "workspace",
+      "orientation": "horizontal",
+      "percent": null,
+      "urgent": false,
+      "marks": [],
+      "focused": false,
+      "layout": "splith",
+      "border": "none",
+      "current_border_width": 0,
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 1280,
+       "height": 720
+      },
+      "deco_rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "window_rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "geometry": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "name": "__i3_scratch",
+      "window": null,
+      "nodes": [],
+      "floating_nodes": [],
+      "focus": [],
+      "fullscreen_mode": 1,
+      "sticky": false,
+      "floating": null,
+      "scratchpad_state": null
+     }
+    ],
+    "floating_nodes": [],
+    "focus": [
+     2147483646
+    ],
+    "fullscreen_mode": 0,
+    "sticky": false,
+    "floating": null,
+    "scratchpad_state": null
+   },
+   {
+    "id": 3,
+    "type": "output",
+    "orientation": "none",
+    "percent": 1.0,
+    "urgent": false,
+    "marks": [],
+    "focused": false,
+    "layout": "output",
+    "border": "none",
+    "current_border_width": 0,
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "width": 1280,
+     "height": 720
+    },
+    "deco_rect": {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 0
+    },
+    "window_rect": {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 0
+    },
+    "geometry": {
+     "x": 0,
+     "y": 0,
+     "width": 0,
+     "height": 0
+    },
+    "name": "HEADLESS-1",
+    "window": null,
+    "nodes": [
+     {
+      "id": 4,
+      "type": "workspace",
+      "orientation": "horizontal",
+      "percent": null,
+      "urgent": false,
+      "marks": [],
+      "focused": false,
+      "layout": "splith",
+      "border": "none",
+      "current_border_width": 0,
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 1280,
+       "height": 720
+      },
+      "deco_rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "window_rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "geometry": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "name": "1",
+      "window": null,
+      "nodes": [
+       {
+        "id": 5,
+        "type": "con",
+        "orientation": "none",
+        "percent": 1.0,
+        "urgent": false,
+        "marks": [],
+        "focused": true,
+        "layout": "none",
+        "border": "normal",
+        "current_border_width": 2,
+        "rect": {
+         "x": 0,
+         "y": 27,
+         "width": 1280,
+         "height": 693
+        },
+        "deco_rect": {
+         "x": 0,
+         "y": 0,
+         "width": 1280,
+         "height": 27
+        },
+        "window_rect": {
+         "x": 2,
+         "y": 0,
+         "width": 1276,
+         "height": 691
+        },
+        "geometry": {
+         "x": 0,
+         "y": 0,
+         "width": 400,
+         "height": 300
+        },
+        "name": "T",
+        "window": null,
+        "nodes": [],
+        "floating_nodes": [],
+        "focus": [],
+        "fullscreen_mode": 0,
+        "sticky": false,
+        "floating": "auto_off",
+        "scratchpad_state": "none",
+        "pid": 31,
+        "app_id": "cua-seatprobe",
+        "foreign_toplevel_identifier": "c9c1e70cec09f01a72c672891f8b777f",
+        "visible": true,
+        "max_render_time": 0,
+        "allow_tearing": false,
+        "shell": "xdg_shell",
+        "inhibit_idle": false,
+        "sandbox_engine": null,
+        "sandbox_app_id": null,
+        "sandbox_instance_id": null,
+        "tag": null,
+        "idle_inhibitors": {
+         "user": "none",
+         "application": "none"
+        }
+       }
+      ],
+      "floating_nodes": [],
+      "focus": [
+       5
+      ],
+      "fullscreen_mode": 1,
+      "sticky": false,
+      "floating": null,
+      "scratchpad_state": null,
+      "num": 1,
+      "output": "HEADLESS-1",
+      "representation": "H[cua-seatprobe]"
+     }
+    ],
+    "floating_nodes": [],
+    "focus": [
+     4
+    ],
+    "fullscreen_mode": 0,
+    "sticky": false,
+    "floating": null,
+    "scratchpad_state": null,
+    "primary": false,
+    "make": "Unknown",
+    "model": "Unknown",
+    "serial": "Unknown",
+    "modes": [],
+    "features": {
+     "adaptive_sync": false,
+     "hdr": false
+    },
+    "non_desktop": false,
+    "active": true,
+    "dpms": true,
+    "power": true,
+    "scale": 1.0,
+    "scale_filter": "nearest",
+    "transform": "normal",
+    "adaptive_sync_status": "disabled",
+    "current_workspace": "1",
+    "current_mode": {
+     "width": 1280,
+     "height": 720,
+     "refresh": 0
+    },
+    "max_render_time": 0,
+    "allow_tearing": false,
+    "hdr": false
+   }
+  ],
+  "floating_nodes": [],
+  "focus": [
+   3
+  ],
+  "fullscreen_mode": 0,
+  "sticky": false,
+  "floating": null,
+  "scratchpad_state": null
+ }
+}

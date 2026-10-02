@@ -1,0 +1,86 @@
+{
+ "delivery": "foreground",
+ "gtk_pid": 307,
+ "wayland_display_for_driver": true,
+ "sway_views": [
+  [
+   307,
+   "xdg_shell",
+   "CuaTestHarness GTK3 Tasks"
+  ]
+ ],
+ "steps": [
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 307
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 218.5,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "main.py",
+      "bounds": {
+       "height": 1053,
+       "width": 1920,
+       "x": 0,
+       "y": 27
+      },
+      "height": 1053,
+      "is_on_screen": true,
+      "pid": 307,
+      "title": "CuaTestHarness GTK3 Tasks [main.py]",
+      "width": 1920,
+      "window_id": 7,
+      "x": 0,
+      "y": 27,
+      "z_index": null
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=7 pid=307 \"CuaTestHarness GTK3 Tasks [main.py]\" 1920x1053+0+27 app=main.py"
+  },
+  {
+   "tool": "click",
+   "label": "Increment",
+   "error": "label not in tree"
+  },
+  {
+   "tool": "click",
+   "label": "Note",
+   "error": "label not in tree"
+  },
+  {
+   "tool": "click",
+   "label": "Save note",
+   "error": "label not in tree"
+  }
+ ],
+ "labels": [
+  "Exit",
+  "I agree",
+  "Increment",
+  "Large",
+  "Medium",
+  "Note",
+  "Reset",
+  "Save note",
+  "Small"
+ ],
+ "fixture_state": {
+  "agreed": false,
+  "counter": 0,
+  "note_saved": null,
+  "pid": 307,
+  "schema": "cua.gtk3_task_state_v1",
+  "seq": 1,
+  "size": "none"
+ },
+ "oracle": {
+  "counter_is_1": false,
+  "note_saved_is_sway": false
+ },
+ "result": "FAIL"
+}

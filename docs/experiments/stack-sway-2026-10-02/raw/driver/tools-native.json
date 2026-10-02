@@ -1,0 +1,780 @@
+{
+ "server": {
+  "name": "cua-driver",
+  "title": null,
+  "version": "0.32.0",
+  "websiteUrl": null,
+  "icons": null
+ },
+ "tool_names": [
+  "bring_to_front",
+  "browser_click",
+  "browser_dialog",
+  "browser_download",
+  "browser_navigate",
+  "browser_pointer",
+  "browser_prepare",
+  "browser_set_input_files",
+  "browser_type",
+  "check_for_update",
+  "check_permissions",
+  "click",
+  "clipboard_read",
+  "clipboard_write",
+  "double_click",
+  "drag",
+  "end_session",
+  "escalate_session",
+  "get_accessibility_tree",
+  "get_agent_cursor_state",
+  "get_browser_state",
+  "get_config",
+  "get_cursor_position",
+  "get_desktop_state",
+  "get_recording_state",
+  "get_screen_size",
+  "get_session",
+  "get_session_state",
+  "get_window_state",
+  "health_report",
+  "hotkey",
+  "install_extension",
+  "install_ffmpeg",
+  "invoke_menu",
+  "kill_app",
+  "launch_app",
+  "list_apps",
+  "list_sessions",
+  "list_windows",
+  "mouse_button_down",
+  "mouse_button_up",
+  "mouse_drag",
+  "move_cursor",
+  "page",
+  "parallel_mouse_drag",
+  "parse_visual_regions",
+  "press_key",
+  "replay_trajectory",
+  "right_click",
+  "scroll",
+  "set_agent_cursor_enabled",
+  "set_agent_cursor_motion",
+  "set_agent_cursor_theme",
+  "set_config",
+  "set_value",
+  "set_window_frame",
+  "start_recording",
+  "start_session",
+  "stop_recording",
+  "type_text",
+  "verify_state",
+  "zoom"
+ ],
+ "schemas": {
+  "list_windows": {
+   "additionalProperties": false,
+   "properties": {
+    "on_screen_only": {
+     "description": "When true, filter to visible windows only. Default false.",
+     "type": "boolean"
+    },
+    "pid": {
+     "description": "Only list windows owned by this process ID.",
+     "type": "integer"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "get_window_state": {
+   "additionalProperties": false,
+   "properties": {
+    "capture_mode": {
+     "description": "DEPRECATED and ignored. get_window_state always returns BOTH the element tree and a screenshot \u2014 ground on both. The modality is chosen at action time by how you address the target: an element ax action (element_token) or an element px action (x,y). Any value (including the old \"som\"/\"screenshot\" aliases) is accepted but has no effect.",
+     "enum": [
+      "ax",
+      "vision"
+     ],
+     "type": "string"
+    },
+    "include_accessibility_tree": {
+     "description": "Default true \u2014 walk the AT-SPI tree and return `elements` + `tree_markdown` alongside the screenshot. Set false to SKIP the AT-SPI walk entirely and return just the screenshot plus window metadata (window_bounds, app_name, window_title) \u2014 the capture-only path for a live window preview / picture-in-picture. Mirrors include_screenshot. Setting BOTH include_accessibility_tree:false AND include_screenshot:false is an error (nothing to return).",
+     "type": "boolean"
+    },
+    "include_screenshot": {
+     "description": "Default true \u2014 returns a grounding screenshot alongside the tree. Set false to skip the grab and return tree only (the cheap path for re-indexing before an element ax action).",
+     "type": "boolean"
+    },
+    "max_depth": {
+     "description": "Cap on the AT-SPI tree walk depth. Omit for the default (uncapped). Lower for deeply nested apps.",
+     "minimum": 1,
+     "type": "integer"
+    },
+    "max_dimension": {
+     "description": "Legacy optional cap on the returned screenshot's long edge. Applied on top of the configured max_image_dimension ceiling when max_image_dimension is omitted.",
+     "minimum": 1,
+     "type": "integer"
+    },
+    "max_elements": {
+     "description": "Cap on total AT-SPI nodes walked. Omit for the default (5 000). Lower for huge web/Electron trees.",
+     "minimum": 1,
+     "type": "integer"
+    },
+    "max_image_dimension": {
+     "description": "Per-call long-edge override. This value wins over configured and legacy limits; 0 returns native-resolution PNG bytes. Omit to preserve configured behavior.",
+     "minimum": 0,
+     "type": "integer"
+    },
+    "pid": {
+     "description": "Process ID that owns the window.",
+     "type": "integer"
+    },
+    "query": {
+     "description": "Optional case-insensitive substring. Projects both tree_markdown and structured elements to matches plus ancestors while preserving original indices. Compare total_element_count with returned_element_count.",
+     "type": "string"
+    },
+    "screenshot_out_file": {
+     "description": "When set, write the PNG to this file path (~ expanded) instead of embedding base64 in the response. The structured output carries screenshot_file_path instead.",
+     "type": "string"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    },
+    "timeout_ms": {
+     "default": 1000,
+     "description": "Wall-clock budget in milliseconds for the accessibility-tree walk (default 1000, min 100, max 120000). Bounds the WHOLE walk. When the budget runs out the tool returns the PARTIAL tree it has, flagged with `truncated: true`, `truncation_reason`, `nodes_visited`, `nodes_pending` and `elements_complete: false`; retry with a larger value (e.g. 5000) or narrow with `query` / `max_depth`.",
+     "maximum": 120000,
+     "minimum": 100,
+     "type": "integer"
+    },
+    "window_id": {
+     "description": "Native window identifier from list_windows, or the `popup.window_id` a click / right_click result named (an open context menu / popover; its menu items then get element indices). Omitted: the pid's open popup menu when one is mapped, else its focused / active / largest window.",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "pid"
+   ],
+   "type": "object"
+  },
+  "click": {
+   "additionalProperties": false,
+   "properties": {
+    "button": {
+     "description": "Mouse button. Default: \"left\" (legacy back-compat). X11: routed via ButtonPress/Release with the matching evdev code. Native Wayland: only left-button is supported via the virtual-pointer protocol; right/middle return an error.",
+     "enum": [
+      "left",
+      "right",
+      "middle"
+     ],
+     "type": "string"
+    },
+    "capture_id": {
+     "description": "Optional one-shot binding to the exact PNG returned by get_window_state or get_desktop_state. When present, x/y are interpreted in that capture and admitted before native dispatch.",
+     "type": "string"
+    },
+    "coordinate_frame": {
+     "description": "Frame of x/y (and from_x/from_y/to_x/to_y). Default \"window\": window-local screenshot pixels as returned by get_window_state. \"desktop\": full-screen pixels as returned by get_desktop_state, translated to the target window. Passing scope:\"desktop\" together with pid/window_id means the same thing.",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "count": {
+     "description": "Number of clicks in one press train: 1 (default), 2 = double-click, 3 = triple-click (line/paragraph selection). There is no separate triple_click tool \u2014 pass count: 3 here.",
+     "minimum": 1,
+     "type": "integer"
+    },
+    "cursor_id": {
+     "description": "Optional multi-cursor instance id. Default: 'default'.",
+     "type": "string"
+    },
+    "delivery_mode": {
+     "default": "background",
+     "description": "Input delivery mode. 'background' (default) never activates or raises the target window. On X11 it injects via XTEST / the XInput2 master pointer (no focus steal). On Wayland it goes through libei + xdg-desktop-portal, which injects to the compositor's input focus \u2014 Wayland's security model has no per-window background targeting, so a specific non-focused window cannot be aimed at; when no libei backend is available the tool returns a structured background_unavailable error. 'foreground' is the explicit escalation: activate the target (X11 _NET_ACTIVE_WINDOW; Wayland compositor activate), inject, then restore the prior active window \u2014 a brief focus swap unless the target was already active. Matches the macOS / Windows delivery_mode surface.",
+     "enum": [
+      "background",
+      "foreground"
+     ],
+     "type": "string"
+    },
+    "element_token": {
+     "description": "Opaque per-snapshot element handle from `structuredContent.elements[].element_token`. Returns an explicit stale error naming the current snapshots once a newer read supersedes it.",
+     "type": "string"
+    },
+    "from_zoom": {
+     "description": "Set true after a zoom call to auto-translate zoom-image pixel coordinates back to full-window space.",
+     "type": "boolean"
+    },
+    "modifier": {
+     "description": "Modifier keys held during the action: cmd, shift, option/alt, ctrl.",
+     "items": {
+      "type": "string"
+     },
+     "type": "array"
+    },
+    "pid": {
+     "description": "Target process ID. Required unless scope is \"desktop\".",
+     "type": "integer"
+    },
+    "scope": {
+     "default": "window",
+     "description": "Coordinate frame (default \"window\"). Pass \"desktop\" with x,y and no pid/window_id for a screen-absolute click in get_desktop_state coordinates.",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    },
+    "target": {
+     "description": "Exact capture/input target selected independently for each action.\n\n`display_id=\"primary\"` is the portable desktop target in this release.\nPlatforms that cannot address another display reject it explicitly rather\nthan silently changing coordinate spaces.",
+     "oneOf": [
+      {
+       "additionalProperties": true,
+       "properties": {
+        "kind": {
+         "const": "window",
+         "type": "string"
+        },
+        "pid": {
+         "minimum": 0,
+         "type": "integer"
+        },
+        "window_id": {
+         "minimum": 0,
+         "type": "integer"
+        }
+       },
+       "required": [
+        "kind",
+        "pid",
+        "window_id"
+       ],
+       "type": "object"
+      },
+      {
+       "additionalProperties": true,
+       "properties": {
+        "display_id": {
+         "type": "string"
+        },
+        "kind": {
+         "const": "desktop",
+         "type": "string"
+        }
+       },
+       "required": [
+        "kind",
+        "display_id"
+       ],
+       "type": "object"
+      }
+     ]
+    },
+    "window_id": {
+     "description": "Window id from list_windows. Required with x/y or element_index; optional with element_token (the token carries it).",
+     "type": "integer"
+    },
+    "x": {
+     "description": "Window-local pixel X of the target window's own get_window_state screenshot (0..screenshot_width). For get_desktop_state pixels pass scope:\"desktop\" (or coordinate_frame:\"desktop\").",
+     "type": "number"
+    },
+    "y": {
+     "description": "Window-local pixel Y of the target window's own get_window_state screenshot (0..screenshot_height); see x.",
+     "type": "number"
+    }
+   },
+   "required": [],
+   "type": "object"
+  },
+  "parallel_mouse_drag": {
+   "additionalProperties": false,
+   "properties": {
+    "drags": {
+     "description": "Two or more drag gestures to run concurrently, each on its own virtual master pointer.",
+     "items": {
+      "additionalProperties": false,
+      "properties": {
+       "button": {
+        "description": "Mouse button. Default \"left\".",
+        "enum": [
+         "left",
+         "right",
+         "middle"
+        ],
+        "type": "string"
+       },
+       "duration_ms": {
+        "description": "Default: 1500 for fn paths, 500 for straight.",
+        "maximum": 10000,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "fn": {
+        "description": "Expression y(x) in window-local pixels; sampled over [x_from,x_to]. Mutually exclusive with from_x/to_x.",
+        "type": "string"
+       },
+       "from_x": {
+        "description": "Straight-segment start X (window-local pixels).",
+        "type": "number"
+       },
+       "from_y": {
+        "description": "Straight-segment start Y (window-local pixels).",
+        "type": "number"
+       },
+       "path": {
+        "description": "Explicit window-local waypoints [[x,y],...] (>=2); pressed once, glided through, released once. Takes precedence over fn/from-to.",
+        "items": {
+         "items": {
+          "type": "number"
+         },
+         "type": "array"
+        },
+        "type": "array"
+       },
+       "samples": {
+        "description": "Waypoints sampled along `fn`. Default: 80.",
+        "maximum": 400,
+        "minimum": 2,
+        "type": "integer"
+       },
+       "session": {
+        "description": "Session/cursor id; also keys the virtual master pointer.",
+        "type": "string"
+       },
+       "steps": {
+        "description": "Motion sub-steps along the whole path. Default: scaled to path length.",
+        "maximum": 300,
+        "minimum": 1,
+        "type": "integer"
+       },
+       "to_x": {
+        "description": "Straight-segment end X (window-local pixels).",
+        "type": "number"
+       },
+       "to_y": {
+        "description": "Straight-segment end Y (window-local pixels).",
+        "type": "number"
+       },
+       "window_id": {
+        "description": "Window id from list_windows.",
+        "type": "integer"
+       },
+       "x_from": {
+        "description": "Domain start (window-local x) when `fn` is used.",
+        "type": "number"
+       },
+       "x_to": {
+        "description": "Domain end (window-local x) when `fn` is used.",
+        "type": "number"
+       }
+      },
+      "required": [
+       "session",
+       "window_id"
+      ],
+      "type": "object"
+     },
+     "minItems": 2,
+     "type": "array"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    }
+   },
+   "required": [
+    "drags"
+   ],
+   "type": "object"
+  },
+  "type_text": {
+   "additionalProperties": false,
+   "properties": {
+    "coordinate_frame": {
+     "description": "Frame of x/y (and from_x/from_y/to_x/to_y). Default \"window\": window-local screenshot pixels as returned by get_window_state. \"desktop\": full-screen pixels as returned by get_desktop_state, translated to the target window. Passing scope:\"desktop\" together with pid/window_id means the same thing.",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "delivery_mode": {
+     "default": "background",
+     "description": "Input delivery mode. 'background' (default) never activates or raises the target window. On X11 it injects via XTEST / the XInput2 master pointer (no focus steal). On Wayland it goes through libei + xdg-desktop-portal, which injects to the compositor's input focus \u2014 Wayland's security model has no per-window background targeting, so a specific non-focused window cannot be aimed at; when no libei backend is available the tool returns a structured background_unavailable error. 'foreground' is the explicit escalation: activate the target (X11 _NET_ACTIVE_WINDOW; Wayland compositor activate), inject, then restore the prior active window \u2014 a brief focus swap unless the target was already active. Matches the macOS / Windows delivery_mode surface.",
+     "enum": [
+      "background",
+      "foreground"
+     ],
+     "type": "string"
+    },
+    "element_token": {
+     "description": "Opaque per-snapshot element handle from `structuredContent.elements[].element_token`. Returns an explicit stale error naming the current snapshots once a newer read supersedes it.",
+     "type": "string"
+    },
+    "pid": {
+     "description": "Target process ID. Omit with scope \"desktop\" to type into the focused application.",
+     "type": "integer"
+    },
+    "scope": {
+     "default": "window",
+     "description": "Use \"desktop\" with no pid to type into the focused application. Default \"window\".",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    },
+    "target": {
+     "anyOf": [
+      {
+       "description": "Exact capture/input target selected independently for each action.\n\n`display_id=\"primary\"` is the portable desktop target in this release.\nPlatforms that cannot address another display reject it explicitly rather\nthan silently changing coordinate spaces.",
+       "oneOf": [
+        {
+         "additionalProperties": true,
+         "properties": {
+          "kind": {
+           "const": "window",
+           "type": "string"
+          },
+          "pid": {
+           "minimum": 0,
+           "type": "integer"
+          },
+          "window_id": {
+           "minimum": 0,
+           "type": "integer"
+          }
+         },
+         "required": [
+          "kind",
+          "pid",
+          "window_id"
+         ],
+         "type": "object"
+        },
+        {
+         "additionalProperties": true,
+         "properties": {
+          "display_id": {
+           "type": "string"
+          },
+          "kind": {
+           "const": "desktop",
+           "type": "string"
+          }
+         },
+         "required": [
+          "kind",
+          "display_id"
+         ],
+         "type": "object"
+        }
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "Preferred per-call target: an exact window (`kind=\"window\"`, `pid`, `window_id`) or the\nprimary desktop (`kind=\"desktop\"`, `display_id=\"primary\"`)."
+    },
+    "text": {
+     "description": "Text to type.",
+     "type": "string"
+    },
+    "window_id": {
+     "description": "Window id from list_windows. Required with x/y; optional with element_token (the token carries it).",
+     "type": "integer"
+    },
+    "x": {
+     "description": "Pixel X of the field to type into \u2014 the element px action form. Pass x,y (no element_token) and the tool pixel-clicks there to establish real renderer focus, then types. Use for Chromium/Electron inputs the AX path can't reach. Window-local pixels of the target window's own get_window_state screenshot by default (same convention as click); for get_desktop_state pixels pass scope:\"desktop\" (or coordinate_frame:\"desktop\") \u2014 a bare pid+x/y is otherwise misinterpreted as window-local and can focus the wrong widget.",
+     "type": "number"
+    },
+    "y": {
+     "description": "Pixel Y of the field (see x).",
+     "type": "number"
+    }
+   },
+   "required": [
+    "text"
+   ],
+   "type": "object"
+  },
+  "press_key": {
+   "additionalProperties": false,
+   "properties": {
+    "coordinate_frame": {
+     "description": "Frame of x/y (and from_x/from_y/to_x/to_y). Default \"window\": window-local screenshot pixels as returned by get_window_state. \"desktop\": full-screen pixels as returned by get_desktop_state, translated to the target window. Passing scope:\"desktop\" together with pid/window_id means the same thing.",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "delivery_mode": {
+     "default": "background",
+     "description": "Input delivery mode. 'background' (default) never activates or raises the target window. On X11 it injects via XTEST / the XInput2 master pointer (no focus steal). On Wayland it goes through libei + xdg-desktop-portal, which injects to the compositor's input focus \u2014 Wayland's security model has no per-window background targeting, so a specific non-focused window cannot be aimed at; when no libei backend is available the tool returns a structured background_unavailable error. 'foreground' is the explicit escalation: activate the target (X11 _NET_ACTIVE_WINDOW; Wayland compositor activate), inject, then restore the prior active window \u2014 a brief focus swap unless the target was already active. Matches the macOS / Windows delivery_mode surface.",
+     "enum": [
+      "background",
+      "foreground"
+     ],
+     "type": "string"
+    },
+    "element_token": {
+     "description": "Opaque per-snapshot element handle from `structuredContent.elements[].element_token`. Returns an explicit stale error naming the current snapshots once a newer read supersedes it.",
+     "type": "string"
+    },
+    "key": {
+     "description": "Key name: enter/return, tab, escape, space, backspace, delete, insert, home, end, pageup, pagedown, up, down, left, right, f1-f12, or any single ASCII character.",
+     "type": "string"
+    },
+    "modifiers": {
+     "description": "Modifier keys held while the key is pressed: ctrl, shift, alt, super.",
+     "items": {
+      "type": "string"
+     },
+     "type": "array"
+    },
+    "pid": {
+     "description": "Target process ID. Omit with scope \"desktop\" to send the key to the focused application.",
+     "type": "integer"
+    },
+    "scope": {
+     "default": "window",
+     "description": "Use \"desktop\" with no pid to send the key to the focused application. Default \"window\".",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    },
+    "target": {
+     "anyOf": [
+      {
+       "description": "Exact capture/input target selected independently for each action.\n\n`display_id=\"primary\"` is the portable desktop target in this release.\nPlatforms that cannot address another display reject it explicitly rather\nthan silently changing coordinate spaces.",
+       "oneOf": [
+        {
+         "additionalProperties": true,
+         "properties": {
+          "kind": {
+           "const": "window",
+           "type": "string"
+          },
+          "pid": {
+           "minimum": 0,
+           "type": "integer"
+          },
+          "window_id": {
+           "minimum": 0,
+           "type": "integer"
+          }
+         },
+         "required": [
+          "kind",
+          "pid",
+          "window_id"
+         ],
+         "type": "object"
+        },
+        {
+         "additionalProperties": true,
+         "properties": {
+          "display_id": {
+           "type": "string"
+          },
+          "kind": {
+           "const": "desktop",
+           "type": "string"
+          }
+         },
+         "required": [
+          "kind",
+          "display_id"
+         ],
+         "type": "object"
+        }
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "Preferred per-call target: an exact window (`kind=\"window\"`, `pid`, `window_id`) or the\nprimary desktop (`kind=\"desktop\"`, `display_id=\"primary\"`)."
+    },
+    "window_id": {
+     "description": "Window id from list_windows. Required with x/y or element_index; optional with element_token (the token carries it).",
+     "type": "integer"
+    },
+    "x": {
+     "description": "Pixel X \u2014 the element px action form: pixel-click there to focus, then send the key. Use when the key must go to a Chromium/Electron surface the AX path can't focus. Pass with y, no element_token. Window-local pixels by default (same convention as click); for get_desktop_state pixels pass scope:\"desktop\" (or coordinate_frame:\"desktop\").",
+     "type": "number"
+    },
+    "y": {
+     "description": "Pixel Y (see x).",
+     "type": "number"
+    }
+   },
+   "required": [
+    "key"
+   ],
+   "type": "object"
+  },
+  "move_cursor": {
+   "additionalProperties": false,
+   "properties": {
+    "cursor_id": {
+     "description": "Cursor instance to move. Default: 'default'.",
+     "type": "string"
+    },
+    "scope": {
+     "default": "window",
+     "description": "\"window\" (default) moves only the agent cursor overlay; \"desktop\" moves the real OS pointer.",
+     "enum": [
+      "window",
+      "desktop"
+     ],
+     "type": "string"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    },
+    "target": {
+     "anyOf": [
+      {
+       "description": "Exact capture/input target selected independently for each action.\n\n`display_id=\"primary\"` is the portable desktop target in this release.\nPlatforms that cannot address another display reject it explicitly rather\nthan silently changing coordinate spaces.",
+       "oneOf": [
+        {
+         "additionalProperties": true,
+         "properties": {
+          "kind": {
+           "const": "window",
+           "type": "string"
+          },
+          "pid": {
+           "minimum": 0,
+           "type": "integer"
+          },
+          "window_id": {
+           "minimum": 0,
+           "type": "integer"
+          }
+         },
+         "required": [
+          "kind",
+          "pid",
+          "window_id"
+         ],
+         "type": "object"
+        },
+        {
+         "additionalProperties": true,
+         "properties": {
+          "display_id": {
+           "type": "string"
+          },
+          "kind": {
+           "const": "desktop",
+           "type": "string"
+          }
+         },
+         "required": [
+          "kind",
+          "display_id"
+         ],
+         "type": "object"
+        }
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "Preferred per-call target: an exact window (`kind=\"window\"`, `pid`, `window_id`) or the\nprimary desktop (`kind=\"desktop\"`, `display_id=\"primary\"`)."
+    },
+    "x": {
+     "description": "Destination X. Window scope: screen coordinates of the agent cursor overlay. Desktop scope: get_desktop_state screenshot pixels.",
+     "type": "number"
+    },
+    "y": {
+     "description": "Destination Y, in the same space as x.",
+     "type": "number"
+    }
+   },
+   "required": [
+    "x",
+    "y"
+   ],
+   "type": "object"
+  },
+  "set_agent_cursor_enabled": {
+   "additionalProperties": false,
+   "properties": {
+    "enabled": {
+     "description": "`true` shows the session's agent cursor overlay; `false` hides it.",
+     "type": "boolean"
+    },
+    "session": {
+     "description": "Public label of the session that owns the cursor.",
+     "type": "string"
+    }
+   },
+   "required": [
+    "session",
+    "enabled"
+   ],
+   "type": "object"
+  },
+  "check_permissions": {
+   "additionalProperties": false,
+   "properties": {
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "health_report": {
+   "additionalProperties": false,
+   "properties": {
+    "include": {
+     "description": "Only run these checks (canonical names). Wins over `skip`.",
+     "items": {
+      "type": "string"
+     },
+     "type": "array"
+    },
+    "session": {
+     "description": "For multi-call work, prefer a short public session label and repeat it on every call that accepts it. Omit it to use the authenticated transport's implicit lifecycle session.",
+     "type": "string"
+    },
+    "skip": {
+     "description": "Skip these checks (canonical names). Ignored when `include` is set.",
+     "items": {
+      "type": "string"
+     },
+     "type": "array"
+    }
+   },
+   "type": "object"
+  }
+ }
+}

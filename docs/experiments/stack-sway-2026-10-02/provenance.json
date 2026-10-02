@@ -1,0 +1,65 @@
+{
+ "schema": "cua.stack.sway.provenance.v1",
+ "date_utc": "2026-10-02",
+ "source": {
+  "repo": "trycua/cua (read-only clone)",
+  "upstream_main": "352507b6c03162ab286b21d5ed509125cc3daece",
+  "packet_branch_base": "352507b6c03162ab286b21d5ed509125cc3daece",
+  "driver_tree_identity": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 352507b6c03162ab286b21d5ed509125cc3daece -- libs/cua-driver  => identical (exit 0)"
+ },
+ "driver_binary": {
+  "version": "cua-driver 0.32.0",
+  "git_sha_reported_by_health_report": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+  "build": "cargo build --locked --release -p cua-driver --features portal-input (CI-default profile), built earlier by the R2 setup lane; reused because the libs/cua-driver tree is identical at current upstream main",
+  "safety_settings": "defaults: no permission-mode override, no approval bypass, Chromium sandbox on"
+ },
+ "kit": {
+  "location": "<HOME>/.local/opt/cua-sway (root/ = extracted packages, bin/ = helper tools, pkgs/ = downloaded packages, src/ = reference sources)",
+  "method": "pacman -Sp (print URLs only) against the existing sync dbs; curl into pkgs/; sha256 verified against %SHA256SUM% of the cachyos-extra-v3 sync db entry; bsdtar extraction without .PKGINFO/.INSTALL/.MTREE/.BUILDINFO. No root, no pacman -S/-U, nothing under /etc /usr /var written.",
+  "packages": [
+   {"name": "sway", "version": "1:1.12-4.1", "file": "sway-1:1.12-4.1-x86_64_v3.pkg.tar.zst", "sha256": "7d63ee31fa64ec8f400ce277ffdfed9629772467b1514a70ef171935c23d2997", "db": "cachyos-extra-v3", "sha256_matches_db": true},
+   {"name": "wlroots0.20", "version": "0.20.2-1.1", "file": "wlroots0.20-0.20.2-1.1-x86_64_v3.pkg.tar.zst", "sha256": "a772066641ff90c458141652ca84161643d4aecc7b9827765d1b3ce1db293a59", "db": "cachyos-extra-v3", "sha256_matches_db": true},
+   {"name": "libliftoff", "version": "0.5.0-1.1", "file": "libliftoff-0.5.0-1.1-x86_64.pkg.tar.zst", "sha256": "4b787fc79652ba8a41256ae07ba857556912d87f9283db3423f4e63b1169a228", "db": "cachyos-extra-v3", "sha256_matches_db": true},
+   {"name": "wtype", "version": "0.4-2.2", "file": "wtype-0.4-2.2-x86_64_v3.pkg.tar.zst", "sha256": "0ab8c7faf301233c5e86cc7b0bf60ef8bf79475789896ded89de00363b5a6b15", "db": "cachyos-extra-v3", "sha256_matches_db": true},
+   {"name": "xorg-xwayland", "version": "24.1.13-1.1", "file": "xorg-xwayland-24.1.13-1.1-x86_64_v3.pkg.tar.zst", "sha256": "acaeff2fba5626df25d0226bfc699726cbce55d1ad8a8421007321885a594081", "db": "cachyos-extra-v3", "sha256_matches_db": true,
+    "note": "already installed system-wide at the same version; the extracted Xwayland is byte-identical to /usr/bin/Xwayland (sha256 61e2ffd4342c2d9ae7e501aa231af3bb178cd853ce472e4bd2978e4543197c64); wlroots launches the system path"}
+  ],
+  "not_available": [{"name": "wlrctl", "reason": "not in the configured sync dbs (AUR only); replaced by the minimal seatctl client below"}],
+  "system_dependencies_used": "seatd/libseat 0.9.3, libinput 1.31.3, pixman 0.46.4, wayland 1.26.0, libxkbcommon 1.13.2, pango 1.58.2, json-c 0.19, dbus 1.16.2, at-spi2-core 2.60.6, gtk3 3.24.52, python-gobject 3.56.3, mesa-utils 9.0.0 (glxgears), grim 1.5.0, xorg-xdpyinfo 1.4.0, bubblewrap 0.12.0, glibc 2.44",
+  "binaries_sha256": {
+   "root/usr/bin/sway": "c4f1c8988571ac969f7f5d93f6eaf54b6d5e2aef8663e63b530587c51ae374ec",
+   "root/usr/lib/libwlroots-0.20.so": "84948288b6ecba0e5451eb3acbb2e042220957bfcc2343fc8c4d23527a8f3afe",
+   "root/usr/bin/wtype": "920ef40e39159c6621dd4a79c21b9cc51051e794eff241ad8e19ece23ffd7c90",
+   "bin/landlock-scope": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8",
+   "bin/seatctl": "2da9f12a409ba2cea11c351a0b47f69d6c41a029253102515d78983b6ad3fb32",
+   "bin/seatprobe": "8179ca0a78ccd05f80c9f69794728f6fed998e5ba7c9ebe1e6a53eaaff5dbf27"
+  },
+  "reference_sources": {
+   "sway-1.12.tar.gz": "29ca7caac960d13e02d8213418d91a5422c7c23102a283ceab944c57c5e1efcf",
+   "wlroots-0.20.2.tar.gz": "972c7ac44b17828f4702bfae7cd8347346a3fb5b2c1076cfa2c3fcedac5ec343",
+   "use": "read-only reference (seat/virtual-device semantics, Xwayland display selection) and protocol XMLs for the helper tools"
+  }
+ },
+ "session": {
+  "script": "cua-sway-session.sh (sanitized copy in session/; local paths replaced by <KIT>, <NODE22>, <TMP>, <HOME>)",
+  "script_sha256_unsanitized": "c3e54bc46d35da2277295708fdabd8d0ae1dcd3489201dd3110189ecb42bd3a9",
+  "hostless_sha256": "d22d755bd488fa34b64183a2b78d8eeedfea125210f44e37db45c6130c769d16",
+  "kernel": "Linux 7.2.2-1-cachyos x86_64, Landlock ABI 10 (scoped abstract-unix + signal need ABI >= 6)",
+  "all_final_receipts_from_script_sha256": "c3e54bc46d35da2277295708fdabd8d0ae1dcd3489201dd3110189ecb42bd3a9 (canary runs 1-3, multiseat reps 1-5, all Driver runs)"
+ },
+ "harness_scripts_sha256_at_final_runs": {
+  "isolation_canary.py": "88c93d7e29f3e1389a2a89d0d296e2305079cc0b9b7477e731ff6f6682dcef70",
+  "canary-run.sh": "266fcaf80600d235fb59517d13626658616c232a479d751e051239e4fcaabc96",
+  "multiseat-proof.sh": "0ef34db516c4576486a93fbed1477ac4cd27fd63910f54f5ca1ebb51e5493f9e",
+  "verify_multiseat.py": "090d662d4502266c7ec80de1d2220cee79b59e07595f72d908c1ce093aa21222 (summary output path made optional after the final reps; grading logic unchanged)",
+  "driver_probe.py": "a394c84dc542306639ca0c7fcc4b71cb372fc08bdd64ac1638313c67973ea4c3",
+  "smoke-arm.sh": "43e8544b8fec33fc73dac9ea265a74223514a850001d3afc221f625334000c7d",
+  "gtk-seat-attribution.sh": "e09189dbf847bb6fc308eefaa00e3f99014249625a6dc7b0da7dc47c80aee88b",
+  "r2 browser-smoke.sh copy": "53bf5268d33c57d3f787f8a565e68849fca95026ab63e65b95f045ceb7a7f64f (matches artifacts/r2/SETUP.json)",
+  "r2 atspi-smoke.sh copy": "4d4e82d11883fa3540978cf090eafb03bada521871494eee4d4bcf4b921c1a11 (matches artifacts/r2/SETUP.json)"
+ },
+ "browser": "Google Chrome 151.0.7922.71 at /opt/google/chrome/chrome would be the Driver's candidate; never launched here (browser_prepare refused before launch)",
+ "models": "none used (no model calls in this packet)",
+ "sanitization": "Receipts were copied by a local packet builder that replaces local absolute paths with <WT>/<ART>/<LANES>/<TMP>/<KIT>/<HOME>/<MNT> placeholders and the host Hyprland instance signature with <host-hypr-sig>, then refuses to finish if any absolute home/mnt path, the signature, the host name or user name survives."
+}

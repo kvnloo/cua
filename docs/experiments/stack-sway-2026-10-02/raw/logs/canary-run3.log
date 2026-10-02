@@ -1,0 +1,66 @@
+[sway-session] ready WAYLAND_DISPLAY=wayland-1 DISPLAY=:3 seats=1 outputs=1280x720
+PASS decoy-abstract (bound outside session)   @cua-canary-decoy-189849722: EPERM (expect EPERM)
+PASS host-hyprland                            /run/user/1000/hypr/<host-hypr-sig>/.socket.sock: ENOENT (expect ENOENT)
+PASS host-hyprland                            /run/user/1000/hypr/<host-hypr-sig>/.socket2.sock: ENOENT (expect ENOENT)
+PASS host-wayland                             /run/user/1000/wayland-0: ENOENT (expect ENOENT)
+PASS host-wayland                             /run/user/1000/wayland-1: ENOENT (expect ENOENT)
+PASS host-wayland                             /run/user/1000/wayland-2: ENOENT (expect ENOENT)
+PASS host-session-bus                         /run/user/1000/bus: ENOENT (expect ENOENT)
+PASS host-atspi-bus                           /run/user/1000/at-spi/bus_1: ENOENT (expect ENOENT)
+PASS host-x11-path                            /tmp/.X11-unix/X0: ENOENT (expect ENOENT)
+PASS host-x11-path                            /tmp/.X11-unix/X1: ENOENT (expect ENOENT)
+PASS host-x11-path                            /tmp/.X11-unix/X2: ENOENT (expect ENOENT)
+PASS host-x11-path                            /tmp/.X11-unix/X9: ENOENT (expect ENOENT)
+PASS host-x11-path                            /tmp/.X11-unix/X99: ENOENT (expect ENOENT)
+PASS private-x11-path (own Xwayland)          /tmp/.X11-unix/X3: REACHABLE (expect REACHABLE)
+PASS private-x11-path (own Xwayland)          /tmp/.X11-unix/X3 is the session's private /tmp inode: True (expect True)
+PASS x11-display-number                       private Xwayland :3 not in host display set [0, 1, 2, 9, 99]: False (expect False)
+PASS host-x11-abstract                        @/tmp/.X11-unix/X0: EPERM (expect ['EPERM', 'ECONNREFUSED'])
+PASS host-x11-abstract                        @/tmp/.X11-unix/X1: ECONNREFUSED (expect ['EPERM', 'ECONNREFUSED'])
+PASS host-x11-abstract                        @/tmp/.X11-unix/X2: EPERM (expect ['EPERM', 'ECONNREFUSED'])
+PASS host-x11-abstract                        @/tmp/.X11-unix/X9: ECONNREFUSED (expect ['EPERM', 'ECONNREFUSED'])
+PASS host-x11-abstract                        @/tmp/.X11-unix/X99: EPERM (expect ['EPERM', 'ECONNREFUSED'])
+PASS decoy-path                               /run/user/1000/hypr/CUADECOY2295/.socket.sock: REACHABLE (expect REACHABLE)
+PASS decoy-path                               /tmp/.X11-unix/X9: ENOENT (expect ENOENT)
+PASS x11-abstract-shadowing                   abstract X11 listeners added to the shared netns by this session: ['@/tmp/.X11-unix/X3'] (expect ['@/tmp/.X11-unix/X3'])
+PASS private-wayland                          <TMP>/sway-session.Nt5eqC/xdg-runtime/wayland-1: REACHABLE (expect REACHABLE)
+PASS private-sway-ipc                         <TMP>/sway-session.Nt5eqC/xdg-runtime/sway-ipc.1000.5.sock: REACHABLE (expect REACHABLE)
+PASS private-client                           wayland client (seatprobe) mapped in private sway tree: True (expect True)
+PASS private-client                           X11 client (glxgears) mapped in private sway tree via Xwayland: True (expect True)
+PASS host-process                             signal 0 to host Hyprland pid 12468: ESRCH (expect ESRCH)
+env_checks {'no_HYPRLAND_vars': True, 'XDG_RUNTIME_DIR_private': True, 'WAYLAND_DISPLAY_socket_private': True, 'SWAYSOCK_private': True, 'DBUS_private': True, 'landlock_scope': True}
+RESULT PASS
+[sway-session] exit rc=0 run_dir=<TMP>/sway-session.Nt5eqC
+{
+ "schema": "cua.stack.sway.canary.v1",
+ "evidence_class": "REAL",
+ "control_all_reachable": true,
+ "inside_pass": true,
+ "inside_rc": 0,
+ "decoy_accept_oracle": {
+  "control_phase": {
+   "hypr_decoy": 1,
+   "x11_tmp_decoy": 1,
+   "abstract_decoy": 1
+  },
+  "inside_phase": {
+   "hypr_decoy": 1,
+   "x11_tmp_decoy": 0,
+   "abstract_decoy": 0
+  }
+ },
+ "decoy_accept_expected": {
+  "control_phase": {
+   "hypr_decoy": 1,
+   "x11_tmp_decoy": 1,
+   "abstract_decoy": 1
+  },
+  "inside_phase": {
+   "hypr_decoy": 1,
+   "x11_tmp_decoy": 0,
+   "abstract_decoy": 0
+  }
+ },
+ "decoy_oracle_pass": true,
+ "result": "PASS"
+}

@@ -1,0 +1,161 @@
+{
+ "delivery": "foreground",
+ "gtk_pid": 46,
+ "wayland_display_for_driver": true,
+ "sway_views": [
+  [
+   46,
+   "xdg_shell",
+   "CuaTestHarness GTK3 Tasks"
+  ]
+ ],
+ "steps": [
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 46
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 100.6,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "main.py",
+      "bounds": {
+       "height": 1053,
+       "width": 1920,
+       "x": 0,
+       "y": 27
+      },
+      "height": 1053,
+      "is_on_screen": true,
+      "pid": 46,
+      "title": "CuaTestHarness GTK3 Tasks [main.py]",
+      "width": 1920,
+      "window_id": 5,
+      "x": 0,
+      "y": 27,
+      "z_index": null
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=5 pid=46 \"CuaTestHarness GTK3 Tasks [main.py]\" 1920x1053+0+27 app=main.py"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 46,
+    "window_id": 5,
+    "x": 68,
+    "y": 60,
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 104.3,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (90.2, 79.6) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(90, 79) screen_point=(90, 107)]"
+   },
+   "text": "Clicked at (90.2, 79.6) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(90, 79) screen_point=(90, 107)]",
+   "label": "Increment"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 46,
+    "window_id": 5,
+    "x": 151,
+    "y": 164,
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 90.0,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (200.2, 217.5) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(200, 217) screen_point=(200, 244)]"
+   },
+   "text": "Clicked at (200.2, 217.5) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(200, 217) screen_point=(200, 244)]",
+   "label": "Note"
+  },
+  {
+   "tool": "type_text",
+   "args": {
+    "pid": 46,
+    "window_id": 5,
+    "text": "sway",
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 46.5,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Typed 4 character(s) (via Wayland virtual-keyboard)."
+   },
+   "text": "Typed 4 character(s) (via Wayland virtual-keyboard)."
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 46,
+    "window_id": 5,
+    "x": 346,
+    "y": 164,
+    "delivery_mode": "foreground"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 90.3,
+   "structured": {
+    "delivery": {
+     "mode": "foreground"
+    },
+    "effect": "unverifiable",
+    "route": "global_input",
+    "summary": "Clicked at (458.8, 217.5) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(458, 217) screen_point=(459, 244)]"
+   },
+   "text": "Clicked at (458.8, 217.5) \u00d7 1 (delivery_mode=foreground, path=wayland_activate); not verified \u2014 confirm with a screenshot. [window_point=(458, 217) screen_point=(459, 244)]",
+   "label": "Save note"
+  }
+ ],
+ "labels": [
+  "Exit",
+  "I agree",
+  "Increment",
+  "Large",
+  "Medium",
+  "Note",
+  "Reset",
+  "Save note",
+  "Small"
+ ],
+ "fixture_state": {
+  "agreed": false,
+  "counter": 0,
+  "note_saved": null,
+  "pid": 46,
+  "schema": "cua.gtk3_task_state_v1",
+  "seq": 1,
+  "size": "none"
+ },
+ "oracle": {
+  "counter_is_1": false,
+  "note_saved_is_sway": false
+ },
+ "result": "FAIL"
+}

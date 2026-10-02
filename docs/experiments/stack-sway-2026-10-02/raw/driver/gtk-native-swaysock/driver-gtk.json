@@ -1,0 +1,108 @@
+{
+ "forward_swaysock": true,
+ "gtk_pid": 213,
+ "sway_views": [
+  [
+   213,
+   "xdg_shell",
+   "CuaTestHarness GTK3"
+  ]
+ ],
+ "steps": [
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 213
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 65.2,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "main.py",
+      "bounds": {
+       "height": 1053,
+       "width": 1920,
+       "x": 0,
+       "y": 27
+      },
+      "height": 1053,
+      "is_on_screen": true,
+      "pid": 213,
+      "title": "CuaTestHarness GTK3 [main.py]",
+      "width": 1920,
+      "window_id": 6,
+      "x": 0,
+      "y": 27,
+      "z_index": null
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=6 pid=213 \"CuaTestHarness GTK3 [main.py]\" 1920x1053+0+27 app=main.py"
+  },
+  {
+   "tool": "get_window_state",
+   "args": {
+    "pid": 213,
+    "window_id": 6,
+    "include_accessibility_tree": true,
+    "include_screenshot": true
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 270.8,
+   "structured": {
+    "_note": "Prefer `elements` \u2014 `tree_markdown` will continue to work but new fields will only be added to the structured side. Use `max_elements` / `max_depth` to bound the AT-SPI walk on apps with very large trees.",
+    "app_name": "main.py",
+    "bounds_complete": true,
+    "capture_id": "capture_b6297aa9910345feaa0e2bf478d4fdf5_0000000000000000",
+    "coordinate_frame": "window",
+    "element_count": 18,
+    "elements_complete": true,
+    "frame_note": "x/y for click / double_click / right_click / drag / scroll on this window are pixels of THIS screenshot (window-local, 0..screenshot_width x 0..screenshot_height), as are the element frames; the screenshot is kept at or below 1.15 megapixels so the image you read is the image these pixels index (frame_scale < 1 says the window was downsized to it). window_bounds is where it sits on the screen. Pass scope:\"desktop\" only for get_desktop_state pixels.",
+    "frame_scale": 0.7541666666666667,
+    "nodes_pending": 0,
+    "nodes_visited": 18,
+    "pid": 213,
+    "returned_element_count": 18,
+    "screenshot_frame_valid": true,
+    "screenshot_height": 794,
+    "screenshot_mime_type": "image/png",
+    "screenshot_original_width": 1920,
+    "screenshot_width": 1448,
+    "snapshot_id": "s00000001",
+    "timeout_ms": 1000,
+    "total_element_count": 18,
+    "truncated": false,
+    "walk_elapsed_ms": 32,
+    "window_bounds": {
+     "height": 1053,
+     "width": 1920,
+     "x": 0,
+     "y": 27
+    },
+    "window_id": 6,
+    "window_title": "CuaTestHarness GTK3 [main.py]"
+   },
+   "text": "window_id=6 pid=213 elements=18 walk_ms=32\n\n- frame = \"CuaTestHarness GTK3\"\n          - [0] menu \"Window\" [actions=[click]] (closed menu, 1 items; click it to open)\n        - label = \"counter=0\"\n          - [1] button \"btn-increment\" [actions=[click]]\n          - [2] button \"btn-reset\" [actions=[click]]\n        - label = \"HARNESS_TEXT_MARKER_v1\"\n        - [3] text \"txt-input\" [actions=[activate]]\n        - label = \"mirror=\"\n        - label = \"click target\"\n        - [4] button \"btn-clicktarget\" [actions=[click]]\n        - label = \"last_action=none  clicks=0\"\n        - label = \"drag_modifier=none  drag_events=0\"\n        - label = \"last_key=none  key_presses=0\"\n        - label = \"last_hotkey=none  hotkeys=0\"\n        - label = \"slider\"\n        - [5] slider \"sld-value\" value=\"0.0\" [actions=[]]\n        - label = \"slider_value=0\"\n        - label = \"checkable\"\n        - [6] check box \"chk-agree\" [actions=[click]]\n        - label = \"agreed=False\"\n        - label = \"multi selection\"\n          - [7] list item \"selection-alpha\" [actions=[]]\n            - label = \"alpha\"\n          - [8] list item \"selection-beta\" [actions=[]]\n            - label = \"beta\"\n          - [9] list item \"selection-gamma\" [actions=[]]\n            - label = \"gamma\"\n        - label = \"selection=none\"\n        - label = \"context menu\"\n        - [10] button \"btn-context\" [actions=[click]]\n        - label = \"menu_action=none\"\n        - label = \"scroll-tall\"\n        - scroll pane = \"scroll-tall\"\n              - [11] bu",
+   "element_names": [
+    "Window",
+    "btn-clicktarget",
+    "btn-context",
+    "btn-exit",
+    "btn-increment",
+    "btn-open-popover",
+    "btn-reset",
+    "chk-agree",
+    "scroll-tall-vertical",
+    "scroll-tall-viewport",
+    "selection-alpha",
+    "selection-beta",
+    "selection-gamma",
+    "sld-value",
+    "txt-input"
+   ]
+  }
+ ]
+}

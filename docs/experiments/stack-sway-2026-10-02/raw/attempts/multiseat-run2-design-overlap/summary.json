@@ -1,0 +1,245 @@
+{
+ "schema": "cua.stack.sway.multiseat.v1",
+ "evidence_class": "REAL",
+ "sway_version": "1.12",
+ "window_ids": {
+  "L": 5,
+  "R": 6
+ },
+ "checks": [
+  {
+   "check": "A.get_seats focus seat0=L seat1=R",
+   "pass": true,
+   "detail": {
+    "seat0_focus": 5,
+    "seat1_focus": 6,
+    "L": 5,
+    "R": 6
+   }
+  },
+  {
+   "check": "A.each seat holds exactly its own virtual pointer",
+   "pass": true,
+   "detail": {
+    "seat0": [
+     [
+      "pointer",
+      "0:0:wlr_virtual_pointer_v1"
+     ]
+    ],
+    "seat1": [
+     [
+      "pointer",
+      "0:0:wlr_virtual_pointer_v1"
+     ]
+    ]
+   }
+  },
+  {
+   "check": "A.seat0 cursor lands in L at its own position",
+   "pass": true,
+   "detail": {
+    "want_surface_xy": [
+     318,
+     346
+    ],
+    "got": [
+     [
+      98.0,
+      73.0
+     ],
+     [
+      318.0,
+      346.0
+     ]
+    ]
+   }
+  },
+  {
+   "check": "A.seat1 cursor lands in R at its own position",
+   "pass": true,
+   "detail": {
+    "want_surface_xy": [
+     318,
+     346
+    ],
+    "got": [
+     [
+      318.0,
+      346.0
+     ]
+    ]
+   }
+  },
+  {
+   "check": "A.seat0 click delivered to L, seat1 click to R",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "check": "A.no cross-seat clicks; wrong-seat events only at that seat's own resting cursor",
+   "pass": true,
+   "detail": {
+    "L_from_seat1": {
+     "wrong_seat_events": [
+      [
+       "pointer_enter",
+       98.0,
+       73.0
+      ]
+     ],
+     "violations": 0
+    },
+    "R_from_seat0": {
+     "wrong_seat_events": [],
+     "violations": 0
+    }
+   }
+  },
+  {
+   "check": "B.each seat holds exactly its own virtual keyboard",
+   "pass": true,
+   "detail": {
+    "seat0": [
+     [
+      "keyboard",
+      "0:0:wlr_virtual_keyboard_v1"
+     ]
+    ],
+    "seat1": [
+     [
+      "keyboard",
+      "0:0:wlr_virtual_keyboard_v1"
+     ]
+    ]
+   }
+  },
+  {
+   "check": "B.seat0 typed 'left' into L only",
+   "pass": true,
+   "detail": {
+    "L": "left",
+    "R": ""
+   }
+  },
+  {
+   "check": "B.seat1 typed 'right' into R only",
+   "pass": true,
+   "detail": {
+    "R": "right",
+    "L": ""
+   }
+  },
+  {
+   "check": "C.seat0 moved alone to (100,100) in L",
+   "pass": true,
+   "detail": {
+    "want_surface_xy": [
+     98,
+     73
+    ],
+    "got": [
+     [
+      318.0,
+      346.0
+     ],
+     [
+      98.0,
+      73.0
+     ]
+    ]
+   }
+  },
+  {
+   "check": "C.no seat1 pointer events anywhere and none in R",
+   "pass": true,
+   "detail": {
+    "L_seat1": 0,
+    "R_any": 0
+   }
+  },
+  {
+   "check": "D.get_seats focus swapped: seat0=R seat1=L",
+   "pass": true,
+   "detail": {
+    "seat0_focus": 6,
+    "seat1_focus": 5
+   }
+  },
+  {
+   "check": "D.seat0 cursor in R, seat1 cursor in L at their own positions",
+   "pass": true,
+   "detail": {
+    "seat0": {
+     "want": [
+      318,
+      346
+     ],
+     "got": [
+      [
+       318.0,
+       346.0
+      ]
+     ]
+    },
+    "seat1": {
+     "want": [
+      318,
+      573
+     ],
+     "got": [
+      [
+       318.0,
+       573.0
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "check": "D.no cross-seat clicks; wrong-seat events only at that seat's previous position",
+   "pass": false,
+   "detail": {
+    "L_from_seat0": {
+     "wrong_seat_events": [
+      [
+       "pointer_enter",
+       98.0,
+       73.0
+      ]
+     ],
+     "violations": 0
+    },
+    "R_from_seat1": {
+     "wrong_seat_events": [
+      [
+       "pointer_enter",
+       318.0,
+       346.0
+      ]
+     ],
+     "violations": 1
+    }
+   }
+  },
+  {
+   "check": "E.seat0 typed 'zero' into R only",
+   "pass": true,
+   "detail": {
+    "R": "zero",
+    "L": ""
+   }
+  },
+  {
+   "check": "E.seat1 typed 'one' into L only",
+   "pass": true,
+   "detail": {
+    "L": "one",
+    "R": ""
+   }
+  }
+ ],
+ "passed": 15,
+ "total": 16,
+ "result": "FAIL"
+}

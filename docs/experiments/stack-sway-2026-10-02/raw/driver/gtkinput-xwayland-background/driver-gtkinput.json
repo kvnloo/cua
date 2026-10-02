@@ -1,0 +1,163 @@
+{
+ "delivery": "background",
+ "gtk_pid": 47,
+ "wayland_display_for_driver": false,
+ "sway_views": [
+  [
+   47,
+   "xwayland",
+   "CuaTestHarness GTK3 Tasks"
+  ]
+ ],
+ "steps": [
+  {
+   "tool": "list_windows",
+   "args": {
+    "pid": 47
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 23.2,
+   "structured": {
+    "windows": [
+     {
+      "app_name": "Main.py",
+      "bounds": {
+       "height": 1051,
+       "width": 1916,
+       "x": 2,
+       "y": 27
+      },
+      "height": 1051,
+      "is_on_screen": true,
+      "pid": 47,
+      "title": "CuaTestHarness GTK3 Tasks",
+      "width": 1916,
+      "window_id": 4194308,
+      "x": 2,
+      "y": 27,
+      "z_index": 0
+     }
+    ]
+   },
+   "text": "Found 1 windows:\n  window_id=4194308 pid=47 \"CuaTestHarness GTK3 Tasks\" 1916x1051+2+27 app=Main.py"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 47,
+    "window_id": 4194308,
+    "x": 51,
+    "y": 45,
+    "delivery_mode": "background"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 303.9,
+   "structured": {
+    "delivery": {
+     "mode": "background"
+    },
+    "effect": "unverifiable",
+    "route": "accessibility",
+    "summary": "Clicked at (67.5, 59.5) \u00d7 1 (delivery_mode=background, path=x11_atspi); hit: button \"\" action=click path=/org/a11y/atspi/accessible/14; the AT-SPI action was dispatched, not verified \u2014 confirm with a screenshot. [window_point=(67, 59) screen_point=(69, 87)]"
+   },
+   "text": "Clicked at (67.5, 59.5) \u00d7 1 (delivery_mode=background, path=x11_atspi); hit: button \"\" action=click path=/org/a11y/atspi/accessible/14; the AT-SPI action was dispatched, not verified \u2014 confirm with a screenshot. [window_point=(67, 59) screen_point=(69, 87)]",
+   "label": "Increment"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 47,
+    "window_id": 4194308,
+    "x": 114,
+    "y": 124,
+    "delivery_mode": "background"
+   },
+   "session": "gtk",
+   "is_error": true,
+   "ms": 6658.2,
+   "structured": {
+    "code": "background_pointer_failed",
+    "effect": "none",
+    "hint": "Click by element_token (AT-SPI action) or retry with delivery_mode:\"foreground\".",
+    "path": "mpx_pointer",
+    "reason": "timed out waiting for X input slave device 'CUA v1.PzfJPDgDeKEedcS9tf4oNg.AAAAQQAAAAABUTWy.AAAAAAAAAAE uinput pointer'",
+    "screen_point": [
+     153,
+     191
+    ],
+    "window_point": [
+     150,
+     164
+    ]
+   },
+   "text": "background pointer delivery failed: the virtual master pointer route did not go through (timed out waiting for X input slave device 'CUA v1.PzfJPDgDeKEedcS9tf4oNg.AAAAQQAAAAABUTWy.AAAAAAAAAAE uinput pointer') and this toolkit drops synthetic pointer events, so no click was delivered. Click by element_token (AT-SPI action) or retry with delivery_mode:\"foreground\". [window_point=(150, 164) screen_point=(153, 191)]",
+   "label": "Note"
+  },
+  {
+   "tool": "type_text",
+   "args": {
+    "pid": 47,
+    "window_id": 4194308,
+    "text": "sway",
+    "delivery_mode": "background"
+   },
+   "session": "gtk",
+   "is_error": true,
+   "ms": 5052.8,
+   "structured": {
+    "code": "tool_invocation_failed"
+   },
+   "text": "virtual master keyboard delivery failed: timed out waiting for X input slave device 'CUA v1.PzfJPDgDeKEedcS9tf4oNg.AAAAQQAAAAABUTWy.AAAAAAAAAAI uinput pointer'"
+  },
+  {
+   "tool": "click",
+   "args": {
+    "pid": 47,
+    "window_id": 4194308,
+    "x": 261,
+    "y": 124,
+    "delivery_mode": "background"
+   },
+   "session": "gtk",
+   "is_error": false,
+   "ms": 1732.6,
+   "structured": {
+    "delivery": {
+     "mode": "background"
+    },
+    "effect": "unverifiable",
+    "route": "accessibility",
+    "summary": "Clicked at (345.4, 164.1) \u00d7 1 (delivery_mode=background, path=x11_atspi); hit: button \"\" action=click path=/org/a11y/atspi/accessible/12; the AT-SPI action was dispatched, not verified \u2014 confirm with a screenshot. [window_point=(345, 164) screen_point=(347, 191)]"
+   },
+   "text": "Clicked at (345.4, 164.1) \u00d7 1 (delivery_mode=background, path=x11_atspi); hit: button \"\" action=click path=/org/a11y/atspi/accessible/12; the AT-SPI action was dispatched, not verified \u2014 confirm with a screenshot. [window_point=(345, 164) screen_point=(347, 191)]",
+   "label": "Save note"
+  }
+ ],
+ "labels": [
+  "Exit",
+  "I agree",
+  "Increment",
+  "Large",
+  "Medium",
+  "Note",
+  "Reset",
+  "Save note",
+  "Small"
+ ],
+ "fixture_state": {
+  "agreed": false,
+  "counter": 1,
+  "note_saved": "",
+  "pid": 47,
+  "schema": "cua.gtk3_task_state_v1",
+  "seq": 3,
+  "size": "none"
+ },
+ "oracle": {
+  "counter_is_1": true,
+  "note_saved_is_sway": false
+ },
+ "result": "FAIL"
+}
