@@ -24,6 +24,9 @@ pub trait SnapshotPayload: Send + Sync + 'static {
 struct Snapshot<S> {
     id: u32,
     window_id: u64,
+    /// The session that published the snapshot. It owns the snapshot's
+    /// element tokens and its screenshot frame; `None` is an anonymous
+    /// (in-process) publication that only anonymous callers resolve.
     screenshot_owner: Option<String>,
     screenshot_scale: Option<f64>,
     zoom: Option<ZoomContext>,
@@ -79,7 +82,7 @@ fn screenshot_context_refusal(pid: Option<i32>, window_id: Option<u64>) -> ToolR
     }))
 }
 
-fn stale_token_refusal<S>(pid: i32, lane: &[Snapshot<S>]) -> ToolResult {
+fn stale_token_refusal<S>(pid: i32, lane: &[&Snapshot<S>]) -> ToolResult {
     let current: Vec<_> = lane
         .iter()
         .map(|snapshot| (format_snapshot_id(snapshot.id), snapshot.window_id))
@@ -385,10 +388,20 @@ impl<S: SnapshotPayload> SnapshotStore<S> {
                 "element_token has invalid format".into(),
             )
         })?;
+        // A token resolves only for the session that published its snapshot.
+        // Another session's snapshots are absent for this caller, so its
+        // tokens refuse as stale and the refusal lists only the caller's own
+        // snapshots, never another session's live handles.
+        let session = args.get("_session_id").and_then(serde_json::Value::as_str);
         let inner = self.inner.lock().unwrap();
-        let lane = inner.get(&pid).map(Vec::as_slice).unwrap_or_default();
+        let lane: Vec<&Snapshot<S>> = inner
+            .get(&pid)
+            .into_iter()
+            .flatten()
+            .filter(|snapshot| snapshot.screenshot_owner.as_deref() == session)
+            .collect();
         let Some(snapshot) = lane.iter().find(|snapshot| snapshot.id == snapshot_id) else {
-            return Err(stale_token_refusal(pid, lane));
+            return Err(stale_token_refusal(pid, &lane));
         };
         if args["window_id"]
             .as_u64()
@@ -864,8 +877,12 @@ mod tests {
                 SessionClientKind::Mcp,
             )
         };
-        let resolve =
-            |token: &str| cache.resolve(10, &serde_json::json!({ "element_token": token }));
+        let resolve = |token: &str| {
+            cache.resolve(
+                10,
+                &serde_json::json!({ "element_token": token, "_session_id": session }),
+            )
+        };
 
         let guard = begin().expect("first unnamed call starts the session");
         let (snapshot, _) = cache
