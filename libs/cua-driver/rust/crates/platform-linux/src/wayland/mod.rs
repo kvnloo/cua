@@ -1081,6 +1081,20 @@ pub fn screenshot_dispatch_with_pid(xid: u64, pid: u32) -> anyhow::Result<Vec<u8
 }
 
 fn screenshot_dispatch_for_pid(xid: u64, pid: Option<u32>) -> anyhow::Result<Vec<u8>> {
+    // Measurement-only invocation count (`CUA_DRIVER_PHASE_TRACE_FILE`).
+    static CALLS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = cua_driver_core::phase_trace::enter("capture_window", &CALLS);
+    let result = screenshot_dispatch_for_pid_unmarked(xid, pid);
+    let mark = if result.is_ok() {
+        "exit_ok"
+    } else {
+        "exit_err"
+    };
+    cua_driver_core::phase_trace::exit("capture_window", mark, n);
+    result
+}
+
+fn screenshot_dispatch_for_pid_unmarked(xid: u64, pid: Option<u32>) -> anyhow::Result<Vec<u8>> {
     if is_wayland() && hyprland::is_session() {
         return hyprland::capture(xid, pid).map_err(|error| {
             tracing::debug!("Hyprland target capture refused: {error:#}");
