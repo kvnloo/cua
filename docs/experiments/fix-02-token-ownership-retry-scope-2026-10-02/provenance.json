@@ -40,6 +40,19 @@
   "kvnloo_cua_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f OPEN"
  },
  "publication_sha": "set by the Publish agent (this lane pushed nothing)",
+ "tested_source_records": {
+  "native_blocks": "block headers record driver_sha256, driver_version, display and telemetry_env only (no git head or worktree state); source identity for native rows is the binary sha256, built from the heads under binaries.*.build_head",
+  "browser_blocks": "validity.json records head, rust_tree_at_head, worktree_dirty (empty = clean libs/cua-driver) and the binary sha256"
+ },
+ "browser_runner_loaded": {
+  "U": {"source": "git show bd0cc9de7:libs/cua-driver/examples/jev-use/python/run.py, cached per private session as fix02_u_run/run_u.py", "sha256": "86635f33283843a06b79f358c469985cebd3976f383c8b5e8a043186a8fd350c", "checked": "all 8 cached run_u.py copies from the U blocks hash to this value (fix pass)"},
+  "F": {"source": "worktree run.py at e8b1064f6", "sha256": "4754c041ef1753bf71c287b1219ac56bfb04635ad49c76de49040ab21067b8ee"},
+  "note": "validity.json run_py_sha256 hashes the worktree run.py in every block, so U blocks record the F value, not the runner they loaded (Deviation 9)"
+ },
+ "unit_red_tree": {
+  "v2": "raw/unit/red-rust + raw/unit/red-tree.patch: U bd0cc9de7 + the final committed new tests (5 files, each byte-equal to e8b1064f6); run in the fix pass under hostless + cargo lock",
+  "v1_superseded": "raw/unit/superseded/red-rust-v1 + red-tree-v1.patch: carried the pre-squash F2 test whose parser missed the libtest prefix; its F2 failure was a parse failure, not evidence"
+ },
  "environment": {
   "isolation": "hostless v2 -> flock quiet-lane.lock (shared per correctness block; exclusive via bin/quiet-timed for timing) -> cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom, private dbus; native rows with private AT-SPI)",
   "browser": "Google Chrome 151.0.7922.71 (in-session --version of the Driver's selected binary per SETUP)",
@@ -51,5 +64,5 @@
  "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "lane_cap": 0},
  "timing_receipt": {"label": "fix02-timing-chunk1", "acquired": "2026-10-02T19:33:12.631Z", "released": "2026-10-02T19:34:27.462Z", "rc": 0, "ledger": "raw/timing/quiet-ledger.jsonl (copied from the loop-wide quiet-lane ledger)"},
  "privacy": {"host_name_sha256": "c76d9da671ff244fa274ad83621cc1ae1c3a2a78b5baa590ad5ab0b5347ea1dd", "absolute_paths": "scrubbed to <scrubbedN>/<target>/<tmp> tokens"},
- "breaches": {"hard_rule_breach": "", "near_miss": "one stdlib python3 string-replacement edit of snapshot_store.rs ran in the plain host shell instead of under hostless (file I/O only; nothing reached the host session)"}
+ "breaches": {"hard_rule_breach": "", "near_miss": "one stdlib python3 string-replacement edit of snapshot_store.rs ran in the plain host shell instead of under hostless (file I/O only; nothing reached the host session)", "fix_pass": "none; every fix-pass command that executed code ran under hostless"}
 }

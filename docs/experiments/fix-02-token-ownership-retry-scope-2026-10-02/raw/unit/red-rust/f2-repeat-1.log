@@ -1,0 +1,23 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.63s
+     Running tests/snapshot_runtime_generation.rs (<target>/debug/deps/snapshot_runtime_generation-d47ab1324ea9395c)
+
+running 1 test
+test a_restarted_process_does_not_reissue_its_predecessors_tokens ... FAILED
+
+failures:
+
+---- a_restarted_process_does_not_reissue_its_predecessors_tokens stdout ----
+
+thread 'a_restarted_process_does_not_reissue_its_predecessors_tokens' (1345652) panicked at crates/cua-driver-core/tests/snapshot_runtime_generation.rs:56:5:
+assertion `left != right` failed: two Driver generations minted the same first token for the same observation
+  left: "s00000001:0"
+ right: "s00000001:0"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    a_restarted_process_does_not_reissue_its_predecessors_tokens
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p cua-driver-core --test snapshot_runtime_generation`

@@ -277,10 +277,10 @@ index 95bfc0e06..0db236a6f 100644
 +}
 diff --git 1/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_runtime_generation.rs 2/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_runtime_generation.rs
 new file mode 100644
-index 000000000..a6249070b
+index 000000000..81e33b994
 --- /dev/null
 +++ 2/libs/cua-driver/rust/crates/cua-driver-core/tests/snapshot_runtime_generation.rs
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,58 @@
 +//! A Driver process restart is a new runtime generation: element tokens from
 +//! the previous process must not resolve in the new one (kvnloo/cua#36 I5p).
 +//!
@@ -322,11 +322,9 @@ index 000000000..a6249070b
 +            .expect("child generation runs");
 +        assert!(output.status.success(), "{output:?}");
 +        let stdout = String::from_utf8(output.stdout).unwrap();
-+        // libtest prints the test's status prefix on the same line.
 +        let token = stdout
-+            .split("FIRST_TOKEN=")
-+            .nth(1)
-+            .and_then(|rest| rest.split_whitespace().next())
++            .lines()
++            .find_map(|line| line.strip_prefix("FIRST_TOKEN="))
 +            .expect("child printed its first token")
 +            .to_owned();
 +        let (id, index) = parse_token(&token).expect("wire shape s<8 hex>:<index>");

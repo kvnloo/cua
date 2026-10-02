@@ -1,0 +1,27 @@
+   Compiling cua-driver-core v0.32.0 (<wt-red>/libs/cua-driver/rust/crates/cua-driver-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.51s
+     Running unittests src/lib.rs (<target>/debug/deps/cua_driver_core-4f2d188a2089d4cb)
+
+running 2 tests
+test browser::v2_tests::set_input_files_refuses_a_detached_file_input ... FAILED
+test browser::v2_tests::set_input_files_assigns_connected_and_reattached_file_inputs ... ok
+
+failures:
+
+---- browser::v2_tests::set_input_files_refuses_a_detached_file_input stdout ----
+
+thread 'browser::v2_tests::set_input_files_refuses_a_detached_file_input' (425836) panicked at crates/cua-driver-core/src/browser/v2_tests.rs:2898:5:
+assertion `left == right` failed: ToolResult { content: [Text { text: "assigned 1 file(s) in tab-e77473da-c367-446f-8a59-67b3c9205771", annotations: None }], is_error: None, structured_content: Some(Object {"file_count": Number(1), "frame": String("main"), "ref": String("p1:0"), "status": String("ok"), "tab_id": String("tab-e77473da-c367-446f-8a59-67b3c9205771"), "target_id": String("bt-4b7db8fa-3073-4497-afdf-57879a524d19")}), action_record: None }
+  left: String("ok")
+ right: "refused"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    browser::v2_tests::set_input_files_refuses_a_detached_file_input
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 819 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p cua-driver-core --lib`
+error: 1 target failed:
+    `-p cua-driver-core --lib`

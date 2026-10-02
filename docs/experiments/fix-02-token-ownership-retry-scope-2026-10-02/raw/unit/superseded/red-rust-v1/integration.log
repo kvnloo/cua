@@ -1,0 +1,69 @@
+   Compiling cua-driver-contract v0.32.0 (<wt-red>/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling cua-driver-core v0.32.0 (<wt-red>/libs/cua-driver/rust/crates/cua-driver-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.96s
+     Running tests/snapshot_runtime_generation.rs (<target>/debug/deps/snapshot_runtime_generation-d47ab1324ea9395c)
+
+running 1 test
+test a_restarted_process_does_not_reissue_its_predecessors_tokens ... FAILED
+
+failures:
+
+---- a_restarted_process_does_not_reissue_its_predecessors_tokens stdout ----
+
+thread 'a_restarted_process_does_not_reissue_its_predecessors_tokens' (420904) panicked at crates/cua-driver-core/tests/snapshot_runtime_generation.rs:45:14:
+child printed its first token
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    a_restarted_process_does_not_reissue_its_predecessors_tokens
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p cua-driver-core --test snapshot_runtime_generation`
+     Running tests/snapshot_session_ownership.rs (<target>/debug/deps/snapshot_session_ownership-70e62151fef3284b)
+
+running 4 tests
+test another_sessions_token_is_refused_and_stays_live_for_its_owner ... FAILED
+test a_token_minted_from_another_sessions_handle_is_refused ... FAILED
+test anonymous_and_named_snapshots_do_not_resolve_for_each_other ... FAILED
+test stale_refusal_names_only_the_callers_own_snapshots ... FAILED
+
+failures:
+
+---- another_sessions_token_is_refused_and_stays_live_for_its_owner stdout ----
+
+thread 'another_sessions_token_is_refused_and_stays_live_for_its_owner' (420910) panicked at crates/cua-driver-core/tests/snapshot_session_ownership.rs:40:10:
+token must be refused: Element { window_id: 7, element_index: 2, element: 30 }
+
+---- a_token_minted_from_another_sessions_handle_is_refused stdout ----
+
+thread 'a_token_minted_from_another_sessions_handle_is_refused' (420908) panicked at crates/cua-driver-core/tests/snapshot_session_ownership.rs:40:10:
+token must be refused: Element { window_id: 7, element_index: 1, element: 20 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- anonymous_and_named_snapshots_do_not_resolve_for_each_other stdout ----
+
+thread 'anonymous_and_named_snapshots_do_not_resolve_for_each_other' (420909) panicked at crates/cua-driver-core/tests/snapshot_session_ownership.rs:40:10:
+token must be refused: Element { window_id: 7, element_index: 0, element: 10 }
+
+---- stale_refusal_names_only_the_callers_own_snapshots stdout ----
+
+thread 'stale_refusal_names_only_the_callers_own_snapshots' (420911) panicked at crates/cua-driver-core/tests/snapshot_session_ownership.rs:84:5:
+assertion `left == right` failed
+  left: Array [Object {"snapshot_id": String("s00000005"), "window_id": Number(7)}, Object {"snapshot_id": String("s00000007"), "window_id": Number(8)}]
+ right: Array [Object {"snapshot_id": String("s00000007"), "window_id": Number(8)}]
+
+
+failures:
+    a_token_minted_from_another_sessions_handle_is_refused
+    anonymous_and_named_snapshots_do_not_resolve_for_each_other
+    another_sessions_token_is_refused_and_stays_live_for_its_owner
+    stale_refusal_names_only_the_callers_own_snapshots
+
+test result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p cua-driver-core --test snapshot_session_ownership`
+error: 2 targets failed:
+    `-p cua-driver-core --test snapshot_runtime_generation`
+    `-p cua-driver-core --test snapshot_session_ownership`

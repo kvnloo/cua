@@ -5,7 +5,10 @@ Recomputes the gating rows from raw/ with its own code (not analyze.py), then ch
 fix02-summary.json and the README numbers it is given; checks PREREG-before-first-trial, lock
 receipts, binary identity, provider 0 and a privacy scan of every packet file.
 
-usage: python3 verify_artifacts.py [--git <repo>]   (with --git, also checks commit times and SHAs)
+usage: python3 verify_artifacts.py [--git <repo>]
+  Without --git the packet-only checks run. With --git <repo> (a clone containing this branch) it also
+  checks commit existence and times, the F trees, the red-tree.patch test files against the committed
+  F files and the runner hashes; the README cites the --git count.
 """
 
 import glob
@@ -141,7 +144,7 @@ check("native F I2d discloses A's handle 0 times", native.get("F/I2d/disclosed",
 
 # I6 on F: other-session marker in any envelope
 markers = {}
-hits = scanned = positive = sessions = 0
+hits = scanned = uncompacted = positive = sessions = 0
 for path in files:
     if os.sep + "F" + os.sep not in path:
         continue
@@ -158,8 +161,15 @@ for path in files:
         for c in r["calls"]:
             other = markers.get({"A": "B", "B": "A"}.get(c.get("actor")))
             scanned += 1
-            hits += int(bool(other) and other in json.dumps(c["response"]))
-check("I6 F: 0 other-session markers in scanned envelopes", scanned > 0 and hits == 0, f"{hits} in {scanned}")
+            body = json.dumps(c["response"])
+            uncompacted += int("<gws text omitted>" not in body)
+            hits += int(bool(other) and other in body)
+# get_window_state envelopes were compacted before recording (text and tree replaced), so the marker
+# scan is meaningful only for the uncompacted ones (refusals, clicks, session calls); both are reported.
+check("I6 F: 0 other-session markers in scanned envelopes", scanned > 0 and hits == 0,
+      f"{hits} in {scanned} ({uncompacted} uncompacted, {scanned - uncompacted} compacted get_window_state)")
+check("I6 F: 520 uncompacted envelopes (280 refusals + 180 successful clicks + 60 session calls)",
+      uncompacted == 520, str(uncompacted))
 check("I6 F positive control: own marker found in every block-session", sessions > 0 and positive == sessions,
       f"{positive}/{sessions}")
 i6 = SUMMARY["native"]["i6_F"]
@@ -243,6 +253,10 @@ for v in glob.glob(os.path.join(RAW, "browser", "*", "validity.json")):
     arm = data["arm"]
     check(f"browser block {os.path.basename(os.path.dirname(v))} valid and on the {arm} binary",
           data["ok"] and data["driver"]["sha256"] == bins[arm]["sha256"])
+    # validity.run_py_sha256 hashes the worktree (F) run.py in every block; U loads its runner from git
+    # (provenance browser_runner_loaded, README Deviation 9)
+    check(f"browser block {os.path.basename(os.path.dirname(v))} run_py_sha256 is the F worktree runner",
+          data["run_py_sha256"] == PROV["browser_runner_loaded"]["F"]["sha256"])
 ledger = jsonl(os.path.join(RAW, "native", "lock-ledger.jsonl"))
 native_blocks = set()
 for p in files:
@@ -268,6 +282,36 @@ check("socket guard counted 0 non-loopback connects", nonloop and max(nonloop) =
 check("PREREG committed before the first counted native attempt",
       PROV["prereg"]["committed_utc"] < first_attempt, f"{PROV['prereg']['committed_utc']} < {first_attempt}")
 
+# ── unit: red tree (U + the final committed new tests) and the flake isolation run ─────────
+UNIT = os.path.join(RAW, "unit")
+RED_EXPECTED = {"a_restarted_process_does_not_reissue_its_predecessors_tokens",
+                "a_token_minted_from_another_sessions_handle_is_refused",
+                "another_sessions_token_is_refused_and_stays_live_for_its_owner",
+                "anonymous_and_named_snapshots_do_not_resolve_for_each_other",
+                "stale_refusal_names_only_the_callers_own_snapshots",
+                "browser::v2_tests::set_input_files_refuses_a_detached_file_input"}
+red_log = open(os.path.join(UNIT, "red-rust", "core-full.log"), encoding="utf-8").read()
+red_failed = set(re.findall(r"^test (\S+) \.\.\. FAILED$", red_log, re.M))
+check("red tree: the full core suite fails exactly the 6 new Rust tests", red_failed == RED_EXPECTED,
+      str(sorted(red_failed ^ RED_EXPECTED)))
+red_passed = sum(int(p) for p in re.findall(r"^test result: \w+\. (\d+) passed", red_log, re.M))
+check("red tree: 847 other core tests pass", red_passed == 847, str(red_passed))
+f2_msg = "two Driver generations minted the same first token"
+f2_logs = [os.path.join(UNIT, "red-rust", n) for n in ("core-full.log", "integration.log")] + sorted(
+    glob.glob(os.path.join(UNIT, "red-rust", "f2-repeat-*.log")))
+check("red tree: the F2 test fails on its assert_ne (not a parse failure) in every red run",
+      len(f2_logs) == 7 and all(f2_msg in open(p, encoding="utf-8").read()
+                                and "child printed its first token" not in open(p, encoding="utf-8").read()
+                                for p in f2_logs), f"{len(f2_logs)} logs")
+red_env = open(os.path.join(UNIT, "red-rust", "env.txt"), encoding="utf-8").read()
+check("red tree: head is the U source and every new test file equals the committed F file",
+      red_env.startswith("head=" + PROV["commits"]["fix01_part_b_cherry_pick_U_head"])
+      and red_env.count("equal_to_F ") == 5 and "DIFFERS_FROM_F" not in red_env)
+flake = sorted(glob.glob(os.path.join(UNIT, "flake-isolation", "run-*.log")))
+check("history flake test passes 20/20 in isolation on F",
+      len(flake) == 20 and all("test result: ok. 1 passed; 0 failed" in open(p, encoding="utf-8").read()
+                               for p in flake), f"{len(flake)} runs")
+
 if "--git" in sys.argv:
     repo = sys.argv[sys.argv.index("--git") + 1]
     for name, sha in PROV["commits"].items():
@@ -286,6 +330,23 @@ if "--git" in sys.argv:
     tree = subprocess.run(["git", "-C", repo, "rev-parse", f"{PROV['commits']['F4_F_head']}:libs/cua-driver/rust"],
                           capture_output=True, text=True).stdout.strip()
     check("F Rust tree matches provenance", tree == PROV["trees"]["F_rust"])
+    # red-tree.patch: each new test file it adds equals the committed F file
+    patch = open(os.path.join(UNIT, "red-tree.patch"), encoding="utf-8").read()
+    for section in re.split(r"^diff --git ", patch, flags=re.M)[1:]:
+        if "\n--- /dev/null\n" not in section:
+            continue
+        name = re.search(r"^\+\+\+ \S+?/(libs/\S+)$", section, re.M).group(1)
+        added = "".join(line[1:] + "\n" for line in section.split("\n@@", 1)[1].split("\n")[1:]
+                        if line.startswith("+"))
+        committed = subprocess.run(["git", "-C", repo, "show", f"{PROV['commits']['F4_F_head']}:{name}"],
+                                   capture_output=True, text=True).stdout
+        check(f"red-tree.patch adds the committed F {os.path.basename(name)}", added == committed)
+    # the runner each browser arm loaded
+    for arm, rev in (("U", PROV["commits"]["fix01_part_b_cherry_pick_U_head"]), ("F", PROV["commits"]["F4_F_head"])):
+        blob = subprocess.run(["git", "-C", repo, "show", f"{rev}:libs/cua-driver/examples/jev-use/python/run.py"],
+                              capture_output=True).stdout
+        check(f"browser {arm} runner sha256 matches provenance",
+              hashlib.sha256(blob).hexdigest() == PROV["browser_runner_loaded"][arm]["sha256"])
 
 # ── privacy ───────────────────────────────────────────────────────────────────
 host_sha = PROV.get("privacy", {}).get("host_name_sha256")
