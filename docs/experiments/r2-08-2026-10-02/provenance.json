@@ -1,0 +1,52 @@
+{
+ "schema": "cua.r2-08.provenance.v1",
+ "lane": "R2-08 (wave 1, CUA RFC loop)",
+ "branch": "exp/r2-08-cross-surface-20261002 (local; not pushed by this worker)",
+ "shas": {
+  "tested_source": "c4d0c6625b5c93849aa8bec610782410e9d45f69 (upstream main; jev-use examples and fixture at this commit)",
+  "driver_built_from": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "driver_validity_check": "git diff --quiet 229b65b28 c4d0c6625 -- libs/cua-driver/rust -> rc=0",
+  "prereg_commit": "da7919209b83883a7a8ab909d4ab4f7bcc49029b (2026-10-02T02:00:52Z, before the first measured trial at 02:02:02Z)",
+  "live_upstream_main_at_run": "8d4e7a08618611453794035f7ff6187f99f0c1e9 (gh api + git fetch, 2026-10-02T02:02Z); git diff c4d0c6625..8d4e7a086 -- libs/cua-driver is empty (no Driver or jev-use drift)",
+  "live_pr_head": "none: R2-08 has no PR; upstream main is the source under test",
+  "publication_sha": "set by the Publish agent; this worker did not push"
+ },
+ "driver": {
+  "path": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+  "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+  "version": "cua-driver 0.32.0",
+  "receipts": "raw/logs/*.log '== driver_sha256=' and '== driver_version=' lines, printed inside each isolated session",
+  "change": "none; default safety settings (no permission-mode override, no approval bypass, Chromium sandbox on, isolated_new profiles)"
+ },
+ "browser": "Driver-selected Google Chrome 151.0.7922.71 (receipt '== chrome_version=' inside each session)",
+ "environment": {
+  "os": "Linux 7.2.2 x86_64, 10 CPUs",
+  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24, openbox, picom xrender, private dbus; host Wayland/Hyprland variables scrubbed; no AT-SPI bus",
+  "python": "jev-use .venv (uv sync --frozen, Python 3.12) via lane-deps.sh",
+  "loadavg": "1-minute loadavg before each base trial 3.85 to 8.18 (other agents active; the quiet-lane lock excludes only lock-respecting lanes); every trial's value is in raw/*/*/trials/*.jsonl"
+ },
+ "runs": {
+  "pilot": "raw/pilot/run1, 2026-10-02T01:57:12Z-01:57:35Z, shared lock, 10 trials, before PREREG (declared, not used for gates)",
+  "base": "raw/base/run1, 2026-10-02T02:02:02Z-02:04:26Z, quiet-lane lock EXCLUSIVE (flock without -s; acquired 02:01:56Z, released 02:04:26Z: raw/logs/base-run1.lockinfo), 60 trials",
+  "negatives": "raw/neg/{n1,n2,n3}-c{0,1}, 2026-10-02T02:04:47Z-02:07:53Z, one SHARED lock acquisition and one session per 10-trial chunk (raw/logs/neg-*.lockinfo)",
+  "n2ctl": "raw/n2ctl/run1, 2026-10-02T02:07:59Z-02:08:06Z, SHARED lock, 3 trials"
+ },
+ "commands": {
+  "pilot": "flock -s <tmp>/locks/quiet-lane.lock <lanes>/cua-x11-session.sh <wt>/docs/experiments/r2-08-2026-10-02/run_in_session.sh <wt> <driver> <artifacts>/pilot --phase pilot",
+  "base": "flock <tmp>/locks/quiet-lane.lock ... run_in_session.sh <wt> <driver> <artifacts>/base/run1 --phase base --rounds 20",
+  "negatives": "run_negatives.sh <lanes> <wt> <driver> <artifacts>",
+  "analysis": "python3 analyze.py --write r2-08-summary.json",
+  "verify": "python3 verify_artifacts.py",
+  "unit": "<jev-use>/.venv/bin/python test_variants.py -v; <jev-use>/.venv/bin/python -m unittest -v python/tests/test_fixture_server.py (raw/logs/unit-*.log)"
+ },
+ "mirror": "<lanes>/artifacts/r2/R2-08/ holds the unsanitized originals (logs contain the session run dir path)",
+ "provider": {"used": false, "attempts": 0, "reached_typesafe": 0},
+ "post_registration_changes": {
+  "analyze.py": "after the runs: two invariant fields that were hard-coded are now computed from raw (api_post_retries, plus new gui_action_retries and api_trials_with_exactly_one_post); 'unverified_successes' renamed 'unverified_successes_by_construction'; 'api_requests_built_from_contract_only' now names its SOURCE evidence. No gate, prediction, signature or statistic changed; the disposition and every gated number are identical before and after"
+ },
+ "files_added_after_registration": {
+  "run_negatives.sh": "host-side loop that ran the six negative chunks and n2ctl with the pre-registered plan, the shared lock and one session per chunk; it calls the registered run_in_session.sh/run_cross_surface.py unchanged",
+  "verify_artifacts.py": "packet verifier",
+  "provenance.json, README.md, r2-08-summary.json, raw/": "results"
+ }
+}

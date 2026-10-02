@@ -124,6 +124,9 @@ def derive(events: list[dict[str, Any]], s: dict[str, Any]) -> dict[str, Any]:
         "decisions_in_T": sum(1 for e in after if e["event"] == "decided"),
         "caller_http_requests_in_T": (2 if arm == "API" else 0) + len(polls.get("polls") or []),
     }
+    d["action_sends"] = {"post": sum(1 for e in events if e["event"] == "post_send"),
+                         "click": sum(1 for e in events if e["event"] == "call_send" and e.get("tool") == "browser_click"),
+                         "type": sum(1 for e in events if e["event"] == "call_send" and e.get("tool") == "browser_type")}
     d["final_action_return_to_confirm_ms"] = None if not (final_ret and confirmed) else (confirmed - final_ret["t_mono_ns"]) / 1e6
     return d
 
@@ -260,14 +263,18 @@ def compute(raw: Path) -> dict[str, Any]:
         "duplicate_mutations": sum(1 for d in every if len(d["signature"]["mutations"]) > 1),
         "duplicate_submit_requests": sum(1 for d in every if len(d["signature"]["submits"]) > 1),
         "errors": [d["id"] for d in every if d["error"] or d["outcome_error"]],
-        "unverified_successes": 0,
+        "unverified_successes_by_construction": 0,
         "success_oracle": "fixture GET /state only (target-owned); Driver results are never the success signal",
         "refusals_effect_refused": sum(1 for d in neg if d["variant"] == "n1" and d["arm"] == "API"
                                        and d["signature"]["submits"] and d["signature"]["submits"][0]["effect"] == "refused"),
         "page_loaded_before_T": sum(1 for d in every if d["page_loaded"]),
         "initial_state_none": sum(1 for d in every if d["signature"]["initial_state"] == {"submitted": None}),
-        "api_requests_built_from_contract_only": True,
-        "api_post_retries": 0,
+        "api_requests_built_from_contract_only": "SOURCE: run_cross_surface.api_task builds the body from DOCUMENTED_CONTRACT only",
+        "api_post_retries": sum(max(0, d["action_sends"]["post"] - 1) for d in every if d["arm"] == "API"),
+        "gui_action_retries": sum(max(0, d["action_sends"]["click"] - 1) + max(0, d["action_sends"]["type"] - 1)
+                                  for d in every if d["arm"] != "API"),
+        "api_trials_with_exactly_one_post": sum(1 for d in every if d["arm"] == "API" and d["action_sends"]["post"] == 1),
+        "api_trials": sum(1 for d in every if d["arm"] == "API"),
     }
     g1 = n_equiv == 20 and len(rounds) == 20
     g2 = all(negatives[v]["discriminating"] for v in negatives)
