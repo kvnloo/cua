@@ -84,6 +84,34 @@ pub struct BrowserEngine {
     reconnect_gates: ReconnectGates,
     pending_existing_profile_cleanups: Mutex<HashMap<String, Vec<ExistingProfileSetupRequest>>>,
     session_end_hook: Mutex<Option<crate::session::SessionEndHookRegistration>>,
+    /// B-02 experiment only: bound listeners per browser session, then pid.
+    /// Empty unless `CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound`.
+    exp_endpoint_bound: Mutex<HashMap<String, HashMap<i64, ExpBoundEndpoint>>>,
+}
+
+/// B-02 EXPERIMENT ONLY (not for promotion). One full ownership proof's
+/// endpoint plus the exact listener it was served from. In-memory only,
+/// scoped to one Driver process and one browser session.
+#[derive(Debug, Clone)]
+struct ExpBoundEndpoint {
+    listener: super::types::ExpBoundListener,
+    endpoint: OwnedEndpoint,
+}
+
+/// B-02 measurement knob: `CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound` enables the
+/// bound ownership check; unset, empty or any other value keeps the full
+/// per-mutation endpoint rediscovery exactly as shipped.
+pub(crate) const EXP_ENDPOINT_REPROOF_ENV: &str = "CUA_DRIVER_EXP_ENDPOINT_REPROOF";
+
+pub(crate) fn exp_endpoint_reproof_bound_from(value: Option<&str>) -> bool {
+    value == Some("bound")
+}
+
+fn exp_endpoint_reproof_bound() -> bool {
+    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        exp_endpoint_reproof_bound_from(std::env::var(EXP_ENDPOINT_REPROOF_ENV).ok().as_deref())
+    })
 }
 
 fn refuse(code: BrowserRefusalCode, msg: impl Into<String>) -> BrowserRefusal {
@@ -646,6 +674,7 @@ impl BrowserEngine {
             reconnect_gates: ReconnectGates::new(),
             pending_existing_profile_cleanups: Mutex::new(HashMap::new()),
             session_end_hook: Mutex::new(None),
+            exp_endpoint_bound: Mutex::new(HashMap::new()),
         });
         let weak: Weak<Self> = Arc::downgrade(&engine);
         let registration =
@@ -653,6 +682,9 @@ impl BrowserEngine {
                 let mut cleanup_errors = Vec::new();
                 if let Some(engine) = weak.upgrade() {
                     engine.store.remove_session(session_id);
+                    // B-02 experiment only: a bound listener never outlives
+                    // its browser session.
+                    engine.exp_endpoint_bound.lock().unwrap().remove(session_id);
                     engine.cleanup_prepared_session(session_id);
                     let pending = {
                         let mut pending = engine.pending_existing_profile_cleanups.lock().unwrap();
@@ -1038,6 +1070,91 @@ impl BrowserEngine {
         Ok(endpoint)
     }
 
+    /// B-02 EXPERIMENT ONLY (default off, not for promotion). The
+    /// per-mutation owned-endpoint re-proof. Unset knob: exactly
+    /// [`Self::owned_endpoint`]. With `CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound`,
+    /// a session that already holds a bound listener from a full proof of
+    /// this same pid uses the bound check; any mismatch, or no entry, runs
+    /// the full discovery and records its listener for the next mutation.
+    async fn owned_endpoint_for_mutation(
+        &self,
+        session: &str,
+        pid: i64,
+    ) -> Result<OwnedEndpoint, BrowserRefusal> {
+        self.owned_endpoint_for_mutation_with(exp_endpoint_reproof_bound(), session, pid)
+            .await
+    }
+
+    pub(crate) async fn owned_endpoint_for_mutation_with(
+        &self,
+        bound_enabled: bool,
+        session: &str,
+        pid: i64,
+    ) -> Result<OwnedEndpoint, BrowserRefusal> {
+        if !bound_enabled {
+            return self.owned_endpoint(pid).await;
+        }
+        let cached = self
+            .exp_endpoint_bound
+            .lock()
+            .unwrap()
+            .get(session)
+            .and_then(|by_pid| by_pid.get(&pid))
+            .cloned();
+        let miss_reason = match cached {
+            Some(entry) => {
+                if self.platform.exp_listener_still_bound(&entry.listener).await {
+                    crate::phase_trace::mark_detail("ep.bound_hit", session, || {
+                        json!({ "port": entry.listener.port })
+                    });
+                    return Ok(entry.endpoint);
+                }
+                if let Some(by_pid) = self.exp_endpoint_bound.lock().unwrap().get_mut(session) {
+                    by_pid.remove(&pid);
+                }
+                "mismatch"
+            }
+            None => "no_entry",
+        };
+        crate::phase_trace::mark_detail("ep.bound_miss", session, || {
+            json!({ "reason": miss_reason })
+        });
+        let endpoint = self.owned_endpoint(pid).await?;
+        self.exp_record_bound_listener(session, pid, &endpoint).await;
+        Ok(endpoint)
+    }
+
+    /// B-02 experiment only: remember the listener behind a full proof.
+    async fn exp_record_bound_listener(&self, session: &str, pid: i64, endpoint: &OwnedEndpoint) {
+        let Some(port) = endpoint
+            .http_port
+            .filter(|_| endpoint.transport == super::types::EndpointTransport::LegacyJsonVersion)
+        else {
+            crate::phase_trace::mark("ep.bound_unavailable", session);
+            return;
+        };
+        match self.platform.exp_bind_listener(pid, port).await {
+            Some(listener) if listener.pid == pid && listener.port == port => {
+                self.exp_endpoint_bound
+                    .lock()
+                    .unwrap()
+                    .entry(session.to_owned())
+                    .or_default()
+                    .insert(
+                        pid,
+                        ExpBoundEndpoint {
+                            listener,
+                            endpoint: endpoint.clone(),
+                        },
+                    );
+                crate::phase_trace::mark_detail("ep.bound_stored", session, || {
+                    json!({ "port": port })
+                });
+            }
+            _ => crate::phase_trace::mark("ep.bound_unavailable", session),
+        }
+    }
+
     /// Re-prove the endpoint exposed by an explicitly approved existing
     /// profile. This route is intentionally separate from driver-managed
     /// endpoint discovery: Chrome's per-instance remote-debugging toggle can
@@ -1266,7 +1383,14 @@ impl BrowserEngine {
             self.existing_profile_endpoint(pid, &live_grant.endpoint_ws_url)
                 .await?
         } else {
-            self.owned_endpoint(pid).await?
+            let endpoint = self.owned_endpoint(pid).await?;
+            // B-02 experiment only (default off): this bind's full proof
+            // seeds the session's bound listener.
+            if exp_endpoint_reproof_bound() {
+                self.exp_record_bound_listener(session, pid, &endpoint)
+                    .await;
+            }
+            endpoint
         };
         if let Some(grant) = &grant {
             if !grant.fingerprint.matches(&fingerprint)
@@ -1530,7 +1654,8 @@ impl BrowserEngine {
             self.existing_profile_endpoint(record.pid, &record.ws_url)
                 .await?
         } else {
-            self.owned_endpoint(record.pid).await?
+            self.owned_endpoint_for_mutation(session, record.pid)
+                .await?
         };
         if endpoint.ws_url != record.ws_url {
             return Err(refuse(
@@ -3220,5 +3345,225 @@ allow:
                 .unwrap_err();
         assert_eq!(refusal.code, BrowserRefusalCode::BrowserOriginOutsideScope);
         assert!(authorize_live_browser_origin(None, "https://app.example.com").is_err());
+    }
+}
+
+/// B-02 measurement knob tests: unset = the full per-mutation discovery every
+/// time; set = one full proof seeds a bound check that any mismatch reverts.
+#[cfg(test)]
+mod exp_b02_endpoint_tests {
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+    use async_trait::async_trait;
+
+    use super::super::platform::{PrepareOutcome, PrepareRequest};
+    use super::super::types::{
+        BrowserProduct, EndpointOwnershipMethod, EndpointOwnershipProof, EndpointTransport,
+        ExpBoundListener, NativeOwnershipMethod, NativeOwnershipProof, ProcessFingerprint,
+    };
+    use super::*;
+
+    struct CountingPlatform {
+        discoveries: AtomicUsize,
+        bound_checks: AtomicUsize,
+        listener_holds: AtomicBool,
+        offers_listener: bool,
+    }
+
+    impl CountingPlatform {
+        fn new(offers_listener: bool) -> Arc<Self> {
+            Arc::new(Self {
+                discoveries: AtomicUsize::new(0),
+                bound_checks: AtomicUsize::new(0),
+                listener_holds: AtomicBool::new(true),
+                offers_listener,
+            })
+        }
+    }
+
+    #[async_trait]
+    impl BrowserPlatform for CountingPlatform {
+        async fn classify_browser(
+            &self,
+            _pid: i64,
+        ) -> Result<BrowserClassification, BrowserRefusal> {
+            Ok(BrowserClassification {
+                is_browser: true,
+                engine: BrowserEngineFamily::Chromium,
+                product_kind: BrowserProduct::GoogleChrome,
+                product: None,
+                channel: None,
+                process_role: BrowserProcessRole::StandaloneConsumer,
+                supports_cdp: true,
+            })
+        }
+
+        async fn native_window(
+            &self,
+            pid: i64,
+            window_id: u64,
+        ) -> Result<NativeWindowInfo, BrowserRefusal> {
+            Ok(NativeWindowInfo {
+                pid,
+                window_id,
+                title: String::new(),
+                bounds: Rect::new(0.0, 0.0, 1.0, 1.0),
+                geometry_exact: true,
+                ownership: NativeOwnershipProof {
+                    method: NativeOwnershipMethod::WindowServerOwner,
+                    owner_pid: pid,
+                    detail: None,
+                },
+            })
+        }
+
+        async fn is_only_exact_native_window(
+            &self,
+            _pid: i64,
+            _window_id: u64,
+        ) -> Result<Option<bool>, BrowserRefusal> {
+            Ok(Some(true))
+        }
+
+        async fn discover_owned_endpoint(
+            &self,
+            pid: i64,
+        ) -> Result<Option<OwnedEndpoint>, BrowserRefusal> {
+            self.discoveries.fetch_add(1, Ordering::SeqCst);
+            Ok(Some(OwnedEndpoint {
+                ws_url: "ws://127.0.0.1:9333/devtools/browser/x".into(),
+                http_port: Some(9333),
+                transport: EndpointTransport::LegacyJsonVersion,
+                ownership: EndpointOwnershipProof {
+                    method: EndpointOwnershipMethod::ListeningSocketPid,
+                    owner_pid: pid,
+                    listener_pid: None,
+                    detail: None,
+                },
+            }))
+        }
+
+        async fn process_fingerprint(
+            &self,
+            pid: i64,
+        ) -> Result<ProcessFingerprint, BrowserRefusal> {
+            Ok(ProcessFingerprint {
+                pid,
+                start_time: Some(1),
+                executable: None,
+            })
+        }
+
+        async fn prepare_endpoint(
+            &self,
+            _request: PrepareRequest,
+        ) -> Result<PrepareOutcome, BrowserRefusal> {
+            unimplemented!("not used by the B-02 endpoint tests")
+        }
+
+        async fn exp_bind_listener(&self, pid: i64, port: u16) -> Option<ExpBoundListener> {
+            self.offers_listener.then_some(ExpBoundListener {
+                pid,
+                pid_start_time: 1,
+                port,
+                inode: 77,
+                fd: 5,
+            })
+        }
+
+        async fn exp_listener_still_bound(&self, _bound: &ExpBoundListener) -> bool {
+            self.bound_checks.fetch_add(1, Ordering::SeqCst);
+            self.listener_holds.load(Ordering::SeqCst)
+        }
+    }
+
+    #[test]
+    fn knob_parses_only_the_exact_bound_value() {
+        assert!(!exp_endpoint_reproof_bound_from(None));
+        assert!(!exp_endpoint_reproof_bound_from(Some("")));
+        assert!(!exp_endpoint_reproof_bound_from(Some("1")));
+        assert!(!exp_endpoint_reproof_bound_from(Some("Bound")));
+        assert!(exp_endpoint_reproof_bound_from(Some("bound")));
+    }
+
+    #[tokio::test]
+    async fn unset_knob_runs_the_full_discovery_on_every_mutation() {
+        let platform = CountingPlatform::new(true);
+        let engine = BrowserEngine::new(platform.clone());
+        for _ in 0..3 {
+            engine
+                .owned_endpoint_for_mutation_with(false, "s", 42)
+                .await
+                .unwrap();
+        }
+        assert_eq!(platform.discoveries.load(Ordering::SeqCst), 3);
+        assert_eq!(platform.bound_checks.load(Ordering::SeqCst), 0);
+        assert!(engine.exp_endpoint_bound.lock().unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn bound_knob_proves_once_then_uses_the_bound_check() {
+        let platform = CountingPlatform::new(true);
+        let engine = BrowserEngine::new(platform.clone());
+        for _ in 0..3 {
+            let endpoint = engine
+                .owned_endpoint_for_mutation_with(true, "s", 42)
+                .await
+                .unwrap();
+            assert_eq!(endpoint.ws_url, "ws://127.0.0.1:9333/devtools/browser/x");
+        }
+        assert_eq!(platform.discoveries.load(Ordering::SeqCst), 1);
+        assert_eq!(platform.bound_checks.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn bound_mismatch_falls_back_to_the_full_proof() {
+        let platform = CountingPlatform::new(true);
+        let engine = BrowserEngine::new(platform.clone());
+        engine
+            .owned_endpoint_for_mutation_with(true, "s", 42)
+            .await
+            .unwrap();
+        platform.listener_holds.store(false, Ordering::SeqCst);
+        engine
+            .owned_endpoint_for_mutation_with(true, "s", 42)
+            .await
+            .unwrap();
+        assert_eq!(platform.discoveries.load(Ordering::SeqCst), 2);
+        assert_eq!(platform.bound_checks.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn bound_entries_are_never_shared_across_sessions_or_pids() {
+        let platform = CountingPlatform::new(true);
+        let engine = BrowserEngine::new(platform.clone());
+        engine
+            .owned_endpoint_for_mutation_with(true, "a", 42)
+            .await
+            .unwrap();
+        engine
+            .owned_endpoint_for_mutation_with(true, "b", 42)
+            .await
+            .unwrap();
+        engine
+            .owned_endpoint_for_mutation_with(true, "a", 43)
+            .await
+            .unwrap();
+        assert_eq!(platform.discoveries.load(Ordering::SeqCst), 3);
+        assert_eq!(platform.bound_checks.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn no_bound_listener_keeps_the_full_proof() {
+        let platform = CountingPlatform::new(false);
+        let engine = BrowserEngine::new(platform.clone());
+        for _ in 0..2 {
+            engine
+                .owned_endpoint_for_mutation_with(true, "s", 42)
+                .await
+                .unwrap();
+        }
+        assert_eq!(platform.discoveries.load(Ordering::SeqCst), 2);
+        assert_eq!(platform.bound_checks.load(Ordering::SeqCst), 0);
     }
 }

@@ -494,6 +494,26 @@ pub trait BrowserPlatform: Send + Sync {
     /// between binding and mutation.
     async fn process_fingerprint(&self, pid: i64) -> Result<ProcessFingerprint, BrowserRefusal>;
 
+    /// B-02 EXPERIMENT ONLY (default off, not for promotion). Record the
+    /// exact listener behind a just-proven endpoint on `port`, when it is
+    /// held by `pid` itself. `None` (the default) means no bound check is
+    /// available, so every re-proof stays the full discovery.
+    async fn exp_bind_listener(
+        &self,
+        _pid: i64,
+        _port: u16,
+    ) -> Option<super::types::ExpBoundListener> {
+        None
+    }
+
+    /// B-02 EXPERIMENT ONLY (default off, not for promotion). Whether the
+    /// recorded listener is still the same socket inode, listening on the
+    /// same loopback port, held at the same descriptor by the same process
+    /// instance. `false` (the default) forces the full discovery.
+    async fn exp_listener_still_bound(&self, _bound: &super::types::ExpBoundListener) -> bool {
+        false
+    }
+
     /// Explicitly prepare an owned endpoint for `pid`. Only ever called
     /// from the `browser_prepare` tool. Adapters gate disruptive or
     /// consent-requiring paths on the request's explicit fields and

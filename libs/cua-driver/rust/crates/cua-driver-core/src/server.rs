@@ -853,7 +853,7 @@ pub async fn handle_request(
     id: serde_json::Value,
     provider: &dyn ToolProvider,
 ) -> Response {
-    handle_request_inner(req, id, provider, None).await
+    handle_request_inner(req, id, provider, None, None).await
 }
 
 /// Dispatch one MCP request with a transport identity proved by the local
@@ -871,7 +871,42 @@ pub async fn handle_request_with_transport_session(
     provider: &dyn ToolProvider,
     transport_session: &str,
 ) -> Response {
-    handle_request_inner(req, id, provider, Some(transport_session)).await
+    handle_request_inner(req, id, provider, Some(transport_session), None).await
+}
+
+/// B-02 measurement knob: `CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1` lets the
+/// direct stdio adapter validate a `tools/call` once, against the adapter's
+/// process-lifetime inventory by reference, instead of cloning that inventory
+/// twice and validating twice. Unset, empty or any other value keeps the
+/// shipped double validation exactly.
+pub const EXP_ADMISSION_TOOLS_CACHE_ENV: &str = "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE";
+
+pub fn exp_admission_tools_cache_from(value: Option<&str>) -> bool {
+    value == Some("1")
+}
+
+pub fn exp_admission_tools_cache() -> bool {
+    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        exp_admission_tools_cache_from(std::env::var(EXP_ADMISSION_TOOLS_CACHE_ENV).ok().as_deref())
+    })
+}
+
+/// B-02 EXPERIMENT ONLY (not for promotion). As
+/// [`handle_request_with_transport_session`], for a `tools/call` the adapter
+/// has already passed through [`crate::mcp_wire::validate_tool_call`] under
+/// protocol era `prevalidated_era` against the same inventory this provider
+/// returns. The inner validation is skipped only when the era recomputed
+/// here is that same era; any other request is validated as shipped. The
+/// adapter passes `None` unless the knob is set.
+pub async fn handle_request_with_transport_session_prevalidated(
+    req: Request,
+    id: serde_json::Value,
+    provider: &dyn ToolProvider,
+    transport_session: &str,
+    prevalidated_era: Option<crate::mcp_wire::ProtocolEra>,
+) -> Response {
+    handle_request_inner(req, id, provider, Some(transport_session), prevalidated_era).await
 }
 
 async fn handle_request_inner(
@@ -879,16 +914,25 @@ async fn handle_request_inner(
     id: serde_json::Value,
     provider: &dyn ToolProvider,
     transport_session: Option<&str>,
+    prevalidated_era: Option<crate::mcp_wire::ProtocolEra>,
 ) -> Response {
     let era = match crate::mcp_wire::classify_request(&req) {
         Ok(era) => era,
         Err(response) => return response,
     };
+    // B-02 measurement only (env-gated, default off): admission sub-spans.
+    crate::phase_trace::mark("mcp.inner_classified", "");
     if req.method == "tools/call" {
-        if let Err(response) =
-            crate::mcp_wire::validate_tool_call(&req, id.clone(), era, &provider.tools_list())
-        {
-            return response;
+        if prevalidated_era == Some(era) {
+            crate::phase_trace::mark("mcp.inner_validation_skipped", "");
+        } else {
+            let inventory = provider.tools_list();
+            crate::phase_trace::mark("mcp.inner_tools_list_built", "");
+            if let Err(response) =
+                crate::mcp_wire::validate_tool_call(&req, id.clone(), era, &inventory)
+            {
+                return response;
+            }
         }
     }
     // B-01 measurement only (env-gated, default off).
@@ -1055,6 +1099,103 @@ mod dispatch_contract_tests {
             let wire = serde_json::to_value(response).unwrap();
             assert_eq!(wire["error"]["code"], expected_code);
         }
+    }
+
+    /// B-02: counts inventory builds so the skipped validation is observable.
+    struct CountingProvider(std::sync::atomic::AtomicUsize);
+
+    #[async_trait::async_trait]
+    impl ToolProvider for CountingProvider {
+        fn tools_list(&self) -> serde_json::Value {
+            self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            serde_json::json!({"tools": [{"name": "get_config"}]})
+        }
+
+        async fn invoke_tool(
+            &self,
+            _name: &str,
+            _arguments: serde_json::Value,
+        ) -> Result<serde_json::Value, String> {
+            Ok(serde_json::json!({"content": [{"type": "text", "text": "ok"}]}))
+        }
+    }
+
+    fn modern_call(name: &str) -> Request {
+        serde_json::from_value(serde_json::json!({
+            "jsonrpc": "2.0", "id": 7, "method": "tools/call",
+            "params": {"name": name, "arguments": {}, "_meta": {
+                "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                "io.modelcontextprotocol/clientCapabilities": {}
+            }}
+        }))
+        .unwrap()
+    }
+
+    #[test]
+    fn b02_admission_knob_parses_only_one() {
+        assert!(!exp_admission_tools_cache_from(None));
+        assert!(!exp_admission_tools_cache_from(Some("")));
+        assert!(!exp_admission_tools_cache_from(Some("true")));
+        assert!(!exp_admission_tools_cache_from(Some("0")));
+        assert!(exp_admission_tools_cache_from(Some("1")));
+    }
+
+    #[tokio::test]
+    async fn b02_prevalidated_call_skips_only_the_repeat_validation() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        let shipped = CountingProvider(AtomicUsize::new(0));
+        let baseline = handle_request_with_transport_session(
+            modern_call("get_config"),
+            serde_json::json!(7),
+            &shipped,
+            "mcp-t",
+        )
+        .await;
+        assert_eq!(shipped.0.load(Ordering::SeqCst), 1);
+
+        let unset = CountingProvider(AtomicUsize::new(0));
+        let same_as_shipped = handle_request_with_transport_session_prevalidated(
+            modern_call("get_config"),
+            serde_json::json!(7),
+            &unset,
+            "mcp-t",
+            None,
+        )
+        .await;
+        assert_eq!(unset.0.load(Ordering::SeqCst), 1);
+
+        let skipped = CountingProvider(AtomicUsize::new(0));
+        let prevalidated = handle_request_with_transport_session_prevalidated(
+            modern_call("get_config"),
+            serde_json::json!(7),
+            &skipped,
+            "mcp-t",
+            Some(crate::mcp_wire::ProtocolEra::Modern),
+        )
+        .await;
+        assert_eq!(skipped.0.load(Ordering::SeqCst), 0);
+
+        let wire = |response: Response| serde_json::to_string(&response).unwrap();
+        let baseline = wire(baseline);
+        assert_eq!(baseline, wire(same_as_shipped));
+        assert_eq!(baseline, wire(prevalidated));
+    }
+
+    #[tokio::test]
+    async fn b02_era_mismatch_still_validates_and_refuses_unknown_tools() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        let provider = CountingProvider(AtomicUsize::new(0));
+        let response = handle_request_with_transport_session_prevalidated(
+            modern_call("unknown"),
+            serde_json::json!(7),
+            &provider,
+            "mcp-t",
+            Some(crate::mcp_wire::ProtocolEra::Legacy),
+        )
+        .await;
+        assert_eq!(provider.0.load(Ordering::SeqCst), 1);
+        let wire = serde_json::to_value(response).unwrap();
+        assert_eq!(wire["error"]["code"], -32602);
     }
 
     struct StubProvider(Result<serde_json::Value, String>);

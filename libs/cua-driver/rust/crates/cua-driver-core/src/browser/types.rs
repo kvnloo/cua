@@ -213,6 +213,24 @@ pub struct OwnedEndpoint {
     pub ownership: EndpointOwnershipProof,
 }
 
+/// B-02 EXPERIMENT ONLY (`CUA_DRIVER_EXP_ENDPOINT_REPROOF=bound`, default
+/// off; not for promotion). The exact listening socket that one full
+/// ownership proof attributed to `pid`: the socket inode of the loopback
+/// listener on `port`, held by `pid` itself at descriptor `fd`, while the
+/// process had `/proc` start time `pid_start_time`. It lives only in one
+/// Driver process's memory, keyed by one browser session, and never
+/// authorizes anything on its own: a later bound check only skips the
+/// rediscovery when every field still holds, and falls back to the full
+/// proof otherwise.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpBoundListener {
+    pub pid: i64,
+    pub pid_start_time: u64,
+    pub port: u16,
+    pub inode: u64,
+    pub fd: u64,
+}
+
 /// A point-in-time identity fingerprint for a process. Used to detect
 /// pid reuse between binding and mutation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
