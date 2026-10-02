@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
-JEV = Path(os.environ.get("JEV_USE_DIR", "")).resolve()
+JEV = Path(os.environ.get("JEV_USE_DIR") or HERE.parents[2] / "libs/cua-driver/examples/jev-use").resolve()
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(JEV))
 sys.path.insert(0, str(JEV / "python"))
@@ -440,12 +440,14 @@ async def run_trial(spec: dict[str, Any], args: argparse.Namespace, server: Csha
     result["driver_env"] = {k: env.get(k) for k in (MIRROR_ENV, FAULT_ENV, KNOB_ENV)}
     result["driver_env_trace_set"] = TRACE_ENV in env
     rec.add("trial_start", arm=spec["arm"], condition=spec["condition"], control=spec.get("control"))
-    params = StdioServerParameters(command=args.driver, args=["mcp"], env=env)
+    driver_bin = args.ref_driver if spec.get("driver") == "ref" else args.driver
+    result["driver_kind"] = spec.get("driver") or "lane"
+    params = StdioServerParameters(command=driver_bin, args=["mcp"], env=env)
     async with stdio_client(params) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             rec.add("driver_ready")
-            driver_pid = own_driver_pid(args.driver)
+            driver_pid = own_driver_pid(driver_bin)
             result["driver_pid_found"] = driver_pid is not None
             tools = (await session.list_tools()).tools
             available = {tool.name for tool in tools}
@@ -456,6 +458,8 @@ async def run_trial(spec: dict[str, Any], args: argparse.Namespace, server: Csha
                                         {"allow_launch": True, "profile": {"mode": "isolated_new"}})
             pid = int(prepared["prepared_pid"])
             result["prepared_pid"] = pid
+            if spec["plan"] == "smoke" and args.protocol_out:
+                result["protocol"] = read_endpoint_protocol(pid, Path(args.protocol_out))
             window = await wait_for_window(driver, pid)
             rec.add("window_ready")
             bound = await timed_call(rec, driver, "bind", "get_browser_state",
@@ -568,7 +572,15 @@ def abba(arms: tuple[str, str], pairs: int) -> list[tuple[int, int, str]]:
 def build_plan(args: argparse.Namespace) -> list[dict[str, Any]]:
     specs: list[dict[str, Any]] = []
     if args.plan == "smoke":
-        specs = [{"plan": "smoke", "condition": "W-quiet", "arm": arm} for arm in ("A", "C_shadow_audit")]
+        specs = [{"plan": "smoke", "condition": c, "arm": arm}
+                 for c in ("W-quiet", "W-churn") for arm in ("A", "C_shadow_audit")]
+    elif args.plan == "defaultoff":
+        # Structural default-off check: the lane binary with the mirror unset vs the map binary
+        # (no mirror code) vs the lane binary with the mirror on; CDP methods compared per trial.
+        for r in range(args.trials):
+            order = [("A", "lane"), ("A", "ref"), ("C_shadow_M", "lane")]
+            for arm, drv in (order if r % 2 == 0 else order[::-1]):
+                specs.append({"plan": "defaultoff", "condition": "W-quiet", "arm": arm, "driver": drv, "pair": r})
     elif args.plan in ("overhead", "idle"):
         comparison = "CMP-C-overhead" if args.plan == "overhead" else "CMP-C-idle"
         for p, position, arm in abba(("A", "C_shadow_M"), args.pairs):
@@ -596,7 +608,8 @@ def build_plan(args: argparse.Namespace) -> list[dict[str, Any]]:
                           "arm": arm, "pair": p, "order": position})
     for i, spec in enumerate(specs):
         spec["block"] = args.block
-        spec["name"] = f"{args.block}-{i:03d}-{spec['plan']}-{spec.get('control') or spec['condition']}-{spec['arm']}"
+        suffix = "-ref" if spec.get("driver") == "ref" else ""
+        spec["name"] = f"{args.block}-{i:03d}-{spec['plan']}-{spec.get('control') or spec['condition']}-{spec['arm']}{suffix}"
     return specs
 
 
@@ -608,7 +621,11 @@ async def main_async(args: argparse.Namespace) -> None:
     specs = build_plan(args)
     manifest: dict[str, Any] = {"plan": args.plan, "block": args.block, "trials": [s["name"] for s in specs],
                                 "started_mono_ns": now(), "pressure_start": pressure(), "provider": "mock",
-                                "driver_sha256": hashlib.sha256(Path(args.driver).read_bytes()).hexdigest()}
+                                "driver_sha256": sha256_file(args.driver),
+                                "ref_driver_sha256": sha256_file(args.ref_driver) if args.ref_driver else None,
+                                "harness_sha256": sha256_file(__file__),
+                                "fixture_sha256": sha256_file(HERE / "cshadow_fixture.py"),
+                                "isolation": args.preflight}
     try:
         for spec in specs:
             await one(spec, args, server, out)
@@ -618,6 +635,123 @@ async def main_async(args: argparse.Namespace) -> None:
         manifest["network"] = dict(NETWORK)
         (out / f"run-manifest-{args.block}.json").write_text(json.dumps(manifest, indent=1))
         server.close()
+
+
+LANES = HERE.parents[3]  # <lanes>/<worktree>/docs/experiments/<packet>
+
+
+def landlock_scope_path() -> str:
+    """The landlock-scope binary hostless v2 execs (its LS= line); the path is never recorded."""
+    for line in read(str(LANES / "bin/hostless")).splitlines():
+        if line.startswith("LS="):
+            return line.split("=", 1)[1].strip().strip('"')
+    return ""
+HOST_RUNTIME_PREFIXES = ("/run/user/",)
+
+
+def sha256_file(path: Any) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def read_endpoint_protocol(browser_pid: int, out_path: Path) -> dict[str, Any]:
+    """Read /json/version and /json/protocol from this trial's own Driver-launched browser
+    (loopback DevTools port from the profile's DevToolsActivePort), inside the session."""
+    import http.client
+
+    args = read(f"/proc/{browser_pid}/cmdline").split("\0")
+    profile = next((a.split("=", 1)[1] for a in args if a.startswith("--user-data-dir=")), None)
+    info: dict[str, Any] = {"profile_found": profile is not None}
+    if not profile:
+        return info
+    deadline = time.monotonic() + 5
+    port_text = ""
+    while time.monotonic() < deadline and not port_text:
+        port_text = read(f"{profile}/DevToolsActivePort").split("\n")[0].strip()
+        if not port_text:
+            time.sleep(0.05)
+    if not port_text.isdigit():
+        info["port_found"] = False
+        return info
+    out: dict[str, Any] = {}
+    for path in ("/json/version", "/json/protocol"):
+        conn = http.client.HTTPConnection("127.0.0.1", int(port_text), timeout=5)
+        conn.request("GET", path)
+        out[path] = conn.getresponse().read()
+        conn.close()
+    version = json.loads(out["/json/version"])
+    out_path.write_bytes(out["/json/protocol"])
+    info.update({"port_found": True, "browser": version.get("Browser"),
+                 "protocol_version": version.get("Protocol-Version"),
+                 "protocol_sha256": hashlib.sha256(out["/json/protocol"]).hexdigest(),
+                 "protocol_bytes": len(out["/json/protocol"])})
+    return info
+
+
+def ancestors(pid: int, table: dict[int, tuple[int, str]]) -> list[int]:
+    chain = []
+    while pid and pid != 1 and len(chain) < 128:
+        chain.append(pid)
+        pid = table.get(pid, (0, ""))[0]
+    return chain
+
+
+def socket_inodes(pid: int) -> set[str]:
+    out = set()
+    try:
+        for fd in os.listdir(f"/proc/{pid}/fd"):
+            try:
+                link = os.readlink(f"/proc/{pid}/fd/{fd}")
+            except OSError:
+                continue
+            if link.startswith("socket:["):
+                out.add(link[8:-1])
+    except OSError:
+        pass
+    return out
+
+
+def preflight() -> dict[str, Any]:
+    """Orchestrator condition 2: the inner env has no host DISPLAY/WAYLAND_DISPLAY and the X
+    socket in use belongs to this session's own Xvfb. Paths are reduced to placeholders."""
+    env = os.environ
+    table = proc_table()
+    mine = set(ancestors(os.getpid(), table))
+    display = env.get("DISPLAY", "")
+    number = display[1:] if display.startswith(":") and display[1:].isdigit() else None
+    xvfb = [pid for pid, (ppid, comm) in table.items() if comm == "Xvfb"
+            and f":{number}" in read(f"/proc/{pid}/cmdline").split("\0") and ppid in mine]
+    sock_path = f"/tmp/.X11-unix/X{number}"
+    listening = {line.split()[6] for line in read("/proc/net/unix").splitlines()[1:]
+                 if len(line.split()) >= 8 and line.split()[7] in (sock_path, "@" + sock_path)}
+    owned = bool(xvfb) and bool(listening) and listening <= socket_inodes(xvfb[0])
+    run_dir = Path(env.get("HOME", "")).parent
+    runtime = env.get("XDG_RUNTIME_DIR", "")
+    dbus = env.get("DBUS_SESSION_BUS_ADDRESS", "")
+    dbus_daemons = [pid for pid, (ppid, comm) in table.items() if comm == "dbus-daemon" and ppid in mine]
+    nnp = any(line.split()[-1] == "1" for line in read("/proc/self/status").splitlines()
+              if line.startswith("NoNewPrivs:"))
+    checks = {
+        "display_is_private_number": number is not None,
+        "no_wayland_vars": not any(k in env for k in ("WAYLAND_DISPLAY", "WAYLAND_SOCKET", "SWAYSOCK", "I3SOCK"))
+        and not any(k.startswith("HYPRLAND") for k in env),
+        "x_socket_owned_by_session_xvfb": owned,
+        "xdg_runtime_dir_in_session_run_dir": runtime.startswith(str(run_dir) + "/")
+        and not runtime.startswith(HOST_RUNTIME_PREFIXES),
+        "dbus_daemon_is_session_child": bool(dbus_daemons) and "/run/user/" not in dbus,
+        "no_xauthority_or_host_bus": "XAUTHORITY" not in env and "AT_SPI_BUS_ADDRESS" not in env,
+        "landlock_no_new_privs": nnp,
+    }
+    return {
+        "wrapper": "hostless v2 (<lanes>/bin/hostless)",
+        "hostless_sha256": sha256_file(LANES / "bin/hostless"),
+        "landlock_scope_sha256": sha256_file(landlock_scope_path()) if landlock_scope_path() else None,
+        "session_script_sha256": sha256_file(LANES / "cua-x11-session.sh"),
+        "session_run_dir": "<lane-tmp>/" + run_dir.name,
+        "inner_display": display,
+        "x_socket": f"/tmp/.X11-unix/X{number} (listening inodes owned by session Xvfb: {owned})",
+        "checks": checks,
+        "ok": all(checks.values()),
+    }
 
 
 def inside_hostless() -> bool:
@@ -633,7 +767,10 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--driver", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--plan", choices=("smoke", "overhead", "idle", "fidelity", "controls", "resident"), required=True)
+    p.add_argument("--plan", choices=("smoke", "defaultoff", "overhead", "idle", "fidelity", "controls", "resident"),
+                   required=True)
+    p.add_argument("--ref-driver", default="")
+    p.add_argument("--protocol-out", default="")
     p.add_argument("--block", required=True)
     p.add_argument("--condition", default="W-quiet", choices=sorted(CONDITIONS))
     p.add_argument("--pairs", type=int, default=30)
@@ -649,6 +786,12 @@ def main() -> None:
     for name in (TRACE_ENV, MIRROR_ENV, FAULT_ENV, KNOB_ENV):
         if name in os.environ:
             raise SystemExit(f"refusing: {name} must not be set in the runner environment")
+    args.preflight = preflight()
+    print("preflight " + json.dumps({"ok": args.preflight["ok"], "display": args.preflight["inner_display"],
+                                     "run_dir": args.preflight["session_run_dir"],
+                                     "checks": args.preflight["checks"]}, sort_keys=True), flush=True)
+    if not args.preflight["ok"]:
+        raise SystemExit("refusing: isolation pre-flight failed")
     asyncio.run(main_async(args))
 
 

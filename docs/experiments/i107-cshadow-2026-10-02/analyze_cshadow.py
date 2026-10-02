@@ -314,9 +314,11 @@ def main() -> int:
     measured_any = summary["trials_measured"] > 0
     fc = summary["required_zero"]["mirror_false_current_action_relevant"]
     if not measured_any:
-        disposition = ("BLOCKED: no REAL measured trial (C shadow qualification cells empty). "
-                       "Pre-registered expectation stands untested; active C NOT_ADMISSIBLE from SOURCE+REAL(B-01) "
-                       "classification: park the persistent mirror for this fixture regardless of shadow results.")
+        disposition = ("BLOCKED for C shadow qualification (no REAL measured trial; fidelity, overhead and budget "
+                       "untested). Active C NOT_ADMISSIBLE (SOURCE + REAL B-01 traces): no Driver read on this fixture "
+                       "may be replaced by mirror state, so no active-C trial and E stays NOT_RUN. Pre-registered "
+                       "expectation if shadow fidelity holds: park the persistent mirror; if any action-relevant "
+                       "false-current appears: KILL the mechanism as built.")
     elif fc > 0:
         disposition = "KILL the mirror mechanism as built (false-current on an action-relevant field)"
     else:
