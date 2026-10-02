@@ -1,0 +1,53 @@
+{
+  "schema": "cua.r2.provenance.v1",
+  "experiment": "OWN-16",
+  "branch": "exp/own-16-modality-truth-20261002",
+  "sources": {
+    "upstream_main_tested": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+    "base_commit": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49 (R2-04 phase marks on 229b65b28; branch exp/r2-04-atspi-profile-20261001)",
+    "tree_identity_check": {"cmd": "git diff --quiet 229b65b2849c3a595ddbc85200d7181b18bd2e47 c4d0c6625b5c93849aa8bec610782410e9d45f69 -- libs/cua-driver", "exit": 0},
+    "instrumentation_commit": "cd9d6d16929c29517d6aee4ea9c8c64d71c770f3",
+    "tested_source": "cd9d6d16929c29517d6aee4ea9c8c64d71c770f3 (the lane binary's build head; later commits on the branch touch docs/experiments only)",
+    "live_upstream_main_at_analysis": {"sha": "8d4e7a08618611453794035f7ff6187f99f0c1e9", "read_utc": "2026-10-02T02:17Z", "read_via": "git ls-remote (read-only)", "commits_since_tested": 10, "libs_cua_driver_paths_changed": 0},
+    "owner_issue": "kvnloo/cua#16 (open, read-only gh read at 2026-10-02T02:17Z)",
+    "publication_sha": "not published by this lane; the Publish agent records the pushed branch head. The packet commit is the branch tip left for the verifier."
+  },
+  "prereg_commit": {"sha": "777149eaec54a50dc84666c8fede2f7a6bf7108f", "committer_epoch": 1790906868, "committer_iso": "2026-10-02T02:07:48Z"},
+  "driver": {
+    "lane": {
+      "label": "own16-cd9d6d169",
+      "sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+      "version_in_session": "cua-driver 0.32.0",
+      "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <worktree> own16-cd9d6d169 cua-release-r2-04; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1 (8bab26f4f 2026-07-14); 91 s; rustc invocations this run: cua_driver 1, cua_driver_core 1, cua_driver_contract 1, platform_linux 1; Fresh workspace units 0; build head cd9d6d16929c29517d6aee4ea9c8c64d71c770f3",
+      "version_disclosure": "build-driver.sh ends with an UNSANDBOXED '<binary> --version' on the host (prints 'cua-driver 0.32.0'; it opens no display). The version used here was re-recorded inside every isolated session (raw/*/session-env.txt)."
+    },
+    "main_shape_reference": {
+      "label": "r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "version": "cua-driver 0.32.0",
+      "use": "default-off smoke response SHAPE comparison only (session D1); never timed against the lane binary"
+    }
+  },
+  "environment": {
+    "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24 (-nolisten tcp), private dbus-run-session, openbox + picom --backend xrender, env -i scrubbed (no WAYLAND_DISPLAY / HYPRLAND_* / host XDG_RUNTIME_DIR), fresh HOME per session",
+    "atspi": "S1, S2, D1: CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" (private at-spi-bus-launcher + at-spi2-registryd). N1: neither set; the session bus auto-activated org.a11y.Bus for the GTK app but org.a11y.atspi.Registry activation failed",
+    "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py task window ('CuaTestHarness GTK3 Tasks', 480x320, 9 indexed elements), system /usr/bin/python3 + PyGObject",
+    "client": "jev-use .venv (uv sync --frozen, Python 3.12) mcp ClientSession over stdio; Driver env = jev-use driver_environment() (+ CUA_DRIVER_PHASE_TRACE_FILE when marks are on)",
+    "oracle_tools": "python-xlib 0.33 in a temp venv outside the repo (X RECORD client); dbus-monitor --monitor on the private AT-SPI bus",
+    "machine": "one Linux x86_64 workstation (host name withheld); other lanes ran concurrently under the shared quiet-lane lock; loadavg recorded per call (1-min 4.26-9.96 across S1/S2)"
+  },
+  "sessions": {
+    "S1": {"mode": "measured", "rotation": 0, "end_utc": "2026-10-02T02:12:30Z", "exclusive_lock_wait_ms": 255153},
+    "N1": {"mode": "negative (no AT-SPI)", "end_utc": "2026-10-02T02:12:44Z"},
+    "S2": {"mode": "measured", "rotation": 3, "end_utc": "2026-10-02T02:15:22Z", "exclusive_lock_wait_ms": 139097},
+    "D1": {"mode": "default-off smoke", "end_utc": "2026-10-02T02:15:35Z"}
+  },
+  "unit_tests": {
+    "where": "inside cua-x11-session.sh (CUA_SESSION_ATSPI=1), under flock -s quiet-lane.lock + cargo-build.lock, CARGO_TARGET_DIR cua-release-r2-04",
+    "cua_driver_core_phase_trace": "6 passed, 0 failed (3 new: counted_line_carries_the_ordinal, off_counts_nothing_and_writes_nothing, on_counts_each_invocation_and_pairs_exit_with_enter)",
+    "platform_linux": "lib 599 passed, 0 failed, 10 ignored; other targets 8 passed, 7 ignored, 0 failed",
+    "toolchain_note": "the session's fresh HOME made rustup install the pinned 1.97.1 toolchain into the session HOME before testing (same version as the release build)"
+  },
+  "provider": {"name": "none", "cap": 0, "attempts": 0, "reached": 0},
+  "mirror": "artifacts/r2/OWN-16/ in the lanes directory (raw runs incl. session logs, build output, unit-test log, batch log)"
+}

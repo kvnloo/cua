@@ -1,0 +1,279 @@
+{
+ "overall": {
+  "disposition": "KEEP",
+  "negative_control": true,
+  "oracle_corroborated": true,
+  "ordinals_gap_free": true,
+  "positive_control": true,
+  "revise_rows": [],
+  "row_classes": {
+   "accessibility_only": "latency_real_selector",
+   "both": "positive_control_pass",
+   "legacy_omitted": "default_honored",
+   "neither": "rejected_explicit",
+   "screenshot_only": "latency_real_selector",
+   "unknown_field": "rejected_explicit",
+   "wrong_type_supplementary": "silently_ignored (supplementary)"
+  },
+  "smoke": true,
+  "untruthful_rows": []
+ },
+ "rows": {
+  "accessibility_only": {
+   "capture_counts": {
+    "S1": {
+     "0": 21
+    },
+    "S2": {
+     "0": 21
+    }
+   },
+   "class": "latency_real_selector",
+   "outcomes": {
+    "honored": 42
+   },
+   "selector": {
+    "include_screenshot": false
+   },
+   "walk_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -4.275714999999998,
+     -1.8076964999999987
+    ],
+    "point": -2.979778500000002
+   },
+   "warm_median_ms": 24.677537,
+   "warm_n": 40,
+   "warm_p95_ms": 33.121791
+  },
+  "both": {
+   "capture_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "class": "positive_control_pass",
+   "outcomes": {
+    "honored": 42
+   },
+   "selector": {
+    "include_accessibility_tree": true,
+    "include_screenshot": true
+   },
+   "walk_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "warm_median_ms": 27.657315500000003,
+   "warm_n": 40,
+   "warm_p95_ms": 38.260935
+  },
+  "legacy_omitted": {
+   "capture_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "class": "default_honored",
+   "outcomes": {
+    "honored": 42
+   },
+   "selector": {},
+   "walk_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -1.6844089999999987,
+     1.7832645000000014
+    ],
+    "point": 0.37950000000000017
+   },
+   "warm_median_ms": 28.036815500000003,
+   "warm_n": 40,
+   "warm_p95_ms": 37.31516
+  },
+  "neither": {
+   "capture_counts": {
+    "S1": {
+     "0": 21
+    },
+    "S2": {
+     "0": 21
+    }
+   },
+   "class": "rejected_explicit",
+   "outcomes": {
+    "rejected": 42
+   },
+   "selector": {
+    "include_accessibility_tree": false,
+    "include_screenshot": false
+   },
+   "walk_counts": {
+    "S1": {
+     "0": 21
+    },
+    "S2": {
+     "0": 21
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -25.6381135,
+     -24.0398185
+    ],
+    "point": -24.572392500000003
+   },
+   "warm_median_ms": 3.084923,
+   "warm_n": 40,
+   "warm_p95_ms": 5.187372
+  },
+  "screenshot_only": {
+   "capture_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "class": "latency_real_selector",
+   "outcomes": {
+    "honored": 42
+   },
+   "selector": {
+    "include_accessibility_tree": false
+   },
+   "walk_counts": {
+    "S1": {
+     "0": 21
+    },
+    "S2": {
+     "0": 21
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -8.457341,
+     -6.522146499999998
+    ],
+    "point": -7.361093500000003
+   },
+   "warm_median_ms": 20.296222,
+   "warm_n": 40,
+   "warm_p95_ms": 30.247418
+  },
+  "unknown_field": {
+   "capture_counts": {
+    "S1": {
+     "0": 21
+    },
+    "S2": {
+     "0": 21
+    }
+   },
+   "class": "rejected_explicit",
+   "outcomes": {
+    "rejected": 42
+   },
+   "selector": {
+    "include_tree": false
+   },
+   "walk_counts": {
+    "S1": {
+     "0": 21
+    },
+    "S2": {
+     "0": 21
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -26.261713,
+     -24.681515500000003
+    ],
+    "point": -25.2089105
+   },
+   "warm_median_ms": 2.448405,
+   "warm_n": 40,
+   "warm_p95_ms": 4.193317
+  },
+  "wrong_type_supplementary": {
+   "capture_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "class": "silently_ignored (supplementary)",
+   "outcomes": {
+    "silently_ignored": 42
+   },
+   "selector": {
+    "include_screenshot": "false"
+   },
+   "walk_counts": {
+    "S1": {
+     "1": 21
+    },
+    "S2": {
+     "1": 21
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -1.761613999999998,
+     1.250677999999997
+    ],
+    "point": -0.3987550000000013
+   },
+   "warm_median_ms": 27.2585605,
+   "warm_n": 40,
+   "warm_p95_ms": 37.406304
+  }
+ },
+ "sessions": {
+  "D1": {
+   "driver_sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+   "driver_version": "cua-driver 0.32.0"
+  },
+  "N1": {
+   "driver_sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+   "driver_version": "cua-driver 0.32.0"
+  },
+  "S1": {
+   "driver_sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+   "driver_version": "cua-driver 0.32.0"
+  },
+  "S2": {
+   "driver_sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+   "driver_version": "cua-driver 0.32.0"
+  }
+ }
+}

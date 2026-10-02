@@ -1,0 +1,1061 @@
+{
+ "experiment": "OWN-16",
+ "negative_control": {
+  "accessibility_only_capture_counts": {
+   "0": 6
+  },
+  "accessibility_requested": 12,
+  "calls": 18,
+  "degraded_reasons": {
+   "atspi_walk_failed: AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName(\"org.freedesktop.DBus.Error.NameHasNoOwner\"), Some(\"Could not activate remote peer 'org.a11y.atspi.Registry': unit fail": 12
+  },
+  "element_count": {
+   "1": 12
+  },
+  "elements_complete": {
+   "False": 12
+  },
+  "exceptions": 0,
+  "pass": true,
+  "screenshot_only_capture_counts": {
+   "1": 6
+  },
+  "screenshot_only_walk_counts": {
+   "0": 6
+  },
+  "session_atspi": "unset",
+  "walk_counts": {
+   "1": 12
+  },
+  "warm_median_ms": {
+   "accessibility_only": 475.594193,
+   "both": 477.371611,
+   "screenshot_only": 20.115132
+  }
+ },
+ "overall": {
+  "disposition": "KEEP",
+  "negative_control": true,
+  "oracle_corroborated": true,
+  "ordinals_gap_free": true,
+  "positive_control": true,
+  "revise_rows": [],
+  "row_classes": {
+   "accessibility_only": "latency_real_selector",
+   "both": "positive_control_pass",
+   "legacy_omitted": "default_honored",
+   "neither": "rejected_explicit",
+   "screenshot_only": "latency_real_selector",
+   "unknown_field": "rejected_explicit",
+   "wrong_type_supplementary": "silently_ignored (supplementary)"
+  },
+  "smoke": true,
+  "untruthful_rows": []
+ },
+ "rows": {
+  "accessibility_only": {
+   "class": "latency_real_selector",
+   "cold": [
+    {
+     "process_cold": false,
+     "session": "S1",
+     "wall_ms": 46.922043
+    },
+    {
+     "process_cold": false,
+     "session": "S2",
+     "wall_ms": 23.15877
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "outcomes": {
+    "honored": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "0": 21
+     },
+     "capture_span_ms_median": null,
+     "dispatch_ms_median": 7.0883009999999995,
+     "driver_walk_elapsed_ms_median": 5,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": 21,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": null,
+     "producers_inside_dispatch": true,
+     "remaining_complete": 21,
+     "response_bytes_median": 4069,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 5.602815,
+     "warm_median_ms": 23.369288500000003,
+     "warm_p95_ms": 33.121791
+    },
+    "S2": {
+     "capture_counts": {
+      "0": 21
+     },
+     "capture_span_ms_median": null,
+     "dispatch_ms_median": 8.112565,
+     "driver_walk_elapsed_ms_median": 6,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": 21,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": null,
+     "producers_inside_dispatch": true,
+     "remaining_complete": 21,
+     "response_bytes_median": 4069,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 6.3461405,
+     "warm_median_ms": 25.448175499999998,
+     "warm_p95_ms": 32.394573
+    }
+   },
+   "remaining_truthful": true,
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -4.275714999999998,
+     -1.8076964999999987
+    ],
+    "point": -2.979778500000002
+   },
+   "warm_median_ms": 24.677537,
+   "warm_n": 40,
+   "warm_p95_ms": 33.121791
+  },
+  "both": {
+   "class": "positive_control_pass",
+   "cold": [
+    {
+     "process_cold": true,
+     "session": "S1",
+     "wall_ms": 136.361728
+    },
+    {
+     "process_cold": false,
+     "session": "S2",
+     "wall_ms": 26.994297
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "outcomes": {
+    "honored": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.3262385,
+     "dispatch_ms_median": 9.785456,
+     "driver_walk_elapsed_ms_median": 5,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 30114,
+     "structured_keys_equal_both": true,
+     "structured_keys_equal_both_strict_calls": 20,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 5.4045305,
+     "warm_median_ms": 26.260711,
+     "warm_p95_ms": 36.828911
+    },
+    "S2": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.3806374999999997,
+     "dispatch_ms_median": 11.183943,
+     "driver_walk_elapsed_ms_median": 6,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 30114,
+     "structured_keys_equal_both": true,
+     "structured_keys_equal_both_strict_calls": 21,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 6.3856245000000005,
+     "warm_median_ms": 28.7465785,
+     "warm_p95_ms": 38.260935
+    }
+   },
+   "warm_median_ms": 27.657315500000003,
+   "warm_n": 40,
+   "warm_p95_ms": 38.260935
+  },
+  "legacy_omitted": {
+   "class": "default_honored",
+   "cold": [
+    {
+     "process_cold": false,
+     "session": "S1",
+     "wall_ms": 46.818459
+    },
+    {
+     "process_cold": false,
+     "session": "S2",
+     "wall_ms": 28.37468
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "outcomes": {
+    "honored": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.339034,
+     "dispatch_ms_median": 9.611756,
+     "driver_walk_elapsed_ms_median": 5,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 30114,
+     "structured_keys_equal_both": true,
+     "structured_keys_equal_both_strict_calls": 21,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 5.4248674999999995,
+     "warm_median_ms": 25.574405,
+     "warm_p95_ms": 35.23977
+    },
+    "S2": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.45748,
+     "dispatch_ms_median": 11.213007,
+     "driver_walk_elapsed_ms_median": 6,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 30114,
+     "structured_keys_equal_both": true,
+     "structured_keys_equal_both_strict_calls": 20,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 6.346406,
+     "warm_median_ms": 29.5832175,
+     "warm_p95_ms": 37.31516
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -1.6844089999999987,
+     1.7832645000000014
+    ],
+    "point": 0.37950000000000017
+   },
+   "warm_median_ms": 28.036815500000003,
+   "warm_n": 40,
+   "warm_p95_ms": 37.31516
+  },
+  "neither": {
+   "class": "rejected_explicit",
+   "cold": [
+    {
+     "process_cold": false,
+     "session": "S1",
+     "wall_ms": 9.053549
+    },
+    {
+     "process_cold": true,
+     "session": "S2",
+     "wall_ms": 3.33051
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "machine_code": [
+    "{\"code\": \"tool_invocation_failed\"}"
+   ],
+   "outcomes": {
+    "rejected": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "0": 21
+     },
+     "capture_span_ms_median": null,
+     "dispatch_ms_median": 0.43679199999999996,
+     "driver_walk_elapsed_ms_median": null,
+     "error_meta": [
+      "{\"code\": \"tool_invocation_failed\"}"
+     ],
+     "error_texts": [
+      "Nothing to return: both include_accessibility_tree:false and include_screenshot:false. Set at least one to true, or pass screenshot_out_file to force a capture."
+     ],
+     "is_error": [
+      true
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "rejected": 21
+     },
+     "png_identical_to_both": null,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 268,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "0": 21
+     },
+     "walk_span_ms_median": null,
+     "warm_median_ms": 2.6529335,
+     "warm_p95_ms": 3.062484
+    },
+    "S2": {
+     "capture_counts": {
+      "0": 21
+     },
+     "capture_span_ms_median": null,
+     "dispatch_ms_median": 0.636619,
+     "driver_walk_elapsed_ms_median": null,
+     "error_meta": [
+      "{\"code\": \"tool_invocation_failed\"}"
+     ],
+     "error_texts": [
+      "Nothing to return: both include_accessibility_tree:false and include_screenshot:false. Set at least one to true, or pass screenshot_out_file to force a capture."
+     ],
+     "is_error": [
+      true
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "rejected": 21
+     },
+     "png_identical_to_both": null,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 268,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "0": 21
+     },
+     "walk_span_ms_median": null,
+     "warm_median_ms": 3.472858,
+     "warm_p95_ms": 8.674712
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -25.6381135,
+     -24.0398185
+    ],
+    "point": -24.572392500000003
+   },
+   "warm_median_ms": 3.084923,
+   "warm_n": 40,
+   "warm_p95_ms": 5.187372
+  },
+  "screenshot_only": {
+   "class": "latency_real_selector",
+   "cold": [
+    {
+     "process_cold": false,
+     "session": "S1",
+     "wall_ms": 39.367543
+    },
+    {
+     "process_cold": false,
+     "session": "S2",
+     "wall_ms": 20.09828
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "outcomes": {
+    "honored": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.3728295,
+     "dispatch_ms_median": 4.07029,
+     "driver_walk_elapsed_ms_median": null,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": 21,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": 21,
+     "response_bytes_median": 26428,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "0": 21
+     },
+     "walk_span_ms_median": null,
+     "warm_median_ms": 19.3329485,
+     "warm_p95_ms": 30.247418
+    },
+    "S2": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.45064,
+     "dispatch_ms_median": 4.344512999999999,
+     "driver_walk_elapsed_ms_median": null,
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": 21,
+     "outcomes": {
+      "honored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": 21,
+     "response_bytes_median": 26428,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "0": 21
+     },
+     "walk_span_ms_median": null,
+     "warm_median_ms": 21.141165,
+     "warm_p95_ms": 28.800033
+    }
+   },
+   "remaining_truthful": true,
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -8.457341,
+     -6.522146499999998
+    ],
+    "point": -7.361093500000003
+   },
+   "warm_median_ms": 20.296222,
+   "warm_n": 40,
+   "warm_p95_ms": 30.247418
+  },
+  "unknown_field": {
+   "class": "rejected_explicit",
+   "cold": [
+    {
+     "process_cold": false,
+     "session": "S1",
+     "wall_ms": 8.647892
+    },
+    {
+     "process_cold": false,
+     "session": "S2",
+     "wall_ms": 2.37303
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "machine_code": [
+    "{\"refusal\": {\"code\": \"invalid_arguments\", \"message\": \"get_window_state: unknown argument include_tree\"}}"
+   ],
+   "outcomes": {
+    "rejected": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "0": 21
+     },
+     "capture_span_ms_median": null,
+     "dispatch_ms_median": 0.0258945,
+     "driver_walk_elapsed_ms_median": null,
+     "error_meta": [
+      "{\"refusal\": {\"code\": \"invalid_arguments\", \"message\": \"get_window_state: unknown argument include_tree\"}}"
+     ],
+     "error_texts": [
+      "get_window_state: unknown argument include_tree"
+     ],
+     "is_error": [
+      true
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "rejected": 21
+     },
+     "png_identical_to_both": null,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 241,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "0": 21
+     },
+     "walk_span_ms_median": null,
+     "warm_median_ms": 2.2023564999999996,
+     "warm_p95_ms": 2.496905
+    },
+    "S2": {
+     "capture_counts": {
+      "0": 21
+     },
+     "capture_span_ms_median": null,
+     "dispatch_ms_median": 0.037838,
+     "driver_walk_elapsed_ms_median": null,
+     "error_meta": [
+      "{\"refusal\": {\"code\": \"invalid_arguments\", \"message\": \"get_window_state: unknown argument include_tree\"}}"
+     ],
+     "error_texts": [
+      "get_window_state: unknown argument include_tree"
+     ],
+     "is_error": [
+      true
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "rejected": 21
+     },
+     "png_identical_to_both": null,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 241,
+     "structured_keys_equal_both": false,
+     "structured_keys_equal_both_strict_calls": 0,
+     "walk_counts": {
+      "0": 21
+     },
+     "walk_span_ms_median": null,
+     "warm_median_ms": 2.8704254999999996,
+     "warm_p95_ms": 5.583203
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -26.261713,
+     -24.681515500000003
+    ],
+    "point": -25.2089105
+   },
+   "warm_median_ms": 2.448405,
+   "warm_n": 40,
+   "warm_p95_ms": 4.193317
+  },
+  "wrong_type_supplementary": {
+   "class": "silently_ignored (supplementary)",
+   "cold": [
+    {
+     "process_cold": false,
+     "session": "S1",
+     "wall_ms": 50.177288
+    },
+    {
+     "process_cold": false,
+     "session": "S2",
+     "wall_ms": 26.303806
+    }
+   ],
+   "integrity_violations": {
+    "frames_outside_window": 0,
+    "png_dim_mismatch": 0,
+    "screenshot_frames_inconsistent": 0,
+    "screenshot_frames_outside_image": 0,
+    "screenshot_window_mismatch": 0
+   },
+   "outcomes": {
+    "silently_ignored": 42
+   },
+   "per_session": {
+    "S1": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.287929,
+     "dispatch_ms_median": 9.921081000000001,
+     "driver_walk_elapsed_ms_median": 5,
+     "error_meta": [],
+     "error_texts": [],
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "silently_ignored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 30114,
+     "structured_keys_equal_both": true,
+     "structured_keys_equal_both_strict_calls": 21,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 5.562571500000001,
+     "warm_median_ms": 25.4629315,
+     "warm_p95_ms": 35.242909
+    },
+    "S2": {
+     "capture_counts": {
+      "1": 21
+     },
+     "capture_span_ms_median": 2.490738,
+     "dispatch_ms_median": 11.109617,
+     "driver_walk_elapsed_ms_median": 6,
+     "error_meta": [],
+     "error_texts": [],
+     "is_error": [
+      false
+     ],
+     "n_cold_warm": 21,
+     "omitted_producer_zero": null,
+     "outcomes": {
+      "silently_ignored": 21
+     },
+     "png_identical_to_both": true,
+     "producers_inside_dispatch": true,
+     "remaining_complete": null,
+     "response_bytes_median": 30114,
+     "structured_keys_equal_both": true,
+     "structured_keys_equal_both_strict_calls": 21,
+     "walk_counts": {
+      "1": 21
+     },
+     "walk_span_ms_median": 6.3916075,
+     "warm_median_ms": 30.607522,
+     "warm_p95_ms": 40.793096
+    }
+   },
+   "warm_diff_vs_both_ms": {
+    "ci95": [
+     -1.761613999999998,
+     1.250677999999997
+    ],
+    "point": -0.3987550000000013
+   },
+   "warm_median_ms": 27.2585605,
+   "warm_n": 40,
+   "warm_p95_ms": 37.406304
+  }
+ },
+ "sessions": {
+  "S1": {
+   "calls_total": 168,
+   "driver_sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+   "driver_version": "cua-driver 0.32.0",
+   "exceptions": 0,
+   "lock_events": [
+    {
+     "loadavg": [
+      9.61,
+      9.07,
+      6.5
+     ],
+     "mode": "shared",
+     "w_ns": 1790906882576409798,
+     "wait_ms": 0.352704
+    },
+    {
+     "loadavg": [
+      6.02,
+      7.51,
+      6.46
+     ],
+     "mode": "exclusive",
+     "w_ns": 1790907140076645111,
+     "wait_ms": 255152.684671
+    },
+    {
+     "loadavg": [
+      6.02,
+      7.51,
+      6.46
+     ],
+     "mode": "shared",
+     "w_ns": 1790907142843479074,
+     "wait_ms": 0.038196
+    }
+   ],
+   "oracle": {
+    "agree": 21,
+    "calls": 21,
+    "idle": {
+     "atspi_calls": 0,
+     "x_image_reads": 0
+    },
+    "idle_clean": true,
+    "per_row": {
+     "accessibility_only": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       0
+      ]
+     },
+     "both": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     },
+     "legacy_omitted": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     },
+     "neither": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       0
+      ],
+      "n": 3,
+      "x_image_reads": [
+       0
+      ]
+     },
+     "screenshot_only": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       0
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     },
+     "unknown_field": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       0
+      ],
+      "n": 3,
+      "x_image_reads": [
+       0
+      ]
+     },
+     "wrong_type_supplementary": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     }
+    },
+    "windows": 22,
+    "windows_recomputed_match": 22
+   },
+   "phase_audit": {
+    "exit_marks": {
+     "atspi_walk:exit_trusted": 98,
+     "capture_window:exit_ok": 96
+    },
+    "invocations": {
+     "atspi_walk": 98,
+     "capture_window": 96
+    },
+    "ordinals_gap_free": true,
+    "producer_invocations_by_tool": {
+     "get_window_state:atspi_walk": 98,
+     "get_window_state:capture_window": 96
+    },
+    "producer_invocations_outside_dispatch": 0
+   },
+   "session_atspi": "1",
+   "usability": {
+    "after_counter": 1,
+    "after_seq": 2,
+    "before_counter": 0,
+    "before_seq": 1,
+    "click_is_error": false,
+    "click_structured": {
+     "effect": "unverifiable",
+     "route": "accessibility"
+    },
+    "event": "usability",
+    "observe_index": 168,
+    "oracle_verified": true,
+    "token_found": true
+   }
+  },
+  "S2": {
+   "calls_total": 168,
+   "driver_sha256": "c6caa34fd58b7aab0e546fd79674fc066ee2f8f0b50a36007a6ca3087f4148d5",
+   "driver_version": "cua-driver 0.32.0",
+   "exceptions": 0,
+   "lock_events": [
+    {
+     "loadavg": [
+      4.26,
+      6.93,
+      6.3
+     ],
+     "mode": "shared",
+     "w_ns": 1790907170830750657,
+     "wait_ms": 0.004853
+    },
+    {
+     "loadavg": [
+      8.24,
+      7.42,
+      6.56
+     ],
+     "mode": "exclusive",
+     "w_ns": 1790907311467636736,
+     "wait_ms": 139096.656898
+    },
+    {
+     "loadavg": [
+      7.9,
+      7.36,
+      6.54
+     ],
+     "mode": "shared",
+     "w_ns": 1790907314629608130,
+     "wait_ms": 0.057361
+    }
+   ],
+   "oracle": {
+    "agree": 21,
+    "calls": 21,
+    "idle": {
+     "atspi_calls": 0,
+     "x_image_reads": 0
+    },
+    "idle_clean": true,
+    "per_row": {
+     "accessibility_only": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       0
+      ]
+     },
+     "both": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     },
+     "legacy_omitted": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     },
+     "neither": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       0
+      ],
+      "n": 3,
+      "x_image_reads": [
+       0
+      ]
+     },
+     "screenshot_only": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       0
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     },
+     "unknown_field": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       0
+      ],
+      "n": 3,
+      "x_image_reads": [
+       0
+      ]
+     },
+     "wrong_type_supplementary": {
+      "agree": 3,
+      "atspi_calls_to_fixture": [
+       142
+      ],
+      "n": 3,
+      "x_image_reads": [
+       1
+      ]
+     }
+    },
+    "windows": 22,
+    "windows_recomputed_match": 22
+   },
+   "phase_audit": {
+    "exit_marks": {
+     "atspi_walk:exit_trusted": 98,
+     "capture_window:exit_ok": 96
+    },
+    "invocations": {
+     "atspi_walk": 98,
+     "capture_window": 96
+    },
+    "ordinals_gap_free": true,
+    "producer_invocations_by_tool": {
+     "get_window_state:atspi_walk": 98,
+     "get_window_state:capture_window": 96
+    },
+    "producer_invocations_outside_dispatch": 0
+   },
+   "session_atspi": "1",
+   "usability": {
+    "after_counter": 1,
+    "after_seq": 2,
+    "before_counter": 0,
+    "before_seq": 1,
+    "click_is_error": false,
+    "click_structured": {
+     "effect": "unverifiable",
+     "route": "accessibility"
+    },
+    "event": "usability",
+    "observe_index": 168,
+    "oracle_verified": true,
+    "token_found": true
+   }
+  }
+ },
+ "smoke": {
+  "calls": 84,
+  "exceptions": 0,
+  "no_trace_file_when_off": true,
+  "pass": true,
+  "shape_identical_per_row": {
+   "accessibility_only": true,
+   "both": true,
+   "legacy_omitted": true,
+   "neither": true,
+   "screenshot_only": true,
+   "unknown_field": true,
+   "wrong_type_supplementary": true
+  },
+  "trace_file_when_on": true
+ }
+}
