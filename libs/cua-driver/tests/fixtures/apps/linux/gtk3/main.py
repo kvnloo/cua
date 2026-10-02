@@ -364,10 +364,14 @@ class TaskWindow(Gtk.Window):
     on Cua Driver output. Ordinary launches never create this window.
     """
 
-    def __init__(self, state_path, density=None):
-        super().__init__(title="CuaTestHarness GTK3 Tasks")
+    def __init__(self, state_path, density=None, title="CuaTestHarness GTK3 Tasks",
+                 on_change=None):
+        super().__init__(title=title)
         self.set_default_size(480, 320)
         self.state_path = state_path
+        # TwoTaskWindows owns the state file when set; None keeps the
+        # single-window behaviour unchanged.
+        self.on_change = on_change
         self.density = density
         self.distractor_actions = 0
         self.counter = 0
@@ -414,7 +418,8 @@ class TaskWindow(Gtk.Window):
         root.pack_start(note_row, False, False, 0)
 
         root.pack_start(self.button("Exit", lambda *_: Gtk.main_quit()), False, False, 0)
-        self.connect("destroy", Gtk.main_quit)
+        if on_change is None:
+            self.connect("destroy", Gtk.main_quit)
         self.publish()
 
     def add_distractors(self, root, density):
@@ -485,30 +490,115 @@ class TaskWindow(Gtk.Window):
         self.saved_note = self.note.get_text()
         self.publish()
 
-    def publish(self):
-        self.counter_label.set_text(f"counter={self.counter}")
-        self.sequence += 1
-        state = {
-            "schema": TASK_STATE_SCHEMA,
-            "pid": os.getpid(),
-            "seq": self.sequence,
+    def task_fields(self):
+        """This window's task state (the per-window part of the state file)."""
+        fields = {
             "counter": self.counter,
             "agreed": self.agreed,
             "size": self.size,
             "note_saved": self.saved_note,
         }
         if self.density is not None:
-            state["density"] = self.density
-            state["distractor_actions"] = self.distractor_actions
-        temporary = f"{self.state_path}.{os.getpid()}.tmp"
-        with open(temporary, "w", encoding="utf-8") as stream:
-            json.dump(state, stream, sort_keys=True)
-        os.replace(temporary, self.state_path)
+            fields["density"] = self.density
+            fields["distractor_actions"] = self.distractor_actions
+        return fields
+
+    def publish(self):
+        self.counter_label.set_text(f"counter={self.counter}")
+        if self.on_change is not None:
+            self.on_change()
+            return
+        self.sequence += 1
+        state = {
+            "schema": TASK_STATE_SCHEMA,
+            "pid": os.getpid(),
+            "seq": self.sequence,
+            **self.task_fields(),
+        }
+        write_state_file(self.state_path, state)
+
+
+def write_state_file(path, state):
+    temporary = f"{path}.{os.getpid()}.tmp"
+    with open(temporary, "w", encoding="utf-8") as stream:
+        json.dump(state, stream, sort_keys=True)
+    os.replace(temporary, path)
+
+
+TWO_WINDOWS_ENV = "CUA_GTK3_TWO_WINDOWS"
+TWO_WINDOWS_SCHEMA = "cua.gtk3_two_window_task_state_v1"
+
+
+class TwoTaskWindows:
+    """Opt-in (CUA_GTK3_TWO_WINDOWS=1 together with CUA_GTK3_TASK_STATE): two
+    TaskWindows in ONE GTK3 process, titled "CuaTestHarness GTK3 Tasks 1" and
+    "... 2", each with its own controls (its own "I agree" checkbox). The app
+    owns one state file with a key per window ("window1", "window2"), each
+    carrying that window's task fields and whether it is still open. SIGUSR1
+    closes window 1 (a target-side close; window 2 stays). The process exits
+    when both windows are closed or Exit is clicked. Measures same-process
+    two-window token ownership (kvnloo/cua#36); ordinary launches and
+    single-window task launches never create it.
+    """
+
+    KEYS = ("window1", "window2")
+
+    def __init__(self, state_path, density=None):
+        import signal
+
+        from gi.repository import GLib
+
+        self.state_path = state_path
+        self.sequence = 0
+        self.ready = False
+        self.open = {key: True for key in self.KEYS}
+        self.windows = {}
+        for number, key in enumerate(self.KEYS, start=1):
+            window = TaskWindow(state_path, density, title=f"CuaTestHarness GTK3 Tasks {number}",
+                                on_change=self.publish)
+            window.connect("destroy", self.on_destroy, key)
+            self.windows[key] = window
+        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, self.close_window1)
+        self.ready = True
+        self.publish()
+
+    def show_all(self):
+        for window in self.windows.values():
+            window.show_all()
+
+    def close_window1(self):
+        if self.open["window1"]:
+            self.windows["window1"].destroy()
+        return True
+
+    def on_destroy(self, _window, key):
+        self.open[key] = False
+        self.publish()
+        if not any(self.open.values()):
+            Gtk.main_quit()
+
+    def publish(self):
+        if not self.ready:
+            return
+        self.sequence += 1
+        state = {
+            "schema": TWO_WINDOWS_SCHEMA,
+            "pid": os.getpid(),
+            "seq": self.sequence,
+            "windows": {
+                key: {"open": self.open[key], **self.windows[key].task_fields()}
+                for key in self.KEYS
+            },
+        }
+        write_state_file(self.state_path, state)
 
 
 def main():
     task_state = os.environ.get(TASK_STATE_ENV, "").strip()
-    win = TaskWindow(task_state, task_density()) if task_state else HarnessWindow()
+    if task_state and os.environ.get(TWO_WINDOWS_ENV, "").strip() == "1":
+        win = TwoTaskWindows(task_state, task_density())
+    else:
+        win = TaskWindow(task_state, task_density()) if task_state else HarnessWindow()
     win.show_all()
     Gtk.main()
 
