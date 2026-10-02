@@ -3612,6 +3612,69 @@ async fn live_accessible<'a>(
     Ok((acc, role))
 }
 
+/// The cached-ref post-`DoAction` settle sleep.
+const POST_ACTION_SLEEP: Duration = Duration::from_millis(50);
+/// Measurement-only (research experiment N-01R, not for upstream): overrides
+/// [`POST_ACTION_SLEEP`] in [`perform_action_ref`]. Unset (the default) keeps
+/// 50 ms; `0` skips the sleep. Read once per process.
+const EXP_POST_ACTION_SLEEP_ENV: &str = "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS";
+
+fn exp_post_action_sleep() -> Duration {
+    static VALUE: OnceLock<Duration> = OnceLock::new();
+    *VALUE.get_or_init(|| {
+        let ms = exp_knob_ms(std::env::var(EXP_POST_ACTION_SLEEP_ENV).ok().as_deref());
+        if let Some(ms) = ms {
+            cua_driver_core::phase_trace::mark("exp_knob", &format!("post_action_sleep_ms={ms}"));
+        }
+        post_action_sleep_for(ms)
+    })
+}
+
+/// A set, non-negative integer knob value in ms; anything else is "unset".
+fn exp_knob_ms(raw: Option<&str>) -> Option<u64> {
+    raw.and_then(|value| value.trim().parse::<u64>().ok())
+}
+
+fn post_action_sleep_for(knob_ms: Option<u64>) -> Duration {
+    knob_ms.map_or(POST_ACTION_SLEEP, Duration::from_millis)
+}
+
+#[cfg(test)]
+mod exp_post_action_sleep_tests {
+    use super::*;
+
+    #[test]
+    fn unset_or_invalid_knob_keeps_the_50_ms_sleep() {
+        assert_eq!(POST_ACTION_SLEEP, Duration::from_millis(50));
+        for raw in [
+            None,
+            Some(""),
+            Some(" "),
+            Some("-1"),
+            Some("fast"),
+            Some("1.5"),
+        ] {
+            assert_eq!(
+                post_action_sleep_for(exp_knob_ms(raw)),
+                POST_ACTION_SLEEP,
+                "{raw:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn set_knob_value_is_used() {
+        assert_eq!(
+            post_action_sleep_for(exp_knob_ms(Some("0"))),
+            Duration::ZERO
+        );
+        assert_eq!(
+            post_action_sleep_for(exp_knob_ms(Some(" 7 "))),
+            Duration::from_millis(7)
+        );
+    }
+}
+
 /// [`perform_action`] on a snapshot-cached element identity. Same contract:
 /// `Ok((action_name, suspected_noop))`. Errors when the object no longer
 /// exists so the caller can fall back to resolving the index afresh.
@@ -3655,7 +3718,10 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
                 }
             };
             cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
-            tokio::time::sleep(Duration::from_millis(50)).await;
+            let post_action_sleep = exp_post_action_sleep();
+            if !post_action_sleep.is_zero() {
+                tokio::time::sleep(post_action_sleep).await;
+            }
             cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
             Ok((
                 actions.get(chosen).cloned().unwrap_or_default(),
