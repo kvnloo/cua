@@ -1,0 +1,718 @@
+{
+ "controls": {
+  "M_reproduces_gaps": {
+   "R1D_flag_before_admission": 40,
+   "R2_cancel_after_admission": 40,
+   "R6_end_session_after_cancel": 40,
+   "R6_shutdown_after_cancel": 40,
+   "R7_ack_lost_guarded_retry": 40
+  },
+  "M_reproduces_gaps_ok": true,
+  "broken_controls_detected": {
+   "M": {
+    "R1 sdk/broken_detach_on_cancel": true,
+    "R4 c_abi/broken_latest_token": true,
+    "R4 sdk/broken_name_keyed": true,
+    "R5 sdk/broken_session_keyed": true,
+    "R6 sdk/broken_ready_on_cancel": true,
+    "R7 sdk/broken_blind_retry": true,
+    "R8 sdk/broken_honoring_transport": true
+   },
+   "P": {
+    "R1 sdk/broken_detach_on_cancel": true,
+    "R2 sdk/broken_plain_closure": true,
+    "R4 c_abi/broken_latest_token": true,
+    "R4 sdk/broken_name_keyed": true,
+    "R5 sdk/broken_session_keyed": true,
+    "R6 sdk/broken_plain_closure_shutdown_after_cancel": true,
+    "R6 sdk/broken_ready_on_cancel": true,
+    "R7 sdk/broken_blind_retry": true,
+    "R7 sdk/broken_plain_closure": true,
+    "R8 sdk/broken_honoring_transport": true
+   }
+  },
+  "negative_no_cancel_zero_failures": {
+   "M": true,
+   "P": true
+  }
+ },
+ "disposition": {
+  "controls_ok": true,
+  "disposition": "KEEP",
+  "failing_rows": [],
+  "p_duplicate_effect": false,
+  "p_readiness_while_running": false,
+  "question": "revised #84 answers the #9 Linux rows",
+  "unit_gate_green": true
+ },
+ "harness_errors": 0,
+ "iterations_total": 2940,
+ "lane": "OWN-09R",
+ "matrix": {
+  "M|R1|c_abi/control_no_cancel": {
+   "PASS": 40
+  },
+  "M|R1|c_abi/flag_before_admission": {
+   "FAIL": 40
+  },
+  "M|R1|sdk/broken_detach_on_cancel": {
+   "FAIL": 40
+  },
+  "M|R1|sdk/cancel_race": {
+   "PASS": 200
+  },
+  "M|R1|sdk/cancel_while_queued": {
+   "PASS": 200
+  },
+  "M|R2|sdk/cancel_after_admission": {
+   "FAIL": 40
+  },
+  "M|R2|sdk/control_no_cancel": {
+   "PASS": 40
+  },
+  "M|R4|c_abi/after_completion_retained_token": {
+   "PASS": 40
+  },
+  "M|R4|c_abi/after_inflight_cancel_retained_token": {
+   "PASS": 40
+  },
+  "M|R4|c_abi/broken_latest_token": {
+   "FAIL": 40
+  },
+  "M|R4|sdk/after_completion": {
+   "PASS": 40
+  },
+  "M|R4|sdk/after_inflight_cancel": {
+   "PASS": 40
+  },
+  "M|R4|sdk/broken_name_keyed": {
+   "FAIL": 40
+  },
+  "M|R5|sdk/broken_session_keyed": {
+   "FAIL": 40
+  },
+  "M|R5|sdk/foreign_session_and_transport": {
+   "PASS": 40
+  },
+  "M|R6|sdk/broken_ready_on_cancel": {
+   "FAIL": 40
+  },
+  "M|R6|sdk/end_session_after_cancel": {
+   "FAIL": 40
+  },
+  "M|R6|sdk/end_session_no_cancel": {
+   "PASS": 40
+  },
+  "M|R6|sdk/shutdown_after_cancel": {
+   "FAIL": 40
+  },
+  "M|R6|sdk/shutdown_no_cancel": {
+   "PASS": 40
+  },
+  "M|R7|sdk/ack_lost_guarded_retry": {
+   "FAIL": 40
+  },
+  "M|R7|sdk/broken_blind_retry": {
+   "FAIL": 40
+  },
+  "M|R7|sdk/control_ack": {
+   "PASS": 40
+  },
+  "M|R7|sdk/delayed_after_native_exit": {
+   "FAIL": 40
+  },
+  "M|R8|mcp_stdio/control_no_cancel": {
+   "PASS": 10
+  },
+  "M|R8|mcp_stdio/notification_mid_native": {
+   "IGNORED": 40
+  },
+  "M|R8|sdk/broken_honoring_transport": {
+   "HONORED": 40
+  },
+  "M|R8|sdk/notification_in_flight": {
+   "IGNORED": 40
+  },
+  "P|R1|c_abi/control_no_cancel": {
+   "PASS": 40
+  },
+  "P|R1|c_abi/flag_before_admission": {
+   "PASS": 40
+  },
+  "P|R1|sdk/broken_detach_on_cancel": {
+   "FAIL": 40
+  },
+  "P|R1|sdk/cancel_race": {
+   "PASS": 200
+  },
+  "P|R1|sdk/cancel_while_queued": {
+   "PASS": 200
+  },
+  "P|R2|sdk/broken_plain_closure": {
+   "FAIL": 40
+  },
+  "P|R2|sdk/cancel_after_admission": {
+   "PASS": 40
+  },
+  "P|R2|sdk/control_no_cancel": {
+   "PASS": 40
+  },
+  "P|R4|c_abi/after_completion_retained_token": {
+   "PASS": 40
+  },
+  "P|R4|c_abi/after_inflight_cancel_retained_token": {
+   "PASS": 40
+  },
+  "P|R4|c_abi/broken_latest_token": {
+   "FAIL": 40
+  },
+  "P|R4|sdk/after_completion": {
+   "PASS": 40
+  },
+  "P|R4|sdk/after_inflight_cancel": {
+   "PASS": 40
+  },
+  "P|R4|sdk/broken_name_keyed": {
+   "FAIL": 40
+  },
+  "P|R5|sdk/broken_session_keyed": {
+   "FAIL": 40
+  },
+  "P|R5|sdk/foreign_session_and_transport": {
+   "PASS": 40
+  },
+  "P|R6|sdk/broken_plain_closure_shutdown_after_cancel": {
+   "FAIL": 40
+  },
+  "P|R6|sdk/broken_ready_on_cancel": {
+   "FAIL": 40
+  },
+  "P|R6|sdk/end_session_after_cancel": {
+   "PASS": 40
+  },
+  "P|R6|sdk/end_session_no_cancel": {
+   "PASS": 40
+  },
+  "P|R6|sdk/shutdown_after_cancel": {
+   "PASS": 40
+  },
+  "P|R6|sdk/shutdown_no_cancel": {
+   "PASS": 40
+  },
+  "P|R7|sdk/ack_lost_guarded_retry": {
+   "PASS": 40
+  },
+  "P|R7|sdk/broken_blind_retry": {
+   "FAIL": 40
+  },
+  "P|R7|sdk/broken_plain_closure": {
+   "FAIL": 40
+  },
+  "P|R7|sdk/control_ack": {
+   "PASS": 40
+  },
+  "P|R7|sdk/delayed_after_native_exit": {
+   "FAIL": 40
+  },
+  "P|R8|mcp_stdio/control_no_cancel": {
+   "PASS": 10
+  },
+  "P|R8|mcp_stdio/notification_mid_native": {
+   "IGNORED": 40
+  },
+  "P|R8|sdk/broken_honoring_transport": {
+   "HONORED": 40
+  },
+  "P|R8|sdk/notification_in_flight": {
+   "IGNORED": 40
+  }
+ },
+ "matrix_by_pass": {
+  "M|R1|c_abi/control_no_cancel|cabi": {
+   "PASS": 40
+  },
+  "M|R1|c_abi/flag_before_admission|cabi": {
+   "FAIL": 40
+  },
+  "M|R1|sdk/broken_detach_on_cancel|main": {
+   "FAIL": 20
+  },
+  "M|R1|sdk/broken_detach_on_cancel|stress": {
+   "FAIL": 20
+  },
+  "M|R1|sdk/cancel_race|main": {
+   "PASS": 100
+  },
+  "M|R1|sdk/cancel_race|stress": {
+   "PASS": 100
+  },
+  "M|R1|sdk/cancel_while_queued|main": {
+   "PASS": 100
+  },
+  "M|R1|sdk/cancel_while_queued|stress": {
+   "PASS": 100
+  },
+  "M|R2|sdk/cancel_after_admission|main": {
+   "FAIL": 20
+  },
+  "M|R2|sdk/cancel_after_admission|stress": {
+   "FAIL": 20
+  },
+  "M|R2|sdk/control_no_cancel|main": {
+   "PASS": 20
+  },
+  "M|R2|sdk/control_no_cancel|stress": {
+   "PASS": 20
+  },
+  "M|R4|c_abi/after_completion_retained_token|cabi": {
+   "PASS": 40
+  },
+  "M|R4|c_abi/after_inflight_cancel_retained_token|cabi": {
+   "PASS": 40
+  },
+  "M|R4|c_abi/broken_latest_token|cabi": {
+   "FAIL": 40
+  },
+  "M|R4|sdk/after_completion|main": {
+   "PASS": 20
+  },
+  "M|R4|sdk/after_completion|stress": {
+   "PASS": 20
+  },
+  "M|R4|sdk/after_inflight_cancel|main": {
+   "PASS": 20
+  },
+  "M|R4|sdk/after_inflight_cancel|stress": {
+   "PASS": 20
+  },
+  "M|R4|sdk/broken_name_keyed|main": {
+   "FAIL": 20
+  },
+  "M|R4|sdk/broken_name_keyed|stress": {
+   "FAIL": 20
+  },
+  "M|R5|sdk/broken_session_keyed|main": {
+   "FAIL": 20
+  },
+  "M|R5|sdk/broken_session_keyed|stress": {
+   "FAIL": 20
+  },
+  "M|R5|sdk/foreign_session_and_transport|main": {
+   "PASS": 20
+  },
+  "M|R5|sdk/foreign_session_and_transport|stress": {
+   "PASS": 20
+  },
+  "M|R6|sdk/broken_ready_on_cancel|main": {
+   "FAIL": 20
+  },
+  "M|R6|sdk/broken_ready_on_cancel|stress": {
+   "FAIL": 20
+  },
+  "M|R6|sdk/end_session_after_cancel|main": {
+   "FAIL": 20
+  },
+  "M|R6|sdk/end_session_after_cancel|stress": {
+   "FAIL": 20
+  },
+  "M|R6|sdk/end_session_no_cancel|main": {
+   "PASS": 20
+  },
+  "M|R6|sdk/end_session_no_cancel|stress": {
+   "PASS": 20
+  },
+  "M|R6|sdk/shutdown_after_cancel|main": {
+   "FAIL": 20
+  },
+  "M|R6|sdk/shutdown_after_cancel|stress": {
+   "FAIL": 20
+  },
+  "M|R6|sdk/shutdown_no_cancel|main": {
+   "PASS": 20
+  },
+  "M|R6|sdk/shutdown_no_cancel|stress": {
+   "PASS": 20
+  },
+  "M|R7|sdk/ack_lost_guarded_retry|main": {
+   "FAIL": 20
+  },
+  "M|R7|sdk/ack_lost_guarded_retry|stress": {
+   "FAIL": 20
+  },
+  "M|R7|sdk/broken_blind_retry|main": {
+   "FAIL": 20
+  },
+  "M|R7|sdk/broken_blind_retry|stress": {
+   "FAIL": 20
+  },
+  "M|R7|sdk/control_ack|main": {
+   "PASS": 20
+  },
+  "M|R7|sdk/control_ack|stress": {
+   "PASS": 20
+  },
+  "M|R7|sdk/delayed_after_native_exit|main": {
+   "FAIL": 20
+  },
+  "M|R7|sdk/delayed_after_native_exit|stress": {
+   "FAIL": 20
+  },
+  "M|R8|mcp_stdio/control_no_cancel|r8_stdio": {
+   "PASS": 10
+  },
+  "M|R8|mcp_stdio/notification_mid_native|r8_stdio": {
+   "IGNORED": 40
+  },
+  "M|R8|sdk/broken_honoring_transport|main": {
+   "HONORED": 20
+  },
+  "M|R8|sdk/broken_honoring_transport|stress": {
+   "HONORED": 20
+  },
+  "M|R8|sdk/notification_in_flight|main": {
+   "IGNORED": 20
+  },
+  "M|R8|sdk/notification_in_flight|stress": {
+   "IGNORED": 20
+  },
+  "P|R1|c_abi/control_no_cancel|cabi": {
+   "PASS": 40
+  },
+  "P|R1|c_abi/flag_before_admission|cabi": {
+   "PASS": 40
+  },
+  "P|R1|sdk/broken_detach_on_cancel|main": {
+   "FAIL": 20
+  },
+  "P|R1|sdk/broken_detach_on_cancel|stress": {
+   "FAIL": 20
+  },
+  "P|R1|sdk/cancel_race|main": {
+   "PASS": 100
+  },
+  "P|R1|sdk/cancel_race|stress": {
+   "PASS": 100
+  },
+  "P|R1|sdk/cancel_while_queued|main": {
+   "PASS": 100
+  },
+  "P|R1|sdk/cancel_while_queued|stress": {
+   "PASS": 100
+  },
+  "P|R2|sdk/broken_plain_closure|main": {
+   "FAIL": 20
+  },
+  "P|R2|sdk/broken_plain_closure|stress": {
+   "FAIL": 20
+  },
+  "P|R2|sdk/cancel_after_admission|main": {
+   "PASS": 20
+  },
+  "P|R2|sdk/cancel_after_admission|stress": {
+   "PASS": 20
+  },
+  "P|R2|sdk/control_no_cancel|main": {
+   "PASS": 20
+  },
+  "P|R2|sdk/control_no_cancel|stress": {
+   "PASS": 20
+  },
+  "P|R4|c_abi/after_completion_retained_token|cabi": {
+   "PASS": 40
+  },
+  "P|R4|c_abi/after_inflight_cancel_retained_token|cabi": {
+   "PASS": 40
+  },
+  "P|R4|c_abi/broken_latest_token|cabi": {
+   "FAIL": 40
+  },
+  "P|R4|sdk/after_completion|main": {
+   "PASS": 20
+  },
+  "P|R4|sdk/after_completion|stress": {
+   "PASS": 20
+  },
+  "P|R4|sdk/after_inflight_cancel|main": {
+   "PASS": 20
+  },
+  "P|R4|sdk/after_inflight_cancel|stress": {
+   "PASS": 20
+  },
+  "P|R4|sdk/broken_name_keyed|main": {
+   "FAIL": 20
+  },
+  "P|R4|sdk/broken_name_keyed|stress": {
+   "FAIL": 20
+  },
+  "P|R5|sdk/broken_session_keyed|main": {
+   "FAIL": 20
+  },
+  "P|R5|sdk/broken_session_keyed|stress": {
+   "FAIL": 20
+  },
+  "P|R5|sdk/foreign_session_and_transport|main": {
+   "PASS": 20
+  },
+  "P|R5|sdk/foreign_session_and_transport|stress": {
+   "PASS": 20
+  },
+  "P|R6|sdk/broken_plain_closure_shutdown_after_cancel|main": {
+   "FAIL": 20
+  },
+  "P|R6|sdk/broken_plain_closure_shutdown_after_cancel|stress": {
+   "FAIL": 20
+  },
+  "P|R6|sdk/broken_ready_on_cancel|main": {
+   "FAIL": 20
+  },
+  "P|R6|sdk/broken_ready_on_cancel|stress": {
+   "FAIL": 20
+  },
+  "P|R6|sdk/end_session_after_cancel|main": {
+   "PASS": 20
+  },
+  "P|R6|sdk/end_session_after_cancel|stress": {
+   "PASS": 20
+  },
+  "P|R6|sdk/end_session_no_cancel|main": {
+   "PASS": 20
+  },
+  "P|R6|sdk/end_session_no_cancel|stress": {
+   "PASS": 20
+  },
+  "P|R6|sdk/shutdown_after_cancel|main": {
+   "PASS": 20
+  },
+  "P|R6|sdk/shutdown_after_cancel|stress": {
+   "PASS": 20
+  },
+  "P|R6|sdk/shutdown_no_cancel|main": {
+   "PASS": 20
+  },
+  "P|R6|sdk/shutdown_no_cancel|stress": {
+   "PASS": 20
+  },
+  "P|R7|sdk/ack_lost_guarded_retry|main": {
+   "PASS": 20
+  },
+  "P|R7|sdk/ack_lost_guarded_retry|stress": {
+   "PASS": 20
+  },
+  "P|R7|sdk/broken_blind_retry|main": {
+   "FAIL": 20
+  },
+  "P|R7|sdk/broken_blind_retry|stress": {
+   "FAIL": 20
+  },
+  "P|R7|sdk/broken_plain_closure|main": {
+   "FAIL": 20
+  },
+  "P|R7|sdk/broken_plain_closure|stress": {
+   "FAIL": 20
+  },
+  "P|R7|sdk/control_ack|main": {
+   "PASS": 20
+  },
+  "P|R7|sdk/control_ack|stress": {
+   "PASS": 20
+  },
+  "P|R7|sdk/delayed_after_native_exit|main": {
+   "FAIL": 20
+  },
+  "P|R7|sdk/delayed_after_native_exit|stress": {
+   "FAIL": 20
+  },
+  "P|R8|mcp_stdio/control_no_cancel|r8_stdio": {
+   "PASS": 10
+  },
+  "P|R8|mcp_stdio/notification_mid_native|r8_stdio": {
+   "IGNORED": 40
+  },
+  "P|R8|sdk/broken_honoring_transport|main": {
+   "HONORED": 20
+  },
+  "P|R8|sdk/broken_honoring_transport|stress": {
+   "HONORED": 20
+  },
+  "P|R8|sdk/notification_in_flight|main": {
+   "IGNORED": 20
+  },
+  "P|R8|sdk/notification_in_flight|stress": {
+   "IGNORED": 20
+  }
+ },
+ "provider": {
+  "attempts": 0,
+  "reached": 0
+ },
+ "row_status": {
+  "M": {
+   "R1": {
+    "gating_variants": {
+     "c_abi/R1D flag_before_admission": {
+      "FAIL": 40
+     },
+     "sdk/cancel_race": {
+      "PASS": 200
+     },
+     "sdk/cancel_while_queued": {
+      "PASS": 200
+     }
+    },
+    "status": "FAIL"
+   },
+   "R2": {
+    "gating_variants": {
+     "sdk/cancel_after_admission": {
+      "FAIL": 40
+     }
+    },
+    "status": "FAIL"
+   },
+   "R3": {
+    "reason": "macOS-first held-input (drag/mouse-up) oracle; no Linux target oracle",
+    "status": "BLOCKED"
+   },
+   "R4": {
+    "gating_variants": {
+     "c_abi/R4C after_completion_retained_token": {
+      "PASS": 40
+     },
+     "c_abi/R4C after_inflight_cancel_retained_token": {
+      "PASS": 40
+     },
+     "sdk/after_completion": {
+      "PASS": 40
+     },
+     "sdk/after_inflight_cancel": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R5": {
+    "gating_variants": {
+     "sdk/foreign_session_and_transport": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R6": {
+    "gating_variants": {
+     "sdk/end_session_after_cancel": {
+      "FAIL": 40
+     },
+     "sdk/shutdown_after_cancel": {
+      "FAIL": 40
+     }
+    },
+    "status": "FAIL"
+   },
+   "R7": {
+    "gating_variants": {
+     "sdk/ack_lost_guarded_retry": {
+      "FAIL": 40
+     }
+    },
+    "status": "FAIL"
+   },
+   "R8": {
+    "mcp_stdio_control_no_cancel": {
+     "PASS": 10
+    },
+    "mcp_stdio_notification_mid_native": {
+     "IGNORED": 40
+    },
+    "sdk_notification_in_flight": {
+     "IGNORED": 40
+    },
+    "status": "OWNER_DECISION"
+   }
+  },
+  "P": {
+   "R1": {
+    "gating_variants": {
+     "c_abi/R1D flag_before_admission": {
+      "PASS": 40
+     },
+     "sdk/cancel_race": {
+      "PASS": 200
+     },
+     "sdk/cancel_while_queued": {
+      "PASS": 200
+     }
+    },
+    "status": "PASS"
+   },
+   "R2": {
+    "gating_variants": {
+     "sdk/cancel_after_admission": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R3": {
+    "reason": "macOS-first held-input (drag/mouse-up) oracle; no Linux target oracle",
+    "status": "BLOCKED"
+   },
+   "R4": {
+    "gating_variants": {
+     "c_abi/R4C after_completion_retained_token": {
+      "PASS": 40
+     },
+     "c_abi/R4C after_inflight_cancel_retained_token": {
+      "PASS": 40
+     },
+     "sdk/after_completion": {
+      "PASS": 40
+     },
+     "sdk/after_inflight_cancel": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R5": {
+    "gating_variants": {
+     "sdk/foreign_session_and_transport": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R6": {
+    "gating_variants": {
+     "sdk/end_session_after_cancel": {
+      "PASS": 40
+     },
+     "sdk/shutdown_after_cancel": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R7": {
+    "gating_variants": {
+     "sdk/ack_lost_guarded_retry": {
+      "PASS": 40
+     }
+    },
+    "status": "PASS"
+   },
+   "R8": {
+    "mcp_stdio_control_no_cancel": {
+     "PASS": 10
+    },
+    "mcp_stdio_notification_mid_native": {
+     "IGNORED": 40
+    },
+    "sdk_notification_in_flight": {
+     "IGNORED": 40
+    },
+    "status": "OWNER_DECISION"
+   }
+  }
+ }
+}

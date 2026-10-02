@@ -1,0 +1,44 @@
+[2026-10-02T18:08:07Z] cargo test --locked -p cua-driver-sdk --lib revision_shutdown_after_cancel head=6024e3e7f0bd034712f743ef7495bf6c3a9668a5 tgt=cua-release-own09r
+   Compiling cua-driver-core v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/platform-linux)
+warning: unused variable: `operation`
+   --> crates/cua-driver-sdk/src/runtime.rs:311:13
+    |
+311 |         let operation =
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_operation`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cua-driver-sdk` (lib test) generated 1 warning (run `cargo fix --lib -p cua-driver-sdk --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 47.43s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-own09r/debug/deps/cua_driver_sdk-55bff99a363dab12)
+
+running 1 test
+test cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit ... FAILED
+
+failures:
+
+---- cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit stdout ----
+
+thread 'cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit' (566657) panicked at crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs:481:5:
+shutdown reported readiness while owned native work was running: [
+    "00 queued:1",
+    "01 admitted:1",
+    "02 native-enter:1",
+    "03 invocation-dropped:1",
+    "04 shutdown-returned",
+]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 106 filtered out; finished in 0.34s
+
+error: test failed, to rerun pass `-p cua-driver-sdk --lib`
+[2026-10-02T18:10:23Z] rc=101

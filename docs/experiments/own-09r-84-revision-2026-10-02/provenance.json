@@ -1,0 +1,55 @@
+{
+  "lane": "OWN-09R",
+  "branch": "exp/own-09r-84-revision-20261002 (fork branch candidate; nothing pushed by this lane)",
+  "shas": {
+    "base_upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+    "upstream_main_at_end_local_ref": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (one commit later; touches no libs/cua-driver path; merge-tree with the branch is clean)",
+    "pr84_head_live_at_start_and_end": "566b9c73245266005c958d40e93d46ee5d463325 (kvnloo/cua#84, OPEN, draft, read with gh; not modified)",
+    "merge_commit": "065ee203b0c0e755a6488a5654bd3d1ba4da6e62 (git merge --no-ff of the #84 head into the base)",
+    "revision_commits": {
+      "1_rebase_fix": "aacc7beb64149dbfe82dc0a13a8d900ebee2041a",
+      "2_cancel_before_admission": "6024e3e7f0bd034712f743ef7495bf6c3a9668a5",
+      "3_guards_owned_to_native_exit": "890c41d1abe7f342910bff62227a1a4d84895c1e",
+      "4_production_spawn_blocking_owned": "965762041db8ebd1ce30ec6628bb03c3d07a1282",
+      "5_r8": "not implemented (OWNER_DECISION)"
+    },
+    "harness_commit": "26e97138cd49d75d2a8f084956f0cc5afb00f67c (adds only the OWN-09 harness test files; Driver build source for P')",
+    "prereg_commit": "b623d04705ce05770dd3097b2ec3c4cef713609b",
+    "publication_sha": "the branch commit that adds this file (not self-referential); read it with git log on the branch",
+    "own09_harness_origin": "bf07c8fe374bc3079c2edb8adaea3bc2bcf9b79d (exp/own-09-cancel-barrier-rows-20261002)"
+  },
+  "trees": {
+    "libs/cua-driver/rust at 989cc76ce (M production)": "b9984f27ef0d8fca700a1e64f2ac29e42415c52a",
+    "libs/cua-driver/rust at 965762041 (revision code)": "6b8db53d45a0f832aea23f7e09c25174325e0617",
+    "libs/cua-driver/rust at 26e97138c and at the PREREG commit (P' tested)": "0748c94e4622379a01533056259df3bf507279e0",
+    "965762041 -> 26e97138c": "only tests/own09_arm_p.rs, tests/own09_harness/mod.rs, tests/own09_harness/rows.rs added",
+    "arm M tree": "989cc76ce + raw/m-tree.patch (test-only: tests/own09_arm_m.rs and own09_harness/* from bf07c8fe3, src/tests/own09r_cabi.rs identical to the branch blob 015ce919a, a cfg(test) mount line in src/abi.rs); not committed"
+  },
+  "binaries": {
+    "driver_M": {"path_label": "bin/cua-driver-own09r-m-989cc76ce", "sha256": "aeb92723b2f05c30b8fb06c95af725c9451372ebf42606c404e33b931ee8fe00", "version": "cua-driver 0.32.0", "built_from": "w3-own09r-m worktree at 989cc76ce (raw/logs/support/driver-build-own09r-m-989cc76ce.txt)"},
+    "driver_P": {"path_label": "bin/cua-driver-own09r-p-26e97138c", "sha256": "df55093c21f385df5dfdd6356710d1f00d2442b924b7470e80623ad5ca30ea2c", "version": "cua-driver 0.32.0", "built_from": "w3-own09r-84-revision worktree at 26e97138c (raw/logs/support/driver-build-own09r-p-26e97138c.txt)"},
+    "driver_build": "hostless flock cargo-build.lock build-driver.sh <wt> <label> cua-release-own09r (cargo build -v --locked --release -p cua-driver --features portal-input; every workspace crate recompiled from that worktree, 0 Fresh units)",
+    "test_binaries": {
+      "own09_arm_m": "47934dff8a5c6bd05e5f4ba6ce960d1c02261f2a81cd72ae2140a789231712ea",
+      "own09_arm_p": "59cab38e54fdf75f1281899cdcf6ba27958bb713c6886afd2c8d9eaef69bfba9",
+      "sdk_lib_tests_m": "de0d8c5b084f46635212466fd70b7eff0047a5cb26c0a7e753dbb65eb51cf603",
+      "sdk_lib_tests_p": "1e0599a7b531251ea2fff8113205760e362389e94df0b481d628486ed3ede3be",
+      "profile": "test (unoptimized + debuginfo); frozen by copy before the first counted run; M target dir cua-release-own09r-m, P' cua-release-own09r",
+      "build_logs": "raw/logs/support/build-tests-m.txt, build-tests-p.txt (Compiling lines name the source worktree)"
+    }
+  },
+  "environment": {
+    "os": "Linux 7.2.2 x86_64",
+    "toolchain": "rustc 1.97.1",
+    "isolation": "every code-executing command under the lanes' hostless wrapper (v2: desktop/session variables removed, private XDG_RUNTIME_DIR, Landlock scope against outside abstract sockets and signals); R8 additionally inside cua-x11-session.sh (private rootless Xvfb, private D-Bus session, private AT-SPI bus via CUA_SESSION_ATSPI=1), CUA_SESSION_EXTRA_ENV with CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1",
+    "locks": "every counted invocation under bin/quiet-timed (exclusive quiet-lane lock; receipts in raw/quiet-lane-receipts.jsonl copied from the shared ledger); compilation under the exclusive cargo-build lock",
+    "provider": "none; TypeSafe attempts 0, reached 0",
+    "concurrent_load": "other lanes active; 1-minute loadavg at the end of each invocation in raw/receipts.jsonl (about 7 to 12). No timing claims."
+  },
+  "commands": {
+    "counted": "run_rows.sh <lanes-root> <sdk-main|sdk-stress|cabi|r8> <M|P> (see the script; ITERS 100 for R1 SDK variants and 20 otherwise per pass; OWN09R_ITERS=40 for the C ABI rows; R8 stdio 40 + 10 per arm)",
+    "unit": "cargo test --locked -p <crate> (cua-driver-core, cua-driver-sdk, cua-driver, platform-linux) on the revision code tree; logs in raw/unit/ (sanitized)",
+    "conversion": "tools/convert_spawn_blocking.py <crates> --check --list converted_callers.json"
+  },
+  "receipts": "raw/receipts.jsonl (utc_start includes the wait for the quiet-lane lock; the lock acquisition time is in raw/quiet-lane-receipts.jsonl)"
+}

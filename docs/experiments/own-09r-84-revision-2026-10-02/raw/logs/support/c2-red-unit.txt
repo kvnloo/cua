@@ -1,0 +1,71 @@
+[2026-10-02T17:49:36Z] cargo test --locked -p cua-driver-sdk --lib revision_cancel_requested_before_admission_is_refused head=aacc7beb64149dbfe82dc0a13a8d900ebee2041a tgt=cua-release-own09r
+   Compiling cua-driver-core v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/platform-linux)
+error: implicit autoref creates a reference to the dereference of a raw pointer
+   --> crates/cua-driver-sdk/src/tests/own09r_cabi.rs:673:18
+    |
+673 |         unsafe { (*queued_token).state.cancelled.store(true, Ordering::Release) };
+    |                  ^^------------^^^^^^^^^^^^^^^^^
+    |                    |
+    |                    this raw pointer has type `*mut CuaDriverOperation`
+    |
+    = note: creating a reference requires the pointer target to be valid and imposes aliasing requirements
+    = note: references are created through calls to explicit `Deref(Mut)::deref(_mut)` implementations
+    = note: `#[deny(dangerous_implicit_autorefs)]` on by default
+help: try using a raw pointer method instead; or if this reference is intentional, make it explicit
+    |
+673 |         unsafe { (&(*queued_token).state).cancelled.store(true, Ordering::Release) };
+    |                  ++                     +
+
+error: could not compile `cua-driver-sdk` (lib test) due to 1 previous error
+[2026-10-02T17:54:20Z] rc=101
+[2026-10-02T17:54:34Z] cargo test --locked -p cua-driver-sdk --lib revision_cancel_requested_before_admission_is_refused head=aacc7beb64149dbfe82dc0a13a8d900ebee2041a tgt=cua-release-own09r
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cua-driver-sdk)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.34s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-own09r/debug/deps/cua_driver_sdk-55bff99a363dab12)
+
+running 1 test
+test abi::own09r_cabi_tests::revision_cancel_requested_before_admission_is_refused ... FAILED
+
+failures:
+
+---- abi::own09r_cabi_tests::revision_cancel_requested_before_admission_is_refused stdout ----
+
+thread 'abi::own09r_cabi_tests::revision_cancel_requested_before_admission_is_refused' (456134) panicked at crates/cua-driver-sdk/src/tests/own09r_cabi.rs:784:5:
+assertion `left == right` failed: {
+    "queued_callbacks": Array [
+        Object {
+            "error": String(""),
+            "is_error": Bool(false),
+            "refusal_code": Null,
+            "status": String("Ok"),
+        },
+    ],
+    "queued_completed_exactly_once": Bool(true),
+    "queued_counter": Array [
+        Number(1),
+        Number(1),
+    ],
+    "queued_never_admitted": Bool(false),
+    "queued_never_entered_native": Bool(false),
+    "queued_no_effect": Bool(false),
+    "queued_refusal_code": Null,
+    "queued_waited_behind_holder": Bool(true),
+    "witness_admitted_after_holder_native_exit": Bool(true),
+}
+  left: "FAIL"
+ right: "PASS"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    abi::own09r_cabi_tests::revision_cancel_requested_before_admission_is_refused
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 105 filtered out; finished in 0.70s
+
+error: test failed, to rerun pass `-p cua-driver-sdk --lib`
+[2026-10-02T18:00:03Z] rc=101

@@ -1,0 +1,18 @@
+[2026-10-02T18:10:40Z] cargo test --locked -p cua-driver-sdk --lib cancellation_slice_a head=6024e3e7f0bd034712f743ef7495bf6c3a9668a5 tgt=cua-release-own09r
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w3-own09r-84-revision/libs/cua-driver/rust/crates/cua-driver-sdk)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.22s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-own09r/debug/deps/cua_driver_sdk-55bff99a363dab12)
+
+running 6 tests
+test cancellation_slice_a_tests::slice_a_rfc_admitted_capacity_is_owned_until_native_exit ... ignored, RFC #3796 kill gate: fails on current main until admitted work is owned until native exit
+test cancellation_slice_a_tests::slice_a_cancel_vs_native_entry_race_has_exactly_one_winner ... ok
+test cancellation_slice_a_tests::slice_a_cancel_before_admission_never_enters_native_work ... ok
+test cancellation_slice_a_tests::slice_a_current_main_cancel_after_admission_releases_permit_before_native_exit ... ok
+test cancellation_slice_a_tests::slice_a_prototype_owned_blocking_keeps_permit_until_native_exit ... ok
+test cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 101 filtered out; finished in 26.85s
+
+[2026-10-02T18:11:19Z] rc=0
