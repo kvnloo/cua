@@ -120,8 +120,12 @@ def blocks(packet: Path) -> dict[str, str]:
                                                 max(warm) if warm else None)) if lat else ""])
     trow.append(["JEV reference", "NOT_RUN (TypeSafe, paid)"] + [""] * 6)
     fo = rows["failopen_ollama_deadport"]["denominators"]
+    stages = sorted({(r.get("backend_error") or {}).get("stage") for r in
+                     jl(packet / "raw" / "scored" / "turn" / "scored-failopen_ollama_deadport.jsonl")})
+    rcs = sorted(set(re.findall(r"^rc=(\d+)$", (packet / "raw" / "controls" / "failopen.log").read_text(), re.M)))
     trow.append(["fail-open control (dead-port adapter)",
-                 f"coverage {fo['coverage']:.1f}, {fo['n_backend_error']}/{fo['n_rows']} rows `backend_error`"] + [""] * 6)
+                 f"coverage {fo['coverage']:.1f}, {fo['n_backend_error']}/{fo['n_rows']} rows `backend_error` "
+                 f"stage={'/'.join(map(str, stages))}, scorer exit {'/'.join(rcs)}"] + [""] * 6)
     out["turn"] = table(["row", "Brier", "log-loss", "ECE", "acc@0.5", "G3 vs LOO prior: Brier diff [95% CI]",
                          "first call wall ms", "warm wall p50 / p95 / max ms"], trow)
 

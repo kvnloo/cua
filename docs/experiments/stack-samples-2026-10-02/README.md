@@ -153,7 +153,7 @@ How to read the table:
 | decider_2b (GPU) | 0.4348 | 1.280 | 0.439 | 0.457 | worse +0.164 [+0.081, +0.250] | 197,540 | 24.3 / 24.6 / 180,127.3 |
 | qwen_3b_baseline (Ollama logprobs, CPU) | 0.5426 | 4.630 | 0.543 | 0.457 | worse +0.272 [+0.170, +0.378] | 9,356 | 2,057.8 / 2,290.6 / 2,359.7 |
 | JEV reference | NOT_RUN (TypeSafe, paid) |  |  |  |  |  |  |
-| fail-open control (dead-port adapter) | coverage 0.0, 105/105 rows `backend_error` |  |  |  |  |  |  |
+| fail-open control (dead-port adapter) | coverage 0.0, 105/105 rows `backend_error` stage=create, scorer exit 0 |  |  |  |  |  |  |
 <!-- END GENERATED turn -->
 
 **Reading the table.**

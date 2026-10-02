@@ -1,0 +1,45 @@
+{
+  "schema": "stack.samplesfix.provenance.v1",
+  "lane": "stack v2 SAMPLESFIX",
+  "branches": {
+    "cua": "kvnloo/cua exp/stack-samplesfix-20261002, from exp/stack-samples-20261002 @ 4c1a4a95e (SAMPLES; not accepted, never pushed)",
+    "hermes": "none: no hermes code change. The unit run used a fresh detached worktree at 5d01f60897373e67f7a3af5a9150439760be93f9 (the SAMPLES commit) with its own venv.",
+    "z0intelligence": "none: z0int 6764ae784f66b902bd6c07e4f7f76848a409423a was only put on PYTHONPATH for the second unit run (read-only)"
+  },
+  "commits": {
+    "prereg": "c26ac5402bb0bab10cb36513dda1d151596b2235",
+    "samples_packet_repair": "see git log 4c1a4a95e..HEAD -- docs/experiments/stack-samples-2026-10-02 (verify check 1)"
+  },
+  "inputs": {
+    "samples_packet": "docs/experiments/stack-samples-2026-10-02/ at 4c1a4a95e",
+    "samples_verifier_problems": "fresh verifier round 1 for SAMPLES (accept=false): 1 blocking claim-honesty problem plus 8 non-blocking items; all are addressed in the SAMPLES README Deviations 2, 6 and 8-14",
+    "local_mirror": "the SAMPLES lane's local raw mirror (lanes artifacts dir stack/samples/runs/<run>/home/.hermes/logs/) for the 12 CUA agent.log/errors.log; the SMOKE lane's mirror (stack/smoke/) for the positive control"
+  },
+  "identities": {
+    "hermes_commit_under_test": "5d01f60897373e67f7a3af5a9150439760be93f9",
+    "hermes_smoke_commit_positive_control": "0d60437a33 (parent of 5d01f608; 5d01f608 changes only lab/z0_hermes_observer/{evaluate_shadow,ollama_logprob_backend,shadow_api_failure}.py and 2 tests)",
+    "bridge_error_source": "tools/tool_search_validation.py @ 5d01f608: normalize_tool_call_entries ('requires calls', 'cannot invoke ... bridge tool') and not_deferrable_error ('is not a known tool name'), all before dispatch",
+    "unit_python": "3.14.7",
+    "unit_pytest": "9.1.1",
+    "verifier_python": "3.14.7 (system, under hostless)",
+    "samples_dataset_content_sha256": "648e418ed1c4ad20c915ffbdabef8b56a7652a144c8ad1c872c9325161ef3c16"
+  },
+  "commands": {
+    "every_code_command": "run under $LANES_BIN/hostless (v2)",
+    "cua_logs": "python3 harness/copy_cua_logs.py <samples packet> <samples mirror>/runs <local sanitize.json>",
+    "cua_tally": "python3 harness/cua_bridge_tally.py <samples packet> <samples packet>/raw/analysis/cua-bridge-tally.json",
+    "tables": "python3 harness/make_tables.py <samples packet> --write | --check",
+    "samples_summary": "python3 harness/make_summary.py <samples packet>",
+    "numbers_kept": "python3 harness/numbers_kept.py raw/samples-README-at-4c1a4a95.md <samples packet>/README.md raw/numbers-kept.json",
+    "tamper": "harness/tamper.sh <samples packet> <scratch dir> > raw/tamper.log",
+    "unit": "env -i PATH=$VENV/bin:/usr/bin:/bin HOME=<private> HERMES_HOME=<private>/.hermes TMPDIR=<private> HTTP_PROXY=HTTPS_PROXY=http://127.0.0.1:9 $VENV/bin/python -m pytest -q -p no:cacheprovider -rs tests/lab/ ; then PYTHONPATH=$Z0_WT:$Z0_WT/src on the 3 shadow test files",
+    "lane_summary": "python3 harness/make_summary.py .",
+    "verify": "python3 verify_artifacts.py [--tamper]"
+  },
+  "timing": "No latency was measured in this lane, so no quiet-timed lock was taken. All latency numbers in the SAMPLES packet come from its original quiet-timed scoring processes.",
+  "shared_infra": {
+    "ollama_11500_claim": "ollama-stack users.d/samples.json was stale (it said SAMPLES uses 11500). SAMPLESFIX marked it status=released with a note; the original is kept in the local mirror. The 11500 server process was not touched (not started, stopped or signalled).",
+    "system_ollama_11434": "not used"
+  },
+  "raw_mirror": "lanes artifacts dir stack/v2/samplesfix/ (verify logs, tamper log, unit raw log, original users.d claim)"
+}
