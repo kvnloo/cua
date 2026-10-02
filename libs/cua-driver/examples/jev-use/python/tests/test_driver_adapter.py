@@ -7,6 +7,7 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from mcp.types import CallToolResult
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -187,6 +188,31 @@ class DriverAdapterTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(DriverToolError) as raised:
             await Driver(FailingSession(), "jev-test").call("parse_visual_regions", {})
         self.assertEqual(raised.exception.code, "not_installed")
+
+    async def test_actual_published_action_envelopes_preserve_refusal_and_uncertainty(self) -> None:
+        captured = json.loads((FIXTURES / "action-results-typing-v1.json").read_text())
+        for case in captured["cases"]:
+            with self.subTest(case=case["case"]):
+                class CapturedSession:
+                    def __init__(self):
+                        self.calls = []
+
+                    async def call_tool(self, name, arguments):
+                        self.calls.append((name, arguments))
+                        return CallToolResult.model_validate(case["wire"])
+
+                session = CapturedSession()
+                driver = Driver(session, "captured-fixture")
+                expected = case["wire"]["structuredContent"]
+                if expected["effect"] == "refused":
+                    with self.assertRaises(DriverToolError) as raised:
+                        await driver.call(case["tool"], {})
+                    self.assertEqual(raised.exception.code, expected["error"]["code"])
+                else:
+                    # Partial and unverified effects are data, never implicit
+                    # success or an instruction to repeat the mutation.
+                    self.assertEqual(await driver.call(case["tool"], {}), expected)
+                self.assertEqual(len(session.calls), 1)
 
     def page(self, *, submit_ref: bool):
         refs = [{"role": "textbox", "name": "verification value", "ref": "p1:0", "value": "expected"}]

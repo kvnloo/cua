@@ -1,0 +1,119 @@
+{
+  "provenance": {
+    "producer_source": "352507b6c03162ab286b21d5ed509125cc3daece plus reviewed typing uncertainty patch",
+    "producer_publication": "7b1d95321ddd30775843c8b72b5b148f60326813",
+    "capture_test": "browser::v2_tests::canonical_typing_wire_envelopes_preserve_target_owned_outcomes",
+    "capture_binary_sha256": "7146153e574d9818e8cbcc85e313b858beb4bc9665edb4cb8b4023d87ba11b36",
+    "boundary": "real ToolRegistry -> existing browser producer -> loopback mock CDP -> public ToolResult serialization",
+    "limits": "Hermetic protocol fixture; target-owned text/call counts, no native browser or task success claim"
+  },
+  "cases": [
+    {
+      "case": "refused",
+      "oracle": {
+        "insert_calls": 0,
+        "key_calls": 0,
+        "text": ""
+      },
+      "tool": "browser_type",
+      "wire": {
+        "content": [
+          {
+            "text": "refused (browser_input_trust_unavailable): the requested ref is not a focused editable element",
+            "type": "text"
+          }
+        ],
+        "structuredContent": {
+          "effect": "refused",
+          "error": {
+            "code": "browser_input_trust_unavailable",
+            "hint": "the requested ref is not a focused editable element"
+          },
+          "escalation": {
+            "reason": "route_unavailable",
+            "target": "page"
+          },
+          "route": "trusted_input",
+          "summary": "refused (browser_input_trust_unavailable): the requested ref is not a focused editable element"
+        }
+      }
+    },
+    {
+      "case": "unknown",
+      "oracle": {
+        "insert_calls": 1,
+        "key_calls": 0,
+        "text": "xy"
+      },
+      "tool": "browser_type",
+      "wire": {
+        "content": [
+          {
+            "text": "unverifiable (browser_input_incomplete): Input typing outcome is uncertain after 0 acknowledged character(s) of 2 requested: CDP socket closed during Input.insertText",
+            "type": "text"
+          }
+        ],
+        "structuredContent": {
+          "delivery": {
+            "mode": "unknown"
+          },
+          "effect": "unverifiable",
+          "route": "trusted_input",
+          "summary": "unverifiable (browser_input_incomplete): Input typing outcome is uncertain after 0 acknowledged character(s) of 2 requested: CDP socket closed during Input.insertText"
+        }
+      }
+    },
+    {
+      "case": "partial",
+      "oracle": {
+        "insert_calls": 0,
+        "key_calls": 8,
+        "text": "xy"
+      },
+      "tool": "browser_type",
+      "wire": {
+        "content": [
+          {
+            "text": "partial (browser_input_incomplete): Input typing outcome is uncertain after 2 acknowledged character(s) of 3 requested: CDP Input.dispatchKeyEvent failed (-32000): fixture key delivery failure",
+            "type": "text"
+          }
+        ],
+        "structuredContent": {
+          "delivery": {
+            "delivered_count": 2,
+            "mode": "background"
+          },
+          "effect": "partial",
+          "route": "trusted_input",
+          "summary": "partial (browser_input_incomplete): Input typing outcome is uncertain after 2 acknowledged character(s) of 3 requested: CDP Input.dispatchKeyEvent failed (-32000): fixture key delivery failure"
+        }
+      }
+    },
+    {
+      "case": "acknowledged",
+      "oracle": {
+        "insert_calls": 1,
+        "key_calls": 0,
+        "text": "xyz"
+      },
+      "tool": "browser_type",
+      "wire": {
+        "content": [
+          {
+            "text": "typed 3 char(s) into tab-e009af98-b82f-42e4-878b-25ff381f3659",
+            "type": "text"
+          }
+        ],
+        "structuredContent": {
+          "delivery": {
+            "delivered_count": 3,
+            "mode": "background"
+          },
+          "effect": "unverifiable",
+          "route": "trusted_input",
+          "summary": "typed 3 char(s) into tab-e009af98-b82f-42e4-878b-25ff381f3659"
+        }
+      }
+    }
+  ]
+}

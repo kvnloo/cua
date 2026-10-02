@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { TypeSafeClient } from '@typesafe-ai/sdk';
+import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import {
   buildCandidates,
@@ -786,3 +787,25 @@ test('tab selection accepts unknown active state', () => {
   );
   assert.throws(() => selectTabId([]));
 });
+
+for (const captured of fixture('action-results-typing-v1.json').cases) {
+  test(`published action envelope: ${captured.case}`, async () => {
+    let calls = 0;
+    const client = {
+      callTool: async () => {
+        calls += 1;
+        return CallToolResultSchema.parse(captured.wire);
+      },
+    };
+    const driver = new Driver(client as any, 'captured-fixture');
+    const expected = captured.wire.structuredContent;
+    if (expected.effect === 'refused') {
+      await assert.rejects(driver.call(captured.tool, {}), (error: unknown) =>
+        error instanceof DriverToolError && error.code === expected.error.code
+      );
+    } else {
+      assert.deepEqual(await driver.call(captured.tool, {}), expected);
+    }
+    assert.equal(calls, 1, 'the adapter must not replay a mutation');
+  });
+}

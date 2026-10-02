@@ -132,8 +132,9 @@ export class Driver {
     }
     const data = result.structuredContent as Record<string, any> | undefined;
     if (!data) throw new Error(`${name} returned no structured result`);
-    if (data.status === 'refused' || data.refusal) {
-      const code = data.refusal?.code;
+    if (data.effect === 'refused' || data.status === 'refused' || data.refusal) {
+      // The closed ActionResult replaces legacy status/refusal fields.
+      const code = (data.effect === 'refused' ? data.error : data.refusal)?.code;
       // DriverToolError is an Error, so existing handlers still match.
       throw new DriverToolError(
         `${name} refused: ${JSON.stringify(data.refusal ?? data)}`,
