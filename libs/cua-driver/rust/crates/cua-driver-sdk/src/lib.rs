@@ -2005,6 +2005,10 @@ uniffi::setup_scaffolding!("cua_driver_sdk");
 mod snapshot_lifecycle_tests;
 
 #[cfg(test)]
+#[path = "tests/cancellation_slice_a.rs"]
+mod cancellation_slice_a_tests;
+
+#[cfg(test)]
 mod tests {
     mod native_windows;
     use super::*;
