@@ -261,10 +261,10 @@ class GuardedRunnerTest(unittest.TestCase):
                     events[-1]["guarded_completion"]["status"], "declined" if tamper else "accepted"
                 )
 
-    def test_ack_lost_after_effect_observes_instead_of_retrying(self):
+    def test_ack_lost_after_effect_reconciles_instead_of_retrying(self):
         events, calls, mutations, observed = self.execute(
             ack_lost_after_effect=True,
-            expected="unknown",
+            expected="verified",
         )
 
         # Independent target oracle proves the click landed even though the
@@ -272,7 +272,7 @@ class GuardedRunnerTest(unittest.TestCase):
         self.assertEqual(observed, {"submitted": "private-field-canary-4316"})
         self.assertEqual(mutations, ["browser_type", "browser_click"])
         # Provider chose only the first action; the guarded completion was
-        # dispatched exactly once and the run stopped on ambiguity.
+        # dispatched exactly once and fresh oracle reads resolved the ambiguity.
         self.assertEqual(calls, 1)
 
         receipt = events[-1]["mutation_outcome"]
@@ -282,14 +282,15 @@ class GuardedRunnerTest(unittest.TestCase):
                 "receiptKind": "mutation-outcome/v0",
                 "mutationKey": "2:submit-form",
                 "attempted": True,
-                "effect": "unknown",
-                "verification": "unverified",
-                "retryDisposition": "observe",
+                "effect": "applied",
+                "verification": "verified",
+                "retryDisposition": "none",
+                "resolution": "verified",
             },
         )
         self.assertTrue(receipt["authorityScope"].startswith("jev-python-"))
         self.assertEqual(events[-1]["event"], "outcome")
-        self.assertEqual(events[-1]["outcome"], "unknown")
+        self.assertEqual(events[-1]["outcome"], "verified")
         self.assertEqual(events[-1]["phase"], "action")
 
     def test_default_off_never_records_an_attempted_guard(self):

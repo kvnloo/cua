@@ -273,6 +273,15 @@ class VerifySetupTests(unittest.TestCase):
         self.assertEqual(result['acted_path'], 'page_structure')
         self.assertEqual(result['submit_tool'], 'browser_click')
 
+    def test_verified_outcome_accepts_only_a_verified_receipt(self):
+        step, final = self.verified('browser_click', 'not_installed')
+        receipt = {"receiptKind": "mutation-outcome/v0", "resolution": "verified"}
+        result = self.replay([step, {**final, "mutation_outcome": receipt}])
+        self.assertEqual(result['outcome'], 'verified')
+        unresolved = {**receipt, "resolution": "unresolved_unknown"}
+        with self.assertRaisesRegex(RuntimeError, 'expected verified outcome'):
+            self.replay([step, {**final, "mutation_outcome": unresolved}])
+
     def test_required_visual_path_fails_when_dom_click_acted(self):
         with self.assertRaisesRegex(RuntimeError, 'Visual path was required.*browser_click'):
             self.replay(self.verified('browser_click', 'ok'), require_visual=True)

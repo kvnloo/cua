@@ -261,7 +261,13 @@ if (process.argv[2] === '--fixture-run') {
         const { events, jsonl, status } = runScenario({ mode, guarded });
         const outcome = mode === 'budget' ? 'budget_exhausted' : 'verified';
         assert.equal(status, mode === 'budget' ? 1 : 0);
-        assert.deepEqual(events.at(-1), { event: 'outcome', outcome });
+        const final = { ...events.at(-1) };
+        // Only a dispatched completion carries a resolved mutation receipt.
+        if (mode === 'accepted') {
+          assert.equal(final.mutation_outcome?.resolution, 'verified');
+          delete final.mutation_outcome;
+        }
+        assert.deepEqual(final, { event: 'outcome', outcome });
         assert.equal(jsonl.includes(TOKEN), false);
       });
     }
@@ -363,9 +369,9 @@ if (process.argv[2] === '--fixture-run') {
     }
   }
 
-  test('runner observes instead of retrying when acknowledgement is lost after effect', () => {
+  test('runner reconciles instead of retrying when acknowledgement is lost after effect', () => {
     const { events, receipt, status, jsonl } = runScenario({ ackLostAfterEffect: true });
-    assert.equal(status, 1);
+    assert.equal(status, 0);
     assert.equal(receipt.submitted, TOKEN);
     assert.deepEqual(
       receipt.actions.map((action: Record<string, unknown>) => action.tool),
@@ -374,7 +380,7 @@ if (process.argv[2] === '--fixture-run') {
 
     const outcome = events.at(-1)!;
     assert.equal(outcome.event, 'outcome');
-    assert.equal(outcome.outcome, 'unknown');
+    assert.equal(outcome.outcome, 'verified');
     assert.equal(outcome.phase, 'action');
     assert.deepEqual(
       { ...outcome.mutation_outcome, authorityScope: '<scope>' },
@@ -383,14 +389,15 @@ if (process.argv[2] === '--fixture-run') {
         mutationKey: '2:submit-form',
         authorityScope: '<scope>',
         attempted: true,
-        effect: 'unknown',
-        verification: 'unverified',
-        retryDisposition: 'observe',
+        effect: 'applied',
+        verification: 'verified',
+        retryDisposition: 'none',
+        resolution: 'verified',
       }
     );
     assert.match(outcome.mutation_outcome.authorityScope, /^jev-typescript-/);
-    // The independent fixture oracle says the effect landed, while the runner
-    // conservatively records unknown and stops after one click.
+    // The independent fixture oracle says the effect landed; fresh oracle reads
+    // resolve the lost acknowledgement after exactly one click.
     assert.equal(jsonl.includes(TOKEN), false);
   });
 
