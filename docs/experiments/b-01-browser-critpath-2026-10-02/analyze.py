@@ -95,8 +95,8 @@ def paired(sa: dict[str, Any], sb: dict[str, Any], key: str = "T_runner_ms") -> 
     return out
 
 
-def ratio_ci(s0: dict, s1: dict, s2: dict) -> dict[str, Any]:
-    r0, r1, r2 = by_round(s0), by_round(s1), by_round(s2)
+def ratio_ci(s0: dict, s1: dict, s2: dict, key: str = "T_runner_ms") -> dict[str, Any]:
+    r0, r1, r2 = by_round(s0, key), by_round(s1, key), by_round(s2, key)
     rounds = sorted(set(r0) & set(r1) & set(r2))
     d1 = [r0[r] - r1[r] for r in rounds]
     d2 = [r0[r] - r2[r] for r in rounds]
@@ -198,7 +198,19 @@ def build(raw: Path) -> dict[str, Any]:
         ht_verdict = "OWNER_DECISION"
     else:
         ht_verdict = "NOT_MATERIAL"
+    # Which settle site ran (the knob shortens both; only the insert_text replace site was exercised).
+    sites: dict[str, int] = {}
+    key_marks = 0
+    for t in trials:
+        for x in t["trace"]:
+            if x["phase"] == "focus.settle_start":
+                k = f"{x['detail']['site']}@{x['detail']['settle_ms']}ms"
+                sites[k] = sites.get(k, 0) + 1
+            elif x["phase"].startswith("key."):
+                key_marks += 1
     out["hypotheses"]["H_T"] = {
+        "settle_site_marks": dict(sorted(sites.items())), "key_marks": key_marks,
+        "scope": "insert_text replace=true settle site only (enter_focus_emulation); the keystroke-site settle never ran: UNTESTED",
         "paired_K2_minus_K3": ht_pair, "t0_stress_paired_K2_minus_K3": t_pair,
         "t0_stress": {arm: {"n": s["n"], "valid": s["valid"], "failures": s["failures"],
                             "T_runner_median_ms": s["T_runner_ms"]["median"]} for arm, s in t_stats.items()},
@@ -248,7 +260,7 @@ def build(raw: Path) -> dict[str, Any]:
                     "NOT_MATERIAL": "IRREDUCIBLE"}[ht_verdict],
         "observation": "IRREDUCIBLE (one fresh semantic_v2 snapshot per action: refs are never durable authority); per-call cost UNTESTED",
         "revalidate": "IRREDUCIBLE (per-mutation binding re-proof, #73 invariant); endpoint re-proof cost UNTESTED",
-        "driver_pre_dispatch": "UNTESTED (tools/list rebuilt and validated twice per call)",
+        "driver_pre_dispatch": "UNTESTED (localized, not isolated: the mcp.line_read->admitted->inner_validated span holds two validate_tool_call runs against a freshly built tools_list plus JSON parsing, protocol_session.validate and session identity)",
         "driver_post_dispatch": "IRREDUCIBLE (JSON-RPC result handling)",
         "transport": "IRREDUCIBLE (stdio JSON-RPC)",
         "client_validation": None,
@@ -285,10 +297,10 @@ def build(raw: Path) -> dict[str, Any]:
                 v = verdict_rules[c]
                 if c == "sleeps_polls":
                     v = "DELETED (H_P KEEP)" if hp[cls]["verdict"] == "KEEP" else \
-                        "tested (H_P): no material component; P10 (K4) bounds the overshoot"
+                        "IRREDUCIBLE (H_P: no material component; P10 (K4) bounds the overshoot)"
                 if c == "client_validation":
                     v = "DELETED (caller-side compiled validators, H_C KEEP)" if hc[cls]["verdict"] == "KEEP" else \
-                        "tested (H_C): work deleted in K5 but no wall-clock saving (time moves to target-effect lag + poll)"
+                        "DELETED (work only: no T_runner saving, the time moves to target-effect lag + poll)"
                 rows.append({"component": c, "mean_ms": ms, "median_ms": s["components_median_ms"][c],
                              "share": share, "material": material, "verdict": v if material else "below threshold"})
             # Untested-but-plausibly-deletable portions (rule written after the runs; see README deviations).
@@ -306,6 +318,33 @@ def build(raw: Path) -> dict[str, Any]:
                               "mcp_transport_mean_ms": s["mcp_transport_mean_ms"]}
     out["E2"] = e2
 
+    # Sensitivity (not a gate): every gate recomputed on T_oracle, the spec's T (2 ms harness re-read).
+    sens: dict[str, Any] = {}
+    for cls in A.CLASSES:
+        s = stats[cls]
+        r = ratio_ci(s["K0"], s["K1"], s["K2"], "T_oracle_ms")
+        prev = "K3" if cls == "fill" else "K2"
+        hp_o = paired(s[prev], s["K4"], "T_oracle_ms")
+        hc_o = paired(s["K4v"], s["K5"], "T_oracle_ms")
+        hc_keep = hc_o["ci95"] is not None and hc_o["ci95"][0] > 0 and hc[cls]["outcome_unchanged"]
+        cands = {a: s[a] for a in ("K2", "K3", "K4", "K5") if a in s and s[a]["valid_frac"] and s[a]["valid_frac"] >= 0.95}
+        if not hc_keep:
+            cands.pop("K5", None)
+        best_o = min(cands, key=lambda a: cands[a]["T_oracle_ms"]["median"])
+        sens[cls] = {
+            "H_V_ratio": r, "H_V_verdict": "KEEP" if (r["ci95"] is not None and r["ci95"][0] >= 0.90) else "REVISE",
+            "H_P_paired_prev_minus_K4": hp_o,
+            "H_P_verdict": "KEEP" if ((s[prev]["sleeps_entered_frac"] or 0) >= 0.10 and hp_o["ci95"] is not None
+                                      and hp_o["ci95"][0] > 0) else "no material component",
+            "H_C_paired_K4_minus_K5": hc_o, "H_C_verdict": "KEEP" if hc_keep else "not material",
+            "best_composed_arm": best_o, "best_composed_T_oracle_median_ms": cands[best_o]["T_oracle_ms"]["median"],
+        }
+    ht_o = paired(stats["fill"]["K2"], stats["fill"]["K3"], "T_oracle_ms")
+    sens["fill"]["H_T_paired_K2_minus_K3"] = ht_o
+    sens["fill"]["H_T_verdict"] = ("KILL/IRREDUCIBLE" if dk["drops"] else
+                                   "OWNER_DECISION" if (ht_o["ci95"] and ht_o["ci95"][0] > 0) else "NOT_MATERIAL")
+    out["sensitivity_T_oracle"] = sens
+
     # Controls and invariants.
     def ctrl_rows(kind: str) -> list[dict[str, Any]]:
         rows = []
@@ -318,8 +357,9 @@ def build(raw: Path) -> dict[str, Any]:
             if kind == "stale_ref":
                 env = s.get("stale_envelope") or {}
                 row.update({"effect": env.get("effect"), "is_error": s.get("stale_is_error"),
-                            "refusal_code": (env.get("refusal") or {}).get("code") if isinstance(env.get("refusal"), dict)
+                            "refusal_code": (env.get("error") or {}).get("code") if isinstance(env.get("error"), dict)
                             else env.get("code"),
+                            "dispatch_marks": stale_dispatch_marks(t),
                             "pass": env.get("effect") == "refused" and s["completion_mutations"] == 0})
             elif kind == "first_only":
                 row["pass"] = (not s["oracle_exact_match"]) and s["completion_mutations"] == 0
@@ -331,6 +371,15 @@ def build(raw: Path) -> dict[str, Any]:
                             and s["completion_mutations"] == 1})
             rows.append(row)
         return rows
+
+    def stale_dispatch_marks(t: dict[str, Any]) -> int:
+        """Effectful-dispatch Driver marks inside the stale-ref call window (0 = refused before dispatch)."""
+        sends = [e["t_mono_ns"] for e in t["events"] if e["event"] == "call_send" and e.get("label") == "stale_click"]
+        rets = [e["t_mono_ns"] for e in t["events"] if e["event"] == "call_return" and e.get("label") == "stale_click"]
+        if not sends or not rets:
+            return -1
+        return sum(1 for x in t["trace"] if sends[0] <= x["t_mono_ns"] <= rets[0]
+                   and x["phase"] in ("click.ref_resolved", "click.cdp_send", "type.ref_resolved", "type.insert_send"))
 
     controls = {k: ctrl_rows(k) for k in ("stale_ref", "first_only", "guard_decline")}
     out["controls"] = {k: {"n": len(v), "pass": sum(1 for r in v if r["pass"]), "rows": v} for k, v in controls.items()}
@@ -344,7 +393,9 @@ def build(raw: Path) -> dict[str, Any]:
         "duplicate_completion_mutations": sum(1 for t in measured_all + ctrl if (t["summary"]["completion_mutations"] or 0) > 1),
         "unverified_successes": sum(1 for t in measured_all + ctrl if t["summary"]["outcome"] == "verified"
                                     and not t["summary"]["oracle_exact_match"]),
-        "stale_ref_dispatches": sum(1 for r in controls["stale_ref"] if r["completion_mutations"] != 0),
+        "stale_ref_completion_mutations": sum(1 for r in controls["stale_ref"] if r["completion_mutations"] != 0),
+        "stale_ref_trials_with_dispatch_marks": sum(1 for r in controls["stale_ref"] if r["dispatch_marks"] != 0),
+        "stale_ref_refusal_codes": sorted({str(r["refusal_code"]) for r in controls["stale_ref"]}),
         "non_loopback_connect_attempts": sum(t["summary"].get("network", {}).get("non_loopback_connect_attempts", 0)
                                              for t in trials),
     }

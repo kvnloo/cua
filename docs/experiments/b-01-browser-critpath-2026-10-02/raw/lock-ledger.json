@@ -1,0 +1,227 @@
+{
+ "schema": "b01.lock-ledger.v1",
+ "clock_mapping": "manifest CLOCK_MONOTONIC values mapped to UTC with the CLOCK_REALTIME - CLOCK_MONOTONIC offset read at ledger time (no suspend since the runs); checked against receipts: measured lock release maps to 02:58:17.5Z vs measured.end receipt 02:58:18Z, and R2-07 P4 cells map inside its 02:16:06Z..02:19:19Z receipt. Unit and build times come from file mtimes and build-driver.sh UTC lines.",
+ "runs": [
+  {
+   "run": "unit-1",
+   "kind": "cargo test (unit.sh) inside cua-x11-session.sh",
+   "start_utc": "2026-10-02T02:07:50Z",
+   "end_utc": "2026-10-02T02:09:55Z",
+   "lock_mode": "not receipted",
+   "lock_receipt": "no lock receipt; the in-session command calls unit.sh, which takes no lock; any outer flock was not recorded",
+   "compliant": "not shown",
+   "rule": "every cargo build/test: SHARED quiet lock",
+   "logs": "overwritten",
+   "numbers_depending_on_it": "none (logs overwritten by run 3)"
+  },
+  {
+   "run": "build b01-56817bd72",
+   "kind": "build-driver.sh",
+   "start_utc": "2026-10-02T02:10:18Z",
+   "end_utc": "2026-10-02T02:11:54Z",
+   "lock_mode": "not receipted (documented command: flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh)",
+   "lock_receipt": "build-driver.sh does not record the locks it runs under",
+   "compliant": "not shown",
+   "rule": "every cargo build: SHARED quiet lock + cargo-build lock",
+   "numbers_depending_on_it": "shakedown only"
+  },
+  {
+   "run": "shakedown-1",
+   "kind": "REAL shakedown (Driver + Chrome), excluded from every number",
+   "binary": "cua-driver-b01-56817bd72",
+   "trials": 19,
+   "start_utc": "2026-10-02T02:16:24.08Z",
+   "end_utc": "2026-10-02T02:17:26.49Z",
+   "lock_mode": "none",
+   "lock_receipt": "manifest locks: [] and the in-session command has no --lock",
+   "compliant": false,
+   "rule": "REAL correctness blocks: SHARED quiet lock, <= 10 trials per acquisition",
+   "numbers_depending_on_it": "none"
+  },
+  {
+   "run": "build b01-9e0267548",
+   "kind": "build-driver.sh",
+   "start_utc": "2026-10-02T02:23:40Z",
+   "end_utc": "2026-10-02T02:25:13Z",
+   "lock_mode": "not receipted (documented command: flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh)",
+   "lock_receipt": "build-driver.sh does not record the locks it runs under",
+   "compliant": "not shown",
+   "rule": "every cargo build: SHARED quiet lock + cargo-build lock",
+   "numbers_depending_on_it": "shakedown only"
+  },
+  {
+   "run": "unit-2",
+   "kind": "cargo test (unit.sh) inside cua-x11-session.sh",
+   "start_utc": "2026-10-02T02:25:23Z",
+   "end_utc": "2026-10-02T02:30:32Z",
+   "lock_mode": "not receipted",
+   "lock_receipt": "no lock receipt; the in-session command calls unit.sh, which takes no lock; any outer flock was not recorded",
+   "compliant": "not shown",
+   "rule": "every cargo build/test: SHARED quiet lock",
+   "logs": "overwritten",
+   "numbers_depending_on_it": "none (logs overwritten by run 3)"
+  },
+  {
+   "run": "shakedown-2",
+   "kind": "REAL shakedown (Driver + Chrome), excluded from every number",
+   "binary": "cua-driver-b01-9e0267548",
+   "trials": 19,
+   "start_utc": "2026-10-02T02:30:59.18Z",
+   "end_utc": "2026-10-02T02:31:57.44Z",
+   "lock_mode": "none",
+   "lock_receipt": "manifest locks: [] and the in-session command has no --lock",
+   "compliant": false,
+   "rule": "REAL correctness blocks: SHARED quiet lock, <= 10 trials per acquisition",
+   "numbers_depending_on_it": "none"
+  },
+  {
+   "run": "build b01-f5c991e59",
+   "kind": "build-driver.sh",
+   "start_utc": "2026-10-02T02:34:51Z",
+   "end_utc": "2026-10-02T02:36:23Z",
+   "lock_mode": "not receipted (documented command: flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh)",
+   "lock_receipt": "build-driver.sh does not record the locks it runs under",
+   "compliant": "not shown",
+   "rule": "every cargo build: SHARED quiet lock + cargo-build lock",
+   "numbers_depending_on_it": "binary used in every measured trial"
+  },
+  {
+   "run": "unit-3",
+   "kind": "cargo test (unit.sh) inside cua-x11-session.sh",
+   "start_utc": "2026-10-02T02:36:24Z",
+   "end_utc": "2026-10-02T02:39:23Z",
+   "lock_mode": "not receipted",
+   "lock_receipt": "no lock receipt; the in-session command calls unit.sh, which takes no lock; any outer flock was not recorded",
+   "compliant": "not shown",
+   "rule": "every cargo build/test: SHARED quiet lock",
+   "logs": "raw/unit/",
+   "numbers_depending_on_it": "UNIT row (run 3 only)"
+  },
+  {
+   "run": "shakedown-3",
+   "kind": "REAL shakedown (Driver + Chrome), excluded from every number",
+   "binary": "cua-driver-b01-f5c991e59",
+   "trials": 21,
+   "start_utc": "2026-10-02T02:40:25.55Z",
+   "end_utc": "2026-10-02T02:41:18.39Z",
+   "lock_mode": "none",
+   "lock_receipt": "manifest locks: [] and the in-session command has no --lock",
+   "compliant": false,
+   "rule": "REAL correctness blocks: SHARED quiet lock, <= 10 trials per acquisition",
+   "numbers_depending_on_it": "none"
+  },
+  {
+   "run": "measured",
+   "kind": "REAL measured",
+   "binary": "cua-driver-b01-f5c991e59",
+   "trials": 440,
+   "start_utc": "2026-10-02T02:44:04.81Z",
+   "end_utc": "2026-10-02T02:58:17.51Z",
+   "lock_mode": "exclusive",
+   "windows": [
+    {
+     "requested_utc": "2026-10-02T02:44:04.81Z",
+     "acquired_utc": "2026-10-02T02:45:02.94Z",
+     "released_utc": "2026-10-02T02:58:17.51Z",
+     "trials": 440
+    }
+   ],
+   "lock_receipt": "raw/run-manifest-measured.json locks",
+   "compliant": true,
+   "numbers_depending_on_it": "yes"
+  },
+  {
+   "run": "controls",
+   "kind": "REAL controls",
+   "binary": "cua-driver-b01-f5c991e59",
+   "trials": 40,
+   "start_utc": "2026-10-02T02:58:58.82Z",
+   "end_utc": "2026-10-02T03:02:27.92Z",
+   "lock_mode": "shared",
+   "windows": [
+    {
+     "requested_utc": "2026-10-02T02:58:58.82Z",
+     "acquired_utc": "2026-10-02T02:58:58.82Z",
+     "released_utc": "2026-10-02T02:59:53.32Z",
+     "trials": 10
+    },
+    {
+     "requested_utc": "2026-10-02T02:59:53.32Z",
+     "acquired_utc": "2026-10-02T02:59:53.32Z",
+     "released_utc": "2026-10-02T03:00:41.79Z",
+     "trials": 10
+    },
+    {
+     "requested_utc": "2026-10-02T03:00:41.79Z",
+     "acquired_utc": "2026-10-02T03:00:41.79Z",
+     "released_utc": "2026-10-02T03:01:34.64Z",
+     "trials": 10
+    },
+    {
+     "requested_utc": "2026-10-02T03:01:34.64Z",
+     "acquired_utc": "2026-10-02T03:01:34.64Z",
+     "released_utc": "2026-10-02T03:02:27.92Z",
+     "trials": 10
+    }
+   ],
+   "lock_receipt": "raw/run-manifest-controls.json locks",
+   "compliant": true,
+   "numbers_depending_on_it": "yes"
+  },
+  {
+   "run": "smoke",
+   "kind": "REAL smoke",
+   "binary": "cua-driver-b01-f5c991e59",
+   "trials": 5,
+   "start_utc": "2026-10-02T03:03:02.75Z",
+   "end_utc": "2026-10-02T03:03:24.73Z",
+   "lock_mode": "shared",
+   "windows": [
+    {
+     "requested_utc": "2026-10-02T03:03:02.75Z",
+     "acquired_utc": "2026-10-02T03:03:02.75Z",
+     "released_utc": "2026-10-02T03:03:24.73Z",
+     "trials": 5
+    }
+   ],
+   "lock_receipt": "raw/run-manifest-smoke.json locks",
+   "compliant": true,
+   "numbers_depending_on_it": "yes"
+  }
+ ],
+ "other_lanes_exclusive_windows_checked": [
+  {
+   "lane": "R2-07",
+   "window": "P4 warm, EXCLUSIVE, 2026-10-02T02:16:06Z..02:19:19Z",
+   "overlaps": "shakedown-1",
+   "detail": "21 of 60 R2-07 P4 warm cells (rounds 1-8; spawn..exit on the shared CLOCK_MONOTONIC) overlap shakedown-1"
+  },
+  {
+   "lane": "R2-07",
+   "window": "P1-P3 learning, EXCLUSIVE, acquired 02:15:35Z, released by 02:16:06Z",
+   "overlaps": "none"
+  },
+  {
+   "lane": "R2-07",
+   "window": "P7 live fallback, EXCLUSIVE, 02:42:34Z..02:42:50Z",
+   "overlaps": "none"
+  },
+  {
+   "lane": "BUG-01",
+   "window": "part-b measured, EXCLUSIVE, 02:19:54Z..02:22:44Z",
+   "overlaps": "none"
+  },
+  {
+   "lane": "R2-08",
+   "window": "base run 1, EXCLUSIVE, 02:01:56Z..02:04:26Z",
+   "overlaps": "none"
+  },
+  {
+   "lane": "OWN-16",
+   "window": "S1 and S2 measured, EXCLUSIVE, ended 02:12:30Z and 02:15:22Z (acquired after BUG-01's SHARED hold ended 02:12:05Z and after 02:12:44Z)",
+   "overlaps": "none"
+  }
+ ],
+ "other_lanes_check_scope": "receipts readable in the lane artifact directories at fix time (R2-07, R2-08, BUG-01, OWN-16; OWN-78 and OWN-105 ran SHARED only). Lanes without UTC lock receipts were not checked; the planner should confirm.",
+ "summary": "3 REAL shakedowns (19, 19, 21 trials) ran with no quiet-lane lock, breaking the SHARED <= 10-per-acquisition rule; 3 unit runs and 3 builds have no lock receipt. No B-01 number depends on the shakedowns. Shakedown-1 overlapped R2-07's EXCLUSIVE P4 warm window."
+}

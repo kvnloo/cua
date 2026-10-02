@@ -245,7 +245,7 @@
       "mean_ms": 9.167,
       "median_ms": 8.807,
       "share": 0.108,
-      "verdict": "UNTESTED (tools/list rebuilt and validated twice per call)"
+      "verdict": "UNTESTED (localized, not isolated: the mcp.line_read->admitted->inner_validated span holds two validate_tool_call runs against a freshly built tools_list plus JSON parsing, protocol_session.validate and session identity)"
      },
      {
       "component": "driver_post_dispatch",
@@ -269,7 +269,7 @@
       "mean_ms": 13.063,
       "median_ms": 12.711,
       "share": 0.154,
-      "verdict": "tested (H_C): work deleted in K5 but no wall-clock saving (time moves to target-effect lag + poll)"
+      "verdict": "DELETED (work only: no T_runner saving, the time moves to target-effect lag + poll)"
      },
      {
       "component": "runner_overhead",
@@ -293,7 +293,7 @@
       "mean_ms": 5.006,
       "median_ms": 0.0,
       "share": 0.059,
-      "verdict": "tested (H_P): no material component; P10 (K4) bounds the overshoot"
+      "verdict": "IRREDUCIBLE (H_P: no material component; P10 (K4) bounds the overshoot)"
      },
      {
       "component": "target_effect_lag",
@@ -567,7 +567,7 @@
       "mean_ms": 9.356,
       "median_ms": 8.8,
       "share": 0.172,
-      "verdict": "UNTESTED (tools/list rebuilt and validated twice per call)"
+      "verdict": "UNTESTED (localized, not isolated: the mcp.line_read->admitted->inner_validated span holds two validate_tool_call runs against a freshly built tools_list plus JSON parsing, protocol_session.validate and session identity)"
      },
      {
       "component": "driver_post_dispatch",
@@ -889,7 +889,7 @@
       "mean_ms": 9.103,
       "median_ms": 8.911,
       "share": 0.171,
-      "verdict": "UNTESTED (tools/list rebuilt and validated twice per call)"
+      "verdict": "UNTESTED (localized, not isolated: the mcp.line_read->admitted->inner_validated span holds two validate_tool_call runs against a freshly built tools_list plus JSON parsing, protocol_session.validate and session identity)"
      },
      {
       "component": "driver_post_dispatch",
@@ -3809,11 +3809,12 @@
      "arm": "K0n",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0000-fill-K0n-stale_ref"
     },
@@ -3821,11 +3822,12 @@
      "arm": "K0",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0001-fill-K0-stale_ref"
     },
@@ -3833,11 +3835,12 @@
      "arm": "K2",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0002-fill-K2-stale_ref"
     },
@@ -3845,11 +3848,12 @@
      "arm": "K3",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0003-fill-K3-stale_ref"
     },
@@ -3857,11 +3861,12 @@
      "arm": "K0",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0004-toggle-K0-stale_ref"
     },
@@ -3869,11 +3874,12 @@
      "arm": "K1",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0005-toggle-K1-stale_ref"
     },
@@ -3881,11 +3887,12 @@
      "arm": "K4",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0006-toggle-K4-stale_ref"
     },
@@ -3893,11 +3900,12 @@
      "arm": "K0",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0007-modal-K0-stale_ref"
     },
@@ -3905,11 +3913,12 @@
      "arm": "K2",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0008-modal-K2-stale_ref"
     },
@@ -3917,11 +3926,12 @@
      "arm": "K4",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c0009-modal-K4-stale_ref"
     },
@@ -3929,11 +3939,12 @@
      "arm": "K0n",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c1014-fill-K0n-stale_ref"
     },
@@ -3941,11 +3952,12 @@
      "arm": "K1",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c1015-fill-K1-stale_ref"
     },
@@ -3953,11 +3965,12 @@
      "arm": "K2",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c1016-fill-K2-stale_ref"
     },
@@ -3965,11 +3978,12 @@
      "arm": "K4",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c1017-fill-K4-stale_ref"
     },
@@ -3977,11 +3991,12 @@
      "arm": "K0",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c1018-toggle-K0-stale_ref"
     },
@@ -3989,11 +4004,12 @@
      "arm": "K2",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c1019-toggle-K2-stale_ref"
     },
@@ -4001,11 +4017,12 @@
      "arm": "K4",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c2020-toggle-K4-stale_ref"
     },
@@ -4013,11 +4030,12 @@
      "arm": "K1",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c2021-modal-K1-stale_ref"
     },
@@ -4025,11 +4043,12 @@
      "arm": "K2",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c2022-modal-K2-stale_ref"
     },
@@ -4037,11 +4056,12 @@
      "arm": "K0",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c2027-fill-K0-stale_ref"
     },
@@ -4049,11 +4069,12 @@
      "arm": "K1",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c2028-fill-K1-stale_ref"
     },
@@ -4061,11 +4082,12 @@
      "arm": "K3",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c2029-fill-K3-stale_ref"
     },
@@ -4073,11 +4095,12 @@
      "arm": "K4",
      "cls": "fill",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c3030-fill-K4-stale_ref"
     },
@@ -4085,11 +4108,12 @@
      "arm": "K1",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c3031-toggle-K1-stale_ref"
     },
@@ -4097,11 +4121,12 @@
      "arm": "K2",
      "cls": "toggle",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c3032-toggle-K2-stale_ref"
     },
@@ -4109,11 +4134,12 @@
      "arm": "K0",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c3033-modal-K0-stale_ref"
     },
@@ -4121,11 +4147,12 @@
      "arm": "K1",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c3034-modal-K1-stale_ref"
     },
@@ -4133,11 +4160,12 @@
      "arm": "K4",
      "cls": "modal",
      "completion_mutations": 0,
+     "dispatch_marks": 0,
      "effect": "refused",
      "is_error": false,
      "oracle_satisfied": false,
      "pass": true,
-     "refusal_code": null,
+     "refusal_code": "browser_ref_stale",
      "runner_outcome": "unknown",
      "trial": "c3035-modal-K4-stale_ref"
     }
@@ -4377,6 +4405,7 @@
     "submits": 100,
     "trials": 100
    },
+   "key_marks": 0,
    "paired_K2_minus_K3": {
     "ci95": [
      99.197,
@@ -4389,9 +4418,14 @@
     "positive": 19,
     "rounds_dropped": []
    },
+   "scope": "insert_text replace=true settle site only (enter_focus_emulation); the keystroke-site settle never ran: UNTESTED",
    "settle_focus_mean_ms": {
     "K2": 101.114,
     "K3": 0.051
+   },
+   "settle_site_marks": {
+    "insert_text_replace@0ms": 108,
+    "insert_text_replace@100ms": 112
    },
    "t0_stress": {
     "K2": {
@@ -4503,10 +4537,152 @@
  "invariants": {
   "duplicate_completion_mutations": 0,
   "non_loopback_connect_attempts": 0,
-  "stale_ref_dispatches": 0,
+  "stale_ref_completion_mutations": 0,
+  "stale_ref_refusal_codes": [
+   "browser_ref_stale"
+  ],
+  "stale_ref_trials_with_dispatch_marks": 0,
   "unverified_successes": 0
  },
  "schema": "b01.summary.v1",
+ "sensitivity_T_oracle": {
+  "fill": {
+   "H_C_paired_K4_minus_K5": {
+    "ci95": [
+     6.692,
+     12.166
+    ],
+    "max": 14.742,
+    "median": 8.991,
+    "min": 0.602,
+    "n": 20,
+    "positive": 20,
+    "rounds_dropped": []
+   },
+   "H_C_verdict": "KEEP",
+   "H_P_paired_prev_minus_K4": {
+    "ci95": [
+     -2.913,
+     0.93
+    ],
+    "max": 13.635,
+    "median": -1.436,
+    "min": -5.51,
+    "n": 20,
+    "positive": 7,
+    "rounds_dropped": []
+   },
+   "H_P_verdict": "no material component",
+   "H_T_paired_K2_minus_K3": {
+    "ci95": [
+     99.639,
+     103.843
+    ],
+    "max": 109.669,
+    "median": 102.731,
+    "min": 93.771,
+    "n": 20,
+    "positive": 20,
+    "rounds_dropped": []
+   },
+   "H_T_verdict": "OWNER_DECISION",
+   "H_V_ratio": {
+    "R": 0.987,
+    "ci95": [
+     0.986,
+     0.989
+    ],
+    "n": 20,
+    "saving_K1_median_ms": 2963.489,
+    "saving_K2_median_ms": 3003.073
+   },
+   "H_V_verdict": "KEEP",
+   "best_composed_T_oracle_median_ms": 70.405,
+   "best_composed_arm": "K5"
+  },
+  "modal": {
+   "H_C_paired_K4_minus_K5": {
+    "ci95": [
+     8.847,
+     11.661
+    ],
+    "max": 15.349,
+    "median": 10.556,
+    "min": 2.748,
+    "n": 20,
+    "positive": 20,
+    "rounds_dropped": []
+   },
+   "H_C_verdict": "KEEP",
+   "H_P_paired_prev_minus_K4": {
+    "ci95": [
+     -2.445,
+     2.973
+    ],
+    "max": 4.033,
+    "median": 0.362,
+    "min": -15.141,
+    "n": 20,
+    "positive": 10,
+    "rounds_dropped": []
+   },
+   "H_P_verdict": "no material component",
+   "H_V_ratio": {
+    "R": 0.985,
+    "ci95": [
+     0.983,
+     0.987
+    ],
+    "n": 20,
+    "saving_K1_median_ms": 2372.208,
+    "saving_K2_median_ms": 2407.774
+   },
+   "H_V_verdict": "KEEP",
+   "best_composed_T_oracle_median_ms": 53.365,
+   "best_composed_arm": "K5"
+  },
+  "toggle": {
+   "H_C_paired_K4_minus_K5": {
+    "ci95": [
+     10.173,
+     14.486
+    ],
+    "max": 18.972,
+    "median": 11.674,
+    "min": 4.699,
+    "n": 20,
+    "positive": 20,
+    "rounds_dropped": []
+   },
+   "H_C_verdict": "KEEP",
+   "H_P_paired_prev_minus_K4": {
+    "ci95": [
+     -0.634,
+     4.335
+    ],
+    "max": 12.439,
+    "median": 2.658,
+    "min": -5.336,
+    "n": 20,
+    "positive": 12,
+    "rounds_dropped": []
+   },
+   "H_P_verdict": "no material component",
+   "H_V_ratio": {
+    "R": 0.986,
+    "ci95": [
+     0.986,
+     0.989
+    ],
+    "n": 20,
+    "saving_K1_median_ms": 2388.119,
+    "saving_K2_median_ms": 2420.933
+   },
+   "H_V_verdict": "KEEP",
+   "best_composed_T_oracle_median_ms": 52.031,
+   "best_composed_arm": "K5"
+  }
+ },
  "smoke": {
   "knob_set": 0,
   "n": 5,

@@ -9,11 +9,18 @@ Checks:
      manifests say provider=mock, and the dry live-request validation made 0 connects.
   4. Locks: every measured trial (blocks m, v, t) lies inside one EXCLUSIVE quiet-lane
      window; every control trial inside a SHARED window of <= 10 trials.
+     4b. raw/lock-ledger.json lists every run manifest (shakedown included) with the lock mode
+     its receipt shows; every run that broke or cannot show the lock rule is named in the
+     README deviations; no shakedown trial is in the analysed set.
   5. PREREG.json was committed before the first measured trial (receipt + git, if present).
   6. The #24 fixtures are verbatim copies of kvnloo/cua 5474aa31f (when that git object exists).
   7. UNIT receipts: the touched suites passed with 0 failures.
   8. Default-off smoke: 5/5 verified with no trace or knob variable and no trace file found.
   9. Privacy: no absolute local path, temp path, user name or host name in any packet file.
+ 10. Stale-ref controls: refused before dispatch (0 dispatch marks in the call window), code
+     browser_ref_stale.
+ 11. E2: every material row carries one of DELETED / IRREDUCIBLE / OWNER_DECISION / UNTESTED
+     (or the mock-decision label).
 """
 
 from __future__ import annotations
@@ -89,8 +96,27 @@ def main() -> None:
         if d["plan_kind"] in ("measured", "controls"):
             check(len(acq) == len(d["blocks"]) == len(rel), f"4 {m.name}: one acquire/release per block")
 
+    ledger = json.loads((raw / "lock-ledger.json").read_text())
+    runs = {r["run"]: r for r in ledger["runs"]}
+    for m in manifests + sorted((raw / "shakedown").glob("run-manifest-*.json")):
+        d = json.loads(m.read_text())
+        acq = [x for x in d.get("locks", []) if x["event"] == "lock_acquired"]
+        mode = acq[0]["mode"] if acq else "none"
+        n = sum(len(b) for b in d["blocks"])
+        hits = [r for r in runs.values() if r.get("lock_mode") == mode and r.get("trials") == n
+                and (r["run"] == d["plan_kind"] or r["run"].startswith(d["plan_kind"]))]
+        check(bool(hits), f"4b {m.relative_to(raw)}: in lock-ledger.json with lock mode {mode} ({n} trials)")
+    bad = [r["run"] for r in ledger["runs"] if r["compliant"] is not True]
+    dev = readme[readme.index("## Deviations"):readme.index("## Limits")]
+    check(all(r.removeprefix("build ") in dev for r in bad),
+          f"4b README deviations name every run without a compliant lock receipt: {bad}")
+    check(not any(t["name"].startswith("shake") for t in trials), "4b no shakedown trial in the analysed set")
+
     rec = json.loads((raw / "timeline-receipts.json").read_text())
     check(rec["prereg_commit_utc"] < rec["measured_start_utc"], "5 PREREG commit precedes the measured run (receipt)")
+    mw = runs["measured"]["windows"][0]
+    check(rec["prereg_commit_utc"] < rec["measured_lock_acquired_utc"] == mw["acquired_utc"],
+          f"5 PREREG commit precedes the EXCLUSIVE lock acquisition {mw['acquired_utc']}")
     try:
         out = subprocess.run(["git", "log", "-1", "--format=%cI", rec["prereg_commit"]], cwd=HERE,
                              capture_output=True, text=True, check=True).stdout.strip()
@@ -126,6 +152,17 @@ def main() -> None:
           "8 default-off smoke: 5/5 verified, trace and knob unset")
     tc = (raw / "default-off-trace-check.txt").read_text()
     check("trace_named_files=0" in tc and "trace_field_files=0" in tc, "8 no trace file in the smoke session or output")
+
+    st = summary["controls"]["stale_ref"]["rows"]
+    inv = summary["invariants"]
+    check(all(r["dispatch_marks"] == 0 for r in st) and inv["stale_ref_trials_with_dispatch_marks"] == 0
+          and inv["stale_ref_refusal_codes"] == ["browser_ref_stale"],
+          f"10 stale-ref: {len(st)} refused before dispatch with code browser_ref_stale")
+
+    allowed = ("DELETED", "IRREDUCIBLE", "OWNER_DECISION", "UNTESTED", "live decision")
+    off = [(c, lab, r["component"]) for c, e in summary["E2"].items() for lab in ("best", "baseline")
+           for r in e[lab]["rows"] if r["material"] and not r["verdict"].startswith(allowed)]
+    check(not off, f"11 E2 material rows all carry an allowed verdict (offenders: {off})")
 
     host = socket.gethostname()
     user = os.environ.get("USER") or ""

@@ -28,7 +28,7 @@
   "name": "cua-driver-b01-f5c991e59",
   "sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3",
   "version_in_session": "cua-driver 0.32.0",
-  "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> b01-f5c991e59 cua-release-r2-01; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; 0 Fresh workspace units; 92 s (raw/build-receipt.txt)",
+  "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> b01-f5c991e59 cua-release-r2-01; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; 0 Fresh workspace units; 92 s (raw/build-receipt.txt); the lock mode of the build invocation is not receipted by build-driver.sh",
   "disclosure": "build-driver.sh runs '<bin> --version' outside the isolated session (no display use); the version was re-recorded inside the session (raw/session-*.log)",
   "superseded_shakedown_only": [
    "cua-driver-b01-56817bd72 (first measurement commit, shakedown 1)",
@@ -40,11 +40,36 @@
   "os": "Linux 7.2.2 x86_64, 10 CPUs, 23 GiB",
   "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24, openbox, picom (xrender), private dbus, no AT-SPI bus, host Wayland/Hyprland variables scrubbed",
   "python": "jev-use .venv (uv sync --frozen, Python 3.12, mcp 1.30.0, typesafe_sdk 0.6.0)",
-  "locks": "measured run (primary + K5 + T0 stress, 440 trials) in one EXCLUSIVE quiet-lane window; controls in 4 SHARED windows of <=10; smoke in 1 SHARED window"
+  "locks": "measured run (primary + K5 + T0 stress, 440 trials) in one EXCLUSIVE quiet-lane window (requested 02:44:04.81Z, acquired 02:45:02.94Z, released 02:58:17.51Z); controls in 4 SHARED windows of <=10; smoke in 1 SHARED window. NOT COMPLIANT: shakedowns 1-3 (19/19/21 REAL trials, 02:16:24-02:17:26Z, 02:30:59-02:31:57Z, 02:40:25-02:41:18Z) ran with no lock (manifest locks: []); unit runs 1-3 (cargo test) and the three builds have no lock receipt. Every run: raw/lock-ledger.json. README Deviation 9."
  },
  "provider": {
   "kind": "mock",
   "typesafe_attempts": 0,
   "typesafe_reached": 0
- }
+ },
+ "lock_ledger": {
+  "file": "raw/lock-ledger.json",
+  "non_compliant_runs": [
+   "shakedown-1",
+   "shakedown-2",
+   "shakedown-3"
+  ],
+  "unreceipted_runs": [
+   "unit-1",
+   "unit-2",
+   "unit-3",
+   "build b01-56817bd72",
+   "build b01-9e0267548",
+   "build b01-f5c991e59"
+  ],
+  "numbers_depending_on_non_compliant_runs": "none",
+  "cross_lane_overlap": "shakedown-1 overlapped R2-07 P4 warm EXCLUSIVE window 02:16:06-02:19:19Z (21 of 60 R2-07 P4 cells); no other known EXCLUSIVE window overlaps; planner to confirm for lanes without UTC lock receipts"
+ },
+ "timeline": {
+  "prereg_commit_utc": "2026-10-02T02:43:42Z",
+  "measured_run_started_utc": "2026-10-02T02:43:58Z (outer script, before the session and lock request)",
+  "measured_lock_acquired_utc": "2026-10-02T02:45:02.94Z",
+  "first_measured_trial_utc": "2026-10-02T02:45:02.95Z"
+ },
+ "gate_metric": "T_runner (pre-registered); the spec's T is T_oracle; all gates recomputed on T_oracle in b01-summary.json sensitivity_T_oracle (H_C fill flips to KEEP; fill best composed K5). README Deviation 10"
 }

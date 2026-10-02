@@ -2,13 +2,13 @@
 
 ## Result in one paragraph
 
-On one source (upstream main `229b65b28` + the R2-01 phase trace + trycua/cua PR 4316 at `a0bca7440` + this lane's measurement-only marks and focus-settle knob), with the mock chooser, the three #24 browser classes take a median whole-task time T of 3180.7 ms (fill→submit, K0n baseline shape), 2487.3 ms (toggle→confirm) and 2471.7 ms (modal→act) with agent-cursor feedback at its default. About 94–97% of that is the awaited cursor glide. The glide is speed-based: the arrival wait grows 2.097 ms per pixel of *planned* path (r² 0.998). The planned Dubins path has a median length of 684.2 px, while the straight start-to-target distance is only 11–283 px. Frame pacing is not the cause: the median wait is 1393.8 ms and no frame took longer than 18.3 ms. The fast glide (K1) keeps the cursor visible and recovers 98.6–98.7% of the saving of feedback OFF in every class (H_V **KEEP**). Deleting the 100 ms focus settle in `browser_type` saves 101.2 ms with 0 dropped characters in 100 knob-0 trials (H_T **OWNER_DECISION**). The 100 ms completion poll is not material at library defaults (H_P: no material component). Compiling the MCP client's output-schema validators once per session deletes about 12.5 ms per two-action task: toggle 13.5 ms, modal 11.7 ms, both KEEP. On fill that saving moves into the target-effect lag plus the poll instead. The best composed configurations finish in 78.7 ms (fill, K3), 52.2 ms (toggle, K5) and 53.2 ms (modal, K5). What remains is dominated by three Driver costs this lane did not test causally: per-mutation endpoint re-proof (~10 ms per action), tools/list re-validation at MCP admission (~4.4 ms per call) and the cold first snapshot (~8–15 ms). That gives an untested-plausibly-deletable share of 51.2% (fill), 70.2% (toggle) and 69.3% (modal) of composed T. **E2 is therefore not met by this lane; the next deletions are localized to exact Driver call sites below.** All 485 trials verified or behaved as their control required: 0 duplicate mutations, 0 unverified successes, 0 stale-ref dispatches, 0 provider requests.
+On one source (upstream main `229b65b28` + the R2-01 phase trace + trycua/cua PR 4316 at `a0bca7440` + this lane's measurement-only marks and focus-settle knob), with the mock chooser, the three #24 browser classes take a median whole-task time T of 3180.7 ms (fill→submit, K0n baseline shape), 2487.3 ms (toggle→confirm) and 2471.7 ms (modal→act) with agent-cursor feedback at its default. About 94–97% of that is the awaited cursor glide. The glide is speed-based: the arrival wait grows 2.097 ms per pixel of *planned* path (r² 0.998). The planned Dubins path has a median length of 684.2 px, while the straight start-to-target distance is only 11–283 px. Frame pacing is not the cause: the median wait is 1393.8 ms and no frame took longer than 18.3 ms. The fast glide (K1) keeps the cursor visible and recovers 98.6–98.7% of the saving of feedback OFF in every class (H_V **KEEP**). Deleting the 100 ms focus settle at the `insert_text` replace site of `browser_type` saves 101.2 ms with 0 dropped characters in 100 knob-0 trials (H_T **OWNER_DECISION**, scoped to that site; the keystroke-site settle never ran and is UNTESTED). The 100 ms completion poll is not material at library defaults (H_P: no material component). Compiling the MCP client's output-schema validators once per session deletes about 12.5 ms per two-action task: toggle 13.5 ms, modal 11.7 ms, both KEEP. On fill that saving moves into the target-effect lag plus the poll instead. The best composed configurations finish in 78.7 ms (fill, K3), 52.2 ms (toggle, K5) and 53.2 ms (modal, K5). The gates use T_runner; on the spec's T (T_oracle, the 2 ms harness re-read) every verdict holds except H_C on fill, which becomes KEEP (9.0 ms [6.7, 12.2]), so fill's best composed arm would be K5 at 70.4 ms (Deviation 10). What remains is dominated by three Driver costs this lane did not test causally: per-mutation endpoint re-proof (~10 ms per action), tools/list re-validation at MCP admission (~4.4 ms per call) and the cold first snapshot (~8–15 ms). That gives an untested-plausibly-deletable share of 51.2% (fill), 70.2% (toggle) and 69.3% (modal) of composed T. **E2 is therefore not met by this lane; the next deletions are localized to exact Driver call sites below.** All 485 trials verified or behaved as their control required: 0 duplicate mutations, 0 unverified successes, 0 stale-ref dispatches, 0 provider requests. **Lock-rule breach (Deviation 9):** the three excluded shakedowns (19, 19 and 21 REAL trials) ran with no quiet-lane lock, and the first overlapped R2-07's EXCLUSIVE P4 window; the lock mode of the unit runs and builds was not receipted (`raw/lock-ledger.json`). No B-01 number depends on those runs.
 
 ## Scope and owners
 
 - Lane B-01, wave 1. Owners: kvnloo/cua#93 (R2-01 follow-up, R2-10 prep), #10 (accounting), #73 (canonical state), #24 (task classes).
 - Advances E1 (why the glide takes ~1.5 s), E2 (browser decomposition with per-component verdicts), E3 prep (R2-10 source, fixtures, harness, live PREREG draft and budget) and E4 (stale-ref, dropped-character, duplicate and unverified-success controls).
-- Pre-registration: `PREREG.json`, committed as `2bc7d0f1d` at 2026-10-02T02:43:42Z, before the first measured trial (02:43:58Z, `raw/timeline-receipts.json`). It was not edited afterwards.
+- Pre-registration: `PREREG.json`, committed as `2bc7d0f1d` at 2026-10-02T02:43:42Z, before the first measured trial. The EXCLUSIVE lock was acquired at 02:45:02.94Z and the first measured trial started at 02:45:02.95Z; 02:43:58Z is when the outer script started the measured run, before the session started and the lock was requested (02:44:04.81Z) (`raw/timeline-receipts.json`, `raw/lock-ledger.json`). It was not edited afterwards.
 - No new service, shadow state, second verifier, router, lifecycle registry, batch API or event service. The knob and the marks are env-gated and default-off. No GitHub writes and no pushes.
 
 ## Provenance (each SHA kept separate)
@@ -32,10 +32,12 @@ Details are in `provenance.json`.
 - Linux 7.2.2 x86_64, 10 CPUs, 23 GiB.
 - `cua-x11-session.sh`: private rootless Xvfb 1920x1080x24, openbox, picom (xrender) and private dbus. No AT-SPI bus. Host Wayland/Hyprland variables scrubbed.
 - jev-use `.venv` (Python 3.12, mcp 1.30.0, typesafe_sdk 0.6.0).
-- Locks:
-  - The 440 measured trials (primary, K5 and T0-stress blocks) ran in one EXCLUSIVE quiet-lane window, 02:43:58Z to 02:58:18Z.
+- Locks (every run, with receipts, in `raw/lock-ledger.json`):
+  - The 440 measured trials (primary, K5 and T0-stress blocks) ran in one EXCLUSIVE quiet-lane window: requested 02:44:04.81Z, acquired 02:45:02.94Z, released 02:58:17.51Z.
   - The 40 controls ran in 4 SHARED windows of at most 10 trials each.
   - The default-off smoke ran in 1 SHARED window.
+  - **Not compliant:** the three shakedowns ran with no lock at all (shakedown-1 02:16:24–02:17:26Z, 19 trials; shakedown-2 02:30:59–02:31:57Z, 19; shakedown-3 02:40:25–02:41:18Z, 21). Each was a single unlocked run of more than 10 REAL trials.
+  - **Not receipted:** the three `cargo test` runs (unit-1 02:07:50–02:09:55Z, unit-2 02:25:23–02:30:32Z, unit-3 02:36:24–02:39:23Z) and the three builds. Nothing records whether they held the SHARED lock, so compliance cannot be shown. See Deviation 9.
 - The 1-minute loadavg before each measured trial ranged from 1.12 to 3.34 (every value is in the trial records).
 
 ## Method
@@ -67,9 +69,9 @@ Details are in `provenance.json`.
   - T0-stress block: 20 AB/BA pairs of K3 vs K2 on fill with a 64-character token.
 - **Clocks.** Caller events use `time.monotonic_ns()`. Driver marks come from `CUA_DRIVER_PHASE_TRACE_FILE`. The journal is stamped on CLOCK_MONOTONIC. An independent harness thread re-reads the server state every 2 ms.
 - **T.**
-  - T_runner = send of the first `semantic_v2` call until the return of the runner's first oracle read that classifies as verified. This is the primary metric for every gate.
-  - T_oracle = the same start until the 2 ms harness read first confirms.
-- **Decomposition.** T_runner is decomposed by telescoping over caller events and the Driver marks inside each call window (taxonomy in `PREREG.json`, code in `b01_analysis.py`). Named-span coverage was 1.000 in every arm; the sum of components matches T to within float rounding.
+  - T_runner = send of the first `semantic_v2` call until the return of the runner's first oracle read that classifies as verified. This is the primary metric for every gate (pre-registered, but a deviation from the spec's T: Deviation 10).
+  - T_oracle = the same start until the 2 ms harness read first confirms. This is the spec's T. Every gate is recomputed on it in `b01-summary.json` → `sensitivity_T_oracle`.
+- **Decomposition.** T_runner is decomposed by telescoping over caller events and the Driver marks inside each call window (taxonomy in `PREREG.json`, code in `b01_analysis.py`). Named-span coverage was 1.000 in every arm; the sum of components matches T to within float rounding. The coverage gate is close to automatic: each interval is classified by its left-boundary mark, so only an unknown mark can produce "unattributed". It shows that every interval has a named owner. It does not show that each owner's label is the true cause of the time inside it.
 - **Statistics.**
   - Medians and nearest-rank p95.
   - Paired differences within a round.
@@ -93,6 +95,16 @@ Paired differences (median, 95% CI; BENCHMARK):
 | toggle | 2388.3 [2386.5, 2390.4] | 2421.3 [2418.4, 2423.0] | 32.8 [30.5, 34.2] | — | 0.4 [−1.3, 3.7] | 13.5 [12.1, 15.4] |
 | modal | 2373.8 [2369.3, 2379.7] | 2406.7 [2404.7, 2409.9] | 33.8 [30.9, 35.0] | — | −1.6 [−3.0, 2.3] | 11.7 [10.4, 13.2] |
 
+**On the spec's T (T_oracle; sensitivity, not the pre-registered gate metric).**
+
+| Gate | fill | toggle | modal | Verdict on T_oracle |
+|---|---|---|---|---|
+| H_V ratio R [CI] | 0.987 [0.986, 0.989] | 0.986 [0.986, 0.989] | 0.985 [0.983, 0.987] | KEEP (unchanged) |
+| H_T K2−K3 | 102.7 [99.6, 103.8] | — | — | OWNER_DECISION (unchanged) |
+| H_P prev−K4 | −1.4 [−2.9, 0.9] | 2.7 [−0.6, 4.3] | 0.4 [−2.4, 3.0] | no material component (unchanged) |
+| H_C K4−K5 | 9.0 [6.7, 12.2] | 11.7 [10.2, 14.5] | 10.6 [8.8, 11.7] | **fill flips to KEEP**; toggle, modal KEEP |
+| best composed arm (median T_oracle) | K5, 70.4 ms (K3: 77.8) | K5, 52.0 ms | K5, 53.4 ms | fill changes from K3 to K5 |
+
 K0n vs K0 on fill (guard vs no guard, mock chooser): −2.1 [−9.3, 3.5] ms. With a mock chooser the guard deletes a decision that costs about 0 ms. Its live value (2→1 provider requests, about −212 ms) is R2-03's and is measured live in R2-10.
 
 ## Hypotheses (pre-registered gates)
@@ -100,7 +112,7 @@ K0n vs K0 on fill (guard vs no guard, mock chooser): −2.1 [−9.3, 3.5] ms. Wi
 | Hypothesis | Result | Verdict | Evidence class |
 |---|---|---|---|
 | H_V fast glide ≥ 90% of OFF's saving | R = 0.987 [0.986, 0.989] fill, 0.986 [0.986, 0.988] toggle, 0.986 [0.984, 0.988] modal. Residual cost of keeping the cursor: 38.8 / 32.8 / 33.8 ms per task | **KEEP** (all classes) | BENCHMARK |
-| H_T delete the 100 ms focus settle (knob 0) | K2−K3 101.2 [99.2, 104.6] ms (19/20 pairs positive). T0 stress (64-char token): 101.2 [100.2, 104.4] ms, 20/20 positive. 0 dropped or reordered characters in 100 knob-0 fill trials (100 submits, exact match), and 0 in 100 knob-unset trials. The settle span is 101.1 ms unset vs 0.05 ms at 0. Readiness was true on the first poll in 200/200 measured fill trials (0 readiness sleeps) | **OWNER_DECISION** (the source comment cites Edge-on-Linux drops, not testable here) | BENCHMARK + REAL |
+| H_T delete the 100 ms focus settle (knob 0), **insert_text replace site only** | K2−K3 101.2 [99.2, 104.6] ms (19/20 pairs positive). Every settle that ran was the `insert_text` replace=true site in `enter_focus_emulation` (220 `focus.settle_start` marks: 112 at 100 ms, 108 at 0 ms). The knob also shortens the keystroke-site settle, but that site never ran (0 `keystrokes` settle marks, 0 `key.*` marks): **UNTESTED**. T0 stress (64-char token): 101.2 [100.2, 104.4] ms, 20/20 positive. 0 dropped or reordered characters in 100 knob-0 fill trials (100 submits, exact match), and 0 in 100 knob-unset trials. The settle span is 101.1 ms unset vs 0.05 ms at 0. Readiness was true on the first poll in 200/200 measured fill trials (0 readiness sleeps) | **OWNER_DECISION** for the insert_text replace site, by the pre-registered rule. That site has no comment of its own. The Edge-on-Linux comment that the rule cites sits at the untested keystroke site. Edge was not tested at either site. Keystroke site: UNTESTED | BENCHMARK + REAL |
 | H_P 100 ms completion poll | The sleep was entered in 1/20 K3 fill trials and 0/20 K2 toggle and modal trials, below the 10% materiality bar. Paired CIs include 0 in every class | **no material component** (all classes) | BENCHMARK |
 | H_C compiled MCP output-schema validators (secondary) | Client validation is 12.9 ms → 0.4 ms per task in every class. Whole-task saving: toggle 13.5 [12.1, 15.4] and modal 11.7 [10.4, 13.2] ms (20/20 positive). On fill the runner time is unchanged, 0.0 [−2.1, 3.1] ms, while T_oracle improves by 9.0 [6.7, 12.2] ms. The fill click now returns before the submit lands, so the poll was entered in 20/20 fill K5 trials and the 10 ms granularity absorbs the gain | **KEEP** toggle, modal; **not material** fill | BENCHMARK |
 
@@ -127,10 +139,10 @@ The best composed arm is selected by the pre-registered rule: lowest median T am
 | decision (mock) | 0.0 | 0% | live decision measured in R2-10 |
 | observation (2 snapshots) | 20.9 | 24.6% | IRREDUCIBLE count (one fresh `semantic_v2` per action; refs are never durable authority). Per-call cost: 19.4 ms CDP vs 1.5 ms processing. The first snapshot costs 14.9 ms more than the second (cold `DOM.getDocument`, attach, AX): UNTESTED |
 | revalidate | 21.8 | 25.7% | IRREDUCIBLE check (#73 per-mutation re-proof). Of this, 19.8 ms (≈10 ms per action) is the owned-endpoint re-proof (`/proc` socket-owner scan + `/json/version` per port, `discover_owned_endpoint`): UNTESTED |
-| MCP transport, total 27.5 ms: driver pre-dispatch | 9.2 | 10.8% | UNTESTED. `validate_tool_call` runs against a freshly built `tools_list()` twice per call (proxy admission + `handle_request_inner`): 8.7 ms |
-| MCP transport: client output-schema validation | 13.1 | 15.4% | tested (H_C): deleted in K5 (0.4 ms), but no fill wall-clock saving (the time moves to target-effect lag + poll) |
+| MCP transport, total 27.5 ms: driver pre-dispatch | 9.2 | 10.8% | UNTESTED. 8.7 ms sits in the `mcp.line_read`→`admitted`→`inner_validated` span. That span includes two `validate_tool_call` runs against a freshly built `tools_list()` (proxy admission + `handle_request_inner`), and also JSON parsing, `protocol_session.validate` and session identity. The cost is localized to the span, not isolated to `validate_tool_call` |
+| MCP transport: client output-schema validation | 13.1 | 15.4% | DELETED (work only). K5 removes it (0.4 ms), but fill T_runner does not improve: the time moves to target-effect lag + poll. On T_oracle, fill saves 9.0 ms [6.7, 12.2] |
 | MCP transport: stdio + driver post-dispatch | 5.2 | 6.2% | IRREDUCIBLE (JSON-RPC over stdio; post-dispatch 2.6 + transport 2.6) |
-| sleeps/polls | 5.0 | 5.9% | tested (H_P): 1/20 trials entered one 100 ms sleep; no material component. K4's 10 ms poll bounds it |
+| sleeps/polls | 5.0 | 5.9% | IRREDUCIBLE at library defaults (H_P: no material component). 1/20 trials entered one 100 ms sleep; K4's 10 ms poll bounds it |
 | settles | 0.05 | 0% | DELETED in this arm by the knob (H_T OWNER_DECISION) |
 | visualization (OFF) | 1.6 | 1.8% | below threshold |
 | dispatch (`Input.insertText` / `Runtime.callFunctionOn`) | 2.3 | 2.7% | below threshold (IRREDUCIBLE) |
@@ -143,7 +155,7 @@ The best composed arm is selected by the pre-registered rule: lowest median T am
 |---|---|---|---|
 | observation | 11.9 (22.4%) | 12.3 (22.6%) | IRREDUCIBLE count. Cold-first excess ≈ 8.3 ms: UNTESTED |
 | revalidate | 22.2 (41.8%) | 22.6 (41.5%) | IRREDUCIBLE check. Endpoint re-proof 20.3 / 20.6 ms: UNTESTED |
-| driver pre-dispatch | 9.1 (17.1%) | 9.4 (17.2%) | UNTESTED (tools/list validation twice per call) |
+| driver pre-dispatch | 9.1 (17.1%) | 9.4 (17.2%) | UNTESTED (localized to the admission span; not isolated, as for fill) |
 | client validation | 0.4 (0.7%) | 0.4 (0.7%) | DELETED (H_C KEEP) |
 | driver post-dispatch + transport | 4.4 (8.2%) | 4.6 (8.4%) | IRREDUCIBLE (stdio JSON-RPC) |
 | everything else | ≤ 1.6 each | ≤ 1.7 each | below threshold |
@@ -167,7 +179,7 @@ The best composed arm is selected by the pre-registered rule: lowest median T am
 The E2 gate (< 5%) is **not met** for the composed configurations. The remaining time sits in three Driver call sites this lane only localized:
 
 1. `BrowserEngine::revalidate_for_mutation` → `owned_endpoint` / `discover_owned_endpoint`: ~10 ms per mutation. Security-relevant; any cheaper equivalent proof is an owner question.
-2. `proxy::run_direct` + `server::handle_request_inner` → `validate_tool_call(.., &tools_list())`: ~4.4 ms per call.
+2. MCP admission, `proxy::run_direct` + `server::handle_request_inner`: ~4.4 ms per call in the span that holds `validate_tool_call(.., &tools_list())` twice, plus JSON parsing, `protocol_session.validate` and session identity. Localized, not isolated.
 3. The first `semantic_v2` snapshot's cold CDP work: ~8–15 ms.
 
 ## Work deleted vs wall-clock saved
@@ -198,12 +210,12 @@ Baseline → composed: fill 3180.7 → 78.7 ms; toggle 2487.3 → 52.2 ms; modal
 
 | Control | Result | Evidence class |
 |---|---|---|
-| Stale ref: re-navigate, then send the step-2 ref with `dom_event`, 2 per arm per class | 28/28: envelope `effect=refused` with `isError=false`, 0 completion mutations, oracle unchanged. The refusal code is not exposed at `code`/`refusal.code` (as in R2-01) | REAL |
+| Stale ref: re-navigate, then send the step-2 ref with `dom_event`, 2 per arm per class | 28/28: envelope `effect=refused`, `error.code=browser_ref_stale`, `isError=false`; 0 completion mutations; oracle unchanged. Refused before dispatch: in every call window the Driver marks stop at `click.revalidated` → `dispatch.exit`, with 0 `ref_resolved`/`cdp_send` marks (`stale_ref_trials_with_dispatch_marks` = 0). The earlier `stale_ref_dispatches` metric counted completion mutations and is renamed `stale_ref_completion_mutations` | REAL |
 | First action only (fill type / toggle checkbox / modal open), 2 per class | 6/6: oracle not satisfied, 0 completion mutations | REAL |
 | Guard decline on jev-use `DUPLICATE_SUBMIT_ON_INPUT` (K0 ×3, K4 ×3) | 6/6: guard declined with `submit_not_unique`, provider route at step 2, verified, exactly 1 submit | REAL |
 | T0 stress, 64-char token: K3 vs K2 (20 + 20) | 40/40 exact match; 0 dropped or reordered characters | REAL |
 | P10 / K5: unverified successes and duplicate mutations | 0 and 0 (across all 485 trials) | REAL |
-| Guarded completion on toggle/modal | Does not apply at the tested source: `plan_guarded_completion` binds only `FIXTURE_TASK_ID`; it bound nothing in 160/160 toggle and modal K0–K4 trials. This is a finding for R2-07/R2-10 | SOURCE + REAL |
+| Guarded completion on toggle/modal | Does not apply at the tested source: `plan_guarded_completion` binds only `FIXTURE_TASK_ID`; it bound nothing in 160/160 primary-block toggle and modal K0–K4 trials, and nothing in 80/80 K5-block toggle and modal trials. This is a finding for R2-07/R2-10 | SOURCE + REAL |
 | Live request builder for toggle/modal (dry, 0 HTTP) | 4/4 requests built by jev-use `choose_for_task` decode as the TypeSafe SDK's `SystemOneRequest`; 0 socket connects (`raw/live-request-validation.json`) | FIXTURE |
 | Default-off smoke: trace and knob unset | 5/5 fill verified; no trace file, no trace-field file, and neither variable in the session command (`raw/default-off-trace-check.txt`) | REAL |
 | Unit: `cua-driver-core` lib, `platform-linux` lib, `cua-driver-sdk` lib, `cua-driver` bins (run inside the session) | 818/818 (7 B-01 tests), 602 passed + 10 ignored (3 B-01 tests), 95/95, 290/290 | UNIT |
@@ -219,6 +231,24 @@ Baseline → composed: fill 3180.7 → 78.7 ms; toggle 2487.3 → 52.2 ms; modal
 6. rustfmt formatting was not applied to the instrumentation (as in R2-01). `build-driver.sh` runs `<bin> --version` outside the session (no display use); the version was re-read inside the session.
 7. The fill Williams square (n = 6) is partial over 20 rounds: rows were used 4, 4, 3, 3, 3 and 3 times, as pre-registered.
 8. Unrelated to the lane: other lanes' unlocked work kept loadavg at 1.1–3.3. Every trial's loadavg is recorded.
+9. **Lock rule broken (common rule 4), found by the verifier.** REAL correctness blocks must hold the quiet-lane lock SHARED, at most 10 trials per acquisition. The three shakedowns broke this:
+   - shakedown-1: 02:16:24–02:17:26Z, 19 REAL trials, binary `b01-56817bd72`.
+   - shakedown-2: 02:30:59–02:31:57Z, 19 trials, `b01-9e0267548`.
+   - shakedown-3: 02:40:25–02:41:18Z, 21 trials, `b01-f5c991e59`.
+
+   They ran with no lock. The plan's shakedown lock mode was `none`, the shakedown manifests (`raw/shakedown/run-manifest-shakedown1.json`, `-shakedown2.json` and `run-manifest-shakedown.json` for shakedown-3) have `locks: []`, and the in-session commands had no `--lock`. Even under an outer `flock -s`, each would have been one acquisition of more than 10 trials. The lock mode of unit-1, unit-2 and unit-3 (`cargo test`) and of the builds `b01-56817bd72`, `b01-9e0267548` and `b01-f5c991e59` was never receipted, so compliance cannot be shown for them. Neither `unit.sh` nor `build-driver.sh` records locks. No B-01 number depends on the shakedowns. The UNIT row rests on unit-3 and the binary comes from build `b01-f5c991e59`, whose lock mode is likewise unreceipted.
+
+   **Cross-lane impact.** Shakedown-1 overlapped R2-07's EXCLUSIVE P4 warm window (02:16:06–02:19:19Z). On the shared monotonic clock, 21 of R2-07's 60 P4 cells (rounds 1–8) ran while shakedown-1 was running. No other known EXCLUSIVE window overlaps any B-01 run without a compliant lock: R2-07 P1–P3 and P7, BUG-01 part-b, R2-08 base and OWN-16 S1/S2 were all checked. The planner should confirm against lanes that have no UTC lock receipts. Details are in `raw/lock-ledger.json`.
+10. **T differs from the spec.** The spec defines T as ending at the first oracle-confirmed read (the 2 ms harness re-read, T_oracle). The gates use T_runner, which ends at the runner's verified read. The PREREG states this choice, and H_P needs it, because the runner's poll is the thing under test. Recomputed on T_oracle (`sensitivity_T_oracle`):
+    - H_V, H_T and H_P do not change.
+    - H_C on fill flips to KEEP: 9.0 ms [6.7, 12.2].
+    - Fill's best composed arm becomes K5: median 70.4 ms vs K3's 77.8 ms.
+11. **Timestamp meanings.** `measured_start_utc` (02:43:58Z) is when the outer script started the measured run. The EXCLUSIVE lock was requested at 02:44:04.81Z and acquired 58.1 s later, at 02:45:02.94Z, which is when the first measured trial started. The PREREG commit (02:43:42Z) precedes both. Monotonic receipts are mapped to UTC as `raw/lock-ledger.json` describes.
+12. **This fix pass.** After the verifier's report:
+    - `analyze.py` was changed to add `sensitivity_T_oracle`, the H_T settle-site counts, the stale-ref refusal code (`error.code`) and dispatch-mark count, and single-label E2 verdicts. The `stale_ref_dispatches` metric was renamed `stale_ref_completion_mutations`.
+    - `verify_artifacts.py` gained the lock-ledger, stale-ref and E2-label checks.
+    - `raw/lock-ledger.json` was added, and `raw/timeline-receipts.json` gained the lock-request, lock-acquired and first-trial times.
+    - No trial was added or re-run, and no headline median changed.
 
 ## Limits
 
@@ -226,7 +256,7 @@ Baseline → composed: fill 3180.7 → 78.7 ms; toggle 2487.3 → 52.2 ms; modal
 - The glide law and Dubins planning are cross-platform code, but the arrival mechanics differ on Wayland (#94), macOS and Windows.
 - The mock chooser means provider decision time is not included.
 - n = 20 per arm per class; p95 values are estimates.
-- The focus-settle deletion is tested only on Chrome 151 on Linux X11. Edge is not tested.
+- The focus-settle deletion is tested only at the `insert_text` replace site, only on Chrome 151 on Linux X11. The keystroke-site settle is untested. Edge is not tested.
 - The keystroke `browser_type` mode, with its 15 ms per-character sleep, never ran (0 `key.*` marks), because jev-use uses `insert_text`.
 
 ## Claim boundary
@@ -240,16 +270,17 @@ Every result here holds only for this configuration:
 - PR 4316 caller at `a0bca7440`
 - mock chooser
 
-On this configuration: the default glide's ~1.4 s per action is the speed law over a long planned Dubins path; the fast glide recovers ≥ 98.4% (CI lower bound) of feedback-OFF's saving; deleting the 100 ms focus settle saves ~101 ms with no dropped characters; and compiled client validators save ~12–14 ms on toggle and modal.
+On this configuration: the default glide's ~1.4 s per action is the speed law over a long planned Dubins path; the fast glide recovers ≥ 98.4% (CI lower bound on T_runner; ≥ 98.3% on T_oracle) of feedback-OFF's saving; deleting the 100 ms focus settle at the `insert_text` replace site saves ~101 ms with no dropped characters (the keystroke-site settle is untested); and compiled client validators save ~12–14 ms on toggle and modal.
 
 This is not a default change, not a LIVE_PROVIDER claim, and nothing transfers to Wayland, macOS, Windows or Edge.
 
 ## Disposition
 
 - **H_V KEEP** (all classes).
-- **H_T OWNER_DECISION**.
+- **H_T OWNER_DECISION**, scoped to the `insert_text` replace site; keystroke site UNTESTED.
 - **H_P no material component** (all classes), with the K5 interaction noted.
-- **H_C KEEP** for toggle and modal, not material for fill.
+- **H_C KEEP** for toggle and modal, not material for fill on T_runner (KEEP on T_oracle; Deviation 10).
+- **Lock-rule breach disclosed** (Deviation 9): the shakedowns ran unlocked, and shakedown-1 overlapped R2-07 P4. Unit and build lock modes are unreceipted. No B-01 number depends on those runs.
 - **E1 answered**: speed law × planned Dubins path length; not frame pacing.
 - **E2 decomposed but not met.** The untested share is 51–70% in the composed arms, in three localized Driver call sites, which are the next lanes.
 - **E3 prep ready**: source, fixtures and harness validated, plus `R2-10-PREREG-DRAFT.json`. The draft uses 30 AB/BA pairs per class. Its TypeSafe budget is 3 (fill), 4 (toggle) and 4 (modal) requests per pair, 330 requests reaching the provider in total, with an attempt cap of 363. It uses this lane's binary with knobs only in the composed arm. Composed = fast glide + T0 + P10 + compiled validators + guard (fill) + an R2-07 slot.
@@ -266,7 +297,7 @@ This is not a default change, not a LIVE_PROVIDER claim, and nothing transfers t
 | `b01_tasks.py` | toggle/modal task specs |
 | `validate_live_request.py` | dry request validation |
 | `b01_analysis.py`, `analyze.py` | decomposition, statistics, gates → `b01-summary.json` |
-| `verify_artifacts.py` | recomputes the summary from `raw/`, checks README headline numbers (`headline-numbers.json`), lock windows, 0 provider HTTP, PREREG order, verbatim fixtures, UNIT receipts, default-off smoke and a privacy scan |
+| `verify_artifacts.py` | recomputes the summary from `raw/`, checks README headline numbers (`headline-numbers.json`), lock windows and the lock ledger, 0 provider HTTP, PREREG order, verbatim fixtures, UNIT receipts, default-off smoke, stale-ref refusal before dispatch, E2 verdict labels and a privacy scan |
 | `provenance.json` | provenance record |
 | `raw/trials-measured.tar.gz` | 440 measured trials (caller JSONL + Driver trace each) |
 | `raw/trials-controls-smoke.tar.gz` | controls and smoke trials |
@@ -274,6 +305,7 @@ This is not a default change, not a LIVE_PROVIDER claim, and nothing transfers t
 | `raw/session-*.log` | sanitized session logs |
 | `raw/unit/` | UNIT logs |
 | `raw/build-receipt.txt`, `raw/timeline-receipts.json` | build and timeline receipts |
+| `raw/lock-ledger.json` | every run with its lock mode and UTC window, the non-compliant runs, and other lanes' EXCLUSIVE windows checked for overlap |
 | `raw/snapshots/` | toggle/modal snapshots from the shakedown |
 | `raw/live-request-validation.json` | dry live-request validation result |
 | `raw/shakedown/` | the excluded shakedown |
