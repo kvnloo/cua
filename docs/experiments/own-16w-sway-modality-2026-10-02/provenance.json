@@ -4,6 +4,7 @@
   "branch": "exp/own-16w-sway-modality-20261002",
   "upstream_main_tested": "989cc76cec262ff8bcf6968b637820340fb9caaa",
   "upstream_main_live_at_analysis": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (gh read 2026-10-02 ~18:05Z: 1 commit ahead of 989cc76ce, 12 files, 0 under libs/cua-driver)",
+  "upstream_main_live_at_review_fix": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (gh read 2026-10-02: 6 commits ahead of 989cc76ce; trycua/cua PR 4375 / 920a42f10 edits platform-linux get_window_state walk timeout budget, not the selectors; dd205d17b merges onto it with no conflict per git merge-tree; selector test not re-run on that tree)",
   "commits": {
     "marks_port_1": "709b0e004 (cherry-pick -x of 28b915ae9, R2-04 phase_trace sink)",
     "marks_port_2_U_head": "b39b866f7892677048862e8d5d8539f30b43efc2 (cherry-pick -x of cd9d6d169, OWN-16 producer counts)",
@@ -31,7 +32,8 @@
   "frozen_file_deviations": {
     "analyze.py": {"prereg_sha256": "a9e7ef43f71cc1efdb01968956c033f1aad42a05090cd5efd6f807be92973116", "final_sha256": "e313cd7b7a33bcad50110e406a9adf0ab2401b1970c1d9d0243831f1548c2ee4", "diff": "analyze-deviation.diff", "readme_ref": "D2"}
   },
-  "unfrozen_additions": {"run_resume.sh": "D1: evaluates run_batch.sh's frozen definitions unchanged and runs the remaining sessions", "verify_artifacts.py": "written after PREREG (verifier, not harness)"},
+  "unfrozen_additions": {"run_resume.sh": "D1: evaluates run_batch.sh's frozen definitions unchanged and runs the remaining sessions", "verify_artifacts.py": "written after PREREG (verifier, not harness); checks 8-10 added in the D5 review fix", ".gitignore": "D5: packet-local re-include of *.log and build/ so raw evidence is tracked"},
+  "post_review_fix": "D5: 34 raw files (8 wayland-capture-lines.log, 20 session.log, batch.log, 3 unit logs, 2 build logs) were git-ignored and missing from 1fed0037b; committed unchanged (byte-identical to the mirror). Fix scope: Linux only (macOS get_window_state.rs:250 and Windows impl_.rs:1331 still use as_bool()); also refuses JSON null.",
   "publication_sha": "recorded by the Publish agent; this lane does not push",
   "live_pr_heads": "none relevant: the fix is new on this branch; trycua/cua PR 4318 is merged into the tested main (db5573914)",
   "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0}

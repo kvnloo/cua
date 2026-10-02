@@ -68,7 +68,7 @@ all 42 counted calls.
 | neither | rejected_explicit / same | 0 | 0 | 0 | 0 | 0 | REAL |
 | legacy_omitted | default_honored / same | 1 | 1 | 1 | 15 | 142 | REAL |
 | unknown_field | rejected_explicit / same | 0 | 0 | 0 | 0 | 0 | REAL |
-| string_false | **U silently_accepted_default / F refused_invalid_arguments** | U 1 / F 0 | U 1 / F 0 | U 1 / F 0 | U 15 / F 0 | U 142 (one 143) / F 0 | REAL + UNIT |
+| string_false | **U silently_accepted_default / F refused_invalid_arguments** | U 1 / F 0 | U 1 / F 0 | U 1 / F 0 | U 15 / F 0 | U 142 in 40 calls, 143 in 2 / F 0 | REAL + UNIT |
 | string_true | **U silently_accepted_default / F refused_invalid_arguments** | U 1 / F 0 | U 1 / F 0 | U 1 / F 0 | U 15 / F 0 | U 142 / F 0 | REAL + UNIT |
 
 ### X11: private Xvfb, string rows only (recertifies OWN-16 on 989cc76ce)
@@ -146,6 +146,24 @@ resamples, seed 1616).
 | S-X | screenshot_only - both | **-5.98 ms** | [-7.30, -4.33] | -6.05 / -5.95 | 168.3 (174.5) vs both 173.2 (187.6) |
 | S-X | accessibility_only - both | **-150.27 ms** | [-152.68, -148.57] | -148.72 / -151.28 | 22.6 (25.6) vs 173.2 |
 
+Per-session medians of the paired differences (21 pairs each; checked against raw/ by
+`verify_artifacts.py`). The pooled CI resamples within session, so it describes the pooled median of
+these two sessions only. In S-W the two sessions differ by more than the pooled CI is wide
+(accessibility_only: -179.73 vs -157.97 ms), so the session-to-session spread is the better guide to
+reproducibility than the CI.
+
+| mode | comparison | B1 | B2 | pooled |
+|---|---|---|---|---|
+| S-W | screenshot_only - both | -10.68 | -7.45 | -8.29 |
+| S-W | accessibility_only - both | -179.73 | -157.97 | -166.00 |
+| S-X | screenshot_only - both | -5.95 | -6.00 | -5.98 |
+| S-X | accessibility_only - both | -153.85 | -149.62 | -150.27 |
+
+<!-- per-session SW screenshot_only: B1 -10.68 (n=21) / B2 -7.45 (n=21) -->
+<!-- per-session SW accessibility_only: B1 -179.73 (n=21) / B2 -157.97 (n=21) -->
+<!-- per-session SX screenshot_only: B1 -5.95 (n=21) / B2 -6.00 (n=21) -->
+<!-- per-session SX accessibility_only: B1 -153.85 (n=21) / B2 -149.62 (n=21) -->
+
 Component medians come from the marks (descriptive; deviation D2 addendum).
 
 | component | S-W both / screenshot_only / accessibility_only | S-X both / screenshot_only / accessibility_only |
@@ -173,8 +191,10 @@ Component medians come from the marks (descriptive; deviation D2 addendum).
 - They are per-observation numbers, not whole-task savings.
 
 Load: 1-minute loadavg per timed call ranged 4.49 to 6.98 (SW-B1), 8.83 to 10.01 (SW-B2), 2.57 to 3.02
-(SX-B1) and 17.41 to 19.51 (SX-B2). AB/BA pairing is within a session, so drift between sessions does
-not enter the paired difference.
+(SX-B1) and 17.41 to 19.51 (SX-B2). SX-B2 held the exclusive quiet-lane lock the whole time, so the load
+came from processes outside the lock protocol on this shared machine. AB/BA pairing is within a
+session, so drift between sessions does not enter the paired difference, but it does widen the
+session-to-session spread above.
 
 ## Observations (not fixed here; they belong to the #100 track)
 
@@ -240,9 +260,29 @@ not enter the paired difference.
 - **D3.** The unit-test "green" run (`raw/unit/unit-green.log`) ran on the worktree with the fix staged
   but not yet committed (head b39b866f7, dirty). The committed `dd205d17b` is that exact content. The
   full suites (`unit-all.log`) ran on the committed tree.
+  - The red run (`raw/unit/unit-red.log`) was not byte-identical to the committed test either. It
+    panics at `get_window_state_selector_tests.rs:31:9` with the `invalid_arguments` message; in the
+    committed file that assert starts at line 35. The red run used an earlier layout of the same test
+    (before formatting). The assertions are the same, but the red evidence is for that earlier layout.
+- **PREREG timestamp.** PREREG's `written_utc` (17:50Z) is earlier than the F build (17:59:26Z) whose
+  sha256 it records, so `written_utc` marks when drafting started. The binding bound is the PREREG
+  commit time, 18:00:27Z, before the first measured call (18:24Z). `verify_artifacts.py` checks the
+  commit time.
 - **D4.** build-driver.sh records the binary sha256 on the host. Every session re-read
   `--version`/sha256 in-session (`session-env.txt`), and `verify_artifacts.py` checks them against
   PREREG.
+- **D5 (packet completeness, post-review fix).** The first packet commit `1fed0037b` left out 34 raw
+  files. The repo-wide `.gitignore` rules `*.log` and `build/` dropped them, so they existed only in the
+  worktree and the mirror. Missing were: the 8 S-W/S-X `oracle/wayland-capture-lines.log` files (the raw
+  compositor oracle behind S-W KEEP), every `session.log` (including the aborted SX-U-T2 one),
+  `raw/batch.log` (D1), `raw/unit/*.log` (red/green), and `raw/build/*.log`.
+  - A packet-local `.gitignore` now re-includes `*.log` and `build/`, and the 34 files are committed
+    unchanged (same bytes as the mirror).
+  - `verify_artifacts.py` gained checks 8 to 10:
+    - every cited or promised raw file exists, and no packet file is git-ignored and untracked;
+    - the raw compositor log is re-attributed to the recorded windows;
+    - the per-session timing medians match raw/.
+  - No data, count or disposition changed.
 - **Pilots.** Four pilots ran before PREREG; they are disclosed there and excluded. Pilot 2 is why the
   walk oracle is GetState rather than "any AT-SPI call": it found the 6-call lookup.
 
@@ -272,6 +312,7 @@ not enter the paired difference.
 |---|---|
 | upstream main tested | 989cc76cec262ff8bcf6968b637820340fb9caaa (includes trycua/cua PR 4318, db5573914) |
 | live upstream main at analysis | da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (1 commit ahead, 0 `libs/cua-driver` files) |
+| live upstream main at review fix | 0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (6 commits ahead of 989cc76ce). trycua/cua PR 4375 (920a42f10) edits `platform-linux/src/tools/impl_.rs` `get_window_state`: it changes the first-snapshot walk timeout budget, not the selectors. `dd205d17b` merges onto it with no conflict (`git merge-tree`); the selector test has not been re-run on that tree. |
 | marks port | 709b0e004 (cherry-pick of 28b915ae9), b39b866f7 (cherry-pick of cd9d6d169) |
 | U (tested source) | b39b866f7892677048862e8d5d8539f30b43efc2; sha256 e4ebdff907188f9e84bae9945b1706a6bed4bec3d863e26567bba3eca4899cb4; `cua-driver 0.32.0` in-session |
 | F (tested source) | dd205d17b1590a1a48c76d34173d7b2b831de0ff; sha256 066ed4ef1310440dba1592e436006d65513084db42527a15c7439707c089ed8b; `cua-driver 0.32.0` in-session |
@@ -285,7 +326,15 @@ not enter the paired difference.
 ## Next
 
 - Publish `dd205d17b` as a standalone fix candidate. It applies to 989cc76ce without the marks: it
-  touches only `get_window_state`'s invoke and adds one test module.
+  touches only `get_window_state`'s invoke and adds one test module. Before publishing:
+  - rebase it onto live upstream main (0f1955d2f merges cleanly, see Provenance) and re-run
+    `get_window_state_selector_tests` on the rebased tree;
+  - say in the PR body that it is **Linux-only**. macOS (`platform-macos/src/tools/get_window_state.rs:250`)
+    and Windows (`platform-windows/src/tools/impl_.rs:1331`) still read the selectors with
+    `as_bool()`, so a string value still means the default there.
+  - say that it also refuses JSON `null`, which used to mean the default. No in-repo client sends null:
+    the SDK input skips `None` via `skip_serializing_if`, and the schema says boolean. Third-party
+    clients that send null will now get `invalid_arguments`.
 - #100 track: the native-Wayland 6-call AT-SPI identity lookup on every `get_window_state` call; S-W
   elements without `screenshot_frame`; frame/scale handling on downscaled sway captures; seat binding.
 - #10 accounting: on sway-tiled windows, `include_screenshot:false` is worth about 150 to 166 ms per
@@ -304,7 +353,11 @@ not enter the paired difference.
   - the frozen hashes, with the D2 change accepted only as disclosed;
   - the in-session binaries, and PREREG-before-trials;
   - the quiet-lane receipts, the README dispositions, and a privacy scan (pass `--host` to also scan
-    for the host name).
+    for the host name);
+  - that every cited or promised raw file exists and none is git-ignored (D5);
+  - a re-attribution of the raw compositor capture log to the recorded windows;
+  - the per-session timing medians.
+- `.gitignore` (packet-local): re-includes `*.log` and `build/` (D5).
 - `provenance.json`.
 - `raw/<MODE>/<BIN>/<ID>/`: `calls.jsonl`, `session-env.txt`, `session.log`, `phase-*.jsonl.gz` and
   `oracle/` (X RECORD events, gzipped dbus-monitor log, compositor capture lines).
