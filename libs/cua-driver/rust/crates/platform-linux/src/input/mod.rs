@@ -2257,7 +2257,7 @@ const EFFECT_REGION_HALF: i32 = 120;
 /// cursor overlay pulses there and would count as a change.
 const EFFECT_MASK_HALF: i32 = 32;
 /// Wait for the application to react before comparing the region.
-const EFFECT_SETTLE: Duration = Duration::from_millis(250);
+const EFFECT_SETTLE: Duration = Duration::from_micros(250_000);
 
 /// Raw ZPixmap bytes of a root-window region (clamped to the screen).
 fn root_region_pixels(cx: i32, cy: i32) -> Option<(Vec<u8>, usize, usize)> {
