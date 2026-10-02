@@ -1,0 +1,78 @@
+{
+ "schema": "n02.prereg.v1",
+ "lane": "N-02 (wave 3, experiment)",
+ "title": "Native MCP transport attribution + causal A/B of caller-compiled output validators (HC) and the focus-guard settle-overshoot clamp (CL), canonical GTK3 fixture",
+ "owners": ["kvnloo/cua#93 (R2-04 / N-01R follow-up)", "kvnloo/cua#20", "kvnloo/cua#10", "kvnloo/cua#73"],
+ "advances": "E2 for the native reference tasks: verdicts for action-call MCP transport (N-01R: 5.05% checkbox S0 / 9.55% text X), observation transport (about 9% / 8%, load-sensitive) and the ~21 ms settle-loop overshoot (focus_guard.rs:609-610 at 28b915ae9)",
+ "provider": {"name": "TypeSafe", "cap_requests_reaching_provider": 0, "note": "scripted chooser; the harness refuses and counts any non-loopback connect"},
+ "source": {
+  "branch": "exp/n-02-native-transport-20261002",
+  "branch_base": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa (N-01R head; libs/cua-driver tree = b9b357bc72fe0627b841f66a2d0812fafca8711f = 28b915ae9 + the N-01R knob commit)",
+  "measurement_commit": "194a6342e21b74f37f4e23af1d90bf32ad377397",
+  "measurement_commit_content": [
+   "CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP=1 (default off): each settle-watch poll sleeps min(SETTLE_POLL, watch_until - now), so the last poll ends at watch_until; the 220 ms window is unchanged; exp_knob mark focus_guard_clamp=1 when on; a focus_guard settle_poll mark after each poll diff (trace gate only, every arm)",
+   "Driver-side MCP span marks in proxy::run_direct behind CUA_DRIVER_PHASE_TRACE_FILE: request_read (scope mcp), parse_done, handler_start, handler_end, serialize_done, response_written (scope mcp:<tool|method>)"
+  ],
+  "driver_binary": "cua-driver-n02-194a6342e, sha256 893646ab95ebaa946283c5e05dd0e8555b64702bf41b0d63d90a17ff6098865e, cua-driver 0.32.0 (read inside cua-x11-session.sh); built by build-driver.sh into cua-release-n02 under the cargo-build lock, head=194a6342e, 0 Fresh workspace units, 216 s. Every block's meta row must carry this sha256",
+  "provenance_link_binary": "cua-driver-n01r-b9b357bc7, sha256 c2a9978eb2b579d500a8fe4829e17fa9cfd2a19ec5d53e333e2b5582bdd3ff95 (hashed for the provenance link only; never compared against)"
+ },
+ "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py, task window",
+ "tasks": {
+  "checkbox": "get_window_state (tree + screenshot) -> jev-use eligible_controls lookup of 'I agree' -> click(element_token, delivery_mode=background)",
+  "text": "the same observation -> lookup of Note and Save note -> set_value(Note, unique token) -> click(Save note, background)"
+ },
+ "forced_path": "AT-SPI DoAction (click, cached-ref route, background delivery, focus guard) and AT-SPI set_value + button; route taken from receipts (route == accessibility) and the full N-01R mark chain on every action",
+ "oracle": "the fixture's own state file (cua.gtk3_task_state_v1), read by an independent harness thread every 2 ms; T ends at the read-end of the first sample that started at or after the last action's tool return and shows the expected state",
+ "arms": {
+  "checkbox": {"S0": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0", "S0+HC": "S0 + caller-compiled output validators", "S0+CL": "S0 + CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP=1", "S0+HC+CL": "both"},
+  "text": {"X": "S0 + set_agent_cursor_motion {glide_duration_ms:1, dwell_after_click_ms:0}", "X+HC": "X + HC", "X+CL": "X + CL", "X+HC+CL": "both"},
+  "HC_method": "B-01 H_C method without monkeypatching: a ClientSession subclass overrides _validate_tool_result; every arm calls tools/list once before T; HC arms compile one validator per distinct output schema right after it (validator_for + check_schema + cls(schema, registry=Registry())), outside T, and validate each result with best_match(iter_errors(structuredContent)), the acceptance rule of jsonschema.validate; non-HC arms run the library path unchanged",
+  "common": "every arm: fresh fixture + fresh Driver per trial, phase trace on, telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1), set_agent_cursor_motion sent before T ({} in non-fast arms), scripted chooser"
+ },
+ "design": {
+  "main": "4x4 Williams square, 24 rounds per task, both tasks per round with the first task alternating by round; each task runs its 4 arms in Williams row (round mod 4). n = 24 per arm per task, 192 trials, paired within the round. Two EXCLUSIVE quiet-timed acquisitions of 12 rounds (96 trials, about 5 minutes each)",
+  "phase1": "Phase 1 attribution uses the S0 (checkbox) and X (text) cells of the same 24 rounds (n = 24 per task); the HC/CL arms are decomposed the same way",
+  "smoke": "d01: 4 trials, arm D = every CUA_DRIVER_EXP_* unset, shared lock (default-off check of the N2 binary)",
+  "controls": "c01..c12, shared lock, 20 trials per block: per task, every arm x {decoy 100 ms, edge steal at 205.0-215.0 ms in 10 evenly spaced values, no steal} x 10, arms in Williams order",
+  "pilot": "p01-p03 (shared lock, excluded from every result): 8 main + 4 edge + 2 no-steal trials to validate the harness",
+  "statistics": "medians; nearest-rank p95; paired within-round differences base - arm (positive = arm faster); percentile bootstrap over rounds, 10000 resamples, seed 9101"
+ },
+ "metrics": {
+  "T": "first get_window_state send -> oracle confirmation (as N-01R)",
+  "decomposition": "N-01R components with contiguous boundaries; Driver marks (wall ns) mapped to the caller monotonic clock with the trial's median wall-mono offset",
+  "transport_parts": {
+   "client_send": "call start m0 -> Driver request_read; sub-spans client_build (m0 -> hand-off to the stdio writer task) and client_write_pipe (hand-off -> request_read: JSON dump, pipe write, Driver read_line wake)",
+   "driver_read_handler": "request_read -> registry dispatch_enter; sub-spans drv_parse, drv_admission (parse_done -> handler_start: protocol validate + validate_tool_call(tools_list) + session identity + bookkeeping), drv_inner_pre (handler_start -> dispatch_enter)",
+   "driver_serialize_write": "registry dispatch_exit -> response_written; sub-spans drv_inner_post (dispatch_exit -> handler_end: SDK return, Driver-side result conformance, finish_response), drv_bookkeep_serialize (handler_end -> serialize_done: post-handler session bookkeeping + serde), drv_write (serialize_done -> response_written: stdout write + flush)",
+   "client_read_validate": "response_written -> call return m1; sub-spans client_pipe_read_parse (-> arrival of the parsed message on the session read stream), client_result_model (-> validate start), client_validate (ClientSession._validate_tool_result span), client_return (-> m1)",
+   "identity": "per call, the four parts sum to N-01R's transport: (m0 -> dispatch_enter) + (dispatch_exit -> m1)"
+  },
+  "loadavg": "1-minute loadavg recorded per trial"
+ },
+ "verdicts": {
+  "HC": "DELETED (KEEP, caller-side) if the 95% CI of median(T_base - T_HC) excludes 0 on the positive side, every trial of both arms is valid and verified (identical outcomes), and the HC equivalence control agrees on 80/80; otherwise NOT_MATERIAL. Evaluated per task (S0 vs S0+HC; X vs X+HC)",
+  "transport_parts_not_removed_by_HC": "IRREDUCIBLE: drv_bookkeep_serialize and drv_write (Driver-side serialize/write). Kernel pipe time is not isolated from the Python reader/writer, so the spans that contain it (client_write_pipe, client_pipe_read_parse) are named UNTESTED with their ms. Every other sub-span (client_build, drv_parse, drv_admission, drv_inner_pre, drv_inner_post, client_result_model, client_return) is named UNTESTED with its ms; client_validate takes the HC verdict",
+  "CL": "DELETED (product fix candidate; default unchanged until reviewed) if the 95% CI of median(T_base - T_CL) excludes 0 on the positive side, the median saving is at least 10 ms, and both steal controls pass 10/10 in every arm; if the controls pass but the saving is under 10 ms or the CI includes 0: NOT_MATERIAL; any steal miss in any arm: KILL. Evaluated per task (S0 vs S0+CL; X vs X+CL)",
+  "steal_pass": "a steal trial passes when the decoy stole, the independent focus sampler's final (focus, active) equals the pre-trial values, and the click receipt reports focus_outcome=restored (the guard detected and restored). Any other outcome is a miss. Steal timing is reported per trial (after do_action_replied, after the guard start, inside the 220 ms watch or not) but does not exclude a trial",
+  "nosteal": "false restore = the receipt reports focus_outcome=restored or the focus sampler saw any change; reported for every arm (main trials too)",
+  "load_sensitivity": "OLS of observation and action transport on 1-minute loadavg over this run's main trials, reported next to N-01R's S0/X medians at loadavg ~17.1 (from its committed trial metrics). Different binaries and host states: qualitative only, never combined or ratioed",
+  "untested_share": "per trial, median over the cell, for checkbox S0/S0+HC/S0+CL/S0+HC+CL and text X/X+HC/X+CL/X+HC+CL. standard: action-call transport sub-spans named UNTESTED (+ client_validate when HC is NOT_MATERIAL) + resolution + runner + unattributed time, over T; the observation transport is IRREDUCIBLE by invariant as in N-01R. conservative: additionally the observation call's UNTESTED transport sub-spans (+ its client_validate when HC is NOT_MATERIAL) and its T0 -> send residual"
+ },
+ "controls": {
+  "HC_equivalence": "offline (hostless, no display): 40 real structuredContent results from the first measured block's corpus (per tool, first in corpus order: get_window_state 8, click 12, set_value 6, list_windows 6, set_agent_cursor_motion 4, get_agent_cursor_state 4) + 40 mutants (strategies add_unknown_property, drop_required, wrong_type, root_not_object tried from index mod 4; the first one the library path rejects is kept). Reference = mcp ClientSession._validate_tool_result (jsonschema.validate); candidate = the harness's compiled path. Required: identical accept/reject 80/80",
+  "CL_safety": "decoy (pre-mapped harness X window, EWMH activate + raise + XSetInputFocus) steals the focus 100 ms after the app's state change (DoAction effect), and an edge steal at 205-215 ms, inside the 220 ms window; n = 10 per arm per task (all 4 arms: the CL arms and the default arms). Required: detect and restore 10/10 in every arm; any miss means CL KILL. No-steal control n = 10 per arm per task",
+  "default_off_smoke": "arm D, 4 trials: no CUA_DRIVER_EXP_* in the Driver environment, no exp_knob marks, post-action sleep 50-60 ms and settle >= 220 ms",
+  "negative_fallback": "the library validation path is the fallback of the compiled path (schema not compiled -> library path); CL off is the fallback of CL"
+ },
+ "gates": {
+  "validity": "at least 95% valid and verified per arm (23/24)",
+  "invariants": "0 stale dispatches, 0 duplicate mutations (final seq = before + 1), 0 unverified successes (T always ends on the oracle; click receipts are unverifiable)",
+  "coverage": "reported per cell"
+ },
+ "locks": "measured blocks e01/e02 under bin/quiet-timed (EXCLUSIVE, receipt in the shared ledger), each under 15 minutes; smoke, controls and pilot under flock -s on the quiet-lane lock (<= 20 trials per acquisition); unit tests and builds under the cargo-build lock",
+ "isolation": "every code-executing command: TMPDIR=<lane tmp> hostless hostless-strict <cmd>; GUI/Driver work inside cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1\"",
+ "pilot_observations": "p01-p03 (14 trials, shared lock, excluded): 14/14 valid and verified; full MCP span / client stamp coverage; the clamp ends the last settle poll at ~220 ms (S0+CL 221.7 ms vs S0 242.3 ms); edge steals at ~211-212 ms after the guard start were detected and restored in S0, S0+CL, X and X+CL; client_validate is the largest transport sub-span in non-HC arms. No design change followed from the pilot",
+ "diagnostics_not_verdicts": "settle_polls and the last settle_poll time after the guard start (the detecting poll in steal trials); steal time relative to do_action_replied and to the guard start; observation payload JSON size",
+ "exclusions": "pilot blocks only. Every measured trial is kept; a failed block attempt keeps its cells and is re-run under a new label; the latest attempt of each planned cell is used and earlier attempts are reported",
+ "claim_boundary": "GTK3 canonical fixture, AT-SPI background delivery, X11 Xvfb/openbox/picom, Driver binary N2 (194a6342e), scripted chooser, fresh Driver per trial. A verdict transfers to R2-10's source by mechanism only"
+}
