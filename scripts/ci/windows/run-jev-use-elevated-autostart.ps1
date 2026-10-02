@@ -210,11 +210,21 @@ try {
         while (-not $state.Stop) {
             foreach ($process in @(Get-CimInstance Win32_Process -Filter "Name='chrome.exe' OR Name='msedge.exe'" -ErrorAction SilentlyContinue)) {
                 $processId = [int]$process.ProcessId
-                if ($seen.ContainsKey($processId) -or [string]::IsNullOrEmpty($process.CommandLine)) { continue }
+                if ([string]::IsNullOrEmpty($process.CommandLine)) { continue }
                 if ($process.CommandLine -notmatch '--user-data-dir') { continue }
-                $seen[$processId] = $true
+                # Windows can reuse a child PID for the next agent's browser.
+                # A PID alone is not an identity across these sequential runs.
+                $creationDate = $process.PSObject.Properties['CreationDate']
+                if ($null -eq $creationDate -or $creationDate.Value -isnot [datetime]) {
+                    throw "cannot identify isolated browser process ${processId}: creation time unavailable"
+                }
+                $created = $creationDate.Value.ToUniversalTime()
+                $identity = "${processId}:$($created.Ticks)"
+                if ($seen.ContainsKey($identity)) { continue }
+                $seen[$identity] = $true
                 $record = [ordered]@{
                     Pid = $processId
+                    Created = $created
                     ParentPid = [int]$process.ParentProcessId
                     Main = ($process.CommandLine -notmatch '\s--type=')
                     Name = $process.Name
@@ -251,13 +261,13 @@ try {
 
     $state.Stop = $true
     $sampler | Wait-Job -Timeout 30 | Out-Null
-    $sampler | Receive-Job -ErrorAction Continue
+    $sampler | Receive-Job -ErrorAction Stop
 
     # 5. Elevated Drivers launched the isolated browsers with standard-user
     #    tokens.
     $browsers = @($state.Browsers)
     foreach ($browser in $browsers) {
-        Write-Posture "[browser] name=$($browser.Name) main=$($browser.Main) parent=$($browser.ParentPid)$(if ($browser.Parent) { " parent_process=[$($browser.Parent)] parent_token=[$($browser.ParentPosture)]" }) $(if ($browser.Posture) { $browser.Posture } else { "pid=$($browser.Pid) unreadable: $($browser.Error)" })"
+        Write-Posture "[browser] name=$($browser.Name) main=$($browser.Main) created=$($browser.Created.ToString('o')) parent=$($browser.ParentPid)$(if ($browser.Parent) { " parent_process=[$($browser.Parent)] parent_token=[$($browser.ParentPosture)]" }) $(if ($browser.Posture) { $browser.Posture } else { "pid=$($browser.Pid) unreadable: $($browser.Error)" })"
     }
     $mains = @($browsers | Where-Object { $_.Main -and $null -ne $_.Posture })
     if ($mains.Count -lt 2) {
