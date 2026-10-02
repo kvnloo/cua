@@ -29,6 +29,7 @@
   "sha256": "2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3",
   "version_in_session": "cua-driver 0.32.0",
   "build": "flock -s quiet-lane.lock flock cargo-build.lock build-driver.sh <wt> b01-f5c991e59 cua-release-r2-01; cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1; 0 Fresh workspace units; 92 s (raw/build-receipt.txt); the lock mode of the build invocation is not receipted by build-driver.sh",
+  "lock": "documented command; lock not receipted (README Deviation 9; raw/lock-ledger.json lists build b01-f5c991e59 as unreceipted)",
   "disclosure": "build-driver.sh runs '<bin> --version' outside the isolated session (no display use); the version was re-recorded inside the session (raw/session-*.log)",
   "superseded_shakedown_only": [
    "cua-driver-b01-56817bd72 (first measurement commit, shakedown 1)",

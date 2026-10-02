@@ -21,6 +21,10 @@ Checks:
      browser_ref_stale.
  11. E2: every material row carries one of DELETED / IRREDUCIBLE / OWNER_DECISION / UNTESTED
      (or the mock-decision label).
+ 12. B-01R text fix: the README quotes the MCP admission cost per tools/call, per action step and
+     per task, and the observation cost per snapshot, exactly as recomputed from raw/; neither
+     '4.4 ... per call' nor 'under the cargo lock' appears outside Deviation 13's before-quotes;
+     the Driver binary row and provenance.json say the build lock was not receipted.
 """
 
 from __future__ import annotations
@@ -47,6 +51,84 @@ def check(cond: bool, what: str) -> None:
     print(("PASS " if cond else "FAIL ") + what)
     if not cond:
         FAIL.append(what)
+
+
+def per_call_costs(trials: list[dict], cls: str, arm: str, block: str) -> dict[str, float]:
+    """MCP admission and observation costs of one arm, recomputed from raw/ with b01_analysis.
+
+    Per task = mean over valid trials of the decomposition's sub-spans. The divisors are counted
+    from raw/ as well: tools/call windows inside T that carry an mcp.line_read mark, the action
+    windows inside T, and the snapshot windows inside T.
+    """
+    import statistics
+
+    adm, cdp, proc, calls, steps, snaps = [], [], [], [], [], []
+    for t in trials:
+        s = t["summary"]
+        if s["cls"] != cls or s["arm"] != arm or s["block"] != block or not A.is_valid(t)[0]:
+            continue
+        d = A.decompose(t)
+        t0 = d["T0_ns"]
+        t1 = t0 + round(d["T_runner_ms"] * 1e6)
+        wins = [w for w in A._windows(t["events"]) if w["t1"] >= t0 and w["t0"] <= t1]
+        reads = [m["t_mono_ns"] for m in t["trace"] if m["phase"] == "mcp.line_read"]
+        calls.append(sum(1 for w in wins if any(w["t0"] <= x <= w["t1"] for x in reads)))
+        steps.append(sum(1 for w in wins if w["label"].startswith("action")))
+        snaps.append(len(d["observations"]))
+        adm.append(d["sub"].get("pre_admission_validate", 0.0) + d["sub"].get("pre_inner_validate", 0.0))
+        cdp.append(d["sub"].get("observation_cdp", 0.0))
+        proc.append(d["sub"].get("observation_processing", 0.0))
+    assert len(set(calls)) == len(set(steps)) == len(set(snaps)) == 1, (cls, arm, calls, steps, snaps)
+    per_task = statistics.mean(adm)
+    return {"n": len(adm), "calls_per_task": calls[0], "steps_per_task": steps[0], "snapshots_per_task": snaps[0],
+            "admission_per_task": per_task, "admission_per_call": per_task / calls[0],
+            "admission_per_step": per_task / steps[0], "obs_cdp_per_task": statistics.mean(cdp),
+            "obs_cdp_per_snapshot": statistics.mean(cdp) / snaps[0], "obs_proc_per_task": statistics.mean(proc),
+            "obs_proc_per_snapshot": statistics.mean(proc) / snaps[0]}
+
+
+def check_text_fix(readme: str, trials: list[dict], summary: dict) -> None:
+    """12. B-01R text fix: per-call / per-step / per-task admission cost, per-snapshot observation cost,
+    and the unreceipted build lock. Deviation 13 quotes the superseded wording verbatim as its "before"
+    column, so the absence checks run on the README with that one section removed."""
+    start = readme.find("13. **Text fix pass (B-01R).**")
+    check(start >= 0, "12 README has Deviation 13 'Text fix pass (B-01R)'")
+    end = readme.index("## Limits")
+    body = readme[:start] + readme[end:] if start >= 0 else readme
+    check(not re.search(r"4\.4[^|\n]{0,20}per call", body), "12 no '4.4 ... per call' outside the Deviation 13 before-quotes")
+    check("under the cargo lock" not in body, "12 no 'under the cargo lock' outside the Deviation 13 before-quotes")
+    prov_row = next(line for line in readme.splitlines() if line.startswith("| Driver binary |"))
+    check("documented command; lock not receipted (Deviation 9)" in prov_row,
+          "12 provenance Driver binary row: 'documented command; lock not receipted (Deviation 9)'")
+    prov = json.loads((HERE / "provenance.json").read_text())
+    check("not receipted" in prov["driver_binary"].get("lock", "")
+          and "build b01-f5c991e59" in prov["lock_ledger"]["unreceipted_runs"],
+          "12 provenance.json driver_binary.lock says the build lock was not receipted")
+
+    fill = per_call_costs(trials, "fill", "K3", "m")
+    tog = per_call_costs(trials, "toggle", "K5", "v")
+    mod = per_call_costs(trials, "modal", "K5", "v")
+    e2 = summary["E2"]
+    for cls, c in (("fill", fill), ("toggle", tog), ("modal", mod)):
+        want = e2[cls]["best"]["untested_plausibly_deletable_ms"]["mcp_admission_tool_list_validation"]
+        check(abs(c["admission_per_task"] - want) < 1e-3 and c["calls_per_task"] == 4 and c["steps_per_task"] == 2
+              and c["snapshots_per_task"] == 2,
+              f"12 {cls} {e2[cls]['best_composed_arm']}: admission per task {c['admission_per_task']:.3f} ms equals the "
+              f"summary; {c['calls_per_task']} tools/call, {c['steps_per_task']} action steps, "
+              f"{c['snapshots_per_task']} snapshots per task (n = {c['n']})")
+    f = fill
+    quotes = [
+        f"about {f['admission_per_call']:.1f} ms per tools/call, about {f['admission_per_step']:.1f} ms per action step "
+        f"(2 calls) and {f['admission_per_task']:.1f} ms per task (4 calls)",
+        f"{f['admission_per_task']:.1f} ms per task sits in",
+        f"about {f['admission_per_call']:.1f} ms per tools/call and {f['admission_per_step']:.1f} ms per action step",
+        f"admission span {tog['admission_per_task']:.1f} / {mod['admission_per_task']:.1f} ms per task, about "
+        f"{tog['admission_per_call']:.1f} / {mod['admission_per_call']:.1f} ms per tools/call",
+        f"Per-snapshot cost (mean of the 2): {f['obs_cdp_per_snapshot']:.1f} ms CDP vs {f['obs_proc_per_snapshot']:.1f} ms "
+        f"processing ({f['obs_cdp_per_task']:.1f} and {f['obs_proc_per_task']:.1f} ms per task)",
+    ]
+    for q in quotes:
+        check(q in body, f"12 README quotes the raw recomputation: '{q}'")
 
 
 def main() -> None:
@@ -163,6 +245,8 @@ def main() -> None:
     off = [(c, lab, r["component"]) for c, e in summary["E2"].items() for lab in ("best", "baseline")
            for r in e[lab]["rows"] if r["material"] and not r["verdict"].startswith(allowed)]
     check(not off, f"11 E2 material rows all carry an allowed verdict (offenders: {off})")
+
+    check_text_fix(readme, trials, summary)
 
     host = socket.gethostname()
     user = os.environ.get("USER") or ""
