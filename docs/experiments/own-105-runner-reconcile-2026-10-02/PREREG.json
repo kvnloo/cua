@@ -1,0 +1,79 @@
+{
+ "schema": "own-105-prereg.v1",
+ "experiment": "OWN-105 runner hardening: bounded reconciliation, unresolved-completion guard, receipt on read failure (kvnloo/cua#105)",
+ "lane": "OWN-105 (fix), CUA RFC loop wave 1",
+ "owners": {
+  "recovery": "kvnloo/cua#105",
+  "lifetime_boundary_only": "kvnloo/cua#9",
+  "vocabulary_no_public_field": "kvnloo/cua#38 (upstream trycua/cua 4009, plain text)",
+  "follow_up_of": "kvnloo/cua#93 R2-05"
+ },
+ "registered_utc": "see the commit time of the commit that adds this file (before the first measured trial)",
+ "sources": {
+  "base_unfixed": "98a45e6c528da9e2715288c20c2a0feeeef8e73f (kvnloo/cua#105 head)",
+  "tests_commit": "feadb19659b5711589b08efaaa8e2fe0cea42420",
+  "fix_commit": "27386f3e34540e22218b704705e5238ef1316e85",
+  "measured_tree": "the PREREG commit; its libs/cua-driver/examples/jev-use tree equals the fix commit (session-env records worktree_head and a clean jev-use status per block)",
+  "driver_source": "a0bca744067d04f05904319d3d919be30c336556; git diff --quiet a0bca7440 98a45e6c5 -- libs/cua-driver/rust rc=0",
+  "driver_binary": {
+   "path_label": "<lanes>/bin/cua-driver-4316-a0bca7440",
+   "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95",
+   "version": "cua-driver 0.31.0"
+  }
+ },
+ "hypothesis": "The three R2-05 runner gaps close with minimal caller-side runner code and no new service. G1: an ambiguous action error is resolved by bounded fresh oracle reads (0.1 s interval, 3 s deadline) into verified, refuted or unresolved_unknown, and a first negative read never authorizes another dispatch. G2: no second completion is dispatched while a dispatched completion is unresolved. G3: a read failure after an unverified completion ends with a receipt instead of escaping. Reconsideration happens exactly once and only when the mutation request's own write provably raised (caller-side write ledger on the transport write); an error class alone is not proof.",
+ "forced_path": "Unmodified jev-use runners at the measured tree (python/run.py run(); typescript/run.ts via its CLI), --provider mock --guarded-completion --visual-observation off --max-steps 4. Step 1 the mock provider types the token; step 2 guarded completion dispatches Submit (browser_click, dom_event). Real MCP stdio, real Driver 0.31.0, real Chrome, private Xvfb.",
+ "fixture": "R2-05 owned loopback fixture with target journal, page variant with a non-navigating Submit (fetch POST of the same form body; Submit stays observable). Placements for the first submit: immediate, after_unchanged:1, withheld (released by the harness after the runner exits).",
+ "rows": {
+  "R0_control": "no fault, immediate",
+  "R1_ack_lost_applied": "ack_lost: Driver answer held until journal applied, dropped, EOF; immediate",
+  "R2_delayed_within_deadline": "ack_lost with barrier received; effect lands only after one unchanged /state read (after_unchanged:1)",
+  "R3_delayed_past_deadline": "ack_lost with barrier received; withheld past the runner's deadline",
+  "R4_read_failure_after_unverified": "Submit answer delivered; withheld; the next semantic snapshot answer is replaced with a tool error result",
+  "R5_replanned_completion": "no fault; withheld; Submit stays observable so the provider re-plans it at step 3",
+  "R6_own_write_raised": "pre_dispatch: after the step-2 snapshot answer the caller-side write is closed; the Submit request's own write raises before anything is sent (Python: anyio ClosedResourceError from the session write stream; TypeScript: StdioClientTransport.send raises 'Not connected' before writing); EOF follows",
+  "R6n_unproven_not_written": "negative control for the pre-write rule: nothing is sent but there is no proof the request's own write raised (Python request_lost: the write returns, the seam drops the request, EOF; TypeScript closed_before_request: EOF right after the snapshot answer, the SDK refuses the request before send())"
+ },
+ "arms_and_n": {
+  "py_fixed": "12 per main row (R0-R6), 4 for R6n",
+  "ts_fixed": "8 per main row (R0-R6), 4 for R6n",
+  "py_unfixed": "5 each for R1, R3, R4, R5 (base runner 98a45e6c5)",
+  "total": 168
+ },
+ "schedule": "deterministic round-robin over (row, arm) cells, rotated per round, odd rounds reversed (run_trials.schedule); blocks of at most 10 trials, each block holds flock -s quiet-lane.lock (shared) for its whole run; every trial kept",
+ "oracle": "target journal owned by the fixture (received and applied per POST /submit with op number and release reason, every /state read with effect visibility); read by the harness after the runner exits, after releasing held operations and waiting for quiescence. The runner's outcome and receipts are under test, never the oracle.",
+ "metrics": "computed by verify_artifacts.py from raw/measured only: duplicates = max(0, applied-1); second_dispatches = max(0, received-1); receipt_ok = final outcome event carries mutation_outcome with receiptKind mutation-outcome/v0, resolution in {verified, refuted, unresolved_unknown, pre_write_failed}, keys within the v0 set plus resolution, token absent from the log; landed_as_failure = applied>=1 and (crash or outcome not in {verified, unknown} or final resolution pre_write_failed); restart_while_unresolved = a second session after a Submit reached the Driver in the first; placement checks per fault (fault fired, barrier reached, journal probe applied 0 where the effect must not have landed, first submit not applied before runner exit in R3/R4/R5, a negative post-dispatch read before apply in R2, no Submit forwarded before the R6/R6n fault).",
+ "gates": {
+  "KEEP": "for the fixed runners: 0 duplicate mutations across all rows; 100% of trials end with a content-free receipt (verified / refuted / unresolved_unknown / pre_write_failed); 0 landed effects classified as failure; R5 has 0 second dispatches; every R6 trial makes exactly one reconsideration; the unfixed control reproduces >=1 gap; the jev-use suites, typecheck and the 4 CLI verifiers pass at the fix head; and fault placement holds in 100% of placement-checked trials (validity condition added by this lane)",
+  "KILL": "any blind second effect (duplicate or second dispatch) in a fixed arm, a landed effect reported as failure, or a restart from step 1 while unresolved",
+  "REVISE": "otherwise"
+ },
+ "predictions_fixed": {
+  "R0_control": "verified, receipt verified",
+  "R1_ack_lost_applied": "verified (reconciled), phase action",
+  "R2_delayed_within_deadline": "verified after a first negative read, phase action",
+  "R3_delayed_past_deadline": "unknown, unresolved_unknown, no retry",
+  "R4_read_failure_after_unverified": "unknown, unresolved_unknown, phase observe, no crash",
+  "R5_replanned_completion": "unknown, unresolved_unknown, phase completion_blocked, 1 Submit reaches the Driver",
+  "R6_own_write_raised": "one reconsider event (pre_write_failed, attempted false, effect none, retryDisposition reconsider), two sessions, verified",
+  "R6n_unproven_not_written": "unknown, unresolved_unknown, 0 reconsiderations, journal received 0"
+ },
+ "unfixed_gap_predicates": {
+  "R1_ack_lost_applied": "G1: outcome unknown, receipt without resolution, effect applied at runner exit, 0 post-dispatch oracle reads before exit",
+  "R3_delayed_past_deadline": "G1: outcome unknown, receipt without resolution, 0 post-dispatch oracle reads before exit",
+  "R4_read_failure_after_unverified": "G3: the runner raised (no outcome event, no receipt)",
+  "R5_replanned_completion": "G2: journal received >= 2 at runner exit"
+ },
+ "pilots": "Plumbing pilots before registration, excluded from all denominators and kept in raw/pilot/: pilot1 (10 trials; 2 TypeScript trials failed to start because the entry was compiled as CommonJS, fixed by renaming it to .mts) and pilot2 (12 trials). The gates come from the lane spec, which predates the pilots; the predictions were written after the pilots had shown them.",
+ "provider": "mock only; 0 requests to TypeSafe",
+ "frozen_file_sha256": {
+  "harness/ackloss_fixture.py": "0b6001d5e110b187221e0e9f4c9d37722e429cc6cb71c8c1fc36a209841bd4d6",
+  "harness/fault_transport.py": "c85eec39fd3d5ae186a3654511aa35e07ebff4d28eaf664d1e80675dace49784",
+  "harness/py_trial.py": "3543634fe9798b311350e7435f638ac8c3b7a5875de79caa5f4959e9e25e2667",
+  "harness/ts_trial.mts": "245ca9fbd537c313389bfb2a4c81a784fe5356af1e2bfa219d6e900f6d12236b",
+  "harness/run_trials.py": "3f39621165cf323c5f99d0f79fd4a6422ceb6a436253bd76a04661a242d6e435",
+  "harness/session_entry.sh": "1f00370c741e7dc1ab3eee690b38ed87a6a6cf76ec39f516afdb9dd0479fea0e",
+  "harness/test_harness.py": "010ccbb68f4bcd9a712d4f2139ffc236218312c9d5b253e91555a8d5750304a6",
+  "verify_artifacts.py": "c61d49ab69d6983e8f63a6981075538857ce3f11a6bcb4a295bfe8a12326b89d"
+ }
+}
