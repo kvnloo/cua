@@ -1,0 +1,78 @@
+{
+  "schema": "cua-rfc-loop.prereg.v1",
+  "lane": "B-01",
+  "title": "Browser critical-path decomposition of the composed configuration on the R2-10 composition source, with causal A/B of feedback, the browser_type focus settle, the completion poll and MCP client schema validation",
+  "owners": ["kvnloo/cua#93 (R2-01 follow-up, R2-10 prep)", "kvnloo/cua#10", "kvnloo/cua#73", "kvnloo/cua#24 (task classes)"],
+  "written_before_first_measured_trial": true,
+  "source": {
+    "base": "7d3a28b663a041b072b4be8aadb187a1eab5fd28 (R2-01 phase trace on upstream main 229b65b28)",
+    "merge": "0c6a53237 = git merge --no-ff a0bca744067d04f05904319d3d919be30c336556 (trycua/cua PR 4316 live head; conflict-free; touches libs/cua-driver/examples/jev-use and .github/workflows/ci-jev-use.yml only)",
+    "measurement_commit": "f5c991e5927513c8b94da4330c94276dc5f8ce22 (B-01 trace marks + CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS; measurement only, default off)",
+    "binary": "cua-driver-b01-f5c991e59, sha256 2e0248ad2b6efedd6c5f7acba6b5d8bd92160a29a6c9c80061bce5ea4efa43f3, cua-driver 0.32.0, build-driver.sh family cua-release-r2-01",
+    "upstream_main_c4d0c6625_libs_cua_driver_identical_to_229b65b28": true
+  },
+  "provider": {"kind": "mock (jev-use choose_mock_for_task)", "cap_requests_reaching_typesafe": 0, "check": "runner refuses and counts every non-loopback socket connect; verify_artifacts requires 0 in every manifest and trial"},
+  "task_classes": {
+    "fill": "jev-use FixtureFormTask on the built-in FixtureServer at the tested source; oracle = server state submitted == token (exact string), plus a server-side CLOCK_MONOTONIC submit journal",
+    "toggle": "#24 'toggle-confirm' page and /event/toggle handler copied verbatim from kvnloo/cua 5474aa31f scripts/repro/issue24_battery_live.py; oracle = oracle_ok('toggle-confirm') (checked is True) on the server state, plus journal",
+    "modal": "#24 'modal' page and /event/opened + /event/modal handlers copied verbatim from 5474aa31f; oracle = oracle_ok('modal') (opened and modal True) on the server state, plus journal"
+  },
+  "per_trial_procedure": "fresh cua-driver mcp; set_agent_cursor_enabled {enabled: arm}; set_agent_cursor_motion {arm motion; defaults made explicit in non-K1 arms}; browser_prepare isolated_new (Driver-chosen Chrome); wait_for_window; bind; navigate; then the jev-use run.py step loop: oracle read, semantic_v2 snapshot, task_candidates_for_step(visual auto), guarded resolve (PR 4316, fill only) or choose_mock_for_task, plan_guarded_completion, action, and after the completion candidate the completion poll (read, sleep poll_ms, same 2.0 s deadline). Fixture reset and a unique token per trial.",
+  "arms": {
+    "K0n": "feedback default ON, no guard, P100, settle unset (R2-10 baseline shape; fill only; decomposition only)",
+    "K0": "feedback default ON (+ guard on fill)",
+    "K1": "fast glide: set_agent_cursor_motion {glide_duration_ms:1, dwell_after_click_ms:0}, cursor stays enabled (+ guard on fill)",
+    "K2": "feedback OFF: set_agent_cursor_enabled {enabled:false} (+ guard on fill)",
+    "K3": "OFF + T0 (CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS=0) + guard; fill only",
+    "K4": "OFF + T0 where applicable (fill) + P10 (completion poll 10 ms, same 2.0 s deadline; caller-side harness parameter) (+ guard on fill)",
+    "K5": "K4 + caller-side compiled MCP output-schema validators (compiled once at tools/list, outside T; same acceptance rule as jsonschema.validate); secondary, added after the shakedown localized ~6 ms per action call to mcp 1.30 ClientSession._validate_tool_result"
+  },
+  "class_arms": {"fill": ["K0n", "K0", "K1", "K2", "K3", "K4"], "toggle": ["K0", "K1", "K2", "K4"], "modal": ["K0", "K1", "K2", "K4"]},
+  "design": {
+    "primary_block": "20 rounds; each round runs every class (class order rotated per round) and, within a class, its arms in the Williams-balanced order row (round mod n_arms) of a Williams square (n=6 fill: rows used 4,4,3,3,3,3 times; n=4 toggle/modal: 5 full squares). n = 20 per arm per class. All under the EXCLUSIVE quiet-lane lock.",
+    "k5_block": "20 rounds x 3 classes of AB/BA pairs K4/K5 (alternating order), EXCLUSIVE lock, after the primary block",
+    "t0_stress_block": "20 AB/BA pairs fill K3 vs K2 with a 64-character token, EXCLUSIVE lock, after the K5 block",
+    "controls_block": "stale-ref 2 per arm per class (28), first-action-only 2 per class (6), guard decline on DUPLICATE_SUBMIT_ON_INPUT 6 (K0 x3, K4 x3); SHARED quiet-lane lock in acquisitions of <= 10 trials; separate run after the measured run in a fresh session",
+    "loadavg": "recorded before and after every trial; every trial and failure kept"
+  },
+  "metrics": {
+    "T0": "caller send of the first semantic_v2 observation (label snapshot1)",
+    "T_runner": "T0 -> return of the runner's first oracle read that classifies verified (primary for every gate)",
+    "T_oracle": "T0 -> first confirming read of the independent harness thread that re-reads the server state every 2 ms (the spec's T; reported for every arm, not gated)",
+    "effect_time": "server journal time of the first completion mutation (fill: submit; toggle: update with checked; modal: update with modal)",
+    "decomposition": "telescoping decomposition of T_runner over caller events (call_send/return, client_validate_start/end, oracle_send/return, sleep_start/end, decide_start/decided) and Driver marks inside each call window; each interval is classified by its left boundary into: observation (cdp|processing), resolution, revalidate, visualization (with arrival-wait sub-component), input_prep, settles (focus settle; readiness-poll sleeps), dispatch (effectful CDP send->response), dispatch_post, driver_pre_dispatch (mcp.line_read->dispatch.enter), driver_post_dispatch (dispatch.exit->mcp.written), transport (client send->mcp.line_read, mcp.written->client_validate_start, client_validate_end->return), client_validation, decision (mock), runner_overhead, verification_reads, sleeps_polls, target_effect_lag (only the part of the post-final-action tail before effect_time), unattributed (unknown left mark). 'MCP transport' (spec) = transport + driver_pre_dispatch + driver_post_dispatch + client_validation, reported grouped and split. Non-additive diagnostics: effect lag from the final CDP send; per-step observation count x ms; glide plan per arrival wait."
+  },
+  "hypotheses": {
+    "H_V": "With the composed decision path fixed, the fast glide (K1) recovers >= 90% of the saving of feedback OFF (K2) relative to the default (K0). Glide profile: regress arrival-wait ms on start-to-target pixel distance across ON (K0, K0n) glides; report slope and intercept with bootstrap CIs, and the planned path length and frame statistics.",
+    "H_T": "On Chrome 151 the 100 ms focus-emulation settle in browser_type can be deleted (knob 0) with 0 dropped characters.",
+    "H_P": "The runner's 100 ms completion-poll sleep is entered in a material fraction (>= 10%) of composed trials (K3 fill, K2 toggle/modal), and a 10 ms bounded poll with the same deadline (K4) deletes that wait with no outcome change.",
+    "H_C": "Secondary: the MCP client's per-call output-schema validation (schema check + validator construction on every tools/call) can be deleted caller-side by compiling one validator per schema at tools/list, with identical acceptance and no outcome change."
+  },
+  "analysis": {
+    "summary": "median and nearest-rank p95 of T_runner and T_oracle per arm per class; paired differences vs K0 and vs the previous arm within the same round",
+    "ci": "seeded percentile bootstrap over rounds, 10000 resamples, seed 20261002 (Python random.Random), statistic = median of paired differences (ratio statistics resample rounds and recompute both medians)",
+    "pairs": "a round contributes a pair only if both trials are valid; dropped pairs are listed",
+    "coverage": "named-span coverage = 1 - unattributed / T_runner per trial; gate on the per-class mean",
+    "shares": "component share = mean component ms / mean T_runner per arm per class (additive); medians also reported",
+    "glide_regression": "OLS of arrival_wait_ms on distance_px (and separately on path_length_px) over every ON arrival wait in K0 and K0n; percentile bootstrap over glides (10000, seed 20261002) for slope and intercept"
+  },
+  "gates": {
+    "validity": ">= 95% of trials verified per arm per class (verified = server-state oracle exact match AND exactly 1 completion mutation AND the expected forced path); every failure listed",
+    "coverage": "named-span coverage >= 90% per class",
+    "H_V": "KEEP if the lower bound of the 95% CI of R = median(T_K0 - T_K1) / median(T_K0 - T_K2) is >= 0.90 (per class); else REVISE and report the residual median(T_K1 - T_K2) with CI",
+    "H_T": "if the CI of median(T_K2 - T_K3) (fill) excludes 0 and 0 characters drop in every T0 trial (K3, K4, K5 fill and the T0 stress block; exact-match oracle), verdict OWNER_DECISION (not DELETED: the source comment cites Edge-on-Linux drops not testable here); any dropped or reordered character gives KILL/IRREDUCIBLE; a CI including 0 with no drops gives NOT_MATERIAL",
+    "H_P": "KEEP (component DELETED) if the 100 ms sleep is entered in >= 10% of K3 (fill) / K2 (toggle, modal) trials AND the CI of median(T_prev - T_K4) excludes 0 AND outcomes are unchanged (validity, 0 duplicate mutations, 0 unverified successes); otherwise 'no material component'",
+    "H_C": "KEEP (component DELETED caller-side) if the CI of median(T_K4 - T_K5) excludes 0 with unchanged outcomes; otherwise not material",
+    "E2": "every component >= 50 ms or >= 5% of T_runner in the best composed arm and in the baseline (K0n fill, K0 toggle/modal) gets DELETED / IRREDUCIBLE / OWNER_DECISION / UNTESTED; the untested-plausibly-deletable share is reported. Best composed arm = the arm with the lowest median T_runner among K2/K3/K4/K5 whose gates and validity held."
+  },
+  "controls": {
+    "stale_ref": "after step 2's snapshot, re-navigate, then send the step-2 candidate (old ref) with dom_event; pass = envelope effect == 'refused' (not isError) and 0 completion mutations; >= 2 per arm per class",
+    "first_only": "perform only step 1 (fill: type; toggle: checkbox; modal: open), wait 1 s; pass = oracle not satisfied and 0 completion mutations",
+    "t0_stress": "20 K3 vs 20 K2 fill trials with a 64-character token; any dropped or reordered character (exact-match oracle) KILLs H_T",
+    "guard_decline": "jev-use DUPLICATE_SUBMIT_ON_INPUT page (verify_setup.py at the tested source): pass = guard telemetry declined/submit_not_unique, provider route at step 2, verified, exactly 1 submit",
+    "p10": "0 unverified successes and 0 duplicate completion mutations in K4/K5",
+    "default_off_smoke": "trace and knob unset: 5 verified fill runs (harness, plan smoke, no trace env) and no trace file anywhere in the session or output dirs"
+  },
+  "claim_boundary": "jev-use fill fixture + #24 toggle/modal pages, X11 Xvfb/openbox/picom, Chrome 151, Driver 229b65b28 + R2-01 trace + B-01 marks/knob, PR 4316 caller at a0bca7440, mock chooser. Not a default change, not a LIVE_PROVIDER claim; nothing transfers to Wayland, macOS, Windows or Edge.",
+  "deviation_policy": "any change after the first measured trial is listed as a deviation in README; no trial is dropped"
+}
