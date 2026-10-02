@@ -29,6 +29,14 @@ import { FixtureFormTask, fixtureSources, type Task, type TaskSources } from './
 
 type VisualMode = 'auto' | 'always' | 'off';
 
+// Bounded fresh reads after a possibly landed mutation (R2-06 bounded re-read).
+const RECONCILE_INTERVAL_MS = 100;
+const RECONCILE_DEADLINE_MS = 3000;
+const PRE_WRITE_FAILED = 'pre_write_failed';
+
+/** The receipt of a dispatched mutation whose effect is not verified yet. */
+type Pending = { receipt?: Record<string, unknown> };
+
 type Arguments = {
   provider: 'mock' | 'live';
   visualObservation: VisualMode;
@@ -154,6 +162,31 @@ export class Driver {
     }
     return data;
   }
+}
+
+/**
+ * Caller-side record of whether the last tools/call request was written. Only
+ * a send that rejected proves the request never left the caller: in SDK 1.30.0
+ * StdioClientTransport.send rejects only before it writes to stdin. A call that
+ * never reached this send proves nothing.
+ */
+export function recordToolCallWrites(transport: {
+  send(message: any, options?: any): Promise<void>;
+}): { toolCall?: 'sending' | 'written' | 'not_written' } {
+  const ledger: { toolCall?: 'sending' | 'written' | 'not_written' } = {};
+  const send = transport.send.bind(transport);
+  transport.send = async (message, options) => {
+    if (message?.method !== 'tools/call') return send(message, options);
+    ledger.toolCall = 'sending';
+    try {
+      await send(message, options);
+    } catch (error: unknown) {
+      ledger.toolCall = 'not_written';
+      throw error;
+    }
+    ledger.toolCall = 'written';
+  };
+  return ledger;
 }
 
 export function supportsCaptureBoundClick(
@@ -406,6 +439,67 @@ export function ambiguousMutationReceipt(args: {
   };
 }
 
+/** Record what fresh oracle reads established about a dispatched mutation. */
+export function resolvedReceipt(
+  receipt: Record<string, unknown>,
+  outcome: Outcome
+): Record<string, unknown> {
+  if (outcome === 'verified') {
+    return {
+      ...receipt,
+      effect: 'applied',
+      verification: 'verified',
+      retryDisposition: 'none',
+      resolution: outcome,
+    };
+  }
+  if (outcome === 'refuted') {
+    return { ...receipt, verification: 'refuted', retryDisposition: 'none', resolution: outcome };
+  }
+  return { ...receipt, resolution: 'unresolved_unknown' };
+}
+
+/**
+ * Read the target oracle until it decides or the deadline passes. It never
+ * dispatches: one negative read is not authority to act again.
+ */
+async function reconcile(task: Task): Promise<Outcome> {
+  const deadline = performance.now() + RECONCILE_DEADLINE_MS;
+  for (;;) {
+    let outcome: Outcome = 'unknown';
+    try {
+      outcome = task.classify(await task.readOracle(), 0);
+    } catch {
+      // A failed read is no evidence either way.
+    }
+    if (outcome === 'verified' || outcome === 'refuted') return outcome;
+    if (performance.now() >= deadline) return 'unknown';
+    await new Promise((resolve) => setTimeout(resolve, RECONCILE_INTERVAL_MS));
+  }
+}
+
+/**
+ * Write the terminal outcome event. A dispatched mutation whose effect is not
+ * verified yet ends with bounded reconciliation, and the event carries its
+ * content-free receipt.
+ */
+async function finish(
+  task: Task,
+  log: string | undefined,
+  pending: Pending,
+  outcome: Outcome,
+  fields: Record<string, unknown> = {}
+): Promise<Outcome> {
+  const receipt = pending.receipt;
+  delete pending.receipt;
+  if (receipt) {
+    if (outcome !== 'verified' && outcome !== 'refuted') outcome = await reconcile(task);
+    fields = { ...fields, mutation_outcome: resolvedReceipt(receipt, outcome) };
+  }
+  await writeEvent(log, { event: 'outcome', outcome, ...fields });
+  return outcome;
+}
+
 export function decisionTimingFields(args: {
   decisionMs: number;
   semanticObserveMs: number;
@@ -425,19 +519,50 @@ export function decisionTimingFields(args: {
 async function run(args: Arguments): Promise<Outcome> {
   const token = args.token ?? `jev-${randomUUID().replaceAll('-', '').slice(0, 10)}`;
   const task: Task = new FixtureFormTask(token, args.fixtureUrl, args.maxSteps);
+  if (args.log) await writeFile(args.log, '', 'utf8');
+  await task.reset();
+  // Lives only for this run and is never authority to act again.
+  const pending: Pending = {};
+
+  const attempt = async (mayReconsider: boolean) => {
+    let outcome: Outcome | typeof PRE_WRITE_FAILED;
+    try {
+      outcome = await runAttempt(args, task, pending, mayReconsider);
+    } catch (error: unknown) {
+      if (!pending.receipt) throw error;
+      // A read failed after an unverified completion: end with a receipt.
+      return finish(task, args.log, pending, 'unknown', {
+        phase: 'observe',
+        error: error instanceof Error ? error.name : 'UnknownError',
+      });
+    }
+    if (pending.receipt) return finish(task, args.log, pending, 'unknown', { phase: 'observe' });
+    return outcome;
+  };
+
+  const outcome = await attempt(true);
+  // The mutation request was never written: reconsider once from fresh state.
+  return outcome === PRE_WRITE_FAILED ? ((await attempt(false)) as Outcome) : outcome;
+}
+
+async function runAttempt(
+  args: Arguments,
+  task: Task,
+  pending: Pending,
+  mayReconsider: boolean
+): Promise<Outcome | typeof PRE_WRITE_FAILED> {
   const transport = new StdioClientTransport({
     command: process.env.CUA_DRIVER_BIN ?? 'cua-driver',
     args: ['mcp'],
     env: driverEnvironment(),
   });
+  const ledger = recordToolCallWrites(transport);
   const client = new Client({ name: 'cua-driver-jev-use-example', version: '0.1.0' });
   // Compact what-happened record for the decision model. The full telemetry
   // events (timings, probabilities) go only to the JSONL log.
   const history: HistoryEntry[] = [];
   let visualDelivery: VisualDelivery = 'background';
   let pendingCompletion: GuardedCompletionPlan | undefined;
-  if (args.log) await writeFile(args.log, '', 'utf8');
-  await task.reset();
 
   try {
     await client.connect(transport);
@@ -466,8 +591,7 @@ async function run(args: Arguments): Promise<Outcome> {
     for (let step = 1; step <= task.maxSteps; step += 1) {
       const current = task.classify(await task.readOracle(), step - 1);
       if (current === 'verified' || current === 'refuted') {
-        await writeEvent(args.log, { event: 'outcome', outcome: current });
-        return current;
+        return finish(task, args.log, pending, current);
       }
 
       const decisionStarted = performance.now();
@@ -495,13 +619,7 @@ async function run(args: Arguments): Promise<Outcome> {
         visualDelivery
       );
       if (!candidates.length) {
-        await writeEvent(args.log, {
-          event: 'outcome',
-          outcome: 'abstained',
-          step,
-          visual: visualRecord,
-        });
-        return 'abstained';
+        return finish(task, args.log, pending, 'abstained', { step, visual: visualRecord });
       }
       const visual = sources.visual?.observation;
       let guardedCandidate: Candidate | undefined;
@@ -607,9 +725,7 @@ async function run(args: Arguments): Promise<Outcome> {
       }
 
       if (candidate.id === 'abstain') {
-        await writeEvent(args.log, {
-          event: 'outcome',
-          outcome: 'abstained',
+        return finish(task, args.log, pending, 'abstained', {
           decision_route: decisionRoute,
           step,
           confidence,
@@ -617,7 +733,16 @@ async function run(args: Arguments): Promise<Outcome> {
           visual: visualRecord,
           ...guardedFields,
         });
-        return 'abstained';
+      }
+
+      if (pending.receipt && task.completionCandidateIds.has(candidate.id)) {
+        // Never dispatch a second completion while the first may land.
+        return finish(task, args.log, pending, 'unknown', {
+          step,
+          phase: 'completion_blocked',
+          decision_route: decisionRoute,
+          candidate: candidate.id,
+        });
       }
 
       let actionMs = 0;
@@ -625,6 +750,7 @@ async function run(args: Arguments): Promise<Outcome> {
         const actionStarted = performance.now();
         try {
           if (!candidate.tool) throw new Error('selected candidate has no executable tool');
+          ledger.toolCall = undefined;
           await driver.call(candidate.tool, candidate.arguments);
         } catch (error: unknown) {
           const refusal = backgroundRefusalCode(candidate, error);
@@ -654,23 +780,37 @@ async function run(args: Arguments): Promise<Outcome> {
             await writeEvent(args.log, event);
             continue;
           }
-          await writeEvent(args.log, {
-            event: 'outcome',
-            outcome: 'unknown',
+          const fields = {
             step,
             phase: 'action',
             decision_route: decisionRoute,
             error: error instanceof Error ? error.name : 'UnknownError',
             tool: candidate.tool,
-            mutation_outcome: ambiguousMutationReceipt({
-              session: driver.sessionLabel,
-              step,
-              candidateId: candidate.id,
-            }),
             visual: visualRecord,
             ...guardedFields,
+          };
+          const receipt = ambiguousMutationReceipt({
+            session: driver.sessionLabel,
+            step,
+            candidateId: candidate.id,
           });
-          return 'unknown';
+          if (ledger.toolCall === 'not_written' && !pending.receipt) {
+            // The request's own write raised, so nothing was sent.
+            await writeEvent(args.log, {
+              ...(mayReconsider ? { event: 'reconsider' } : { event: 'outcome', outcome: 'unknown' }),
+              ...fields,
+              mutation_outcome: {
+                ...receipt,
+                attempted: false,
+                effect: 'none',
+                retryDisposition: mayReconsider ? 'reconsider' : 'none',
+                resolution: PRE_WRITE_FAILED,
+              },
+            });
+            return mayReconsider ? PRE_WRITE_FAILED : 'unknown';
+          }
+          pending.receipt ??= receipt;
+          return finish(task, args.log, pending, 'unknown', fields);
         }
         actionMs = Math.round((performance.now() - actionStarted) * 100) / 100;
         pendingCompletion = nextCompletion;
@@ -695,11 +835,15 @@ async function run(args: Arguments): Promise<Outcome> {
       await writeEvent(args.log, event);
       if (args.dryRun) return 'unknown';
       if (task.completionCandidateIds.has(candidate.id)) {
+        pending.receipt = ambiguousMutationReceipt({
+          session: driver.sessionLabel,
+          step,
+          candidateId: candidate.id,
+        });
         for (let attempt = 0; attempt < 20; attempt += 1) {
           const outcome = task.classify(await task.readOracle(), step);
           if (outcome === 'verified' || outcome === 'refuted') {
-            await writeEvent(args.log, { event: 'outcome', outcome });
-            return outcome;
+            return finish(task, args.log, pending, outcome);
           }
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
@@ -707,8 +851,7 @@ async function run(args: Arguments): Promise<Outcome> {
     }
 
     const outcome = task.classify(await task.readOracle(), task.maxSteps);
-    await writeEvent(args.log, { event: 'outcome', outcome });
-    return outcome;
+    return finish(task, args.log, pending, outcome);
   } finally {
     await client.close();
   }

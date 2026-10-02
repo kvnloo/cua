@@ -128,7 +128,10 @@ def verify(
     if completed.returncode != 0:
         raise subprocess.CalledProcessError(completed.returncode, command)
     expected = {"event": "outcome", "outcome": "verified"}
-    if not events or events[-1] != expected:
+    final = dict(events[-1]) if events else {}
+    # A dispatched completion may end with its resolved, content-free receipt.
+    receipt = final.pop("mutation_outcome", {"resolution": "verified"})
+    if final != expected or not isinstance(receipt, dict) or receipt.get("resolution") != "verified":
         raise RuntimeError("Runner did not report the expected verified outcome")
     if observed != {"submitted": token}:
         raise RuntimeError(

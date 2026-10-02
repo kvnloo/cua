@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+import anyio
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -39,6 +40,11 @@ from tasks import (
 )
 
 __all__ = ["fixture_state", "reset_fixture"]
+
+# Bounded fresh reads after a possibly landed mutation (R2-06 bounded re-read).
+RECONCILE_INTERVAL_S = 0.1
+RECONCILE_DEADLINE_S = 3.0
+PRE_WRITE_FAILED = "pre_write_failed"
 
 
 def validate_fixture_url(value: str) -> str:
@@ -112,6 +118,44 @@ class Driver:
                 code if isinstance(code, str) and code else None,
             )
         return data
+
+
+class WriteLedger:
+    """Caller-side record of whether the last ``tools/call`` request was written.
+
+    It wraps the session's transport write stream. Only a send that raised a
+    closed or broken stream error proves the request never left the caller; a
+    call that never reached this stream proves nothing.
+    """
+
+    def __init__(self, stream: Any) -> None:
+        self._stream = stream
+        self.tool_call: str | None = None
+
+    async def send(self, message: Any) -> None:
+        root = getattr(getattr(message, "message", None), "root", None)
+        if getattr(root, "method", None) != "tools/call":
+            await self._stream.send(message)
+            return
+        self.tool_call = "sending"
+        try:
+            await self._stream.send(message)
+        except (anyio.ClosedResourceError, anyio.BrokenResourceError):
+            self.tool_call = "not_written"
+            raise
+        self.tool_call = "written"
+
+    def close(self) -> None:
+        self._stream.close()
+
+    async def aclose(self) -> None:
+        await self._stream.aclose()
+
+    async def __aenter__(self) -> "WriteLedger":
+        return self
+
+    async def __aexit__(self, *_exc: object) -> None:
+        await self.aclose()
 
 
 def supports_capture_bound_click(tools: list[Any]) -> bool:
@@ -372,6 +416,57 @@ def ambiguous_mutation_receipt(
     }
 
 
+def resolved_receipt(receipt: dict[str, Any], outcome: str) -> dict[str, Any]:
+    """Record what fresh oracle reads established about a dispatched mutation."""
+    if outcome == "verified":
+        fields = {"effect": "applied", "verification": "verified", "retryDisposition": "none"}
+    elif outcome == "refuted":
+        fields = {"verification": "refuted", "retryDisposition": "none"}
+    else:
+        fields = {}
+        outcome = "unresolved_unknown"
+    return {**receipt, **fields, "resolution": outcome}
+
+
+async def reconcile(task: Task) -> str:
+    """Read the target oracle until it decides or the deadline passes.
+
+    It never dispatches: one negative read is not authority to act again.
+    """
+    deadline = time.monotonic() + RECONCILE_DEADLINE_S
+    while True:
+        try:
+            outcome = task.classify(task.read_oracle(), steps=0)
+        except Exception:
+            outcome = "unknown"  # a failed read is no evidence either way
+        if outcome in {"verified", "refuted"}:
+            return outcome
+        if time.monotonic() >= deadline:
+            return "unknown"
+        await asyncio.sleep(RECONCILE_INTERVAL_S)
+
+
+async def finish(
+    task: Task,
+    log_path: Path | None,
+    pending: dict[str, Any],
+    outcome: str,
+    **fields: Any,
+) -> str:
+    """Write the terminal outcome event.
+
+    A dispatched mutation whose effect is not verified yet ends with bounded
+    reconciliation, and the event carries its content-free receipt.
+    """
+    receipt = pending.pop("receipt", None)
+    if receipt is not None:
+        if outcome not in {"verified", "refuted"}:
+            outcome = await reconcile(task)
+        fields["mutation_outcome"] = resolved_receipt(receipt, outcome)
+    write_event(log_path, {"event": "outcome", "outcome": outcome, **fields})
+    return outcome
+
+
 def decision_timing_fields(
     *,
     decision_ms: float,
@@ -393,22 +488,55 @@ def decision_timing_fields(
 async def run(args: argparse.Namespace) -> str:
     token = args.token or f"jev-{uuid.uuid4().hex[:10]}"
     task: Task = FixtureFormTask(token, args.fixture_url, args.max_steps)
+    log_path = Path(args.log) if args.log else None
+    if log_path:
+        log_path.write_text("", encoding="utf-8")
+    task.reset()
+    # The receipt of a dispatched mutation whose effect is not verified yet.
+    # It lives only for this run and is never authority to act again.
+    pending: dict[str, Any] = {}
+
+    async def attempt(may_reconsider: bool) -> str:
+        try:
+            outcome = await run_attempt(args, task, log_path, pending, may_reconsider)
+        except Exception as error:
+            if not pending:
+                raise
+            # A read failed after an unverified completion: end with a receipt.
+            return await finish(
+                task, log_path, pending, "unknown", phase="observe", error=type(error).__name__
+            )
+        if pending:
+            return await finish(task, log_path, pending, "unknown", phase="observe")
+        return outcome
+
+    outcome = await attempt(True)
+    if outcome == PRE_WRITE_FAILED:
+        # The mutation request was never written: reconsider once from fresh state.
+        outcome = await attempt(False)
+    return outcome
+
+
+async def run_attempt(
+    args: argparse.Namespace,
+    task: Task,
+    log_path: Path | None,
+    pending: dict[str, Any],
+    may_reconsider: bool,
+) -> str:
     label = f"jev-python-{uuid.uuid4().hex[:8]}"
     # Compact what-happened record for the decision model. The full telemetry
     # events (timings, probabilities) go only to the JSONL log.
     history: list[dict[str, Any]] = []
     visual_delivery: VisualDelivery = "background"
     pending_completion: GuardedCompletionPlan | None = None
-    log_path = Path(args.log) if args.log else None
-    if log_path:
-        log_path.write_text("", encoding="utf-8")
-    task.reset()
 
     params = StdioServerParameters(
         command=os.getenv("CUA_DRIVER_BIN", "cua-driver"), args=["mcp"], env=driver_environment()
     )
     async with stdio_client(params) as (read, write):
-        async with ClientSession(read, write) as session:
+        ledger = WriteLedger(write)
+        async with ClientSession(read, ledger) as session:
             await session.initialize()
             advertised_tools = (await session.list_tools()).tools
             available_tools = {tool.name for tool in advertised_tools}
@@ -433,8 +561,7 @@ async def run(args: argparse.Namespace) -> str:
             for step in range(1, task.max_steps + 1):
                 current = task.classify(task.read_oracle(), steps=step - 1)
                 if current in {"verified", "refuted"}:
-                    write_event(log_path, {"event": "outcome", "outcome": current})
-                    return current
+                    return await finish(task, log_path, pending, current)
 
                 started = time.perf_counter()
                 phase_started = time.perf_counter()
@@ -461,11 +588,9 @@ async def run(args: argparse.Namespace) -> str:
                     phase_timings=candidate_phase,
                 )
                 if not candidates:
-                    write_event(
-                        log_path,
-                        {"event": "outcome", "outcome": "abstained", "step": step, "visual": visual_record},
+                    return await finish(
+                        task, log_path, pending, "abstained", step=step, visual=visual_record
                     )
-                    return "abstained"
 
                 visual = sources.visual.observation if sources.visual is not None else None
                 guarded_candidate = None
@@ -583,25 +708,37 @@ async def run(args: argparse.Namespace) -> str:
                     continue
 
                 if candidate.id == "abstain":
-                    write_event(
+                    return await finish(
+                        task,
                         log_path,
-                        {
-                            "event": "outcome",
-                            "outcome": "abstained",
-                            "step": step,
-                            "decision_route": decision_route,
-                            **guarded_record,
-                            "confidence": confidence,
-                            "probabilities": probabilities,
-                            "visual": visual_record,
-                        },
+                        pending,
+                        "abstained",
+                        step=step,
+                        decision_route=decision_route,
+                        **guarded_record,
+                        confidence=confidence,
+                        probabilities=probabilities,
+                        visual=visual_record,
                     )
-                    return "abstained"
+
+                if pending and candidate.id in task.completion_candidate_ids:
+                    # Never dispatch a second completion while the first may land.
+                    return await finish(
+                        task,
+                        log_path,
+                        pending,
+                        "unknown",
+                        step=step,
+                        phase="completion_blocked",
+                        decision_route=decision_route,
+                        candidate=candidate.id,
+                    )
 
                 if not args.dry_run:
                     action_started = time.perf_counter()
                     try:
                         assert candidate.tool is not None
+                        ledger.tool_call = None
                         await driver.call(candidate.tool, candidate.arguments)
                     except Exception as error:
                         refusal = background_refusal_code(candidate, error)
@@ -634,26 +771,36 @@ async def run(args: argparse.Namespace) -> str:
                             history.append(task.history_entry(step, candidate.id, refusal=refusal))
                             write_event(log_path, event)
                             continue
-                        write_event(
-                            log_path,
-                            {
-                                "event": "outcome",
-                                "outcome": "unknown",
-                                "step": step,
-                                "phase": "action",
-                                "decision_route": decision_route,
-                                **guarded_record,
-                                "error": type(error).__name__,
-                                "tool": candidate.tool,
-                                "mutation_outcome": ambiguous_mutation_receipt(
-                                    session=label,
-                                    step=step,
-                                    candidate_id=candidate.id,
-                                ),
-                                "visual": visual_record,
-                            },
+                        fields = {
+                            "step": step,
+                            "phase": "action",
+                            "decision_route": decision_route,
+                            **guarded_record,
+                            "error": type(error).__name__,
+                            "tool": candidate.tool,
+                            "visual": visual_record,
+                        }
+                        receipt = ambiguous_mutation_receipt(
+                            session=label, step=step, candidate_id=candidate.id
                         )
-                        return "unknown"
+                        if ledger.tool_call == "not_written" and not pending:
+                            # The request's own write raised, so nothing was sent.
+                            receipt = {
+                                **receipt,
+                                "attempted": False,
+                                "effect": "none",
+                                "retryDisposition": "reconsider" if may_reconsider else "none",
+                                "resolution": PRE_WRITE_FAILED,
+                            }
+                            event = (
+                                {"event": "reconsider"}
+                                if may_reconsider
+                                else {"event": "outcome", "outcome": "unknown"}
+                            )
+                            write_event(log_path, {**event, **fields, "mutation_outcome": receipt})
+                            return PRE_WRITE_FAILED if may_reconsider else "unknown"
+                        pending.setdefault("receipt", receipt)
+                        return await finish(task, log_path, pending, "unknown", **fields)
                     action_ms = round((time.perf_counter() - action_started) * 1000, 2)
                     pending_completion = next_completion
                 else:
@@ -679,18 +826,17 @@ async def run(args: argparse.Namespace) -> str:
                 if args.dry_run:
                     return "unknown"
                 if candidate.id in task.completion_candidate_ids:
+                    pending["receipt"] = ambiguous_mutation_receipt(
+                        session=label, step=step, candidate_id=candidate.id
+                    )
                     for _ in range(20):
                         outcome = task.classify(task.read_oracle(), steps=step)
                         if outcome in {"verified", "refuted"}:
-                            write_event(
-                                log_path, {"event": "outcome", "outcome": outcome}
-                            )
-                            return outcome
+                            return await finish(task, log_path, pending, outcome)
                         await asyncio.sleep(0.1)
 
             outcome = task.classify(task.read_oracle(), steps=task.max_steps)
-            write_event(log_path, {"event": "outcome", "outcome": outcome})
-            return outcome
+            return await finish(task, log_path, pending, outcome)
 
 
 def parse_args() -> argparse.Namespace:
