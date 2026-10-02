@@ -1,0 +1,39 @@
+# Stack SAMPLES lane private Hermes profile (exp/stack-samples-20261002).
+# Copied per run into $LANE_DIR/runs/<run>/home/.hermes.
+# Local model only; observer on (metadata only); nothing phones home or self-updates.
+model:
+  default: "qwen2.5:3b"
+  provider: "custom"
+  base_url: "http://127.0.0.1:11434/v1"
+  api_key: "ollama-local-no-key"
+  # Hermes refuses windows below 64K; Ollama allocates num_ctx per request.
+  context_length: 65536
+  ollama_num_ctx: 65536
+
+# Observer plugin (kvnloo/hermes-agent#385). Plugins are opt-in; only this one is enabled.
+plugins:
+  enabled:
+    - z0-hermes-observer
+  auto_update_check_hours: 0
+  auto_apply: false
+
+# No passive update checks, no driver refresh, no remote model catalog.
+updates:
+  check: false
+  refresh_cua_driver: false
+  pre_update_backup: "off"
+model_catalog:
+  enabled: false
+
+# Computer use: driver comes from HERMES_CUA_DRIVER_CMD (set by run-hermes.sh);
+# telemetry stays off; standard approval boundary (no bypass).
+computer_use:
+  cua_telemetry: false
+  permission_mode: "standard"
+  autostart: false
+  native_wayland: false
+bot_desktop:
+  auto_start: false
+
+logging:
+  level: "INFO"

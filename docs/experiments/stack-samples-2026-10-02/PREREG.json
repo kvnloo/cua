@@ -1,0 +1,117 @@
+{
+  "schema": "stack.samples.prereg.v1",
+  "experiment_id": "stack-samples-2026-10-02",
+  "issue": "kvnloo/hermes-agent#319 (2026-10-01 directive: collect joined receipts from ordinary Hermes workload without changing behaviour, freeze, compare base-rate/deterministic baselines with the installed local z0int backends on the same examples)",
+  "registered_before_measured_runs": true,
+  "scope": "Sample collection + offline shadow evaluation only. No new integration architecture, protocol, question family or active controller. Shadow scoring runs after each Hermes process has exited and nothing in Hermes reads its output. Hermes is the executor; z0intelligence owns the schema (z0int.hermes_shadow_example.v1, z0int.decision_result.v1, adapters.hermes_z0int); an independent fixture oracle grades outcomes; no observer or backend credits its own success.",
+
+  "identities": {
+    "hermes": {"repo": "kvnloo/hermes-agent fork", "branch": "exp/stack-samples-20261002", "commit": "5d01f608975ab1d32d6a07c6c19213d2d4c5d98f", "base": "exp/stack-integration-20261002 0d60437a3329448bb9d2992e34cec81b0afd36df = fork main 4d3555e5ca + #385 ce5c027b + #386 521d4354 + #387 b8203889", "runtime_change_vs_integration": "none: the observer plugin (__init__.py) is unchanged; the commit touches only the offline scripts shadow_api_failure.py, evaluate_shadow.py, the new ollama_logprob_backend.py and lab tests", "python": "3.14.7", "unit": "25 passed, 2 skipped (run_tests.sh, 7 lab files); the 2 adapter tests pass under direct pytest with z0int on PYTHONPATH (13/13)"},
+    "z0intelligence": {"worktree": "detached origin/dev", "commit": "6764ae784f66b902bd6c07e4f7f76848a409423a", "venv": "python 3.11.14, torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6 (Z0_SETUP.json)"},
+    "executor_model": {"server": "system Ollama 127.0.0.1:11434 version 0.16.1 (CPU inference observed; served context 4096)", "model": "qwen2.5:3b", "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b", "size_bytes": 1929912432, "hermes_provider": "custom /v1, context_length 65536 declared by config (server serves 4096; truncated prompts are a recorded workload property, see metrics)"},
+    "executor_model_choice_note": "The orchestrator-allowed user-local Ollama on 127.0.0.1:11500 is shared with other stack lanes and had no model; this lane's attempt to pull one there was denied by the permission system (shared resource), so this lane uses the installed model on 11434 for the whole frozen dataset (one model identity).",
+    "cua_driver": {"binary": "cua-driver-r2-main-229b65b28", "version": "0.32.0", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3"},
+    "gui_fixture": {"path": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py (kvnloo/cua 352507b6c)", "sha256": "547b7bcab3e0a6098902c8ccc7d3f58e0dcb74616d31e4d03c8704e6445d4059", "mode": "TaskWindow (CUA_GTK3_TASK_STATE app-owned state file), optional CUA_GTK3_TASK_DENSITY 12/24"},
+    "session_kits": {"hostless_sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b", "cua_x11_session_sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b", "launcher_run_hermes_sha256": "cdaaee3fd73beb3a86d0d82ab062f16db3d25c7cd8cbe051edf2371da591bcd6", "cua_task_sha256": "95971dd1bb0e43cb562a22b75b073d1d3c380a9a5d93052223ee0225814071d3", "note": "sanitized copies (local paths replaced by variables) are committed under harness/ with the packet"}
+  },
+
+  "workload": {
+    "description": "Ordinary one-shot Hermes CLI turns (hermes_cli.main chat -Q -q <prompt>), metadata-only observer plugin (#385) on, default approvals, default tool search, one isolated process + fresh private HERMES_HOME per task. 100 file-tool tasks (10 families x 10 seeded instances, toolset 'file', --max-turns 4) and 12 CUA tasks (toolset 'computer_use', --max-turns 4) against the GTK3 TaskWindow fixture inside a fresh private Xvfb session per task (cua-x11-session.sh under hostless, private AT-SPI).",
+    "tasks_file": "workload/tasks.jsonl",
+    "tasks_sha256": "0e05d3c3b8d1044e63c1dc8e734e3d71f0a9ab39518a25fab057afc74012dfba",
+    "fixtures_tree_sha256": "ecb512bdeea0681948e3d1f3ad0b01b3eabecbd80507f978a87e0eb5ff2ada80 (sha256 of sorted 'sha256sum' lines of workload/fixtures/**)",
+    "generator": "harness/workload.py generate (seed 20261002; order shuffled with seed 20261003 before any outcome existed)",
+    "families_file": ["read_code", "json_field", "find_file", "write_token", "edit_config", "sum_numbers", "count_errors", "uppercase_copy", "line_n", "no_tool_math"],
+    "families_cua": {"cua_read_counter": 3, "cua_button_present": 5, "cua_increment": 2, "cua_agree": 2},
+    "cua_expectation_declared": "Under default approvals a one-shot (-q) run fail-closes computer_use input actions (tools/approval.py _run_approval_gate, fail_closed_when_no_human). This lane does NOT set approvals.single_query_mode: approve, --yolo or any other approval bypass, so cua_increment / cua_agree are expected to fail the oracle; that is recorded as ordinary behaviour, not a harness defect. Read-only capture is not gated. With default tool search, computer_use is reached through the tool_call bridge.",
+    "stop_rule": "Run tasks strictly in tasks.jsonl order, one at a time, until all 112 ran or until 2026-10-02T08:35:00Z (no new task starts after it). Tasks not started are NOT_RUN and listed. No task is re-run, skipped or dropped after its outcome is seen. Pilots (runs pilot-01, pilot-cua-01, P-p000*, P-p001*) used separate prompts and are excluded.",
+    "minimum": "20 joined turn-lane receipts with a known oracle verdict; target 100+"
+  },
+
+  "oracle": {
+    "id": "fixture_oracle:stack-samples-v1",
+    "implementation": "harness/workload.py oracle (sha256 b2e6335ac7a8ed1f623d3531cfb912a7d8dc0cf5914843a146c470fe492dfad2)",
+    "inputs": "only the final reply (run meta/stdout) and files the task produced in the run cwd, or the GTK3 fixture's app-owned state file (state.after.json) for CUA tasks. Never observer rows, Hermes logs or backend output.",
+    "verdicts": "verified_success true/false; null (unknown) when a GUI state file is missing. Unknown stays unknown: excluded from Brier/log-loss, counted in denominators.",
+    "self_test": "harness/oracle_selftest.py: for all 112 tasks a synthetic ideal run passes, an empty run fails (or is unknown for GUI state tasks) and a wrong answer fails. Result before measured runs: PASS 112/112."
+  },
+
+  "decision_lanes": [
+    {
+      "id": "api.attempt_will_fail",
+      "status": "registered row; expected DEGENERATE (Z0_SETUP.json expected_base_rate)",
+      "unit": "one physical provider attempt (pre_api_request joined to post_api_request|api_request_error by the #386 joiner)",
+      "request": "#386 request_for(pre) unchanged",
+      "label": "objective lifecycle fact: true iff the terminal event is api_request_error",
+      "denominators": "join_audit over the frozen events: n_pre, n_joined, n_orphan_pre_overwritten, n_orphan_pre_unclosed, n_terminal_without_pre, observer_rows_dropped"
+    },
+    {
+      "id": "verification_needed",
+      "status": "the lane expected to carry signal (orchestrator decision 3; existing z0int decision-capability-v1 capability; no new question family)",
+      "unit": "one Hermes task turn (fixture_task_id -> session_id -> observer trace)",
+      "question": {"id": "verification_needed", "type": "boolean", "instructions": "Does this turn require an explicit verification pass before responding?", "criteria": {"false": "Safe to respond without extra verification", "true": "Run verification before responding"}, "source": "benchmarks/fixtures/decision-capability-v1/examples.jsonl verification_needed rows, verbatim"},
+      "state": "content-free turn counters derived from that turn's observer rows only: harness, provider, model, api_call_count, api_error_count, max_retry_count, tool_call_count, tool_error_count, tools_used (sorted names), distinct_tool_count, final_finish_reason, execution_completed, turn_exit_reason, interrupted, approx_input_tokens_max, prompt_tokens_last, output_tokens_total. No prompt, task family, file content or oracle field.",
+      "join": "adapters.hermes_z0int.normalize_envelope({session_id, turn_id, trace_id: observer identity.trace_id}) -> close_observation(execution_completed=..., verified_success=None, model=...) -> join_outcome(gold_verified=<oracle verdict or None>)",
+      "label": "y = true iff joined verified_success is False (the unverified outcome failed the independent oracle). Declared proxy: decision-capability-v1 gold is normative ('should verify'); here it is 'the outcome was wrong', i.e. verification would have been needed.",
+      "harness": "harness/build_turn_examples.py (glue: emits z0int.hermes_shadow_example.v1 rows; scored with the same #386 score_examples and evaluated with evaluate_shadow --question-id verification_needed)"
+    }
+  ],
+
+  "rows": {
+    "base_rate_in_sample": "evaluate_shadow base_rate_brier: constant at the in-sample prevalence. Oracle-optimistic reference only; never a competitor.",
+    "deterministic_constant_0_5": "p = 0.5 for every example (uninformative, preregistered).",
+    "deterministic_loo_group_prior": "p_i = (positives outside group(i) + 0.5) / (examples outside group(i) + 1); group = task family (turn lane) or Hermes run (api lane). Non-leaky w.r.t. example i; pure arithmetic, no backend.",
+    "laya_421m": "registry backend (CPU) - current z0int default candidate",
+    "julia_1": "registry backend (CPU worker)",
+    "decider_2b": "registry backend (GPU, alone on the GPU)",
+    "nanojev": "registry backend (GPU) - comparison row only, never verify truth",
+    "qwen_3b_baseline": "--backend ollama:qwen2.5:3b via lab/z0_hermes_observer/ollama_logprob_backend.py on 127.0.0.1:11434 (first-token logprob distribution; refuses rather than one-hot). Note: same model as the executor.",
+    "jev_reference": "NOT_RUN (TypeSafe, paid; policy)",
+    "openjev_06b / openjev_4b": "NOT_RUN (not registered in create_backend; outside the requested set)"
+  },
+
+  "runs": [
+    {"id": "collect", "what": "harness/collect.sh over workload/tasks.jsonl under hostless; per task run-hermes.sh (file) or cua-x11-session.sh + cua-task.sh (CUA), then the oracle", "outputs": "index.jsonl, verdicts.jsonl, per-run meta/ + observer events.jsonl"},
+    {"id": "freeze", "what": "after collection ends: concatenate per-run observer spools in index order into dataset/events.jsonl, write dataset/MANIFEST.json (sha256 of every frozen file, schema versions, workload description, identities). No example is added, removed or relabelled after the freeze."},
+    {"id": "build", "what": "api lane: shadow_api_failure.py --audit-output; turn lane: build_turn_examples.py"},
+    {"id": "score", "what": "one process per backend per lane over the frozen examples; GPU backends sequentially, after confirming the GPU has room (shared GPU, other lanes' chat model); each scoring process wrapped in quiet-timed (exclusive lock, ledger) so latency numbers come from the quiet lane", "env": "HF_HUB_OFFLINE=1, private Z0INT_HOME, explicit Z0INT_NANOJEV_CHECKPOINT and Z0INT_JULIA_PYTHON, Z0INT_LAYA_DEVICE=cpu, Z0INT_JULIA_DEVICE=cpu"},
+    {"id": "evaluate", "what": "evaluate_shadow.py --question-id <lane> per row + harness/analyze.py for baselines, bootstrap CIs, ECE, latency and disagreement slices"}
+  ],
+
+  "controls": [
+    {"id": "fail_open_backend_outage", "what": "score the turn lane with --backend ollama:qwen2.5:3b and Z0INT_OLLAMA_BASE_URL=http://127.0.0.1:9 (dead port). Pass = scorer exits 0, every row carries backend_error stage=create, coverage 0 reported, no row dropped; Hermes is not involved (offline)."},
+    {"id": "shadow_cannot_reach_hermes", "what": "SOURCE: scoring starts only after collection ended (index timestamps vs scorer ledger); grep shows no Hermes runtime module imports or reads scored/examples files; the only Hermes-side code change is offline scripts."},
+    {"id": "isolation_receipts", "what": "per run: meta/mask.inside (live Hermes home, real home, host runtime dir empty; only the private X socket visible in GUI runs), meta/env.inside free of live paths, live-home stat before/after (metadata only)."},
+    {"id": "observer_completeness", "what": "observer_rows_dropped total must be 0, else the cohort is flagged incomplete"}
+  ],
+
+  "metrics": {
+    "per_row_per_lane": ["n (scored), denominators (rows, labelled, unknown, backend_error, missing_probability, coverage)", "positive_rate", "Brier", "log-loss (p clipped to [1e-12, 1-1e-12]; rows at exactly 0/1 counted)", "accuracy@0.5", "calibration: 5 equal-width reliability bins + ECE", "latency: backend_create_ms (cold load), first-call wall ms (cold), warm per-call wall ms p50/p95 and backend-reported latency_ms p50/p95"],
+    "comparisons": "paired bootstrap (2000 resamples, seed 20261002, resampling tasks; api lane resamples runs) of Brier(row) - Brier(deterministic_loo_group_prior)",
+    "disagreement_slices": "pairwise disagreement rate at 0.5 between rows; Brier by task kind (file vs cua) and by family; examples where every model row is wrong",
+    "workload_descriptors": "oracle pass rate overall/by family, exit codes, timeouts, api calls per task, share of API attempts whose usage.prompt_tokens >= 4096 (served-context truncation), tool error counts"
+  },
+
+  "gates": {
+    "G1_sample": "turn lane needs >= 20 joined receipts with known label, else BLOCKED for ranking (target 100)",
+    "G2_degenerate": "a lane with < 5 positives or < 5 negatives among labelled examples is DEGENERATE: report counts and the exact one-sided 95% Clopper-Pearson upper bound on the minority rate; no backend ranking claim on that lane",
+    "G3_beats_baseline": "a model row 'beats' deterministic_loo_group_prior only if its paired-bootstrap 95% CI of the Brier difference lies entirely below 0; 'worse' if entirely above; else 'no detectable difference'",
+    "G4_coverage": "a row with coverage < 1 is reported with its error counts and is not ranked above a full-coverage row; no imputation",
+    "G5_completeness": "observer_rows_dropped == 0 and every RUN task has an oracle row; otherwise flag",
+    "promotion": "promotion_ready is false for every row regardless of results; no active control is enabled or proposed by this experiment"
+  },
+
+  "hypotheses": [
+    {"id": "H1", "statement": "api.attempt_will_fail has < 5 positives on this workload (DEGENERATE).", "type": "confirmatory (expected true)"},
+    {"id": "H2", "statement": "verification_needed has >= 5 positives and >= 5 negatives (non-degenerate).", "type": "confirmatory (expected true)"},
+    {"id": "H3", "statement": "On verification_needed at least one locally runnable z0int backend beats deterministic_loo_group_prior under G3.", "type": "exploratory, two-sided, no directional prediction"}
+  ],
+
+  "claim_boundary": [
+    "One executor model (qwen2.5:3b Q4_K_M on CPU, 4096-token served context) on one shared machine; synthetic fixture tasks; small N. Not a statement about other models, providers or real user workloads.",
+    "verification_needed labels are the proxy 'unverified outcome failed the fixture oracle', not the normative v1 gold.",
+    "CUA rows are constrained by default approvals (input fail-closed in -q mode) and default tool search; they say nothing about Driver capability.",
+    "Latency numbers are quiet-lane measurements on a shared GPU/CPU (other lanes may use the GPU), canary-to-small-cohort grade.",
+    "No backend is promoted; nothing here authorises active control."
+  ]
+}
