@@ -6,7 +6,8 @@
   "pr_head": "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939",
   "pr_head_reads": {
     "start": "raw/provenance/pr-head-start.json (2026-10-02T17:18:53Z)",
-    "end": "raw/provenance/pr-head-end.json"
+    "interim": "2026-10-02T18:43:30Z (before the resumed batch; same head)",
+    "end": "raw/provenance/pr-head-end.json (2026-10-02T19:52:36Z)"
   },
   "pr_head_in_issue_body": "kvnloo/cua#75 body cites d301a076c (older head; drift disclosed in PREREG-AMENDMENT-1 e)",
   "m0": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
@@ -20,24 +21,27 @@
   "amendment_commit": "c1fe992b084633d6f25df1efa1261718b8e18bf6 (PREREG-AMENDMENT-1.json + harness/run_batch_qt.sh)",
   "publication_sha": "the branch tip that contains this file (see git log); the publisher records the pushed SHA",
   "upstream_main": {
-    "latest_seen": "989cc76cec262ff8bcf6968b637820340fb9caaa",
-    "merge_tree": "git merge-tree --write-tree 989cc76ce 8391cf802 -> rc 0, tree e7fc835fc51fb577b73d9a75095c071fe4c7da8d, no conflicts",
+    "latest_seen": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9 (2026-10-02T10:25:37-07:00; read at completion)",
+    "merge_tree": "git merge-tree --write-tree da46c4bc8 8391cf802 -> rc 0, tree 2641ae7668bdcd24d74624252fd7998bc6908b14, no conflicts; merge base 2ca90d338",
+    "merge_tree_at_amendment": "git merge-tree --write-tree 989cc76ce 8391cf802 -> rc 0, tree e7fc835fc51fb577b73d9a75095c071fe4c7da8d, no conflicts",
     "jev_use_drift_since_m0": 0,
+    "gtk3_fixture_drift_since_m0": 0,
     "driver_drift_since_binary_source_229b65b28": "18 libs/cua-driver files (none in examples/jev-use or the GTK3 fixture)"
   },
   "driver": {
     "binary": "<lanes>/bin/cua-driver-r2-main-229b65b28",
     "source": "upstream main 229b65b2849c3a595ddbc85200d7181b18bd2e47 (M0 is an ancestor; examples/jev-use identical between them)",
     "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
-    "hash_reads": ["raw/provenance/driver-sha256-start.txt", "raw/provenance/driver-sha256-end.txt"],
-    "version": "per block in raw/real/blocks/*/meta.json (driver_version); the same binary serves both arms"
+    "hash_reads": ["raw/provenance/driver-sha256-start.txt (17:19:13Z)", "interim 18:43:30Z before the resumed batch (same hash)", "raw/provenance/driver-sha256-end.txt (19:52:45Z)"],
+    "version": "cua-driver 0.32.0 in all 16 blocks (raw/real/blocks/*/meta.json driver_version); the same binary serves both arms"
   },
   "environment": {
     "wrapper": "bin/hostless (v2: environment scrub + Landlock scope) around every code-executing command",
-    "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24 (-nolisten tcp), private dbus, openbox + picom, private AT-SPI bus (CUA_SESSION_ATSPI=1), fresh session HOME per block",
+    "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24 (-nolisten tcp), private dbus-run-session bus, openbox + picom, at-spi-bus-launcher + registryd on that private bus (CUA_SESSION_ATSPI=1; AT_SPI_BUS_ADDRESS neither inherited nor exported), fresh session HOME per block",
     "session_extra_env": "CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1 (values seen per block in raw/real/session-env/)",
     "runtimes": "jev-use .venv Python 3.12 (uv sync --frozen), Node 22.23.2 (npm ci --ignore-scripts), fixture on system /usr/bin/python3 + PyGObject",
-    "lock": "one bin/quiet-timed EXCLUSIVE quiet-lane acquisition per block of <= 10 trials",
+    "lock": "one bin/quiet-timed EXCLUSIVE quiet-lane acquisition per block of <= 10 trials; host loadavg (1 min) 3.16-23.85 during trials, so not quiet (no timing claim)",
+    "runs": "t001-t100 17:25:23-18:24:17Z; t101-t160 18:49:42-19:52:24Z (resume after the first batch was stopped between blocks; README D9)",
     "os": "Linux X11 (Xvfb); no Wayland, no macOS, no Windows"
   },
   "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "chooser": "--provider mock (task.mock_preferences)"}

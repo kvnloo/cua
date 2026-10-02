@@ -17,8 +17,9 @@ Checks, each printed PASS/FAIL:
   ledger      every block: one acquired/released pair in raw/real/lock-ledger.jsonl (exclusive, <= 10
               trials, rc 0) nested inside its quiet-timed receipt (raw/real/quiet-lane-ledger-excerpt),
               and every trial of the block inside the pair
-  session     every block saw Driver telemetry disabled, private DISPLAY + AT-SPI bus, no Wayland,
-              Hyprland or provider key
+  session     every block saw Driver telemetry disabled, a private DISPLAY, no inherited AT_SPI_BUS_ADDRESS
+              (deviation D10), no Wayland, Hyprland or provider key; its session log shows at-spi-bus-launcher
+              on the one private session dbus-daemon; every action receipt has route=accessibility
   provenance  Driver sha256 equal at start and end and to the pinned value; one Driver version in every
               block; PR head equal at start and end
   prereg      PREREG.json committed once (cd1878872) and unchanged; PREREG-AMENDMENT-1.json committed once,
@@ -185,10 +186,15 @@ def verify_guard(fresh: dict) -> None:
     check("guard 16 block metas", len(metas) == 16)
     for meta_path in metas:
         meta = json.loads(meta_path.read_text())
-        check(f"guard self-test {meta['block']} refused 2/2, no Wayland, no provider key",
-              meta["guard_self_test"]["pass"] is True and meta["typesafe_key_present"] is False
+        # Deviation D10 (README): this check first required at_spi_bus_set True. cua-x11-session.sh starts
+        # at-spi-bus-launcher on its private dbus-run-session bus and never exports AT_SPI_BUS_ADDRESS, so
+        # clients find the bus through org.a11y.Bus on that private bus and the variable is unset in every
+        # block. The check now requires it unset (nothing inherited); verify_session proves the private bus.
+        check(f"guard self-test {meta['block']} refused 2/2, no Wayland, no provider key, no inherited AT-SPI address",
+              meta["guard_self_test"]["pass"] is True and meta["guard_self_test"]["refused"] == 2
+              and meta["typesafe_key_present"] is False
               and meta["wayland_display_set"] is False and meta["display_set"] is True
-              and meta["at_spi_bus_set"] is True and meta["failures"] == 0, meta["driver_version"])
+              and meta["at_spi_bus_set"] is False and meta["failures"] == 0, meta["driver_version"])
 
 
 def verify_comparator() -> None:
@@ -248,16 +254,42 @@ def verify_ledger() -> None:
     check("ledger: every lock chunk <= 15 minutes", longest <= 900, f"longest {longest:.0f} s")
 
 
+SESSION_LINE = re.compile(r"^\[session\] DISPLAY=:\d+ openbox=\d+ picom=\d+ dbus=unix:path=\S+$", re.M)
+DAEMON_PID = re.compile(r"^dbus-daemon\[(\d+)\]", re.M)
+ATSPI_ON_BUS = re.compile(r"^dbus-daemon\[(\d+)\].*requested by .*comm=\"/usr/lib/at-spi-bus-launcher", re.M)
+
+
 def verify_session() -> None:
-    envs = sorted((HERE / "raw/real/session-env").glob("*.json"))
+    real = HERE / "raw/real"
+    envs = sorted((real / "session-env").glob("*.json"))
     good = 0
     for path in envs:
         e = json.loads(path.read_text())
+        # Deviation D10: AT_SPI_BUS_ADDRESS_set was first required True; it is required False now (see verify_guard)
         good += (e["CUA_DRIVER_RS_TELEMETRY_ENABLED"] == "0" and e["DO_NOT_TRACK"] == "1" and e["CUA_SESSION_ATSPI"] == "1"
-                 and e["DISPLAY_set"] is True and e["AT_SPI_BUS_ADDRESS_set"] is True and e["WAYLAND_DISPLAY_set"] is False
+                 and e["DISPLAY_set"] is True and e["AT_SPI_BUS_ADDRESS_set"] is False and e["WAYLAND_DISPLAY_set"] is False
                  and e["HYPRLAND_INSTANCE_SIGNATURE_set"] is False and e["TYPESAFE_API_KEY_set"] is False)
-    check("session: 16/16 blocks with telemetry off, private DISPLAY + AT-SPI, no Wayland/Hyprland/provider key",
-          len(envs) == 16 and good == 16, f"{good}/{len(envs)}")
+    check("session: 16/16 blocks with telemetry off, private DISPLAY, AT-SPI requested, no inherited AT-SPI address, "
+          "no Wayland/Hyprland/provider key", len(envs) == 16 and good == 16, f"{good}/{len(envs)}")
+    # Deviation D10 replacement evidence for the private AT-SPI bus: each block's session log shows the private
+    # dbus-run-session bus and an at-spi-bus-launcher request served by that one session dbus-daemon
+    private = 0
+    for path in envs:
+        log = (real / f"session-{path.stem}.log").read_text()
+        pids = set(DAEMON_PID.findall(log))
+        atspi = set(ATSPI_ON_BUS.findall(log))
+        private += len(SESSION_LINE.findall(log)) == 1 and len(pids) == 1 and atspi == pids
+    check("session: 16/16 blocks ran at-spi-bus-launcher on their one private session dbus-daemon",
+          len(envs) == 16 and private == 16, f"{private}/{len(envs)}")
+    receipts, accessible = 0, 0
+    for r in jsonl(real / "trials.jsonl"):
+        primary, _, _ = analyze.build_traces(real / "trials" / r["trial_id"], r)
+        for body in primary["receipts"]:
+            sc = body.get("structuredContent") or {}
+            receipts += 1
+            accessible += sc.get("route") == "accessibility" and (sc.get("delivery") or {}).get("mode") == "background"
+    check("session: every action receipt route=accessibility, delivery=background (the forced AT-SPI path)",
+          receipts > 0 and accessible == receipts, f"{accessible}/{receipts}")
 
 
 def verify_provenance() -> None:
@@ -274,7 +306,10 @@ def verify_provenance() -> None:
 
 
 def git(*args: str) -> str:
-    return subprocess.run(["git", "-C", str(HERE), *args], capture_output=True, text=True, check=True).stdout
+    # pathspecs below are repo-relative (REL/...), so run from the worktree top, not from HERE
+    top = subprocess.run(["git", "-C", str(HERE), "rev-parse", "--show-toplevel"], capture_output=True, text=True,
+                         check=True).stdout.strip()
+    return subprocess.run(["git", "-C", top, *args], capture_output=True, text=True, check=True).stdout
 
 
 def commit_utc(iso: str) -> datetime:
