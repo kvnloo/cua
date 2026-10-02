@@ -1,0 +1,52 @@
+{
+ "schema": "cua.i107.cshadow.prereg-amendment.v1",
+ "amends": {
+  "path": "docs/experiments/i107-cshadow-2026-10-02/PREREG.json",
+  "commit": "9dbd2f9667c210b0e3a26595208f02841e51086b"
+ },
+ "status": "Committed after the excluded smoke blocks and BEFORE the first measured trial. Arms, scope, cohorts, conditions, required-zero counts, budgets, thresholds, statistics, continuation rule and decision table are unchanged (map PREREG + lane PREREG). This amendment records the isolation approval, harness defects found by the smokes, the block schedule, and analysis refinements declared before any measured data exists.",
+ "isolation_approval": {
+  "source": "orchestrator approval 2026-10-02 relayed in this lane's task: bin/hostless v2 is the approved isolation wrapper for REAL browser blocks in this lane",
+  "conditions_applied": [
+   "every browser/Driver process launches only inside cua-x11-session.sh, run under bin/hostless (v2, Landlock scope)",
+   "DISPLAY / WAYLAND_DISPLAY / socket paths never point at host locations; the runner's pre-flight refuses unless DISPLAY is a session-private number > 2 whose listening X socket inodes (pathname and abstract) belong to the Xvfb that is an ancestor-child of this runner, XDG_RUNTIME_DIR and the D-Bus daemon are the session's own, XAUTHORITY is absent or the session's own xvfb-run cookie, no Wayland/Hyprland/AT-SPI host variable is present, and NoNewPrivs=1 (Landlock)",
+   "every block manifest records hostless sha256, landlock-scope sha256, session script sha256, session run dir (placeholder-reduced), inner DISPLAY and the pre-flight checks",
+   "every block runs through bin/quiet-timed (ledger receipt per block)",
+   "pre-flight code derives paths from the packet location (no absolute local path in the repository)",
+   "pathname-socket caveat recorded under Limits in the README"
+  ],
+  "block_command": "hostless quiet-timed <label> cua-x11-session.sh <jev-use>/.venv/bin/python run_cshadow.py --driver <bin> --out <dir> --plan <plan> --block <label> ... (hostless outermost so the lock script also runs inside it; the lane PREREG listed quiet-timed outermost: disclosed order change, no effect on the lock or the measured process)"
+ },
+ "smoke_blocks_excluded": {
+  "labels": ["i107-cshadow-smoke-s1", "i107-cshadow-smoke-s2", "i107-cshadow-smoke-s3", "i107-cshadow-smoke-c1", "i107-cshadow-smoke-m1", "i107-cshadow-smoke-m2", "i107-cshadow-smoke-m3"],
+  "use": "harness debugging only; never pooled with measured trials; retained under raw/smoke/"
+ },
+ "harness_defects_fixed_before_measurement": [
+  "pre-flight: XAUTHORITY was refused outright, but xvfb-run sets it to its own cookie under the session TMPDIR; now accepted only when it is under the session run dir (smoke-s1 refused to start)",
+  "pre-flight: explicit check that the inner display number is > 2 (host X0..X2 never used), in addition to socket ownership",
+  "endpoint protocol read: Chrome rewrites its process title (argv joined by spaces), so --user-data-dir was not found by splitting on NUL (smoke-s2); the endpoint's /json/protocol was then read in smoke-s3: Chrome/151.0.7922.71, protocol 1.3, sha256 c61c953c...1458, identical to the resources.pak extraction used for the SOURCE row",
+  "a refused fresh semantic_v2 read now ends the trial with outcome 'unknown' plus snapshot_error {step,type,code} instead of an unhandled exception (DC11 renderer kill: browser_route_unavailable after about 100 s)",
+  "OraclePoller.stop no longer joins a never-started thread (idle and resident plans crashed in smoke-m1)",
+  "Driver pid = the runner's direct child running the binary (helper processes re-exec the same binary); the pid is recorded in every resource sample",
+  "VmSwap (Driver) and summed VmSwap (browser tree) are recorded next to VmHWM/VmRSS: smoke-m2/m3 showed RSS falling during the idle interval and VmHWM read lower at idle end than at idle start on the same pid while host memory PSI was non-zero, so memory numbers are reported with this reclaim caveat (frozen metrics unchanged: VmHWM at trial end, browser-tree RSS)"
+ ],
+ "schedule": {
+  "defaultoff": "10 rounds, each lane-A / map-binary-A / lane-C_shadow_M, order alternating (structural: CDP method sets and mirror marks; no timing claim)",
+  "overhead": "W-quiet and W-churn, 30 ABBA pairs each, blocks of 10 pairs (pair offsets 0/10/20), conditions interleaved block by block",
+  "idle": "W-idle-quiet and W-idle-churn, 30 ABBA pairs each, blocks of 5 pairs, conditions interleaved",
+  "fidelity": "W-quiet and W-churn, 30 C_shadow_audit trials each, blocks of 15",
+  "controls": "5 rounds (one per block): DC01-DC05a, DC07, DC10, DC11, DC12-DC17b, DC19a/b in arms A and C_shadow_audit (order alternating by round), DC18 x 9 faults in C_shadow_audit; DC11 counts only trials whose renderer descent was proven",
+  "resident": "6 ABBA session pairs, 10 tasks each, W-churn",
+  "continuation": "unchanged: one extra block of 30 pairs only where the frozen rule says so"
+ },
+ "analysis_refinements_declared_before_data": [
+  "required-zero mirror false-current gate is computed over un-faulted streams (fidelity, overhead, idle, resident, controls other than DC18). DC18 fault-injection trials are reported separately (false-current detected by the audit vs self-detected invalidation), because an injected dropped event is expected to produce false-current that only a fresh read detects (UNIT finding); it is a control on detection, not on the mirror's live correctness",
+  "an audit whose bracketing window contains the mirror's own (re)bootstrap is all ambiguous_in_flight by construction (the first audit of every trial); fidelity reports audits_compared (field_checks > 0) and the bootstrap-coincident audit count separately, never as agreement",
+  "event lag from i107.mirror.op_applied vs the fixture's ack receipt and mapped page mutation time (both reported)",
+  "CMP-C-idle events/s = cdp.event ledger rows on the Driver inside [idle_start, idle_end] / interval; Driver and browser-tree CPU deltas and VmHWM/RSS at idle end",
+  "CMP-C-resident: per-session median T_oracle per task, session age, CDP attach/detach counts, mirror bootstraps/resyncs; ABBA pairs of session medians",
+  "default-off: lane-A trials have zero i107.mirror marks and zero mirror-only CDP methods, and their CDP method multiset equals the map binary's A trial in the same round (variation from page-dependent counts reported)",
+  "mirror cost decomposition from i107.mirror.stats: construct, bootstrap (attach/enable/frame tree/getDocument), event handling, cut, audit; per condition medians",
+  "expected safe control outcomes (both arms): DC04 remove Submit, DC12 hidden ancestor, DC14a overlay, DC16a disabled fieldset, DC16b aria-disabled, DC17b CSS-only name change -> abstained/budget_exhausted with zero submits; DC01/DC03/DC05a/DC07/DC10/DC13/DC14b/DC15/DC17a/DC19 -> verified or a refusal with zero wrong-target or duplicate effects; DC10 old binding/ref in a new session label must be refused (the lane PREREG named browser_binding_stale / browser_ref_stale; the smoke showed the session-scope authority refuses first with authorization_host_failed / protected_resource_scope_invalid, so any refusal counts and the codes are recorded)"
+ ]
+}

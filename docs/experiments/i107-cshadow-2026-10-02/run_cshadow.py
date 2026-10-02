@@ -201,14 +201,17 @@ def resources(driver_pid: int | None, browser_pid: int | None) -> dict[str, Any]
     table = proc_table()
     out: dict[str, Any] = {"t_mono_ns": now()}
     if driver_pid:
+        out["driver_pid"] = driver_pid
         out["driver_cpu_s"] = cpu_s(driver_pid)
         out["driver_vmhwm_kib"] = status_kib(driver_pid, "VmHWM")
         out["driver_vmrss_kib"] = status_kib(driver_pid, "VmRSS")
+        out["driver_vmswap_kib"] = status_kib(driver_pid, "VmSwap")  # reclaim under host memory pressure
     if browser_pid:
         tree = [browser_pid] + descendants(browser_pid, table)
         out["browser_tree_pids"] = len(tree)
         out["browser_tree_cpu_s"] = sum(cpu_s(p) for p in tree)
         out["browser_tree_rss_kib"] = sum(status_kib(p, "VmRSS") for p in tree)
+        out["browser_tree_swap_kib"] = sum(status_kib(p, "VmSwap") for p in tree)
     return out
 
 
@@ -216,7 +219,8 @@ def own_driver_pid(driver_bin: str) -> int | None:
     me = os.getpid()
     table = proc_table()
     target = os.path.realpath(driver_bin)
-    for pid in descendants(me, table):
+    # The MCP server is this runner's direct child; helper processes re-exec the same binary.
+    for pid in sorted(p for p in descendants(me, table) if table[p][0] == me):
         try:
             if os.path.realpath(f"/proc/{pid}/exe") == target:
                 return pid
@@ -272,7 +276,8 @@ class OraclePoller:
 
     def stop(self) -> None:
         self._stop.set()
-        self._thread.join(timeout=2)
+        if self._thread.ident is not None:  # idle/resident trials never start the poller
+            self._thread.join(timeout=2)
 
 
 class Recorder:
@@ -335,8 +340,16 @@ async def run_task(driver: Driver, session: ClientSession, rec: Recorder, server
         if control and control.get("op") and ((point == "during_bootstrap" and step == 1)
                                               or (point == "during_audit" and step == 2)):
             concurrent = asyncio.create_task(send_op(rec, server, control["op"], wait_ack=False))
-        snap = await timed_call(rec, driver, f"snapshot{step}", "get_browser_state",
-                                {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"})
+        try:
+            snap = await timed_call(rec, driver, f"snapshot{step}", "get_browser_state",
+                                    {"target_id": target_id, "tab_id": tab_id, "snapshot_format": "semantic_v2"})
+        except Exception as error:  # a refused fresh read ends the trial; never retried or bypassed
+            result["outcome"] = "unknown"
+            result["snapshot_error"] = {"step": step, "type": type(error).__name__,
+                                        "code": getattr(error, "code", None)}
+            if concurrent is not None:
+                await concurrent
+            return
         if concurrent is not None:
             await concurrent
         rec.add("cand_start", step=step)
@@ -658,7 +671,8 @@ def read_endpoint_protocol(browser_pid: int, out_path: Path) -> dict[str, Any]:
     (loopback DevTools port from the profile's DevToolsActivePort), inside the session."""
     import http.client
 
-    args = read(f"/proc/{browser_pid}/cmdline").split("\0")
+    # Chrome rewrites its process title on Linux, joining argv with spaces into one string.
+    args = read(f"/proc/{browser_pid}/cmdline").replace("\0", " ").split()
     profile = next((a.split("=", 1)[1] for a in args if a.startswith("--user-data-dir=")), None)
     info: dict[str, Any] = {"profile_found": profile is not None}
     if not profile:
@@ -732,13 +746,16 @@ def preflight() -> dict[str, Any]:
               if line.startswith("NoNewPrivs:"))
     checks = {
         "display_is_private_number": number is not None,
+        "display_not_host_x0_x2": number is not None and int(number) > 2,
         "no_wayland_vars": not any(k in env for k in ("WAYLAND_DISPLAY", "WAYLAND_SOCKET", "SWAYSOCK", "I3SOCK"))
         and not any(k.startswith("HYPRLAND") for k in env),
         "x_socket_owned_by_session_xvfb": owned,
         "xdg_runtime_dir_in_session_run_dir": runtime.startswith(str(run_dir) + "/")
         and not runtime.startswith(HOST_RUNTIME_PREFIXES),
         "dbus_daemon_is_session_child": bool(dbus_daemons) and "/run/user/" not in dbus,
-        "no_xauthority_or_host_bus": "XAUTHORITY" not in env and "AT_SPI_BUS_ADDRESS" not in env,
+        # xvfb-run writes its own cookie file under the session's TMPDIR; a host cookie is refused.
+        "xauthority_absent_or_session_own": env.get("XAUTHORITY", str(run_dir) + "/").startswith(str(run_dir) + "/"),
+        "no_host_atspi_bus": "AT_SPI_BUS_ADDRESS" not in env,
         "landlock_no_new_privs": nnp,
     }
     return {
