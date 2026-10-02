@@ -566,7 +566,14 @@ pub(crate) fn compose_accessibility_tree(
         let visibility = classify_visibility(dom_meta, layout_meta, viewport);
         let actions = action_kinds(&role, dom_meta, &states, layout_meta);
         let name = ax_value_string(ax.get("name")).and_then(clean_semantic_text);
-        let value = ax_value_string(ax.get("value")).and_then(clean_semantic_text);
+        // Ordinary input values are exact evidence, unlike readable AX text.
+        // Require the same backend-bound current-property source as DOM-only
+        // inputs; missing or lossy evidence must not fall back to AX display.
+        let value = if dom_meta.is_some_and(is_plain_input) {
+            layout_meta.and_then(|layout| layout.input_value.clone())
+        } else {
+            ax_value_string(ax.get("value")).and_then(clean_semantic_text)
+        };
         let document_order = dom_meta.map_or(fallback_order, |meta| meta.order);
         nodes.push(SemanticNode {
             ax_id,
@@ -728,16 +735,7 @@ fn supplement_dom_actions(
             // A content attribute is a default, not proof of the current field.
             // Only expose ordinary text-entry inputs from this live snapshot;
             // never expand password/file/hidden-field value exposure.
-            value: if meta.tag == "input"
-                && ["text", "search", "email", "url", "tel", "number"]
-                    .iter()
-                    .any(|kind| {
-                        meta.attrs
-                            .get("type")
-                            .map_or("text", String::as_str)
-                            .eq_ignore_ascii_case(kind)
-                    })
-            {
+            value: if is_plain_input(meta) {
                 layout_meta.and_then(|layout| layout.input_value.clone())
             } else {
                 None
@@ -984,6 +982,18 @@ fn ax_value_string(value: Option<&Value>) -> Option<String> {
         Value::Number(value) => Some(value.to_string()),
         _ => None,
     }
+}
+
+fn is_plain_input(meta: &DomMeta) -> bool {
+    meta.tag == "input"
+        && ["text", "search", "email", "url", "tel", "number"]
+            .iter()
+            .any(|kind| {
+                meta.attrs
+                    .get("type")
+                    .map_or("text", String::as_str)
+                    .eq_ignore_ascii_case(kind)
+            })
 }
 
 fn lossless_input_value(value: &str) -> Option<String> {
@@ -1322,10 +1332,11 @@ mod tests {
             node.name.as_deref() == Some("Custom action")
                 && node.actions == vec![BrowserActionKind::Click, BrowserActionKind::Pointer]
         }));
-        assert!(page
-            .selected
-            .iter()
-            .all(|node| node.name.as_deref() != Some("Static panel")));
+        assert!(
+            page.selected
+                .iter()
+                .all(|node| node.name.as_deref() != Some("Static panel"))
+        );
     }
 
     #[test]
@@ -1376,10 +1387,11 @@ mod tests {
             .find(|node| node.name.as_deref() == Some("Scrollable archive"))
             .expect("scrollable DOM supplement");
         assert_eq!(scrollable.actions, vec![BrowserActionKind::Scroll]);
-        assert!(page
-            .selected
-            .iter()
-            .all(|node| node.name.as_deref() != Some("Overflow-visible panel")));
+        assert!(
+            page.selected
+                .iter()
+                .all(|node| node.name.as_deref() != Some("Overflow-visible panel"))
+        );
     }
 
     #[test]
@@ -1458,10 +1470,11 @@ mod tests {
         ]});
         let document = compose_accessibility_tree(&ax, &dom, &layout, &viewport, frame());
         let page = document.page(0, 300, None, None);
-        assert!(page
-            .selected
-            .iter()
-            .all(|node| node.name.as_deref() != Some("Covered")));
+        assert!(
+            page.selected
+                .iter()
+                .all(|node| node.name.as_deref() != Some("Covered"))
+        );
         assert_eq!(page.omissions.page_occluded, 1);
     }
 
@@ -1628,7 +1641,22 @@ mod tests {
         }
         assert_eq!(
             observe("text", Some("dom-current"), exact(), Some("ax-current")).as_deref(),
-            Some("ax-current")
+            Some("dom-current")
+        );
+        assert_eq!(observe("text", None, None, Some("default-goal")), None);
+        assert_eq!(
+            observe(
+                "text",
+                Some(" default-goal "),
+                exact(),
+                Some("default-goal")
+            ),
+            None
+        );
+        // Other AX values retain their display-oriented normalization.
+        assert_eq!(
+            observe("checkbox", None, None, Some("  ax  display  ")).as_deref(),
+            Some("ax display")
         );
     }
 }

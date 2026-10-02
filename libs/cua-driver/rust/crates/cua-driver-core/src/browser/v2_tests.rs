@@ -7,14 +7,14 @@
 use std::collections::BTreeMap;
 use std::io::Cursor;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc, Mutex as StdMutex,
+    atomic::{AtomicBool, Ordering},
 };
 
 use async_trait::async_trait;
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::action_record::ActionExecutionRecord;
 use crate::protocol::{Content, ToolResult};
@@ -29,8 +29,8 @@ use super::platform::{
 use super::pointer::BrowserPointerTool;
 use super::refusal::BrowserRefusal;
 use super::tools::{
-    browser_protected_resource_scope, BrowserClickTool, BrowserNavigateTool, BrowserPrepareTool,
-    BrowserTypeTool, GetBrowserStateTool,
+    BrowserClickTool, BrowserNavigateTool, BrowserPrepareTool, BrowserTypeTool,
+    GetBrowserStateTool, browser_protected_resource_scope,
 };
 use super::types::{
     BrowserClassification, BrowserEngineFamily, BrowserProcessRole, BrowserProduct,
@@ -64,6 +64,7 @@ struct FixtureState {
     dom_value_witness: bool,
     omit_witness_ax: bool,
     omit_witness_input_value: bool,
+    witness_ax_override: Option<String>,
     focused_nodes: BTreeMap<String, i64>,
     // Target-owned text, independent of the driver's result and request log.
     editable_text: BTreeMap<(String, i64), String>,
@@ -112,6 +113,7 @@ impl Default for FixtureState {
             dom_value_witness: false,
             omit_witness_ax: false,
             omit_witness_input_value: false,
+            witness_ax_override: None,
             focused_nodes: BTreeMap::new(),
             editable_text: BTreeMap::new(),
             semantic_large_page: false,
@@ -544,8 +546,8 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     if st.dom_value_witness {
                         document["root"]["children"][0]["children"][0]["attributes"] =
                             json!(["id", "main-btn", "aria-label", "Submit"]);
-                        document["root"]["children"][0]["children"][1]["shadowRoots"][0]
-                            ["children"][0]["attributes"] = json!([
+                        document["root"]["children"][0]["children"][1]["shadowRoots"][0]["children"]
+                            [0]["attributes"] = json!([
                             "type",
                             "text",
                             "aria-label",
@@ -581,7 +583,7 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                         {"nodeId": "typing-input", "parentId": "typing-root", "ignored": false,
                          "backendDOMNodeId": 20, "role": {"value": "textbox"},
                          "name": {"value": if st.dom_value_witness { "verification value" } else { "Shadow Input" }},
-                         "value": {"value": st.editable_text.get(&("T1".into(), 20))},
+                         "value": {"value": st.witness_ax_override.as_ref().or_else(|| st.editable_text.get(&("T1".into(), 20)))},
                          "properties": [{"name": "editable", "value": {"value": "plaintext"}}],
                          "childIds": []}
                     ]}))
@@ -630,10 +632,13 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     }
                     MockReply::ok(semantic_layout_snapshot(&backends, &bounds))
                 } else if st.observe_editable_text {
-                    MockReply::ok(semantic_layout_snapshot(
-                        &[20],
-                        &[[20.0, 20.0, 120.0, 30.0]],
-                    ))
+                    let mut layout = semantic_layout_snapshot(&[20], &[[20.0, 20.0, 120.0, 30.0]]);
+                    let strings = layout["strings"].as_array_mut().unwrap();
+                    let index = strings.len();
+                    strings.push(json!(st.editable_text.get(&("T1".into(), 20))));
+                    layout["documents"][0]["nodes"]["inputValue"] =
+                        json!({"index": [0], "value": [index]});
+                    MockReply::ok(layout)
                 } else {
                     MockReply::ok(semantic_layout_snapshot(&[], &[]))
                 }
@@ -1790,10 +1795,12 @@ async fn requested_tab_screenshot_refuses_malformed_image_data() {
     let refusal = structured(&result);
     assert_eq!(refusal["status"], "refused", "{refusal}");
     assert_eq!(refusal["refusal"]["code"], "browser_route_unavailable");
-    assert!(result
-        .content
-        .iter()
-        .all(|content| !matches!(content, Content::Image { .. })));
+    assert!(
+        result
+            .content
+            .iter()
+            .all(|content| !matches!(content, Content::Image { .. }))
+    );
 }
 
 #[tokio::test]
@@ -2042,15 +2049,21 @@ async fn semantic_snapshot_uses_bounded_dom_fallback_only_for_known_size_failure
     assert_eq!(snap["status"], "ok", "{snap}");
     assert_eq!(snap["snapshot"]["complete"], false, "{snap}");
     let document_calls = recorded_calls(&f, "DOM.getDocument");
-    assert!(document_calls
-        .iter()
-        .any(|(_, params)| params["depth"] == -1));
-    assert!(document_calls
-        .iter()
-        .any(|(_, params)| params["depth"] == 256));
-    assert!(document_calls
-        .iter()
-        .any(|(_, params)| params["depth"] == 8));
+    assert!(
+        document_calls
+            .iter()
+            .any(|(_, params)| params["depth"] == -1)
+    );
+    assert!(
+        document_calls
+            .iter()
+            .any(|(_, params)| params["depth"] == 256)
+    );
+    assert!(
+        document_calls
+            .iter()
+            .any(|(_, params)| params["depth"] == 8)
+    );
 }
 
 #[tokio::test]
@@ -2065,12 +2078,16 @@ async fn semantic_snapshot_uses_bounded_dom_fallback_for_full_tree_timeout() {
     assert_eq!(snap["status"], "ok", "{snap}");
     assert_eq!(snap["snapshot"]["complete"], false, "{snap}");
     let document_calls = recorded_calls(&f, "DOM.getDocument");
-    assert!(document_calls
-        .iter()
-        .any(|(_, params)| params["depth"] == -1));
-    assert!(document_calls
-        .iter()
-        .any(|(_, params)| params["depth"] == 8));
+    assert!(
+        document_calls
+            .iter()
+            .any(|(_, params)| params["depth"] == -1)
+    );
+    assert!(
+        document_calls
+            .iter()
+            .any(|(_, params)| params["depth"] == 8)
+    );
     assert!(document_calls.iter().all(|(_, params)| {
         params["depth"] == -1 || params["depth"].as_i64().is_some_and(|depth| depth <= 8)
     }));
@@ -2088,12 +2105,16 @@ async fn semantic_snapshot_hydrates_truncated_fallback_branches() {
     let snap = semantic_snapshot_with(&f, &target, &tab, json!({"query": "Reply"})).await;
     assert_eq!(snap["status"], "ok", "{snap}");
     assert_eq!(snap["snapshot"]["complete"], false, "{snap}");
-    assert!(snap["refs"]
-        .as_array()
-        .is_some_and(|refs| refs.iter().any(|entry| entry["name"] == "Reply")));
-    assert!(recorded_calls(&f, "DOM.describeNode")
-        .iter()
-        .any(|(_, params)| params["backendNodeId"] == 999));
+    assert!(
+        snap["refs"]
+            .as_array()
+            .is_some_and(|refs| refs.iter().any(|entry| entry["name"] == "Reply"))
+    );
+    assert!(
+        recorded_calls(&f, "DOM.describeNode")
+            .iter()
+            .any(|(_, params)| params["backendNodeId"] == 999)
+    );
 }
 
 #[tokio::test]
@@ -2551,9 +2572,11 @@ async fn typing_into_an_oopif_input_routes_to_the_child_session() {
         "typing must land in the contained child session: {inserts:?}"
     );
     let focuses = recorded_calls(&f, "DOM.focus");
-    assert!(focuses
-        .iter()
-        .all(|(sess, _)| sess.as_deref().unwrap().starts_with("oopif-sess-")));
+    assert!(
+        focuses
+            .iter()
+            .all(|(sess, _)| sess.as_deref().unwrap().starts_with("oopif-sess-"))
+    );
 }
 
 #[tokio::test]
@@ -2708,14 +2731,16 @@ async fn windowless_side_panel_target_is_skipped_and_bind_stays_exact() {
     assert_eq!(tabs[0]["url"], "https://fixture.test/");
     // The window-less target was asked for its window (and skipped), never attached to.
     let st = f.state.lock().unwrap();
-    assert!(st
-        .calls
-        .iter()
-        .any(|(_, m, p)| { m == "Browser.getWindowForTarget" && p["targetId"] == "T_SIDEPANEL" }));
-    assert!(!st
-        .calls
-        .iter()
-        .any(|(_, m, p)| { m == "Target.attachToTarget" && p["targetId"] == "T_SIDEPANEL" }));
+    assert!(
+        st.calls.iter().any(|(_, m, p)| {
+            m == "Browser.getWindowForTarget" && p["targetId"] == "T_SIDEPANEL"
+        })
+    );
+    assert!(
+        !st.calls
+            .iter()
+            .any(|(_, m, p)| { m == "Target.attachToTarget" && p["targetId"] == "T_SIDEPANEL" })
+    );
 }
 
 #[tokio::test]
@@ -2986,9 +3011,11 @@ async fn fresh_semantic_value_corroborates_unknown_typing_without_replay() {
                 "fresh scoped session after socket loss"
             );
             let reads = &state.calls[boundary..];
-            assert!(reads
-                .iter()
-                .any(|(_, method, _)| method == "DOM.getDocument"));
+            assert!(
+                reads
+                    .iter()
+                    .any(|(_, method, _)| method == "DOM.getDocument")
+            );
             assert!(reads.iter().any(|(_, method, params)| method
                 == "Accessibility.getFullAXTree"
                 && params["frameId"] == "F_MAIN"));
@@ -3042,11 +3069,13 @@ async fn failed_semantic_ax_read_does_not_reconcile_unknown_typing() {
     let (target, tab) = bind(&f).await;
     let before = semantic_snapshot(&f, &target, &tab).await;
     assert_eq!(before["status"], "ok", "{before}");
-    assert!(before["refs"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|entry| entry["name"] == "Shadow Input" && entry["value"] == "seed"));
+    assert!(
+        before["refs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["name"] == "Shadow Input" && entry["value"] == "seed")
+    );
     let action_state = snapshot(&f, &target, &tab).await;
     let input = ref_of(&action_state, "main", "Shadow Input");
     let result = BrowserTypeTool::new(f.engine.clone())
@@ -3084,10 +3113,12 @@ async fn failed_semantic_ax_read_does_not_reconcile_unknown_typing() {
         "failed AX read cannot claim fresh success: {fresh}"
     );
     assert_eq!(fresh["refusal"]["code"], "browser_route_unavailable");
-    assert!(fresh["refusal"]["message"]
-        .as_str()
-        .unwrap()
-        .contains("Accessibility.getFullAXTree failed"));
+    assert!(
+        fresh["refusal"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("Accessibility.getFullAXTree failed")
+    );
     assert!(
         fresh.get("refs").is_none(),
         "do not return cached value-bearing refs"
@@ -3098,9 +3129,11 @@ async fn failed_semantic_ax_read_does_not_reconcile_unknown_typing() {
     );
     {
         let state = f.state.lock().unwrap();
-        assert!(state.calls[boundary..]
-            .iter()
-            .any(|(_, method, _)| method == "Accessibility.getFullAXTree"));
+        assert!(
+            state.calls[boundary..]
+                .iter()
+                .any(|(_, method, _)| method == "Accessibility.getFullAXTree")
+        );
         assert_eq!(state.editable_text[&("T1".into(), 20)], "seed-done");
     }
     assert_eq!(recorded_calls(&f, "Input.insertText"), input_calls);
@@ -3213,11 +3246,13 @@ async fn dom_attribute_value_differs_from_live_property_after_unknown_typing() {
         state.editable_text.insert(("T1".into(), 20), LIVE.into());
     }
     let restored = semantic_snapshot(&f, &target, &tab).await;
-    assert!(restored["refs"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|node| node["name"] == "verification value" && node["value"] == LIVE));
+    assert!(
+        restored["refs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|node| node["name"] == "verification value" && node["value"] == LIVE)
+    );
     assert_eq!(
         f.state.lock().unwrap().editable_text[&("T1".into(), 20)],
         LIVE
@@ -3233,5 +3268,84 @@ async fn dom_attribute_value_differs_from_live_property_after_unknown_typing() {
         "value_controls": value_controls
         }))
         .unwrap()
+    );
+}
+
+#[tokio::test]
+async fn ax_plain_input_requires_lossless_current_property_evidence() {
+    let f = fixture_with(|state| {
+        state.dom_value_witness = true;
+        state.observe_editable_text = true;
+        state.oopif_present = false;
+        state
+            .editable_text
+            .insert(("T1".into(), 20), "live-other".into());
+    })
+    .await;
+    let (target, tab) = bind(&f).await;
+    let before = semantic_snapshot(&f, &target, &tab).await;
+    let mut rows = Vec::new();
+    let mut violations = Vec::new();
+    for (label, raw, missing, override_value, expected) in [
+        (
+            "exact",
+            "default-goal".to_owned(),
+            false,
+            None,
+            Some("default-goal"),
+        ),
+        ("whitespace", " default-goal ".to_owned(), false, None, None),
+        ("missing", "default-goal".to_owned(), true, None, None),
+        ("empty", String::new(), false, None, None),
+        ("long", "x".repeat(1001), false, None, None),
+        (
+            "different",
+            "live-other".to_owned(),
+            false,
+            None,
+            Some("live-other"),
+        ),
+        (
+            "ax_disagrees",
+            "live-other".to_owned(),
+            false,
+            Some("default-goal".to_owned()),
+            Some("live-other"),
+        ),
+    ] {
+        {
+            let mut state = f.state.lock().unwrap();
+            state.editable_text.insert(("T1".into(), 20), raw.clone());
+            state.omit_witness_input_value = missing;
+            state.witness_ax_override = override_value;
+        }
+        let snapshot = semantic_snapshot(&f, &target, &tab).await;
+        let field = snapshot["refs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|node| node["name"] == "verification value")
+            .unwrap();
+        if field["value"].as_str() != expected {
+            violations.push(label);
+        }
+        assert_eq!(
+            f.state.lock().unwrap().editable_text[&("T1".into(), 20)],
+            raw
+        );
+        rows.push(json!({"label": label, "raw_target_value": raw, "expected_value": expected, "snapshot": snapshot}));
+    }
+    assert!(recorded_calls(&f, "Input.insertText").is_empty());
+    assert!(recorded_calls(&f, "Input.dispatchKeyEvent").is_empty());
+    println!(
+        "AX_INPUT_FIDELITY:{}",
+        serde_json::to_string(
+            &json!({"session": SESSION, "before": before, "rows": rows, "mutation_requests": 0})
+        )
+        .unwrap()
+    );
+    assert!(
+        violations.is_empty(),
+        "plain input fidelity violations: {violations:?}"
     );
 }
