@@ -1,0 +1,85 @@
+{
+ "schema": "cua.i107.lane-prereg.v1",
+ "issue": "kvnloo/cua#107",
+ "lane": "D (checked execution): D(A-reads) vs A on the trycua/cua PR 4316 guarded continuation",
+ "parents": ["kvnloo/cua#93 R2-07", "kvnloo/cua#10", "kvnloo/cua#73", "kvnloo/cua#74"],
+ "status": "FROZEN before any measured lane-D trial. No measured trial has run: every REAL cell is BLOCKED by the hostless browser-launch blocker (map PREREG infrastructure_blocker_at_freeze). This file adds only the harness details the map PREREG leaves to lanes; it changes no frozen map field. Any later change to the items below is an amendment committed before the affected trials and disclosed.",
+ "map_prereg": {
+  "path": "docs/experiments/i107-map-2026-10-02/PREREG.json",
+  "sha256": "8eeb837ffa24425cfc36ba2c72a8ea65df4207e1a39a7d261f1cda85496b2c53",
+  "commit": "be68363bc38940d5560be55165ceaf6fd743437b",
+  "binding_fields": ["arms.A", "arms.D", "fixed_settings_all_arms", "cohorts", "workload_conditions", "comparisons.CMP-D", "comparisons.CMP-D-K2", "design", "metrics", "outcome_and_safety_requirements", "minimum_useful_improvement", "statistics", "continuation_rule", "dependency_controls", "dependency_control_rules", "decision_table", "blocked_and_not_run_cells", "ledger_format", "packet"]
+ },
+ "identities": {
+  "tested_source": "branch exp/i107-d-20261002 from be68363bc (= exp/i107-map-20261002 packet HEAD); libs/cua-driver tree a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497; lane commits add docs/experiments/i107-d-2026-10-02/ only",
+  "caller": "jev-use tree 72bf8156136771da9a767ec12ae7c364e426d910 (byte-identical to the jev-use tree at trycua/cua PR 4316 head a0bca7440); python/run.py run() executed unmodified",
+  "driver_binary": {"name": "cua-driver-i107-092b065d5", "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed", "both_arms": true, "rebuild": "never in this lane; run_d.py refuses a binary with another sha256"},
+  "live_pr_head": "read with gh pr view 4316 -R trycua/cua --json headRefOid,state,mergedAt at lane start and end, recorded in raw/ separately from the tested source (start: a0bca744067d04f05904319d3d919be30c336556, OPEN, mergedAt null, 2026-10-02T04:53:03Z)",
+  "provider": "choose_mock_for_task (scripted mock), 0 provider HTTP (runner refuses non-loopback sockets). Every row is FIXTURE/BENCHMARK with the chooser named. LIVE_PROVIDER cells BLOCKED pending owner budget; R2-03's live -212 ms (0.31.0, TypeSafe) is never borrowed or summed."
+ },
+ "arms": {
+  "A": "jev-use run.run(args) with provider=mock, visual_observation=auto, guarded_completion=False",
+  "D": "the same with guarded_completion=True (PR 4316). Observation = A's full fresh semantic_v2 reads (B BLOCKED). The continuation is planned by plan_guarded_completion from the admitted task constants FIXTURE_TASK_ID and SUBMIT_NAME (tasks.py) and the provider-selected first mutation; never from fixture answers (the token reaches the plan only as the task's own parameter, as in A)",
+  "identical_in_both": "binary, fixture page per condition, token cohort, set_agent_cursor_enabled(enabled=false) sent once before browser_prepare, phase trace file on, CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS unset, max_steps 4, completion poll 20 x 100 ms (run.py), fresh cua-driver mcp process + isolated_new browser per trial"
+ },
+ "harness": {
+  "runner": "harness/run_d.py: imports jev-use python/run.py and runs run() unmodified, patching only module-level names run.py looks up at call time (OWN-105/R2-05 pattern): stdio_client (real SDK client or the OWN-105 fault seam, cleanup stamps + resource sample), ClientSession (stamps every tools/call; injects set_agent_cursor_enabled(false) before browser_prepare; control hooks), FixtureFormTask (read_oracle stamped), choose_mock_for_task / plan_guarded_completion / resolve_guarded_completion / task_candidates_for_step (stamped pass-throughs), asyncio (sleep stamped), driver_environment (sets the per-trial trace file, removes the knob)",
+  "reused": {"b01_analysis.py": "kvnloo/cua 6689610d5 docs/experiments/b-01-browser-critpath-2026-10-02/b01_analysis.py, verbatim, sha256 072c8ef2f925aa7c3d2894c47c66b2e665f5c77774d2a53fe03215b2b9a48a31", "fault_transport.py": "kvnloo/cua b97daa4ba docs/experiments/own-105-runner-reconcile-2026-10-02/harness/fault_transport.py (itself from R2-05), verbatim, sha256 c85eec39fd3d5ae186a3654511aa35e07ebff4d28eaf664d1e80675dace49784", "run_critpath.py": "B-01's network guard and client-validation timing patch are copied into run_d.py (cited); its arm table and step-loop re-implementation are not used, because lane D runs run.py itself"},
+  "fixture": "harness/i107_fixture.py, a separate process: W-quiet = jev-use fixture_server.PAGE byte for byte; W-churn = the same form + 500-node region, seed 20261002, 20 Hz, 10 nodes per tick (text / attribute flip / insert-remove), fixed-size contain:strict region, no node containing 'submit' or 'verification', starts during parse; control = the same form + EventSource channel (per-trial epoch so a stale page stream never takes a later op). CLOCK_MONOTONIC journal of config/reset/submit/wrong_target_submit/control_posted/control_delivered/control_ack/note. Shared with lane AB (import i107_fixture.page_for('churn'))",
+  "oracle": "independent 2 ms poller thread in the fixture process reading the in-memory state (no HTTP, separate process from the runner); T_oracle ends at its first read showing submitted == token. The runner's own /state reads are stamped but are not the oracle",
+  "lock": "one <lanes>/bin/quiet-timed invocation per block (EXCLUSIVE quiet-lane lock, ledger receipt), wrapping cua-x11-session.sh, under hostless; the lock is held before the block's first MCP session opens",
+  "per_trial_records": "loadavg and /proc/pressure/{cpu,memory,io} before and after; Driver utime+stime, VmHWM, VmRSS and the Driver-launched browser tree CPU/RSS sampled at stdio-client exit (before the Driver is closed); cleanup span = stdio close start -> browser main pid gone; lifetime = trial start -> browser gone; cold startup = trial start -> navigate return",
+  "tdd": "harness unit tests in harness/tests (fixture, schedule, analysis, guard matrix, end-to-end through the real run.run with an in-memory fake Driver); red logs then green logs in raw/unit/"
+ },
+ "schedule": {
+  "source": "harness/d_plan.py schedule() (blocks run in this order)",
+  "smoke": "1 A/D pair W-quiet, excluded",
+  "shakedown": "2 measured pairs (W-quiet, W-churn) + DC01, DC06, DC07, DC20a pairs, excluded",
+  "CMP-D": "6 blocks x 10 pairs, condition order W-quiet, W-churn, W-churn, W-quiet, W-quiet, W-churn; pair order alternates AD, DA (30 AD + 30 DA)",
+  "CMP-D continuation": "predeclared blocks cmpd-xq1..3 (W-quiet) and cmpd-xc1..3 (W-churn), each 10 pairs, run only for a condition that is INCONCLUSIVE after its first 30 pairs; never a third block",
+  "CMP-D-K2": "after every K1 block: 3 blocks x 10 pairs W-quiet, token = 64 uppercase ASCII letters (disjoint from K1's 'jev-' + 10 lowercase hex)",
+  "controls": "19 controls x 5 reps x 2 arms = 190 trials, pairs alternate AD/DA, controls rotated by 4 per rep, blocks of 10 pairs"
+ },
+ "dependency_controls_lane_d": {
+  "points": "after_type = immediately after the first browser_type returns (before the step-2 snapshot); before_click = after the step-2 snapshot and decision, immediately before the first browser_click is sent (check-to-dispatch). Mutations go through the page's EventSource channel; the harness waits for the page ack (5 s) before continuing",
+  "DC01": "set_value 'changed-by-page' after_type; expect D declined field_not_proven then re-type; A re-types; oracle submitted == token only",
+  "DC03": "competing Submit inserted BEFORE the original in the same form, formaction /submit-competing (journaled wrong_target_submit), after_type; expect D declined submit_not_unique; A's first match is the competing button (recorded as a wrong-target effect of A)",
+  "DC04": "remove_submit after_type; expect no click, no false success, D declined submit_not_unique",
+  "DC05a": "rerender_submit (clone replaces the button, same form) after_type; expect verified, D accepted with fresh ref != prior ref",
+  "DC05b": "replace_submit_watch before_click: the detached original reports any click it receives (note detached_click); expect no effect from the stale node; recorded per arm as Driver stale acceptance (known gap R2-07 N4a); 0 duplicates",
+  "DC06": "relocate_decoy after_type: real Submit removed, identical Submit in a new form posting /submit-decoy; expect D accepted -> decoy submit (missing form-scope fact; blocks D's promotion); A's behaviour recorded",
+  "DC07": "replace_document (location.replace same URL) before_click; the harness also waits for the new document's channel to open; expect browser_ref_stale before any dispatch, 0 effect from the old ref",
+  "DC10": "session replacement probe before_click: the pending browser_click (old target_id/tab_id/ref/session label) is sent through a NEW cua-driver mcp process; expect a binding/ref refusal and 0 submits during the probe; the original trial then continues",
+  "DC12": "hide_submit (ancestor class -> display:none) after_type",
+  "DC13": "offscreen_submit (ancestor class -> transform -5000px) after_type",
+  "DC14a": "overlay_submit after_type (fixed, pointer-events:auto, covering Submit)",
+  "DC14b": "overlay_submit before_click (dom_event this.click() bypasses hit testing: a route property, recorded)",
+  "DC15": "blur_field (focus to the heading) after_type; expect no outcome change",
+  "DC16a": "fieldset_disable (Submit moved into a disabled fieldset, no attribute on the button) after_type",
+  "DC16b": "aria_disable (aria-disabled=true) after_type",
+  "DC17a": "set_value '' after_type (property change, no attribute)",
+  "DC17b": "before_name (CSS ::before content 'Do not ') after_type; expect D declines when the name no longer matches",
+  "DC20a": "applied-but-acknowledgement-lost: OWN-105 fault seam mode ack_lost, barrier = fixture journal shows the submit applied, then the Driver's click response is dropped and the transport closed; expect runner unknown, no redispatch, 0 duplicates",
+  "DC20b": "delayed effect: fixture /submit handler delays 300 ms; expect late verification within the runner's 2 s poll, no redispatch, 0 duplicates",
+  "unit_expectations": "raw/unit/guard-matrix.json gives the caller-logic outcome per control (UNIT); Driver/Chrome-dependent snapshot shapes (DC12, DC13, DC14a, DC16a/b, DC17b) are listed as conditional branches and decided only by REAL runs",
+  "not_in_lane_d": {"DC02": "covered by CMP-D W-churn", "DC08": "NOT_RUN (map)", "DC09": "NOT_RUN (map)", "DC11": "arms A/C only (lane CSHADOW/AB)", "DC18": "C only", "DC19": "A/D part covered by DC01, DC05b, DC07 (map)"}
+ },
+ "analysis": {
+  "code": "harness/d_analysis.py (+ b01_analysis.py)",
+  "decomposition": "telescoping over [T0 = snapshot1 send, T1 = poller first ok] (T_oracle; T_runner variant ends at the runner's verified read). i107 ledger marks (cdp.send/reply/event, snap.acquired_*) are removed before the decomposition (counts, not boundaries). Regions: Driver call windows by B-01 mark taxonomy; runner oracle reads; sleeps; decision; plan_/guard_ windows = guard_program; candidate building; control injection; post-effect gap = oracle_lag; rest runner_overhead",
+  "spans10": {"observation_acquisition": "observation_cdp", "projection_encoding_transport": "observation_processing + driver_post_dispatch + transport + client_validation + candidate_build", "provider_inference": "decision", "resolution_validation": "resolution + revalidate + driver_pre_dispatch + input_prep + guard_program (PR 4316 program creation and verification counted here, not hidden)", "dispatch": "dispatch + dispatch_post", "wait": "visualization + settles + sleeps_polls + target_effect_lag", "fresh_verification": "verification_reads + oracle_lag", "residual": "runner_overhead + unattributed + control_injection", "cleanup": "reported separately (outside T)"},
+  "accounting_gate": "coverage = 1 - residual / T_oracle > 0.90 per arm (median over valid trials and every valid trial listed) before any latency claim",
+  "validity_for_timing": "excluded flag unset; runner outcome verified; oracle satisfied; exactly 1 /submit journal entry; 0 wrong-target; mutation tools exactly [browser_type, browser_click]; decision routes A [provider, provider], D [provider, guarded-completion]; feedback off (cursor call acked, no overlay arrival waits, platform.gate cursor_enabled false); focus settle exactly [100]; T defined. A pair enters the paired analysis only if both members are valid; every excluded pair is listed with reasons",
+  "outcome_equivalence": "verified rate (oracle) of D equals A's per condition; every non-verified trial explained",
+  "statistics": "map PREREG statistics: delta = D - A (T_oracle, ms), median of paired deltas, percentile bootstrap 10000 resamples seed 20261002, 95% CI; arm medians, nearest-rank p95, sign counts, denominators; sensitivity excluding pairs with a 1-min loadavg above 8",
+  "threshold": "max(5 ms, 5% of A's median T_oracle) per condition; MEANINGFUL if median <= -threshold and CI upper < 0; NO_MEANINGFUL_BENEFIT if CI lower > -threshold; else INCONCLUSIVE -> continuation rule",
+  "work_deleted": "per task, structurally, separate from wall-clock: provider/chooser decisions (expected A 2, D 1), PR 4316 plan and resolve calls and their time, snapshots, producer RPCs by CDP method and bytes, acquired DOM/layout/AX nodes, MCP bytes, mutations, polls/sleeps. Provider requests are 0 in both arms (mock); the live value of a deleted decision is BLOCKED",
+  "required_zero": "per arm, excluded trials not counted: stale_ref_effect (a submit journaled within a browser_ref_stale call window + 500 ms), unauthorized_action (mutation on a target other than the bound one), wrong_target_effect (any wrong_target_submit), duplicate_effect (> 1 /submit), unverified_success (runner verified, oracle not). driver_stale_acceptance (detached_click note + browser_click ok) is reported per arm as the known shared Driver gap",
+  "disposition": "decision table of the map PREREG, applied in this order: no REAL CMP-D pairs -> BLOCKED; any D required-zero count > 0 (DC06 included) -> REVISE D (missing dependency fact), no promotion; MEANINGFUL in every primary condition -> prioritize under R2-07 (do not credit the cache); decisions deleted but wall-clock not meaningful -> report work deleted, live value BLOCKED; else INCONCLUSIVE"
+ },
+ "blocked_at_freeze": {
+  "REAL": "every REAL block (smoke, shakedown, CMP-D, CMP-D-K2, controls) until the orchestrator/owner provides an approved host-isolation wrapper under which the Driver's isolated-launch trust check passes without bypassing it. Then: re-run the smoke, record the wrapper identity in provenance, run the schedule in order",
+  "LIVE_PROVIDER": "BLOCKED pending owner budget",
+  "not_lane_d": "CMP-distortion (lane AB), W-idle conditions and C comparisons (lane CSHADOW), E (NOT_RUN)"
+ }
+}

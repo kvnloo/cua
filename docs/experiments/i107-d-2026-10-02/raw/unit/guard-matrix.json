@@ -1,0 +1,837 @@
+[
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "baseline",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "type-verification-value",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "type-verification-value",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "field_not_proven",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "only",
+  "control": "DC01",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "other"
+  }
+ },
+ {
+  "A": {
+   "choice": "type-verification-value",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "type-verification-value",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "field_not_proven",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "only",
+  "control": "DC17a",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "empty"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "competing"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": "competing"
+  },
+  "branch": "only",
+  "control": "DC03",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "competing",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    },
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "only",
+  "control": "DC04",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC05a",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "decoy"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "decoy"
+  },
+  "branch": "only",
+  "control": "DC06",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": "the Submit's form/ancestor scope (PR 4316 binds role + name + uniqueness only)",
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "decoy",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC15",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "submit_omitted_css_hidden",
+  "control": "DC12",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "submit_kept_no_layout",
+  "control": "DC12",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "no_layout"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "submit_kept_offscreen",
+  "control": "DC13",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "offscreen"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "submit_omitted_page_occluded",
+  "control": "DC14a",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "submit_kept",
+  "control": "DC14a",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "ax_disabled_no_actions",
+  "control": "DC16a",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": false,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "ax_enabled",
+  "control": "DC16a",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "ax_disabled_no_actions",
+  "control": "DC16b",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": false,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "ax_enabled",
+  "control": "DC16b",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "target": null
+  },
+  "D": {
+   "choice": "reobserve",
+   "decisions_step2": 1,
+   "fresh_ref": null,
+   "guard": {
+    "reason": "submit_not_unique",
+    "status": "declined"
+   },
+   "prior_ref": "p1:1",
+   "target": null
+  },
+  "branch": "ax_name_includes_before",
+  "control": "DC17b",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Do not Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "ax_name_unchanged",
+  "control": "DC17b",
+  "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "caller",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC05b",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "driver_or_fixture",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC07",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "driver_or_fixture",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC10",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "driver_or_fixture",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC14b",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "driver_or_fixture",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC20a",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "driver_or_fixture",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ },
+ {
+  "A": {
+   "choice": "submit-form",
+   "decisions_step2": 1,
+   "target": "real"
+  },
+  "D": {
+   "choice": "submit-form",
+   "decisions_step2": 0,
+   "fresh_ref": "p2:1",
+   "guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "prior_ref": "p1:1",
+   "target": "real"
+  },
+  "branch": "only",
+  "control": "DC20b",
+  "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)",
+  "missing_fact": null,
+  "outcome_owner": "driver_or_fixture",
+  "step2_snapshot": {
+   "buttons": [
+    {
+     "action_ref": true,
+     "marker": "real",
+     "name": "Submit",
+     "visibility": "in_viewport"
+    }
+   ],
+   "field": "token"
+  }
+ }
+]

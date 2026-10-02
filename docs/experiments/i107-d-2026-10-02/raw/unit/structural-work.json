@@ -1,0 +1,182 @@
+{
+ "arms": {
+  "A": {
+   "decision_routes": [
+    [
+     "[\"provider\", \"provider\"]",
+     5
+    ]
+   ],
+   "guard": [
+    [
+     "[]",
+     5
+    ]
+   ],
+   "outcomes": [
+    [
+     "verified",
+     5
+    ]
+   ],
+   "per_task": {
+    "bind_reads": [
+     [
+      1,
+      5
+     ]
+    ],
+    "decisions": [
+     [
+      2,
+      5
+     ]
+    ],
+    "driver_mutations": [
+     [
+      2,
+      5
+     ]
+    ],
+    "journal_submits": [
+     [
+      1,
+      5
+     ]
+    ],
+    "plan_calls": [
+     [
+      0,
+      5
+     ]
+    ],
+    "plans_bound": [
+     [
+      0,
+      5
+     ]
+    ],
+    "resolve_calls": [
+     [
+      0,
+      5
+     ]
+    ],
+    "snapshots_full": [
+     [
+      2,
+      5
+     ]
+    ],
+    "snapshots_query": [
+     [
+      0,
+      5
+     ]
+    ],
+    "wrong_target_submits": [
+     [
+      0,
+      5
+     ]
+    ]
+   },
+   "tool_sequence": [
+    [
+     "[\"set_agent_cursor_enabled\", \"browser_prepare\", \"list_windows\", \"get_browser_state\", \"browser_navigate\", \"get_browser_state\", \"browser_type\", \"get_browser_state\", \"browser_click\"]",
+     5
+    ]
+   ]
+  },
+  "D": {
+   "decision_routes": [
+    [
+     "[\"provider\", \"guarded-completion\"]",
+     5
+    ]
+   ],
+   "guard": [
+    [
+     "[{\"status\": \"accepted\", \"reason\": null}]",
+     5
+    ]
+   ],
+   "outcomes": [
+    [
+     "verified",
+     5
+    ]
+   ],
+   "per_task": {
+    "bind_reads": [
+     [
+      1,
+      5
+     ]
+    ],
+    "decisions": [
+     [
+      1,
+      5
+     ]
+    ],
+    "driver_mutations": [
+     [
+      2,
+      5
+     ]
+    ],
+    "journal_submits": [
+     [
+      1,
+      5
+     ]
+    ],
+    "plan_calls": [
+     [
+      1,
+      5
+     ]
+    ],
+    "plans_bound": [
+     [
+      1,
+      5
+     ]
+    ],
+    "resolve_calls": [
+     [
+      1,
+      5
+     ]
+    ],
+    "snapshots_full": [
+     [
+      2,
+      5
+     ]
+    ],
+    "snapshots_query": [
+     [
+      0,
+      5
+     ]
+    ],
+    "wrong_target_submits": [
+     [
+      0,
+      5
+     ]
+    ]
+   },
+   "tool_sequence": [
+    [
+     "[\"set_agent_cursor_enabled\", \"browser_prepare\", \"list_windows\", \"get_browser_state\", \"browser_navigate\", \"get_browser_state\", \"browser_type\", \"get_browser_state\", \"browser_click\"]",
+     5
+    ]
+   ]
+  }
+ },
+ "evidence": "UNIT_FAKE_DRIVER (real caller + PR 4316 guard; fake Driver; no browser)",
+ "n_per_arm": 5
+}
