@@ -2723,3 +2723,37 @@ async fn background_browser_receipts_keep_background_delivery() {
     assert_eq!(public["route"], "trusted_input", "{public}");
     assert_eq!(public["delivery"]["mode"], "background", "{public}");
 }
+
+// ── CDP session accumulation repro (BUG-01 part B) ──────────────────────────
+
+#[tokio::test]
+#[ignore = "BUG-01 part B repro: every browser tool call attaches a fresh flattened tab session and never detaches it; fails until fixed (owner: browser timing)"]
+async fn repeated_browser_calls_do_not_accumulate_cdp_tab_sessions() {
+    // Design intent (browser-tool-implementation-plan.md): one CDP session ID
+    // per Cua session/tab, and session cleanup detaches its CDP sessions.
+    let f = fixture_with(|st| {
+        st.oopif_supported = false;
+        st.oopif_present = false;
+    })
+    .await;
+    let (target, tab) = bind(&f).await;
+    let attached_before = recorded_calls(&f, "Target.attachToTarget").len();
+    for _ in 0..10 {
+        let snap = semantic_snapshot(&f, &target, &tab).await;
+        assert_eq!(snap["status"], "ok", "{snap}");
+    }
+    let attached = recorded_calls(&f, "Target.attachToTarget").len() - attached_before;
+    let detached = recorded_calls(&f, "Target.detachFromTarget")
+        .iter()
+        .filter(|(_, params)| {
+            params["sessionId"]
+                .as_str()
+                .is_some_and(|session| session.starts_with("tab-sess-"))
+        })
+        .count();
+    assert!(
+        attached.saturating_sub(detached) <= 1,
+        "10 snapshots left {} live tab sessions ({attached} attached, {detached} detached)",
+        attached.saturating_sub(detached)
+    );
+}
