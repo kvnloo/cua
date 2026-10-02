@@ -1,0 +1,1825 @@
+{
+ "approval_blocks_by_action_mode": {
+  "focus_app:background": 1,
+  "focus_app:foreground": 1,
+  "set_value:foreground": 2
+ },
+ "by_class": {
+  "cua:approval_blocked": 4,
+  "cua:capture": 67,
+  "cua:dedup_note": 1,
+  "cua:driver_ok": 70,
+  "cua:driver_refusal": 19,
+  "cua:hermes_error": 2,
+  "file:file_error": 6,
+  "file:file_ok": 105
+ },
+ "cua_failed_runs_with_approval_block": [
+  "M-c009-browser_submit-02",
+  "M-c052-browser_submit-04",
+  "M-c108-cua_size-03"
+ ],
+ "cua_runs": {
+  "M-c003-cua_button_present-01": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_button_present",
+   "verified_success": true
+  },
+  "M-c004-browser_submit-01": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "type_text",
+     "effect": "unverifiable",
+     "element": 15,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input",
+     "text_len": 12
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c006-cua_note-01": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "delivery_mode": "background",
+     "driver_action": "type_text",
+     "element": 6,
+     "keys_present": true,
+     "result_class": "driver_refusal"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "cua_note",
+   "verified_success": false
+  },
+  "M-c009-browser_submit-02": {
+   "approval_blocked": [
+    "set_value"
+   ],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture",
+     "call_index": 1,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 2,
+     "delivery_mode": "foreground",
+     "element": 15,
+     "result_class": "approval_blocked",
+     "single_query_mode": true,
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c011-cua_note-02": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "driver_action": "type_text",
+     "element": 6,
+     "result_class": "driver_refusal",
+     "text_len": 8
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "cua_note",
+   "verified_success": false
+  },
+  "M-c012-cua_agree-01": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_agree",
+   "verified_success": true
+  },
+  "M-c023-cua_increment-01": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 2,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 4,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture",
+     "call_index": 5,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": true
+  },
+  "M-c026-browser_submit-03": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "type_text",
+     "effect": "unverifiable",
+     "element": 15,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input",
+     "text_len": 12
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c033-cua_size-01": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 3,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 3,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_size",
+   "verified_success": true
+  },
+  "M-c034-cua_button_present-02": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_button_present",
+   "verified_success": true
+  },
+  "M-c039-cua_size-02": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 5,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 5,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_size",
+   "verified_success": true
+  },
+  "M-c041-cua_increment-02": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "delivery_mode": "background",
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 5,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c044-cua_agree-02": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 34,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 34,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_agree",
+   "verified_success": false
+  },
+  "M-c047-cua_button_present-03": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_button_present",
+   "verified_success": true
+  },
+  "M-c048-cua_increment-03": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c052-browser_submit-04": {
+   "approval_blocked": [
+    "focus_app",
+    "set_value"
+   ],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "focus_app",
+     "call_index": 1,
+     "delivery_mode": "background",
+     "result_class": "approval_blocked",
+     "single_query_mode": true
+    },
+    {
+     "action": "set_value",
+     "call_index": 2,
+     "delivery_mode": "foreground",
+     "element": 15,
+     "result_class": "approval_blocked",
+     "single_query_mode": true,
+     "value_present": true
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c054-cua_note-03": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "driver_action": "type_text",
+     "element": 6,
+     "result_class": "driver_refusal",
+     "text_len": 8
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture",
+     "call_index": 4,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "cua_note",
+   "verified_success": false
+  },
+  "M-c061-cua_increment-04": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "keys_present": true,
+     "result_class": "driver_ok",
+     "route": "accessibility",
+     "text_len": 0,
+     "value_present": true
+    },
+    {
+     "action": "capture",
+     "call_index": 2,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "keys_present": true,
+     "result_class": "driver_ok",
+     "route": "accessibility",
+     "text_len": 0,
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "keys_present": true,
+     "result_class": "driver_ok",
+     "route": "accessibility",
+     "text_len": 0,
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 5,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "keys_present": true,
+     "result_class": "driver_ok",
+     "route": "accessibility",
+     "text_len": 0,
+     "value_present": true
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c067-cua_button_present-04": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_button_present",
+   "verified_success": true
+  },
+  "M-c071-cua_button_present-05": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_button_present",
+   "verified_success": true
+  },
+  "M-c073-cua_agree-03": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 2,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_agree",
+   "verified_success": true
+  },
+  "M-c077-cua_agree-04": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 17,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 17,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_agree",
+   "verified_success": true
+  },
+  "M-c078-browser_submit-05": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "type_text",
+     "effect": "unverifiable",
+     "element": 15,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input",
+     "text_len": 12
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c082-cua_note-04": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "driver_action": "type_text",
+     "element": 6,
+     "result_class": "driver_refusal",
+     "text_len": 6
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "cua_note",
+   "verified_success": false
+  },
+  "M-c084-cua_note-05": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "driver_action": "type_text",
+     "element": 6,
+     "keys_present": true,
+     "result_class": "driver_refusal"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture_after",
+     "call_index": 4,
+     "code": "unknown action 'capture_after'",
+     "delivery_mode": "foreground",
+     "element": 7,
+     "result_class": "hermes_error"
+    },
+    {
+     "action": "click",
+     "call_index": 5,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture",
+     "call_index": 6,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture",
+     "call_index": 7,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "cua_note",
+   "verified_success": false
+  },
+  "M-c086-cua_increment-05": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "delivery_mode": "background",
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery_mode": "background",
+     "element": 1,
+     "result_class": "dedup_note"
+    },
+    {
+     "action": "click",
+     "call_index": 5,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 6,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 7,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c087-browser_submit-06": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "type_text",
+     "effect": "unverifiable",
+     "element": 15,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input",
+     "text_len": 12
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c089-cua_increment-06": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 1,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 5,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 6,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 3,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 7,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 4,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 8,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 5,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c091-cua_button_present-06": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_button_present",
+   "verified_success": true
+  },
+  "M-c094-browser_submit-07": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "type_text",
+     "effect": "unverifiable",
+     "element": 15,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input",
+     "text_len": 11
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c096-cua_increment-07": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c099-cua_agree-05": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 2,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_agree",
+   "verified_success": true
+  },
+  "M-c100-cua_agree-06": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 17,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 17,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "delivery_mode": "foreground",
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_agree",
+   "verified_success": true
+  },
+  "M-c103-cua_agree-07": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 2,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_agree",
+   "verified_success": true
+  },
+  "M-c104-browser_submit-08": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "delivery_mode": "background",
+     "driver_action": "type_text",
+     "element": 15,
+     "keys_present": true,
+     "result_class": "driver_refusal",
+     "text_len": 12,
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "delivery_mode": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 16,
+     "focus_after": null,
+     "keys_present": true,
+     "result_class": "driver_ok",
+     "route": "accessibility",
+     "text_len": 0,
+     "value_present": true
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture",
+     "call_index": 4,
+     "result_class": "capture"
+    },
+    {
+     "action": "capture",
+     "call_index": 5,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "browser_submit",
+   "verified_success": false
+  },
+  "M-c106-cua_note-06": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "type",
+     "call_index": 1,
+     "code": "background_unavailable",
+     "driver_action": "type_text",
+     "element": 6,
+     "result_class": "driver_refusal",
+     "text_len": 6
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "capture_after",
+     "call_index": 3,
+     "code": "unknown action 'capture_after'",
+     "result_class": "hermes_error"
+    },
+    {
+     "action": "click",
+     "call_index": 4,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 7,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 5,
+     "result_class": "capture"
+    },
+    {
+     "action": "key",
+     "call_index": 6,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "press_key",
+     "effect": "unverifiable",
+     "focus_after": "target",
+     "keys_present": true,
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 7,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "background_unavailable"
+   ],
+   "family": "cua_note",
+   "verified_success": false
+  },
+  "M-c108-cua_size-03": {
+   "approval_blocked": [
+    "focus_app"
+   ],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 3,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "focus_app",
+     "call_index": 2,
+     "delivery_mode": "foreground",
+     "result_class": "approval_blocked",
+     "single_query_mode": true
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_size",
+   "verified_success": false
+  },
+  "M-c115-cua_increment-08": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "click",
+     "call_index": 1,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    },
+    {
+     "action": "click",
+     "call_index": 3,
+     "delivery": "background",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 0,
+     "focus_after": null,
+     "result_class": "driver_ok",
+     "route": "accessibility"
+    }
+   ],
+   "driver_refusal_codes": [],
+   "family": "cua_increment",
+   "verified_success": false
+  },
+  "M-c119-cua_size-04": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 4,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 4,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_size",
+   "verified_success": true
+  },
+  "M-c136-cua_agree-08": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 34,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 34,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_agree",
+   "verified_success": false
+  },
+  "M-c138-cua_size-05": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 5,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 5,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_size",
+   "verified_success": true
+  },
+  "M-c141-cua_size-06": {
+   "approval_blocked": [],
+   "calls": [
+    {
+     "action": "capture",
+     "call_index": 0,
+     "result_class": "capture"
+    },
+    {
+     "action": "set_value",
+     "call_index": 1,
+     "code": "set_value_unavailable",
+     "driver_action": "set_value",
+     "element": 4,
+     "result_class": "driver_refusal",
+     "value_present": true
+    },
+    {
+     "action": "click",
+     "call_index": 2,
+     "delivery": "foreground",
+     "delivery_mode": "foreground",
+     "driver_action": "click",
+     "effect": "unverifiable",
+     "element": 4,
+     "focus_after": "target",
+     "result_class": "driver_ok",
+     "route": "global_input"
+    },
+    {
+     "action": "capture",
+     "call_index": 3,
+     "result_class": "capture"
+    }
+   ],
+   "driver_refusal_codes": [
+    "set_value_unavailable"
+   ],
+   "family": "cua_size",
+   "verified_success": true
+  }
+ },
+ "cua_runs_with_approval_block": [
+  "M-c009-browser_submit-02",
+  "M-c052-browser_submit-04",
+  "M-c108-cua_size-03"
+ ],
+ "driver_refusals_by_action_code": {
+  "set_value:set_value_unavailable": 12,
+  "type_text:background_unavailable": 7
+ },
+ "hermes_errors": {
+  "unknown action 'capture_after'": 2
+ },
+ "n_calls": 274,
+ "schema": "stack2-confirm.tool_audit.v1",
+ "source": "role=tool rows of each run's private state.db (read-only), joined by tool_call_id",
+ "type_calls_by_shape": {
+  "element=yes,text=no,keys=yes,mode=background->driver_refusal:background_unavailable": 2,
+  "element=yes,text=yes,keys=no,mode=background->driver_refusal:background_unavailable": 4,
+  "element=yes,text=yes,keys=no,mode=foreground->driver_ok:focus_after=target": 5,
+  "element=yes,text=yes,keys=yes,mode=background->driver_refusal:background_unavailable": 1
+ }
+}

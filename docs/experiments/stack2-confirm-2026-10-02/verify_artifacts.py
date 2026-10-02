@@ -14,6 +14,10 @@ Check groups:
   8 summary: summary.json numbers and verdict equal the analysis files
   9 ledger: every scoring process has a quiet-lane ledger line with rc 0
  10 hygiene: no local absolute paths, host name or non-noreply e-mail in committed text; SHA256SUMS
+ 11 tool audit (correction round 1): raw/analysis/tool-audit.json recomputes from raw/analysis/tool-calls.jsonl and
+    dataset/runs.jsonl; the README section 2 tallies match it
+
+Temp files go to $TMPDIR, else to a hidden .verify-tmp dir next to this file that is removed afterwards.
 """
 from __future__ import annotations
 
@@ -38,6 +42,8 @@ ANALYSIS_COMMIT = "821d895a4d12adcb9212e1381d47505e91b91275"
 FREEZE_COMMIT_FILE = HERE / "raw" / "freeze_commit.txt"   # written by the commit after the freeze commit
 HERMES_HEAD = "b51c7a222e7a0fb29d1da8933a6c08b956b86f61"
 HOST_SHA16 = "c76d9da671ff244f"  # sha256(host name)[:16]
+_OWN_TMP = HERE / ".verify-tmp"
+TMP_BASE = os.environ.get("TMPDIR") or str(_OWN_TMP)
 FAILS: list[str] = []
 PASSES: list[str] = []
 
@@ -87,7 +93,7 @@ def g2() -> None:
     prereg = json.loads((HERE / "PREREG.json").read_text())
     tasks = HERE / "workload" / "tasks.jsonl"
     check("2", sha(tasks) == prereg["workload"]["tasks_sha256"], "tasks.jsonl sha256 == PREREG")
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=TMP_BASE) as tmp:
         subprocess.run([sys.executable, str(HERE / "harness" / "workload.py"), "generate", tmp], check=True)
         check("2", (Path(tmp) / "tasks.jsonl").read_bytes() == tasks.read_bytes(), "workload regeneration byte-identical")
         p = subprocess.run([sys.executable, str(HERE / "harness" / "oracle_selftest.py"), str(tasks),
@@ -142,6 +148,9 @@ def g5() -> None:
     check("5", only_auth_mtime and len(stat) <= 1,
           f"live Hermes home file entries unchanged in {len(run) - len(stat)}/{len(run)} runs; the rest: auth.json mtime "
           f"only, no size change, live home an empty tmpfs inside Hermes ({[r['task_id'] for r in stat]})")
+    moved = sum(bool(r["isolation"].get("live_home_dir_mtime_moved")) for r in run)
+    check("5", moved == 140 and all(r["isolation"]["live_hermes_home_entries"] == "0" for r in run),
+          f"live home directory mtime moved in {moved}/{len(run)} runs (README section 1); empty tmpfs inside Hermes in all")
 
 
 def g6() -> None:
@@ -159,7 +168,7 @@ def g6() -> None:
 
 
 def g7() -> None:
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=TMP_BASE) as tmp:
         for lane, qid in (("turn", "verification_needed"), ("api", "api.attempt_will_fail")):
             out = Path(tmp) / f"{lane}.json"
             subprocess.run([sys.executable, str(HERE / "harness" / "analyze.py"), str(HERE / "harness" / "vendor"), qid,
@@ -196,15 +205,16 @@ def g10() -> None:
     hits = []
     for f in files:
         p = HERE / f
-        if p.suffix in (".png", ".jpg", ".pyc") or not p.is_file() or f == "verify_artifacts.py":
+        if p.suffix in (".png", ".jpg", ".pyc") or not p.is_file():
             hits += [f"{f}: bytecode committed"] if p.suffix == ".pyc" else []
             continue
         text = p.read_text(encoding="utf-8", errors="replace")
         for m in pat.finditer(text):
             hits.append(f"{f}: {m.group(0)}")
         # the host name is checked by hash so it never appears in this file
-        if any(hashlib.sha256(w.encode()).hexdigest()[:16] == HOST_SHA16 for w in set(re.findall(r"[a-z0-9]+", text.lower()))
-               if len(w) == 5):
+        low = text.lower()
+        words = set(re.findall(r"[a-z0-9]+", low)) | set(re.findall(r"[a-z0-9][a-z0-9.-]*[a-z0-9]", low))
+        if any(hashlib.sha256(w.encode()).hexdigest()[:16] == HOST_SHA16 for w in words):
             hits.append(f"{f}: host name")
     check("10", not hits, f"no local paths/host/e-mail in {len(files)} committed files {hits[:5]}")
     sums = HERE / "SHA256SUMS"
@@ -212,12 +222,46 @@ def g10() -> None:
     check("10", not bad, f"SHA256SUMS ({len(sums.read_text().splitlines())} files) {bad[:5]}")
 
 
+def g11() -> None:
+    sys.path.insert(0, str(HERE / "harness"))
+    import tool_audit  # noqa
+    rows = jl(HERE / "raw" / "analysis" / "tool-calls.jsonl")
+    runs = {r["run_id"]: {"kind": r["kind"], "family": r["family"], "verified_success": r["verified_success"]}
+            for r in jl(HERE / "dataset" / "runs.jsonl") if r["status"] == "RUN"}
+    check("11", {r["run_id"] for r in rows} <= set(runs), f"{len(rows)} tool-call rows all belong to RUN tasks")
+    re_audit = json.dumps(tool_audit.summarize(rows, runs), indent=1, sort_keys=True) + "\n"
+    check("11", re_audit == (HERE / "raw" / "analysis" / "tool-audit.json").read_text(encoding="utf-8"),
+          "tool-audit.json recomputed byte for byte from tool-calls.jsonl")
+    a = json.loads(re_audit)
+    bc = a["by_class"]
+    cua = sum(v for k, v in bc.items() if k.startswith("cua:"))
+    fil = sum(v for k, v in bc.items() if k.startswith("file:"))
+    want = {"cua": 163, "file": 111, "cua:driver_ok": 70, "cua:capture": 67, "cua:driver_refusal": 19,
+            "cua:approval_blocked": 4, "cua:hermes_error": 2, "cua:dedup_note": 1, "file:file_ok": 105, "file:file_error": 6}
+    got = {"cua": cua, "file": fil, **bc}
+    check("11", all(got.get(k) == v for k, v in want.items()), f"README section 2 tool tallies == audit {got}")
+    check("11", a["driver_refusals_by_action_code"] == {"set_value:set_value_unavailable": 12,
+                                                       "type_text:background_unavailable": 7}, "Driver refusals by code")
+    check("11", a["cua_failed_runs_with_approval_block"] == a["cua_runs_with_approval_block"]
+          == ["M-c009-browser_submit-02", "M-c052-browser_submit-04", "M-c108-cua_size-03"],
+          "approval blocks only in the 3 failing CUA runs named in the README")
+    note = [k for k, v in a["cua_runs"].items() if v["family"] == "cua_note"]
+    check("11", len(note) == 6 and all(not a["cua_runs"][k]["verified_success"]
+                                       and a["cua_runs"][k]["driver_refusal_codes"] == ["background_unavailable"]
+                                       for k in note), "every cua_note run: background type refused, nothing typed")
+
+
 def main() -> None:
-    for g in (g1, g2, g3, g4, g5, g6, g7, g8, g9, g10):
+    own = not os.environ.get("TMPDIR")
+    if own:
+        _OWN_TMP.mkdir(exist_ok=True)
+    for g in (g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11):
         try:
             g()
         except Exception as e:  # a crashed group is a failure, never a skip
             FAILS.append(f"[{g.__name__}] crashed: {type(e).__name__}: {e}")
+    if own:
+        shutil.rmtree(_OWN_TMP, ignore_errors=True)
     for line in PASSES:
         print("PASS", line)
     for line in FAILS:
