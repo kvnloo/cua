@@ -211,7 +211,7 @@ def counts(trial: dict[str, Any]) -> dict[str, Any]:
     journal = s.get("journal", [])
     steps = [e for e in runlog if e.get("event") == "step"]
     guard = [{"status": e["guarded_completion"].get("status"), "reason": e["guarded_completion"].get("reason")}
-             for e in steps if isinstance(e.get("guarded_completion"), dict)]
+             for e in runlog if e.get("event") in ("step", "outcome") and isinstance(e.get("guarded_completion"), dict)]
 
     def span_sum(a: str, b: str) -> float:
         return sum((y - x) / 1e6 for x, y in B._pairs(ev, a, b))

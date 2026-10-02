@@ -12,6 +12,8 @@ test_paired_analysis_uses_complete_valid_pairs_only (test_analysis.StatsAndDecis
 test_required_zero_counts (test_analysis.StatsAndDecisionTest.test_required_zero_counts) ... ok
 test_verdict_thresholds (test_analysis.StatsAndDecisionTest.test_verdict_thresholds) ... ok
 test_forced_paths (test_analysis.ValidityTest.test_forced_paths) ... ok
+test_code_from_every_known_place (test_envelope.EnvelopeTest.test_code_from_every_known_place) ... ok
+test_envelope_keeps_short_scalars_and_one_level_of_codes_only (test_envelope.EnvelopeTest.test_envelope_keeps_short_scalars_and_one_level_of_codes_only) ... ok
 test_churn_page_keeps_the_form_and_adds_a_seeded_region (test_fixture.PagesTest.test_churn_page_keeps_the_form_and_adds_a_seeded_region) ... ok
 test_churn_words_never_name_the_form_controls (test_fixture.PagesTest.test_churn_words_never_name_the_form_controls) ... ok
 test_control_page_has_the_channel_and_every_registered_op (test_fixture.PagesTest.test_control_page_has_the_channel_and_every_registered_op) ... ok
@@ -36,6 +38,13 @@ test_field_changed_declines_field_not_proven (test_guard_matrix.GuardMatrixTest.
 test_relocated_lookalike_is_accepted_missing_scope_fact (test_guard_matrix.GuardMatrixTest.test_relocated_lookalike_is_accepted_missing_scope_fact) ... ok
 test_removed_submit_declines (test_guard_matrix.GuardMatrixTest.test_removed_submit_declines) ... ok
 test_rows_are_json_and_token_free (test_guard_matrix.GuardMatrixTest.test_rows_are_json_and_token_free) ... ok
+test_accepts_private_display_with_ancestor (test_isolation_guard.IsolationGuardTest.test_accepts_private_display_with_ancestor) ... ok
+test_hostless_ancestor_is_found_from_the_process_tree (test_isolation_guard.IsolationGuardTest.test_hostless_ancestor_is_found_from_the_process_tree) ... ok
+test_isolation_record (test_isolation_guard.IsolationGuardTest.test_isolation_record) ... ok
+test_refuses_host_session_variables_and_bypass_knobs (test_isolation_guard.IsolationGuardTest.test_refuses_host_session_variables_and_bypass_knobs) ... ok
+test_refuses_without_a_hostless_ancestor (test_isolation_guard.IsolationGuardTest.test_refuses_without_a_hostless_ancestor) ... ok
+test_consecutive_blocks_resolve_in_order (test_lock_group.LockGroupTest.test_consecutive_blocks_resolve_in_order) ... ok
+test_gaps_or_reordering_are_refused (test_lock_group.LockGroupTest.test_gaps_or_reordering_are_refused) ... ok
 test_check_to_dispatch_controls_fire_before_the_click (test_plan.ControlRegistryTest.test_check_to_dispatch_controls_fire_before_the_click) ... ok
 test_control_values_never_derive_from_a_token (test_plan.ControlRegistryTest.test_control_values_never_derive_from_a_token) ... ok
 test_every_op_exists_on_the_control_page_and_points_are_known (test_plan.ControlRegistryTest.test_every_op_exists_on_the_control_page_and_points_are_known) ... ok
@@ -47,19 +56,19 @@ test_controls_have_at_least_5_per_arm_and_alternate_order (test_plan.ScheduleTes
 test_k2_runs_after_k1_with_a_64_char_token_of_another_class (test_plan.ScheduleTest.test_k2_runs_after_k1_with_a_64_char_token_of_another_class) ... ok
 test_names_are_unique_and_file_safe (test_plan.ScheduleTest.test_names_are_unique_and_file_safe) ... ok
 test_shakedown_is_flagged_excluded (test_plan.ScheduleTest.test_shakedown_is_flagged_excluded) ... ok
-{"trial": "t-quiet-A", "outcome": "verified", "poller_first_ok_ns": 222922685645949, "loadavg_before": "4.92 12.13 11.77 5/2973 3864972"}
-{"trial": "t-quiet-D", "outcome": "verified", "poller_first_ok_ns": 222922691833017, "loadavg_before": "4.92 12.13 11.77 5/2972 3864984"}
-{"trial": "t-churn-A", "outcome": "verified", "poller_first_ok_ns": 222922699562098, "loadavg_before": "4.92 12.13 11.77 7/2972 3864995"}
-{"trial": "t-churn-D", "outcome": "verified", "poller_first_ok_ns": 222922706706615, "loadavg_before": "4.92 12.13 11.77 8/2972 3865008"}
-{"trial": "t-dc01-D", "outcome": "verified", "poller_first_ok_ns": 222922717424300, "loadavg_before": "4.92 12.13 11.77 6/2972 3865019"}
-{"trial": "t-dc03-A", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "4.92 12.13 11.77 6/2974 3865040"}
-{"trial": "t-dc03-D", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "8.97 12.74 11.97 5/2513 3866044"}
-{"trial": "t-dc06-D", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "9.59 12.75 11.98 12/2775 3868227"}
-{"trial": "t-dc06-A", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "9.78 12.74 11.99 17/2648 3870221"}
-{"trial": "t-dc10-D", "outcome": "verified", "poller_first_ok_ns": 222957494170593, "loadavg_before": "10.19 12.73 11.99 14/2483 3871704"}
-{"trial": "t-dc05b-D", "outcome": "verified", "poller_first_ok_ns": 222959532972355, "loadavg_before": "10.19 12.73 11.99 13/2481 3871728"}
-{"trial": "t-dc07-D", "outcome": "unknown", "poller_first_ok_ns": null, "loadavg_before": "10.19 12.73 11.99 13/2720 3872273"}
-{"trial": "t-k2-A", "outcome": "verified", "poller_first_ok_ns": 222962062710282, "loadavg_before": "10.25 12.70 11.99 14/2529 3872797"}
+{"trial": "t-quiet-A", "outcome": "verified", "poller_first_ok_ns": 230009352767463, "loadavg_before": "14.54 13.83 14.78 13/2107 3886478"}
+{"trial": "t-quiet-D", "outcome": "verified", "poller_first_ok_ns": 230009362322000, "loadavg_before": "14.54 13.83 14.78 13/2107 3886496"}
+{"trial": "t-churn-A", "outcome": "verified", "poller_first_ok_ns": 230009370775889, "loadavg_before": "14.54 13.83 14.78 14/2107 3886512"}
+{"trial": "t-churn-D", "outcome": "verified", "poller_first_ok_ns": 230009381396420, "loadavg_before": "14.54 13.83 14.78 14/2107 3886528"}
+{"trial": "t-dc01-D", "outcome": "verified", "poller_first_ok_ns": 230009396459482, "loadavg_before": "14.54 13.83 14.78 14/2107 3886545"}
+{"trial": "t-dc03-A", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "14.54 13.83 14.78 14/2108 3886574"}
+{"trial": "t-dc03-D", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "14.37 13.82 14.76 12/2108 3894014"}
+{"trial": "t-dc06-D", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "14.01 13.76 14.73 12/2123 3901636"}
+{"trial": "t-dc06-A", "outcome": "budget_exhausted", "poller_first_ok_ns": null, "loadavg_before": "14.01 13.76 14.73 14/2035 3907891"}
+{"trial": "t-dc10-D", "outcome": "verified", "poller_first_ok_ns": 230044238460466, "loadavg_before": "13.86 13.74 14.71 16/2011 3914415"}
+{"trial": "t-dc05b-D", "outcome": "verified", "poller_first_ok_ns": 230046266769453, "loadavg_before": "13.86 13.74 14.71 14/2009 3914681"}
+{"trial": "t-dc07-D", "outcome": "unknown", "poller_first_ok_ns": null, "loadavg_before": "13.23 13.61 14.66 7/2024 3916850"}
+{"trial": "t-k2-A", "outcome": "verified", "poller_first_ok_ns": 230048796509131, "loadavg_before": "13.23 13.61 14.66 17/2059 3918815"}
 test_arm_a_and_d_paths_and_work_deleted (test_runner_fake.FakeRunnerTest.test_arm_a_and_d_paths_and_work_deleted) ... ok
 test_cleanup_resources_and_environment_records (test_runner_fake.FakeRunnerTest.test_cleanup_resources_and_environment_records) ... ok
 test_cursor_disabled_before_prepare_in_both_arms (test_runner_fake.FakeRunnerTest.test_cursor_disabled_before_prepare_in_both_arms) ... ok
@@ -74,6 +83,6 @@ test_no_token_in_any_written_file (test_runner_fake.FakeRunnerTest.test_no_token
 test_trials_are_valid_and_decomposable (test_runner_fake.FakeRunnerTest.test_trials_are_valid_and_decomposable) ... ok
 
 ----------------------------------------------------------------------
-Ran 61 tests in 45.536s
+Ran 70 tests in 46.001s
 
 OK

@@ -1,0 +1,4013 @@
+{
+ "chooser": "choose_mock_for_task (scripted mock) in every row: FIXTURE/BENCHMARK, never LIVE_PROVIDER",
+ "disposition": {
+  "basis": "{\"wrong_target_effect\": 10}",
+  "disposition": "REVISE D (missing dependency fact); no promotion"
+ },
+ "identities": {
+  "caller": "jev-use tree 72bf8156136771da9a767ec12ae7c364e426d910 (byte-identical to the jev-use tree at trycua/cua PR 4316 head a0bca7440); python/run.py run() executed unmodified",
+  "driver_binary": {
+   "both_arms": true,
+   "name": "cua-driver-i107-092b065d5",
+   "rebuild": "never in this lane; run_d.py refuses a binary with another sha256",
+   "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed"
+  },
+  "live_pr_head": "read with gh pr view 4316 -R trycua/cua --json headRefOid,state,mergedAt at lane start and end, recorded in raw/ separately from the tested source (start: a0bca744067d04f05904319d3d919be30c336556, OPEN, mergedAt null, 2026-10-02T04:53:03Z)",
+  "provider": "choose_mock_for_task (scripted mock), 0 provider HTTP (runner refuses non-loopback sockets). Every row is FIXTURE/BENCHMARK with the chooser named. LIVE_PROVIDER cells BLOCKED pending owner budget; R2-03's live -212 ms (0.31.0, TypeSafe) is never borrowed or summed.",
+  "tested_source": "branch exp/i107-d-20261002 from be68363bc (= exp/i107-map-20261002 packet HEAD); libs/cua-driver tree a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497; lane commits add docs/experiments/i107-d-2026-10-02/ only"
+ },
+ "issue": "kvnloo/cua#107",
+ "lane": "i107-d",
+ "live_pr_head_reads": {
+  "end": {
+   "command": "gh pr view 4316 -R trycua/cua --json headRefOid,state,mergedAt,updatedAt",
+   "note": "live upstream PR head (read-only) at lane end, recorded separately from the tested source",
+   "read_utc": "2026-10-02T07:20:08Z",
+   "result": {
+    "headRefOid": "a0bca744067d04f05904319d3d919be30c336556",
+    "mergedAt": null,
+    "state": "OPEN",
+    "updatedAt": "2026-10-01T17:03:24Z"
+   }
+  },
+  "start": {
+   "command": "gh pr view 4316 -R trycua/cua --json headRefOid,state,mergedAt,updatedAt",
+   "note": "live upstream PR head (read-only), recorded separately from the tested source",
+   "read_utc": "2026-10-02T04:53:03Z",
+   "result": {
+    "headRefOid": "a0bca744067d04f05904319d3d919be30c336556",
+    "mergedAt": null,
+    "state": "OPEN",
+    "updatedAt": "2026-10-01T17:03:24Z"
+   }
+  }
+ },
+ "prereg": {
+  "lane": "PREREG.json",
+  "map_sha256": "8eeb837ffa24425cfc36ba2c72a8ea65df4207e1a39a7d261f1cda85496b2c53"
+ },
+ "provisional_from_unit": "REVISE D expected: given a fresh snapshot with one role=button name=Submit action ref, PR 4316's guard accepts a Submit relocated into a different form (DC06), because it binds role + name + uniqueness only; this is UNIT evidence on the caller logic and still needs the REAL DC06 run",
+ "real": {
+  "blocker": null,
+  "comparisons": {
+   "CMP-D": {
+    "W-churn": {
+     "arms": {
+      "A": {
+       "cdp_methods": {
+        "Accessibility.getFullAXTree": 60,
+        "Browser.getWindowBounds": 120,
+        "Browser.getWindowForTarget": 120,
+        "DOM.focus": 90,
+        "DOM.getBoxModel": 60,
+        "DOM.getDocument": 60,
+        "DOM.resolveNode": 60,
+        "DOM.scrollIntoViewIfNeeded": 60,
+        "DOMSnapshot.captureSnapshot": 60,
+        "Emulation.setFocusEmulationEnabled": 60,
+        "Input.insertText": 30,
+        "Page.getFrameTree": 120,
+        "Page.getLayoutMetrics": 120,
+        "Page.navigate": 30,
+        "Runtime.callFunctionOn": 120,
+        "Runtime.evaluate": 60,
+        "Target.attachToTarget": 150,
+        "Target.getTargets": 120,
+        "Target.setAutoAttach": 120
+       },
+       "coverage": {
+        "gate_gt_0_90": true,
+        "median": 0.9995992880549938,
+        "min": 0.9984896127456158
+       },
+       "median_T_oracle_ms": 1221.0902875000002,
+       "median_cleanup_ms": {
+        "browser_exit_ms": 0.8227789999999999,
+        "cleanup_ms": 474.3519135,
+        "cold_startup_ms": 804.478299,
+        "lifetime_ms": 2510.4732160000003,
+        "resource_sample_ms": 29.288777,
+        "session_close_ms": 473.000941
+       },
+       "median_counts": {
+        "acquired_ax_nodes": 3044.0,
+        "acquired_dom_nodes": 2048.0,
+        "acquired_layout_nodes": 2032.0,
+        "cdp_events": 687.0,
+        "cdp_reply_bytes": 1657207.0,
+        "cdp_send_bytes": 8054.0,
+        "cdp_sends": 54.0,
+        "decision_ms": 0.013964,
+        "decisions": 2.0,
+        "driver_mutations": 2.0,
+        "mcp_bytes_total": 105853.0,
+        "mcp_snapshot_bytes": 103462.0,
+        "plan_calls": 0.0,
+        "plan_ms": 0.0,
+        "resolve_calls": 0.0,
+        "resolve_ms": 0.0,
+        "runner_oracle_reads": 3.0,
+        "sleeps": 0.0,
+        "snapshots_full": 2.0
+       },
+       "median_resources": {
+        "browser_cpu_s": 1.46,
+        "browser_rss_kib": 1130874.0,
+        "driver_cpu_s": 1.1949999999999998,
+        "driver_vmhwm_kib": 68086.0
+       },
+       "median_spans10_ms": {
+        "dispatch": 6.6700145,
+        "fresh_verification": 1.393933,
+        "observation_acquisition": 222.3100945,
+        "projection_encoding_transport": 786.294969,
+        "provider_inference": 0.013964,
+        "residual": 0.47194499999999995,
+        "resolution_validation": 90.71965750000001,
+        "wait": 105.808019
+       },
+       "n_trials": 30,
+       "n_valid": 30,
+       "oracle_verified": 30,
+       "outcomes": {
+        "abstained": 0,
+        "budget_exhausted": 0,
+        "error": 0,
+        "refuted": 0,
+        "timeout": 0,
+        "unknown": 0,
+        "verified": 30
+       }
+      },
+      "D": {
+       "cdp_methods": {
+        "Accessibility.getFullAXTree": 60,
+        "Browser.getWindowBounds": 120,
+        "Browser.getWindowForTarget": 120,
+        "DOM.focus": 90,
+        "DOM.getBoxModel": 60,
+        "DOM.getDocument": 60,
+        "DOM.resolveNode": 60,
+        "DOM.scrollIntoViewIfNeeded": 60,
+        "DOMSnapshot.captureSnapshot": 60,
+        "Emulation.setFocusEmulationEnabled": 60,
+        "Input.insertText": 30,
+        "Page.getFrameTree": 120,
+        "Page.getLayoutMetrics": 120,
+        "Page.navigate": 30,
+        "Runtime.callFunctionOn": 120,
+        "Runtime.evaluate": 60,
+        "Target.attachToTarget": 150,
+        "Target.getTargets": 120,
+        "Target.setAutoAttach": 120
+       },
+       "coverage": {
+        "gate_gt_0_90": true,
+        "median": 0.9995986957687468,
+        "min": 0.9989554675935738
+       },
+       "median_T_oracle_ms": 1219.14292,
+       "median_cleanup_ms": {
+        "browser_exit_ms": 0.7712924999999999,
+        "cleanup_ms": 477.917548,
+        "cold_startup_ms": 794.1223305000001,
+        "lifetime_ms": 2491.382889,
+        "resource_sample_ms": 29.977019499999997,
+        "session_close_ms": 477.1869385
+       },
+       "median_counts": {
+        "acquired_ax_nodes": 3044.0,
+        "acquired_dom_nodes": 2048.0,
+        "acquired_layout_nodes": 2032.0,
+        "cdp_events": 687.0,
+        "cdp_reply_bytes": 1657234.0,
+        "cdp_send_bytes": 8054.0,
+        "cdp_sends": 54.0,
+        "decision_ms": 0.005984,
+        "decisions": 1.0,
+        "driver_mutations": 2.0,
+        "mcp_bytes_total": 105877.0,
+        "mcp_snapshot_bytes": 103486.0,
+        "plan_calls": 1.0,
+        "plan_ms": 0.0201225,
+        "resolve_calls": 1.0,
+        "resolve_ms": 0.0285565,
+        "runner_oracle_reads": 3.0,
+        "sleeps": 0.0,
+        "snapshots_full": 2.0
+       },
+       "median_resources": {
+        "browser_cpu_s": 1.44,
+        "browser_rss_kib": 1129750.0,
+        "driver_cpu_s": 1.18,
+        "driver_vmhwm_kib": 67930.0
+       },
+       "median_spans10_ms": {
+        "dispatch": 8.443815999999998,
+        "fresh_verification": 1.5491735,
+        "observation_acquisition": 223.88464499999998,
+        "projection_encoding_transport": 784.537947,
+        "provider_inference": 0.005984,
+        "residual": 0.4797205,
+        "resolution_validation": 86.89559700000001,
+        "wait": 106.45407549999999
+       },
+       "n_trials": 30,
+       "n_valid": 30,
+       "oracle_verified": 30,
+       "outcomes": {
+        "abstained": 0,
+        "budget_exhausted": 0,
+        "error": 0,
+        "refuted": 0,
+        "timeout": 0,
+        "unknown": 0,
+        "verified": 30
+       }
+      }
+     },
+     "continuation_needed": false,
+     "paired": {
+      "A_median_ms": 1221.0902875000002,
+      "A_p95_ms": 1366.842564,
+      "D_median_ms": 1219.14292,
+      "D_p95_ms": 1346.332542,
+      "comparison": "CMP-D",
+      "condition": "W-churn",
+      "deltas_ms": [
+       136.89685699999995,
+       -53.06288799999993,
+       -4.0052369999999655,
+       16.273087000000032,
+       117.22009100000002,
+       64.69850400000018,
+       80.04717600000004,
+       64.61450599999989,
+       -81.18434699999989,
+       15.73224899999991,
+       -31.240532999999914,
+       -44.236945000000105,
+       -64.14274,
+       11.291556000000128,
+       -33.36764399999993,
+       4.482218999999986,
+       -38.7848120000001,
+       -43.122768999999835,
+       -229.67901099999995,
+       74.09671100000014,
+       63.127877000000126,
+       -4.8720979999998235,
+       -29.934784000000036,
+       -110.50067200000012,
+       24.83064300000001,
+       -156.47124200000007,
+       -53.69856300000015,
+       68.76519499999995,
+       36.91182600000002,
+       -101.81265899999994
+      ],
+      "excluded_pairs": [],
+      "pairs_seen": 30,
+      "pairs_valid": 30,
+      "verdict": {
+       "ci95_ms": [
+        -40.95379049999997,
+        20.55186500000002
+       ],
+       "median_ms": -4.4386674999998945,
+       "n": 30,
+       "negative": 16,
+       "positive": 14,
+       "threshold_ms": 61.05451437500001,
+       "verdict": "NO_MEANINGFUL_BENEFIT"
+      }
+     },
+     "sensitivity_load1_le_8": {
+      "n": 0,
+      "verdict": "NO_DATA"
+     },
+     "status": "BENCHMARK (REAL, scripted chooser)"
+    },
+    "W-quiet": {
+     "arms": {
+      "A": {
+       "cdp_methods": {
+        "Accessibility.getFullAXTree": 60,
+        "Browser.getWindowBounds": 120,
+        "Browser.getWindowForTarget": 120,
+        "DOM.focus": 90,
+        "DOM.getBoxModel": 60,
+        "DOM.getDocument": 60,
+        "DOM.resolveNode": 60,
+        "DOM.scrollIntoViewIfNeeded": 60,
+        "DOMSnapshot.captureSnapshot": 60,
+        "Emulation.setFocusEmulationEnabled": 60,
+        "Input.insertText": 30,
+        "Page.getFrameTree": 120,
+        "Page.getLayoutMetrics": 120,
+        "Page.navigate": 30,
+        "Runtime.callFunctionOn": 120,
+        "Runtime.evaluate": 60,
+        "Target.attachToTarget": 150,
+        "Target.getTargets": 120,
+        "Target.setAutoAttach": 120
+       },
+       "coverage": {
+        "gate_gt_0_90": true,
+        "median": 0.9990414905525871,
+        "min": 0.9956481328446998
+       },
+       "median_T_oracle_ms": 270.5620655,
+       "median_cleanup_ms": {
+        "browser_exit_ms": 0.608983,
+        "cleanup_ms": 469.594252,
+        "cold_startup_ms": 799.6097205,
+        "lifetime_ms": 1545.1869769999998,
+        "resource_sample_ms": 29.247169,
+        "session_close_ms": 468.976415
+       },
+       "median_counts": {
+        "acquired_ax_nodes": 42.0,
+        "acquired_dom_nodes": 42.0,
+        "acquired_layout_nodes": 30.0,
+        "cdp_events": 10.0,
+        "cdp_reply_bytes": 46676.0,
+        "cdp_send_bytes": 8054.0,
+        "cdp_sends": 54.0,
+        "decision_ms": 0.012752,
+        "decisions": 2.0,
+        "driver_mutations": 2.0,
+        "mcp_bytes_total": 8343.0,
+        "mcp_snapshot_bytes": 5952.0,
+        "plan_calls": 0.0,
+        "plan_ms": 0.0,
+        "resolve_calls": 0.0,
+        "resolve_ms": 0.0,
+        "runner_oracle_reads": 3.0,
+        "sleeps": 0.0,
+        "snapshots_full": 2.0
+       },
+       "median_resources": {
+        "browser_cpu_s": 1.12,
+        "browser_rss_kib": 1110340.0,
+        "driver_cpu_s": 0.4,
+        "driver_vmhwm_kib": 45230.0
+       },
+       "median_spans10_ms": {
+        "dispatch": 6.876861999999999,
+        "fresh_verification": 0.796083,
+        "observation_acquisition": 54.78219300000001,
+        "projection_encoding_transport": 23.964713499999995,
+        "provider_inference": 0.012752,
+        "residual": 0.258023,
+        "resolution_validation": 78.887978,
+        "wait": 105.3838415
+       },
+       "n_trials": 30,
+       "n_valid": 30,
+       "oracle_verified": 30,
+       "outcomes": {
+        "abstained": 0,
+        "budget_exhausted": 0,
+        "error": 0,
+        "refuted": 0,
+        "timeout": 0,
+        "unknown": 0,
+        "verified": 30
+       }
+      },
+      "D": {
+       "cdp_methods": {
+        "Accessibility.getFullAXTree": 60,
+        "Browser.getWindowBounds": 120,
+        "Browser.getWindowForTarget": 120,
+        "DOM.focus": 90,
+        "DOM.getBoxModel": 60,
+        "DOM.getDocument": 60,
+        "DOM.resolveNode": 60,
+        "DOM.scrollIntoViewIfNeeded": 60,
+        "DOMSnapshot.captureSnapshot": 60,
+        "Emulation.setFocusEmulationEnabled": 60,
+        "Input.insertText": 30,
+        "Page.getFrameTree": 120,
+        "Page.getLayoutMetrics": 120,
+        "Page.navigate": 30,
+        "Runtime.callFunctionOn": 120,
+        "Runtime.evaluate": 60,
+        "Target.attachToTarget": 150,
+        "Target.getTargets": 120,
+        "Target.setAutoAttach": 120
+       },
+       "coverage": {
+        "gate_gt_0_90": true,
+        "median": 0.9990861569350472,
+        "min": 0.9957453574680004
+       },
+       "median_T_oracle_ms": 271.6315415,
+       "median_cleanup_ms": {
+        "browser_exit_ms": 0.6129145,
+        "cleanup_ms": 472.4452295,
+        "cold_startup_ms": 789.414002,
+        "lifetime_ms": 1549.7860235,
+        "resource_sample_ms": 29.0018325,
+        "session_close_ms": 471.817103
+       },
+       "median_counts": {
+        "acquired_ax_nodes": 42.0,
+        "acquired_dom_nodes": 42.0,
+        "acquired_layout_nodes": 30.0,
+        "cdp_events": 10.0,
+        "cdp_reply_bytes": 46676.0,
+        "cdp_send_bytes": 8054.0,
+        "cdp_sends": 54.0,
+        "decision_ms": 0.006460499999999999,
+        "decisions": 1.0,
+        "driver_mutations": 2.0,
+        "mcp_bytes_total": 8343.0,
+        "mcp_snapshot_bytes": 5952.0,
+        "plan_calls": 1.0,
+        "plan_ms": 0.022621000000000002,
+        "resolve_calls": 1.0,
+        "resolve_ms": 0.029184500000000002,
+        "runner_oracle_reads": 3.0,
+        "sleeps": 0.0,
+        "snapshots_full": 2.0
+       },
+       "median_resources": {
+        "browser_cpu_s": 1.1150000000000002,
+        "browser_rss_kib": 1109506.0,
+        "driver_cpu_s": 0.4,
+        "driver_vmhwm_kib": 45326.0
+       },
+       "median_spans10_ms": {
+        "dispatch": 6.725251,
+        "fresh_verification": 0.8170165,
+        "observation_acquisition": 47.647045500000004,
+        "projection_encoding_transport": 25.8779855,
+        "provider_inference": 0.006460499999999999,
+        "residual": 0.248227,
+        "resolution_validation": 79.493201,
+        "wait": 105.49458249999999
+       },
+       "n_trials": 30,
+       "n_valid": 30,
+       "oracle_verified": 30,
+       "outcomes": {
+        "abstained": 0,
+        "budget_exhausted": 0,
+        "error": 0,
+        "refuted": 0,
+        "timeout": 0,
+        "unknown": 0,
+        "verified": 30
+       }
+      }
+     },
+     "continuation_needed": false,
+     "paired": {
+      "A_median_ms": 270.5620655,
+      "A_p95_ms": 294.801054,
+      "D_median_ms": 271.6315415,
+      "D_p95_ms": 306.53886,
+      "comparison": "CMP-D",
+      "condition": "W-quiet",
+      "deltas_ms": [
+       -47.29698400000001,
+       -5.457459999999969,
+       12.680567999999994,
+       16.24597,
+       8.005432999999982,
+       -11.889468000000022,
+       32.78884899999997,
+       -24.114400999999987,
+       20.786632999999995,
+       105.64694600000001,
+       -80.47919999999999,
+       9.266928000000007,
+       -9.314686999999992,
+       13.730861000000004,
+       2.9488920000000007,
+       -0.8096610000000055,
+       3.3722530000000006,
+       -19.195007000000032,
+       12.31612899999999,
+       -10.760224000000022,
+       -18.660547000000008,
+       22.000421000000017,
+       7.650529000000006,
+       -7.243325000000027,
+       -18.33051899999998,
+       16.63272999999998,
+       -7.6552540000000135,
+       -18.915251000000012,
+       -21.758560000000017,
+       24.613923
+      ],
+      "excluded_pairs": [],
+      "pairs_seen": 30,
+      "pairs_valid": 30,
+      "verdict": {
+       "ci95_ms": [
+        -10.037455500000007,
+        10.791528499999998
+       ],
+       "median_ms": 1.0696154999999976,
+       "n": 30,
+       "negative": 15,
+       "positive": 15,
+       "threshold_ms": 13.528103275000001,
+       "verdict": "NO_MEANINGFUL_BENEFIT"
+      }
+     },
+     "sensitivity_load1_le_8": {
+      "n": 0,
+      "verdict": "NO_DATA"
+     },
+     "status": "BENCHMARK (REAL, scripted chooser)"
+    }
+   },
+   "CMP-D-K2": {
+    "W-quiet": {
+     "arms": {
+      "A": {
+       "cdp_methods": {
+        "Accessibility.getFullAXTree": 60,
+        "Browser.getWindowBounds": 120,
+        "Browser.getWindowForTarget": 120,
+        "DOM.focus": 90,
+        "DOM.getBoxModel": 60,
+        "DOM.getDocument": 60,
+        "DOM.resolveNode": 60,
+        "DOM.scrollIntoViewIfNeeded": 60,
+        "DOMSnapshot.captureSnapshot": 60,
+        "Emulation.setFocusEmulationEnabled": 60,
+        "Input.insertText": 30,
+        "Page.getFrameTree": 120,
+        "Page.getLayoutMetrics": 120,
+        "Page.navigate": 30,
+        "Runtime.callFunctionOn": 120,
+        "Runtime.evaluate": 60,
+        "Target.attachToTarget": 150,
+        "Target.getTargets": 120,
+        "Target.setAutoAttach": 120
+       },
+       "coverage": {
+        "gate_gt_0_90": true,
+        "median": 0.9987289340285199,
+        "min": 0.9977845387720586
+       },
+       "median_T_oracle_ms": 247.289289,
+       "median_cleanup_ms": {
+        "browser_exit_ms": 0.8412195,
+        "cleanup_ms": 471.5427485,
+        "cold_startup_ms": 830.810097,
+        "lifetime_ms": 1594.4929240000001,
+        "resource_sample_ms": 29.748066,
+        "session_close_ms": 470.3431065
+       },
+       "median_counts": {
+        "acquired_ax_nodes": 42.0,
+        "acquired_dom_nodes": 42.0,
+        "acquired_layout_nodes": 30.0,
+        "cdp_events": 11.0,
+        "cdp_reply_bytes": 47332.0,
+        "cdp_send_bytes": 8104.0,
+        "cdp_sends": 54.0,
+        "decision_ms": 0.016398999999999997,
+        "decisions": 2.0,
+        "driver_mutations": 2.0,
+        "mcp_bytes_total": 8543.0,
+        "mcp_snapshot_bytes": 6152.0,
+        "plan_calls": 0.0,
+        "plan_ms": 0.0,
+        "resolve_calls": 0.0,
+        "resolve_ms": 0.0,
+        "runner_oracle_reads": 3.0,
+        "sleeps": 0.0,
+        "snapshots_full": 2.0
+       },
+       "median_resources": {
+        "browser_cpu_s": 1.295,
+        "browser_rss_kib": 1116504.0,
+        "driver_cpu_s": 0.43,
+        "driver_vmhwm_kib": 45314.0
+       },
+       "median_spans10_ms": {
+        "dispatch": 7.453317999999999,
+        "fresh_verification": 1.1041984999999999,
+        "observation_acquisition": 40.563714000000004,
+        "projection_encoding_transport": 27.370327500000005,
+        "provider_inference": 0.016398999999999997,
+        "residual": 0.3313665,
+        "resolution_validation": 71.02138,
+        "wait": 105.1984195
+       },
+       "n_trials": 30,
+       "n_valid": 30,
+       "oracle_verified": 30,
+       "outcomes": {
+        "abstained": 0,
+        "budget_exhausted": 0,
+        "error": 0,
+        "refuted": 0,
+        "timeout": 0,
+        "unknown": 0,
+        "verified": 30
+       }
+      },
+      "D": {
+       "cdp_methods": {
+        "Accessibility.getFullAXTree": 60,
+        "Browser.getWindowBounds": 120,
+        "Browser.getWindowForTarget": 120,
+        "DOM.focus": 90,
+        "DOM.getBoxModel": 60,
+        "DOM.getDocument": 60,
+        "DOM.resolveNode": 60,
+        "DOM.scrollIntoViewIfNeeded": 60,
+        "DOMSnapshot.captureSnapshot": 60,
+        "Emulation.setFocusEmulationEnabled": 60,
+        "Input.insertText": 30,
+        "Page.getFrameTree": 120,
+        "Page.getLayoutMetrics": 120,
+        "Page.navigate": 30,
+        "Runtime.callFunctionOn": 120,
+        "Runtime.evaluate": 60,
+        "Target.attachToTarget": 150,
+        "Target.getTargets": 120,
+        "Target.setAutoAttach": 120
+       },
+       "coverage": {
+        "gate_gt_0_90": true,
+        "median": 0.9986680717372309,
+        "min": 0.9953667768280947
+       },
+       "median_T_oracle_ms": 278.73562649999997,
+       "median_cleanup_ms": {
+        "browser_exit_ms": 0.76112,
+        "cleanup_ms": 466.81023749999997,
+        "cold_startup_ms": 907.289082,
+        "lifetime_ms": 1675.7211295,
+        "resource_sample_ms": 30.6813425,
+        "session_close_ms": 465.783275
+       },
+       "median_counts": {
+        "acquired_ax_nodes": 42.0,
+        "acquired_dom_nodes": 42.0,
+        "acquired_layout_nodes": 30.0,
+        "cdp_events": 11.0,
+        "cdp_reply_bytes": 46996.0,
+        "cdp_send_bytes": 8104.0,
+        "cdp_sends": 54.0,
+        "decision_ms": 0.0081185,
+        "decisions": 1.0,
+        "driver_mutations": 2.0,
+        "mcp_bytes_total": 8543.0,
+        "mcp_snapshot_bytes": 6152.0,
+        "plan_calls": 1.0,
+        "plan_ms": 0.030983999999999998,
+        "resolve_calls": 1.0,
+        "resolve_ms": 0.033016000000000004,
+        "runner_oracle_reads": 3.0,
+        "sleeps": 0.0,
+        "snapshots_full": 2.0
+       },
+       "median_resources": {
+        "browser_cpu_s": 1.395,
+        "browser_rss_kib": 1117224.0,
+        "driver_cpu_s": 0.46499999999999997,
+        "driver_vmhwm_kib": 45238.0
+       },
+       "median_spans10_ms": {
+        "dispatch": 7.5995230000000005,
+        "fresh_verification": 1.219474,
+        "observation_acquisition": 49.04528549999999,
+        "projection_encoding_transport": 28.04334049999999,
+        "provider_inference": 0.0081185,
+        "residual": 0.359448,
+        "resolution_validation": 89.37980400000001,
+        "wait": 105.2533195
+       },
+       "n_trials": 30,
+       "n_valid": 30,
+       "oracle_verified": 30,
+       "outcomes": {
+        "abstained": 0,
+        "budget_exhausted": 0,
+        "error": 0,
+        "refuted": 0,
+        "timeout": 0,
+        "unknown": 0,
+        "verified": 30
+       }
+      }
+     },
+     "continuation_needed": false,
+     "paired": {
+      "A_median_ms": 247.289289,
+      "A_p95_ms": 380.640556,
+      "D_median_ms": 278.73562649999997,
+      "D_p95_ms": 332.008207,
+      "comparison": "CMP-D-K2",
+      "condition": "W-quiet",
+      "deltas_ms": [
+       -68.11723,
+       -23.24582300000003,
+       21.303627000000006,
+       -12.829681999999991,
+       -81.59271100000001,
+       -15.024798000000004,
+       116.75153900000001,
+       -13.119326000000001,
+       30.076625000000035,
+       -0.7861219999999776,
+       1.144141999999988,
+       -20.489666,
+       -7.995714000000021,
+       9.624858000000017,
+       -2.97644600000001,
+       13.213457000000005,
+       16.946136000000024,
+       -5.271809000000019,
+       -2.8680570000000216,
+       -1.248153000000002,
+       54.66058699999999,
+       -6.989733000000001,
+       6.341662000000014,
+       41.52365800000001,
+       27.09375700000001,
+       -0.5034379999999885,
+       12.285437000000002,
+       25.629227000000014,
+       -79.713717,
+       50.786058999999995
+      ],
+      "excluded_pairs": [],
+      "pairs_seen": 30,
+      "pairs_valid": 30,
+      "verdict": {
+       "ci95_ms": [
+        -6.13077100000001,
+        12.749447000000004
+       ],
+       "median_ms": -0.644779999999983,
+       "n": 30,
+       "negative": 16,
+       "positive": 14,
+       "threshold_ms": 12.36446445,
+       "verdict": "NO_MEANINGFUL_BENEFIT"
+      }
+     },
+     "sensitivity_load1_le_8": {
+      "n": 0,
+      "verdict": "NO_DATA"
+     },
+     "status": "BENCHMARK (REAL, scripted chooser)"
+    }
+   }
+  },
+  "controls": [
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC01",
+    "decisions": [
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC01",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5,
+     "declined:field_not_proven": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC03",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC03",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC04",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC04",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC05a",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC05a",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC05b",
+    "decisions": [
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "detached_clicks": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC05b",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC06",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC06",
+    "decisions": [
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC07",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {
+     "action2:browser_ref_stale:refused:ok=True": 5
+    },
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC07",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 10
+    },
+    "mutation_refusals": {
+     "action2:browser_ref_stale:refused:ok=True": 5
+    },
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC10",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {
+     "protected_resource_scope_invalid": 5
+    },
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC10",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {
+     "protected_resource_scope_invalid": 5
+    },
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC12",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC12",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC13",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC13",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC14a",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC14a",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC14b",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC14b",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC15",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC15",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC16a",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC16a",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC16b",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC16b",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC17a",
+    "decisions": [
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC17a",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5,
+     "declined:field_not_proven": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC17b",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC17b",
+    "decisions": [
+     4,
+     4,
+     4,
+     4,
+     4
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "declined:submit_not_unique": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 0,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "budget_exhausted": 5
+    },
+    "submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {
+     "null": 5
+    },
+    "arm": "A",
+    "clicks_after_fault": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "control": "DC20a",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 5,
+    "guard": {},
+    "mutation_refusals": {
+     "action2:None:None:ok=False": 5
+    },
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "unknown": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {
+     "null": 5
+    },
+    "arm": "D",
+    "clicks_after_fault": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "control": "DC20a",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 5,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {
+     "action2:None:None:ok=False": 5
+    },
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "unknown": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "A",
+    "clicks_after_fault": [],
+    "control": "DC20b",
+    "decisions": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {},
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "action_error_codes": {},
+    "arm": "D",
+    "clicks_after_fault": [],
+    "control": "DC20b",
+    "decisions": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "detached_clicks": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fault_fired": 0,
+    "guard": {
+     "accepted:None": 5
+    },
+    "mutation_refusals": {},
+    "n": 5,
+    "oracle_verified": 5,
+    "probe_codes": {},
+    "runner_outcomes": {
+     "verified": 5
+    },
+    "submits": [
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "wrong_target_submits": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ],
+  "excluded_runs": [
+   {
+    "T_oracle_ms": 233.544,
+    "arm": "A",
+    "condition": "W-quiet",
+    "control": null,
+    "coverage": 0.9988,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-000-quiet-A",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 196.868,
+    "arm": "D",
+    "condition": "W-quiet",
+    "control": null,
+    "coverage": 0.9989,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "guarded-completion"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-001-quiet-D",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 1084.109,
+    "arm": "D",
+    "condition": "W-churn",
+    "control": null,
+    "coverage": 0.9996,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "guarded-completion"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-002-churn-D",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 1122.653,
+    "arm": "A",
+    "condition": "W-churn",
+    "control": null,
+    "coverage": 0.9996,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-003-churn-A",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 417.143,
+    "arm": "A",
+    "condition": "W-quiet",
+    "control": "DC01",
+    "coverage": 0.9859,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider",
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-004-dc01-A",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 428.977,
+    "arm": "D",
+    "condition": "W-quiet",
+    "control": "DC01",
+    "coverage": 0.9889,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider",
+     "guarded-completion"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [
+     {
+      "reason": "field_not_proven",
+      "status": "declined"
+     },
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-005-dc01-D",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": null,
+    "arm": "D",
+    "condition": "W-quiet",
+    "control": "DC06",
+    "coverage": null,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "guarded-completion",
+     "provider",
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 0,
+    "mutation_refusals": [],
+    "oracle_verified": false,
+    "outcome": "budget_exhausted",
+    "trial": "shake-006-dc06-D",
+    "wrong_target_submits": 1
+   },
+   {
+    "T_oracle_ms": null,
+    "arm": "A",
+    "condition": "W-quiet",
+    "control": "DC06",
+    "coverage": null,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider",
+     "provider",
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [],
+    "journal_submits": 0,
+    "mutation_refusals": [],
+    "oracle_verified": false,
+    "outcome": "budget_exhausted",
+    "trial": "shake-007-dc06-A",
+    "wrong_target_submits": 1
+   },
+   {
+    "T_oracle_ms": 2640.659,
+    "arm": "A",
+    "condition": "W-quiet",
+    "control": "DC07",
+    "coverage": 0.973,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider",
+     "provider",
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-008-dc07-A",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 2631.348,
+    "arm": "D",
+    "condition": "W-quiet",
+    "control": "DC07",
+    "coverage": 0.9788,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "guarded-completion",
+     "provider",
+     "guarded-completion"
+    ],
+    "excluded": "shakedown",
+    "fault": null,
+    "guard": [
+     {
+      "reason": null,
+      "status": "accepted"
+     },
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "shake-009-dc07-D",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 382.835,
+    "arm": "D",
+    "condition": "W-quiet",
+    "control": "DC20a",
+    "coverage": 0.9994,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": {
+     "clicks_after_fault": 0,
+     "fired": true,
+     "mode": "ack_lost"
+    },
+    "guard": [
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 1,
+    "mutation_refusals": [
+     {
+      "code": null,
+      "effect": null,
+      "label": "action2",
+      "ok": false
+     }
+    ],
+    "oracle_verified": true,
+    "outcome": "unknown",
+    "trial": "shake-010-dc20a-D",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 223.078,
+    "arm": "A",
+    "condition": "W-quiet",
+    "control": "DC20a",
+    "coverage": 0.9987,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider"
+    ],
+    "excluded": "shakedown",
+    "fault": {
+     "clicks_after_fault": 0,
+     "fired": true,
+     "mode": "ack_lost"
+    },
+    "guard": [],
+    "journal_submits": 1,
+    "mutation_refusals": [
+     {
+      "code": null,
+      "effect": null,
+      "label": "action2",
+      "ok": false
+     }
+    ],
+    "oracle_verified": true,
+    "outcome": "unknown",
+    "trial": "shake-011-dc20a-A",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 498.121,
+    "arm": "A",
+    "condition": "W-quiet",
+    "control": null,
+    "coverage": 0.9992,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "provider"
+    ],
+    "excluded": "smoke",
+    "fault": null,
+    "guard": [],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "smoke-000-quiet-A",
+    "wrong_target_submits": 0
+   },
+   {
+    "T_oracle_ms": 346.587,
+    "arm": "D",
+    "condition": "W-quiet",
+    "control": null,
+    "coverage": 0.9981,
+    "cursor_ack": {
+     "ok": true,
+     "requested": false
+    },
+    "decision_routes": [
+     "provider",
+     "guarded-completion"
+    ],
+    "excluded": "smoke",
+    "fault": null,
+    "guard": [
+     {
+      "reason": null,
+      "status": "accepted"
+     }
+    ],
+    "journal_submits": 1,
+    "mutation_refusals": [],
+    "oracle_verified": true,
+    "outcome": "verified",
+    "trial": "smoke-001-quiet-D",
+    "wrong_target_submits": 0
+   }
+  ],
+  "manifests": [
+   {
+    "block": "cmpd-b1",
+    "ended_utc": "2026-10-02T06:32:05.604Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-cmpd-b1..cmpd-b6",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:31:33.871Z",
+    "trials": [
+     "cmpd-b1-000-quiet-A",
+     "cmpd-b1-001-quiet-D",
+     "cmpd-b1-002-quiet-D",
+     "cmpd-b1-003-quiet-A",
+     "cmpd-b1-004-quiet-A",
+     "cmpd-b1-005-quiet-D",
+     "cmpd-b1-006-quiet-D",
+     "cmpd-b1-007-quiet-A",
+     "cmpd-b1-008-quiet-A",
+     "cmpd-b1-009-quiet-D",
+     "cmpd-b1-010-quiet-D",
+     "cmpd-b1-011-quiet-A",
+     "cmpd-b1-012-quiet-A",
+     "cmpd-b1-013-quiet-D",
+     "cmpd-b1-014-quiet-D",
+     "cmpd-b1-015-quiet-A",
+     "cmpd-b1-016-quiet-A",
+     "cmpd-b1-017-quiet-D",
+     "cmpd-b1-018-quiet-D",
+     "cmpd-b1-019-quiet-A"
+    ]
+   },
+   {
+    "block": "cmpd-b2",
+    "ended_utc": "2026-10-02T06:32:51.703Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-cmpd-b1..cmpd-b6",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:32:05.673Z",
+    "trials": [
+     "cmpd-b2-000-churn-A",
+     "cmpd-b2-001-churn-D",
+     "cmpd-b2-002-churn-D",
+     "cmpd-b2-003-churn-A",
+     "cmpd-b2-004-churn-A",
+     "cmpd-b2-005-churn-D",
+     "cmpd-b2-006-churn-D",
+     "cmpd-b2-007-churn-A",
+     "cmpd-b2-008-churn-A",
+     "cmpd-b2-009-churn-D",
+     "cmpd-b2-010-churn-D",
+     "cmpd-b2-011-churn-A",
+     "cmpd-b2-012-churn-A",
+     "cmpd-b2-013-churn-D",
+     "cmpd-b2-014-churn-D",
+     "cmpd-b2-015-churn-A",
+     "cmpd-b2-016-churn-A",
+     "cmpd-b2-017-churn-D",
+     "cmpd-b2-018-churn-D",
+     "cmpd-b2-019-churn-A"
+    ]
+   },
+   {
+    "block": "cmpd-b3",
+    "ended_utc": "2026-10-02T06:33:41.975Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-cmpd-b1..cmpd-b6",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:32:51.813Z",
+    "trials": [
+     "cmpd-b3-000-churn-A",
+     "cmpd-b3-001-churn-D",
+     "cmpd-b3-002-churn-D",
+     "cmpd-b3-003-churn-A",
+     "cmpd-b3-004-churn-A",
+     "cmpd-b3-005-churn-D",
+     "cmpd-b3-006-churn-D",
+     "cmpd-b3-007-churn-A",
+     "cmpd-b3-008-churn-A",
+     "cmpd-b3-009-churn-D",
+     "cmpd-b3-010-churn-D",
+     "cmpd-b3-011-churn-A",
+     "cmpd-b3-012-churn-A",
+     "cmpd-b3-013-churn-D",
+     "cmpd-b3-014-churn-D",
+     "cmpd-b3-015-churn-A",
+     "cmpd-b3-016-churn-A",
+     "cmpd-b3-017-churn-D",
+     "cmpd-b3-018-churn-D",
+     "cmpd-b3-019-churn-A"
+    ]
+   },
+   {
+    "block": "cmpd-b4",
+    "ended_utc": "2026-10-02T06:34:12.940Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-cmpd-b1..cmpd-b6",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:33:42.058Z",
+    "trials": [
+     "cmpd-b4-000-quiet-A",
+     "cmpd-b4-001-quiet-D",
+     "cmpd-b4-002-quiet-D",
+     "cmpd-b4-003-quiet-A",
+     "cmpd-b4-004-quiet-A",
+     "cmpd-b4-005-quiet-D",
+     "cmpd-b4-006-quiet-D",
+     "cmpd-b4-007-quiet-A",
+     "cmpd-b4-008-quiet-A",
+     "cmpd-b4-009-quiet-D",
+     "cmpd-b4-010-quiet-D",
+     "cmpd-b4-011-quiet-A",
+     "cmpd-b4-012-quiet-A",
+     "cmpd-b4-013-quiet-D",
+     "cmpd-b4-014-quiet-D",
+     "cmpd-b4-015-quiet-A",
+     "cmpd-b4-016-quiet-A",
+     "cmpd-b4-017-quiet-D",
+     "cmpd-b4-018-quiet-D",
+     "cmpd-b4-019-quiet-A"
+    ]
+   },
+   {
+    "block": "cmpd-b5",
+    "ended_utc": "2026-10-02T06:34:44.546Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-cmpd-b1..cmpd-b6",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:34:13.047Z",
+    "trials": [
+     "cmpd-b5-000-quiet-A",
+     "cmpd-b5-001-quiet-D",
+     "cmpd-b5-002-quiet-D",
+     "cmpd-b5-003-quiet-A",
+     "cmpd-b5-004-quiet-A",
+     "cmpd-b5-005-quiet-D",
+     "cmpd-b5-006-quiet-D",
+     "cmpd-b5-007-quiet-A",
+     "cmpd-b5-008-quiet-A",
+     "cmpd-b5-009-quiet-D",
+     "cmpd-b5-010-quiet-D",
+     "cmpd-b5-011-quiet-A",
+     "cmpd-b5-012-quiet-A",
+     "cmpd-b5-013-quiet-D",
+     "cmpd-b5-014-quiet-D",
+     "cmpd-b5-015-quiet-A",
+     "cmpd-b5-016-quiet-A",
+     "cmpd-b5-017-quiet-D",
+     "cmpd-b5-018-quiet-D",
+     "cmpd-b5-019-quiet-A"
+    ]
+   },
+   {
+    "block": "cmpd-b6",
+    "ended_utc": "2026-10-02T06:35:38.064Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-cmpd-b1..cmpd-b6",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:34:44.620Z",
+    "trials": [
+     "cmpd-b6-000-churn-A",
+     "cmpd-b6-001-churn-D",
+     "cmpd-b6-002-churn-D",
+     "cmpd-b6-003-churn-A",
+     "cmpd-b6-004-churn-A",
+     "cmpd-b6-005-churn-D",
+     "cmpd-b6-006-churn-D",
+     "cmpd-b6-007-churn-A",
+     "cmpd-b6-008-churn-A",
+     "cmpd-b6-009-churn-D",
+     "cmpd-b6-010-churn-D",
+     "cmpd-b6-011-churn-A",
+     "cmpd-b6-012-churn-A",
+     "cmpd-b6-013-churn-D",
+     "cmpd-b6-014-churn-D",
+     "cmpd-b6-015-churn-A",
+     "cmpd-b6-016-churn-A",
+     "cmpd-b6-017-churn-D",
+     "cmpd-b6-018-churn-D",
+     "cmpd-b6-019-churn-A"
+    ]
+   },
+   {
+    "block": "ctl-b01",
+    "ended_utc": "2026-10-02T07:06:02.583Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b01..ctl-b05",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:04:50.548Z",
+    "trials": [
+     "ctl-b01-000-dc01-A",
+     "ctl-b01-001-dc01-D",
+     "ctl-b01-002-dc03-D",
+     "ctl-b01-003-dc03-A",
+     "ctl-b01-004-dc04-A",
+     "ctl-b01-005-dc04-D",
+     "ctl-b01-006-dc05a-D",
+     "ctl-b01-007-dc05a-A",
+     "ctl-b01-008-dc05b-A",
+     "ctl-b01-009-dc05b-D",
+     "ctl-b01-010-dc06-D",
+     "ctl-b01-011-dc06-A",
+     "ctl-b01-012-dc07-A",
+     "ctl-b01-013-dc07-D",
+     "ctl-b01-014-dc10-D",
+     "ctl-b01-015-dc10-A",
+     "ctl-b01-016-dc12-A",
+     "ctl-b01-017-dc12-D",
+     "ctl-b01-018-dc13-D",
+     "ctl-b01-019-dc13-A"
+    ]
+   },
+   {
+    "block": "ctl-b02",
+    "ended_utc": "2026-10-02T07:06:59.334Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b01..ctl-b05",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:06:02.673Z",
+    "trials": [
+     "ctl-b02-000-dc14a-A",
+     "ctl-b02-001-dc14a-D",
+     "ctl-b02-002-dc14b-D",
+     "ctl-b02-003-dc14b-A",
+     "ctl-b02-004-dc15-A",
+     "ctl-b02-005-dc15-D",
+     "ctl-b02-006-dc16a-D",
+     "ctl-b02-007-dc16a-A",
+     "ctl-b02-008-dc16b-A",
+     "ctl-b02-009-dc16b-D",
+     "ctl-b02-010-dc17a-D",
+     "ctl-b02-011-dc17a-A",
+     "ctl-b02-012-dc17b-A",
+     "ctl-b02-013-dc17b-D",
+     "ctl-b02-014-dc20a-D",
+     "ctl-b02-015-dc20a-A",
+     "ctl-b02-016-dc20b-A",
+     "ctl-b02-017-dc20b-D",
+     "ctl-b02-018-dc05b-D",
+     "ctl-b02-019-dc05b-A"
+    ]
+   },
+   {
+    "block": "ctl-b03",
+    "ended_utc": "2026-10-02T07:08:04.111Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b01..ctl-b05",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:06:59.448Z",
+    "trials": [
+     "ctl-b03-000-dc06-A",
+     "ctl-b03-001-dc06-D",
+     "ctl-b03-002-dc07-D",
+     "ctl-b03-003-dc07-A",
+     "ctl-b03-004-dc10-A",
+     "ctl-b03-005-dc10-D",
+     "ctl-b03-006-dc12-D",
+     "ctl-b03-007-dc12-A",
+     "ctl-b03-008-dc13-A",
+     "ctl-b03-009-dc13-D",
+     "ctl-b03-010-dc14a-D",
+     "ctl-b03-011-dc14a-A",
+     "ctl-b03-012-dc14b-A",
+     "ctl-b03-013-dc14b-D",
+     "ctl-b03-014-dc15-D",
+     "ctl-b03-015-dc15-A",
+     "ctl-b03-016-dc16a-A",
+     "ctl-b03-017-dc16a-D",
+     "ctl-b03-018-dc16b-D",
+     "ctl-b03-019-dc16b-A"
+    ]
+   },
+   {
+    "block": "ctl-b04",
+    "ended_utc": "2026-10-02T07:08:58.141Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b01..ctl-b05",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:08:04.206Z",
+    "trials": [
+     "ctl-b04-000-dc17a-A",
+     "ctl-b04-001-dc17a-D",
+     "ctl-b04-002-dc17b-D",
+     "ctl-b04-003-dc17b-A",
+     "ctl-b04-004-dc20a-A",
+     "ctl-b04-005-dc20a-D",
+     "ctl-b04-006-dc20b-D",
+     "ctl-b04-007-dc20b-A",
+     "ctl-b04-008-dc01-A",
+     "ctl-b04-009-dc01-D",
+     "ctl-b04-010-dc03-D",
+     "ctl-b04-011-dc03-A",
+     "ctl-b04-012-dc04-A",
+     "ctl-b04-013-dc04-D",
+     "ctl-b04-014-dc05a-D",
+     "ctl-b04-015-dc05a-A",
+     "ctl-b04-016-dc12-A",
+     "ctl-b04-017-dc12-D",
+     "ctl-b04-018-dc13-D",
+     "ctl-b04-019-dc13-A"
+    ]
+   },
+   {
+    "block": "ctl-b05",
+    "ended_utc": "2026-10-02T07:09:47.275Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b01..ctl-b05",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:08:58.225Z",
+    "trials": [
+     "ctl-b05-000-dc14a-A",
+     "ctl-b05-001-dc14a-D",
+     "ctl-b05-002-dc14b-D",
+     "ctl-b05-003-dc14b-A",
+     "ctl-b05-004-dc15-A",
+     "ctl-b05-005-dc15-D",
+     "ctl-b05-006-dc16a-D",
+     "ctl-b05-007-dc16a-A",
+     "ctl-b05-008-dc16b-A",
+     "ctl-b05-009-dc16b-D",
+     "ctl-b05-010-dc17a-D",
+     "ctl-b05-011-dc17a-A",
+     "ctl-b05-012-dc17b-A",
+     "ctl-b05-013-dc17b-D",
+     "ctl-b05-014-dc20a-D",
+     "ctl-b05-015-dc20a-A",
+     "ctl-b05-016-dc20b-A",
+     "ctl-b05-017-dc20b-D",
+     "ctl-b05-018-dc01-D",
+     "ctl-b05-019-dc01-A"
+    ]
+   },
+   {
+    "block": "ctl-b06",
+    "ended_utc": "2026-10-02T07:15:53.064Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b06..ctl-b10",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:14:39.131Z",
+    "trials": [
+     "ctl-b06-000-dc03-A",
+     "ctl-b06-001-dc03-D",
+     "ctl-b06-002-dc04-D",
+     "ctl-b06-003-dc04-A",
+     "ctl-b06-004-dc05a-A",
+     "ctl-b06-005-dc05a-D",
+     "ctl-b06-006-dc05b-D",
+     "ctl-b06-007-dc05b-A",
+     "ctl-b06-008-dc06-A",
+     "ctl-b06-009-dc06-D",
+     "ctl-b06-010-dc07-D",
+     "ctl-b06-011-dc07-A",
+     "ctl-b06-012-dc10-A",
+     "ctl-b06-013-dc10-D",
+     "ctl-b06-014-dc15-D",
+     "ctl-b06-015-dc15-A",
+     "ctl-b06-016-dc16a-A",
+     "ctl-b06-017-dc16a-D",
+     "ctl-b06-018-dc16b-D",
+     "ctl-b06-019-dc16b-A"
+    ]
+   },
+   {
+    "block": "ctl-b07",
+    "ended_utc": "2026-10-02T07:16:54.170Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b06..ctl-b10",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:15:53.154Z",
+    "trials": [
+     "ctl-b07-000-dc17a-A",
+     "ctl-b07-001-dc17a-D",
+     "ctl-b07-002-dc17b-D",
+     "ctl-b07-003-dc17b-A",
+     "ctl-b07-004-dc20a-A",
+     "ctl-b07-005-dc20a-D",
+     "ctl-b07-006-dc20b-D",
+     "ctl-b07-007-dc20b-A",
+     "ctl-b07-008-dc01-A",
+     "ctl-b07-009-dc01-D",
+     "ctl-b07-010-dc03-D",
+     "ctl-b07-011-dc03-A",
+     "ctl-b07-012-dc04-A",
+     "ctl-b07-013-dc04-D",
+     "ctl-b07-014-dc05a-D",
+     "ctl-b07-015-dc05a-A",
+     "ctl-b07-016-dc05b-A",
+     "ctl-b07-017-dc05b-D",
+     "ctl-b07-018-dc06-D",
+     "ctl-b07-019-dc06-A"
+    ]
+   },
+   {
+    "block": "ctl-b08",
+    "ended_utc": "2026-10-02T07:17:44.017Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b06..ctl-b10",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:16:54.228Z",
+    "trials": [
+     "ctl-b08-000-dc07-A",
+     "ctl-b08-001-dc07-D",
+     "ctl-b08-002-dc10-D",
+     "ctl-b08-003-dc10-A",
+     "ctl-b08-004-dc12-A",
+     "ctl-b08-005-dc12-D",
+     "ctl-b08-006-dc13-D",
+     "ctl-b08-007-dc13-A",
+     "ctl-b08-008-dc14a-A",
+     "ctl-b08-009-dc14a-D",
+     "ctl-b08-010-dc14b-D",
+     "ctl-b08-011-dc14b-A",
+     "ctl-b08-012-dc17b-A",
+     "ctl-b08-013-dc17b-D",
+     "ctl-b08-014-dc20a-D",
+     "ctl-b08-015-dc20a-A",
+     "ctl-b08-016-dc20b-A",
+     "ctl-b08-017-dc20b-D",
+     "ctl-b08-018-dc01-D",
+     "ctl-b08-019-dc01-A"
+    ]
+   },
+   {
+    "block": "ctl-b09",
+    "ended_utc": "2026-10-02T07:18:55.589Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b06..ctl-b10",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:17:44.095Z",
+    "trials": [
+     "ctl-b09-000-dc03-A",
+     "ctl-b09-001-dc03-D",
+     "ctl-b09-002-dc04-D",
+     "ctl-b09-003-dc04-A",
+     "ctl-b09-004-dc05a-A",
+     "ctl-b09-005-dc05a-D",
+     "ctl-b09-006-dc05b-D",
+     "ctl-b09-007-dc05b-A",
+     "ctl-b09-008-dc06-A",
+     "ctl-b09-009-dc06-D",
+     "ctl-b09-010-dc07-D",
+     "ctl-b09-011-dc07-A",
+     "ctl-b09-012-dc10-A",
+     "ctl-b09-013-dc10-D",
+     "ctl-b09-014-dc12-D",
+     "ctl-b09-015-dc12-A",
+     "ctl-b09-016-dc13-A",
+     "ctl-b09-017-dc13-D",
+     "ctl-b09-018-dc14a-D",
+     "ctl-b09-019-dc14a-A"
+    ]
+   },
+   {
+    "block": "ctl-b10",
+    "ended_utc": "2026-10-02T07:19:20.142Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-ctl-b06..ctl-b10",
+    "provider": "mock",
+    "started_utc": "2026-10-02T07:18:55.693Z",
+    "trials": [
+     "ctl-b10-000-dc14b-A",
+     "ctl-b10-001-dc14b-D",
+     "ctl-b10-002-dc15-D",
+     "ctl-b10-003-dc15-A",
+     "ctl-b10-004-dc16a-A",
+     "ctl-b10-005-dc16a-D",
+     "ctl-b10-006-dc16b-D",
+     "ctl-b10-007-dc16b-A",
+     "ctl-b10-008-dc17a-A",
+     "ctl-b10-009-dc17a-D"
+    ]
+   },
+   {
+    "block": "k2-b1",
+    "ended_utc": "2026-10-02T06:54:11.796Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-k2-b1..k2-b3",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:53:36.558Z",
+    "trials": [
+     "k2-b1-000-quiet-A",
+     "k2-b1-001-quiet-D",
+     "k2-b1-002-quiet-D",
+     "k2-b1-003-quiet-A",
+     "k2-b1-004-quiet-A",
+     "k2-b1-005-quiet-D",
+     "k2-b1-006-quiet-D",
+     "k2-b1-007-quiet-A",
+     "k2-b1-008-quiet-A",
+     "k2-b1-009-quiet-D",
+     "k2-b1-010-quiet-D",
+     "k2-b1-011-quiet-A",
+     "k2-b1-012-quiet-A",
+     "k2-b1-013-quiet-D",
+     "k2-b1-014-quiet-D",
+     "k2-b1-015-quiet-A",
+     "k2-b1-016-quiet-A",
+     "k2-b1-017-quiet-D",
+     "k2-b1-018-quiet-D",
+     "k2-b1-019-quiet-A"
+    ]
+   },
+   {
+    "block": "k2-b2",
+    "ended_utc": "2026-10-02T06:54:43.183Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-k2-b1..k2-b3",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:54:11.880Z",
+    "trials": [
+     "k2-b2-000-quiet-A",
+     "k2-b2-001-quiet-D",
+     "k2-b2-002-quiet-D",
+     "k2-b2-003-quiet-A",
+     "k2-b2-004-quiet-A",
+     "k2-b2-005-quiet-D",
+     "k2-b2-006-quiet-D",
+     "k2-b2-007-quiet-A",
+     "k2-b2-008-quiet-A",
+     "k2-b2-009-quiet-D",
+     "k2-b2-010-quiet-D",
+     "k2-b2-011-quiet-A",
+     "k2-b2-012-quiet-A",
+     "k2-b2-013-quiet-D",
+     "k2-b2-014-quiet-D",
+     "k2-b2-015-quiet-A",
+     "k2-b2-016-quiet-A",
+     "k2-b2-017-quiet-D",
+     "k2-b2-018-quiet-D",
+     "k2-b2-019-quiet-A"
+    ]
+   },
+   {
+    "block": "k2-b3",
+    "ended_utc": "2026-10-02T06:55:12.641Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-k2-b1..k2-b3",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:54:43.258Z",
+    "trials": [
+     "k2-b3-000-quiet-A",
+     "k2-b3-001-quiet-D",
+     "k2-b3-002-quiet-D",
+     "k2-b3-003-quiet-A",
+     "k2-b3-004-quiet-A",
+     "k2-b3-005-quiet-D",
+     "k2-b3-006-quiet-D",
+     "k2-b3-007-quiet-A",
+     "k2-b3-008-quiet-A",
+     "k2-b3-009-quiet-D",
+     "k2-b3-010-quiet-D",
+     "k2-b3-011-quiet-A",
+     "k2-b3-012-quiet-A",
+     "k2-b3-013-quiet-D",
+     "k2-b3-014-quiet-D",
+     "k2-b3-015-quiet-A",
+     "k2-b3-016-quiet-A",
+     "k2-b3-017-quiet-D",
+     "k2-b3-018-quiet-D",
+     "k2-b3-019-quiet-A"
+    ]
+   },
+   {
+    "block": "shake",
+    "ended_utc": "2026-10-02T06:12:06.046Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-shake",
+    "provider": "mock",
+    "started_utc": "2026-10-02T06:11:31.165Z",
+    "trials": [
+     "shake-000-quiet-A",
+     "shake-001-quiet-D",
+     "shake-002-churn-D",
+     "shake-003-churn-A",
+     "shake-004-dc01-A",
+     "shake-005-dc01-D",
+     "shake-006-dc06-D",
+     "shake-007-dc06-A",
+     "shake-008-dc07-A",
+     "shake-009-dc07-D",
+     "shake-010-dc20a-D",
+     "shake-011-dc20a-A"
+    ]
+   },
+   {
+    "block": "smoke",
+    "ended_utc": "2026-10-02T05:48:36.876Z",
+    "fixture_pid_separate": true,
+    "isolation": {
+     "display_is_private": true,
+     "hostless_ancestor_found": true,
+     "uid_map": "0 0 4294967295",
+     "wayland_display_set": false
+    },
+    "lock_label": "i107-d-smoke",
+    "provider": "mock",
+    "started_utc": "2026-10-02T05:48:32.126Z",
+    "trials": [
+     "smoke-000-quiet-A",
+     "smoke-001-quiet-D"
+    ]
+   }
+  ],
+  "required_zero": {
+   "A": {
+    "driver_stale_acceptance": 5,
+    "duplicate_effect": 0,
+    "stale_ref_effect": 0,
+    "unauthorized_action": 0,
+    "unverified_success": 0,
+    "wrong_target_effect": 10
+   },
+   "D": {
+    "driver_stale_acceptance": 5,
+    "duplicate_effect": 0,
+    "stale_ref_effect": 0,
+    "unauthorized_action": 0,
+    "unverified_success": 0,
+    "wrong_target_effect": 10
+   }
+  },
+  "status": "COMPLETE",
+  "trials_excluded": 14,
+  "trials_measured": 370
+ },
+ "schema": "cua.i107.lane-d.summary.v1",
+ "unit": {
+  "dc06_missing_scope_fact": {
+   "A_choice": "submit-form",
+   "A_target": "decoy",
+   "D_guard": {
+    "reason": null,
+    "status": "accepted"
+   },
+   "D_target": "decoy",
+   "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+  },
+  "guard_matrix": {
+   "DC01/only": {
+    "A_choice": "type-verification-value",
+    "A_target": null,
+    "D_guard": {
+     "reason": "field_not_proven",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC03/only": {
+    "A_choice": "submit-form",
+    "A_target": "competing",
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": "competing",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC04/only": {
+    "A_choice": "reobserve",
+    "A_target": null,
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC05a/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC05b/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC06/only": {
+    "A_choice": "submit-form",
+    "A_target": "decoy",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "decoy",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC07/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC10/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC12/submit_kept_no_layout": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC12/submit_omitted_css_hidden": {
+    "A_choice": "reobserve",
+    "A_target": null,
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC13/submit_kept_offscreen": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC14a/submit_kept": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC14a/submit_omitted_page_occluded": {
+    "A_choice": "reobserve",
+    "A_target": null,
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC14b/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC15/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC16a/ax_disabled_no_actions": {
+    "A_choice": "reobserve",
+    "A_target": null,
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC16a/ax_enabled": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC16b/ax_disabled_no_actions": {
+    "A_choice": "reobserve",
+    "A_target": null,
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC16b/ax_enabled": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC17a/only": {
+    "A_choice": "type-verification-value",
+    "A_target": null,
+    "D_guard": {
+     "reason": "field_not_proven",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC17b/ax_name_includes_before": {
+    "A_choice": "reobserve",
+    "A_target": null,
+    "D_guard": {
+     "reason": "submit_not_unique",
+     "status": "declined"
+    },
+    "D_target": null,
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC17b/ax_name_unchanged": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (branch conditional on Driver/Chrome; REAL BLOCKED)"
+   },
+   "DC20a/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "DC20b/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   },
+   "baseline/only": {
+    "A_choice": "submit-form",
+    "A_target": "real",
+    "D_guard": {
+     "reason": null,
+     "status": "accepted"
+    },
+    "D_target": "real",
+    "evidence": "UNIT (caller logic over a control-shaped snapshot; REAL BLOCKED)"
+   }
+  },
+  "structural_work_per_task": {
+   "decision_routes": {
+    "A": [
+     [
+      "[\"provider\", \"provider\"]",
+      5
+     ]
+    ],
+    "D": [
+     [
+      "[\"provider\", \"guarded-completion\"]",
+      5
+     ]
+    ]
+   },
+   "decisions": {
+    "A": [
+     [
+      2,
+      5
+     ]
+    ],
+    "D": [
+     [
+      1,
+      5
+     ]
+    ]
+   },
+   "driver_mutations": {
+    "A": [
+     [
+      2,
+      5
+     ]
+    ],
+    "D": [
+     [
+      2,
+      5
+     ]
+    ]
+   },
+   "evidence": "UNIT_FAKE_DRIVER (real caller + PR 4316 guard; fake Driver; no browser)",
+   "n_per_arm": 5,
+   "plan_calls": {
+    "A": [
+     [
+      0,
+      5
+     ]
+    ],
+    "D": [
+     [
+      1,
+      5
+     ]
+    ]
+   },
+   "resolve_calls": {
+    "A": [
+     [
+      0,
+      5
+     ]
+    ],
+    "D": [
+     [
+      1,
+      5
+     ]
+    ]
+   },
+   "snapshots_full": {
+    "A": [
+     [
+      2,
+      5
+     ]
+    ],
+    "D": [
+     [
+      2,
+      5
+     ]
+    ]
+   }
+  }
+ },
+ "work_deleted_vs_wallclock": {
+  "deleted_decision_cost_with_mock": "about 0 ms expected (B-01 K0n vs K0: -2.1 [-9.3, 3.5] ms); not measured here",
+  "live_provider_value": "BLOCKED pending owner budget (R2-03's live -212 ms on 0.31.0 is not borrowed or summed)",
+  "wallclock_REAL": {
+   "W-churn": {
+    "ci95_ms": [
+     -40.95379049999997,
+     20.55186500000002
+    ],
+    "median_ms": -4.4386674999998945,
+    "n": 30,
+    "negative": 16,
+    "positive": 14,
+    "threshold_ms": 61.05451437500001,
+    "verdict": "NO_MEANINGFUL_BENEFIT"
+   },
+   "W-quiet": {
+    "ci95_ms": [
+     -10.037455500000007,
+     10.791528499999998
+    ],
+    "median_ms": 1.0696154999999976,
+    "n": 30,
+    "negative": 15,
+    "positive": 15,
+    "threshold_ms": 13.528103275000001,
+    "verdict": "NO_MEANINGFUL_BENEFIT"
+   }
+  },
+  "work_deleted_REAL": 1.0,
+  "work_deleted_UNIT": "chooser decisions per task A 2 -> D 1; PR 4316 program creation 0 -> 1 and verification 0 -> 1 call per task; snapshots, mutations and tool sequence unchanged"
+ }
+}

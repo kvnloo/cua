@@ -1,0 +1,42 @@
+{
+ "schema": "cua.i107.lane-d.provenance.v1",
+ "issue": "kvnloo/cua#107",
+ "lane": "D",
+ "identities_kept_separate": {
+  "upstream_main_at_map_pin": "352507b6c03162ab286b21d5ed509125cc3daece",
+  "live_pr_head": "trycua/cua PR 4316, read at lane start and end (raw/pr4316-head-start.json, raw/pr4316-head-end.json)",
+  "tested_source": {
+   "branch": "exp/i107-d-20261002",
+   "base": "be68363bc38940d5560be55165ceaf6fd743437b (exp/i107-map-20261002 packet HEAD)",
+   "libs_cua_driver_tree": "a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497",
+   "caller_jev_use_tree": "72bf8156136771da9a767ec12ae7c364e426d910 (byte-identical to the jev-use tree at PR 4316 head a0bca7440)",
+   "lane_commits": "add docs/experiments/i107-d-2026-10-02/ only (verify_artifacts check 4)"
+  },
+  "driver_binary": {
+   "name": "cua-driver-i107-092b065d5",
+   "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
+   "version": "cua-driver 0.32.0",
+   "built_from": "092b065d5e1f6e0b9ba3abe4f5fbcd37c339303b by build-driver.sh under hostless (v1) and the cargo-build lock (map lane; 0 fresh units, 208 s, lock 04:36:41.382Z-04:40:09.365Z); not rebuilt here",
+   "instrumentation": "CUA_DRIVER_PHASE_TRACE_FILE set per trial in both arms; CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS unset"
+  },
+  "publication": "set by the Synthesize publisher (not pushed by this lane)"
+ },
+ "reused": {
+  "harness/b01_analysis.py": {"from": "kvnloo/cua 6689610d5 docs/experiments/b-01-browser-critpath-2026-10-02/b01_analysis.py", "sha256": "072c8ef2f925aa7c3d2894c47c66b2e665f5c77774d2a53fe03215b2b9a48a31", "status_of_source": "B-01 PENDING (rejected for text only; numbers reproduced by its verifier)"},
+  "harness/fault_transport.py": {"from": "kvnloo/cua b97daa4ba docs/experiments/own-105-runner-reconcile-2026-10-02/harness/fault_transport.py (from R2-05)", "sha256": "c85eec39fd3d5ae186a3654511aa35e07ebff4d28eaf664d1e80675dace49784"},
+  "run_critpath.py parts": "B-01's loopback-only socket guard and MCP client-validation timing patch, copied into harness/run_d.py"
+ },
+ "environment": {
+  "unit": "jev-use .venv Python 3.12.13, mcp 1.30.0, anyio 4.15.1; node 22.23.2 for inline-script syntax checks; under <lanes>/bin/hostless",
+  "isolation": {
+   "hostless_v1": "bubblewrap user namespace (host root files appear as uid 65534; blocked the Driver's isolated browser launch); used for the first unit runs only",
+   "hostless_v2": {"installed_utc": "2026-10-02T05:06:31Z", "sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b", "landlock_scope_sha256": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8", "what": "environment scrub + private XDG_RUNTIME_DIR + Landlock scope (abstract unix sockets and signals); no user namespace"},
+   "session": "<lanes>/cua-x11-session.sh sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b (private Xvfb, private D-Bus, openbox, picom, cleared environment)",
+   "quiet_timed": "<lanes>/bin/quiet-timed sha256 65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b; receipts copied to raw/real/<group>/lock-receipt.json"
+  }
+ },
+ "provider": {"chooser": "choose_mock_for_task (scripted mock)", "typesafe_requests": 0, "label": "FIXTURE/BENCHMARK"},
+ "github_writes": 0,
+ "pushes": 0,
+ "path_policy": "no absolute local path, host name or secret in any packet file; logs carry <wt>, <lanes>, <tmp>, <home> placeholders"
+}
