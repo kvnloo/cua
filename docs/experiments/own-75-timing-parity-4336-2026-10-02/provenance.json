@@ -1,0 +1,44 @@
+{
+  "schema": "cua.r2.provenance.v1",
+  "experiment": "OWN-75 (resumed as lane OWN-75R, wave 3)",
+  "owner_rows": ["kvnloo/cua#75 (WAIT / promotion-only directive of 2026-10-01)", "kvnloo/cua#10 (consumer)"],
+  "pr": "trycua/cua PR 4336 (plain text; open; nothing is posted upstream)",
+  "pr_head": "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939",
+  "pr_head_reads": {
+    "start": "raw/provenance/pr-head-start.json (2026-10-02T17:18:53Z)",
+    "end": "raw/provenance/pr-head-end.json"
+  },
+  "pr_head_in_issue_body": "kvnloo/cua#75 body cites d301a076c (older head; drift disclosed in PREREG-AMENDMENT-1 e)",
+  "m0": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
+  "m0_definition": "git merge-base 8391cf802 upstream/main (also the merge base with upstream main 989cc76ce)",
+  "tested_source": {
+    "head_arm": "branch exp/own-75r-timing-parity-4336-20261002: 8391cf802 + packet-only commits; jev-use tree f3ba27c40253d00cd235ca001bdae72357300f6c",
+    "m0_arm": "detached worktree at 2ca90d338 (removed after the run); jev-use tree 635a4f588c6817ccb6cb6f5b7baacddbfc42f786",
+    "gtk3_fixture_blob": "fa4b5ad328acc7835b32cf57fbdfd61d11b5df62 (libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py, identical at head and m0; launched from the head worktree for both arms)"
+  },
+  "prereg_commit": "cd18788725090377d64347235cb31ce628d9d796",
+  "amendment_commit": "c1fe992b084633d6f25df1efa1261718b8e18bf6 (PREREG-AMENDMENT-1.json + harness/run_batch_qt.sh)",
+  "publication_sha": "the branch tip that contains this file (see git log); the publisher records the pushed SHA",
+  "upstream_main": {
+    "latest_seen": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+    "merge_tree": "git merge-tree --write-tree 989cc76ce 8391cf802 -> rc 0, tree e7fc835fc51fb577b73d9a75095c071fe4c7da8d, no conflicts",
+    "jev_use_drift_since_m0": 0,
+    "driver_drift_since_binary_source_229b65b28": "18 libs/cua-driver files (none in examples/jev-use or the GTK3 fixture)"
+  },
+  "driver": {
+    "binary": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+    "source": "upstream main 229b65b2849c3a595ddbc85200d7181b18bd2e47 (M0 is an ancestor; examples/jev-use identical between them)",
+    "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+    "hash_reads": ["raw/provenance/driver-sha256-start.txt", "raw/provenance/driver-sha256-end.txt"],
+    "version": "per block in raw/real/blocks/*/meta.json (driver_version); the same binary serves both arms"
+  },
+  "environment": {
+    "wrapper": "bin/hostless (v2: environment scrub + Landlock scope) around every code-executing command",
+    "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080x24 (-nolisten tcp), private dbus, openbox + picom, private AT-SPI bus (CUA_SESSION_ATSPI=1), fresh session HOME per block",
+    "session_extra_env": "CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1 (values seen per block in raw/real/session-env/)",
+    "runtimes": "jev-use .venv Python 3.12 (uv sync --frozen), Node 22.23.2 (npm ci --ignore-scripts), fixture on system /usr/bin/python3 + PyGObject",
+    "lock": "one bin/quiet-timed EXCLUSIVE quiet-lane acquisition per block of <= 10 trials",
+    "os": "Linux X11 (Xvfb); no Wayland, no macOS, no Windows"
+  },
+  "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "chooser": "--provider mock (task.mock_preferences)"}
+}
