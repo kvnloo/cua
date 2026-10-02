@@ -162,8 +162,9 @@ pub(crate) struct DriverRuntime {
     last_activity: AtomicU64,
     /// Calls hold a read guard; shutdown takes the write guard after closing
     /// admission. Therefore shutdown is idempotent and does not return while a
-    /// previously admitted operation is still executing.
-    lifecycle: tokio::sync::RwLock<()>,
+    /// previously admitted operation is still executing. The read guard is an
+    /// admission hold, so owned native work of a cancelled call keeps it too.
+    lifecycle: Arc<tokio::sync::RwLock<()>>,
     lifecycle_maintenance: Mutex<Option<LifecycleMaintenance>>,
     activity_observer: Option<Arc<dyn DriverActivityObserver>>,
 }
@@ -205,7 +206,7 @@ impl DriverRuntime {
             compatibility_context,
             shutdown: AtomicBool::new(false),
             last_activity: AtomicU64::new(now_unix_secs()),
-            lifecycle: tokio::sync::RwLock::new(()),
+            lifecycle: Arc::new(tokio::sync::RwLock::new(())),
             lifecycle_maintenance: Mutex::new(None),
             activity_observer: options.activity_observer.clone(),
         });
@@ -307,7 +308,8 @@ impl DriverRuntime {
             return None;
         }
         self.last_activity.store(now_unix_secs(), Ordering::Relaxed);
-        let _operation = self.lifecycle.read().await;
+        let operation =
+            cua_driver_core::tool::AdmissionHold::new(self.lifecycle.clone().read_owned().await);
         if !self.is_running() {
             return None;
         }
@@ -328,10 +330,12 @@ impl DriverRuntime {
             .into_iter()
             .map(|adapter| adapter.id.to_owned())
             .collect::<Vec<_>>();
-        let result = self
-            .registry
-            .invoke_with_context_and_evidence(name, args, context, evidence)
-            .await;
+        let result = cua_driver_core::tool::with_admission_holds(
+            [operation.clone()],
+            self.registry
+                .invoke_with_context_and_evidence(name, args, context, evidence),
+        )
+        .await;
         if let Some(observer) = self.activity_observer.as_ref() {
             let refusal_code = result
                 .structured_content

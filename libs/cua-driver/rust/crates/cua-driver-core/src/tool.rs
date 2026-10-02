@@ -76,33 +76,52 @@ fn desktop_action_coordinator() -> &'static Arc<tokio::sync::Mutex<()>> {
     COORDINATOR.get_or_init(|| Arc::new(tokio::sync::Mutex::new(())))
 }
 
-/// PROTOTYPE (RFC #3796 slice A): shared ownership of the desktop action permit.
+/// Shared ownership of one RAII admission guard (RFC #3796 slice A).
 ///
-/// Dispatch used to hold the coordinator guard in the async frame, so dropping a cancelled caller
-/// released capacity while a `spawn_blocking` native closure was still running. The permit is now
-/// reference-counted and exposed to the invocation; native work that must outlive its caller moves a
-/// clone into its closure (see [`spawn_blocking_owned`]) so capacity is reusable only after native exit.
+/// Dispatch used to hold its guards in the async frame, so dropping a cancelled caller released them
+/// while a `spawn_blocking` native closure was still running. A guard wrapped in an `AdmissionHold` is
+/// reference-counted: the frame keeps one reference and drops it where it always did, and native work
+/// that must outlive its caller moves clones of every hold of the current call into its closure (see
+/// [`spawn_blocking_owned`]), so the guard is released only after native exit. Holds are the existing
+/// guards themselves (the SDK lifecycle read guard, the session dispatch guard, the desktop action
+/// permit); there is no registry.
 #[derive(Clone)]
-pub struct AdmissionHold(#[allow(dead_code)] Arc<tokio::sync::OwnedMutexGuard<()>>);
+pub struct AdmissionHold(#[allow(dead_code)] Arc<dyn std::any::Any + Send + Sync>);
+
+impl AdmissionHold {
+    pub fn new(guard: impl std::any::Any + Send + Sync) -> Self {
+        Self(Arc::new(guard))
+    }
+}
 
 tokio::task_local! {
-    static ADMISSION_HOLD: AdmissionHold;
+    static ADMISSION_HOLDS: Vec<AdmissionHold>;
 }
 
-/// The admission permit of the current dispatch, if it holds one.
-pub fn current_admission_hold() -> Option<AdmissionHold> {
-    ADMISSION_HOLD.try_with(Clone::clone).ok()
+/// Every admission hold of the current call, outermost first.
+pub fn current_admission_holds() -> Vec<AdmissionHold> {
+    ADMISSION_HOLDS.try_with(Clone::clone).unwrap_or_default()
 }
 
-/// `tokio::task::spawn_blocking` whose closure keeps the current call's admission permit until it returns.
+/// Run `future` with `holds` added to the current call's admission holds.
+pub async fn with_admission_holds<F: std::future::Future>(
+    holds: impl IntoIterator<Item = AdmissionHold>,
+    future: F,
+) -> F::Output {
+    let mut all = current_admission_holds();
+    all.extend(holds);
+    ADMISSION_HOLDS.scope(all, future).await
+}
+
+/// `tokio::task::spawn_blocking` whose closure keeps the current call's admission holds until it returns.
 pub async fn spawn_blocking_owned<F, R>(work: F) -> Result<R, tokio::task::JoinError>
 where
     F: FnOnce() -> R + Send + 'static,
     R: Send + 'static,
 {
-    let hold = current_admission_hold();
+    let holds = current_admission_holds();
     tokio::task::spawn_blocking(move || {
-        let _hold = hold;
+        let _holds = holds;
         work()
     })
     .await
@@ -1748,7 +1767,9 @@ impl ToolRegistry {
                     ),
                 };
                 match admitted {
-                    Ok(guard) => Some(guard),
+                    // Owned native work keeps the session in flight until it
+                    // exits, so end_session reports cleanup pending, not done.
+                    Ok(guard) => Some(AdmissionHold::new(guard)),
                     Err(message) => {
                         return protected_refusal("session_ended", message);
                     }
@@ -1794,12 +1815,12 @@ impl ToolRegistry {
             // which the foreground target can lose keyboard eligibility
             // between the fixture's focus proof and SendInput. Contended
             // runtimes still wait and serialize through the same mutex.
-            Some(AdmissionHold(Arc::new(
+            Some(AdmissionHold::new(
                 match coordinator.clone().try_lock_owned() {
                     Ok(guard) => guard,
                     Err(_) => coordinator.lock_owned().await,
                 },
-            )))
+            ))
         } else {
             None
         };
@@ -1851,20 +1872,17 @@ impl ToolRegistry {
         // Desktop pixels read off a capped get_desktop_state image are mapped
         // back to the uncapped capture before any platform interprets them.
         crate::desktop_capture_scale::map_desktop_args(&mut args);
-        let invocation = tool.invoke(args.clone());
-        let mut result = match _desktop_action.clone() {
-            Some(hold) => {
-                crate::recording::scope_dispatch_click_capture(
-                    pending_turn.as_ref(),
-                    ADMISSION_HOLD.scope(hold, invocation),
-                )
-                .await
-            }
-            None => {
-                crate::recording::scope_dispatch_click_capture(pending_turn.as_ref(), invocation)
-                    .await
-            }
-        };
+        // The frame keeps its own references and drops them below at the
+        // usual points; owned native work keeps clones until it exits.
+        let holds: Vec<AdmissionHold> = lifecycle_dispatch
+            .iter()
+            .chain(_desktop_action.iter())
+            .cloned()
+            .collect();
+        let invocation = with_admission_holds(holds, tool.invoke(args.clone()));
+        let mut result =
+            crate::recording::scope_dispatch_click_capture(pending_turn.as_ref(), invocation)
+                .await;
         match resolved_name {
             "get_desktop_state" if result.is_error != Some(true) => {
                 crate::desktop_capture_scale::record_desktop_state(
