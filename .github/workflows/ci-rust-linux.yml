@@ -61,7 +61,7 @@ env:
 jobs:
   pacman:
     name: Arch native pacman updates
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest
     container: archlinux:base-devel
     timeout-minutes: 30
     defaults:
@@ -116,7 +116,7 @@ jobs:
 
   unit:
     name: Rust Linux unit and compile
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest
     timeout-minutes: 30
     env:
       # Dozens of debug test binaries: line tables keep backtraces useful
