@@ -13,8 +13,16 @@
   "headRefOid": "a0bca744067d04f05904319d3d919be30c336556",
   "state": "OPEN", "mergedAt": null, "isDraft": false, "updatedAt": "2026-10-01T17:03:24Z",
   "baseRefOid_reported": "242667fa99ae6ffe8067ee1a76e094ff50ed6d43",
-  "use_in_this_lane": "none functional: arms A and B_proj run without --guarded-completion; the jev-use tree at the tested source contains the PR's flag-gated code"
+  "use_in_this_lane": "none functional: arms A and B_proj run without --guarded-completion; the jev-use tree at the tested source contains the PR's flag-gated code",
+  "re_read_at_fix_round": "2026-10-02T08:01:56Z, same command: head a0bca744067d04f05904319d3d919be30c336556, OPEN, mergedAt null, not draft, updatedAt 2026-10-01T17:03:24Z (unchanged)"
  },
+ "harness_by_block": {
+  "note": "Each block runs one Python process (run_block.sh execs run_critpath.py once), so the harness code is the code on disk when the block started. Blocks main2 and controls2 predate the manifest harness_sha256 field; their mapping is inferred from commit times and the shape of the raw records.",
+  "i107-ab-main2": {"harness_commit": "9405bc6fc", "evidence": "block 06:41:02-06:51:17Z; a23e7c6bb (which changed run_critpath.py, file mtime 06:42Z) was written after the process had loaded the script; main2 stale_ref records carry the 9405bc6fc stale_envelope shape (no error code)"},
+  "i107-ab-controls2": {"harness_commit": "a23e7c6bb", "evidence": "block 07:00:02-07:02:05Z, after a23e7c6bb; stale_ref records carry the error code"},
+  "i107-ab-controls3": {"harness_commit": "5f9e1c1ab", "evidence": "recorded by the block itself: session-env harness_commit 5f9e1c1ab plus run-manifest harness_sha256 per harness file; verify_artifacts.py check 13 compares each sha256 with the blob at that commit. session-env shows harness_dirty_files 2: verify_artifacts.py and provenance.json were being edited (neither is loaded by the runner)"}
+ },
+ "driver_telemetry": "The Driver's product telemetry is on by default. Each private session starts with a fresh HOME, so every session log shows the Driver's first-run telemetry notice, and its lifecycle worker may have sent content-free events to the vendor's analytics endpoint. The runner's '0 non-loopback connects' guard covers the runner process only, not the Driver. This is a project-wide condition (r2 SETUP) and is identical across arms; it is not a provider request.",
  "tested_source": {
   "branch": "exp/i107-ab-20261002 (worktree from be68363bc on exp/i107-map-20261002)",
   "driver_build_commit": "092b065d5e1f6e0b9ba3abe4f5fbcd37c339303b",

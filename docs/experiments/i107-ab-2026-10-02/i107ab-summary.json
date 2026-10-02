@@ -1,4 +1,55 @@
 {
+ "blocked_and_not_run_cells": [
+  {
+   "arms": "A,B",
+   "cell": "A-vs-B read cost",
+   "condition": "all",
+   "reason": "no producer-side scoped fresh read is expressible through the existing contract (map section 4); B_proj acquires what A acquires (REAL); making B real needs a result-equal Driver optimisation or a #73/#74 contract change, neither authorised",
+   "status": "BLOCKED"
+  },
+  {
+   "arms": "A,B_proj",
+   "cell": "live provider",
+   "condition": "all",
+   "reason": "no TypeSafe request in this track (budget reserved for R2-10); every timing row uses choose_mock_for_task",
+   "status": "BLOCKED"
+  },
+  {
+   "arms": "A,B_proj",
+   "cell": "cohort K2",
+   "condition": "all",
+   "reason": "map PREREG lists K2 as secondary; this lane ran K1 only",
+   "status": "NOT_RUN"
+  },
+  {
+   "arms": "A,B_proj",
+   "cell": "cohort K3",
+   "condition": "all",
+   "reason": "NOT_RUN in the map PREREG",
+   "status": "NOT_RUN"
+  },
+  {
+   "arms": "A,B_proj",
+   "cell": "cohort K4",
+   "condition": "all",
+   "reason": "NOT_RUN in the map PREREG",
+   "status": "NOT_RUN"
+  },
+  {
+   "arms": "A",
+   "cell": "W-idle-quiet / W-idle-churn",
+   "condition": "idle",
+   "reason": "idle conditions belong to lane CSHADOW (CMP-C-idle)",
+   "status": "NOT_RUN"
+  },
+  {
+   "arms": "E",
+   "cell": "arm E",
+   "condition": "all",
+   "reason": "NOT_RUN in the map PREREG",
+   "status": "NOT_RUN"
+  }
+ ],
  "cells": [
   {
    "arms": "A,B_proj",
@@ -63,6 +114,22 @@
    "planned_trials": 10,
    "status": "RAN",
    "trials": 20
+  },
+  {
+   "arms": "A,B_proj",
+   "cell": "controls DC01",
+   "condition": "W-quiet",
+   "planned_trials": 10,
+   "status": "RAN",
+   "trials": 10
+  },
+  {
+   "arms": "A,B_proj",
+   "cell": "controls DC05a",
+   "condition": "W-quiet",
+   "planned_trials": 10,
+   "status": "RAN",
+   "trials": 10
   }
  ],
  "cmp_ab": {
@@ -1191,9 +1258,71 @@
   }
  },
  "controls": {
+  "DC01|A": {
+   "applied": 5,
+   "n": 5,
+   "op_ok": 5,
+   "op_ok_unrecorded": 0,
+   "outcomes": {
+    "abstained": 0,
+    "budget_exhausted": 0,
+    "error": 0,
+    "n": 5,
+    "other": 0,
+    "refuted": 0,
+    "timeout": 0,
+    "unknown": 0,
+    "verified": 5
+   },
+   "retyped": 5,
+   "stale_code_missing": 0,
+   "stale_codes": [],
+   "stale_dispatch_marks": 0,
+   "stale_effects": [],
+   "step2_field_value_is_token": 0,
+   "step2_submit_ref_changed": 5,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "3": 5
+   },
+   "submits": 5,
+   "wrong_target_submits": 0
+  },
+  "DC01|B_proj": {
+   "applied": 5,
+   "n": 5,
+   "op_ok": 5,
+   "op_ok_unrecorded": 0,
+   "outcomes": {
+    "abstained": 0,
+    "budget_exhausted": 0,
+    "error": 0,
+    "n": 5,
+    "other": 0,
+    "refuted": 0,
+    "timeout": 0,
+    "unknown": 0,
+    "verified": 5
+   },
+   "retyped": 5,
+   "stale_code_missing": 0,
+   "stale_codes": [],
+   "stale_dispatch_marks": 0,
+   "stale_effects": [],
+   "step2_field_value_is_token": 0,
+   "step2_submit_ref_changed": 5,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "3": 5
+   },
+   "submits": 5,
+   "wrong_target_submits": 0
+  },
   "DC03|A": {
    "applied": 10,
    "n": 10,
+   "op_ok": 0,
+   "op_ok_unrecorded": 10,
    "outcomes": {
     "abstained": 0,
     "budget_exhausted": 0,
@@ -1205,16 +1334,25 @@
     "unknown": 0,
     "verified": 10
    },
+   "retyped": 0,
    "stale_code_missing": 0,
    "stale_codes": [],
    "stale_dispatch_marks": 0,
    "stale_effects": [],
+   "step2_field_value_is_token": 10,
+   "step2_submit_ref_changed": 0,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "2": 10
+   },
    "submits": 10,
    "wrong_target_submits": 10
   },
   "DC03|B_proj": {
    "applied": 10,
    "n": 10,
+   "op_ok": 0,
+   "op_ok_unrecorded": 10,
    "outcomes": {
     "abstained": 0,
     "budget_exhausted": 0,
@@ -1226,16 +1364,25 @@
     "unknown": 0,
     "verified": 10
    },
+   "retyped": 0,
    "stale_code_missing": 0,
    "stale_codes": [],
    "stale_dispatch_marks": 0,
    "stale_effects": [],
+   "step2_field_value_is_token": 10,
+   "step2_submit_ref_changed": 0,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "2": 10
+   },
    "submits": 10,
    "wrong_target_submits": 10
   },
   "DC04|A": {
    "applied": 10,
    "n": 10,
+   "op_ok": 0,
+   "op_ok_unrecorded": 10,
    "outcomes": {
     "abstained": 0,
     "budget_exhausted": 10,
@@ -1247,16 +1394,25 @@
     "unknown": 0,
     "verified": 0
    },
+   "retyped": 0,
    "stale_code_missing": 0,
    "stale_codes": [],
    "stale_dispatch_marks": 0,
    "stale_effects": [],
+   "step2_field_value_is_token": 10,
+   "step2_submit_ref_changed": 0,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "4": 10
+   },
    "submits": 0,
    "wrong_target_submits": 0
   },
   "DC04|B_proj": {
    "applied": 10,
    "n": 10,
+   "op_ok": 0,
+   "op_ok_unrecorded": 10,
    "outcomes": {
     "abstained": 0,
     "budget_exhausted": 10,
@@ -1268,16 +1424,85 @@
     "unknown": 0,
     "verified": 0
    },
+   "retyped": 0,
    "stale_code_missing": 0,
    "stale_codes": [],
    "stale_dispatch_marks": 0,
    "stale_effects": [],
+   "step2_field_value_is_token": 10,
+   "step2_submit_ref_changed": 0,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "4": 10
+   },
    "submits": 0,
+   "wrong_target_submits": 0
+  },
+  "DC05a|A": {
+   "applied": 5,
+   "n": 5,
+   "op_ok": 5,
+   "op_ok_unrecorded": 0,
+   "outcomes": {
+    "abstained": 0,
+    "budget_exhausted": 0,
+    "error": 0,
+    "n": 5,
+    "other": 0,
+    "refuted": 0,
+    "timeout": 0,
+    "unknown": 0,
+    "verified": 5
+   },
+   "retyped": 0,
+   "stale_code_missing": 0,
+   "stale_codes": [],
+   "stale_dispatch_marks": 0,
+   "stale_effects": [],
+   "step2_field_value_is_token": 5,
+   "step2_submit_ref_changed": 5,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "2": 5
+   },
+   "submits": 5,
+   "wrong_target_submits": 0
+  },
+  "DC05a|B_proj": {
+   "applied": 5,
+   "n": 5,
+   "op_ok": 5,
+   "op_ok_unrecorded": 0,
+   "outcomes": {
+    "abstained": 0,
+    "budget_exhausted": 0,
+    "error": 0,
+    "n": 5,
+    "other": 0,
+    "refuted": 0,
+    "timeout": 0,
+    "unknown": 0,
+    "verified": 5
+   },
+   "retyped": 0,
+   "stale_code_missing": 0,
+   "stale_codes": [],
+   "stale_dispatch_marks": 0,
+   "stale_effects": [],
+   "step2_field_value_is_token": 5,
+   "step2_submit_ref_changed": 5,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "2": 5
+   },
+   "submits": 5,
    "wrong_target_submits": 0
   },
   "stale_ref|A": {
    "applied": 10,
    "n": 10,
+   "op_ok": 0,
+   "op_ok_unrecorded": 0,
    "outcomes": {
     "abstained": 0,
     "budget_exhausted": 0,
@@ -1289,6 +1514,7 @@
     "unknown": 10,
     "verified": 0
    },
+   "retyped": 0,
    "stale_code_missing": 5,
    "stale_codes": [
     "browser_ref_stale"
@@ -1297,12 +1523,20 @@
    "stale_effects": [
     "refused"
    ],
+   "step2_field_value_is_token": 10,
+   "step2_submit_ref_changed": 0,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "2": 10
+   },
    "submits": 0,
    "wrong_target_submits": 0
   },
   "stale_ref|B_proj": {
    "applied": 10,
    "n": 10,
+   "op_ok": 0,
+   "op_ok_unrecorded": 0,
    "outcomes": {
     "abstained": 0,
     "budget_exhausted": 0,
@@ -1314,6 +1548,7 @@
     "unknown": 10,
     "verified": 0
    },
+   "retyped": 0,
    "stale_code_missing": 5,
    "stale_codes": [
     "browser_ref_stale"
@@ -1322,6 +1557,12 @@
    "stale_effects": [
     "refused"
    ],
+   "step2_field_value_is_token": 10,
+   "step2_submit_ref_changed": 0,
+   "step2_submit_ref_same": 0,
+   "step_counts": {
+    "2": 10
+   },
    "submits": 0,
    "wrong_target_submits": 0
   }
@@ -1533,6 +1774,28 @@
    "unknown": 5,
    "verified": 5
   },
+  "controls3|W-quiet|A": {
+   "abstained": 0,
+   "budget_exhausted": 0,
+   "error": 0,
+   "n": 10,
+   "other": 0,
+   "refuted": 0,
+   "timeout": 0,
+   "unknown": 0,
+   "verified": 10
+  },
+  "controls3|W-quiet|B_proj": {
+   "abstained": 0,
+   "budget_exhausted": 0,
+   "error": 0,
+   "n": 10,
+   "other": 0,
+   "refuted": 0,
+   "timeout": 0,
+   "unknown": 0,
+   "verified": 10
+  },
   "controls|W-quiet|A": {
    "abstained": 0,
    "budget_exhausted": 5,
@@ -1611,6 +1874,301 @@
    "verified": 30
   }
  },
+ "dependency_control_coverage": {
+  "DC01": {
+   "A": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 5,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 5
+    },
+    "status": "RAN (this lane)",
+    "trials": 5
+   },
+   "B_proj": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 5,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 5
+    },
+    "status": "RAN (this lane)",
+    "trials": 5
+   },
+   "note": "disclosed extension: the lane PREREG omitted DC01 for A/B_proj although the map PREREG names both arms; lane D also ran A"
+  },
+  "DC02": {
+   "A": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 30,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 30
+    },
+    "status": "RAN (this lane)",
+    "trials": 30
+   },
+   "B_proj": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 30,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 30
+    },
+    "status": "RAN (this lane)",
+    "trials": 30
+   },
+   "note": "DC02 is the CMP-AB W-churn condition (unrelated 500-node churn at 20 Hz throughout); outcome and candidate equivalence are the DC02 readout"
+  },
+  "DC03": {
+   "A": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 10,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 10
+    },
+    "status": "RAN (this lane)",
+    "trials": 10
+   },
+   "B_proj": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 10,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 10
+    },
+    "status": "RAN (this lane)",
+    "trials": 10
+   }
+  },
+  "DC04": {
+   "A": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 10,
+     "error": 0,
+     "n": 10,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 0
+    },
+    "status": "RAN (this lane)",
+    "trials": 10
+   },
+   "B_proj": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 10,
+     "error": 0,
+     "n": 10,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 0
+    },
+    "status": "RAN (this lane)",
+    "trials": 10
+   }
+  },
+  "DC05a": {
+   "A": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 5,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 5
+    },
+    "status": "RAN (this lane)",
+    "trials": 5
+   },
+   "B_proj": {
+    "outcomes": {
+     "abstained": 0,
+     "budget_exhausted": 0,
+     "error": 0,
+     "n": 5,
+     "other": 0,
+     "refuted": 0,
+     "timeout": 0,
+     "unknown": 0,
+     "verified": 5
+    },
+    "status": "RAN (this lane)",
+    "trials": 5
+   },
+   "note": "disclosed extension, as DC01; lane D also ran A"
+  },
+  "DC05b": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC06": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC07": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   },
+   "note": "this lane's stale_ref control (browser_navigate to the same URL, then the old ref) is related but is not DC07 (location.replace)"
+  },
+  "DC08": {
+   "A": {
+    "status": "NOT_RUN (map: no admitted iframe fixture)"
+   },
+   "B_proj": {
+    "status": "NOT_RUN (map)"
+   }
+  },
+  "DC09": {
+   "A": {
+    "status": "NOT_RUN (map: no authorized tab-creation path)"
+   },
+   "B_proj": {
+    "status": "NOT_RUN (map)"
+   }
+  },
+  "DC10": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC11": {
+   "A": {
+    "status": "NOT_RUN here; OWNED: lane CSHADOW (arms A and C_shadow_audit on its own binary), BLOCKED there with 0 REAL trials"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   },
+   "note": "lane D's PREREG points DC11 to 'lane CSHADOW/AB'; this lane's PREREG did not register it and its renderer-kill descent proof is CSHADOW's registered procedure, so arm A DC11 has no REAL result in any lane yet"
+  },
+  "DC12": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC13": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC14": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC15": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC16": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC17": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC18": {
+   "A": {
+    "status": "NOT_ASSIGNED (C_shadow_audit only)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC19": {
+   "A": {
+    "status": "COVERED per map: check-to-dispatch by DC01 (this lane, lane D), DC05b and DC07 (lane D); bootstrap/reconciliation parts are mirror-only (lane CSHADOW, BLOCKED)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  },
+  "DC20": {
+   "A": {
+    "status": "OWNED: lane D, arm A on the same binary cua-driver-i107-092b065d5 (kvnloo/cua exp/i107-d-20261002, packet 6d1c60926; not re-verified here)"
+   },
+   "B_proj": {
+    "status": "NOT_ASSIGNED (the map PREREG's arms for this control exclude B_proj)"
+   }
+  }
+ },
  "distortion": {
   "ci95": [
    -35.916,
@@ -1656,6 +2214,19 @@
    "lock_label": "i107-ab-controls2",
    "non_loopback_connects": 0,
    "plan": "controls2",
+   "preflight_ok": true,
+   "preflight_reasons": [
+    "ok",
+    "ok",
+    "missing",
+    "missing"
+   ],
+   "status": "ran"
+  },
+  "run-manifest-controls3.json": {
+   "lock_label": "i107-ab-controls3",
+   "non_loopback_connects": 0,
+   "plan": "controls3",
    "preflight_ok": true,
    "preflight_reasons": [
     "ok",
@@ -1742,6 +2313,6 @@
  },
  "schema": "cua.i107.ab.summary.v1",
  "status": "RAN",
- "trials_attempted": 269,
- "trials_measured": 265
+ "trials_attempted": 289,
+ "trials_measured": 285
 }

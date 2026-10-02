@@ -1,0 +1,66 @@
+...E.........F.EF..............EE....E........
+======================================================================
+ERROR: test_controls3_trials_are_summarized_with_coverage_and_static_cells (test_i107ab.AnalyzeTests.test_controls3_trials_are_summarized_with_coverage_and_static_cells)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 640, in test_controls3_trials_are_summarized_with_coverage_and_static_cells
+    c = summary["controls"]["DC01|A"]
+        ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'DC01|A'
+
+======================================================================
+ERROR: test_control_ops_dc01_and_dc05a_self_check (test_i107ab.FixtureTests.test_control_ops_dc01_and_dc05a_self_check)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 187, in test_control_ops_dc01_and_dc05a_self_check
+    self.assertIn(".value='changed-by-page'", F.CONTROL_OPS["DC01"])
+                                              ~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'DC01'
+
+======================================================================
+ERROR: test_controls3_plan_runs_dc01_and_dc05a_on_both_arms (test_i107ab.RunnerTests.test_controls3_plan_runs_dc01_and_dc05a_on_both_arms)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 394, in test_controls3_plan_runs_dc01_and_dc05a_on_both_arms
+    self.assertIn("controls3", R.PLANS)
+                               ^^^^^^^
+AttributeError: module 'run_critpath' has no attribute 'PLANS'
+
+======================================================================
+ERROR: test_harness_hashes_cover_runner_files (test_i107ab.RunnerTests.test_harness_hashes_cover_runner_files)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 422, in test_harness_hashes_cover_runner_files
+    h = self.R.harness_hashes()
+        ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'run_critpath' has no attribute 'harness_hashes'
+
+======================================================================
+ERROR: test_submit_ref_changed_reports_identity_without_ref_values (test_i107ab.RunnerTests.test_submit_ref_changed_reports_identity_without_ref_values)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 416, in test_submit_ref_changed_reports_identity_without_ref_values
+    self.assertIsNone(R.submit_ref_changed(None, s1))
+                      ^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'run_critpath' has no attribute 'submit_ref_changed'
+
+======================================================================
+FAIL: test_control_bus_records_op_result_from_ack (test_i107ab.FixtureTests.test_control_bus_records_op_result_from_ack)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 209, in test_control_bus_records_op_result_from_ack
+    self.assertTrue(all(bus.wait_ack(i, timeout=0.1) for i in ids))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_control_script_acks_with_op_result (test_i107ab.FixtureTests.test_control_script_acks_with_op_result)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/docs/experiments/i107-ab-2026-10-02/test_i107ab.py", line 200, in test_control_script_acks_with_op_result
+    self.assertIn("ok=1", js)
+AssertionError: 'ok=1' not found in '<script>(function(){var OPS={"DC03": "var f=document.querySelector(\'form\');var o=f.querySelector(\'button\');var b=document.createElement(\'button\');b.type=\'submit\';b.name=\'dc_submitter\';b.setAttribute(\'value\',\'competitor\');b.textContent=\'Submit\';f.insertBefore(b,o);", "DC04": "document.querySelector(\'form button\').remove();"};var es=new EventSource(\'/events\');es.onmessage=function(m){var op=JSON.parse(m.data);try{(new Function(OPS[op.op]))();}catch(e){}fetch(\'/ack\',{method:\'POST\',body:op.id});};})();</script>'
+
+----------------------------------------------------------------------
+Ran 46 tests in 2.119s
+
+FAILED (failures=2, errors=5)

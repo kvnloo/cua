@@ -4,7 +4,8 @@
 
 For each run directory: run-manifest-*.json and session-env-*.txt are copied, trials/ is bundled
 as raw/trials-<run>.tar.gz, and session.out is copied with local paths replaced. The quiet-lane
-receipts whose label starts with "i107-ab" are copied to raw/lock-receipts.jsonl.
+receipts whose label starts with "i107-ab" (excluding verifier labels) are copied to
+raw/lock-receipts.jsonl.
 """
 
 from __future__ import annotations
@@ -45,7 +46,8 @@ def main() -> None:
                     info.size, info.mtime, info.mode = len(data), 0, 0o644
                     tar.addfile(info, io.BytesIO(data))
     rows = [json.loads(x) for x in ledger.read_text().splitlines() if x.strip()]
-    mine = [r for r in rows if str(r.get("label", "")).startswith("i107-ab")]
+    # Lane receipts only: a verifier's own quiet-lock use (label containing "verif") is not a lane block.
+    mine = [r for r in rows if str(r.get("label", "")).startswith("i107-ab") and "verif" not in str(r.get("label"))]
     (raw / "lock-receipts.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in mine))
     print(f"collected {names}; {len(mine)} lock receipts")
 

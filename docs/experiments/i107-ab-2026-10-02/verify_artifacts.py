@@ -13,8 +13,13 @@ Checks:
   7. Default-off check (if run): 5/5 verified, trace variable unset, no trace file.
   8. Stale-ref controls (if run): refused with browser_ref_stale, 0 dispatch marks, 0 submits.
   9. No file under libs/ changed on this lane's branch (git, if available).
- 10. Privacy: no absolute local path, temp path, user name or host name in any packet file.
+ 10. Privacy: no absolute local path, temp path, user name or host name in any packet file, and no
+     token, key, private-key block, bearer/JWT or email-address pattern (SECRET_PATTERNS).
  11. Every ledger row carries an evidence label or a cell status.
+ 12. DC01/DC05a (if run): >=5 per arm on A and B_proj, every op acked with its self-check passed;
+     the DC01-DC20 coverage table covers both arms.
+ 13. Every run manifest that records harness_sha256 matches the harness blobs at the commit its
+     session-env file names.
 """
 
 from __future__ import annotations
@@ -60,7 +65,41 @@ def headlines(summary: dict) -> list[str]:
             out.append(f"{cond}: T_oracle B_proj - A median {t['median']} ms")
     for cond, d in sorted(summary.get("decomposition_A", {}).items()):
         out.append(f"{cond}: A T_oracle median {d['T_oracle_median_ms']} ms, coverage min {d['coverage_min']}")
+    for key, c in sorted(summary.get("controls", {}).items()):
+        o = c["outcomes"]
+        out.append(f"control {key}: n {c['n']}, verified {o['verified']}, budget_exhausted {o['budget_exhausted']}, "
+                   f"other outcomes {o['n'] - o['verified'] - o['budget_exhausted']}, submits {c['submits']}, "
+                   f"wrong-target {c['wrong_target_submits']}")
     return out
+
+
+# Built from parts so this file does not match itself.
+SECRET_PATTERNS = [
+    ("openai/anthropic-style key", re.compile("sk" + r"-[A-Za-z0-9_-]{20,}")),
+    ("github token", re.compile("gh" + r"[pousr]_[A-Za-z0-9]{30,}|github" + r"_pat_[A-Za-z0-9_]{20,}")),
+    ("aws access key", re.compile("AK" + r"IA[0-9A-Z]{16}")),
+    ("google api key", re.compile("AI" + r"za[0-9A-Za-z_-]{35}")),
+    ("slack token", re.compile("xo" + r"x[baprs]-[A-Za-z0-9-]{10,}")),
+    ("private key block", re.compile("-----BEGIN [A-Z ]*PRIV" + "ATE KEY-----")),
+    ("bearer token", re.compile("Bear" + r"er [A-Za-z0-9._~+/-]{20,}")),
+    ("jwt", re.compile("ey" + r"J[A-Za-z0-9_-]{10,}\.ey" + r"J[A-Za-z0-9_-]{10,}\.")),
+    ("email address", re.compile(r"[A-Za-z0-9._%+-]+@(?!anthropic\.com)[A-Za-z0-9.-]+\.(?:com|org|net|io|dev)\b")),
+]
+
+
+def _packet_texts():
+    import tarfile
+    for path in sorted(HERE.rglob("*")):
+        if not path.is_file() or "__pycache__" in path.parts:
+            continue
+        rel = str(path.relative_to(HERE))
+        if path.name.endswith(".tar.gz"):
+            with tarfile.open(path, "r:gz") as tar:
+                for member in tar.getmembers():
+                    if member.isfile():
+                        yield f"{rel}:{member.name}", tar.extractfile(member).read().decode("utf-8", "replace")
+        else:
+            yield rel, path.read_bytes().decode("utf-8", "replace")
 
 
 def utc(s: str) -> datetime.datetime:
@@ -169,9 +208,45 @@ def main() -> None:
                 offenders.append(str(path.relative_to(HERE)))
                 break
     check(not offenders, f"10 privacy scan over every packet file (offenders: {offenders})")
+    secrets = []
+    for path, text in _packet_texts():
+        hits = [name for name, rx in SECRET_PATTERNS if rx.search(text)]
+        if hits:
+            secrets.append(f"{path}: {hits}")
+    check(not secrets, f"10 secret scan ({len(SECRET_PATTERNS)} token/key/email patterns) over every packet file (offenders: {secrets})")
+
+    new = {k: v for k, v in summary["controls"].items() if k.split("|")[0] in ("DC01", "DC05a")}
+    if new:
+        check(all(v["n"] >= 5 and v["applied"] == v["n"] and v["op_ok"] == v["n"] for v in new.values())
+              and sorted(new) == ["DC01|A", "DC01|B_proj", "DC05a|A", "DC05a|B_proj"],
+              f"12 DC01/DC05a on A and B_proj: >=5 each, every op acked and self-checked ({ {k: v['n'] for k, v in new.items()} })")
+    else:
+        print("SKIP 12 DC01/DC05a controls not run")
+    cov = summary.get("dependency_control_coverage") or {}
+    want = {f"DC{i:02d}" for i in range(1, 21)} - {"DC05"} | {"DC05a", "DC05b"}
+    check(set(cov) == want and all(set(v) >= {"A", "B_proj"} for v in cov.values()),
+          f"12 DC01-DC20 coverage table present for arms A and B_proj ({len(cov)} controls)")
 
     bad = [r for r in ledger if not (r.get("evidence") or r.get("status"))]
     check(not bad, f"11 every ledger row carries an evidence label or cell status ({len(ledger)} rows)")
+
+    for name, m in manifests.items():
+        hs = m.get("harness_sha256")
+        if not hs:
+            print(f"SKIP 13 {name}: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)")
+            continue
+        env = next(iter(raw.glob(f"*-session-env-{m.get('plan_kind')}.txt")), None)
+        commit = None
+        if env is not None:
+            commit = next((ln.split(":", 1)[1].strip() for ln in env.read_text().splitlines() if ln.startswith("harness_commit:")), None)
+        try:
+            import hashlib
+            same = commit is not None and all(
+                hashlib.sha256(subprocess.run(["git", "show", f"{commit}:docs/experiments/{HERE.name}/{f}"], cwd=HERE,
+                                              capture_output=True, check=True).stdout).hexdigest() == h for f, h in hs.items())
+            check(same, f"13 {name}: harness files equal the blobs at the recorded harness commit {commit}")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print(f"SKIP 13 {name}: git not available")
 
     print(f"\n{len(FAIL)} failure(s)")
     sys.exit(1 if FAIL else 0)
