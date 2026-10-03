@@ -99,24 +99,34 @@ def visual_decision_state(visual: VisualObservation | None) -> dict[str, Any] | 
 GOAL = FIXTURE_GOAL
 
 
+def runner_verified_state(task: Task, sources: TaskSources) -> dict[str, Any]:
+    """The secret-redacted page state the runner verified for this step.
+
+    ``form`` is the task's state summary, which states what the runner verified
+    from its candidate sources, so the model does not have to infer it from the
+    outline. ``page`` and ``outline`` come from the same page snapshot. Every
+    secret task parameter is replaced everywhere.
+    """
+    snapshot = sources.require_page().snapshot
+    return {
+        "page": task.redact(snapshot.get("page")),
+        "form": task.state_summary(sources),
+        "outline": task.redact(snapshot.get("outline")),
+    }
+
+
 def task_decision_state(
     task: Task, sources: TaskSources, history: list[dict[str, Any]]
 ) -> dict[str, Any]:
     """Build the compact, deterministic, secret-redacted state sent to Jev.
 
-    ``form`` is the task's state summary, which states what the runner verified
-    from its candidate sources, so the model does not have to infer it from the
-    outline. Every secret task parameter is replaced everywhere, including the
-    outline and visual text.
+    The observation is ``runner_verified_state`` plus the redacted visual parse.
     """
-    snapshot = sources.require_page().snapshot
     visual = sources.visual.observation if sources.visual is not None else None
     return {
         "goal": task.goal,
         "observation": {
-            "page": task.redact(snapshot.get("page")),
-            "form": task.state_summary(sources),
-            "outline": task.redact(snapshot.get("outline")),
+            **runner_verified_state(task, sources),
             "visual": task.redact(visual_decision_state(visual)),
         },
         "history": [dict(item) for item in history],

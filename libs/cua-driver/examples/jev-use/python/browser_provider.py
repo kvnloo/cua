@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 from choose_action import REQUEST_SCHEMA, validate_request
 from decision_models import DecisionRequest, TypeSafeDecisionModel, choose
-from jev_adapter import choose_mock_for_task, visual_decision_state
+from jev_adapter import choose_mock_for_task, runner_verified_state, visual_decision_state
 from s1_service import choose_s1_service
 from tasks import Task, TaskSources
 
@@ -82,10 +82,13 @@ def choose_browser_provider(
         return choice, confidence, probabilities, backend
 
     decision_request = DecisionRequest.from_validated(request)
+    # The bounded request carries no page state, so TypeSafe also receives the
+    # runner-verified page/form/outline state the pre-parity runner sent.
+    runner_state = runner_verified_state(task, sources)
     from typesafe_sdk import TypeSafeClient
 
     with TypeSafeClient() as client:
-        result = choose(TypeSafeDecisionModel(client), decision_request)
+        result = choose(TypeSafeDecisionModel(client, runner_state), decision_request)
     if result.kind == "error":
         raise RuntimeError(f"{backend} decision failed")
     return (

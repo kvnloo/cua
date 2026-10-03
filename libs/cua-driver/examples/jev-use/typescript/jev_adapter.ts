@@ -108,24 +108,37 @@ export function visualDecisionState(visual?: VisualObservation) {
 export const GOAL = FIXTURE_GOAL;
 
 /**
- * Build the compact, deterministic, secret-redacted state sent to Jev. `form`
- * is the task's state summary, which states what the runner verified from its
+ * The secret-redacted page state the runner verified for this step. `form` is
+ * the task's state summary, which states what the runner verified from its
  * candidate sources, so the model does not have to infer it from the outline.
- * Every secret task parameter is replaced everywhere, including outline and
- * visual text.
+ * `page` and `outline` come from the same page snapshot. Every secret task
+ * parameter is replaced everywhere.
+ */
+export function runnerVerifiedState(task: Task, sources: TaskSources) {
+  const snapshot = requirePage(sources).snapshot;
+  return {
+    page: task.redact(snapshot.page ?? null),
+    form: task.stateSummary(sources),
+    outline: task.redact(snapshot.outline ?? '') as string,
+  };
+}
+
+/**
+ * Build the compact, deterministic, secret-redacted state sent to Jev: the
+ * runnerVerifiedState plus the redacted visual parse.
  */
 export function taskDecisionState(
   task: Task,
   sources: TaskSources,
   history: readonly HistoryEntry[]
 ) {
-  const snapshot = requirePage(sources).snapshot;
+  const verified = runnerVerifiedState(task, sources);
   return {
     goal: task.goal,
     observation: {
-      page: JSON.stringify(task.redact(snapshot.page ?? null)),
-      form: JSON.stringify(task.stateSummary(sources)),
-      outline: task.redact(snapshot.outline ?? '') as string,
+      page: JSON.stringify(verified.page),
+      form: JSON.stringify(verified.form),
+      outline: verified.outline,
       visual: JSON.stringify(task.redact(visualDecisionState(sources.visual?.observation))),
     },
     history: JSON.stringify(history),

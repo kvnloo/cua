@@ -117,6 +117,56 @@ class BrowserProviderTest(unittest.TestCase):
                 self.assertEqual(backend, "typesafe")
         self.assertEqual(choose_model.call_count, 2)
 
+    def test_typesafe_request_restores_runner_verified_page_state(self):
+        token = "secret-proof-token"
+        task = FixtureFormTask(token)
+        snapshot = {
+            "target_id": "target",
+            "tab_id": "tab",
+            "capture_id": "browser-capture-1",
+            "page": {"title": "Fixture", "url": "http://127.0.0.1:8765/"},
+            "outline": f'textbox "verification value" value="{token}"\nbutton "Submit"',
+            "refs": [
+                {"role": "textbox", "name": "verification value", "ref": "p1:0", "value": ""},
+                {"role": "button", "name": "Submit", "ref": "p1:1"},
+            ],
+        }
+        sources = fixture_sources(snapshot)
+        candidates = task.candidates(sources)
+        sent: list[dict] = []
+
+        class FakeClient:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def system_one(self, **request):
+                sent.append(request)
+                answer = SimpleNamespace(
+                    choice="type-verification-value",
+                    confidence=0.8,
+                    probabilities={"type-verification-value": 0.8, "reobserve": 0.1, "abstain": 0.1},
+                )
+                return SimpleNamespace(choices={"candidate": answer}, model="test-model")
+
+        with patch("typesafe_sdk.TypeSafeClient", return_value=FakeClient()):
+            choice, _, _, backend = choose_browser_provider("typesafe", task, sources, candidates, [])
+        self.assertEqual((choice, backend), ("type-verification-value", "typesafe"))
+        observation = sent[0]["state"]["observation"]
+        # Every bounded-request field is kept ...
+        self.assertEqual(observation["capture_id"], "browser-capture-1")
+        self.assertIn("regions", observation)
+        self.assertIn("history", observation)
+        # ... and the runner-verified state is restored, as the pre-parity runner sent it.
+        self.assertEqual(
+            observation["form"], {"verification_field": "empty", "submit_button": "available"}
+        )
+        self.assertEqual(observation["page"], snapshot["page"])
+        self.assertIn("verification value", observation["outline"])
+        self.assertNotIn(token, json.dumps(sent[0]["state"]))
+
 
 if __name__ == "__main__":
     unittest.main()

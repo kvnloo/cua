@@ -170,14 +170,18 @@ class OptionLimitError(ValueError):
 class TypeSafeDecisionModel:
     name = "typesafe-jev"
 
-    def __init__(self, client: Any) -> None:
+    def __init__(self, client: Any, runner_state: Mapping[str, Any] | None = None) -> None:
+        """``runner_state`` is caller-verified, secret-redacted observation state
+        (for example a browser runner's ``page``/``form``/``outline``) that is
+        added to the request's provider observation."""
         self.client = client
+        self.runner_state = dict(runner_state or {})
 
     def score(self, request: DecisionRequest) -> ModelScores:
         choice = choose_bounded_with_typesafe(
             self.client,
             goal=request.goal,
-            observation=request.provider_observation(),
+            observation={**request.provider_observation(), **self.runner_state},
             criteria=request.criteria,
         )
         if choice.selected_id not in request.criteria:

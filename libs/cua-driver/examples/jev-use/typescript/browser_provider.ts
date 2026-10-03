@@ -11,7 +11,11 @@ import {
   validateRequest,
   type ValidatedRequest,
 } from './choose_action.js';
-import { chooseBoundedWithTypeSafe, chooseMockForTask } from './jev_adapter.js';
+import {
+  chooseBoundedWithTypeSafe,
+  chooseMockForTask,
+  runnerVerifiedState,
+} from './jev_adapter.js';
 import { chooseS1Service } from './s1_service.js';
 import type { Candidate } from './sources.js';
 import type { HistoryEntry, Task, TaskSources } from './tasks.js';
@@ -91,10 +95,12 @@ export async function chooseBrowserProvider(
   const criteria = Object.fromEntries(
     request.candidates.map(({ id, description }) => [id, description])
   );
+  // The bounded request carries no page state, so TypeSafe also receives the
+  // runner-verified page/form/outline state the pre-parity runner sent.
   const result = await chooseBoundedWithTypeSafe(
     new TypeSafeClient(),
     request.goal,
-    providerObservation(request),
+    { ...providerObservation(request), ...runnerVerifiedState(task, sources) },
     criteria
   );
   return {
