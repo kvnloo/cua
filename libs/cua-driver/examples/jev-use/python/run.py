@@ -8,6 +8,7 @@ import time
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.error import URLError
 from urllib.parse import urlsplit
 
 from mcp import ClientSession, StdioServerParameters
@@ -103,8 +104,9 @@ class Driver:
         data = result.structuredContent
         if not isinstance(data, dict):
             raise RuntimeError(f"{name} returned no structured result")
-        if data.get("status") == "refused" or data.get("refusal"):
-            refusal = data.get("refusal")
+        if data.get("effect") == "refused" or data.get("status") == "refused" or data.get("refusal"):
+            # The closed ActionResult replaces legacy status/refusal fields.
+            refusal = data.get("error") if data.get("effect") == "refused" else data.get("refusal")
             code = refusal.get("code") if isinstance(refusal, dict) else None
             # DriverToolError is a RuntimeError, so existing handlers still match.
             raise DriverToolError(
@@ -415,14 +417,29 @@ async def run(args: argparse.Namespace) -> str:
 
                 started = time.perf_counter()
                 phase_started = time.perf_counter()
-                snapshot = await driver.call(
-                    "get_browser_state",
-                    {
-                        "target_id": target_id,
-                        "tab_id": tab_id,
-                        "snapshot_format": "semantic_v2",
-                    },
-                )
+                try:
+                    snapshot = await driver.call(
+                        "get_browser_state",
+                        {
+                            "target_id": target_id,
+                            "tab_id": tab_id,
+                            "snapshot_format": "semantic_v2",
+                        },
+                    )
+                except DriverToolError:
+                    # A failed observation proves neither success nor absence of
+                    # the prior effect. Stop without another action or raw error.
+                    write_event(
+                        log_path,
+                        {
+                            "event": "outcome",
+                            "outcome": "unknown",
+                            "step": step,
+                            "phase": "observation",
+                            "error": "DriverToolError",
+                        },
+                    )
+                    return "unknown"
                 semantic_observe_ms = round((time.perf_counter() - phase_started) * 1000, 2)
                 candidate_phase: dict[str, float] = {}
                 candidates, sources, visual_record = await task_candidates_for_step(
@@ -652,7 +669,25 @@ async def run(args: argparse.Namespace) -> str:
                     return "unknown"
                 if candidate.id in task.completion_candidate_ids:
                     for _ in range(20):
-                        outcome = task.classify(task.read_oracle(), steps=step)
+                        try:
+                            oracle = task.read_oracle()
+                        except URLError as error:
+                            # The completion may have taken effect. An unavailable
+                            # oracle cannot verify it or authorize another submit.
+                            write_event(
+                                log_path,
+                                {
+                                    "event": "outcome",
+                                    "outcome": "unknown",
+                                    "step": step,
+                                    "phase": "verification",
+                                    "error": type(error).__name__,
+                                    "decision_route": decision_route,
+                                    **guarded_record,
+                                },
+                            )
+                            return "unknown"
+                        outcome = task.classify(oracle, steps=step)
                         if outcome in {"verified", "refuted"}:
                             write_event(
                                 log_path, {"event": "outcome", "outcome": outcome}
