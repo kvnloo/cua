@@ -272,6 +272,74 @@ mod tests {
         );
     }
 
+    /// FIX-03 (kvnloo/cua#36): the trajectory recorder's element lookup
+    /// resolves a capture-only publication (trycua/cua PR 4375's
+    /// `publish_capture_for_session`) only for the session that published it.
+    /// The recorder passes the calling session as `_session_id`; without a
+    /// point it never walks AT-SPI, so this runs headless.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recording_element_lookup_resolves_a_capture_publication_only_for_its_session() {
+        use crate::atspi::snapshot::{AtspiSnapshot, Snapshots};
+        use crate::atspi::{AtspiIdentity, AtspiNode};
+        use cua_driver_core::element_token::token_for;
+        use cua_driver_core::snapshot_store::{register_runtime_store, retire_runtime_scope};
+
+        const SCOPE: &str = "fix03-recording-lookup-session";
+        const PID: i64 = 4_242_424;
+        const WINDOW: u64 = 7;
+        let node = AtspiNode {
+            element_index: Some(20),
+            role: "check box".into(),
+            name: Some("I agree".into()),
+            value: None,
+            checked: None,
+            enabled: None,
+            selected: None,
+            description: None,
+            actions: Vec::new(),
+            element_key: 20,
+            identity: Some(AtspiIdentity {
+                bus_name: ":1.1".into(),
+                path: "/node/20".into(),
+                frame_bus_name: ":1.1".into(),
+                frame_path: "/frame".into(),
+            }),
+            depth: 0,
+            parent_element_index: None,
+            in_web_content: false,
+            object_ref: None,
+        };
+        cua_driver_core::tool::with_runtime_scope(SCOPE.into(), || {
+            let store = std::sync::Arc::new(Snapshots::new());
+            register_runtime_store(&store);
+            let (snapshot_id, _) = store
+                .publish_capture_for_session(
+                    PID as i32,
+                    WINDOW,
+                    AtspiSnapshot::from_nodes(&[node]),
+                    Some("rec-A"),
+                    Some(1.0),
+                )
+                .expect("session A publishes a capture");
+            let lookup = |session: &str| {
+                super::element_window_local_xy(
+                    PID,
+                    &serde_json::json!({
+                        "pid": PID,
+                        "element_token": token_for(snapshot_id, 20),
+                        "_session_id": session,
+                    }),
+                    false,
+                )
+            };
+            assert_eq!(lookup("rec-B"), None, "session B must not resolve A's capture");
+            assert_eq!(lookup("rec-A"), Some((WINDOW, None)), "session A resolves its own");
+            drop(store);
+            retire_runtime_scope(SCOPE);
+        });
+    }
+
     #[test]
     fn hyprland_pixel_marker_keeps_fractional_output_coordinates() {
         assert_eq!(
