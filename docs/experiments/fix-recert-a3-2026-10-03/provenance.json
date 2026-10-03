@@ -1,0 +1,59 @@
+{
+ "schema": "recert-fix-a3-provenance-v1",
+ "lane": "RECERT-FIX", "wave": 5, "attempt": 3,
+ "branches": {
+  "packet": "exp/fix-recert-a3-20261003",
+  "fix02": {"name": "exp/fix-02r-a3-20261003", "head": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c"},
+  "own09r": {"name": "exp/own-09r2-a3-20261003", "head": "ba611b51a48f6798eb3b3114f0c98af03c2d7d52"},
+  "own16w": {"name": "exp/own-16w2-a3-20261003", "head": "7e31eae59d2316c3e41d31a3eb872837bb945283"}
+ },
+ "sources": {
+  "base_0f1955d2f": {"sha": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218", "rust_tree": "03907b569c54052194e1e1d8078399ff7af379a4", "libs_cua_driver_tree": "df2b49c32e73756f0ef1ee2338f51626d5921d92", "libs_cua_driver_fixtures_tree": "f23585116935ef61e220c3b59b18d64ecf045b6f"},
+  "U_prime": {"sha": "513e45fee0c5b02c7dd6d41a960f925a164b5066", "rust_tree": "c609a7b606013fee2b2e0da9086a8555eea852f4", "jev_tree": "38020fbe07df2b6dbf617b64c5189fd89f3e299f"},
+  "F_prime": {"sha": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c", "rust_tree": "a15fd479763eccf9016970e56034facd955f71e0", "jev_tree": "0a8df4374a591f734d04390409a3608e0e5e6b56"},
+  "own09r_merge": {"sha": "4e3e90776313286d9a67923bdb2ecc970c5ecf47", "rust_tree": "2045a552b5c067a82ed467e4b7c657e74f607307", "remerge_diff": "empty (0 textual conflicts)"},
+  "own09r_P_prime": {"sha": "ba611b51a48f6798eb3b3114f0c98af03c2d7d52", "rust_tree": "d3a5de83ddb8bbcc6a63fc3aab90a18cf26333ba", "commits": {"c1": "3a84dca3d", "c2": "cf72bb328", "c3": "17cb66d1d", "c4": "24980c8cd", "harness": "ba611b51a"}},
+  "own09r_M": {"sha": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218", "test_patch": "harness/own09r-w3/m-tree.patch (wave-3 blob, applied uncommitted to the M worktree; test-only)"},
+  "U_dprime": {"sha": "57e3564cac9e998d40bddea35fb0228699861141", "rust_tree": "9e171a25a35c6fe7283b155976534187cf1fc918"},
+  "F_dprime": {"sha": "7e31eae59d2316c3e41d31a3eb872837bb945283", "rust_tree": "04ea992802fd8e6f175ea06476f2f0d2273a5959"},
+  "fixture": {"path": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py", "base_blob": "fa4b5ad328acc7835b32cf57fbdfd61d11b5df62", "packet_blob": "0c5821e8b772bd6e8d9497e1a700dd6672410066", "sha256": "750eac0f29a5f34516eff5355e71077b59c1e7fdfa8e5ed6b6b3a7f0c9585a31", "note": "used for every native and W2 row on both arms; single-window path unchanged (smoke S1)"}
+ },
+ "range_diff": {"result": "14/14 '='", "pairs": {"F1": "80e625acc->8e0e8aea0", "F2": "3930dd7d0->205a4ecb2", "F3": "6e9f9dfff->cdffb3213", "F4": "e8b1064f6->a357d061d", "fix01-a": "35041124c->0fd76ecc5", "fix01-b": "bd0cc9de7->513e45fee", "own09r-c1": "aacc7beb6->3a84dca3d", "own09r-c2": "6024e3e7f->cf72bb328", "own09r-c3": "890c41d1a->17cb66d1d", "own09r-c4": "965762041->24980c8cd", "own09r-harness": "26e97138c->ba611b51a", "own16w-u1": "709b0e004->fa277577a", "own16w-u2": "b39b866f7->57e3564ca", "own16w-F": "dd205d17b->7e31eae59"}, "unreviewed_commit": "df4f1edf5 (test-only) reviewed and kept"},
+ "binaries": {
+  "fix02r3-u-513e45fee": {"sha256": "3d27b55b76bdfa64d8659100f995db23400c3b46c06543832aa3c8acb0b31acd", "head": "513e45fee", "version": "cua-driver 0.32.0", "family": "cua-release-fix02"},
+  "fix02r3-f-df4f1edf5": {"sha256": "e438980aa6812ac43a63793fca001fc1e2d86515a105eeb099f6a9c269fd64a1", "head": "df4f1edf5", "version": "cua-driver 0.32.0", "family": "cua-release-fix02"},
+  "own16w3-u-57e3564ca": {"sha256": "6649483fc258130bbc958366c68831b670f81394626b9bc71edb918ff06b246c", "head": "57e3564ca", "version": "cua-driver 0.32.0", "family": "cua-release-own16w"},
+  "own16w3-f-7e31eae59": {"sha256": "623a3d0e6da2205492c604a4f7b33827e6cd34d9a128e85fcea2cddd8b664b86", "head": "7e31eae59", "version": "cua-driver 0.32.0", "family": "cua-release-own16w"},
+  "own09r_frozen_test_binaries": {"own09_arm_m": "97aad9d286289ae0454d073cb345d3815d15f25f6e306e331b07b35dd7907dc6", "sdk_lib_tests_m": "cb94f25c7997f65ef48c6e7b878485afd46f4c840228425f0def412253b06388", "own09_arm_p": "b109df6d5c01186cb0d6abf5cb0c78083f4b156969d34023c86dbcf4bbcf4436", "sdk_lib_tests_p": "c99b814ecdf506a32827d52c49c0ba585a5333c95f0afe31277866793e71ec1e", "frozen_utc": "2026-10-03T10:11:08Z", "first_counted_utc": "2026-10-03T10:11:14Z"}
+ },
+ "prereg": {"commit": "073cff82ef7a0f10abbf5201575be2ebfa4e0337", "committed_utc": "2026-10-03T07:43:01Z", "first_counted_block_utc": "2026-10-03T07:43:18Z"},
+ "environment": {
+  "os": "Linux 7.2.2 x86_64", "rustc": "1.97.1",
+  "isolation": "hostless v2 for every code-executing command; cua-x11-session.sh (private rootless Xvfb 1920x1080x24, openbox, picom, private D-Bus, private AT-SPI) for native, browser and unit runs; hostless cua-sway-session.sh (headless sway 1.12, Xwayland, private D-Bus and AT-SPI, WAYLAND_DEBUG=server) for S-W",
+  "script_sha256": {"cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b", "cua-sway-session.sh": "fed58de9b208748ec6f6ec9a1bc11008c651eb68ddd103cb5200f7c368384c1f", "hostless": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b", "build-driver.sh": "0d5fb029f44c77a682649aaf71395a517c2d2e46ba10ee802073ac9e2a0269ce"},
+  "gtk_fixture_python": "system python 3.14 with gi (GTK 3.24)", "jev_use": "venv Python 3.12.13, Node v22.23.2",
+  "browser": "the Driver-selected Google Chrome (151.0.7922.71 per the loop SETUP record; not re-read in this attempt)",
+  "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1",
+  "loadavg_1min_at_lock_acquire": "0.62 to 28.63 across counted blocks (shared machine; correctness only)"
+ },
+ "live_heads": {
+  "start": {"utc": "2026-10-03T07:20:28Z", "upstream_main": "cb685fad7aef1df6a35ffec653295a0cea4daee6", "kvnloo_cua_84": "566b9c73245266005c958d40e93d46ee5d463325", "kvnloo_cua_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f", "trees_equal_0f1955d2f": true},
+  "end": "raw/heads/live-heads-end.txt"
+ },
+ "unit": {
+  "fix02_red_expected": [
+   "a_capture_only_publication_resolves_only_for_its_session",
+   "a_restarted_process_does_not_reissue_its_predecessors_tokens",
+   "a_token_minted_from_another_sessions_handle_is_refused",
+   "anonymous_and_named_snapshots_do_not_resolve_for_each_other",
+   "another_sessions_token_is_refused_and_stays_live_for_its_owner",
+   "browser::v2_tests::set_input_files_refuses_a_detached_file_input",
+   "stale_refusal_names_only_the_callers_own_snapshots",
+   "two_windows_of_one_process_keep_tokens_per_window_and_per_session"
+  ]
+ },
+ "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0},
+ "privacy": {"scanner": "privacy_scan.py (names from an untracked CUA_PRIVACY_NAMES_FILE; decodes hex and base64 literals)", "result": "raw/privacy-scan.txt"},
+ "publication_sha": null,
+ "live_heads_at_publication": null
+}

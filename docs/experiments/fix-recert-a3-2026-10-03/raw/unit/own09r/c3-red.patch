@@ -1,0 +1,44 @@
+diff --git i/libs/cua-driver/rust/crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs w/libs/cua-driver/rust/crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs
+index b0e7a640c..d9b055f02 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs
+@@ -456,3 +456,39 @@ async fn slice_a_cancel_vs_native_entry_race_has_exactly_one_winner() {
+     );
+     assert_eq!(cancel_won + admission_won, ROUNDS);
+ }
++
++/// OWN-09R: a cancelled call whose native work is owned (`spawn_blocking_owned`) keeps the runtime's
++/// lifecycle read guard, so shutdown does not report readiness until that native work exits.
++#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
++async fn revision_shutdown_after_cancel_waits_for_owned_native_exit() {
++    let mut fx = Fixture::new(&[1]).await;
++    let first = fx.call_with(1, true);
++    phase(&fx.entered(1), "call 1 native-enter").await;
++    first.abort();
++    assert!(first.await.unwrap_err().is_cancelled());
++    phase(&fx.dropped(1), "call 1 invocation dropped").await;
++
++    let driver = fx.driver.clone();
++    let shared = fx.shared.clone();
++    let returned = Arc::new(Notify::new());
++    let signal = returned.clone();
++    let shutdown = tokio::spawn(async move {
++        let result = driver.shutdown().await;
++        shared.ledger.log("shutdown-returned");
++        signal.notify_one();
++        result.is_ok()
++    });
++    assert!(
++        did_not_happen(&returned).await,
++        "shutdown reported readiness while owned native work was running: {:#?}",
++        fx.shared.ledger.dump()
++    );
++    fx.release(1);
++    assert!(tokio::time::timeout(WAIT, shutdown).await.unwrap().unwrap());
++    let ledger = &fx.shared.ledger;
++    assert!(
++        ledger.position("native-exit:1") < ledger.position("shutdown-returned"),
++        "{:#?}",
++        ledger.dump()
++    );
++}

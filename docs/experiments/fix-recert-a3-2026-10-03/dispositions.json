@@ -1,0 +1,152 @@
+{
+ "FIX-02 F1": {
+  "disposition": "KEEP",
+  "failing_rows": [],
+  "gates": {
+   "I2 F' 40/40": true,
+   "I2d F' 40/40": true,
+   "P 20/20": true,
+   "U' lands I2 (>=1)": true,
+   "U' lands I2d (>=1)": true,
+   "forged I2 refused 10/10": true,
+   "unit red/green + suites": true
+  },
+  "verdict": "RECERT_PASS",
+  "wave3": "KEEP"
+ },
+ "FIX-02 F2": {
+  "disposition": "KEEP",
+  "failing_rows": [],
+  "gates": {
+   "I5p F' 20/20": true,
+   "I5ps F' 20/20": true,
+   "I5pt F' 10/10": true,
+   "U' accepts I5p (>=1)": true,
+   "forged I1 refused 10/10": true,
+   "unit red/green + suites": true
+  },
+  "verdict": "RECERT_PASS",
+  "wave3": "KEEP"
+ },
+ "FIX-02 F3": {
+  "disposition": "KEEP",
+  "failing_rows": [],
+  "gates": {
+   "0 blind re-dispatches on F'": true,
+   "F3-py-stale 10/10": true,
+   "F3-py-trust_unknown 10/10": true,
+   "F3-ts-stale 10/10": true,
+   "F3-ts-trust_unknown 10/10": true,
+   "unit red/green + suites": true
+  },
+  "verdict": "RECERT_PASS",
+  "wave3": "KEEP"
+ },
+ "FIX-02 F4": {
+  "disposition": "REVISE",
+  "failing_rows": [],
+  "gates": {
+   "F4 F' 20/20 (narrower claim; TOCTOU not covered)": true,
+   "unit red/green + suites": true
+  },
+  "verdict": "RECERT_PASS",
+  "wave3": "REVISE"
+ },
+ "OWN-09R (kvnloo/cua#84 revision)": {
+  "failing_rows": [],
+  "gates": {
+   "M_R1D_fail_40": true,
+   "M_R2_fail_40": true,
+   "M_R6_fail_80": true,
+   "M_R7_fail_40": true,
+   "P_R1D_pass_40": true,
+   "P_R2_pass_40": true,
+   "P_R4_pass": true,
+   "P_R5_pass_40": true,
+   "P_R6_pass_80": true,
+   "P_R7_pass_40": true,
+   "every control as wave 3": true,
+   "unit c1 red (compile error)": true,
+   "unit head cua-driver-core 0 failed (first run, or re-run + 20/20 isolation)": true,
+   "unit own09r/c1-green-slice-a.log 0 failed": true,
+   "unit own09r/c2-green-unit.log 0 failed": true,
+   "unit own09r/c2-red-unit.log red": true,
+   "unit own09r/c3-green-unit.log 0 failed": true,
+   "unit own09r/c3-red-unit.log red": true,
+   "unit own09r/head-cua-driver-sdk.log 0 failed": true,
+   "unit own09r/head-cua-driver.log 0 failed": true
+  },
+  "verdict": "RECERT_PASS",
+  "wave3": "KEEP"
+ },
+ "OWN-16W": {
+  "failing_rows": [],
+  "gates": {
+   "S-W F'' rows meet the wave-3 gates": true,
+   "S-W token click verified per F'' session": true,
+   "X11 F'' positive control": true,
+   "X11 F'' string_false refused 42/42": true,
+   "X11 F'' string_true refused 42/42": true,
+   "X11 U'' accepts 42/42 (both string rows)": true,
+   "unit F'' platform-linux lib 0 failed": true,
+   "unit selector green on F''": true,
+   "unit selector red on U''": true
+  },
+  "observation": {
+   "X11 U'' positive control": "positive_control_fail",
+   "X11 U'' walk oracle agrees": 41
+  },
+  "verdict": "RECERT_PASS",
+  "wave3": "KEEP (S-W; X11 string fix)"
+ },
+ "kvnloo/cua#36 same-process two-window row": {
+  "failing_rows": [],
+  "gates": {
+   "0 cross-session mutations on F'": true,
+   "W2a F' 20/20": true,
+   "W2b F' 20/20": true,
+   "W2c F' 20/20": true,
+   "W2d F' 20/20": true
+  },
+  "u_prime_default_path": {
+   "W2a": {
+    "cross_landed": 20,
+    "cross_refused": 0,
+    "n": 20,
+    "pass": 0,
+    "positives_verified": 20,
+    "route:accessibility": 60,
+    "unverified_success": 0
+   },
+   "W2b": {
+    "n": 20,
+    "pass": 20,
+    "positives_verified": 20,
+    "route:accessibility": 40,
+    "w1_after_w2_verified": 20
+   },
+   "W2c": {
+    "code:capture_target_mismatch": 20,
+    "mismatch_landed": 0,
+    "mismatch_refused": 20,
+    "n": 20,
+    "pass": 20,
+    "positives_verified": 20,
+    "route:accessibility": 20,
+    "unverified_success": 0
+   },
+   "W2d": {
+    "closed_landed": 0,
+    "closed_refused": 20,
+    "code:stale_element_token": 20,
+    "n": 20,
+    "pass": 20,
+    "positives_verified": 20,
+    "route:accessibility": 20,
+    "unverified_success": 0,
+    "w1_closed_confirmed": 20
+   }
+  },
+  "verdict": "KEEP"
+ }
+}

@@ -1,0 +1,43 @@
+dbus-daemon[2662010]: [session uid=1000 pid=2662010 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=2662029 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2662010]: [session uid=1000 pid=2662010 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:100 openbox=2662131 picom=2662132 dbus=unix:path=<TMPDBUS>,guid=<GUID>
+[unit] head=cf72bb3288d7796e156feac35e1ac11efe137bda dirty=1 DISPLAY=:100 wayland=unset target=cua-release-own09r rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
+[unit] dirty:  M libs/cua-driver/rust/crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs
+[unit] cargo test --locked -p cua-driver-sdk --lib revision_shutdown_after_cancel
+   Compiling cua-driver-contract v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cua-driver-core v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.76s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-own09r/debug/deps/cua_driver_sdk-55bff99a363dab12)
+
+running 1 test
+test cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit ... FAILED
+
+failures:
+
+---- cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit stdout ----
+
+thread 'cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit' (2664457) panicked at crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs:481:5:
+shutdown reported readiness while owned native work was running: [
+    "00 queued:1",
+    "01 admitted:1",
+    "02 native-enter:1",
+    "03 invocation-dropped:1",
+    "04 shutdown-returned",
+]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cancellation_slice_a_tests::revision_shutdown_after_cancel_waits_for_owned_native_exit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 107 filtered out; finished in 0.33s
+
+error: test failed, to rerun pass `-p cua-driver-sdk --lib`
+[unit] rc=101
+[session] exit rc=101 run_dir=<tmp>/x11-session.guC7Aq

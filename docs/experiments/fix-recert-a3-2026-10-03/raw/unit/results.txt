@@ -1,0 +1,42 @@
+[2026-10-03T09:37:37Z] queue units A (single cargo-lock acquisition)
+[2026-10-03T10:09:55Z] units restart (attempt 2 of the unit script: RUSTUP_HOME fix)
+[2026-10-03T10:09:55Z] units part A (one cargo-lock acquisition): OWN-09R P freeze, OWN-16W, FIX-02
+[2026-10-03T10:11:52Z] cargo rc=101 log=own16w/red-selector-U.log wt=w5-own16w2-u args=--locked -p platform-linux --lib get_window_state_selector_tests
+[2026-10-03T10:11:52Z] own16w U'' restored: 0 dirty
+[2026-10-03T10:12:36Z] cargo rc=0 log=own16w/green-selector-F.log wt=w5-own16w2 args=--locked -p platform-linux --lib get_window_state_selector_tests
+[2026-10-03T10:13:13Z] cargo rc=0 log=own16w/F-platform-linux-lib.log wt=w5-own16w2 args=--locked -p platform-linux --lib
+[2026-10-03T10:14:13Z] cargo rc=0 log=fix02/F-core.log wt=w5-fix02r args=--locked -p cua-driver-core --lib --tests
+[2026-10-03T10:15:46Z] cargo rc=0 log=fix02/F-platform-linux-lib.log wt=w5-fix02r args=--locked -p platform-linux --lib
+[2026-10-03T10:16:09Z] jev F rc=0
+[2026-10-03T10:16:09Z] browser chunk ended; applying the FIX-02 red tree to U'
+[2026-10-03T10:17:02Z] cargo rc=101 log=fix02/red-core.log wt=w5-fix02r-u args=--locked -p cua-driver-core --lib --tests
+[2026-10-03T10:17:26Z] jev red rc=0
+[2026-10-03T10:17:26Z] fix02 U' restored: 0 dirty
+[2026-10-03T10:17:26Z] units A released rc=0
+[2026-10-03T10:17:26Z] queue units B (single cargo-lock acquisition)
+[2026-10-03T11:05:32Z] units restart (attempt 2 of the unit script: RUSTUP_HOME fix)
+[2026-10-03T11:05:32Z] units part B (one cargo-lock acquisition): OWN-09R per commit and head suites
+[2026-10-03T11:06:14Z] cargo rc=101 log=fix02/red-core.log wt=w5-fix02r-u args=--locked -p cua-driver-core --lib --tests --no-fail-fast
+[2026-10-03T11:06:14Z] fix02 U' restored after red re-run: 0 dirty
+[2026-10-03T11:07:12Z] cargo rc=101 log=own09r/c1-red-sdk-lib-no-run.log wt=w5-own09r2-red args=--locked -p cua-driver-sdk --lib --no-run
+[2026-10-03T11:08:13Z] cargo rc=0 log=own09r/c1-green-slice-a.log wt=w5-own09r2-red args=--locked -p cua-driver-sdk --lib cancellation_slice_a
+[2026-10-03T11:08:57Z] cargo rc=101 log=own09r/c2-red-unit.log wt=w5-own09r2-red args=--locked -p cua-driver-sdk --lib revision_cancel_requested_before_admission_is_refused
+[2026-10-03T11:09:31Z] cargo rc=0 log=own09r/c2-green-unit.log wt=w5-own09r2-red args=--locked -p cua-driver-sdk --lib revision_cancel_requested_before_admission_is_refused
+[2026-10-03T11:10:02Z] cargo rc=101 log=own09r/c3-red-unit.log wt=w5-own09r2-red args=--locked -p cua-driver-sdk --lib revision_shutdown_after_cancel
+[2026-10-03T11:11:27Z] cargo rc=0 log=own09r/c3-green-unit.log wt=w5-own09r2-red args=--locked -p cua-driver-sdk --lib cancellation_slice_a
+[2026-10-03T11:12:13Z] c4 red check rc=1
+[2026-10-03T11:12:59Z] c4 green check rc=0
+[2026-10-03T11:14:45Z] cargo rc=0 log=own09r/c4-compile-tests.log wt=w5-own09r2-red args=--locked -p cua-driver-core -p cua-driver-sdk -p cua-driver -p platform-linux --no-run
+[2026-10-03T11:14:47Z] own09r red worktree back at 4e3e90776, dirty 0
+[2026-10-03T11:15:44Z] cargo rc=101 log=own09r/head-cua-driver-core.log wt=w5-own09r2 args=--locked -p cua-driver-core
+[2026-10-03T11:23:37Z] cargo rc=0 log=own09r/head-cua-driver-sdk.log wt=w5-own09r2 args=--locked -p cua-driver-sdk
+[2026-10-03T11:27:31Z] cargo rc=0 log=own09r/head-cua-driver.log wt=w5-own09r2 args=--locked -p cua-driver
+[2026-10-03T11:27:31Z] units done
+[2026-10-03T11:27:31Z] units B released rc=0
+[2026-10-03T11:27:38Z] queue units C (single cargo-lock acquisition)
+[2026-10-03T11:44:05Z] units part C (one cargo-lock acquisition): history flake re-run and isolation
+[2026-10-03T11:44:48Z] cargo rc=0 log=own09r/head-cua-driver-core-rerun.log wt=w5-own09r2 args=--locked -p cua-driver-core
+[2026-10-03T11:45:00Z] cargo rc=0 log=own09r/history-isolation/build-P.log wt=w5-own09r2 args=--locked -p cua-driver-core --lib --no-run
+[2026-10-03T11:45:37Z] cargo rc=0 log=own09r/history-isolation/build-M.log wt=w5-own09r2-m args=--locked -p cua-driver-core --lib --no-run
+[2026-10-03T11:45:40Z] units part C done
+[2026-10-03T11:45:40Z] units C released rc=0

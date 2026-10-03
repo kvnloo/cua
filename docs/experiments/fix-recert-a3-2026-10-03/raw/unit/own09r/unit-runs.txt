@@ -1,0 +1,27 @@
+[2026-10-03T08:00:00Z] unit start wt=w5-own09r2-m family=cua-release-own09r args=--locked -p cua-driver-sdk --test own09_arm_m --lib --no-run
+[2026-10-03T09:00:07Z] unit end wt=w5-own09r2-m rc=0 log=build-tests-M.log
+[2026-10-03T09:00:11Z] unit start wt=w5-own09r2 family=cua-release-own09r args=--locked -p cua-driver-sdk --test own09_arm_p --lib --no-run
+[2026-10-03T10:09:55Z] unit start wt=w5-own09r2 family=cua-release-own09r args=--locked -p cua-driver-sdk --test own09_arm_p --lib --no-run
+[2026-10-03T10:10:59Z] unit end wt=w5-own09r2 rc=0 log=build-tests-P.log
+[2026-10-03T11:06:14Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-sdk --lib --no-run
+[2026-10-03T11:07:12Z] unit end wt=w5-own09r2-red rc=101 log=c1-red-sdk-lib-no-run.log
+[2026-10-03T11:07:12Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-sdk --lib cancellation_slice_a
+[2026-10-03T11:08:13Z] unit end wt=w5-own09r2-red rc=0 log=c1-green-slice-a.log
+[2026-10-03T11:08:13Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-sdk --lib revision_cancel_requested_before_admission_is_refused
+[2026-10-03T11:08:57Z] unit end wt=w5-own09r2-red rc=101 log=c2-red-unit.log
+[2026-10-03T11:08:57Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-sdk --lib revision_cancel_requested_before_admission_is_refused
+[2026-10-03T11:09:31Z] unit end wt=w5-own09r2-red rc=0 log=c2-green-unit.log
+[2026-10-03T11:09:31Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-sdk --lib revision_shutdown_after_cancel
+[2026-10-03T11:10:02Z] unit end wt=w5-own09r2-red rc=101 log=c3-red-unit.log
+[2026-10-03T11:10:02Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-sdk --lib cancellation_slice_a
+[2026-10-03T11:11:27Z] unit end wt=w5-own09r2-red rc=0 log=c3-green-unit.log
+[2026-10-03T11:12:59Z] unit start wt=w5-own09r2-red family=cua-release-own09r args=--locked -p cua-driver-core -p cua-driver-sdk -p cua-driver -p platform-linux --no-run
+[2026-10-03T11:14:45Z] unit end wt=w5-own09r2-red rc=0 log=c4-compile-tests.log
+[2026-10-03T11:14:47Z] unit start wt=w5-own09r2 family=cua-release-own09r args=--locked -p cua-driver-core
+[2026-10-03T11:15:44Z] unit end wt=w5-own09r2 rc=101 log=head-cua-driver-core.log
+[2026-10-03T11:15:44Z] unit start wt=w5-own09r2 family=cua-release-own09r args=--locked -p cua-driver-sdk
+[2026-10-03T11:23:37Z] unit end wt=w5-own09r2 rc=0 log=head-cua-driver-sdk.log
+[2026-10-03T11:23:37Z] unit start wt=w5-own09r2 family=cua-release-own09r args=--locked -p cua-driver
+[2026-10-03T11:27:31Z] unit end wt=w5-own09r2 rc=0 log=head-cua-driver.log
+[2026-10-03T11:44:05Z] unit start wt=w5-own09r2 family=cua-release-own09r args=--locked -p cua-driver-core
+[2026-10-03T11:44:48Z] unit end wt=w5-own09r2 rc=0 log=head-cua-driver-core-rerun.log

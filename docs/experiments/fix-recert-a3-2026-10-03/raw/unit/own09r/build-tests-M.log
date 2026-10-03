@@ -1,0 +1,22 @@
+dbus-daemon[1885609]: [session uid=1000 pid=1885609 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=1885629 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[1885609]: [session uid=1000 pid=1885609 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:100 openbox=1885684 picom=1885686 dbus=unix:path=<TMPDBUS>,guid=<GUID>
+[unit] head=0f1955d2f1ee2b01b40775aa53ea2af0b5544218 dirty=4 DISPLAY=:100 wayland=unset target=cua-release-own09r rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
+[unit] dirty:  M libs/cua-driver/rust/crates/cua-driver-sdk/src/abi.rs
+[unit] dirty: ?? libs/cua-driver/rust/crates/cua-driver-sdk/src/tests/own09r_cabi.rs
+[unit] dirty: ?? libs/cua-driver/rust/crates/cua-driver-sdk/tests/own09_arm_m.rs
+[unit] dirty: ?? libs/cua-driver/rust/crates/cua-driver-sdk/tests/own09_harness/
+[unit] cargo test --locked -p cua-driver-sdk --test own09_arm_m --lib --no-run
+   Compiling cua-driver-contract v0.32.0 (<lanes>/w5-own09r2-m/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.32.0 (<lanes>/w5-own09r2-m/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w5-own09r2-m/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cua-driver-core v0.32.0 (<lanes>/w5-own09r2-m/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w5-own09r2-m/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<lanes>/w5-own09r2-m/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 09s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+  Executable unittests src/lib.rs (<cargo-targets>/cua-release-own09r/debug/deps/cua_driver_sdk-55bff99a363dab12)
+  Executable tests/own09_arm_m.rs (<cargo-targets>/cua-release-own09r/debug/deps/own09_arm_m-38efc3842cfa19d9)
+[unit] rc=0
+[session] exit rc=0 run_dir=<tmp>/x11-session.JMTOu5

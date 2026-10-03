@@ -1,0 +1,21 @@
+dbus-daemon[2647334]: [session uid=1000 pid=2647334 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=2647343 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2647334]: [session uid=1000 pid=2647334 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:100 openbox=2647367 picom=2647368 dbus=unix:path=<TMPDBUS>,guid=<GUID>
+[unit] head=4e3e90776313286d9a67923bdb2ecc970c5ecf47 dirty=0 DISPLAY=:100 wayland=unset target=cua-release-own09r rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
+[unit] cargo test --locked -p cua-driver-sdk --lib --no-run
+   Compiling cua-driver-contract v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-sdk v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cua-driver-sdk)
+   Compiling cua-driver-core v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<lanes>/w5-own09r2-red/libs/cua-driver/rust/crates/platform-linux)
+error[E0599]: no method named `unwrap` found for opaque type `impl std::future::Future<Output = tokio::sync::MutexGuard<'_, ()>>` in the current scope
+   --> crates/cua-driver-sdk/src/tests/cancellation_slice_a.rs:148:63
+    |
+148 |         let serial = crate::runtime::TEST_RUNTIME_LOCK.lock().unwrap();
+    |                                                               ^^^^^^ method not found in `impl std::future::Future<Output = tokio::sync::MutexGuard<'_, ()>>`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `cua-driver-sdk` (lib test) due to 1 previous error
+[unit] rc=101
+[session] exit rc=101 run_dir=<tmp>/x11-session.jgWSyb

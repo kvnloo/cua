@@ -1,0 +1,39 @@
+dbus-daemon[2285538]: [session uid=1000 pid=2285538 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=2285547 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[2285538]: [session uid=1000 pid=2285538 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:100 openbox=2285574 picom=2285575 dbus=unix:path=<TMPDBUS>,guid=<GUID>
+[unit] head=57e3564cac9e998d40bddea35fb0228699861141 dirty=2 DISPLAY=:100 wayland=unset target=cua-release-own16w rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
+[unit] dirty:  M libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs
+[unit] dirty: ?? libs/cua-driver/rust/crates/platform-linux/src/tools/impl_/get_window_state_selector_tests.rs
+[unit] cargo test --locked -p platform-linux --lib get_window_state_selector_tests
+   Compiling cua-driver-contract v0.32.0 (<lanes>/w5-own16w2-u/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.32.0 (<lanes>/w5-own16w2-u/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-core v0.32.0 (<lanes>/w5-own16w2-u/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<lanes>/w5-own16w2-u/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<lanes>/w5-own16w2-u/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.12s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<cargo-targets>/cua-release-own16w/debug/deps/platform_linux-6d020a7d4959d2d9)
+
+running 1 test
+test tools::impl_::get_window_state_selector_tests::non_boolean_modality_selectors_are_refused_as_invalid_arguments ... FAILED
+
+failures:
+
+---- tools::impl_::get_window_state_selector_tests::non_boolean_modality_selectors_are_refused_as_invalid_arguments stdout ----
+
+thread 'tools::impl_::get_window_state_selector_tests::non_boolean_modality_selectors_are_refused_as_invalid_arguments' (2289127) panicked at crates/platform-linux/src/tools/impl_/get_window_state_selector_tests.rs:35:9:
+assertion `left == right` failed: include_screenshot="false" must be refused with invalid_arguments
+  left: None
+ right: Some(String("invalid_arguments"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tools::impl_::get_window_state_selector_tests::non_boolean_modality_selectors_are_refused_as_invalid_arguments
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 612 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p platform-linux --lib`
+[unit] rc=101
+[session] exit rc=101 run_dir=<tmp>/x11-session.hUbCZx

@@ -1,0 +1,13 @@
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs
+index 50a5717a3..88a5ffd99 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs
+@@ -1807,7 +1807,7 @@ impl ToolRegistry {
+         // permit) has completed. A caller whose cancellation was requested
+         // while this call waited is refused here, before native work starts,
+         // exactly as if the abort had landed during the wait.
+-        if caller_cancellation_requested() {
++        if false && caller_cancellation_requested() {
+             crate::cursor_events::end_tool(cursor_event);
+             return protected_refusal(
+                 "cancelled_before_admission",
