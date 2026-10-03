@@ -75,12 +75,22 @@ export function browserDecisionRequest(
   return validateRequest(request);
 }
 
+/**
+ * Optional injected dependencies. Defaults: a TypeSafeClient configured from
+ * the environment, and the S1 URL from CUA_S1_DECISION_URL.
+ */
+export type BrowserProviderDeps = Readonly<{
+  typesafeClient?: Pick<TypeSafeClient, 'systemOne'>;
+  s1Url?: string;
+}>;
+
 export async function chooseBrowserProvider(
   provider: BrowserProvider,
   task: Task,
   sources: TaskSources,
   candidates: Candidate[],
-  history: HistoryEntry[]
+  history: HistoryEntry[],
+  deps: BrowserProviderDeps = {}
 ): Promise<BrowserDecision> {
   const backend = backendName(provider);
   if (provider === 'mock') {
@@ -90,7 +100,7 @@ export async function chooseBrowserProvider(
 
   const request = browserDecisionRequest(task, sources, candidates, history);
   if (provider === 's1') {
-    return { ...(await chooseS1Service(request)), backend };
+    return { ...(await chooseS1Service(request, deps.s1Url)), backend };
   }
   const criteria = Object.fromEntries(
     request.candidates.map(({ id, description }) => [id, description])
@@ -98,7 +108,7 @@ export async function chooseBrowserProvider(
   // The bounded request carries no page state, so TypeSafe also receives the
   // runner-verified page/form/outline state the pre-parity runner sent.
   const result = await chooseBoundedWithTypeSafe(
-    new TypeSafeClient(),
+    deps.typesafeClient ?? new TypeSafeClient(),
     request.goal,
     { ...providerObservation(request), ...runnerVerifiedState(task, sources) },
     criteria
