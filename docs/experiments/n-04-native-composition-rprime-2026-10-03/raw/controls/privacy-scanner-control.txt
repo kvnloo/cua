@@ -1,0 +1,30 @@
+# UNIT control for privacy_scan_commits.py (scratch repo, 5 commits: base, hex-encoded home path, base64-encoded host name, public handle text, plain user name). Commit ids replaced by <c>; matched text is never printed.
+## hex-path, names file unset
+privacy scan <range>: 1 commits, 1 blobs, 1 decoded literals; CUA_PRIVACY_NAMES_FILE not set: the name sub-check covers the host name only
+  HIT <c> hex.txt path#0 (decoded)
+PRIVACY FAILED (1 findings)
+## hex-path, names file set
+privacy scan <range>: 1 commits, 1 blobs, 1 decoded literals; CUA_PRIVACY_NAMES_FILE set: 2 private names (file + host name)
+  HIT <c> hex.txt path#0 (decoded)
+PRIVACY FAILED (1 findings)
+## b64-hostname, names file unset
+privacy scan <range>: 1 commits, 1 blobs, 1 decoded literals; CUA_PRIVACY_NAMES_FILE not set: the name sub-check covers the host name only
+  HIT <c> b64.txt name#0 (decoded)
+PRIVACY FAILED (1 findings)
+## b64-hostname, names file set
+privacy scan <range>: 1 commits, 1 blobs, 1 decoded literals; CUA_PRIVACY_NAMES_FILE set: 2 private names (file + host name)
+  HIT <c> b64.txt name#0 (decoded)
+PRIVACY FAILED (1 findings)
+## public-handle-negative, names file unset
+privacy scan <range>: 1 commits, 1 blobs, 0 decoded literals; CUA_PRIVACY_NAMES_FILE not set: the name sub-check covers the host name only
+PRIVACY OK (0 findings)
+## public-handle-negative, names file set
+privacy scan <range>: 1 commits, 1 blobs, 0 decoded literals; CUA_PRIVACY_NAMES_FILE set: 2 private names (file + host name)
+PRIVACY OK (0 findings)
+## plain-username, names file unset
+privacy scan <range>: 1 commits, 1 blobs, 0 decoded literals; CUA_PRIVACY_NAMES_FILE not set: the name sub-check covers the host name only
+PRIVACY OK (0 findings)
+## plain-username, names file set
+privacy scan <range>: 1 commits, 1 blobs, 0 decoded literals; CUA_PRIVACY_NAMES_FILE set: 2 private names (file + host name)
+  HIT <c> user.txt name#1 (plain)
+PRIVACY FAILED (1 findings)
