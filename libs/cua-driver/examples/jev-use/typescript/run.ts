@@ -97,7 +97,9 @@ export class DriverToolError extends Error {
     // PRE_DISPATCH_REFUSALS prove that nothing was dispatched.
     readonly refused = false,
     // The refusal's own `retryable` flag when it carries one.
-    readonly retryable?: boolean
+    readonly retryable?: boolean,
+    // The refusal's own `delivery` declaration when it carries one.
+    readonly delivery?: string
   ) {
     super(message);
     this.name = 'DriverToolError';
@@ -128,13 +130,26 @@ export const PRE_DISPATCH_REFUSALS: ReadonlySet<string> = new Set([
   'browser_origin_outside_scope',
 ]);
 
-/** A refusal earns a fresh dispatch only when it proves nothing was dispatched. */
+/**
+ * A refusal earns a fresh dispatch only when it proves nothing was dispatched.
+ * The refusal's own declarations come first: `retryable: false` or a declared
+ * delivery other than `not_delivered` (for example `unknown` after an
+ * assignment) means it may have landed, whatever its code.
+ */
 export function mayRedispatchAfter(error: DriverToolError): boolean {
-  return (
-    error.code !== undefined &&
-    PRE_DISPATCH_REFUSALS.has(error.code) &&
-    error.retryable !== false
-  );
+  if (error.retryable === false) return false;
+  if (error.delivery !== undefined && error.delivery !== 'not_delivered') return false;
+  return error.code !== undefined && PRE_DISPATCH_REFUSALS.has(error.code);
+}
+
+/** Bounded re-read of the target-owned oracle: `verified`/`refuted` or `unknown`. */
+async function reconcileFromOracle(task: Task, step: number): Promise<Outcome> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const outcome = task.classify(await task.readOracle(), step);
+    if (outcome === 'verified' || outcome === 'refuted') return outcome;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return 'unknown';
 }
 
 /** Recover the closed refusal code from the stable `refused (<code>):` text prefix. */
@@ -189,13 +204,15 @@ export class Driver {
           ? structuredCode
           : refusalCodeFromContent(result.content);
       const retryable = data.refusal ? data.refusal.detail?.retryable : data.retryable;
+      const delivery = data.refusal?.detail?.delivery;
       // DriverToolError is an Error, so existing handlers still match.
       throw new DriverToolError(
         `${name} refused: ${JSON.stringify(data.refusal ?? data)}`,
         code,
         undefined,
         true,
-        typeof retryable === 'boolean' ? retryable : undefined
+        typeof retryable === 'boolean' ? retryable : undefined,
+        typeof delivery === 'string' ? delivery : undefined
       );
     }
     return data;
@@ -634,8 +651,19 @@ async function run(args: Arguments): Promise<Outcome> {
               visual: visualRecord,
             };
             // Only a refusal that proves nothing was dispatched earns one fresh
-            // observation and decision; any other may have landed and stays unknown.
-            if (refusalRetried || !mayRedispatchAfter(error)) {
+            // observation and decision; any other may have landed: it is never
+            // dispatched again, and a completion is reconciled from the
+            // target-owned oracle (else unknown).
+            if (!mayRedispatchAfter(error)) {
+              let outcome: Outcome = 'unknown';
+              if (task.completionCandidateIds.has(candidate.id)) {
+                refused.phase = 'reconcile';
+                outcome = await reconcileFromOracle(task, step);
+              }
+              await writeEvent(args.log, { event: 'outcome', outcome, ...refused });
+              return outcome;
+            }
+            if (refusalRetried) {
               await writeEvent(args.log, { event: 'outcome', outcome: 'unknown', ...refused });
               return 'unknown';
             }
@@ -679,13 +707,10 @@ async function run(args: Arguments): Promise<Outcome> {
       await writeEvent(args.log, event);
       if (args.dryRun) return 'unknown';
       if (task.completionCandidateIds.has(candidate.id)) {
-        for (let attempt = 0; attempt < 20; attempt += 1) {
-          const outcome = task.classify(await task.readOracle(), step);
-          if (outcome === 'verified' || outcome === 'refuted') {
-            await writeEvent(args.log, { event: 'outcome', outcome, token });
-            return outcome;
-          }
-          await new Promise((resolve) => setTimeout(resolve, 100));
+        const outcome = await reconcileFromOracle(task, step);
+        if (outcome === 'verified' || outcome === 'refuted') {
+          await writeEvent(args.log, { event: 'outcome', outcome, token });
+          return outcome;
         }
         // Accepted but unconfirmed after the bounded re-read: the click may
         // still land, so stop instead of re-planning it.
