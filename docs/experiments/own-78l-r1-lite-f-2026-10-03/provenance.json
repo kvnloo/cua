@@ -1,0 +1,50 @@
+{
+ "schema": "cua.r2.provenance.v1",
+ "lane": "OWN-78L",
+ "wave": 6,
+ "branch": "exp/own-78l-r1-lite-f-20261003",
+ "branch_base": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6 (OWN-78A packet head, REVISE; contains F)",
+ "tested_sources": {
+  "fix_candidate_F": "61eec09092fd161f62651a890c882f276a642855",
+  "F_commits": {"F1": "736410ea1", "F2": "9d8aad90c", "F3": "61eec0909"},
+  "pr_4394_head_under_F": "039257811e0bbb2348c616c52562409923d2856f",
+  "examples_tree_id_F": "fce87489ea3b6f64bda8ac6c1727dd20f433f3a2",
+  "tree_checks": "each cell's validity.json checks every tracked file of 61eec0909:libs/cua-driver/examples/jev-use against its git blob id in the export, and that the export has no other file (dependency dirs excepted)",
+  "unit_tree": "a separate F export by SHA; jev-use plus the repository files its Python suite reads (.github/workflows/authorized-live-jev-use.yml, libs/cua-driver/tests/fixtures/apps)"
+ },
+ "pr_4394_live_head": {
+  "start": {"utc": "2026-10-03T13:06:41Z", "head": "039257811e0bbb2348c616c52562409923d2856f", "state": "OPEN", "updatedAt": "2026-10-01T15:16:55Z"},
+  "end": {"utc": "2026-10-03T13:14:51Z", "head": "039257811e0bbb2348c616c52562409923d2856f", "state": "OPEN", "updatedAt": "2026-10-01T15:16:55Z"},
+  "read_via": "gh pr view 4394 -R trycua/cua (read-only)"
+ },
+ "prereg_commit": {"sha": "fad2e963db48deba3134aa4e0d4074b840862c1d", "committed_utc": "2026-10-03T13:10:12Z",
+                   "before": "unit attempt 1 (13:10:21Z), the stub cell (13:12:00Z), every control cell and the first live provider request (R1t1, 13:13:50Z lock acquired)"},
+ "publication_sha": "PLACEHOLDER: the branch commit that adds this README (set by Publish; not pushed by this lane)",
+ "driver": {"binary_name": "cua-driver-own78-4394-0392578",
+            "sha256": "19bad35248702fd42f6aa372f1f4bebe4ca3728d9be0f67287f1c186a0b47df9",
+            "version_in_session": "cua-driver 0.31.0",
+            "source_of_expected_hash": "OWN-78A provenance.json (driver.sha256); refused on mismatch",
+            "built_from": "039257811 (OWN-78 build); no build in this lane: neither the PR nor F touches libs/cua-driver/rust"},
+ "reused_by_import": {
+  "from": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03/harness at 6f6c67955",
+  "blobs": {"own78a_harness.py": "01c08b1d1d206b9c4203f7acafb570e4a99364a6",
+            "own78a_launcher.py": "e814b649116349718e4c1dde28bd423b4f6bb50c",
+            "in_session.sh": "e7b2bcdc3a77499f13594ad3cb305afddcf0b6aa",
+            "unit.sh": "05c87cd6ca825eb67952c084c234fc5357120ae7",
+            "privacy_scan.py": "512412c9e49e54c3f5651d6285c9d19eb1bf8ab4",
+            "package_raw.py": "72df76c1570c4f06bc80d529b9b93d00b57fdd14",
+            "verify_helper.py (packet root)": "23a3af67da58c1e9398ecb28f8587fe344e25669"}
+ },
+ "environment": {
+  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080, private dbus, openbox + picom, scrubbed env, no AT-SPI, CUA_DRIVER_RS_TELEMETRY_ENABLED=false; launched under bin/hostless; a fresh session per cell; 0-3 s jitter and an xdpyinfo probe before each cell (OWN-78A in_session.sh)",
+  "browser": "Chrome launched by the Driver per cell (isolated_new profile, Chromium sandbox on, default Driver safety)",
+  "python": "3.12.13 (uv-locked jev-use venv of the F export)",
+  "node": "v22.23.2 (unit row only)",
+  "provider": "TypeSafe api.typesafe.ai, model jev-1.13.0 (as recorded per response)",
+  "key": "TYPESAFE_API_KEY forwarded into the three R1 sessions by name (CUA_SESSION_FORWARD_SECRETS); never on a command line, never printed or recorded; absent from every control session (checked per cell: typesafe_key_present)",
+  "locks": "flock -s on the quiet-lane lock, one acquisition per cell (raw/locks.jsonl and the machine-wide ledger, lane OWN-78L), held 12.5-23.3 s",
+  "loadavg": "6.4 to 15.6 (1-min) at lock acquisition; no timing claims"
+ },
+ "provider_use": {"attempts": 6, "reached": 6, "guard_refused": 3, "guard_refused_note": "CAP-0 control only, never sent",
+                  "lane_cap": {"reached": 6, "attempts": 8}}
+}

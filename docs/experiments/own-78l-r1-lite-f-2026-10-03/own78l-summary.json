@@ -1,0 +1,706 @@
+{
+ "blocked": {
+  "A2_vs_A3_residual_gap": "BLOCKED (budget)",
+  "S1_backend_row": "BLOCKED (adapter not local; non-TypeSafe providers not permitted)",
+  "full_n_R1_20_R4_20": "BLOCKED (budget: about 60 reached)"
+ },
+ "cap0": {
+  "allowance": [
+   0,
+   0
+  ],
+  "attempts": 0,
+  "evidence_class": "UNIT+FIXTURE",
+  "guard_refused": 3,
+  "harness_can_start_at_cap0": false,
+  "input_events": 0,
+  "key_in_runner_env": false,
+  "lane_cap": [
+   0,
+   0
+  ],
+  "pass": true,
+  "reached": 0,
+  "refused_hosts": [
+   "api.typesafe.ai"
+  ],
+  "runner_outcome": {
+   "backend": "typesafe",
+   "error": "RuntimeError",
+   "outcome": "unknown",
+   "phase": "decide"
+  },
+  "submits": 0
+ },
+ "disposition": "KEEP",
+ "e4_all_arms": {
+  "decisions_from_failure_receipts": 0,
+  "duplicate_mutations": 0,
+  "replays_or_restarts": 0,
+  "unverified_successes": 0
+ },
+ "gate_conditions": {
+  "backend_equals_responder_3_of_3": true,
+  "cap0_control_pass": true,
+  "mock_control_pass": true,
+  "r1_verified_3_of_3": true,
+  "unit_109_credential_free": true,
+  "zero_replays_or_restarts": true
+ },
+ "headline": "R1-lite on F: verified 3/3, backend == responder 3/3, replays/restarts 0; MOCK 3/3; CAP-0 pass; stub key-shape pass; UNIT TS 109/109; provider 6 attempts / 6 reached",
+ "lane": "OWN-78L",
+ "mock": {
+  "e4": {
+   "decisions_from_failure_receipts": 0,
+   "duplicate_mutations": 0,
+   "replays_or_restarts": 0,
+   "unverified_successes": 0
+  },
+  "n": 3,
+  "pass": 3,
+  "trials": [
+   {
+    "backends": [
+     "mock"
+    ],
+    "decisions": 2,
+    "evidence_class": "FIXTURE",
+    "http_attempt_receipts": 0,
+    "oracle": {
+     "input_events": 1,
+     "journal_last_equals_token": true,
+     "runner_outcome": "verified",
+     "runner_rc": 0,
+     "submits": 1,
+     "submitted_equals_token": true,
+     "unverified_success": false,
+     "verified": true
+    },
+    "override_receipt": [
+     {
+      "from": "typesafe",
+      "to": "mock"
+     }
+    ],
+    "pass": true,
+    "provider_request_receipts": 0,
+    "replay": {
+     "duplicate_mutation": false,
+     "flags": {
+      "browser_click_gt_1": false,
+      "browser_navigate_gt_1": false,
+      "browser_prepare_gt_1": false,
+      "browser_type_gt_1": false,
+      "input_event_after_submit_click": false,
+      "mutation_after_submit_click": false,
+      "reset_gt_1": false,
+      "submits_gt_1": false
+     },
+     "mutating_dispatches": {
+      "browser_click": 1,
+      "browser_type": 1
+     },
+     "replay_or_restart": false
+    },
+    "trial": "MOCKt1"
+   },
+   {
+    "backends": [
+     "mock"
+    ],
+    "decisions": 2,
+    "evidence_class": "FIXTURE",
+    "http_attempt_receipts": 0,
+    "oracle": {
+     "input_events": 1,
+     "journal_last_equals_token": true,
+     "runner_outcome": "verified",
+     "runner_rc": 0,
+     "submits": 1,
+     "submitted_equals_token": true,
+     "unverified_success": false,
+     "verified": true
+    },
+    "override_receipt": [
+     {
+      "from": "typesafe",
+      "to": "mock"
+     }
+    ],
+    "pass": true,
+    "provider_request_receipts": 0,
+    "replay": {
+     "duplicate_mutation": false,
+     "flags": {
+      "browser_click_gt_1": false,
+      "browser_navigate_gt_1": false,
+      "browser_prepare_gt_1": false,
+      "browser_type_gt_1": false,
+      "input_event_after_submit_click": false,
+      "mutation_after_submit_click": false,
+      "reset_gt_1": false,
+      "submits_gt_1": false
+     },
+     "mutating_dispatches": {
+      "browser_click": 1,
+      "browser_type": 1
+     },
+     "replay_or_restart": false
+    },
+    "trial": "MOCKt2"
+   },
+   {
+    "backends": [
+     "mock"
+    ],
+    "decisions": 2,
+    "evidence_class": "FIXTURE",
+    "http_attempt_receipts": 0,
+    "oracle": {
+     "input_events": 1,
+     "journal_last_equals_token": true,
+     "runner_outcome": "verified",
+     "runner_rc": 0,
+     "submits": 1,
+     "submitted_equals_token": true,
+     "unverified_success": false,
+     "verified": true
+    },
+    "override_receipt": [
+     {
+      "from": "typesafe",
+      "to": "mock"
+     }
+    ],
+    "pass": true,
+    "provider_request_receipts": 0,
+    "replay": {
+     "duplicate_mutation": false,
+     "flags": {
+      "browser_click_gt_1": false,
+      "browser_navigate_gt_1": false,
+      "browser_prepare_gt_1": false,
+      "browser_type_gt_1": false,
+      "input_event_after_submit_click": false,
+      "mutation_after_submit_click": false,
+      "reset_gt_1": false,
+      "submits_gt_1": false
+     },
+     "mutating_dispatches": {
+      "browser_click": 1,
+      "browser_type": 1
+     },
+     "replay_or_restart": false
+    },
+    "trial": "MOCKt3"
+   }
+  ],
+  "verified": 3
+ },
+ "provider": {
+  "attempts": 6,
+  "budget_json": {
+   "attempts": 6,
+   "lane_cap_attempts": 8,
+   "lane_cap_reached": 6,
+   "reached": 6
+  },
+  "by_block": {
+   "CAP0t1": 0,
+   "MOCKt1": 0,
+   "MOCKt2": 0,
+   "MOCKt3": 0,
+   "R1t1": 2,
+   "R1t2": 2,
+   "R1t3": 2
+  },
+  "cap": {
+   "attempts": 8,
+   "reached": 6
+  },
+  "guard_refused": 3,
+  "hosts": [
+   "api.typesafe.ai"
+  ],
+  "reached": 6,
+  "statuses": [
+   200
+  ],
+  "within_cap": true
+ },
+ "r1_lite": {
+  "backend_equals_responder": 3,
+  "decisions": 6,
+  "descriptive_latency_ms": {
+   "http_max": 351.7,
+   "http_median": 192.2,
+   "http_min": 168.6,
+   "note": "descriptive only; no timing claim"
+  },
+  "e4": {
+   "decisions_from_failure_receipts": 0,
+   "duplicate_mutations": 0,
+   "replays_or_restarts": 0,
+   "unverified_successes": 0
+  },
+  "max_decisions_per_trial": 2,
+  "models": [
+   "jev-1.13.0"
+  ],
+  "n": 3,
+  "ran": 3,
+  "replays_or_restarts": 0,
+  "trials": [
+   {
+    "allowance": [
+     2,
+     3
+    ],
+    "attempts": 2,
+    "backend_vs_responder": {
+     "all_equal": true,
+     "n_decisions": 2,
+     "n_ok_responses": 2,
+     "pairs": [
+      {
+       "candidate": "type-verification-value",
+       "equal": true,
+       "http_status": 200,
+       "input_tokens": 697,
+       "model": "jev-1.13.0",
+       "output_tokens": 52,
+       "probabilities": {
+        "abstain": 0.41,
+        "reobserve": 0.07,
+        "type-verification-value": 0.52
+       },
+       "request_id_match": true,
+       "responder": "typesafe",
+       "responder_host": "api.typesafe.ai",
+       "runner_backend": "typesafe",
+       "selected_id": "type-verification-value",
+       "step": 1
+      },
+      {
+       "candidate": "submit-form",
+       "equal": true,
+       "http_status": 200,
+       "input_tokens": 763,
+       "model": "jev-1.13.0",
+       "output_tokens": 44,
+       "probabilities": {
+        "abstain": 0.0,
+        "reobserve": 0.01,
+        "submit-form": 0.99
+       },
+       "request_id_match": true,
+       "responder": "typesafe",
+       "responder_host": "api.typesafe.ai",
+       "runner_backend": "typesafe",
+       "selected_id": "submit-form",
+       "step": 2
+      }
+     ]
+    },
+    "evidence_class": "LIVE_PROVIDER+REAL",
+    "guard_refused": 0,
+    "http_latency_ms": [
+     351.7,
+     260.7
+    ],
+    "loadavg_at_spawn": [
+     "13.33",
+     "8.64",
+     "4.99"
+    ],
+    "models": [
+     "jev-1.13.0"
+    ],
+    "oracle": {
+     "input_events": 1,
+     "journal_last_equals_token": true,
+     "runner_outcome": "verified",
+     "runner_rc": 0,
+     "submits": 1,
+     "submitted_equals_token": true,
+     "unverified_success": false,
+     "verified": true
+    },
+    "reached": 2,
+    "replay": {
+     "duplicate_mutation": false,
+     "flags": {
+      "browser_click_gt_1": false,
+      "browser_navigate_gt_1": false,
+      "browser_prepare_gt_1": false,
+      "browser_type_gt_1": false,
+      "input_event_after_submit_click": false,
+      "mutation_after_submit_click": false,
+      "reset_gt_1": false,
+      "submits_gt_1": false
+     },
+     "mutating_dispatches": {
+      "browser_click": 1,
+      "browser_type": 1
+     },
+     "replay_or_restart": false
+    },
+    "step_timings_ms": [
+     {
+      "action_ms": 1626.56,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.06,
+      "decision_ms": 570.7,
+      "provider_decision_ms": 534.07,
+      "semantic_observe_ms": 36.5,
+      "step": 1,
+      "total_step_ms": 2197.27,
+      "visual_observe_ms": 0.0
+     },
+     {
+      "action_ms": 1536.01,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.04,
+      "decision_ms": 268.2,
+      "provider_decision_ms": 262.42,
+      "semantic_observe_ms": 5.65,
+      "step": 2,
+      "total_step_ms": 1804.22,
+      "visual_observe_ms": 0.0
+     }
+    ],
+    "token_sha256_16": "21e50d49a761c654",
+    "trial": "R1t1",
+    "typed_ref_is_fixture_textbox": true,
+    "utc_start": "2026-10-03T13:13:57Z"
+   },
+   {
+    "allowance": [
+     2,
+     3
+    ],
+    "attempts": 2,
+    "backend_vs_responder": {
+     "all_equal": true,
+     "n_decisions": 2,
+     "n_ok_responses": 2,
+     "pairs": [
+      {
+       "candidate": "type-verification-value",
+       "equal": true,
+       "http_status": 200,
+       "input_tokens": 698,
+       "model": "jev-1.13.0",
+       "output_tokens": 52,
+       "probabilities": {
+        "abstain": 0.44,
+        "reobserve": 0.05,
+        "type-verification-value": 0.51
+       },
+       "request_id_match": true,
+       "responder": "typesafe",
+       "responder_host": "api.typesafe.ai",
+       "runner_backend": "typesafe",
+       "selected_id": "type-verification-value",
+       "step": 1
+      },
+      {
+       "candidate": "submit-form",
+       "equal": true,
+       "http_status": 200,
+       "input_tokens": 764,
+       "model": "jev-1.13.0",
+       "output_tokens": 44,
+       "probabilities": {
+        "abstain": 0.0,
+        "reobserve": 0.01,
+        "submit-form": 0.99
+       },
+       "request_id_match": true,
+       "responder": "typesafe",
+       "responder_host": "api.typesafe.ai",
+       "runner_backend": "typesafe",
+       "selected_id": "submit-form",
+       "step": 2
+      }
+     ]
+    },
+    "evidence_class": "LIVE_PROVIDER+REAL",
+    "guard_refused": 0,
+    "http_latency_ms": [
+     200.7,
+     168.6
+    ],
+    "loadavg_at_spawn": [
+     "14.83",
+     "9.39",
+     "5.33"
+    ],
+    "models": [
+     "jev-1.13.0"
+    ],
+    "oracle": {
+     "input_events": 1,
+     "journal_last_equals_token": true,
+     "runner_outcome": "verified",
+     "runner_rc": 0,
+     "submits": 1,
+     "submitted_equals_token": true,
+     "unverified_success": false,
+     "verified": true
+    },
+    "reached": 2,
+    "replay": {
+     "duplicate_mutation": false,
+     "flags": {
+      "browser_click_gt_1": false,
+      "browser_navigate_gt_1": false,
+      "browser_prepare_gt_1": false,
+      "browser_type_gt_1": false,
+      "input_event_after_submit_click": false,
+      "mutation_after_submit_click": false,
+      "reset_gt_1": false,
+      "submits_gt_1": false
+     },
+     "mutating_dispatches": {
+      "browser_click": 1,
+      "browser_type": 1
+     },
+     "replay_or_restart": false
+    },
+    "step_timings_ms": [
+     {
+      "action_ms": 1602.32,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.04,
+      "decision_ms": 351.31,
+      "provider_decision_ms": 325.62,
+      "semantic_observe_ms": 25.59,
+      "step": 1,
+      "total_step_ms": 1953.64,
+      "visual_observe_ms": 0.0
+     },
+     {
+      "action_ms": 1545.23,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.03,
+      "decision_ms": 176.27,
+      "provider_decision_ms": 170.3,
+      "semantic_observe_ms": 5.86,
+      "step": 2,
+      "total_step_ms": 1721.51,
+      "visual_observe_ms": 0.0
+     }
+    ],
+    "token_sha256_16": "5dff8ee300fe6b9e",
+    "trial": "R1t2",
+    "typed_ref_is_fixture_textbox": true,
+    "utc_start": "2026-10-03T13:14:19Z"
+   },
+   {
+    "allowance": [
+     2,
+     3
+    ],
+    "attempts": 2,
+    "backend_vs_responder": {
+     "all_equal": true,
+     "n_decisions": 2,
+     "n_ok_responses": 2,
+     "pairs": [
+      {
+       "candidate": "type-verification-value",
+       "equal": true,
+       "http_status": 200,
+       "input_tokens": 702,
+       "model": "jev-1.13.0",
+       "output_tokens": 52,
+       "probabilities": {
+        "abstain": 0.42,
+        "reobserve": 0.08,
+        "type-verification-value": 0.5
+       },
+       "request_id_match": true,
+       "responder": "typesafe",
+       "responder_host": "api.typesafe.ai",
+       "runner_backend": "typesafe",
+       "selected_id": "type-verification-value",
+       "step": 1
+      },
+      {
+       "candidate": "submit-form",
+       "equal": true,
+       "http_status": 200,
+       "input_tokens": 768,
+       "model": "jev-1.13.0",
+       "output_tokens": 44,
+       "probabilities": {
+        "abstain": 0.0,
+        "reobserve": 0.01,
+        "submit-form": 0.99
+       },
+       "request_id_match": true,
+       "responder": "typesafe",
+       "responder_host": "api.typesafe.ai",
+       "runner_backend": "typesafe",
+       "selected_id": "submit-form",
+       "step": 2
+      }
+     ]
+    },
+    "evidence_class": "LIVE_PROVIDER+REAL",
+    "guard_refused": 0,
+    "http_latency_ms": [
+     174.2,
+     183.7
+    ],
+    "loadavg_at_spawn": [
+     "15.35",
+     "9.77",
+     "5.53"
+    ],
+    "models": [
+     "jev-1.13.0"
+    ],
+    "oracle": {
+     "input_events": 1,
+     "journal_last_equals_token": true,
+     "runner_outcome": "verified",
+     "runner_rc": 0,
+     "submits": 1,
+     "submitted_equals_token": true,
+     "unverified_success": false,
+     "verified": true
+    },
+    "reached": 2,
+    "replay": {
+     "duplicate_mutation": false,
+     "flags": {
+      "browser_click_gt_1": false,
+      "browser_navigate_gt_1": false,
+      "browser_prepare_gt_1": false,
+      "browser_type_gt_1": false,
+      "input_event_after_submit_click": false,
+      "mutation_after_submit_click": false,
+      "reset_gt_1": false,
+      "submits_gt_1": false
+     },
+     "mutating_dispatches": {
+      "browser_click": 1,
+      "browser_type": 1
+     },
+     "replay_or_restart": false
+    },
+    "step_timings_ms": [
+     {
+      "action_ms": 1671.35,
+      "candidate": "type-verification-value",
+      "candidate_build_ms": 0.04,
+      "decision_ms": 378.99,
+      "provider_decision_ms": 348.7,
+      "semantic_observe_ms": 30.15,
+      "step": 1,
+      "total_step_ms": 2050.36,
+      "visual_observe_ms": 0.0
+     },
+     {
+      "action_ms": 1537.71,
+      "candidate": "submit-form",
+      "candidate_build_ms": 0.05,
+      "decision_ms": 192.57,
+      "provider_decision_ms": 185.65,
+      "semantic_observe_ms": 6.79,
+      "step": 2,
+      "total_step_ms": 1730.3,
+      "visual_observe_ms": 0.0
+     }
+    ],
+    "token_sha256_16": "abbc3e7a50f7114b",
+    "trial": "R1t3",
+    "typed_ref_is_fixture_textbox": true,
+    "utc_start": "2026-10-03T13:14:37Z"
+   }
+  ],
+  "verified": 3
+ },
+ "schema": "cua.r2.own78l.summary.v1",
+ "stub_keyshape": {
+  "evidence_class": "FIXTURE",
+  "oracle": {
+   "input_events": 1,
+   "journal_last_equals_token": true,
+   "runner_outcome": "verified",
+   "runner_rc": 0,
+   "submits": 1,
+   "submitted_equals_token": true,
+   "unverified_success": false,
+   "verified": true
+  },
+  "pass": true,
+  "requests": 2,
+  "state_key_paths": [
+   [
+    "observation",
+    "observation.capture_id",
+    "observation.regions",
+    "observation.history",
+    "observation.page",
+    "observation.page.title",
+    "observation.page.url",
+    "observation.form",
+    "observation.form.verification_field",
+    "observation.form.submit_button",
+    "observation.outline"
+   ],
+   [
+    "observation",
+    "observation.capture_id",
+    "observation.regions",
+    "observation.history",
+    "observation.page",
+    "observation.page.title",
+    "observation.page.url",
+    "observation.form",
+    "observation.form.verification_field",
+    "observation.form.submit_button",
+    "observation.outline"
+   ]
+  ]
+ },
+ "unit": {
+  "credential_env_present": 0,
+  "evidence_class": "UNIT",
+  "green_109": true,
+  "incomplete_export_attempts_kept": {
+   "attempt1-incomplete-export-f": "FAILED (errors=2, skipped=1)",
+   "attempt2-incomplete-export-f": "FAILED (errors=1, skipped=1)"
+  },
+  "python_ran": 234,
+  "python_status": "OK (skipped=1)",
+  "step_rcs": {
+   "python-unittest-discover": "0",
+   "ts-npm-test": "0",
+   "ts-typecheck": "0",
+   "verify_choice_cli": "0",
+   "verify_choice_cli-v2": "0",
+   "verify_decision_cli-mock": "0",
+   "verify_decision_cli-native": "0"
+  },
+  "ts": {
+   "fail": 0,
+   "pass": 109,
+   "tests": 109
+  },
+  "typecheck_rc": 0
+ },
+ "validity_ok": {
+  "CAP0t1": true,
+  "MOCKt1": true,
+  "MOCKt2": true,
+  "MOCKt3": true,
+  "R1t1": true,
+  "R1t2": true,
+  "R1t3": true,
+  "STUBt1": true
+ }
+}
