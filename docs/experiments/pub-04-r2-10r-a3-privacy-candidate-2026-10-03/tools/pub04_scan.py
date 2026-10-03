@@ -32,6 +32,9 @@ from verify_helper import GENERIC_PATH, PrivacyScanner, SECRET, decoded_texts, e
 
 DBUS = re.compile(r"/tmp/dbus-[A-Za-z0-9_]+")
 PRIVATE = {"plain-name", "user-name-in-raw", "encoded-name", "encoded-list", "abs-path", "tmp-dbus", "url-encoded"}
+PCT_ALNUM = r"%(?:3[0-9]|4[1-9A-F]|5[0-9A]|6[1-9A-F]|7[0-9A])"  # a percent-encoded letter or digit (re.I)
+URL_LEFT = r"(?<![A-Za-z0-9])(?<!" + PCT_ALNUM + ")"
+URL_RIGHT = r"(?![A-Za-z0-9])(?!" + PCT_ALNUM + ")"
 CLASSES = ["plain-name", "user-name-in-raw", "encoded-name", "url-encoded", "encoded-list", "abs-path",
            "tmp-dbus", "abs-path-generic", "secret-like"]
 
@@ -44,7 +47,10 @@ class Scanner(PrivacyScanner):
             raw = name.encode()
             for fmt in ("%{:02x}", "%{:02X}"):
                 enc = "".join(fmt.format(b) for b in raw)
-                self.url.append((f"name#{i}({role})", re.compile(re.escape(enc), re.I)))
+                # word boundary in decoded space, as for the plain class: no letter/digit (literal or
+                # percent-encoded) right before or after, so a public handle that starts with the name
+                # (the fork owner token) does not count as the name
+                self.url.append((f"name#{i}({role})", re.compile(URL_LEFT + re.escape(enc) + URL_RIGHT, re.I)))
 
     def _abs_n(self, text: str) -> tuple[str | None, int]:
         n = sum(len(p.findall(text)) for p in self.roots)
