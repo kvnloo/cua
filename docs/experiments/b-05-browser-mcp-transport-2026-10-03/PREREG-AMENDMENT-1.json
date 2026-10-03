@@ -1,0 +1,61 @@
+{
+ "schema": "cua-rfc-loop.prereg-amendment.v1",
+ "lane": "B-05",
+ "attempt": 2,
+ "amends": "PREREG.json (commit 3cced771f)",
+ "written_before_first_phase_B_trial": true,
+ "phase_A_basis": "Phase A chunk A1 (96/96 COMP trials verified and valid, 32 per class, EXCLUSIVE quiet-timed + cargo lock, 1-minute loadavg mean 13.8) and floor replays of all 96 trials (F1 1248/1248 and F0 1248/1248 requests byte-matched). Per-mark cost c_m = 34.5 us (median of 1536 null-pair intervals). Numbers below are corrected per-task means in ms, excess over the F0 floor with its 95% CI; they are recomputed by analyze_b05.py from raw/ (the overhead control was still running when this file was written and does not enter the selection rule).",
+ "selection": {
+  "mandated_ge_1ms_above_floor": {
+   "c_in.prep": {"fill": "0.829 [0.792, 0.869]", "toggle": "0.909 [0.838, 0.990]", "modal": "3.580 [0.873, 8.940] (mean carried by one trial; median 0.86)", "menu_item": "none: request-side session prep (ClientSession.send_request model build + memory-stream hop to the stdin writer) is not addressed by any pre-registered menu item", "result": "UNTESTED (no candidate)"},
+   "d_out.post": {"fill": "1.176 [1.065, 1.300]", "toggle": "0.851 [0.735, 0.995]", "modal": "0.916 [0.825, 1.011]", "menu_item": "none: Driver SDK post-dispatch work (runtime return, normalize, conform, handled) is not serialization or the stdout write; the menu's Driver items act on d_out.serialize / d_out.write / d_out.flush", "result": "UNTESTED (no candidate)"}
+  },
+  "optional_0_5_to_1_0ms_above_floor": {
+   "c_out.parse": {"fill": "0.713 [0.669, 0.759]", "toggle": "0.510 [0.476, 0.547]", "modal": "0.523 [0.485, 0.562]", "menu_item": "caller-side JSON parse replacement", "candidate": "PARSE_FAST"},
+   "c_out.validate": {"fill": "0.510 [0.470, 0.552]", "toggle": "0.457 [0.428, 0.493]", "modal": "0.478 [0.449, 0.511]", "menu_item": "caller-side validation replacement", "candidate": "VALIDATE_FAST"},
+   "c_out.route": {"fill": "0.557 [0.526, 0.590]", "toggle": "0.499 [0.469, 0.532]", "modal": "0.541 [0.511, 0.572]", "menu_item": "none fits: the memory-stream hops reader -> session receive loop -> request stream are not read buffering or chunk size (one response is one chunk: 0.2-1.8 KB frames, 64 KiB reads)", "result": "UNTESTED (no candidate)"}
+  },
+  "not_selected": {
+   "d_out.write + d_out.flush": "0.176-0.207 ms excess, CI upper 0.21-0.26 < 0.5: the inherited single-write knob cannot meet the DELETED gate (and frames in T are 0.2-1.8 KB, below the 8 KiB BufWriter size where the knob changes the write count); not measured",
+   "d_out.serialize": "0.024-0.028 ms: Driver compact serialization not measured (serde_json::to_string is already compact)",
+   "duplicated text content": "frames in T are 0.2-1.8 KB and payload-size costs (d_out.serialize, d_out.write, c_out.frame) are each < 0.25 ms per task; not measured (would be at most OWNER_DECISION)",
+   "res.store_lookup": "0.025-0.036 ms per task: caching the snapshot-store lookup not measured",
+   "others": "every other lane sub-span is below 0.5 ms per task (see the summary)"
+  }
+ },
+ "candidates": [
+  {
+   "arm": "PARSE_FAST",
+   "chunk_prefix": "B1",
+   "control_arm": "COMP_OFF",
+   "arm_overrides": {"parser": "fast"},
+   "caller_variant": {"parser": "fast"},
+   "driver_knobs": {},
+   "target_subspans": ["c_out.parse"],
+   "floor_keys": ["f.c_out.parse"],
+   "primary_metric": "caller_ms",
+   "menu_item": "caller-side JSON parse replacement (caller only; outputs compared)",
+   "implementation": "harness/b05_variants.py fast_parse: an exact JSON-RPC success envelope is decoded with json.loads and wrapped by JSONRPCResponse.model_construct; anything else goes through the library parser unchanged",
+   "equivalence": "100% of tools/call responses in both arms of B1: decoded message canonical JSON identical to the library parser's on the same bytes (harness/b05_equivalence.py); negative: the 10 malformed frames of harness/b05_floor.MALFORMED through the full client stack with the fast parser are all rejected",
+   "output_contract_change": false
+  },
+  {
+   "arm": "VALIDATE_FAST",
+   "chunk_prefix": "B2",
+   "control_arm": "COMP_OFF",
+   "arm_overrides": {"validator": "fast"},
+   "caller_variant": {"validator": "fast"},
+   "driver_knobs": {},
+   "target_subspans": ["c_out.validate"],
+   "floor_keys": ["f.c_out.validate"],
+   "primary_metric": "caller_ms",
+   "menu_item": "caller-side validation replacement (caller only; outputs compared)",
+   "implementation": "harness/b05_variants.py FastValidator: each output schema compiled at tools/list (outside T) into closures for the keywords the Driver's schemas use; accept -> no errors, reject -> the library validator's iter_errors (same best_match text)",
+   "equivalence": "100% of validated structured results in both arms of B2: accept/reject and error text identical to the library compiled validator; negative: every mutation of each captured result shape (missing/null/wrong-type/bad-enum field, extra property, non-object) gets the library's verdict and error text",
+   "output_contract_change": false
+  }
+ ],
+ "design": "per candidate: plan B (b05_browser.py --plan B --arms COMP_OFF,<arm>), 30 rounds, classes rotated per round, AB (COMP_OFF first) on even rounds and BA on odd rounds = 30 pairs per class, layer = chunk prefix; then N4a 5 per class in the candidate arm (same layer and routines); fresh Driver, Chrome, fixture and token per trial; EXCLUSIVE quiet-timed + cargo lock, each acquisition <= 25 min",
+ "gates": "PREREG.gates unchanged; saving = paired mean (COMP_OFF - candidate) of caller_ms per class; DELETED iff >= 0.5 ms with 95% CI lower bound > 0, validity 100% in both arms, equivalence 100%, N4a 5/5 per class, negative control all rejected/matched; a T_runner CI entirely below 0 for the saving (candidate slower) is a regression",
+ "unchanged": "binary B5 (sha256 f4149bdd...), configuration, oracle, analysis code paths for Phase A"
+}
