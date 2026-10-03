@@ -317,6 +317,26 @@ pub fn classify_focus_move(
     }
 }
 
+/// The same-app rule on both focus signals. The WM writes
+/// `_NET_ACTIVE_WINDOW` a beat after the core focus moves, so right after a
+/// steal the active window can still name the target's window while the core
+/// focus already sits on the other application's: an attributable core focus
+/// must belong to the target too.
+fn same_app_move(
+    target_pid: Option<u32>,
+    previous_owner: Option<u32>,
+    active_owner: Option<u32>,
+    core_owner: Option<u32>,
+) -> FocusMove {
+    match (
+        classify_focus_move(target_pid, previous_owner, active_owner),
+        classify_focus_move(target_pid, previous_owner, core_owner.or(active_owner)),
+    ) {
+        (FocusMove::SameAppDialog, FocusMove::SameAppDialog) => FocusMove::SameAppDialog,
+        _ => FocusMove::OtherApp,
+    }
+}
+
 /// What a background action must not change.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FocusSnapshot {
@@ -647,8 +667,10 @@ impl FocusSnapshot {
         // Same-app rule: the focus stayed inside the target application
         // (it opened a dialog). Leave it and say so.
         let new_owner = focus_window.and_then(|w| x.owner_pid(w));
+        let (core, _) = x.core_focus();
+        let core_owner = (core > 1).then(|| x.owner_pid(core)).flatten();
         if target_owns_focus
-            && classify_focus_move(target_pid, self.previous_owner, new_owner)
+            && same_app_move(target_pid, self.previous_owner, new_owner, core_owner)
                 == FocusMove::SameAppDialog
         {
             let window = focus_window.unwrap_or(0);
@@ -970,6 +992,38 @@ mod tests {
         );
         assert_eq!(
             classify_focus_move(None, Some(7), Some(7)),
+            FocusMove::OtherApp
+        );
+    }
+
+    /// OWN-20G's 10 misclassified steals: the guard read the core focus on the
+    /// decoy (pid 3) while `_NET_ACTIVE_WINDOW` still named the target's
+    /// window (pid 7), and left the steal in place as the app's own dialog.
+    #[test]
+    fn a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog() {
+        assert_eq!(
+            same_app_move(Some(7), Some(7), Some(7), Some(3)),
+            FocusMove::OtherApp,
+            "core focus on another app while the active window lags"
+        );
+        // The app's own dialog took the core focus first: still its dialog.
+        assert_eq!(
+            same_app_move(Some(7), Some(7), Some(7), Some(7)),
+            FocusMove::SameAppDialog
+        );
+        // The core focus is PointerRoot/None or on a window no pid owns:
+        // the active window decides, as before.
+        assert_eq!(
+            same_app_move(Some(7), Some(7), Some(7), None),
+            FocusMove::SameAppDialog
+        );
+        // The active window moved to another app first: restore, as before.
+        assert_eq!(
+            same_app_move(Some(7), Some(7), Some(3), Some(7)),
+            FocusMove::OtherApp
+        );
+        assert_eq!(
+            same_app_move(Some(7), Some(3), Some(7), Some(7)),
             FocusMove::OtherApp
         );
     }
