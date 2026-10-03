@@ -260,6 +260,8 @@ impl X {
             .into_iter()
             .filter_map(|(w, c)| c.reply().ok().map(|a| (w, a)))
             .filter(|(_, a)| a.override_redirect && a.map_state == MapState::VIEWABLE)
+            // FIX-20O control only (rejected design): the tools/impl_.rs title rule.
+            .filter(|(w, _)| !(self.window_pid(*w).is_none() && self.window_title(*w).starts_with("Cua.")))
             .map(|(w, _)| w)
             .collect()
     }
