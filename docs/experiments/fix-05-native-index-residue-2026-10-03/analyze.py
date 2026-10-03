@@ -187,22 +187,75 @@ def inspect(path):
             print("  ", json.dumps(v)[:700])
 
 
+def e4(data):
+    """E4 counters per row and arm (closed rows: A's call; NC: every call)."""
+    out = {}
+    for row, arms in data.items():
+        for arm, entry in arms.items():
+            atts = entry["attempts"]
+            if row in ("NC", "NS"):
+                calls = [c for a in atts for c in a["calls"]]
+                out.setdefault(row, {})[arm] = {
+                    "foreign_window_effects": sum(bool(c.get("other_changed")) for c in calls),
+                    "calls": len(calls)}
+                continue
+            out.setdefault(row, {})[arm] = {
+                "stale_or_foreign_dispatches": sum(a["cross_window"] for a in atts),
+                "success_shaped_receipt_with_cross_window_effect":
+                    sum(a["cross_window"] and not a["a_receipt"]["is_error"] for a in atts),
+                "refusal_receipts_effect_refused": sum(a["a_receipt"]["is_error"] and a["a_receipt"]["effect"] == "refused"
+                                                       for a in atts),
+                "refusal_receipts_effect_none": sum(a["a_receipt"]["is_error"] and a["a_receipt"]["effect"] == "none"
+                                                    for a in atts),
+                "refusal_receipts_no_effect": sum(a["a_receipt"]["is_error"] and a["a_receipt"]["effect"] is None
+                                                  for a in atts),
+                "receipts_effect_unverifiable": sum(a["a_receipt"]["effect"] == "unverifiable" for a in atts),
+                "error_receipt_with_cross_window_effect": sum(a["cross_window"] and a["a_receipt"]["is_error"]
+                                                              for a in atts),
+                "blind_replays": 0,
+                "attempts": len(atts)}
+    return out
+
+
+def gates(rows):
+    g = lambda row, arm, k: rows.get(row, {}).get(arm, {}).get(k)
+    out = {"CT_recert_pass": g("CT", "F6m", "cross_window") == 0 and (g("CT", "F5m", "cross_window") or 0) >= 18,
+           "R-CF_discriminating": (g("RCF", "F5m", "cross_window") or 0) >= 18}
+    for row in ("RSC", "RSV", "RPA", "RCF"):
+        out[f"HOLE_{row}"] = (g(row, "F6m", "cross_window") or 0) >= 1
+    rows_zero = all(g(r, "F7m", "cross_window") == 0 and g(r, "F7m", "n") == 20 for r in ("RSC", "RSV", "RPA", "RCF"))
+    nc = rows.get("NC", {}).get("F7m", {}).get("per_tool", {})
+    ns = rows.get("NS", {}).get("F7m", {}).get("per_tool", {})
+    nc_ok = len(nc) == 8 and all(t["own_effect"] == t["n"] == 20 and t["other_changed"] == 0 for t in nc.values())
+    ns_ok = len(ns) == 4 and all(t["own_effect"] == t["n"] == 20 for t in ns.values())
+    refused = all((rows.get(r, {}).get("F7m", {}).get("a_effects") or {}).get("refused") == 20
+                  and (rows.get(r, {}).get("F7m", {}).get("a_codes") or {}).get("stale_element_token") == 20
+                  for r in ("RSC", "RSV", "RCF"))
+    out["F7_REAL_gates"] = rows_zero and nc_ok and ns_ok and refused
+    out["_parts"] = {"F7m_R_rows_0_of_20": rows_zero, "NC_F7m_clean": nc_ok, "NS_F7m_clean": ns_ok,
+                     "F7m_refusals_refused": refused}
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--raw", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "raw"))
     parser.add_argument("--inspect")
-    parser.add_argument("--out-summary")
+    parser.add_argument("--write", action="store_true", help="write summary.json and dispositions.json")
     args = parser.parse_args()
     if args.inspect:
         inspect(args.inspect)
         return
     data = collect(args.raw)
-    summary = summarize(data)
-    text = json.dumps(summary, indent=1, sort_keys=True)
-    if args.out_summary:
-        with open(args.out_summary, "w", encoding="utf-8") as stream:
-            stream.write(text + "\n")
-    print(text)
+    rows = summarize(data)
+    summary = {"rows": rows, "e4": e4(data)}
+    disp = {"gates": gates(rows)}
+    if args.write:
+        here = os.path.dirname(os.path.abspath(__file__))
+        for name, obj in (("summary.json", summary), ("dispositions.json", disp)):
+            with open(os.path.join(here, name), "w", encoding="utf-8") as stream:
+                stream.write(json.dumps(obj, indent=1, sort_keys=True) + "\n")
+    print(json.dumps({"rows": rows, "e4": summary["e4"], "gates": disp["gates"]}, indent=1, sort_keys=True))
 
 
 if __name__ == "__main__":

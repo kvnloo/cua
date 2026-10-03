@@ -1,0 +1,70 @@
+diff --git i/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs w/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs
+index a071c88d4..0f04f46d0 100644
+--- i/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs
++++ w/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs
+@@ -887,6 +887,65 @@ mod window_scoped_fallback_tests {
+     }
+ }
+ 
++#[cfg(test)]
++mod residue_fallback_tests {
++    use super::*;
++
++    // FIX-05 (kvnloo/cua#36, kvnloo/cua#73 E4): the index fallbacks FIX-04 left
++    // pid-wide. No snapshot was ever published for this (pid, window), so the
++    // token's window snapshot is gone: every element-addressed path must refuse
++    // it as stale instead of resolving the index against another window.
++    const PID: u32 = 3_999_905;
++    const XID: u64 = 0x7fff_0f05;
++
++    /// set_value -> set_value_in: the fallback after the cached write is
++    /// set_value(pid, idx), a walk of the whole application.
++    #[test]
++    fn window_scoped_set_value_without_its_snapshot_is_stale_not_resolved_pid_wide() {
++        let error = set_value_in(PID, Some(XID), 6, "fix05").unwrap_err();
++        assert!(error.is::<native::CachedElementGone>(), "{error:#}");
++    }
++
++    /// scroll -> scroll_element: the element token's index was resolved
++    /// against a walk of the whole application, never against its window.
++    #[test]
++    fn window_scoped_scroll_without_its_snapshot_is_stale_not_resolved_pid_wide() {
++        let error = scroll_element(
++            PID,
++            Some(XID),
++            9,
++            "down",
++            1,
++            cua_driver_contract::ScrollBy::Line,
++        )
++        .unwrap_err();
++        assert!(error.is::<native::CachedElementGone>(), "{error:#}");
++    }
++
++    /// click -> perform_action_observed (pin, unchanged by FIX-05): the public
++    /// element action acts on the exact observed object and never re-walks by
++    /// index, so a gone object is stale. perform_action(pid, idx) has no public
++    /// element-token caller.
++    #[test]
++    fn observed_action_without_its_object_is_stale_and_never_re_walks() {
++        let element = cache::CachedElement {
++            key: 1,
++            identity: AtspiIdentity {
++                bus_name: ":1.7".into(),
++                path: "/node/2".into(),
++                frame_bus_name: ":1.7".into(),
++                frame_path: "/frame/w1".into(),
++            },
++            object_ref: None,
++            role: "check box".into(),
++            in_web_content: false,
++            bounds: None,
++        };
++        let error = perform_action_observed(&element).unwrap_err();
++        assert!(error.is::<native::CachedElementGone>(), "{error:#}");
++    }
++}
++
+ #[cfg(test)]
+ mod token_frame_tests {
+     use super::*;

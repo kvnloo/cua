@@ -1,0 +1,78 @@
+{
+ "schema": "cua.r2.provenance.v1",
+ "lane": "FIX-05",
+ "shas": {
+  "upstream_base": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+  "F5m": "d5447e9d3d7ba41c25bd43ca132ff01371b98df8",
+  "F6m": "c07691e09ec4c5e1edcb790057ae9480ec9e2505",
+  "F7": "66afb3427943dd41ad3db5985835506429e852f9",
+  "F7m": "66afb3427943dd41ad3db5985835506429e852f9",
+  "prereg": "04665bd2d688bd3709ef83a991cdc6c1e96e0169",
+  "fix04_source_branch_head": "2b59a66f75fbc31344e90b2c1ad1b1aa940ab7cb"
+ },
+ "trees": {
+  "a9baa8d10": {
+   "libs/cua-driver": "98aaae2c1afa7758cad5f5dd67cf712a3869b792",
+   "rust": "e6a89add8968e6ba8d5a288e854988f975b797ad"
+  },
+  "F5m": {
+   "libs/cua-driver": "81aa78692b1d3679777332adea0258e6ea03f890",
+   "rust": "36b194fbf9644d5acabace1180ab7c66554429cc"
+  },
+  "F6m": {
+   "libs/cua-driver": "42ea7c71b769aa89d3b979b43a00456cac06483a",
+   "rust": "d799375fde152e79e7072eb931a26723a36c9b5a"
+  },
+  "F7m": {
+   "libs/cua-driver": "23caf36addf1b23c6e6cf0575d1ad05dba0f1bf3",
+   "rust": "402c42e565323249d644ca52e15a43b6bb330e04"
+  }
+ },
+ "replay": "raw/replay.txt: 14 commits cherry-picked onto a9baa8d10 with -x, patch-id equal 14/14, no conflict",
+ "binaries": {
+  "F5m": {
+   "file": "cua-driver-fix05-f5m-d5447e9d3",
+   "sha256": "4778ada19ae343aed9ebae4ff43db36921bf65459094df535694a658aa0e37e1",
+   "version": "cua-driver 0.33.1",
+   "built_from": "detached temp worktree at d5447e9d3",
+   "fresh_workspace_units": 0
+  },
+  "F6m": {
+   "file": "cua-driver-fix05-f6m-c07691e09",
+   "sha256": "b8efb6ec89a2920128e3100364d8aa3999fa1decb111eae0540bbfceb9767830",
+   "version": "cua-driver 0.33.1",
+   "built_from": "lane worktree at c07691e09 (clean Rust tree)",
+   "fresh_workspace_units": 0
+  },
+  "F7m": {
+   "file": "cua-driver-fix05-f7m-66afb3427",
+   "sha256": "220b5e11145f74539739967dbfc5ddaca5ccfef3574b3d302dc2714dc13d806a",
+   "version": "cua-driver 0.33.1",
+   "built_from": "lane worktree at 66afb3427 (clean Rust tree; packet files untracked, outside the Rust workspace)",
+   "fresh_workspace_units": 0
+  }
+ },
+ "build": "bin/hostless -> harness/qlock_fix05.sh (shared) -> flock cargo-build.lock -> build-driver.sh <wt> <label> cua-release-fix02r (cargo build -v --locked --release -p cua-driver --features portal-input); raw/builds/",
+ "versions_source": "driver_version in every counted block header (read inside the private session)",
+ "environment": {
+  "os": "Linux 7.2.2 x86_64",
+  "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "hostless": "bin/hostless v2",
+  "session": "cua-x11-session.sh (private rootless Xvfb 1920x1080, openbox, picom, private D-Bus, AT-SPI bus)",
+  "python_fixture": "system python3 + gi (GTK3) inside the session",
+  "jev_use": "uv venv Python 3.12.13, Node v22.23.2",
+  "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=false, DO_NOT_TRACK=1"
+ },
+ "unit_expectations": {
+  "core-lib-tests": "868 passed, 0 failed on F6m and F7m",
+  "platform-linux-lib": "F6m 606 passed / F7m 610 passed, 0 failed, 10 ignored",
+  "jev-use": "Python 245 OK (1 skipped), TS 121/121, typecheck rc 0, 4 CLI verifiers rc 0 on F6m and F7m; the two guarded-focused steps do not apply on this base (rc 5: no such test file / rc 1), as in SETUP, FIX-03, FIX-04"
+ },
+ "provider": {
+  "name": "TypeSafe",
+  "cap": 0,
+  "attempts": 0,
+  "reached": 0
+ },
+ "publication_sha": "set by Publish; never equal-by-assumption to the tested SHAs"
+}

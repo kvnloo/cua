@@ -1,0 +1,28 @@
+   Compiling cua-driver-contract v0.33.1 (<scrubbed0>/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.33.1 (<scrubbed0>/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-core v0.33.1 (<scrubbed0>/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.33.1 (<scrubbed0>/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.33.1 (<scrubbed0>/libs/cua-driver/rust/crates/platform-linux)
+error[E0061]: this function takes 5 arguments but 6 arguments were supplied
+   --> crates/platform-linux/src/atspi/mod.rs:913:21
+    |
+913 |         let error = scroll_element(
+    |                     ^^^^^^^^^^^^^^
+914 |             PID,
+915 |             Some(XID),
+    |             --------- unexpected argument #2 of type `std::option::Option<u64>`
+    |
+note: function defined here
+   --> crates/platform-linux/src/atspi/mod.rs:367:8
+    |
+367 | pub fn scroll_element(
+    |        ^^^^^^^^^^^^^^
+help: remove the extra argument
+    |
+914 -             PID,
+915 -             Some(XID),
+914 +             PID,
+    |
+
+For more information about this error, try `rustc --explain E0061`.
+error: could not compile `platform-linux` (lib test) due to 1 previous error
