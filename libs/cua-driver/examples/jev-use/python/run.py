@@ -103,8 +103,9 @@ class Driver:
         data = result.structuredContent
         if not isinstance(data, dict):
             raise RuntimeError(f"{name} returned no structured result")
-        if data.get("status") == "refused" or data.get("refusal"):
-            refusal = data.get("refusal")
+        if data.get("effect") == "refused" or data.get("status") == "refused" or data.get("refusal"):
+            # The closed ActionResult replaces legacy status/refusal fields.
+            refusal = data.get("error") if data.get("effect") == "refused" else data.get("refusal")
             code = refusal.get("code") if isinstance(refusal, dict) else None
             # DriverToolError is a RuntimeError, so existing handlers still match.
             raise DriverToolError(
