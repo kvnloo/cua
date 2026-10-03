@@ -1,0 +1,39 @@
+{
+ "schema": "n03.provenance.v1",
+ "lane": "N-03 (wave 4, attempt 2)",
+ "branch": "exp/n-03-native-closure-axfg-a2-20261003",
+ "base_commit": "85a73c2c71e44ca512b8cc6023cf5c77c0f35bdc",
+ "base_composition": {
+  "r2_10_source": "8f3a646b4818b757648835cf89db8886626b1cf0 (R2-10 accepted wave 3; upstream base 989cc76cec262ff8bcf6968b637820340fb9caaa)",
+  "n02_cherry_pick": "194a6342e21b74f37f4e23af1d90bf32ad377397 -> 85a73c2c7 (range-diff in raw/provenance/range-diff.txt: patch content unchanged, conflict context only)"
+ },
+ "tested_source": {
+  "commit": "85a73c2c71e44ca512b8cc6023cf5c77c0f35bdc",
+  "libs_cua_driver_tree": "186e373fb7d3c39d167c8805646be52b23aaa700",
+  "driver_changes_on_this_branch": "none"
+ },
+ "prereg_commit": "d929b49f25c83f237141641fab3eb03a3c231739",
+ "binaries": {
+  "N3": {"name": "cua-driver-n03-a2-85a73c2c7", "sha256": "b1843871a7439486ebc719bf6e7817929b1c1d87e8b86183b99609f926bf7986", "version": "cua-driver 0.32.0", "version_read": "inside cua-x11-session.sh (run_block.sh log line, raw/runs/*/session.log)", "build": "build-driver.sh (cargo build --locked --release -p cua-driver --features portal-input; rustc 1.97.1) under hostless and the cargo-build lock; target family cua-release-r2-10; 105 s"},
+  "R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "role": "default-off smoke comparator only"},
+  "attempt1_N3": {"name": "cua-driver-n03-85a73c2c7", "sha256": "262a8cfcf7e84584287122f3472a68ef7f83793079fe181994ec2cf401682b0a", "role": "not used; rebuild of the same source is not bit-identical (57490072 vs 57489976 bytes; differing strings are LLVM anonymous-symbol hashes)"}
+ },
+ "upstream_freshness": {
+  "planning_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (libs/cua-driver tree df2b49c32e73756f0ef1ee2338f51626d5921d92)",
+  "live_main_at_start": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (gh read 2026-10-03T02:40:05Z; compare planning...main = 0 ahead)",
+  "drift_vs_tested_upstream_base": "989cc76ce..41c34cb0d touches 8 libs/cua-driver files (trycua/cua PR 4375 snapshot cold-start budget + tool description text, PR 3489 macOS key gap). Claim-relevant: platform-linux tools/impl_.rs changes only get_window_state's default walk budget for a window's first snapshot (2000 ms instead of 1000 ms when timeout_ms is omitted; the fixture walk takes about 10 ms) and its description text; cua-driver-core tool_schema.rs adds the helper. No change to output schemas, atspi/native.rs, foreground.rs, proxy.rs, server.rs or sdk_adapter.rs.",
+  "live_main_at_end": "a8d5788fddee3d851beaabd0d626bbc5e9fdf7cc (gh read 2026-10-03T05:45:40Z; compare 41c34cb0d...main = 2 ahead, 0 libs/cua-driver files)"
+ },
+ "live_heads_at_start": {
+  "trycua/cua PR 4316": "a0bca744067d04f05904319d3d919be30c336556 (open)",
+  "kvnloo/cua#106": "c45845797b714ccfd76a9569d3238a0724107a83 (open; packet layout reference)"
+ },
+ "live_heads_at_end": {
+  "trycua/cua main": "a8d5788fddee3d851beaabd0d626bbc5e9fdf7cc",
+  "trycua/cua PR 4316": "a0bca744067d04f05904319d3d919be30c336556 (open, unchanged)",
+  "kvnloo/cua#106": "c45845797b714ccfd76a9569d3238a0724107a83 (open, unchanged)"
+ },
+ "publication_sha": "set by the Publish agent",
+ "environment": "one Linux host (10 CPUs); hostless v2 for every code-executing command; native blocks inside hostless-strict + cua-x11-session.sh (private Xvfb, private AT-SPI bus); Driver telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); jev-use venv (uv sync --frozen, Python 3.12; mcp 1.30.0, jsonschema 4.26.0, referencing 0.37.0); other tracks kept the host loaded outside the quiet lock (loadavg per trial in raw)",
+ "provider": {"attempts": 0, "reached": 0}
+}
