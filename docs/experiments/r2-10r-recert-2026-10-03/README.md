@@ -370,6 +370,19 @@ budget). NOT_RUN: none of the pre-registered rows.
    scripted rows are labelled REAL+BENCHMARK (FIXTURE); the D1 timing differences are labelled
    indicative. Committed session logs contain ephemeral private-session D-Bus socket addresses
    (no user or host name); they are kept as recorded.
+12. Publish-gate fixes (PUB-02, 2026-10-03; no trial, number, gate or verdict changed). (a) The
+   verifier inherited from R2-10 carried a hex-encoded private-name list. The branch was rebuilt from
+   45dff8f32 so that no commit carries it: `verify_artifacts.py` now reads private names from the
+   untracked file named by `CUA_PRIVACY_NAMES_FILE` plus the verifying host's name (whole-token match),
+   decodes and scans hex and base64 runs, scans gzip members but not the compressed bytes, and fails on
+   a committed list of encoded name-like strings. Each rebuilt commit keeps its author date and its
+   original tree except `verify_artifacts.py`. SHAs cited elsewhere in this packet are the originals:
+   caf3d68a7 = bda126df2, 3028d8078 = 8e67e6bbc (PREREG; R' was built at 3028d8078, whose
+   libs/cua-driver tree 8e67e6bbc shares), 0bfd24053 = 56e980c6f, 567d76e2b = 2bd181dff,
+   184b39b43 = 8be812d0c, c183b95e3 = ac46b5032. (b) `raw/provenance/builds.log` is annotated:
+   the first Cn' control build ended rc=143 because the RECERT-FIX lane's `pkill -f` at ~02:44:58Z
+   matched this lane's build chain, not because of a 120 s tool timeout as the original log line
+   says. That line is kept; the rerun built Cn'.
 
 ## Limits
 
@@ -399,3 +412,5 @@ no default change is claimed.
 - `raw/`: browser trial bundles, native and drift trials, Phase 0 rows, shakedowns, the interrupted S2
   block, lock receipts, chunk logs, rebase evidence, provenance reads.
 - Verify from a clean clone of the lane head: `python3 verify_artifacts.py` (standard library only).
+  Set `CUA_PRIVACY_NAMES_FILE` to an untracked file of private names (one per line) to extend the
+  name check beyond the verifying host's name; the names are never committed.
