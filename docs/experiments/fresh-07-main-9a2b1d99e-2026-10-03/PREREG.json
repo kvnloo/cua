@@ -1,0 +1,91 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "lane": "FRESH-07",
+  "packet": "docs/experiments/fresh-07-main-9a2b1d99e-2026-10-03/",
+  "branch": "exp/fresh-07-main-9a2b1d99e-20261003",
+  "purpose": "E6 freshness: a disposition for every Linux-relevant libs/cua-driver change between 0f1955d2f (tested line of the surviving claims) and upstream main 9a2b1d99e, and a per-claim UNAFFECTED/AFFECTED call. Freshness only; no new product claim.",
+  "committed_before": "Phase 1c (the REAL window-tree probe). No probe trial runs before this file is committed.",
+  "sources": {
+    "old_line": {"sha": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218", "libs_cua_driver_tree": "df2b49c32e73756f0ef1ee2338f51626d5921d92"},
+    "new_main": {"sha": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b", "libs_cua_driver_tree": "42ce4dfcc493e4ab3d87aa6e5c2d25a44eaff798"},
+    "linux_relevant_changes_expected": [
+      "platform-linux/src/overlay.rs: trycua/cua PR 4529 (5e13eb777) - an idle X11 agent-cursor overlay window stays unmapped until a frame with a non-empty visible shape is painted; it is unmapped again when the shape is blanked (cursor hidden, capture hold, resync blanking)",
+      "cua-driver-core/src/expectation.rs: trycua/cua PR 4531 (15c6c24e2) - verify_state element matching prefers addressable rows over rows marked display_only=true, and projects display_only",
+      "Cargo.lock / Cargo.toml / VERSION: 0.32.0 -> 0.33.0 (1553a3f36 release, 32b34fbc7 installer version)",
+      "tests/fixtures/shared/scenarios.json: one scenario added (to be classified in Phase 1a)"
+    ]
+  },
+  "rule_verbatim": "A claim is UNAFFECTED iff (b)/(d) SOURCE shows the changed code is not on its forced path, or the probe in (c) shows identical overlay map state in every arm of that claim between the old line and 9a2b1d99e. Otherwise it is AFFECTED.",
+  "rule_operationalization": {
+    "forced_path": {
+      "timing_claims": "every Driver code path executed between the claim's T0 and its oracle read in any arm, including awaits on the agent-cursor arrival and the focus-guard post-check",
+      "count_claims": "the decision code that produces the counted outcome (refusal, landing, restore, reconnect, duplicate) plus every window-system read that this decision consumes"
+    },
+    "overlay_rs_on_forced_path_iff_any": {
+      "T1": "an arm has the agent cursor enabled for an action inside T on X11, so the action awaits (or races) an X11 overlay paint whose code changed (map/unmap transitions in paint_x11_tiles / blank_x11_overlay_shape)",
+      "T2": "the claim's counted decision, or a step inside T, reads the X11 map state of override-redirect root children without excluding the agent overlay (SOURCE: platform-linux input/focus_guard.rs mapped_popups(), which has no own-overlay filter; input/foreground.rs window set, which keeps pid-less popups). tools/impl_.rs:976 filters titles starting with 'Cua.' and does not count.",
+      "T3": "the claim is a timing claim whose arms all have the cursor off, and the probe does NOT show the old line's startup MapWindow of the overlay completed before the MCP initialize reply in 5/5 runs of every old binary (T0 is always after initialize in every harness)"
+    },
+    "count_claim_exception": "For a count claim, T1 alone does not make it AFFECTED: a shifted arrival time is not the counted quantity. T2 makes a count claim AFFECTED only when the read feeds the counted decision (a focus-guard restore / report that is counted). A count decided before the guard post-check (refusal before delivery, landing seen by a target-owned oracle) is UNAFFECTED by SOURCE.",
+    "expectation_rs_on_forced_path_iff": "the claim calls Driver verify_state (expectation::VerifyStateTool, the only caller of evaluate_predicates) OR any Linux producer (platform-linux, cua-driver-core, jev-use) can emit an element field display_only=true on 9a2b1d99e. If neither, the partition returns the unchanged match list and project_element adds no key: UNAFFECTED.",
+    "version_bump_on_forced_path_iff": "any CUA_DRIVER_* env read or tool-schema code differs between the two sources apart from version strings (SOURCE diff of the Linux crates: cua-driver, cua-driver-core, cua-driver-sdk, cua-driver-contract, platform-linux, cursor-overlay)",
+    "unaffected_never_from_absence": "An UNAFFECTED call cites SOURCE (file:line on 9a2b1d99e) and, for overlay.rs, the probe facts. Not observing an effect is never sufficient."
+  },
+  "claims_preliminary": {
+    "note": "Preliminary SOURCE reading written before the probe; the final table is in README.md and summary JSON. T1/T2/T3 as above.",
+    "R2-10R scripted browser BASE/COMP/COMP_K on R' (exp/r2-10r-recert-a2-20261003 c183b95e3)": "BASE and COMP_K have the cursor ON (browser_platform.rs animate_cursor_to_for awaits the X11 arrival) -> T1 -> AFFECTED",
+    "R2-10R native X/S0/BASE rows on R'": "background AT-SPI click inside focus_guard::guarded with reveal_pointer_action_for before it (tools/impl_.rs ~6379-6457) -> T2 (timing row; guard post-check inside T) -> AFFECTED",
+    "R2-10R D1 first-snapshot grace": "observation only (get_window_state), no action, no paint -> UNAFFECTED by SOURCE",
+    "B-07 on B7 (exp/b-07-transport-residual-rprime-20261003 eab1e87a3)": "every measured arm is R2-10R COMP (cursor off), browser CDP route, no focus guard -> UNAFFECTED unless T3 fails",
+    "B-08 on B7 (exp/b-08-per-process-cold-b7-20261003 49ae94590)": "every measured arm is scripted COMP (cursor off); per-process cold start makes T3 decisive -> UNAFFECTED unless T3 fails; the feedback-on SMOKE is a correctness control, not a claim",
+    "N-04 X+V+HCL vs BASE on R'n (exp/n-04-native-composition-rprime-20261003 9d7d8d7a5), incl. V/HCL component rows and the ungated focus-steal row": "background AT-SPI click under the focus guard with cursor reveal in every arm -> T2 -> AFFECTED",
+    "N-03 (exp/n-03-native-closure-axfg-a3-20261003 6b70ec902)": "same native route; Part B ax_fg foreground route post-check reads the foreground window set incl. pid-less popups -> T2 -> AFFECTED (superseded for E2/E3 by N-04)",
+    "OWN-20P (exp/own-20p-guard-port-a11y-20261003 64081dded) R1 restore / normal path / safety": "counted outcome is the guard restore decision, which reads mapped_popups -> T2 -> AFFECTED",
+    "OWN-20P R3 reconnect, noop_direct": "counted outcome is AT-SPI bus reconnect / action reach, decided before the guard post-check -> UNAFFECTED by SOURCE",
+    "OWN-20Q (exp/own-20q-a11y-triggers-dialog-markfree-20261003 44116546d) R1m restore, DLG": "guard restore decision -> T2 -> AFFECTED",
+    "OWN-20Q A2 r3s/r3w/r3_carry": "reconnect / duplicate counts decided in atspi/native.rs before the guard post-check -> UNAFFECTED by SOURCE",
+    "FIX-03 (exp/fix-03-file-input-toctou-session-routing-20261003 e300edbd3) A1-A3 browser": "feedback off, CDP route, count claims -> UNAFFECTED by SOURCE",
+    "FIX-03 WS/WK/WR native X11 (X RECORD oracle)": "refusal decided before delivery; landing counted by X RECORD; guard post-check not counted -> UNAFFECTED by SOURCE",
+    "RECERT-FIX (exp/fix-recert-a3-20261003 939580fc6) I2/I2d/I5p/I5pt/W2a-W2d/F3/F4, OWN-09R, OWN-16W dd205d17b": "refusal/landing/duplicate counts decided before any guard post-check; OWN-09R is C ABI/SDK without display actions; F3 ts keeps feedback on but its count is runner logic -> UNAFFECTED by SOURCE",
+    "OWN-16W X11 string row (exp/own-16w-sway-modality-20261002 1b9819157)": "non-boolean include_screenshot refused before any producer runs; no action, no paint -> UNAFFECTED by SOURCE"
+  },
+  "probe_1c": {
+    "class": "FIXTURE fact (window tree), not timing; SHARED quiet-lane lock not required; run under bin/hostless + cua-x11-session.sh with CUA_SESSION_ATSPI=1",
+    "binaries": {
+      "Rp": "R' cua-driver-r2-10r-a2-45dff8f32 sha256 922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8 (0.32.0)",
+      "B7": "cua-driver-b07-231f6e8bb sha256 6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa (0.32.0)",
+      "Rn": "R'n cua-driver-n04-11a03bf51 sha256 78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc (0.32.0)",
+      "M": "plain 9a2b1d99e cua-driver-fresh07-main-9a2b1d99e sha256 795dca5abd96e9a28cc8b59fc9cb3059c28f1b9e4d0ac1d2ebe8a7360c402f6f (0.33.0), built with build-driver.sh fresh07-main cua-release-fresh07 under the cargo lock and hostless"
+    },
+    "n": "5 runs per binary; each run = fresh GTK3 task fixture (repository libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py) + fresh Driver (mcp over stdio), no CUA_DRIVER_EXP_* variable, telemetry off",
+    "states_per_run": [
+      "S0 spawn: a 2 ms X-tree poller records every overlay state transition from Driver spawn (first appearance, first VIEWABLE / UNMAPPED) and the time of the MCP initialize reply",
+      "S1 idle: after initialize + list_windows + set_agent_cursor_motion {} and 300 ms quiet",
+      "S2 feedback-on action: get_window_state, then background click on the 'I agree' check box by element_token (the N-03/N-04/OWN-20 forced route), product-default cursor; tree read immediately after the reply (oracle-read time) and again after 1.5 s",
+      "S3 feedback-off action: set_agent_cursor_enabled {enabled:false}; tree read; then the same background click; tree read immediately after the reply and after 1.5 s"
+    ],
+    "per_read_fields": "overlay window(s) titled Cua.AgentCursorOverlay.* with map_state, override_redirect, bounding and input shape rectangle counts; XGetInputFocus; _NET_ACTIVE_WINDOW; top of _NET_CLIENT_LIST_STACKING; the set of mapped override-redirect root children (the focus guard's popup view); XQueryPointer child of root",
+    "per_action_fields": "the click's structured focus-guard fields (focus_changed, focus_restored, focus_outcome, grab_held_by) and its text content; the fixture state file before/after (target-owned oracle: agreed toggles, seq increments)",
+    "oracle": "the private X server's window tree read by an independent ctypes libX11/libXext client in the harness process (never the Driver)",
+    "expectations_written_before_running": {
+      "E1": "old binaries: overlay VIEWABLE with 0 bounding and 0 input rectangles at S1; M: overlay exists and is UNMAPPED at S1",
+      "E2": "S2 immediately after the reply: overlay VIEWABLE with non-empty bounding shape on every binary",
+      "E3": "S3 after set_agent_cursor_enabled false: old VIEWABLE (empty shape), M UNMAPPED; after the native click the cursor may be revived by reveal_pointer_action_for (recorded, not assumed)",
+      "E4": "focus, active window and stacking top identical between old and new at every state (the overlay is override-redirect with an empty input shape)",
+      "E5": "M may report grab_held_by on the background click (focus_guard mapped_popups sees the newly mapped overlay); old binaries never do. Counted descriptively k/5 per binary.",
+      "P_start": "old binaries: overlay VIEWABLE before the initialize reply in 5/5 (decides T3)"
+    },
+    "decision_use": "Identical overlay map state in every arm of a claim (probe clause) is judged from S1/S2/S3 per binary family; T3 from P_start; E5 is a concrete check of T2."
+  },
+  "unit_1d": {
+    "commands": [
+      "cargo test -p cua-driver-core expectation (timeout 1800, cargo lock, hostless)",
+      "cargo test -p cua-driver-core --lib (full suite)",
+      "cargo test -p platform-linux --lib (full suite, inside cua-x11-session.sh so X11-needing tests have a private server)"
+    ],
+    "oracle": "the tests' own assertions; every failure kept and reported with its name"
+  },
+  "phase_2": "Only if any claim is AFFECTED. Its scope, builds (R''/R''n = 9a2b1d99e + the original step commits, default-off control), harnesses, n and gates are pre-registered in PREREG-P2.json, committed before the first Phase 2 trial.",
+  "provider": {"cap": 0, "use": "none"},
+  "deviations_policy": "Any deviation from this file is listed in README.md with its reason; nothing is silently dropped."
+}
