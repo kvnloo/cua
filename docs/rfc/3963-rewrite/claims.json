@@ -1,6 +1,6 @@
 {
- "schema": "rfc3963-rewrite-claims/v1",
- "note": "Each cited number: 'text' must appear verbatim in README.md; 'needle' must appear verbatim in the packet file at 'sha:path' (kind packet), or equal the STATE.json value at 'json_path' (kind state; checked only when --state is given).",
+ "schema": "rfc3963-rewrite-claims/v2",
+ "note": "Curated claims (no 'generated' flag) cover numbers in README prose: 'text' must appear in the README section named by 'section' (inside 'readme_context' when given). Kind packet: 'needle' must be on line 'line' of the packet file at 'sha:path' (next to 'anchor' when given). Kind packet_json: the value at 'json_path' formatted with 'fmt' must equal 'needle'. Generated claims ('generated': true) are written by generate.py: one per number in a section-4 row ('readme_row'; text must be in that row of the README table) and the STATE budget numbers ('readme_block'). Kinds packet_line / packet_json / state / state_text carry their pointer in 'source'.",
  "claims": [
   {
    "id": "C01",
@@ -9,9 +9,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 21
    },
-   "needle": "45.11 | [42.43, 51.90]"
+   "needle": "45.11 | [42.43, 51.90]",
+   "section": "## 1."
   },
   {
    "id": "C02",
@@ -20,9 +22,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 21
    },
-   "needle": "3647.2 ms | 80.9 ms"
+   "needle": "3647.2 ms | 80.9 ms",
+   "section": "## 1."
   },
   {
    "id": "C03",
@@ -31,9 +35,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 22
    },
-   "needle": "5.95 | [5.70, 6.25]"
+   "needle": "5.95 | [5.70, 6.25]",
+   "section": "## 1."
   },
   {
    "id": "C04",
@@ -42,9 +48,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 23
    },
-   "needle": "5.73 | [5.41, 6.00]"
+   "needle": "5.73 | [5.41, 6.00]",
+   "section": "## 1."
   },
   {
    "id": "C05",
@@ -53,9 +61,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 26
    },
-   "needle": "46.56 | [45.56, 47.69]"
+   "needle": "46.56 | [45.56, 47.69]",
+   "section": "## 1."
   },
   {
    "id": "C06",
@@ -64,9 +74,11 @@
    "source": {
     "kind": "packet",
     "sha": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
-    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md"
+    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md",
+    "line": 30
    },
-   "needle": "45.65 | [44.39, 48.36]"
+   "needle": "45.65 | [44.39, 48.36]",
+   "section": "## 1."
   },
   {
    "id": "C07",
@@ -75,9 +87,11 @@
    "source": {
     "kind": "packet",
     "sha": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
-    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md"
+    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md",
+    "line": 31
    },
-   "needle": "46.82 | [45.21, 48.69]"
+   "needle": "46.82 | [45.21, 48.69]",
+   "section": "## 1."
   },
   {
    "id": "C08",
@@ -86,9 +100,11 @@
    "source": {
     "kind": "packet",
     "sha": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
-    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md"
+    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md",
+    "line": 32
    },
-   "needle": "44.86 | [43.56, 46.81]"
+   "needle": "44.86 | [43.56, 46.81]",
+   "section": "## 1."
   },
   {
    "id": "C09",
@@ -97,9 +113,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 166
    },
-   "needle": "give S 1.01 in every class"
+   "needle": "give S 1.01 in every class",
+   "section": "## 1."
   },
   {
    "id": "C10",
@@ -108,9 +126,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 79
    },
-   "needle": "5.941 [5.938, 5.957]"
+   "needle": "5.941 [5.938, 5.957]",
+   "section": "## 1.",
+   "anchor": "| E3, text |"
   },
   {
    "id": "C11",
@@ -119,9 +140,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 96
    },
-   "needle": "1.030"
+   "needle": "1.030",
+   "section": "## 1.",
+   "anchor": "| text | S0 (KEEP-only"
   },
   {
    "id": "C12",
@@ -130,9 +154,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 165
    },
-   "needle": "94-97% of"
+   "needle": "94-97% of",
+   "section": "## 1."
   },
   {
    "id": "C13",
@@ -141,9 +167,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 156
    },
-   "needle": "provider decisions 484.8"
+   "needle": "provider decisions 484.8",
+   "section": "## 1."
   },
   {
    "id": "C14",
@@ -152,9 +180,12 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 135
    },
-   "needle": "90.9%"
+   "needle": "| 14.0% | 90.4% | 90.9% |",
+   "section": "## 1.",
+   "anchor": "untested share (E2)"
   },
   {
    "id": "C15",
@@ -163,9 +194,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 189
    },
-   "needle": "scripted chooser"
+   "needle": "scripted chooser",
+   "section": "## 1.",
+   "anchor": "Native T excludes provider decisions"
   },
   {
    "id": "C16",
@@ -174,9 +208,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 173
    },
-   "needle": "SkillDroid ~2.4x for pure replay"
+   "needle": "SkillDroid ~2.4x for pure replay",
+   "section": "## 1."
   },
   {
    "id": "C17",
@@ -185,31 +221,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 81
    },
-   "needle": "1.65%"
-  },
-  {
-   "id": "C18",
-   "row": "B-07",
-   "text": "Untested share 1.6% / 0.6% / 0.6%",
-   "source": {
-    "kind": "packet",
-    "sha": "eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1",
-    "path": "docs/experiments/b-07-transport-residual-rprime-2026-10-03/README.md"
-   },
-   "needle": "1.6% / 0.6% / 0.6%"
-  },
-  {
-   "id": "C19",
-   "row": "B-06",
-   "text": "lower bounds of 36.70% and 34.93%",
-   "source": {
-    "kind": "packet",
-    "sha": "31bc98a95b746080d1b74b895fe575071d4a94e9",
-    "path": "docs/experiments/b-06-per-process-cold-snapshot-2026-10-03/README.md"
-   },
-   "needle": "34.93"
+   "needle": "1.65%",
+   "section": "## 1.",
+   "anchor": "| E2, text |"
   },
   {
    "id": "C20",
@@ -218,20 +235,12 @@
    "source": {
     "kind": "packet",
     "sha": "8e751a75dd454ab396a4172c3ba98759323c01c2",
-    "path": "docs/experiments/r2-02-2026-10-01/README.md"
+    "path": "docs/experiments/r2-02-2026-10-01/README.md",
+    "line": 156
    },
-   "needle": "+42.1"
-  },
-  {
-   "id": "C21",
-   "row": "R2-05",
-   "text": "0/60 duplicates",
-   "source": {
-    "kind": "packet",
-    "sha": "236e37e01792d4e60ee5334f702b47e6f122921e",
-    "path": "docs/experiments/r2-05-2026-10-01/README.md"
-   },
-   "needle": "0/60"
+   "needle": "+42.1",
+   "section": "## 7.",
+   "anchor": "Wall-clock saved:** none."
   },
   {
    "id": "C22",
@@ -240,9 +249,12 @@
    "source": {
     "kind": "packet",
     "sha": "cea02cb74cc1ad64497804d5da1270a8775f6c75",
-    "path": "docs/experiments/fix-02-token-ownership-retry-scope-2026-10-02/README.md"
+    "path": "docs/experiments/fix-02-token-ownership-retry-scope-2026-10-02/README.md",
+    "line": 68
    },
-   "needle": "40/40"
+   "needle": "**landed 40/40** (A toggled",
+   "section": "## 2.",
+   "anchor": "| U | I2 |"
   },
   {
    "id": "C23",
@@ -251,9 +263,11 @@
    "source": {
     "kind": "packet",
     "sha": "7f46edd1681fbf58586f8b4972636c3da56e3be6",
-    "path": "docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03/README.md"
+    "path": "docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03/README.md",
+    "line": 25
    },
-   "needle": "withheld 3/3 + 3/3 unknown; 0 duplicates"
+   "needle": "withheld 3/3 + 3/3 unknown; 0 duplicates",
+   "section": "## 2."
   },
   {
    "id": "C24",
@@ -262,9 +276,11 @@
    "source": {
     "kind": "packet",
     "sha": "6bab214abb707a3db9e8a7d641d160c3f58e08d5",
-    "path": "docs/experiments/r2-03-2026-10-01/README.md"
+    "path": "docs/experiments/r2-03-2026-10-01/README.md",
+    "line": 9
    },
-   "needle": "-211.849"
+   "needle": "-211.849",
+   "section": "## 5."
   },
   {
    "id": "C25",
@@ -273,9 +289,12 @@
    "source": {
     "kind": "packet",
     "sha": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
-    "path": "docs/experiments/fix-01-detached-node-refusal-2026-10-02/README.md"
+    "path": "docs/experiments/fix-01-detached-node-refusal-2026-10-02/README.md",
+    "line": 107
    },
-   "needle": "20/20"
+   "needle": "first click **refused `browser_ref_stale` 20/20**",
+   "section": "## 5.",
+   "anchor": "C1 N4a (routine) | F |"
   },
   {
    "id": "C26",
@@ -284,9 +303,11 @@
    "source": {
     "kind": "packet",
     "sha": "939580fc64073d0159865b547566d3522ce1565f",
-    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md"
+    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md",
+    "line": 241
    },
-   "needle": "Cross-session mutations | **100**"
+   "needle": "Cross-session mutations | **100**",
+   "section": "## 5."
   },
   {
    "id": "C27",
@@ -295,9 +316,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 8
    },
-   "needle": "2.94 ms [2.02 ms, 3.46 ms]"
+   "needle": "2.94 ms [2.02 ms, 3.46 ms]",
+   "section": "## 5.",
+   "anchor": "At k=1 it saves"
   },
   {
    "id": "C28",
@@ -306,20 +330,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 8
    },
-   "needle": "3.04 ms [2.01 ms, 3.91 ms]"
-  },
-  {
-   "id": "C29",
-   "row": "OWN-78A",
-   "text": "F 5/5 vs PR 0/5",
-   "source": {
-    "kind": "packet",
-    "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
-    "path": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03/README.md"
-   },
-   "needle": "5/5"
+   "needle": "3.04 ms [2.01 ms, 3.91 ms]",
+   "section": "## 5.",
+   "anchor": "At k=1 it saves"
   },
   {
    "id": "C30",
@@ -328,9 +344,12 @@
    "source": {
     "kind": "packet",
     "sha": "e02621fdc1fe5098efd48af295964f25902553ea",
-    "path": "docs/experiments/own-75-timing-parity-4336-2026-10-02/README.md"
+    "path": "docs/experiments/own-75-timing-parity-4336-2026-10-02/README.md",
+    "line": 65
    },
-   "needle": "160/160"
+   "needle": "160/160",
+   "section": "## 5.",
+   "anchor": "| S3 behaviour identity |"
   },
   {
    "id": "C31",
@@ -339,9 +358,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 156
    },
-   "needle": "awaited glide 3000.5"
+   "needle": "awaited glide 3000.5",
+   "section": "## 6."
   },
   {
    "id": "C32",
@@ -350,9 +371,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 158
    },
-   "needle": "glide 2406.2"
+   "needle": "glide 2406.2",
+   "section": "## 6."
   },
   {
    "id": "C33",
@@ -361,9 +384,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 123
    },
-   "needle": "22.4 (28.2%)"
+   "needle": "22.4 (28.2%)",
+   "section": "## 6."
   },
   {
    "id": "C34",
@@ -372,9 +397,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 36
    },
-   "needle": "59.13"
+   "needle": "59.13",
+   "section": "## 6."
   },
   {
    "id": "C35",
@@ -383,9 +410,11 @@
    "source": {
     "kind": "packet",
     "sha": "b282ff3894fa85a7b82257cb1edd5088c2f0ac37",
-    "path": "docs/experiments/b-02-browser-driver-sites-2026-10-02/README.md"
+    "path": "docs/experiments/b-02-browser-driver-sites-2026-10-02/README.md",
+    "line": 9
    },
-   "needle": "from 42.7 / 39.0 / 37.8 ms to 10.6 / 8.7 / 8.9 ms"
+   "needle": "from 42.7 / 39.0 / 37.8 ms to 10.6 / 8.7 / 8.9 ms",
+   "section": "## 6."
   },
   {
    "id": "C36",
@@ -394,9 +423,11 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 165
    },
-   "needle": "reveal glide 0 / 1410.6 ms"
+   "needle": "reveal glide 0 / 1410.6 ms",
+   "section": "## 6."
   },
   {
    "id": "C37",
@@ -405,9 +436,12 @@
    "source": {
     "kind": "packet",
     "sha": "0cd63f786290f967f41a5a6b615d54f98045ebec",
-    "path": "docs/experiments/b-01-browser-critpath-2026-10-02/README.md"
+    "path": "docs/experiments/b-01-browser-critpath-2026-10-02/README.md",
+    "line": 115
    },
-   "needle": "100 ms"
+   "needle": "delete the 100 ms focus settle",
+   "section": "## 6.",
+   "anchor": "H_T"
   },
   {
    "id": "C38",
@@ -416,9 +450,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 156
    },
-   "needle": "focus settle 101.0"
+   "needle": "focus settle 101.0",
+   "section": "## 6."
   },
   {
    "id": "C39",
@@ -427,9 +463,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 75
    },
-   "needle": "82.22"
+   "needle": "82.22",
+   "section": "## 6.",
+   "anchor": "| HCL, checkbox |"
   },
   {
    "id": "C40",
@@ -438,9 +477,12 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 76
    },
-   "needle": "73.69"
+   "needle": "73.69",
+   "section": "## 6.",
+   "anchor": "| HCL, text |"
   },
   {
    "id": "C41",
@@ -449,31 +491,12 @@
    "source": {
     "kind": "packet",
     "sha": "afba150d55426bf775cb10adaa698cf99493b229",
-    "path": "docs/experiments/r2-08-2026-10-02/README.md"
+    "path": "docs/experiments/r2-08-2026-10-02/README.md",
+    "line": 103
    },
-   "needle": "174.4 ms"
-  },
-  {
-   "id": "C42",
-   "row": "B-06",
-   "text": "10.0 [8.0, 12.0] ms fill, 4.0 [3.9, 6.0] ms toggle",
-   "source": {
-    "kind": "packet",
-    "sha": "31bc98a95b746080d1b74b895fe575071d4a94e9",
-    "path": "docs/experiments/b-06-per-process-cold-snapshot-2026-10-03/README.md"
-   },
-   "needle": "10.0 [8.0, 12.0]"
-  },
-  {
-   "id": "C43",
-   "row": "B-06",
-   "text": "10.0 [8.0, 12.0] ms fill, 4.0 [3.9, 6.0] ms toggle",
-   "source": {
-    "kind": "packet",
-    "sha": "31bc98a95b746080d1b74b895fe575071d4a94e9",
-    "path": "docs/experiments/b-06-per-process-cold-snapshot-2026-10-03/README.md"
-   },
-   "needle": "4.0 [3.9, 6.0]"
+   "needle": "174.4 ms",
+   "section": "## 6.",
+   "anchor": "Paired T(API) − T(G_off)"
   },
   {
    "id": "C44",
@@ -482,9 +505,11 @@
    "source": {
     "kind": "packet",
     "sha": "0c2896a53e185ed6b92e61fdb405e42137cc0720",
-    "path": "docs/experiments/own-09r-84-revision-2026-10-02/README.md"
+    "path": "docs/experiments/own-09r-84-revision-2026-10-02/README.md",
+    "line": 297
    },
-   "needle": "The wedged closure keeps those guards until it exits"
+   "needle": "The wedged closure keeps those guards until it exits",
+   "section": "## 6."
   },
   {
    "id": "C45",
@@ -493,9 +518,11 @@
    "source": {
     "kind": "packet",
     "sha": "1b981915777f7fe6628eb3917906f9d0e345b107",
-    "path": "docs/experiments/own-16w-sway-modality-2026-10-02/README.md"
+    "path": "docs/experiments/own-16w-sway-modality-2026-10-02/README.md",
+    "line": 335
    },
-   "needle": "null"
+   "needle": "say that it also refuses JSON `null`, which used to mean the default",
+   "section": "## 6."
   },
   {
    "id": "C46",
@@ -504,9 +531,11 @@
    "source": {
     "kind": "packet",
     "sha": "3539e34ae16d8c49d8de65452663a916dd6647fa",
-    "path": "docs/experiments/r2-09-native-event-wake-2026-10-02/README.md"
+    "path": "docs/experiments/r2-09-native-event-wake-2026-10-02/README.md",
+    "line": 52
    },
-   "needle": "WebKitGTK"
+   "needle": "| T3 WebKitGTK MiniBrowser | **NOT_RUN.**",
+   "section": "## 5."
   },
   {
    "id": "C47",
@@ -515,9 +544,11 @@
    "source": {
     "kind": "packet",
     "sha": "939580fc64073d0159865b547566d3522ce1565f",
-    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md"
+    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md",
+    "line": 307
    },
-   "needle": "re-run 847/0"
+   "needle": "re-run 847/0",
+   "section": "## 6."
   },
   {
    "id": "C48",
@@ -526,9 +557,11 @@
    "source": {
     "kind": "packet",
     "sha": "eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1",
-    "path": "docs/experiments/b-07-transport-residual-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/b-07-transport-residual-rprime-2026-10-03/README.md",
+    "line": 29
    },
-   "needle": "0.48 ms"
+   "needle": "0.48 ms",
+   "section": "## 10."
   },
   {
    "id": "C49",
@@ -537,9 +570,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 156
    },
-   "needle": "3567.3 ms"
+   "needle": "3567.3 ms",
+   "section": "## 10."
   },
   {
    "id": "C50",
@@ -548,9 +583,11 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 165
    },
-   "needle": "54.27 ms [53.04, 55.21]"
+   "needle": "54.27 ms [53.04, 55.21]",
+   "section": "## 10."
   },
   {
    "id": "C51",
@@ -559,9 +596,11 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 165
    },
-   "needle": "1468.03 ms"
+   "needle": "1468.03 ms",
+   "section": "## 10."
   },
   {
    "id": "C52",
@@ -570,9 +609,12 @@
    "source": {
     "kind": "packet",
     "sha": "8620ebfa23a77c0f94403a619b7684a65c3cd63c",
-    "path": "docs/experiments/b-04-observation-reconcile-2026-10-03/README.md"
+    "path": "docs/experiments/b-04-observation-reconcile-2026-10-03/README.md",
+    "line": 14
    },
-   "needle": "+64.0"
+   "needle": "+64.0",
+   "section": "## 7.",
+   "anchor": "| fill | **IRREDUCIBLE**"
   },
   {
    "id": "C53",
@@ -581,20 +623,12 @@
    "source": {
     "kind": "packet",
     "sha": "7052382820687e5bf55e2925e09a3fbe70cce500",
-    "path": "docs/experiments/b-05-browser-mcp-transport-2026-10-03/README.md"
+    "path": "docs/experiments/b-05-browser-mcp-transport-2026-10-03/README.md",
+    "line": 188
    },
-   "needle": "VALIDATE_FAST"
-  },
-  {
-   "id": "C54",
-   "row": "R2-01",
-   "text": "1541.6 ms with cursor feedback on vs 23.5 ms off, 98.46%",
-   "source": {
-    "kind": "packet",
-    "sha": "2ca82efaedf0083c3732b7855c78a5d1442f9dce",
-    "path": "docs/experiments/r2-01-2026-10-01/README.md"
-   },
-   "needle": "1541.6"
+   "needle": "every mean below the 0.5 ms gate",
+   "section": "## 7.",
+   "anchor": "VALIDATE_FAST (c_out.validate candidate)"
   },
   {
    "id": "C55",
@@ -603,9 +637,11 @@
    "source": {
     "kind": "packet",
     "sha": "6da15bf3516ddbf657e5d947875be6adae5299ef",
-    "path": "docs/experiments/own-20-atspi-invalidation-census-2026-10-02/README.md"
+    "path": "docs/experiments/own-20-atspi-invalidation-census-2026-10-02/README.md",
+    "line": 76
    },
-   "needle": "event absence authorizes reuse"
+   "needle": "event absence authorizes reuse",
+   "section": "## 2."
   },
   {
    "id": "C56",
@@ -614,9 +650,12 @@
    "source": {
     "kind": "packet",
     "sha": "3539e34ae16d8c49d8de65452663a916dd6647fa",
-    "path": "docs/experiments/r2-09-native-event-wake-2026-10-02/README.md"
+    "path": "docs/experiments/r2-09-native-event-wake-2026-10-02/README.md",
+    "line": 217
    },
-   "needle": "focus change"
+   "needle": "focus change",
+   "section": "## 2.",
+   "anchor": "Event semantics"
   },
   {
    "id": "C57",
@@ -625,9 +664,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 54
    },
-   "needle": "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1"
+   "needle": "CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1",
+   "section": "## 5."
   },
   {
    "id": "C58",
@@ -636,9 +677,11 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 60
    },
-   "needle": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0"
+   "needle": "CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0",
+   "section": "## 5."
   },
   {
    "id": "C59",
@@ -647,9 +690,11 @@
    "source": {
     "kind": "packet",
     "sha": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
-    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md"
+    "path": "docs/experiments/r2-10r-recert-2026-10-03/README.md",
+    "line": 179
    },
-   "needle": "default-off smoke, R' (no knobs, no trace) vs Cn'"
+   "needle": "default-off smoke, R' (no knobs, no trace) vs Cn'",
+   "section": "## 2."
   },
   {
    "id": "C60",
@@ -658,20 +703,11 @@
    "source": {
     "kind": "packet",
     "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md"
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 174
    },
-   "needle": "Default-off smoke, R'n vs R'"
-  },
-  {
-   "id": "C61",
-   "row": "N-02",
-   "text": "107.5 ms per session",
-   "source": {
-    "kind": "packet",
-    "sha": "9846ac8033a8b5e952b0d44f39858625375d54e1",
-    "path": "docs/experiments/n-02-native-transport-2026-10-02/README.md"
-   },
-   "needle": "107.5"
+   "needle": "Default-off smoke, R'n vs R'",
+   "section": "## 2."
   },
   {
    "id": "C62",
@@ -680,39 +716,3174 @@
    "source": {
     "kind": "packet",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
-    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md"
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 34
    },
-   "needle": "S_COMP_K (KEEP-only deletions"
+   "needle": "S_COMP_K (KEEP-only deletions",
+   "section": "## 10."
+  },
+  {
+   "id": "C10b",
+   "row": "N-04",
+   "text": "checkbox 1.196 [1.189, 1.198]",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 78
+   },
+   "needle": "1.196 [1.189, 1.198]",
+   "anchor": "| E3, checkbox |"
+  },
+  {
+   "id": "C11b",
+   "row": "N-04",
+   "text": "checkbox 1.180",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 92
+   },
+   "needle": "1.180 [1.177, 1.184]",
+   "anchor": "| checkbox | S0 (KEEP-only"
+  },
+  {
+   "id": "C17b",
+   "row": "N-04",
+   "text": "1.19% (checkbox)",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 80
+   },
+   "needle": "1.19%",
+   "anchor": "| E2, checkbox |"
+  },
+  {
+   "id": "C63",
+   "row": "B-08",
+   "text": "0.4%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "toggle",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "0.4%",
+   "readme_context": "toggle 0.4% (3.6%)"
+  },
+  {
+   "id": "C64",
+   "row": "B-08",
+   "text": "3.6%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "toggle",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "3.6%",
+   "readme_context": "toggle 0.4% (3.6%)"
+  },
+  {
+   "id": "C65",
+   "row": "B-08",
+   "text": "0.4%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "modal",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "0.4%",
+   "readme_context": "modal 0.4% (3.3%)"
+  },
+  {
+   "id": "C66",
+   "row": "B-08",
+   "text": "3.3%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "modal",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "3.3%",
+   "readme_context": "modal 0.4% (3.3%)"
+  },
+  {
+   "id": "C67",
+   "row": "B-08",
+   "text": "16.9%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "fill",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "16.9%",
+   "readme_context": "fill 16.9% (19.0%)"
+  },
+  {
+   "id": "C68",
+   "row": "B-08",
+   "text": "19.0%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "fill",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "19.0%",
+   "readme_context": "fill 16.9% (19.0%)"
+  },
+  {
+   "id": "C69",
+   "row": "B-08",
+   "text": "0.4%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "toggle",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "0.4%",
+   "readme_context": "untested 0.4% (3.6%) and 0.4% (3.3%)"
+  },
+  {
+   "id": "C70",
+   "row": "B-08",
+   "text": "3.6%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "toggle",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "3.6%",
+   "readme_context": "untested 0.4% (3.6%) and 0.4% (3.3%)"
+  },
+  {
+   "id": "C71",
+   "row": "B-08",
+   "text": "3.3%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "modal",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "3.3%",
+   "readme_context": "untested 0.4% (3.6%) and 0.4% (3.3%)"
+  },
+  {
+   "id": "C72",
+   "row": "B-08",
+   "text": "16.9%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "fill",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "16.9%",
+   "readme_context": "Fill is not met: 16.9% (19.0%)"
+  },
+  {
+   "id": "C73",
+   "row": "B-08",
+   "text": "19.0%",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "fill",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1"
+   },
+   "needle": "19.0%",
+   "readme_context": "Fill is not met: 16.9% (19.0%)"
+  },
+  {
+   "id": "C74",
+   "row": "R2-07e",
+   "text": "warm valid 29/29",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_toggle_warm_valid",
+     "text"
+    ],
+    "fmt": "raw"
+   },
+   "needle": "warm valid 29/29"
+  },
+  {
+   "id": "C75",
+   "row": "R2-07e",
+   "text": "warm decisions 0, warm provider lines 0",
+   "section": "## 1.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_toggle_warm_decisions",
+     "text"
+    ],
+    "fmt": "raw"
+   },
+   "needle": "warm decisions 0, warm provider lines 0"
+  },
+  {
+   "id": "C76",
+   "row": "R2-07e",
+   "text": "warm valid 29/29",
+   "section": "## 10.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_toggle_warm_valid",
+     "text"
+    ],
+    "fmt": "raw"
+   },
+   "needle": "warm valid 29/29"
+  },
+  {
+   "id": "C77",
+   "row": "R2-07e",
+   "text": "warm decisions 0, warm provider lines 0",
+   "section": "## 10.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_toggle_warm_decisions",
+     "text"
+    ],
+    "fmt": "raw"
+   },
+   "needle": "warm decisions 0, warm provider lines 0"
+  },
+  {
+   "id": "C78",
+   "row": "FIX-03-SIDE",
+   "text": "40",
+   "section": "## 2.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "e4",
+     "F",
+     "cross_session_mutation"
+    ],
+    "fmt": "int"
+   },
+   "needle": "40",
+   "readme_context": "cross-session effects 40 on F' vs 0 on F5"
+  },
+  {
+   "id": "C79",
+   "row": "FIX-03-SIDE",
+   "text": "0",
+   "section": "## 2.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "e4",
+     "F5",
+     "cross_session_mutation"
+    ],
+    "fmt": "int"
+   },
+   "needle": "0",
+   "readme_context": "cross-session effects 40 on F' vs 0 on F5"
+  },
+  {
+   "id": "C80",
+   "row": "FIX-03-SIDE",
+   "text": "40",
+   "section": "## 5.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "e4",
+     "F",
+     "cross_session_mutation"
+    ],
+    "fmt": "int"
+   },
+   "needle": "40",
+   "readme_context": "40 cross-session effects on F' vs 0 on F5"
+  },
+  {
+   "id": "C81",
+   "row": "FIX-03-SIDE",
+   "text": "0",
+   "section": "## 5.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "e4",
+     "F5",
+     "cross_session_mutation"
+    ],
+    "fmt": "int"
+   },
+   "needle": "0",
+   "readme_context": "40 cross-session effects on F' vs 0 on F5"
+  },
+  {
+   "id": "C82",
+   "row": "OWN-78A",
+   "text": "correct-type 5/5",
+   "section": "## 5.",
+   "source": {
+    "kind": "packet",
+    "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+    "path": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03/README.md",
+    "line": 13
+   },
+   "needle": "restored typing: A2 correct-type **5/5**",
+   "readme_context": "F correct-type 5/5 vs PR abstain 5/5"
+  },
+  {
+   "id": "C83",
+   "row": "OWN-78A",
+   "text": "abstain 5/5",
+   "section": "## 5.",
+   "source": {
+    "kind": "packet",
+    "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+    "path": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03/README.md",
+    "line": 10
+   },
+   "needle": "A0 abstain **5/5**, P(type) 0.09-0.12.",
+   "readme_context": "F correct-type 5/5 vs PR abstain 5/5"
+  },
+  {
+   "id": "C84",
+   "row": "OWN-78L",
+   "text": "3",
+   "section": "## 5.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "verified"
+    ],
+    "fmt": "int"
+   },
+   "needle": "3",
+   "readme_context": "R1-lite 3 of 3 verified live"
+  },
+  {
+   "id": "C85",
+   "row": "OWN-78L",
+   "text": "3",
+   "section": "## 5.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "n"
+    ],
+    "fmt": "int"
+   },
+   "needle": "3",
+   "readme_context": "R1-lite 3 of 3 verified live"
+  },
+  {
+   "id": "C86",
+   "row": "B-08",
+   "text": "10.58",
+   "section": "## 6.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "fill",
+     "D_C_minus_Wa",
+     "median"
+    ],
+    "fmt": "f2"
+   },
+   "needle": "10.58",
+   "readme_context": "fill 10.58 [9.50, 11.41]"
+  },
+  {
+   "id": "C87",
+   "row": "B-08",
+   "text": "[9.50, 11.41]",
+   "section": "## 6.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "fill",
+     "D_C_minus_Wa",
+     "ci"
+    ],
+    "fmt": "ci2"
+   },
+   "needle": "[9.50, 11.41]",
+   "readme_context": "fill 10.58 [9.50, 11.41]"
+  },
+  {
+   "id": "C88",
+   "row": "B-08",
+   "text": "3.05",
+   "section": "## 6.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "toggle",
+     "D_C_minus_Wa",
+     "median"
+    ],
+    "fmt": "f2"
+   },
+   "needle": "3.05",
+   "readme_context": "toggle 3.05 [2.62, 5.38]"
+  },
+  {
+   "id": "C89",
+   "row": "B-08",
+   "text": "[2.62, 5.38]",
+   "section": "## 6.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "toggle",
+     "D_C_minus_Wa",
+     "ci"
+    ],
+    "fmt": "ci2"
+   },
+   "needle": "[2.62, 5.38]",
+   "readme_context": "toggle 3.05 [2.62, 5.38]"
+  },
+  {
+   "id": "C90",
+   "row": "B-08",
+   "text": "4.56",
+   "section": "## 6.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "modal",
+     "D_C_minus_Wa",
+     "median"
+    ],
+    "fmt": "f2"
+   },
+   "needle": "4.56",
+   "readme_context": "modal 4.56 [2.98, 5.92]"
+  },
+  {
+   "id": "C91",
+   "row": "B-08",
+   "text": "[2.98, 5.92]",
+   "section": "## 6.",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "modal",
+     "D_C_minus_Wa",
+     "ci"
+    ],
+    "fmt": "ci2"
+   },
+   "needle": "[2.98, 5.92]",
+   "readme_context": "modal 4.56 [2.98, 5.92]"
+  },
+  {
+   "id": "C92",
+   "row": "R2-07e",
+   "text": "489.1 (84.2%)",
+   "section": "## 10.",
+   "source": {
+    "kind": "packet",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/README.md",
+    "line": 219
+   },
+   "needle": "| training (n=1) | 580.5 | 489.1 (84.2%)"
+  },
+  {
+   "id": "C93",
+   "row": "R2-07e",
+   "text": "580.5 ms",
+   "section": "## 10.",
+   "source": {
+    "kind": "packet",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/README.md",
+    "line": 219
+   },
+   "needle": "| training (n=1) | 580.5 | 489.1 (84.2%)",
+   "readme_context": "489.1 (84.2%) of 580.5 ms"
+  },
+  {
+   "id": "C94",
+   "row": "R2-07e",
+   "text": "66.8 ms",
+   "section": "## 10.",
+   "source": {
+    "kind": "packet",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/README.md",
+    "line": 206
+   },
+   "needle": "| amortized mean over 30 (+compile + admission) | 66.8 ms"
+  },
+  {
+   "id": "C95",
+   "row": "R2-07e",
+   "text": "73.0 ms; ratio 1.54",
+   "section": "## 10.",
+   "source": {
+    "kind": "packet",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/README.md",
+    "line": 209
+   },
+   "needle": "73.0 ms; ratio 1.54",
+   "readme_context": "it is 73.0 ms; ratio 1.54"
+  },
+  {
+   "id": "G-R2-01-n1",
+   "generated": true,
+   "row": "R2-01",
+   "text": "1541.6 ms",
+   "readme_row": "R2-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "2ca82efaedf0083c3732b7855c78a5d1442f9dce",
+    "path": "docs/experiments/r2-01-2026-10-01/README.md",
+    "line": 5,
+    "context": "took a median **1541.6 ms** with agent-cursor feedback ON",
+    "text": "1541.6 ms"
+   }
+  },
+  {
+   "id": "G-R2-01-n2",
+   "generated": true,
+   "row": "R2-01",
+   "text": "23.5 ms",
+   "readme_row": "R2-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "2ca82efaedf0083c3732b7855c78a5d1442f9dce",
+    "path": "docs/experiments/r2-01-2026-10-01/README.md",
+    "line": 5,
+    "context": "and **23.5 ms** with it OFF",
+    "text": "23.5 ms"
+   }
+  },
+  {
+   "id": "G-R2-01-n3",
+   "generated": true,
+   "row": "R2-01",
+   "text": "98.46%",
+   "readme_row": "R2-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "2ca82efaedf0083c3732b7855c78a5d1442f9dce",
+    "path": "docs/experiments/r2-01-2026-10-01/README.md",
+    "line": 91,
+    "context": "(d) ON visualization ≥ 50% of the ON span: 98.46%",
+    "text": "98.46%"
+   }
+  },
+  {
+   "id": "G-R2-02-n1",
+   "generated": true,
+   "row": "R2-02",
+   "text": "100 ms",
+   "readme_row": "R2-02",
+   "source": {
+    "kind": "packet_line",
+    "sha": "8e751a75dd454ab396a4172c3ba98759323c01c2",
+    "path": "docs/experiments/r2-02-2026-10-01/README.md",
+    "line": 193,
+    "context": "than the existing 100 ms poll loop",
+    "text": "100 ms"
+   }
+  },
+  {
+   "id": "G-R2-02-n2",
+   "generated": true,
+   "row": "R2-02",
+   "text": "+42.1 ms",
+   "readme_row": "R2-02",
+   "source": {
+    "kind": "packet_line",
+    "sha": "8e751a75dd454ab396a4172c3ba98759323c01c2",
+    "path": "docs/experiments/r2-02-2026-10-01/README.md",
+    "line": 156,
+    "context": "The paired median is +42.1 ms (event slower)",
+    "text": "+42.1 ms"
+   }
+  },
+  {
+   "id": "G-R2-03-n1",
+   "generated": true,
+   "row": "R2-03",
+   "text": "2",
+   "readme_row": "R2-03",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6bab214abb707a3db9e8a7d641d160c3f58e08d5",
+    "path": "docs/experiments/r2-03-2026-10-01/README.md",
+    "line": 128,
+    "context": "receipts (2 → 1 provider requests in 40/40 pairs)",
+    "text": "2"
+   }
+  },
+  {
+   "id": "G-R2-03-n2",
+   "generated": true,
+   "row": "R2-03",
+   "text": "1",
+   "readme_row": "R2-03",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6bab214abb707a3db9e8a7d641d160c3f58e08d5",
+    "path": "docs/experiments/r2-03-2026-10-01/README.md",
+    "line": 128,
+    "context": "receipts (2 → 1 provider requests in 40/40 pairs)",
+    "text": "1"
+   }
+  },
+  {
+   "id": "G-R2-03-n3",
+   "generated": true,
+   "row": "R2-03",
+   "text": "40/40",
+   "readme_row": "R2-03",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6bab214abb707a3db9e8a7d641d160c3f58e08d5",
+    "path": "docs/experiments/r2-03-2026-10-01/README.md",
+    "line": 128,
+    "context": "receipts (2 → 1 provider requests in 40/40 pairs)",
+    "text": "40/40"
+   }
+  },
+  {
+   "id": "G-R2-03-n4",
+   "generated": true,
+   "row": "R2-03",
+   "text": "-211.849 ms",
+   "readme_row": "R2-03",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6bab214abb707a3db9e8a7d641d160c3f58e08d5",
+    "path": "docs/experiments/r2-03-2026-10-01/README.md",
+    "line": 9,
+    "context": "is **-211.849 ms**",
+    "text": "-211.849 ms"
+   }
+  },
+  {
+   "id": "G-R2-03-n5",
+   "generated": true,
+   "row": "R2-03",
+   "text": "0",
+   "readme_row": "R2-03",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 146,
+    "context": "because guarded completion binds 0 of these",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-R2-04-n1",
+   "generated": true,
+   "row": "R2-04",
+   "text": "1%",
+   "readme_row": "R2-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9bfd437390571985870a66d941f43dbe417f31c0",
+    "path": "docs/experiments/r2-04-2026-10-01/README.md",
+    "line": 297,
+    "context": "accounts for under 1% of native AT-SPI action time",
+    "text": "1%"
+   }
+  },
+  {
+   "id": "G-R2-04-n2",
+   "generated": true,
+   "row": "R2-04",
+   "text": "9",
+   "readme_row": "R2-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9bfd437390571985870a66d941f43dbe417f31c0",
+    "path": "docs/experiments/r2-04-2026-10-01/README.md",
+    "line": 19,
+    "context": "**KILL** for this 9-element fixture",
+    "text": "9"
+   }
+  },
+  {
+   "id": "G-R2-05-n1",
+   "generated": true,
+   "row": "R2-05",
+   "text": "0",
+   "readme_row": "R2-05",
+   "source": {
+    "kind": "packet_line",
+    "sha": "236e37e01792d4e60ee5334f702b47e6f122921e",
+    "path": "docs/experiments/r2-05-2026-10-01/README.md",
+    "line": 5,
+    "context": "typed duplicates 0 in 60 typed trials, and",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-R2-05-n2",
+   "generated": true,
+   "row": "R2-05",
+   "text": "60",
+   "readme_row": "R2-05",
+   "source": {
+    "kind": "packet_line",
+    "sha": "236e37e01792d4e60ee5334f702b47e6f122921e",
+    "path": "docs/experiments/r2-05-2026-10-01/README.md",
+    "line": 5,
+    "context": "typed duplicates 0 in 60 typed trials, and",
+    "text": "60"
+   }
+  },
+  {
+   "id": "G-R2-05-n3",
+   "generated": true,
+   "row": "R2-05",
+   "text": "10/10",
+   "readme_row": "R2-05",
+   "source": {
+    "kind": "packet_line",
+    "sha": "236e37e01792d4e60ee5334f702b47e6f122921e",
+    "path": "docs/experiments/r2-05-2026-10-01/README.md",
+    "line": 5,
+    "context": "produced RD naive duplicate in 10/10 (naive",
+    "text": "10/10"
+   }
+  },
+  {
+   "id": "G-R2-06-n1",
+   "generated": true,
+   "row": "R2-06",
+   "text": "+3.6",
+   "readme_row": "R2-06",
+   "source": {
+    "kind": "packet_line",
+    "sha": "f00b9396365a44e69c44498a1cb52f18aa8a3871",
+    "path": "docs/experiments/r2-06-2026-10-01/README.md",
+    "line": 63,
+    "context": "late POSTs landed +3.6 to +10.1 ms after return",
+    "text": "+3.6"
+   }
+  },
+  {
+   "id": "G-R2-06-n2",
+   "generated": true,
+   "row": "R2-06",
+   "text": "+10.1 ms",
+   "readme_row": "R2-06",
+   "source": {
+    "kind": "packet_line",
+    "sha": "f00b9396365a44e69c44498a1cb52f18aa8a3871",
+    "path": "docs/experiments/r2-06-2026-10-01/README.md",
+    "line": 63,
+    "context": "late POSTs landed +3.6 to +10.1 ms after return",
+    "text": "+10.1 ms"
+   }
+  },
+  {
+   "id": "G-R2-06-n3",
+   "generated": true,
+   "row": "R2-06",
+   "text": "17/30",
+   "readme_row": "R2-06",
+   "source": {
+    "kind": "packet_line",
+    "sha": "f00b9396365a44e69c44498a1cb52f18aa8a3871",
+    "path": "docs/experiments/r2-06-2026-10-01/README.md",
+    "line": 5,
+    "context": "Only **17/30** were verified by a single",
+    "text": "17/30"
+   }
+  },
+  {
+   "id": "G-R2-06-n4",
+   "generated": true,
+   "row": "R2-06",
+   "text": "30/30",
+   "readme_row": "R2-06",
+   "source": {
+    "kind": "packet_line",
+    "sha": "f00b9396365a44e69c44498a1cb52f18aa8a3871",
+    "path": "docs/experiments/r2-06-2026-10-01/README.md",
+    "line": 5,
+    "context": "independently verified in **30/30** within",
+    "text": "30/30"
+   }
+  },
+  {
+   "id": "G-R2-07-n1",
+   "generated": true,
+   "row": "R2-07",
+   "text": "3/3",
+   "readme_row": "R2-07",
+   "source": {
+    "kind": "packet_line",
+    "sha": "2d71548b46114cd1a1bc58ccdef323ce185c9965",
+    "path": "docs/experiments/r2-07-2026-10-02/README.md",
+    "line": 13,
+    "context": "accepts the ref to the detached node** (3/3",
+    "text": "3/3"
+   }
+  },
+  {
+   "id": "G-R2-07b-n1",
+   "generated": true,
+   "row": "R2-07b",
+   "text": "20/20",
+   "readme_row": "R2-07b",
+   "source": {
+    "kind": "packet_line",
+    "sha": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
+    "path": "docs/experiments/fix-01-detached-node-refusal-2026-10-02/README.md",
+    "line": 17,
+    "context": "F refused it with `browser_ref_stale` **20/20**",
+    "text": "20/20"
+   }
+  },
+  {
+   "id": "G-R2-07b-n2",
+   "generated": true,
+   "row": "R2-07b",
+   "text": "20/20",
+   "readme_row": "R2-07b",
+   "source": {
+    "kind": "packet_line",
+    "sha": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
+    "path": "docs/experiments/fix-01-detached-node-refusal-2026-10-02/README.md",
+    "line": 17,
+    "context": "fresh observation and verified **20/20**",
+    "text": "20/20"
+   }
+  },
+  {
+   "id": "G-R2-07c-n1",
+   "generated": true,
+   "row": "R2-07c",
+   "text": "0",
+   "readme_row": "R2-07c",
+   "source": {
+    "kind": "packet_line",
+    "sha": "7f46edd1681fbf58586f8b4972636c3da56e3be6",
+    "path": "docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03/README.md",
+    "line": 25,
+    "context": "withheld 3/3 + 3/3 unknown; 0 duplicates",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-R2-07c-n2",
+   "generated": true,
+   "row": "R2-07c",
+   "text": "8-32",
+   "readme_row": "R2-07c",
+   "source": {
+    "kind": "packet_line",
+    "sha": "7f46edd1681fbf58586f8b4972636c3da56e3be6",
+    "path": "docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03/README.md",
+    "line": 12,
+    "context": "The host loadavg was 8-32",
+    "text": "8-32"
+   }
+  },
+  {
+   "id": "G-R2-07d-n1",
+   "generated": true,
+   "row": "R2-07d",
+   "text": "+0.5 ms",
+   "readme_row": "R2-07d",
+   "source": {
+    "kind": "packet_line",
+    "sha": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+    "path": "docs/experiments/r2-07d-quiet-timing-phase-l-2026-10-03/README.md",
+    "line": 160,
+    "context": "paired median +0.5 ms [-1.3, +0.8]: non-regression shown",
+    "text": "+0.5 ms"
+   }
+  },
+  {
+   "id": "G-R2-07d-n2",
+   "generated": true,
+   "row": "R2-07d",
+   "text": "+0.6 ms",
+   "readme_row": "R2-07d",
+   "source": {
+    "kind": "packet_line",
+    "sha": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+    "path": "docs/experiments/r2-07d-quiet-timing-phase-l-2026-10-03/README.md",
+    "line": 17,
+    "context": "- **modal:** +0.6 ms [-1.4, +2.4]",
+    "text": "+0.6 ms"
+   }
+  },
+  {
+   "id": "G-R2-07d-n3",
+   "generated": true,
+   "row": "R2-07d",
+   "text": "+2.4 ms",
+   "readme_row": "R2-07d",
+   "source": {
+    "kind": "packet_line",
+    "sha": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+    "path": "docs/experiments/r2-07d-quiet-timing-phase-l-2026-10-03/README.md",
+    "line": 211,
+    "context": "CI upper +2.4 ms > +2.0 ms",
+    "text": "+2.4 ms"
+   }
+  },
+  {
+   "id": "G-R2-07d-n4",
+   "generated": true,
+   "row": "R2-07d",
+   "text": "+2.0",
+   "readme_row": "R2-07d",
+   "source": {
+    "kind": "packet_line",
+    "sha": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+    "path": "docs/experiments/r2-07d-quiet-timing-phase-l-2026-10-03/README.md",
+    "line": 211,
+    "context": "CI upper +2.4 ms > +2.0 ms",
+    "text": "+2.0"
+   }
+  },
+  {
+   "id": "G-R2-07e-d",
+   "generated": true,
+   "row": "R2-07e",
+   "text": "warm decisions 0, warm provider lines 0",
+   "readme_row": "R2-07e",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_toggle_warm_decisions",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "warm decisions 0, warm provider lines 0"
+   }
+  },
+  {
+   "id": "G-R2-07e-p",
+   "generated": true,
+   "row": "R2-07e",
+   "text": "15 attempts / 15 reached",
+   "readme_row": "R2-07e",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "provider",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "15 attempts / 15 reached"
+   }
+  },
+  {
+   "id": "G-R2-07e-s",
+   "generated": true,
+   "row": "R2-07e",
+   "text": "+0.7 ms [+0.5, +2.6]",
+   "readme_row": "R2-07e",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "Q_toggle_diff975",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "+0.7 ms [+0.5, +2.6]"
+   }
+  },
+  {
+   "id": "G-R2-07e-w",
+   "generated": true,
+   "row": "R2-07e",
+   "text": "warm valid 29/29",
+   "readme_row": "R2-07e",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_toggle_warm_valid",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "warm valid 29/29"
+   }
+  },
+  {
+   "id": "G-R2-07e-MODAL-d",
+   "generated": true,
+   "row": "R2-07e-MODAL",
+   "text": "warm decisions 0, warm provider lines 0",
+   "readme_row": "R2-07e-MODAL",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_modal_warm_decisions",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "warm decisions 0, warm provider lines 0"
+   }
+  },
+  {
+   "id": "G-R2-07e-MODAL-g",
+   "generated": true,
+   "row": "R2-07e-MODAL",
+   "text": "modal gate PASS",
+   "readme_row": "R2-07e-MODAL",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "Q_modal_gate",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "modal gate PASS"
+   }
+  },
+  {
+   "id": "G-R2-07e-MODAL-q",
+   "generated": true,
+   "row": "R2-07e-MODAL",
+   "text": "-0.5 ms [-1.4, +0.5]",
+   "readme_row": "R2-07e-MODAL",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "Q_modal_diff975",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "-0.5 ms [-1.4, +0.5]"
+   }
+  },
+  {
+   "id": "G-R2-07e-MODAL-qp",
+   "generated": true,
+   "row": "R2-07e-MODAL",
+   "text": "60/60 pairs valid",
+   "readme_row": "R2-07e-MODAL",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "Q_modal_pairs",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "60/60 pairs valid"
+   }
+  },
+  {
+   "id": "G-R2-07e-MODAL-w",
+   "generated": true,
+   "row": "R2-07e-MODAL",
+   "text": "warm valid 29/29",
+   "readme_row": "R2-07e-MODAL",
+   "source": {
+    "kind": "packet_json",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "path": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03/headline-numbers.json",
+    "json_path": [
+     "L_modal_warm_valid",
+     "text"
+    ],
+    "fmt": "raw",
+    "text": "warm valid 29/29"
+   }
+  },
+  {
+   "id": "G-R2-08-n1",
+   "generated": true,
+   "row": "R2-08",
+   "text": "20/20",
+   "readme_row": "R2-08",
+   "source": {
+    "kind": "packet_line",
+    "sha": "afba150d55426bf775cb10adaa698cf99493b229",
+    "path": "docs/experiments/r2-08-2026-10-02/README.md",
+    "line": 5,
+    "context": "to the GUI route in **20/20** matched rounds",
+    "text": "20/20"
+   }
+  },
+  {
+   "id": "G-R2-08-n2",
+   "generated": true,
+   "row": "R2-08",
+   "text": "174.4 ms",
+   "readme_row": "R2-08",
+   "source": {
+    "kind": "packet_line",
+    "sha": "afba150d55426bf775cb10adaa698cf99493b229",
+    "path": "docs/experiments/r2-08-2026-10-02/README.md",
+    "line": 5,
+    "context": "= **−174.4 ms**",
+    "text": "174.4 ms"
+   }
+  },
+  {
+   "id": "G-R2-09-n1",
+   "generated": true,
+   "row": "R2-09",
+   "text": "50 ms",
+   "readme_row": "R2-09",
+   "source": {
+    "kind": "packet_line",
+    "sha": "3539e34ae16d8c49d8de65452663a916dd6647fa",
+    "path": "docs/experiments/r2-09-native-event-wake-2026-10-02/README.md",
+    "line": 58,
+    "context": "After the reply, the 50 ms sleep is replaced",
+    "text": "50 ms"
+   }
+  },
+  {
+   "id": "G-R2-09-n2",
+   "generated": true,
+   "row": "R2-09",
+   "text": "40/40",
+   "readme_row": "R2-09",
+   "source": {
+    "kind": "packet_line",
+    "sha": "3539e34ae16d8c49d8de65452663a916dd6647fa",
+    "path": "docs/experiments/r2-09-native-event-wake-2026-10-02/README.md",
+    "line": 14,
+    "context": "Chromium background: S0 is safe 40/40",
+    "text": "40/40"
+   }
+  },
+  {
+   "id": "G-R2-10-n1",
+   "generated": true,
+   "row": "R2-10",
+   "text": "45.11",
+   "readme_row": "R2-10",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 21,
+    "context": "| 3647.2 ms | 80.9 ms | 45.11 | [42.43, 51.90]",
+    "text": "45.11"
+   }
+  },
+  {
+   "id": "G-R2-10-n2",
+   "generated": true,
+   "row": "R2-10",
+   "text": "5.95",
+   "readme_row": "R2-10",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 22,
+    "context": "| 2928.3 ms | 491.8 ms | 5.95 |",
+    "text": "5.95"
+   }
+  },
+  {
+   "id": "G-R2-10-n3",
+   "generated": true,
+   "row": "R2-10",
+   "text": "5.73",
+   "readme_row": "R2-10",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 23,
+    "context": "| 2930.2 ms | 511.0 ms | 5.73 |",
+    "text": "5.73"
+   }
+  },
+  {
+   "id": "G-R2-10-n4",
+   "generated": true,
+   "row": "R2-10",
+   "text": "1.01",
+   "readme_row": "R2-10",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 166,
+    "context": "the KEEP-only deletions give S 1.01 in every class",
+    "text": "1.01"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-RECERT-budget.cap",
+   "generated": true,
+   "row": "R2-10-LIVE-RECERT",
+   "text": "600",
+   "readme_row": "R2-10-LIVE-RECERT",
+   "source": {
+    "kind": "state",
+    "json_path": "provider_budget.cap_requests",
+    "fmt": "int",
+    "text": "600"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-RECERT-budget.remaining",
+   "generated": true,
+   "row": "R2-10-LIVE-RECERT",
+   "text": "17",
+   "readme_row": "R2-10-LIVE-RECERT",
+   "source": {
+    "kind": "state",
+    "json_path": "provider_budget.remaining_reached",
+    "fmt": "int",
+    "text": "17"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-RECERT-need",
+   "generated": true,
+   "row": "R2-10-LIVE-RECERT",
+   "text": "180",
+   "readme_row": "R2-10-LIVE-RECERT",
+   "source": {
+    "kind": "state_text",
+    "json_path": "blocked_items_w6",
+    "context": "Needs >= 180 TypeSafe reached",
+    "text": "180"
+   }
+  },
+  {
+   "id": "G-R2-10-NATIVE-LIVE-need",
+   "generated": true,
+   "row": "R2-10-NATIVE-LIVE",
+   "text": "120",
+   "readme_row": "R2-10-NATIVE-LIVE",
+   "source": {
+    "kind": "state_text",
+    "json_path": "dispositions.owner_rows_blocked_hardware.R2-10 native live-provider arms",
+    "context": ">=120 more reached needed",
+    "text": "120"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-CR-budget.remaining",
+   "generated": true,
+   "row": "R2-10-LIVE-CR",
+   "text": "17",
+   "readme_row": "R2-10-LIVE-CR",
+   "source": {
+    "kind": "state",
+    "json_path": "provider_budget.remaining_reached",
+    "fmt": "int",
+    "text": "17"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-CR-need",
+   "generated": true,
+   "row": "R2-10-LIVE-CR",
+   "text": "120",
+   "readme_row": "R2-10-LIVE-CR",
+   "source": {
+    "kind": "state_text",
+    "json_path": "blocked_items_w6",
+    "context": "BLOCKED, paid budget (>= 120 reached). R2-07e",
+    "text": "120"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-CR-u1",
+   "generated": true,
+   "row": "R2-10-LIVE-CR",
+   "text": "90.4%",
+   "readme_row": "R2-10-LIVE-CR",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 135,
+    "context": "| **untested share (E2)** | | 14.0% | 90.4% | 90.9%",
+    "text": "90.4%"
+   }
+  },
+  {
+   "id": "G-R2-10-LIVE-CR-u2",
+   "generated": true,
+   "row": "R2-10-LIVE-CR",
+   "text": "90.9%",
+   "readme_row": "R2-10-LIVE-CR",
+   "source": {
+    "kind": "packet_line",
+    "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+    "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+    "line": 135,
+    "context": "| **untested share (E2)** | | 14.0% | 90.4% | 90.9%",
+    "text": "90.9%"
+   }
+  },
+  {
+   "id": "G-B-01-n1",
+   "generated": true,
+   "row": "B-01",
+   "text": "2.097",
+   "readme_row": "B-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "0cd63f786290f967f41a5a6b615d54f98045ebec",
+    "path": "docs/experiments/b-01-browser-critpath-2026-10-02/README.md",
+    "line": 5,
+    "context": "the arrival wait grows 2.097 ms per pixel",
+    "text": "2.097"
+   }
+  },
+  {
+   "id": "G-B-01-n2",
+   "generated": true,
+   "row": "B-01",
+   "text": "94–97%",
+   "readme_row": "B-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "0cd63f786290f967f41a5a6b615d54f98045ebec",
+    "path": "docs/experiments/b-01-browser-critpath-2026-10-02/README.md",
+    "line": 5,
+    "context": "About 94–97% of that is the awaited cursor glide",
+    "text": "94–97%"
+   }
+  },
+  {
+   "id": "G-B-01-n3",
+   "generated": true,
+   "row": "B-01",
+   "text": "100 ms",
+   "readme_row": "B-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "0cd63f786290f967f41a5a6b615d54f98045ebec",
+    "path": "docs/experiments/b-01-browser-critpath-2026-10-02/README.md",
+    "line": 115,
+    "context": "H_T delete the 100 ms focus settle",
+    "text": "100 ms"
+   }
+  },
+  {
+   "id": "G-B-05-n1",
+   "generated": true,
+   "row": "B-05",
+   "text": "0.16-0.26 ms",
+   "readme_row": "B-05",
+   "source": {
+    "kind": "packet_line",
+    "sha": "7052382820687e5bf55e2925e09a3fbe70cce500",
+    "path": "docs/experiments/b-05-browser-mcp-transport-2026-10-03/README.md",
+    "line": 187,
+    "context": "work deleted 0.16-0.26 ms per task",
+    "text": "0.16-0.26 ms"
+   }
+  },
+  {
+   "id": "G-B-05-n2",
+   "generated": true,
+   "row": "B-05",
+   "text": "0.12-0.15 ms",
+   "readme_row": "B-05",
+   "source": {
+    "kind": "packet_line",
+    "sha": "7052382820687e5bf55e2925e09a3fbe70cce500",
+    "path": "docs/experiments/b-05-browser-mcp-transport-2026-10-03/README.md",
+    "line": 188,
+    "context": "work deleted 0.12-0.15 ms per task",
+    "text": "0.12-0.15 ms"
+   }
+  },
+  {
+   "id": "G-B-05-n3",
+   "generated": true,
+   "row": "B-05",
+   "text": "0.5 ms",
+   "readme_row": "B-05",
+   "source": {
+    "kind": "packet_line",
+    "sha": "7052382820687e5bf55e2925e09a3fbe70cce500",
+    "path": "docs/experiments/b-05-browser-mcp-transport-2026-10-03/README.md",
+    "line": 9,
+    "context": "fail the 0.5 ms gate, so they are KILLed",
+    "text": "0.5 ms"
+   }
+  },
+  {
+   "id": "G-B-06-n1",
+   "generated": true,
+   "row": "B-06",
+   "text": "10.0",
+   "readme_row": "B-06",
+   "source": {
+    "kind": "packet_line",
+    "sha": "31bc98a95b746080d1b74b895fe575071d4a94e9",
+    "path": "docs/experiments/b-06-per-process-cold-snapshot-2026-10-03/README.md",
+    "line": 24,
+    "context": "was fill D 10.0 [8.0, 12.0]",
+    "text": "10.0"
+   }
+  },
+  {
+   "id": "G-B-06-n2",
+   "generated": true,
+   "row": "B-06",
+   "text": "4.0",
+   "readme_row": "B-06",
+   "source": {
+    "kind": "packet_line",
+    "sha": "31bc98a95b746080d1b74b895fe575071d4a94e9",
+    "path": "docs/experiments/b-06-per-process-cold-snapshot-2026-10-03/README.md",
+    "line": 24,
+    "context": "toggle D 4.0 [3.9, 6.0] (D' 4.0)",
+    "text": "4.0"
+   }
+  },
+  {
+   "id": "G-B-07-n1",
+   "generated": true,
+   "row": "B-07",
+   "text": "0.48 ms",
+   "readme_row": "B-07",
+   "source": {
+    "kind": "packet_line",
+    "sha": "eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1",
+    "path": "docs/experiments/b-07-transport-residual-rprime-2026-10-03/README.md",
+    "line": 29,
+    "context": "PREP_FAST deletes only 0.48 ms of caller work",
+    "text": "0.48 ms"
+   }
+  },
+  {
+   "id": "G-B-08-e4",
+   "generated": true,
+   "row": "B-08",
+   "text": "0",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "e4_total"
+    ],
+    "fmt": "int",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-B-08-f1",
+   "generated": true,
+   "row": "B-08",
+   "text": "16.9%",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "fill",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1",
+    "text": "16.9%"
+   }
+  },
+  {
+   "id": "G-B-08-f2",
+   "generated": true,
+   "row": "B-08",
+   "text": "19.0%",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "fill",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1",
+    "text": "19.0%"
+   }
+  },
+  {
+   "id": "G-B-08-fci",
+   "generated": true,
+   "row": "B-08",
+   "text": "[9.50, 11.41]",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "fill",
+     "D_C_minus_Wa",
+     "ci"
+    ],
+    "fmt": "ci2",
+    "text": "[9.50, 11.41]"
+   }
+  },
+  {
+   "id": "G-B-08-fd",
+   "generated": true,
+   "row": "B-08",
+   "text": "10.58",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "fill",
+     "D_C_minus_Wa",
+     "median"
+    ],
+    "fmt": "f2",
+    "text": "10.58"
+   }
+  },
+  {
+   "id": "G-B-08-m1",
+   "generated": true,
+   "row": "B-08",
+   "text": "0.4%",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "modal",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1",
+    "text": "0.4%"
+   }
+  },
+  {
+   "id": "G-B-08-m2",
+   "generated": true,
+   "row": "B-08",
+   "text": "3.3%",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "modal",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1",
+    "text": "3.3%"
+   }
+  },
+  {
+   "id": "G-B-08-mci",
+   "generated": true,
+   "row": "B-08",
+   "text": "[2.98, 5.92]",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "modal",
+     "D_C_minus_Wa",
+     "ci"
+    ],
+    "fmt": "ci2",
+    "text": "[2.98, 5.92]"
+   }
+  },
+  {
+   "id": "G-B-08-md",
+   "generated": true,
+   "row": "B-08",
+   "text": "4.56",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "modal",
+     "D_C_minus_Wa",
+     "median"
+    ],
+    "fmt": "f2",
+    "text": "4.56"
+   }
+  },
+  {
+   "id": "G-B-08-t1",
+   "generated": true,
+   "row": "B-08",
+   "text": "0.4%",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "toggle",
+     "C",
+     "corr:below_gate_as_irreducible",
+     "untested_share"
+    ],
+    "fmt": "pct1",
+    "text": "0.4%"
+   }
+  },
+  {
+   "id": "G-B-08-t2",
+   "generated": true,
+   "row": "B-08",
+   "text": "3.6%",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "part_E",
+     "classes",
+     "toggle",
+     "C",
+     "corr:below_gate_as_untested",
+     "untested_share"
+    ],
+    "fmt": "pct1",
+    "text": "3.6%"
+   }
+  },
+  {
+   "id": "G-B-08-tci",
+   "generated": true,
+   "row": "B-08",
+   "text": "[2.62, 5.38]",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "toggle",
+     "D_C_minus_Wa",
+     "ci"
+    ],
+    "fmt": "ci2",
+    "text": "[2.62, 5.38]"
+   }
+  },
+  {
+   "id": "G-B-08-td",
+   "generated": true,
+   "row": "B-08",
+   "text": "3.05",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "classes",
+     "toggle",
+     "D_C_minus_Wa",
+     "median"
+    ],
+    "fmt": "f2",
+    "text": "3.05"
+   }
+  },
+  {
+   "id": "G-B-08-valid",
+   "generated": true,
+   "row": "B-08",
+   "text": "384",
+   "readme_row": "B-08",
+   "source": {
+    "kind": "packet_json",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "path": "docs/experiments/b-08-per-process-cold-b7-2026-10-03/b08-summary.json",
+    "json_path": [
+     "n_trials",
+     "valid_measured"
+    ],
+    "fmt": "int",
+    "text": "384"
+   }
+  },
+  {
+   "id": "G-N-01R-n1",
+   "generated": true,
+   "row": "N-01R",
+   "text": "50 ms",
+   "readme_row": "N-01R",
+   "source": {
+    "kind": "packet_line",
+    "sha": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+    "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/README.md",
+    "line": 10,
+    "context": "**Fixed 50 ms post-DoAction sleep: DELETED on GTK3 AT-SPI",
+    "text": "50 ms"
+   }
+  },
+  {
+   "id": "G-N-02-n1",
+   "generated": true,
+   "row": "N-02",
+   "text": "107.5 ms",
+   "readme_row": "N-02",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9846ac8033a8b5e952b0d44f39858625375d54e1",
+    "path": "docs/experiments/n-02-native-transport-2026-10-02/README.md",
+    "line": 163,
+    "context": "validator compilation once per session at tools/list: median 107.5 ms",
+    "text": "107.5 ms"
+   }
+  },
+  {
+   "id": "G-N-03-n1",
+   "generated": true,
+   "row": "N-03",
+   "text": "39/40",
+   "readme_row": "N-03",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6b70ec9024cc3921f7637bba2ffabcc93e29fc77",
+    "path": "docs/experiments/n-03-native-closure-axfg-2026-10-03/README.md",
+    "line": 136,
+    "context": "PASS iff restored in every row): FAIL, 39/40 restored",
+    "text": "39/40"
+   }
+  },
+  {
+   "id": "G-N-04-n1",
+   "generated": true,
+   "row": "N-04",
+   "text": "1.196",
+   "readme_row": "N-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 78,
+    "context": "| 24 pairs | best X+V+HCL: S 1.196 [1.189, 1.198]",
+    "text": "1.196"
+   }
+  },
+  {
+   "id": "G-N-04-n2",
+   "generated": true,
+   "row": "N-04",
+   "text": "5.941",
+   "readme_row": "N-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 79,
+    "context": "| 24 pairs | best X+V+HCL: S 5.941 [5.938, 5.957]",
+    "text": "5.941"
+   }
+  },
+  {
+   "id": "G-N-04-n3",
+   "generated": true,
+   "row": "N-04",
+   "text": "1.180",
+   "readme_row": "N-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 92,
+    "context": "| S0 (KEEP-only; supplement, its own BASE) | 1.180 [1.177, 1.184]",
+    "text": "1.180"
+   }
+  },
+  {
+   "id": "G-N-04-n4",
+   "generated": true,
+   "row": "N-04",
+   "text": "1.030",
+   "readme_row": "N-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 96,
+    "context": "| text | S0 (KEEP-only; supplement, its own BASE) | 1.030 [1.030, 1.031]",
+    "text": "1.030"
+   }
+  },
+  {
+   "id": "G-N-04-n5",
+   "generated": true,
+   "row": "N-04",
+   "text": "1.19%",
+   "readme_row": "N-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 80,
+    "context": "| 24 rows | 1.19% (primary)",
+    "text": "1.19%"
+   }
+  },
+  {
+   "id": "G-N-04-n6",
+   "generated": true,
+   "row": "N-04",
+   "text": "1.65%",
+   "readme_row": "N-04",
+   "source": {
+    "kind": "packet_line",
+    "sha": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+    "path": "docs/experiments/n-04-native-composition-rprime-2026-10-03/README.md",
+    "line": 8,
+    "context": "untested share falls from R2-10R's 6.9% to 1.65% on one source",
+    "text": "1.65%"
+   }
+  },
+  {
+   "id": "G-FIX-01-n1",
+   "generated": true,
+   "row": "FIX-01",
+   "text": "20/20",
+   "readme_row": "FIX-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
+    "path": "docs/experiments/fix-01-detached-node-refusal-2026-10-02/README.md",
+    "line": 107,
+    "context": "first click **refused `browser_ref_stale` 20/20**",
+    "text": "20/20"
+   }
+  },
+  {
+   "id": "G-FIX-02-F4-n1",
+   "generated": true,
+   "row": "FIX-02-F4",
+   "text": "20/20",
+   "readme_row": "FIX-02-F4",
+   "source": {
+    "kind": "packet_line",
+    "sha": "cea02cb74cc1ad64497804d5da1270a8775f6c75",
+    "path": "docs/experiments/fix-02-token-ownership-retry-scope-2026-10-02/README.md",
+    "line": 12,
+    "context": "Detached input: refused **20/20**",
+    "text": "20/20"
+   }
+  },
+  {
+   "id": "G-FIX-03-g5",
+   "generated": true,
+   "row": "FIX-03",
+   "text": "20",
+   "readme_row": "FIX-03",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_a",
+     "A1",
+     "F5",
+     "gen0_change_events_total"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-n",
+   "generated": true,
+   "row": "FIX-03",
+   "text": "20",
+   "readme_row": "FIX-03",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_a",
+     "A1",
+     "F5",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-s5",
+   "generated": true,
+   "row": "FIX-03",
+   "text": "0",
+   "readme_row": "FIX-03",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_a",
+     "A1",
+     "F5",
+     "success_receipts"
+    ],
+    "fmt": "int",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-FIX-03-sS",
+   "generated": true,
+   "row": "FIX-03",
+   "text": "20",
+   "readme_row": "FIX-03",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_a",
+     "A1",
+     "FS",
+     "success_receipt_for_detached_node"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-u5",
+   "generated": true,
+   "row": "FIX-03",
+   "text": "20",
+   "readme_row": "FIX-03",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_a",
+     "A1",
+     "F5",
+     "refused_post_check_unknown"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-SIDE-wl",
+   "generated": true,
+   "row": "FIX-03-SIDE",
+   "text": "20",
+   "readme_row": "FIX-03-SIDE",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_c_d",
+     "W2dX-U",
+     "B_landed"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-SIDE-wn",
+   "generated": true,
+   "row": "FIX-03-SIDE",
+   "text": "20",
+   "readme_row": "FIX-03-SIDE",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_c_d",
+     "W2dX-U",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-SIDE-wr",
+   "generated": true,
+   "row": "FIX-03-SIDE",
+   "text": "20",
+   "readme_row": "FIX-03-SIDE",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "part_c_d",
+     "W2dX-F5",
+     "B_refused"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-FIX-03-SIDE-x5",
+   "generated": true,
+   "row": "FIX-03-SIDE",
+   "text": "0",
+   "readme_row": "FIX-03-SIDE",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "e4",
+     "F5",
+     "cross_session_mutation"
+    ],
+    "fmt": "int",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-FIX-03-SIDE-xf",
+   "generated": true,
+   "row": "FIX-03-SIDE",
+   "text": "40",
+   "readme_row": "FIX-03-SIDE",
+   "source": {
+    "kind": "packet_json",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "path": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/summary.json",
+    "json_path": [
+     "e4",
+     "F",
+     "cross_session_mutation"
+    ],
+    "fmt": "int",
+    "text": "40"
+   }
+  },
+  {
+   "id": "G-RECERT-FIX-n0",
+   "generated": true,
+   "row": "RECERT-FIX",
+   "text": "0",
+   "readme_row": "RECERT-FIX",
+   "source": {
+    "kind": "packet_line",
+    "sha": "939580fc64073d0159865b547566d3522ce1565f",
+    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md",
+    "line": 241,
+    "context": "W2a 20) | **0**",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-RECERT-FIX-n1",
+   "generated": true,
+   "row": "RECERT-FIX",
+   "text": "100",
+   "readme_row": "RECERT-FIX",
+   "source": {
+    "kind": "packet_line",
+    "sha": "939580fc64073d0159865b547566d3522ce1565f",
+    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md",
+    "line": 241,
+    "context": "| Cross-session mutations | **100**",
+    "text": "100"
+   }
+  },
+  {
+   "id": "G-RECERT-FIX-n2",
+   "generated": true,
+   "row": "RECERT-FIX",
+   "text": "50",
+   "readme_row": "RECERT-FIX",
+   "source": {
+    "kind": "packet_line",
+    "sha": "939580fc64073d0159865b547566d3522ce1565f",
+    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md",
+    "line": 242,
+    "context": "| **50** (I5p 20, I5pt 10, F4 20)",
+    "text": "50"
+   }
+  },
+  {
+   "id": "G-RECERT-FIX-n3",
+   "generated": true,
+   "row": "RECERT-FIX",
+   "text": "20",
+   "readme_row": "RECERT-FIX",
+   "source": {
+    "kind": "packet_line",
+    "sha": "939580fc64073d0159865b547566d3522ce1565f",
+    "path": "docs/experiments/fix-recert-a3-2026-10-03/README.md",
+    "line": 243,
+    "context": "| **20** (F3 trust_unknown py 10, ts 10)",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-BUG-01-n1",
+   "generated": true,
+   "row": "BUG-01",
+   "text": "20 of 20",
+   "readme_row": "BUG-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "097b4f0974d5c161360fc3683c17f298ff681c70",
+    "path": "docs/experiments/bug-01-delivery-cdp-2026-10-02/README.md",
+    "line": 5,
+    "context": "all 20 of 20 foreground trusted `browser_click` receipts said `delivery.mode=background`",
+    "text": "20 of 20"
+   }
+  },
+  {
+   "id": "G-BUG-01-n2",
+   "generated": true,
+   "row": "BUG-01",
+   "text": "20/20",
+   "readme_row": "BUG-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "097b4f0974d5c161360fc3683c17f298ff681c70",
+    "path": "docs/experiments/bug-01-delivery-cdp-2026-10-02/README.md",
+    "line": 73,
+    "context": "| background 20/20 | **foreground 20/20**",
+    "text": "20/20"
+   }
+  },
+  {
+   "id": "G-OWN-09-n1",
+   "generated": true,
+   "row": "OWN-09",
+   "text": "40/40",
+   "readme_row": "OWN-09",
+   "source": {
+    "kind": "packet_line",
+    "sha": "bf07c8fe374bc3079c2edb8adaea3bc2bcf9b79d",
+    "path": "docs/experiments/own-09-cancel-barrier-rows-2026-10-02/README.md",
+    "line": 5,
+    "context": "is still running, 40/40 per variant",
+    "text": "40/40"
+   }
+  },
+  {
+   "id": "G-OWN-09-n2",
+   "generated": true,
+   "row": "OWN-09",
+   "text": "1/40",
+   "readme_row": "OWN-09",
+   "source": {
+    "kind": "packet_line",
+    "sha": "bf07c8fe374bc3079c2edb8adaea3bc2bcf9b79d",
+    "path": "docs/experiments/own-09-cancel-barrier-rows-2026-10-02/README.md",
+    "line": 156,
+    "context": "(kill gate, 1/40)",
+    "text": "1/40"
+   }
+  },
+  {
+   "id": "G-OWN-09-R8-n1",
+   "generated": true,
+   "row": "OWN-09-R8",
+   "text": "40/40",
+   "readme_row": "OWN-09-R8",
+   "source": {
+    "kind": "packet_line",
+    "sha": "0c2896a53e185ed6b92e61fdb405e42137cc0720",
+    "path": "docs/experiments/own-09r-84-revision-2026-10-02/README.md",
+    "line": 15,
+    "context": "40/40 each. The effect lands exactly once",
+    "text": "40/40"
+   }
+  },
+  {
+   "id": "G-OWN-16-n1",
+   "generated": true,
+   "row": "OWN-16",
+   "text": "42/42",
+   "readme_row": "OWN-16",
+   "source": {
+    "kind": "packet_line",
+    "sha": "7a4f3252af9c845f2a6cc489a54616c2e3cb92c8",
+    "path": "docs/experiments/own-16-modality-truth-2026-10-02/README.md",
+    "line": 42,
+    "context": "`screenshot_only`: AT-SPI walk count 0 in 42/42 calls",
+    "text": "42/42"
+   }
+  },
+  {
+   "id": "G-OWN-20-n1",
+   "generated": true,
+   "row": "OWN-20",
+   "text": "40 of 40",
+   "readme_row": "OWN-20",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6da15bf3516ddbf657e5d947875be6adae5299ef",
+    "path": "docs/experiments/own-20-atspi-invalidation-census-2026-10-02/README.md",
+    "line": 15,
+    "context": "no `children-changed:add` event in 40 of 40 reps",
+    "text": "40 of 40"
+   }
+  },
+  {
+   "id": "G-OWN-20G-n1",
+   "generated": true,
+   "row": "OWN-20G",
+   "text": "20/20 + 20/20",
+   "readme_row": "OWN-20G",
+   "source": {
+    "kind": "packet_line",
+    "sha": "ce7544cc064cecfd9ba4702466a1d0f24b1799b6",
+    "path": "docs/experiments/own-20g-guard-final-diff-2026-10-03/README.md",
+    "line": 9,
+    "context": "G restored **20/20 + 20/20** steals",
+    "text": "20/20 + 20/20"
+   }
+  },
+  {
+   "id": "G-OWN-20G-n2",
+   "generated": true,
+   "row": "OWN-20G",
+   "text": "20/20 + 20/20",
+   "readme_row": "OWN-20G",
+   "source": {
+    "kind": "packet_line",
+    "sha": "ce7544cc064cecfd9ba4702466a1d0f24b1799b6",
+    "path": "docs/experiments/own-20g-guard-final-diff-2026-10-03/README.md",
+    "line": 9,
+    "context": "U missed **20/20 + 20/20** silently",
+    "text": "20/20 + 20/20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-a",
+   "generated": true,
+   "row": "OWN-20Q",
+   "text": "40",
+   "readme_row": "OWN-20Q",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "r1m",
+     "U0_silent_miss"
+    ],
+    "fmt": "int",
+    "text": "40"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-an",
+   "generated": true,
+   "row": "OWN-20Q",
+   "text": "40",
+   "readme_row": "OWN-20Q",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "r1m",
+     "n",
+     "U0"
+    ],
+    "fmt": "int",
+    "text": "40"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-b",
+   "generated": true,
+   "row": "OWN-20Q",
+   "text": "40",
+   "readme_row": "OWN-20Q",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "r1m",
+     "G0_verified_restore"
+    ],
+    "fmt": "int",
+    "text": "40"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-bn",
+   "generated": true,
+   "row": "OWN-20Q",
+   "text": "40",
+   "readme_row": "OWN-20Q",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "r1m",
+     "n",
+     "G0"
+    ],
+    "fmt": "int",
+    "text": "40"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-fr",
+   "generated": true,
+   "row": "OWN-20Q",
+   "text": "0",
+   "readme_row": "OWN-20Q",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "r1m",
+     "false_restores"
+    ],
+    "fmt": "int",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-DLG-dc",
+   "generated": true,
+   "row": "OWN-20Q-DLG",
+   "text": "10",
+   "readme_row": "OWN-20Q-DLG",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "dlg",
+     "dialog_control",
+     "GQ",
+     "dialog_left_focused"
+    ],
+    "fmt": "int",
+    "text": "10"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-DLG-dcn",
+   "generated": true,
+   "row": "OWN-20Q-DLG",
+   "text": "10",
+   "readme_row": "OWN-20Q-DLG",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "dlg",
+     "dialog_control",
+     "GQ",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "10"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-DLG-ga",
+   "generated": true,
+   "row": "OWN-20Q-DLG",
+   "text": "20",
+   "readme_row": "OWN-20Q-DLG",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "dlg",
+     "GA_misclassified"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-DLG-gan",
+   "generated": true,
+   "row": "OWN-20Q-DLG",
+   "text": "20",
+   "readme_row": "OWN-20Q-DLG",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "dlg",
+     "n",
+     "GA"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-DLG-gq",
+   "generated": true,
+   "row": "OWN-20Q-DLG",
+   "text": "20",
+   "readme_row": "OWN-20Q-DLG",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "dlg",
+     "GQ_verified_restore"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-DLG-gqn",
+   "generated": true,
+   "row": "OWN-20Q-DLG",
+   "text": "20",
+   "readme_row": "OWN-20Q-DLG",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "dlg",
+     "n",
+     "GQ"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-r3n",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "0",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3n",
+     "GQ",
+     "pass"
+    ],
+    "fmt": "int",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-r3nn",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "20",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3n",
+     "GQ",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-r3s",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "20",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3s",
+     "GQ",
+     "pass"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-r3sn",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "20",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3s",
+     "GQ",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-r3w",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "10",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3w",
+     "GQ",
+     "pass"
+    ],
+    "fmt": "int",
+    "text": "10"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-r3wn",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "10",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3w",
+     "GQ",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "10"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-rc",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "23",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3_carry",
+     "restart_happened_view",
+     "safe_where_killed"
+    ],
+    "fmt": "int",
+    "text": "23"
+   }
+  },
+  {
+   "id": "G-OWN-20Q-A2-rcn",
+   "generated": true,
+   "row": "OWN-20Q-A2",
+   "text": "23",
+   "readme_row": "OWN-20Q-A2",
+   "source": {
+    "kind": "packet_json",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "path": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03/own20q-summary.json",
+    "json_path": [
+     "a2",
+     "r3_carry",
+     "restart_happened_view",
+     "killed_total"
+    ],
+    "fmt": "int",
+    "text": "23"
+   }
+  },
+  {
+   "id": "G-OWN-75R-n1",
+   "generated": true,
+   "row": "OWN-75R",
+   "text": "160/160",
+   "readme_row": "OWN-75R",
+   "source": {
+    "kind": "packet_line",
+    "sha": "e02621fdc1fe5098efd48af295964f25902553ea",
+    "path": "docs/experiments/own-75-timing-parity-4336-2026-10-02/README.md",
+    "line": 65,
+    "context": "| S3 behaviour identity | REAL | 160/160 trials ran",
+    "text": "160/160"
+   }
+  },
+  {
+   "id": "G-OWN-78-n1",
+   "generated": true,
+   "row": "OWN-78",
+   "text": "30/30",
+   "readme_row": "OWN-78",
+   "source": {
+    "kind": "packet_line",
+    "sha": "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8",
+    "path": "docs/experiments/own-78-provider-receipts-4394-2026-10-02/README.md",
+    "line": 6,
+    "context": "the HTTP-evidenced responder (30/30)",
+    "text": "30/30"
+   }
+  },
+  {
+   "id": "G-OWN-78-n2",
+   "generated": true,
+   "row": "OWN-78",
+   "text": "30/30",
+   "readme_row": "OWN-78",
+   "source": {
+    "kind": "packet_line",
+    "sha": "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8",
+    "path": "docs/experiments/own-78-provider-receipts-4394-2026-10-02/README.md",
+    "line": 11,
+    "context": "abstains at step 1 in 30/30 measured trials",
+    "text": "30/30"
+   }
+  },
+  {
+   "id": "G-OWN-78-n3",
+   "generated": true,
+   "row": "OWN-78",
+   "text": "5/5",
+   "readme_row": "OWN-78",
+   "source": {
+    "kind": "packet_line",
+    "sha": "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8",
+    "path": "docs/experiments/own-78-provider-receipts-4394-2026-10-02/README.md",
+    "line": 11,
+    "context": "the pre-PR runner verified 5/5",
+    "text": "5/5"
+   }
+  },
+  {
+   "id": "G-OWN-78A-n1",
+   "generated": true,
+   "row": "OWN-78A",
+   "text": "5/5",
+   "readme_row": "OWN-78A",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+    "path": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03/README.md",
+    "line": 13,
+    "context": "restored typing: A2 correct-type **5/5**, P(type)",
+    "text": "5/5"
+   }
+  },
+  {
+   "id": "G-OWN-78A-n2",
+   "generated": true,
+   "row": "OWN-78A",
+   "text": "5/5",
+   "readme_row": "OWN-78A",
+   "source": {
+    "kind": "packet_line",
+    "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+    "path": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03/README.md",
+    "line": 10,
+    "context": "A0 abstain **5/5**, P(type) 0.09-0.12.",
+    "text": "5/5"
+   }
+  },
+  {
+   "id": "G-OWN-78L-b",
+   "generated": true,
+   "row": "OWN-78L",
+   "text": "3",
+   "readme_row": "OWN-78L",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "backend_equals_responder"
+    ],
+    "fmt": "int",
+    "text": "3"
+   }
+  },
+  {
+   "id": "G-OWN-78L-lb",
+   "generated": true,
+   "row": "OWN-78L",
+   "text": "0.29 (exact two-sided 95% lower bound)",
+   "readme_row": "OWN-78L",
+   "source": {
+    "kind": "packet_line",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/README.md",
+    "line": 134,
+    "context": "as low as 0.29 (exact two-sided 95% lower bound)",
+    "text": "0.29 (exact two-sided 95% lower bound)"
+   }
+  },
+  {
+   "id": "G-OWN-78L-n",
+   "generated": true,
+   "row": "OWN-78L",
+   "text": "3",
+   "readme_row": "OWN-78L",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "3"
+   }
+  },
+  {
+   "id": "G-OWN-78L-rr",
+   "generated": true,
+   "row": "OWN-78L",
+   "text": "0",
+   "readme_row": "OWN-78L",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "replays_or_restarts"
+    ],
+    "fmt": "int",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-OWN-78L-v",
+   "generated": true,
+   "row": "OWN-78L",
+   "text": "3",
+   "readme_row": "OWN-78L",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "verified"
+    ],
+    "fmt": "int",
+    "text": "3"
+   }
+  },
+  {
+   "id": "G-OWN-78-R1R4-budget.remaining",
+   "generated": true,
+   "row": "OWN-78-R1R4",
+   "text": "17",
+   "readme_row": "OWN-78-R1R4",
+   "source": {
+    "kind": "state",
+    "json_path": "provider_budget.remaining_reached",
+    "fmt": "int",
+    "text": "17"
+   }
+  },
+  {
+   "id": "G-OWN-78-R1R4-k",
+   "generated": true,
+   "row": "OWN-78-R1R4",
+   "text": "3",
+   "readme_row": "OWN-78-R1R4",
+   "source": {
+    "kind": "packet_json",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "path": "docs/experiments/own-78l-r1-lite-f-2026-10-03/own78l-summary.json",
+    "json_path": [
+     "r1_lite",
+     "n"
+    ],
+    "fmt": "int",
+    "text": "3"
+   }
+  },
+  {
+   "id": "G-OWN-78-R1R4-need",
+   "generated": true,
+   "row": "OWN-78-R1R4",
+   "text": "60",
+   "readme_row": "OWN-78-R1R4",
+   "source": {
+    "kind": "state_text",
+    "json_path": "dispositions.OWN-78L.blockers",
+    "context": "(~60 reached",
+    "text": "60"
+   }
+  },
+  {
+   "id": "G-OWN-78-R1R4-r",
+   "generated": true,
+   "row": "OWN-78-R1R4",
+   "text": "20",
+   "readme_row": "OWN-78-R1R4",
+   "source": {
+    "kind": "state_text",
+    "json_path": "dispositions.OWN-78L.blockers",
+    "context": "Full-n live R1 20 / R4 20",
+    "text": "20"
+   }
+  },
+  {
+   "id": "G-OWN-78-A2A3-budget.remaining",
+   "generated": true,
+   "row": "OWN-78-A2A3",
+   "text": "17",
+   "readme_row": "OWN-78-A2A3",
+   "source": {
+    "kind": "state",
+    "json_path": "provider_budget.remaining_reached",
+    "fmt": "int",
+    "text": "17"
+   }
+  },
+  {
+   "id": "G-OWN-105-n1",
+   "generated": true,
+   "row": "OWN-105",
+   "text": "0",
+   "readme_row": "OWN-105",
+   "source": {
+    "kind": "packet_line",
+    "sha": "b97daa4ba08605c08f6a5da8baf1bf32c5ff4093",
+    "path": "docs/experiments/own-105-runner-reconcile-2026-10-02/README.md",
+    "line": 6,
+    "context": "**fixed duplicates 0 in 148 fixed trials**",
+    "text": "0"
+   }
+  },
+  {
+   "id": "G-OWN-105-n2",
+   "generated": true,
+   "row": "OWN-105",
+   "text": "148",
+   "readme_row": "OWN-105",
+   "source": {
+    "kind": "packet_line",
+    "sha": "b97daa4ba08605c08f6a5da8baf1bf32c5ff4093",
+    "path": "docs/experiments/own-105-runner-reconcile-2026-10-02/README.md",
+    "line": 6,
+    "context": "**fixed duplicates 0 in 148 fixed trials**",
+    "text": "148"
+   }
+  },
+  {
+   "id": "G-PKT-01-n1",
+   "generated": true,
+   "row": "PKT-01",
+   "text": "27",
+   "readme_row": "PKT-01",
+   "source": {
+    "kind": "packet_line",
+    "sha": "cca59642dce3cd1a9c8e17b9f578eb94fc4b1f6e",
+    "path": "docs/experiments/packet-audit-2026-10-03/README.md",
+    "line": 195,
+    "context": "| 27/27, heads equal to origin",
+    "text": "27"
+   }
   },
   {
    "id": "S01",
+   "generated": true,
    "row": "STATE",
-   "text": "562 of 600 reached used, 38 remain",
+   "text": "583",
+   "readme_block": "budget",
    "source": {
     "kind": "state",
-    "json_path": "provider_budget.used_requests_reached_provider"
-   },
-   "needle": 562
+    "json_path": "provider_budget.used_requests_reached_provider",
+    "fmt": "int",
+    "text": "583"
+   }
   },
   {
    "id": "S02",
+   "generated": true,
    "row": "STATE",
-   "text": "562 of 600 reached used, 38 remain",
+   "text": "600",
+   "readme_block": "budget",
    "source": {
     "kind": "state",
-    "json_path": "provider_budget.cap_requests"
-   },
-   "needle": 600
+    "json_path": "provider_budget.cap_requests",
+    "fmt": "int",
+    "text": "600"
+   }
   },
   {
    "id": "S03",
+   "generated": true,
    "row": "STATE",
-   "text": "562 of 600 reached used, 38 remain",
+   "text": "17",
+   "readme_block": "budget",
    "source": {
     "kind": "state",
-    "json_path": "provider_budget.remaining_reached"
-   },
-   "needle": 38
+    "json_path": "provider_budget.remaining_reached",
+    "fmt": "int",
+    "text": "17"
+   }
+  },
+  {
+   "id": "S04",
+   "generated": true,
+   "row": "STATE",
+   "text": "679",
+   "readme_block": "budget",
+   "source": {
+    "kind": "state",
+    "json_path": "provider_budget.used_attempts",
+    "fmt": "int",
+    "text": "679"
+   }
   }
  ]
 }

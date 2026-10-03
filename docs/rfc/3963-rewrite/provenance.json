@@ -1,70 +1,573 @@
 {
-  "schema": "rfc3963-rewrite-provenance/v1",
-  "lane": "DOC-3963 (wave 6, deliverable)",
-  "branch": "docs/rfc3963-rewrite-draft-20261003",
-  "base": {"repo": "trycua/cua main", "sha": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f", "committer_date": "2026-10-03T12:54:29Z"},
-  "provider": {"attempts": 0, "reached": 0, "note": "deliverable lane; no Driver, GUI or provider use"},
-  "inputs": {
-    "census_branch": {"ref": "origin/research/rfc3963-dependency-census-20260925", "sha": "ed6887c111764f91bb1d95939621404d134b8edd", "scanner_pin": "a959b2a23f8099769d0d57e4b8c2c8e70bf7d036", "note": "read-only scanner; edges are mentions, not prerequisites; its export is not committed and was not regenerated"},
-    "loop_state": {"file": "STATE.json (loop state, outside the repository)", "sha256": "b53b192f646bdcbe4eb1ce1f7d7dc19bf2a5b78c2434545eb2a58cbe524b60b7", "mtime_utc": "2026-10-03T12:42:33Z", "note": "state after wave-5 publication; dispositions, owner_rows_linux, owner_rows_blocked_hardware, owner_decisions_pending, blocked_items_w3..w5, provider_budget"},
-    "end_condition": {"file": "END_CONDITION.md v1", "sha256": "c33899325df698d2c2676b2b10422197fdb4b2dae47ef67ec3ad3244ad0bb1ea"},
-    "syntheses": {
-      "SYNTHESIS.md": "27d77bbc48b037e681ce414941d3bbadb547f835b476447e732e979e3883267b",
-      "SYNTHESIS-w1.md": "9bf1fde96cb9e4ac8fe8ed62465ecd40a40935f9c8514946d323e6e3ea6421b8",
-      "SYNTHESIS-w2.md": "d63f236a23ff395ed2706ae5824ca04caec10755986d5cb32d2dfc9ba106902d",
-      "SYNTHESIS-w3.md": "b0623dbad02a6c8ce847c71a522f17b086afbe75332a531260897ac327a1c00d",
-      "SYNTHESIS-w4.md": "1611903b922fa41e7eda16d828e25e28e20fd2ca29c77894d70736d8dbff871a",
-      "SYNTHESIS-w5.md": "9bf7ba7277e0857a02ecf161b2d5c716ee56a68bc917407e8e90442901194e6d"
-    },
-    "packets": "every accepted packet README read with git show <sha>:<packet>/README.md at the SHA in dispositions.json"
+ "schema": "rfc3963-rewrite-provenance/v1",
+ "lane": "DOC-3963b (wave 7, deliverable)",
+ "branch": "docs/rfc3963-rewrite-draft-r2-20261003",
+ "base": {
+  "repo": "trycua/cua main",
+  "sha": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
+  "committer_date": "2026-10-03T12:54:29Z"
+ },
+ "provider": {
+  "attempts": 0,
+  "reached": 0,
+  "note": "deliverable lane; no Driver, GUI or provider use"
+ },
+ "inputs": {
+  "census_branch": {
+   "ref": "origin/research/rfc3963-dependency-census-20260925",
+   "sha": "ed6887c111764f91bb1d95939621404d134b8edd",
+   "scanner_pin": "a959b2a23f8099769d0d57e4b8c2c8e70bf7d036",
+   "note": "read-only scanner; edges are mentions, not prerequisites; its export is not committed and was not regenerated",
+   "fetch": {
+    "remote": "fork",
+    "ref": "refs/heads/research/rfc3963-dependency-census-20260925",
+    "note": "verify_artifacts.py fetches it read-only into a clone that lacks it, or reports NEED with the command"
+   }
   },
-  "gh_reads": [
-    {"what": "trycua/cua issue 3963 (state CLOSED, updatedAt 2026-09-29T18:38:06Z, 22 comments; maintainer decision 2026-09-29T18:38:05Z)", "utc": "2026-10-03T13:05:00Z"},
-    {"what": "kvnloo/cua#73 (OPEN, updatedAt 2026-10-03T12:41:55Z)", "utc": "2026-10-03T13:05:00Z"},
-    {"what": "kvnloo/cua#93", "utc": "2026-10-03T13:05:01Z"},
-    {"what": "kvnloo/cua#10", "utc": "2026-10-03T13:05:01Z"},
-    {"what": "kvnloo/cua#74 (OPEN, updatedAt 2026-10-03T12:41:57Z)", "utc": "2026-10-03T13:05:02Z"},
-    {"what": "trycua/cua PR 4316 OPEN head a0bca744067d04f05904319d3d919be30c336556", "utc": "2026-10-03T13:09:35Z"},
-    {"what": "trycua/cua PR 4317 MERGED as 0ddf0f7a388630715a5b2a7361ee267e77b5c70d", "utc": "2026-10-03T13:09:35Z"},
-    {"what": "trycua/cua PR 4336 OPEN head 8391cf80275d2a5e7288f9d7c6b0a3e5f7822939", "utc": "2026-10-03T13:09:36Z"},
-    {"what": "trycua/cua PR 4394 OPEN head 039257811e0bbb2348c616c52562409923d2856f", "utc": "2026-10-03T13:09:39Z"},
-    {"what": "trycua/cua PR 4318 MERGED as db55739146476d2a5f6b34c8ccde4da6eab1dc3a", "utc": "2026-10-03T13:09:40Z"},
-    {"what": "trycua/cua PR 3961 OPEN head 97cd02c2645404968ef10b1c8103ea3a932c77bf", "utc": "2026-10-03T13:09:40Z"},
-    {"what": "kvnloo/cua#84 OPEN head 566b9c73245266005c958d40e93d46ee5d463325", "utc": "2026-10-03T13:09:40Z"},
-    {"what": "kvnloo/cua#105 OPEN head 98a45e6c528da9e2715288c20c2a0feeeef8e73f", "utc": "2026-10-03T13:09:41Z"},
-    {"what": "kvnloo/cua#106 OPEN head c45845797b714ccfd76a9569d3238a0724107a83", "utc": "2026-10-03T13:09:41Z"},
-    {"what": "upstream main c8edda06be53e13a759c69de125ce37189023954 (committer 2026-10-03T13:02:59Z)", "utc": "2026-10-03T13:09:41Z"},
-    {"what": "upstream item types (issue vs PR) for 3873 4009 3796 3904 3903 3906 3492 2794 3494 4052 3971 3946 2969 4164 4196 3961 4316 4317 4336 4394 3931 4318 2958 4236 4055 3473", "utc": "2026-10-03T13:12Z"},
-    {"what": "compare 5de1a3799...c8edda06b: ahead 2, 49 files; libs/cua-driver: docs/test-matrix.md, python/pyproject.toml, python/src/cua_driver/__init__.py, rust/CHANGELOG.md, rust/Cargo.lock, rust/Cargo.toml, rust/Skills/cua-driver/SKILL.md, rust/VERSION, cua-driver-e2e harness_winui3_test.rs / harness_wpf_test.rs / support/foreground_text_oracle.rs, platform-windows input/keyboard.rs, tests/fixtures/apps/windows (4 files), typescript/package-lock.json, typescript/package.json (release bump + Windows input; no core/sdk/contract/platform-linux path)", "utc": "2026-10-03T13:10Z"}
-  ],
-  "origin_heads_read": {"command": "git ls-remote origin (read-only)", "utc": "2026-10-03T13:06:28Z", "note": "every cited row branch head equals its cited SHA except OWN-75 (hard-stop record, never pushed)"},
-  "freshness": {
-    "tested_upstream": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
-    "range": "0f1955d2f..5de1a3799",
-    "commits": 31,
-    "libs_cua_driver_files": [
-      "libs/cua-driver/rust/Skills/cua-driver/MACOS.md",
-      "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/ax/exact_target.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/browser/setup_ui.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/tools/click.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/tools/invoke_menu.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/tools/set_value.rs",
-      "libs/cua-driver/rust/crates/platform-macos/src/windows.rs",
-      "libs/cua-driver/rust/crates/platform-windows/src/browser_platform.rs",
-      "libs/cua-driver/rust/crates/platform-windows/src/tools/impl_.rs",
-      "libs/cua-driver/rust/crates/platform-windows/src/win32/mod.rs",
-      "libs/cua-driver/rust/crates/platform-windows/src/win32/windows.rs",
-      "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift",
-      "libs/cua-driver/tests/fixtures/shared/scenarios.json"
-    ],
-    "verdict": "no Linux core, sdk, contract or platform-linux path; scenarios.json is the shared cross-platform scenario list (already noted at wave-5 synthesis). No surviving Linux claim depends on these files."
+  "loop_state": {
+   "file": "STATE.json (loop state, outside the repository)",
+   "sha256": "ba636f47d3c00624bd0fe5351fade70598e8520c550da08390e6431024dcb673",
+   "mtime_utc": "2026-10-03T15:37:25Z",
+   "note": "state after wave-6 publication; generate.py reads dispositions, waves, blocked_items_w6, owner_rows_blocked_hardware and provider_budget from it; the sha256 is rewritten by generate.py"
   },
-  "pins_from_state": {
-    "R": "989cc76cec262ff8bcf6968b637820340fb9caaa + R2-10 steps (tested source 8f3a646b4818b757648835cf89db8886626b1cf0), binary sha256 12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
-    "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a = 0f1955d2f + R2-10 steps, binary sha256 922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
-    "R_prime_n": "11a03bf513a9b9ab107852ade67e13dbda5d30e7 = R' + N-02 marks, binary sha256 78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc",
-    "B7": "R' + B-07 picks, binary sha256 6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+  "end_condition": {
+   "file": "END_CONDITION.md v1",
+   "sha256": "c33899325df698d2c2676b2b10422197fdb4b2dae47ef67ec3ad3244ad0bb1ea"
+  },
+  "syntheses": {
+   "SYNTHESIS.md": "27d77bbc48b037e681ce414941d3bbadb547f835b476447e732e979e3883267b",
+   "SYNTHESIS-w1.md": "9bf1fde96cb9e4ac8fe8ed62465ecd40a40935f9c8514946d323e6e3ea6421b8",
+   "SYNTHESIS-w2.md": "d63f236a23ff395ed2706ae5824ca04caec10755986d5cb32d2dfc9ba106902d",
+   "SYNTHESIS-w3.md": "b0623dbad02a6c8ce847c71a522f17b086afbe75332a531260897ac327a1c00d",
+   "SYNTHESIS-w4.md": "1611903b922fa41e7eda16d828e25e28e20fd2ca29c77894d70736d8dbff871a",
+   "SYNTHESIS-w5.md": "9bf7ba7277e0857a02ecf161b2d5c716ee56a68bc917407e8e90442901194e6d",
+   "SYNTHESIS-w6.md": "764fcb256448eff6a3491b976fce97c8618fc7c4a04636322dcabb630875f2ef"
+  },
+  "packets": "every accepted packet README read with git show <sha>:<packet>/README.md at the SHA in dispositions.json",
+  "wave6_packets": [
+   {
+    "row": "B-08",
+    "branch": "exp/b-08-per-process-cold-b7-20261003",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "files": [
+     "b08-summary.json",
+     "README.md"
+    ]
+   },
+   {
+    "row": "R2-07e / R2-07e-MODAL",
+    "branch": "exp/r2-07e-modal-gate-phase-l-20261003",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "files": [
+     "headline-numbers.json",
+     "README.md"
+    ]
+   },
+   {
+    "row": "OWN-78L",
+    "branch": "exp/own-78l-r1-lite-f-20261003",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "files": [
+     "own78l-summary.json",
+     "README.md"
+    ]
+   },
+   {
+    "row": "FIX-03 / FIX-03-SIDE",
+    "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "files": [
+     "summary.json",
+     "README.md"
+    ]
+   },
+   {
+    "row": "OWN-20Q / -DLG / -A2",
+    "branch": "exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "files": [
+     "own20q-summary.json",
+     "README.md"
+    ]
+   },
+   {
+    "row": "PUB-03",
+    "branch": "exp/own-20g-guard-final-diff-r1c-20261003 (held, not on origin)",
+    "sha": "cb18ebfbdfa41b733b8c68c1971760ab39f392f4",
+    "files": [
+     "README.md",
+     "PRIVACY-REWRITE.md"
+    ]
+   }
+  ]
+ },
+ "gh_reads": [
+  {
+   "what": "trycua/cua issue 3963 (state CLOSED, updatedAt 2026-09-29T18:38:06Z, 22 comments; maintainer decision 2026-09-29T18:38:05Z)",
+   "utc": "2026-10-03T13:05:00Z"
+  },
+  {
+   "what": "kvnloo/cua#73 (OPEN, updatedAt 2026-10-03T12:41:55Z)",
+   "utc": "2026-10-03T13:05:00Z"
+  },
+  {
+   "what": "kvnloo/cua#93",
+   "utc": "2026-10-03T13:05:01Z"
+  },
+  {
+   "what": "kvnloo/cua#10",
+   "utc": "2026-10-03T13:05:01Z"
+  },
+  {
+   "what": "kvnloo/cua#74 (OPEN, updatedAt 2026-10-03T12:41:57Z)",
+   "utc": "2026-10-03T13:05:02Z"
+  },
+  {
+   "what": "trycua/cua PR 4316 OPEN head a0bca744067d04f05904319d3d919be30c336556",
+   "utc": "2026-10-03T13:09:35Z"
+  },
+  {
+   "what": "trycua/cua PR 4317 MERGED as 0ddf0f7a388630715a5b2a7361ee267e77b5c70d",
+   "utc": "2026-10-03T13:09:35Z"
+  },
+  {
+   "what": "trycua/cua PR 4336 OPEN head 8391cf80275d2a5e7288f9d7c6b0a3e5f7822939",
+   "utc": "2026-10-03T13:09:36Z"
+  },
+  {
+   "what": "trycua/cua PR 4394 OPEN head 039257811e0bbb2348c616c52562409923d2856f",
+   "utc": "2026-10-03T13:09:39Z"
+  },
+  {
+   "what": "trycua/cua PR 4318 MERGED as db55739146476d2a5f6b34c8ccde4da6eab1dc3a",
+   "utc": "2026-10-03T13:09:40Z"
+  },
+  {
+   "what": "trycua/cua PR 3961 OPEN head 97cd02c2645404968ef10b1c8103ea3a932c77bf",
+   "utc": "2026-10-03T13:09:40Z"
+  },
+  {
+   "what": "kvnloo/cua#84 OPEN head 566b9c73245266005c958d40e93d46ee5d463325",
+   "utc": "2026-10-03T13:09:40Z"
+  },
+  {
+   "what": "kvnloo/cua#105 OPEN head 98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+   "utc": "2026-10-03T13:09:41Z"
+  },
+  {
+   "what": "kvnloo/cua#106 OPEN head c45845797b714ccfd76a9569d3238a0724107a83",
+   "utc": "2026-10-03T13:09:41Z"
+  },
+  {
+   "what": "upstream main c8edda06be53e13a759c69de125ce37189023954 (committer 2026-10-03T13:02:59Z)",
+   "utc": "2026-10-03T13:09:41Z"
+  },
+  {
+   "what": "upstream item types (issue vs PR) for 3873 4009 3796 3904 3903 3906 3492 2794 3494 4052 3971 3946 2969 4164 4196 3961 4316 4317 4336 4394 3931 4318 2958 4236 4055 3473",
+   "utc": "2026-10-03T13:12Z"
+  },
+  {
+   "what": "compare 5de1a3799...c8edda06b: ahead 2, 49 files; libs/cua-driver: docs/test-matrix.md, python/pyproject.toml, python/src/cua_driver/__init__.py, rust/CHANGELOG.md, rust/Cargo.lock, rust/Cargo.toml, rust/Skills/cua-driver/SKILL.md, rust/VERSION, cua-driver-e2e harness_winui3_test.rs / harness_wpf_test.rs / support/foreground_text_oracle.rs, platform-windows input/keyboard.rs, tests/fixtures/apps/windows (4 files), typescript/package-lock.json, typescript/package.json (release bump + Windows input; no core/sdk/contract/platform-linux path)",
+   "utc": "2026-10-03T13:10Z"
+  },
+  {
+   "what": "trycua/cua PR 4529 MERGED as 5e13eb7777172587fa32ce2af1d78d7572b77f1a (head b0661343e88a999f784bd6b449ef0db0168f7d38, mergedAt 2026-10-03T15:00:31Z; files: libs/cua-driver/rust/crates/platform-linux/src/overlay.rs)",
+   "utc": "2026-10-03T15:54:59Z"
+  },
+  {
+   "what": "trycua/cua PR 4531 MERGED as 15c6c24e23184f8e0388440ec52f3e4ee2fb58f3 (head 87a05590d67c7a8b4e6c51c07f1939bb1bc35658, mergedAt 2026-10-03T15:30:53Z; files: libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md, libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs, libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs)",
+   "utc": "2026-10-03T15:54:59Z"
   }
+ ],
+ "origin_heads_read": {
+  "command": "git ls-remote (read-only), run by verify_artifacts.py",
+  "note": "see raw/ logs for the heads at verification time"
+ },
+ "freshness": {
+  "tested_upstream": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+  "range": "0f1955d2f..5de1a3799",
+  "commits": 31,
+  "libs_cua_driver_files": [
+   "libs/cua-driver/rust/Skills/cua-driver/MACOS.md",
+   "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/ax/exact_target.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/browser/setup_ui.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/click.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/invoke_menu.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/set_value.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/windows.rs",
+   "libs/cua-driver/rust/crates/platform-windows/src/browser_platform.rs",
+   "libs/cua-driver/rust/crates/platform-windows/src/tools/impl_.rs",
+   "libs/cua-driver/rust/crates/platform-windows/src/win32/mod.rs",
+   "libs/cua-driver/rust/crates/platform-windows/src/win32/windows.rs",
+   "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift",
+   "libs/cua-driver/tests/fixtures/shared/scenarios.json"
+  ],
+  "verdict": "no Linux core, sdk, contract or platform-linux path; scenarios.json is the shared cross-platform scenario list (already noted at wave-5 synthesis). No surviving Linux claim depends on these files."
+ },
+ "pins_from_state": {
+  "R": "989cc76cec262ff8bcf6968b637820340fb9caaa + R2-10 steps (tested source 8f3a646b4818b757648835cf89db8886626b1cf0), binary sha256 12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a = 0f1955d2f + R2-10 steps, binary sha256 922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+  "R_prime_n": "11a03bf513a9b9ab107852ade67e13dbda5d30e7 = R' + N-02 marks, binary sha256 78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc",
+  "B7": "R' + B-07 picks, binary sha256 6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+ },
+ "parent_revision": {
+  "lane": "DOC-3963 (wave 6)",
+  "branch": "docs/rfc3963-rewrite-draft-20261003",
+  "sha": "088fe745ae299964a6de1fb3bf1d138331b7afca"
+ },
+ "freshness_now": {
+  "upstream_main": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+  "read": "local upstream/main ref (git rev-parse) 2026-10-03T15:54Z; gh pr view for PR 4529 / 4531",
+  "commits_past_tested": 41,
+  "commits_past_base": 10,
+  "range": "5de1a3799..9a2b1d99e",
+  "linux_core_paths": [
+   {
+    "path": "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+    "pr": 4529,
+    "merge": "5e13eb7777172587fa32ce2af1d78d7572b77f1a",
+    "status": "disposition pending: FRESH-07 (wave 7)"
+   },
+   {
+    "path": "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
+    "pr": 4531,
+    "merge": "15c6c24e23184f8e0388440ec52f3e4ee2fb58f3",
+    "status": "disposition pending: FRESH-07 (wave 7)"
+   }
+  ],
+  "other_libs_cua_driver_files": "docs/test-matrix.md, python/pyproject.toml, python/src/cua_driver/__init__.py, rust/CHANGELOG.md, rust/Cargo.lock, rust/Cargo.toml, rust/Skills/cua-driver/SKILL.md, rust/Skills/cua-driver/WORKFLOW.md, rust/VERSION, cua-driver-e2e harness_winui3_test.rs / harness_wpf_test.rs / support/foreground_text_oracle.rs, platform-macos tools/get_window_state.rs, platform-windows input/keyboard.rs, scripts/_install-rust.sh, scripts/install.ps1, tests/fixtures/apps/windows (4 files), typescript/package-lock.json, typescript/package.json",
+  "verdict": "not judged here: the two Linux/core paths are the FRESH-07 lane's (wave 7)"
+ },
+ "sha_refs": {
+  "030f6bdbf811e124e11daa2de0569bffb993b66d": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-10-composition-20261002"
+  },
+  "039257811e0bbb2348c616c52562409923d2856f": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-78-provider-receipts-4394-20261002"
+  },
+  "064d2e4ad931e7a3b884c4621e3d5cbb4600f7b9": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20p-guard-port-a11y-20261003"
+  },
+  "088fe745ae299964a6de1fb3bf1d138331b7afca": {
+   "remote": "self",
+   "ref": "HEAD"
+  },
+  "097b4f0974d5c161360fc3683c17f298ff681c70": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/bug-01-delivery-cdp-sessions-20261002"
+  },
+  "0c2896a53e185ed6b92e61fdb405e42137cc0720": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-09r-84-revision-20261002"
+  },
+  "0cd63f786290f967f41a5a6b615d54f98045ebec": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-01r-browser-critpath-textfix-20261002"
+  },
+  "11a03bf513a9b9ab107852ade67e13dbda5d30e7": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/n-04-native-composition-rprime-20261003"
+  },
+  "15c6c24e23184f8e0388440ec52f3e4ee2fb58f3": {
+   "remote": "upstream",
+   "ref": "refs/heads/main"
+  },
+  "1b981915777f7fe6628eb3917906f9d0e345b107": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-16w-sway-modality-20261002"
+  },
+  "2237cf9c6328899583843a48f3a507af5ba0fb1f": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-03-file-input-toctou-session-routing-20261003"
+  },
+  "236e37e01792d4e60ee5334f702b47e6f122921e": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-05-ack-loss-real-20261001"
+  },
+  "2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/bug-01-delivery-cdp-sessions-20261002"
+  },
+  "2ca82efaedf0083c3732b7855c78a5d1442f9dce": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-01-feedback-ab-20261001"
+  },
+  "2d71548b46114cd1a1bc58ccdef323ce185c9965": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-07-compiled-routine-20261002"
+  },
+  "31318e3741a5bd1ff131fda83f1fcccf5d058664": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20q-a11y-triggers-dialog-markfree-20261003"
+  },
+  "31bc98a95b746080d1b74b895fe575071d4a94e9": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-06-per-process-cold-snapshot-20261003"
+  },
+  "3539e34ae16d8c49d8de65452663a916dd6647fa": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-09-native-event-wake-20261002"
+  },
+  "3930dd7d0b45cec49c7b45f91b9b880c2603e022": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-02-token-ownership-retry-scope-20261002"
+  },
+  "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-09-native-event-wake-20261002"
+  },
+  "44116546d54047f01d7318eecbc2f36303ec1013": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20q-a11y-triggers-dialog-markfree-20261003"
+  },
+  "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-10r-recert-a3-20261003"
+  },
+  "49a3adf0f0b33446e77c1413fec579090ff2f29a": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/bug-01-delivery-cdp-sessions-20261002"
+  },
+  "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-08-per-process-cold-b7-20261003"
+  },
+  "4a301d32a96d0a5d54a77d7147af1191c7df4c4e": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-01-detached-node-refusal-20261002"
+  },
+  "4ac191a7c1d5a77cf4ed98474b4d3ebf76cc27c2": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20q-a11y-triggers-dialog-markfree-20261003"
+  },
+  "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-78-provider-receipts-4394-20261002"
+  },
+  "566b9c73245266005c958d40e93d46ee5d463325": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-09-cancel-barrier-rows-20261002"
+  },
+  "5de1a37997e6c423899dd0a56aaa63bcf5abee8f": {
+   "remote": "self",
+   "ref": "HEAD"
+  },
+  "5e13eb7777172587fa32ce2af1d78d7572b77f1a": {
+   "remote": "upstream",
+   "ref": "refs/heads/main"
+  },
+  "61eec09092fd161f62651a890c882f276a642855": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-78a-abstain-isolation-4394-20261003"
+  },
+  "64081dded4e0a3ddf144e68ab1ea43579f85f572": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20p-guard-port-a11y-20261003"
+  },
+  "67b99ddc6a66a217c76dc491977de78180434751": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-07e-modal-gate-phase-l-20261003"
+  },
+  "6b70ec9024cc3921f7637bba2ffabcc93e29fc77": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/n-03-native-closure-axfg-a3-20261003"
+  },
+  "6bab214abb707a3db9e8a7d641d160c3f58e08d5": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-03-guarded-live-20261001"
+  },
+  "6da15bf3516ddbf657e5d947875be6adae5299ef": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20-atspi-invalidation-census-20261002"
+  },
+  "6e9f9dfff4ed23f44f623b3b0d0298a823974f0c": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-02-token-ownership-retry-scope-20261002"
+  },
+  "6eb9319fe785a7eb7d5e156a9221edf818a3697f": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-01-detached-node-refusal-20261002"
+  },
+  "6f6c67955505e5b48f130a69feac9ea11c6e9ed6": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-78a-abstain-isolation-4394-20261003"
+  },
+  "7052382820687e5bf55e2925e09a3fbe70cce500": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-05-browser-mcp-transport-a3-20261003"
+  },
+  "79f6dd29958b2a73b477544ca9e777efade8a6c3": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-07d-quiet-timing-phase-l-20261003"
+  },
+  "7a4f3252af9c845f2a6cc489a54616c2e3cb92c8": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-16-modality-truth-20261002"
+  },
+  "7e31eae59d2316c3e41d31a3eb872837bb945283": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-16w2-a3-20261003"
+  },
+  "7f46edd1681fbf58586f8b4972636c3da56e3be6": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-07c-toggle-modal-compiled-a2-20261003"
+  },
+  "80e625acc5df939008b99e3fe74e0734c5f3d3b9": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-02-token-ownership-retry-scope-20261002"
+  },
+  "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-75-timing-parity-4336-20261002"
+  },
+  "8620ebfa23a77c0f94403a619b7684a65c3cd63c": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-04-observation-reconcile-a2-20261003"
+  },
+  "8cfa8c1dbd281da84f9acf8745dc8bea73da96e3": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-01-detached-node-refusal-20261002"
+  },
+  "8e751a75dd454ab396a4172c3ba98759323c01c2": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-02-cdp-wake-20261001"
+  },
+  "939580fc64073d0159865b547566d3522ce1565f": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-recert-a3-20261003"
+  },
+  "9846ac8033a8b5e952b0d44f39858625375d54e1": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/n-02-native-transport-20261002"
+  },
+  "989cc76cec262ff8bcf6968b637820340fb9caaa": {
+   "remote": "self",
+   "ref": "HEAD"
+  },
+  "98a45e6c528da9e2715288c20c2a0feeeef8e73f": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-05-ack-loss-real-20261001"
+  },
+  "9a2b1d99ec8044ff58b2a2b46802edd2609c057b": {
+   "remote": "upstream",
+   "ref": "refs/heads/main"
+  },
+  "9bfd437390571985870a66d941f43dbe417f31c0": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-04-atspi-profile-20261001"
+  },
+  "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/n-04-native-composition-rprime-20261003"
+  },
+  "a0bca744067d04f05904319d3d919be30c336556": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-03-guarded-live-20261001"
+  },
+  "a3e3cb86e37885db84e3f43fe81c3b882d1a4b49": {
+   "remote": "fork",
+   "ref": "refs/heads/docs/accounting-10-queue-74-20261003"
+  },
+  "a761f1f1f8850951a446b423c36d2dcce1e18611": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20p-guard-port-a11y-20261003"
+  },
+  "afba150d55426bf775cb10adaa698cf99493b229": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-08-cross-surface-20261002"
+  },
+  "b235fabefd55f7e6b77e908db7fe00bb540f9846": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-03-file-input-toctou-session-routing-20261003"
+  },
+  "b282ff3894fa85a7b82257cb1edd5088c2f0ac37": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-02-browser-driver-sites-20261002"
+  },
+  "b34eef71ee40bc733670e68d9cf57f6acc92ec5c": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-03-toggle-cold-snapshot-20261002"
+  },
+  "b97daa4ba08605c08f6a5da8baf1bf32c5ff4093": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-105-runner-reconcile-20261002"
+  },
+  "ba611b51a48f6798eb3b3114f0c98af03c2d7d52": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-09r2-a3-20261003"
+  },
+  "bf07c8fe374bc3079c2edb8adaea3bc2bcf9b79d": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-09-cancel-barrier-rows-20261002"
+  },
+  "c4342323bf51d9dcaea824c10aad59a5dd7a3c1c": {
+   "remote": "fork",
+   "ref": "refs/heads/docs/packet-template-privacy-20261003"
+  },
+  "cb18ebfbdfa41b733b8c68c1971760ab39f392f4": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20g-guard-final-diff-r1c-20261003"
+  },
+  "cca59642dce3cd1a9c8e17b9f578eb94fc4b1f6e": {
+   "remote": "fork",
+   "ref": "refs/heads/docs/packet-template-audit-a2-20261003"
+  },
+  "cd18788725090377d64347235cb31ce628d9d796": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-75-timing-parity-4336-20261002"
+  },
+  "ce7544cc064cecfd9ba4702466a1d0f24b1799b6": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-20g-guard-final-diff-a2-20261003"
+  },
+  "cea02cb74cc1ad64497804d5da1270a8775f6c75": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-02-token-ownership-retry-scope-20261002"
+  },
+  "d22eeb2ecf8a679d1425c21120a599775aa0817d": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-10r-recert-a3-20261003"
+  },
+  "d9edde70e8b1254e1352c660d859d8dfd6932d02": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-78l-r1-lite-f-20261003"
+  },
+  "dd205d17b1590a1a48c76d34173d7b2b831de0ff": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-16w-sway-modality-20261002"
+  },
+  "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-03-file-input-toctou-session-routing-20261003"
+  },
+  "e02621fdc1fe5098efd48af295964f25902553ea": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-75r-timing-parity-4336-20261002"
+  },
+  "e300edbd318f33b907741ca7aaec2ee666a2dac0": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-03-file-input-toctou-session-routing-20261003"
+  },
+  "eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-07-transport-residual-rprime-20261003"
+  },
+  "ed6887c111764f91bb1d95939621404d134b8edd": {
+   "remote": "fork",
+   "ref": "refs/heads/research/rfc3963-dependency-census-20260925"
+  },
+  "f00b9396365a44e69c44498a1cb52f18aa8a3871": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-06-trusted-input-20261001"
+  },
+  "ff77554f46db2799334a20cb55111decc02582de": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/own-36-session-isolation-native-20261002"
+  }
+ }
 }
