@@ -183,6 +183,19 @@ def install_provider_ledger(path: Path) -> None:
     httpx2.Client.request = request
 
 
+# R2-10R attempt 2: run_critpath.OraclePoller.stop joined a thread that run_b02.control_trial never started
+# when a trial failed during setup; the RuntimeError ("cannot join thread before it is started") replaced
+# the real error in the row (attempt-1 p0c-nw2-U). Same guard as Sampler.stop below; a started poller
+# behaves exactly as before.
+def _oracle_poller_stop(self: Any) -> None:
+    self._stop.set()
+    if self._thread.ident is not None:
+        self._thread.join(timeout=2)
+
+
+rc.OraclePoller.stop = _oracle_poller_stop
+
+
 # ── oracle sampler ───────────────────────────────────────────────────────────
 
 class Sampler:

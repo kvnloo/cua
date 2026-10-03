@@ -14,6 +14,9 @@ case "${DBUS_SESSION_BUS_ADDRESS:-}" in *"/run/user/"*) refuse "host session bus
 for v in CUA_DRIVER_PERMISSION_MODE CUA_DRIVER_DANGEROUSLY_BYPASS_APPROVALS CUA_E2E_BROWSER_NO_SANDBOX; do
   [ -z "${!v:-}" ] || refuse "$v set"
 done
+# R2-10R attempt 2: fail fast (rc 97, no trial written) when the private Xvfb did not come up (the open
+# cua-x11-session display race: attempt-1 p0c-nw2-U ran 10 trials against an X server that was gone).
+xdpyinfo >/dev/null 2>&1 || { echo "[r2-10] session_failed_to_start: display $DISPLAY unreachable" >&2; exit 97; }
 EX="$WT/libs/cua-driver/examples/jev-use"
 export JEV_USE_DIR="$EX" PYTHONDONTWRITEBYTECODE=1
 key=absent; [ -n "${TYPESAFE_API_KEY:-}" ] && key=present

@@ -1,0 +1,53 @@
+{
+ "schema": "cua-rfc-loop.prereg-amendment.v1",
+ "lane": "R2-10R",
+ "wave": 4,
+ "attempt": 2,
+ "amends": "PREREG.json (committed in 3028d8078 before any attempt-1 Phase 0 row; reviewed by attempt 2 and kept except as amended here)",
+ "written_before_first_counted_row": true,
+ "source": {
+  "branch": "exp/r2-10r-recert-a2-20261003 (new; based on the attempt-1 head 3028d80780fabf39363cc9271778d9e124d0447a, which is 0f1955d2f + R2-10 steps 1-8 = tested head 45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a, plus caf3d68a7 (verbatim harness copy from 030f6bdbf) and 3028d8078 (PREREG, harness edits, D1 harness, raw/rebase))",
+  "worktree": "w4-a2-r2-10r (lanes dir)",
+  "tested_head": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a (unchanged)",
+  "tested_rust_tree": "3ae6bd4408628fa098760e4886e3b2e45f89d807 (unchanged; libs/cua-driver tree 11ee32235d5e is the same at 45dff8f32, 3028d8078 and every attempt-2 commit)",
+  "upstream_main_at_start": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (read-only git fetch 2026-10-03T02:41:33Z); its libs/cua-driver tree df2b49c32e73756f0ef1ee2338f51626d5921d92 equals 0f1955d2f's, so R' is current for every libs/cua-driver path",
+  "named_prs_at_start": "trycua/cua PR 4316 OPEN head a0bca744067d04f05904319d3d919be30c336556 (unchanged); trycua/cua PR 4375 MERGED as 920a42f10 (head 1f2e5c2f1); trycua/cua PR 3489 MERGED as 310cdfd58 (head b725a3c1e)",
+  "range_diff_recheck": "raw/rebase/a2-recheck.txt: R' range-diff all 8 '=', Cn' range-diff both '=', whole-step +/- line hashes identical (R2-10 vs R' and Cn vs Cn'), the two files both sides touched differ only in blob ids and hunk offsets",
+  "control": {"branch": "exp/r2-10r-control-a2-20261003 (new; from 8a2362770f2120c136c69a50b711a6b9e3a69b8f, no new commit)", "worktree": "w4-a2-r2-10r-ctl", "rust_tree": "c609a7b606013fee2b2e0da9086a8555eea852f4",
+              "range_diff": "git range-diff 989cc76ce..1381014a3 0f1955d2f..8a2362770: 9d8880855 = a4cda75bd, 1381014a3 = 8a2362770 (raw/rebase/range-diff-control.txt)"}
+ },
+ "binaries": {
+  "rule": "attempt-2 builds under hostless with flock on the cargo-build lock, build-driver.sh family cua-release-r2-10; the in-session --version is read inside a private X11 session (raw/provenance/versions.txt). The build embeds the worktree HEAD (attempt 1 built R' at 45dff8f32, attempt 2 at 3028d8078) and is not byte-reproducible, so attempt-2 binaries are new artifacts; only attempt-2 binaries are used in counted rows.",
+  "R_prime": {"label": "r2-10r-a2-45dff8f32", "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8", "version": "cua-driver 0.32.0", "built_from_head": "3028d80780fabf39363cc9271778d9e124d0447a (rust tree 3ae6bd440862)",
+              "attempt_1": {"label": "r2-10r-45dff8f32", "sha256": "d830ee779b5681496dd35c7ba524580684dbd1430fea82a836e8f977fb658f9a", "used": "no attempt-2 row"}},
+  "Cn_prime": {"label": "r2-10r-a2-ctl-8a2362770", "sha256": "e66fac2cac19bc7899598f4a3d8337de1fc69fcaf99163e5553f1dc2d9f91b0b", "version": "cua-driver 0.32.0", "built_from_head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f (rust tree c609a7b60601)", "use": "Phase 0 (d) default-off smoke only",
+               "attempt_1": {"label": "r2-10r-ctl-8a2362770", "sha256": "97dfc91e953132daa4ceb49056f1ac5a5ae046c9b6473acaaaca1496fd2b1c79", "used": "no attempt-2 row"}},
+  "U": {"label": "b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version": "cua-driver 0.32.0", "use": "Phase 0 (b)/(c) positive control only (unchanged)"}
+ },
+ "labels": "every attempt-2 lock acquisition uses the prefix r2-10r-a2- (ledger receipts with lane R2-10R); package_raw.py collects only r2-10r-a2- receipts from the global ledger",
+ "attempt_1_disclosure": {
+  "status": "aborted attempt; read-only for attempt 2; no attempt-1 row is counted; Phase 0 (a)-(e), D1, every scripted, native and control row are re-run in full by attempt 2",
+  "ran": "SHARED-lock shakedown, pilot and Phase 0 blocks only, 2026-10-02 22:13-22:28Z; no EXCLUSIVE trial; 0 TypeSafe requests",
+  "receipt_labels": ["r2-10r-shake1", "r2-10r-nshake1", "r2-10r-d1shake1", "r2-10r-p0b-c1-R", "r2-10r-p0b-c1-U", "r2-10r-p0c-nw2-R", "r2-10r-p0c-nw2-U (rc=1)", "r2-10r-p0d-tools-R", "r2-10r-p0d-smoke-R", "r2-10r-p0d-tools-C", "r2-10r-p0d-smoke-C", "r2-10r-p0a-unit", "r2-10r-p0d-native-R", "r2-10r-p0d-native-C", "r2-10r-p0e-train"],
+  "not_reached": "r2-10r-p0e-g5 and everything after it",
+  "c_nw2_U_rc1_diagnosis": "failed session start, masked by a harness fault. Evidence: in that session openbox logged 'Failed to open the display from the DISPLAY environment variable', picom logged 'Can't open display', the Driver logged 'X11 overlay: cannot connect to display: Connection refused' in every trial and xvfb-run's cleanup found the Xvfb pid already gone ('kill: No such process'): the private Xvfb on :99 did not come up (the open cua-x11-session display race; R2-10's N1 failed the same way). Every one of the 10 U trials then failed in run_b02.control_trial before its oracle poller started, and run_critpath.OraclePoller.stop joined that never-started thread, so the row recorded 'RuntimeError: cannot join thread before it is started' instead of the real error. Neither U nor R' was at fault; U must still fire 5/5 per class, and is re-run by attempt 2 under a new label."
+ },
+ "harness_edits_attempt_2": [
+  "harness/in_session.sh: fail fast with rc 97 and no trial written when xdpyinfo cannot reach the session display ('session_failed_to_start'); every other check unchanged",
+  "harness/r2_10_browser.py: run_critpath.OraclePoller.stop only joins a started thread (the same guard Sampler.stop already has), so a setup failure is recorded with its real error; a started poller behaves exactly as before. No arm, plan, metric, oracle or pass rule changed",
+  "harness/package_raw.py: the global lock-ledger filter takes only r2-10r-a2- labels"
+ ],
+ "analysis_edits_attempt_2": [
+  "analyze_r2_10.py: reporting-only transport split. Browser mcp_transport_in = client_send + driver pre-dispatch outside admission (pre_other); mcp_transport_out = client_return + client_receive_parse + driver_post_dispatch; the two sum to R2-10's mcp_transport, whose definition and verdict (UNTESTED) are unchanged. Native observation_transport and action_transport are split the same way into their send->dispatch_enter and dispatch_exit->return halves. Output keys browser.scripted.transport_split and native.transport_split, each with check_sum_ms against the R2-10 component mean. Resolution and the admission residual (mcp_admission) stay separate rows as in R2-10",
+  "make_headlines.py and verify_artifacts.py: the uncommitted attempt-1 edits (three source summaries, the tracked/ignored-file check, the reference check, base 0f1955d2f), salvaged and reviewed by attempt 2"
+ ],
+ "corrections": [
+  "Scripted chunking: two chunks S1 (rounds 0-15) and S2 (rounds 16-31) exactly as R2-10's S1/S2, replacing the PREREG's four chunks of 8 rounds; the trial sequence is identical (build_plan unchanged) and each acquisition stays under 25 min (R2-10's S1/S2 took 8 min each)",
+  "Failed-session rule (extends the PREREG rule): a chunk that exits 97 from the display probe wrote no trial; its log is kept in raw/logs and listed in the README, and the chunk is re-run under the same output directory with label suffix -r<k>. A chunk whose session fails after trials began is kept in raw/failed-sessions/ (counted and listed, excluded from row evaluation by the PREREG failed-session rule) and re-run under a new label and trial prefix",
+  "Every Phase 0 row runs under the SHARED quiet lock; Phase 0 (a) takes the cargo-build lock first, then the SHARED lock (as the PREREG)",
+  "Order of work: Phase 0 (a)-(e) -> D1 -> S1 -> S2 -> N1 -> nm1 -> nm2 -> nd1"
+ ],
+ "unchanged": "hypothesis, drift_row_D1 (arms, 20 AB/BA pairs, gate, report), arms and forced paths, oracle, metrics, statistics (seed 20261002, 10000 resamples), gates (RECERTIFIED iff all), e2_verdicts_preregistered, live layer BLOCKED (budget), provider cap 0, claim boundary",
+ "provider_budget": {"provider": "TypeSafe", "lane_cap_reached": 0, "lane_cap_attempts": 0, "expected": "0 attempts, 0 reached"},
+ "shakedowns_before_this_amendment": "attempt 2: r2-10r-a2-shake1 (browser plan shakedown), r2-10r-a2-nshake1 (native nk1), r2-10r-a2-d1shake1 (D1 d1k) under the SHARED lock on the attempt-2 binaries; not counted, kept in raw/shakedown/"
+}

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""R2-10 packet verifier (standard library only).
+"""R2-10R packet verifier (standard library only).
 
-1. Recomputes the whole summary from raw/ with analyze_r2_10.analyze and requires it to equal the
-   committed r2-10-summary.json (seeded bootstrap: deterministic).
+1. Recomputes r2-10r-summary.json (analyze_r2_10.analyze), d1-summary.json (analyze_d1.analyze) and
+   recert-summary.json (recert_gates.gates against reference/r2-10-reference.json) from raw/ and
+   requires each to equal the committed file (seeded bootstrap: deterministic).
 2. Requires every headline number in headline-numbers.json to equal its recomputed value and to
    appear verbatim in README.md.
-3. Privacy-scans EVERY commit of the branch (base..HEAD, merges included): every added/modified
+3. Requires every file this packet cites (every file under raw/, reference/, harness/, the top-level
+   packet files, and every packet-relative path named in README.md) to exist, to be tracked by git
+   and not to be git-ignored; fails on untracked files under raw/.
+4. Requires the reference to be the accepted R2-10 summary blob (git blob sha1 recorded in it, read
+   from exp/r2-10-composition-20261002 030f6bdbf when that commit is available).
+5. Privacy-scans EVERY commit of the branch (base..HEAD, merges included): every added/modified
    blob (tar.gz/gz members included), every path name, commit message and author/committer
    identity: no absolute home or mount paths, no lane/host names, no secret-like values.
    Private names are never committed, not even encoded: they come from the untracked file named
@@ -13,7 +19,9 @@
    (even length >= 8) and base64 runs (>= 12 chars, valid padding) are decoded and scanned too,
    and a committed list of encoded name-like strings fails (PUB-02 rewrite).
 
-usage: verify_artifacts.py [--base 989cc76cec262ff8bcf6968b637820340fb9caaa] [--skip-git]
+usage: verify_artifacts.py [--base 0f1955d2f1ee2b01b40775aa53ea2af0b5544218] [--skip-git]
+(R2-10R edit of the R2-10 verify_artifacts.py: three recomputed summaries, the tracked/ignored-file
+check, the reference check, base 0f1955d2f and the step-2 merge 6f438492b in the allowlist.)
 """
 
 from __future__ import annotations
@@ -33,9 +41,13 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import analyze_d1 as D  # noqa: E402
 import analyze_r2_10 as A  # noqa: E402
+import recert_gates as G  # noqa: E402
 
-BASE = "989cc76cec262ff8bcf6968b637820340fb9caaa"
+BASE = "0f1955d2f1ee2b01b40775aa53ea2af0b5544218"
+R2_10_COMMIT = "030f6bdbf"
+R2_10_SUMMARY = "docs/experiments/r2-10-composition-2026-10-02/r2-10-summary.json"
 # Generic path patterns first (private#0-2 stay stable for ALLOW); private names follow. They are read at
 # verify time and never stored in the repository, not even encoded (PUB-02 rewrite of an encoded list).
 GENERIC = [re.compile(r"/home/[A-Za-z0-9_.-]+/"), re.compile(r"/mnt/[A-Za-z0-9_.-]+/"), re.compile(r"/Users/[A-Za-z0-9_.-]+/")]
@@ -61,15 +73,18 @@ SECRET = [re.compile(p) for p in (r"sk-[A-Za-z0-9_-]{20,}", r"ghp_[A-Za-z0-9]{20
                                   r"-----BEGIN [A-Z ]*PRIVATE KEY-----", r"AKIA[0-9A-Z]{16}",
                                   r"TYPESAFE_API_KEY\s*[=:]\s*['\"]?[A-Za-z0-9_\-]{12,}", r"(?i)bearer\s+[A-Za-z0-9._\-]{24,}")]
 IDENTITY = {("Kevin Rajan", "7121943+kvnloo@users.noreply.github.com"), ("kvnloo", "7121943+kvnloo@users.noreply.github.com")}
-# Upstream content (trycua/cua PR 4316 head a0bca7440, brought in by the step-2 merge b10cd09f2), already
+# Upstream content (trycua/cua PR 4316 head a0bca7440, brought in by the step-2 merge 6f438492b), already
 # public: a GitHub Actions runner path in the CI workflow and a placeholder key literal in a unit test
-# (recorded as benign by the wave-1/2 publish scans). Matched by (commit, path, pattern); nothing else.
+# (the same two hits R2-10 allowlisted for a0bca7440 / b10cd09f2). Matched by (commit, path, pattern).
 ALLOW = {
     ("a0bca7440", ".github/workflows/ci-jev-use.yml", "private#0"),
-    ("b10cd09f2", ".github/workflows/ci-jev-use.yml", "private#0"),
+    ("6f438492b", ".github/workflows/ci-jev-use.yml", "private#0"),
     ("a0bca7440", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
-    ("b10cd09f2", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
+    ("6f438492b", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
 }
+TOP = ["README.md", "PREREG.json", "provenance.json", "r2-10r-summary.json", "d1-summary.json", "recert-summary.json",
+       "headline-numbers.json", "analyze_r2_10.py", "analyze_d1.py", "recert_gates.py", "make_headlines.py",
+       "verify_artifacts.py", ".gitignore", "reference/r2-10-reference.json"]
 CHECKS: list[tuple[str, bool, str]] = []
 
 
@@ -77,8 +92,8 @@ def check(name: str, ok: bool, detail: str = "") -> None:
     CHECKS.append((name, bool(ok), detail))
 
 
-def git(*args: str) -> bytes:
-    return subprocess.run(["git", "-C", str(HERE), *args], capture_output=True, check=True).stdout
+def git(*args: str, ok: bool = True) -> bytes:
+    return subprocess.run(["git", "-C", str(HERE), *args], capture_output=True, check=ok).stdout
 
 
 def texts_of_blob(path: str, data: bytes) -> list[tuple[str, str]]:
@@ -178,15 +193,55 @@ def privacy_scan(base: str) -> None:
           f"hits: {encoded_lists[:10]}")
     print(NAMES_NOTE)
     check("privacy: author/committer identity", not bad_ident, f"bad: {bad_ident[:10]}")
-    print(f"privacy allowlisted (upstream PR 4316 content): {sorted(set(allowed))}")
+    print(f"privacy: {len(commits)} commits, {blobs_scanned} blobs; allowlisted (upstream PR 4316 content): {sorted(set(allowed))}")
 
 
-def walk(obj, path):  # noqa: ANN001, ANN201
-    for key in path.split("."):
-        if isinstance(obj, list):
-            obj = obj[int(key)]
-        else:
-            obj = obj[key]
+def tracked_check() -> None:
+    cited = set(TOP)
+    for sub in ("raw", "reference", "harness"):
+        for f in sorted((HERE / sub).rglob("*")):
+            if f.is_file() and "__pycache__" not in f.parts:
+                cited.add(str(f.relative_to(HERE)))
+    readme = (HERE / "README.md").read_text()
+    for m in re.finditer(r"`((?:raw|harness|reference)/[^`\s*]+)`", readme):
+        p = m.group(1).rstrip("/")
+        if (HERE / p).is_dir():
+            continue
+        cited.add(p)
+    tracked = set(git("ls-files", "--", ".").decode().splitlines())
+    missing, untracked, ignored = [], [], []
+    for p in sorted(cited):
+        if not (HERE / p).exists():
+            missing.append(p)
+            continue
+        if p not in tracked:
+            untracked.append(p)
+        if subprocess.run(["git", "-C", str(HERE), "check-ignore", "-q", "--no-index", p]).returncode == 0:
+            ignored.append(p)
+    check(f"cited files exist ({len(cited)})", not missing, f"missing: {missing[:10]}")
+    check("cited files are tracked by git", not untracked, f"untracked: {untracked[:10]}")
+    check("cited files are not git-ignored", not ignored, f"ignored: {ignored[:10]}")
+
+
+def reference_check() -> None:
+    ref = json.loads((HERE / "reference" / "r2-10-reference.json").read_text())
+    want = ref.get("source", {}).get("summary_git_blob_sha1")
+    got = git("rev-parse", f"{R2_10_COMMIT}:{R2_10_SUMMARY}", ok=False).decode().strip()
+    if got:
+        blob = git("cat-file", "blob", got)
+        same = G.extract(json.loads(blob))
+        same_ok = all(same[k] == ref[k] for k in ("S", "decomposition", "work_deleted", "validity", "e4"))
+        check("reference = verdicts extracted from the accepted R2-10 summary blob", got == want and same_ok,
+              f"blob {got} vs recorded {want}; extract equal {same_ok}")
+    else:
+        check("reference blob available (R2-10 commit not in this clone; recorded sha1 only)", bool(want), "")
+
+
+def walk(docs, path):  # noqa: ANN001, ANN201
+    doc, _, rest = path.partition(":")
+    obj = docs[doc]
+    for key in rest.split("."):
+        obj = obj[int(key)] if isinstance(obj, list) else obj[key]
     return obj
 
 
@@ -195,16 +250,19 @@ def main() -> None:
     p.add_argument("--base", default=BASE)
     p.add_argument("--skip-git", action="store_true")
     args = p.parse_args()
-    summary_path = HERE / "r2-10-summary.json"
-    recomputed = json.loads(json.dumps(A.analyze(HERE / "raw"), sort_keys=True, default=str))
-    committed = json.loads(summary_path.read_text())
-    check("summary recomputes identically from raw/", recomputed == committed,
-          "" if recomputed == committed else "differs")
+    S = json.loads(json.dumps(A.analyze(HERE / "raw"), sort_keys=True, default=str))
+    Dd = json.loads(json.dumps(D.analyze(HERE / "raw"), sort_keys=True))
+    Gg = json.loads(json.dumps(G.gates(S, Dd, json.loads((HERE / "reference" / "r2-10-reference.json").read_text())),
+                               sort_keys=True))
+    for name, rec in (("r2-10r-summary.json", S), ("d1-summary.json", Dd), ("recert-summary.json", Gg)):
+        committed = json.loads((HERE / name).read_text())
+        check(f"{name} recomputes identically from raw/", rec == committed, "" if rec == committed else "differs")
+    docs = {"S": S, "D": Dd, "G": Gg}
     readme = (HERE / "README.md").read_text()
     heads = json.loads((HERE / "headline-numbers.json").read_text())
     for h in heads["numbers"]:
-        val = walk(recomputed, h["path"])
-        shown = h["format"].format(val) if not isinstance(val, list) else h["format"].format(*val)
+        val = walk(docs, h["path"])
+        shown = h["format"].format(*val) if isinstance(val, list) else h["format"].format(val)
         check(f"headline {h['id']} = {shown}", shown == h["text"] and h["text"] in readme,
               f"recomputed {shown!r}, listed {h['text']!r}, in README {h['text'] in readme}")
     for f in sorted((HERE / "raw").rglob("*")):
@@ -213,6 +271,8 @@ def main() -> None:
                 if any(pat.search(text) for pat in PRIVATE):
                     check(f"raw privacy {where[:100]}", False, "private string in raw file")
     if not args.skip_git:
+        tracked_check()
+        reference_check()
         privacy_scan(args.base)
     bad = [c for c in CHECKS if not c[1]]
     for name, ok, detail in CHECKS:
