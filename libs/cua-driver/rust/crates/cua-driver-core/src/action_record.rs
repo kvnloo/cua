@@ -660,8 +660,22 @@ fn legacy_refusal(structured: &serde_json::Value) -> Option<ActionRefusal> {
     })
 }
 
+/// Whether a refusal payload declares that its input may have landed: a
+/// `refusal.detail.delivery` other than `not_delivered` (the producers write
+/// `unknown` after an acknowledged or assigned input). Such a refusal is not a
+/// proof that nothing happened, so it is never recorded as `refused`.
+pub(crate) fn refusal_delivery_may_have_landed(structured: &serde_json::Value) -> bool {
+    structured
+        .pointer("/refusal/detail/delivery")
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|delivery| delivery != "not_delivered")
+}
+
 fn legacy_effect(structured: &serde_json::Value) -> ActionEffect {
     if structured.get("status").and_then(serde_json::Value::as_str) == Some("refused") {
+        if refusal_delivery_may_have_landed(structured) {
+            return ActionEffect::Unverifiable;
+        }
         let is_partial = structured
             .pointer("/refusal/code")
             .and_then(serde_json::Value::as_str)
@@ -952,6 +966,9 @@ fn actual_delivery_from_legacy(
 ) -> Option<ActualDelivery> {
     if effect == ActionEffect::Refused {
         return None;
+    }
+    if refusal_delivery_may_have_landed(structured) {
+        return Some(ActualDelivery::Unknown);
     }
     if matches!(
         tool_name,
@@ -1805,6 +1822,87 @@ mod tests {
                     "browser ActionResult leaked {forbidden}: {rendered}"
                 );
             }
+        }
+    }
+
+    #[test]
+    fn refusal_that_declares_delivery_unknown_is_unverifiable_not_refused() {
+        // FIX-04: a refusal issued after the input was acknowledged or assigned
+        // (trusted click/pointer focus-emulation cleanup, set_input_files
+        // post-assignment check) says the effect may have landed. It must not
+        // be recorded as `refused`, which means nothing was delivered.
+        for (tool, code) in [
+            ("browser_click", "browser_input_trust_unavailable"),
+            ("browser_pointer", "browser_input_trust_unavailable"),
+            ("browser_click", "browser_ref_stale"),
+        ] {
+            let record = ActionExecutionRecord::from_legacy(
+                tool,
+                &serde_json::json!({"input_route": "trusted"}),
+                &serde_json::json!({
+                    "status": "refused",
+                    "refusal": {
+                        "code": code,
+                        "message": "acknowledged; delivery is unknown",
+                        "detail": {"delivery": "unknown", "retryable": false}
+                    }
+                }),
+            )
+            .expect("delivery-unknown refusal should normalize");
+            assert_eq!(record.effect, ActionEffect::Unverifiable, "{tool} {code}");
+            assert_eq!(record.actual_delivery, Some(ActualDelivery::Unknown));
+            assert!(record.refusal.is_none());
+            let public = record.public_result().expect("should project");
+            assert_eq!(public.effect, cua_driver_contract::ActionEffect::Unverifiable);
+            assert!(public.error.is_none());
+        }
+
+        // Controls: a pre-dispatch refusal stays refused; a delivered prefix
+        // stays partial; an incomplete typing run with nothing delivered and
+        // no delivery declaration stays refused.
+        let pre_dispatch = ActionExecutionRecord::from_legacy(
+            "browser_click",
+            &serde_json::json!({}),
+            &serde_json::json!({
+                "status": "refused",
+                "refusal": {"code": "browser_ref_stale", "message": "refresh"}
+            }),
+        )
+        .unwrap();
+        assert_eq!(pre_dispatch.effect, ActionEffect::Refused);
+        let not_delivered = ActionExecutionRecord::from_legacy(
+            "browser_click",
+            &serde_json::json!({}),
+            &serde_json::json!({
+                "status": "refused",
+                "refusal": {
+                    "code": "browser_ref_stale",
+                    "message": "refresh",
+                    "detail": {"delivery": "not_delivered"}
+                }
+            }),
+        )
+        .unwrap();
+        assert_eq!(not_delivered.effect, ActionEffect::Refused);
+        for (delivered, effect) in [(3, ActionEffect::Partial), (0, ActionEffect::Refused)] {
+            let record = ActionExecutionRecord::from_legacy(
+                "browser_type",
+                &serde_json::json!({}),
+                &serde_json::json!({
+                    "status": "refused",
+                    "refusal": {
+                        "code": "browser_input_incomplete",
+                        "message": "typing stopped",
+                        "detail": {
+                            "requested_chars": 4,
+                            "delivered_chars": delivered,
+                            "retryable": false
+                        }
+                    }
+                }),
+            )
+            .unwrap();
+            assert_eq!(record.effect, effect, "delivered_chars={delivered}");
         }
     }
 
