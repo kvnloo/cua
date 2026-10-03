@@ -1,0 +1,113 @@
+{
+ "lane": "PUB-04",
+ "published": {
+  "branch": "exp/r2-10r-recert-a3-20261003",
+  "head": "d22eeb2ecf8a679d1425c21120a599775aa0817d"
+ },
+ "candidate": {
+  "branch": "exp/r2-10r-recert-a3-r1c-20261003",
+  "head": "a2ded080cac3f8bdd17e3076da1e3b4196b57fa5",
+  "redaction_only_head": "a5ac8368fec372b06fedeb6cc9c6d6ab12e58dc2",
+  "commit_map": {
+   "8be812d0c7cd1b1558f21b68e65ea271643f49fd": "a7fc59005e767819bd6bd68a4064234d56db2e48",
+   "ac46b50323a6bf0dcb3be80c9d731e589be049d1": "4d496ed1e3c9f9a9b94953198e37fd4ddfb82e05",
+   "d22eeb2ecf8a679d1425c21120a599775aa0817d": "a5ac8368fec372b06fedeb6cc9c6d6ab12e58dc2"
+  }
+ },
+ "redactions": {
+  "files": 25,
+  "occurrences": 25,
+  "classes": [
+   "tmp-dbus"
+  ],
+  "message_redactions": 0,
+  "manifest_refs": 0
+ },
+ "normalized_diff": {
+  "pairs": 4,
+  "masked_pass": true,
+  "patternfree_pass": true,
+  "head_pair": {
+   "identical_paths": 8153,
+   "differing_paths": 25,
+   "redactions": 25,
+   "added": [
+    "docs/experiments/r2-10r-recert-2026-10-03/PRIVACY-REWRITE.md"
+   ]
+  }
+ },
+ "verifier_parity": {
+  "o-d22eeb2ec.nonames": "189/189",
+  "o-d22eeb2ec.names": "189/189",
+  "r-a5ac8368f.nonames": "189/189",
+  "r-a5ac8368f.names": "189/189",
+  "c-a2ded080c.nonames": "189/189",
+  "c-a2ded080c.names": "189/189"
+ },
+ "candidate_scan": {
+  "commits": 17,
+  "private_findings": 0,
+  "non_private": {
+   "abs-path-generic": 2
+  }
+ },
+ "published_scan": {
+  "commits": 16,
+  "private_findings": 25,
+  "first_offending_commit": {
+   "tmp-dbus": "8be812d0c7cd"
+  }
+ },
+ "rescan": {
+  "heads": 7,
+  "total_private_findings": 0,
+  "per_head": {
+   "B-08": {
+    "head": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "commits": 27,
+    "loop_commits": 22,
+    "private": 0
+   },
+   "R2-07e": {
+    "head": "67b99ddc6a66a217c76dc491977de78180434751",
+    "commits": 17,
+    "loop_commits": 17,
+    "private": 0
+   },
+   "OWN-78L": {
+    "head": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "commits": 11,
+    "loop_commits": 11,
+    "private": 0
+   },
+   "FIX-03": {
+    "head": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "commits": 18,
+    "loop_commits": 13,
+    "private": 0
+   },
+   "OWN-20Q": {
+    "head": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "commits": 28,
+    "loop_commits": 11,
+    "private": 0
+   },
+   "DOC-3963": {
+    "head": "088fe745ae299964a6de1fb3bf1d138331b7afca",
+    "commits": 37,
+    "loop_commits": 1,
+    "private": 0
+   },
+   "DOC-10-74": {
+    "head": "a3e3cb86e37885db84e3f43fe81c3b882d1a4b49",
+    "commits": 38,
+    "loop_commits": 2,
+    "private": 0
+   }
+  }
+ },
+ "provider": {
+  "typesafe_attempts": 0,
+  "typesafe_reached": 0
+ }
+}
