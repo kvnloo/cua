@@ -7,7 +7,7 @@ Uses the R2-07c harness/package_raw.py (bundle + privacy scan) and the R2-07d dr
 (drops private-session noise lines) unchanged, by import. Per block: <block>-trials.tar.gz, <block>-manifests/,
 <block>-routines/, artifacts/<block>-artifact-*.json, <block>-load-gate.jsonl, <block>-progress-*.json,
 <block>-chunk-logs/ and <block>-loop.log. Lock receipts: the lane ledger, and the quiet-lane ledger lines whose
-label starts with "r207f-". Every text file is privacy-scanned; any hit aborts packaging.
+label starts with "r207f-" or "r207fr-" (R2-07fR resume). Every text file is privacy-scanned; any hit aborts packaging.
 """
 
 from __future__ import annotations
@@ -43,6 +43,7 @@ def main() -> None:
     p.add_argument("--global-ledger")
     p.add_argument("--unit", action="append", default=[])
     p.add_argument("--ident", action="append", default=[])
+    p.add_argument("--locks", help="R2-07fR: directory of read-only lock-holder snapshots -> raw/locks/")
     a = p.parse_args()
     src, dst = Path(a.src), Path(a.dst)
     dst.mkdir(parents=True, exist_ok=True)
@@ -95,11 +96,16 @@ def main() -> None:
         d.mkdir(exist_ok=True)
         for u in a.ident:
             copy_text(Path(u), d / Path(u).name)
+    if a.locks and Path(a.locks).is_dir():
+        d = dst / "locks"
+        d.mkdir(exist_ok=True)
+        for f in sorted(Path(a.locks).glob("*.jsonl")):
+            copy_text(f, d / f.name)
     if a.ledger and Path(a.ledger).exists():
         copy_text(Path(a.ledger), dst / "lock-receipts-lane.jsonl")
     if a.global_ledger and Path(a.global_ledger).exists():
         lines = [x for x in Path(a.global_ledger).read_text().splitlines()
-                 if x.strip() and json.loads(x).get("label", "").startswith("r207f-")]
+                 if x.strip() and json.loads(x).get("label", "").startswith(("r207f-", "r207fr-"))]
         text = "\n".join(lines) + "\n"
         pr.scan(text, "global ledger")
         (dst / "lock-receipts-global.jsonl").write_text(text)

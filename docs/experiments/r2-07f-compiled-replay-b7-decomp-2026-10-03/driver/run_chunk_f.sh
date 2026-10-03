@@ -14,10 +14,15 @@
 # (unchanged; refuses outside a private session) -> the jev-use venv python <python-script>.
 # Machine paths come from the environment, never from the packet: R2_07F_LANES (lanes dir),
 # R2_07F_LOCKDIR (shared lock dir), R2_07F_LEDGER (lane ledger file).
+# Resume bookkeeping (R2-07fR, wave 8; env-gated, default unchanged): R2_07F_LABEL_PREFIX (default r207f) sets
+# the lock label prefix (the resume uses r207fr); R2_07F_SHARED_YIELD=1 makes the shared mode wait, before
+# taking the SHARED lock, until no EXCLUSIVE waiter is queued on the quiet-lane lock (/proc/locks), so a
+# SHARED control block never starves an EXCLUSIVE timing window.
 set -uo pipefail
 LABEL="$1"; MODE="$2"; WT="$3"; shift 3
 [ "${CUA_HOSTLESS:-}" = 1 ] || { echo "refusing: run through hostless" >&2; exit 96; }
 LANES="${R2_07F_LANES:?}"; LOCKDIR="${R2_07F_LOCKDIR:?}"; LEDGER="${R2_07F_LEDGER:?}"
+PFX="${R2_07F_LABEL_PREFIX:-r207f}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 EXP="$HERE/../.."
 PROBE="$EXP/r2-07d-quiet-timing-phase-l-2026-10-03/driver/probe_then.sh"
@@ -31,30 +36,37 @@ echo "[$(date -u +%FT%T.%3NZ)] chunk $LABEL mode=$MODE loadavg=$(la)"
 if [ "$MODE" = exclusive ]; then
   if ! flock -n "$LOCKDIR/cargo-build.lock" true; then
     echo "[$(date -u +%FT%T.%3NZ)] cargo-build lock busy before acquiring; nothing ran" >&2
-    printf '{"lane":"R2-07f","label":"r207f-%s","mode":"exclusive","cargo_busy_precheck":true,"rc":74,"utc":"%s"}\n' \
-      "$LABEL" "$(date -u +%FT%T.%3NZ)" >> "$LEDGER"
+    printf '{"lane":"R2-07f","label":"%s-%s","mode":"exclusive","cargo_busy_precheck":true,"rc":74,"utc":"%s"}\n' \
+      "$PFX" "$LABEL" "$(date -u +%FT%T.%3NZ)" >> "$LEDGER"
     exit 74
   fi
-  ( cd "$WT" && "$LANES/bin/quiet-timed" "r207f-$LABEL" \
+  ( cd "$WT" && "$LANES/bin/quiet-timed" "$PFX-$LABEL" \
       flock -w 60 -E 74 "$LOCKDIR/cargo-build.lock" \
       timeout --signal=TERM --kill-after=30 900 \
       bash -c 'sleep "$((RANDOM % 3)).$((RANDOM % 10))"; exec "$@"' jitter "${session[@]}" )
   rc=$?
-  printf '{"lane":"R2-07f","label":"r207f-%s","mode":"exclusive","cargo_lock_inside_quiet":true,"released":"%s","rc":%d,"loadavg_at_release":"%s"}\n' \
-    "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" "$(la)" >> "$LEDGER"
+  printf '{"lane":"R2-07f","label":"%s-%s","mode":"exclusive","cargo_lock_inside_quiet":true,"released":"%s","rc":%d,"loadavg_at_release":"%s"}\n' \
+    "$PFX" "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" "$(la)" >> "$LEDGER"
 elif [ "$MODE" = shared ]; then
   exec 8>"$LOCKDIR/quiet-lane.lock"
+  if [ "${R2_07F_SHARED_YIELD:-0}" = 1 ]; then
+    ino="$(stat -c %i "$LOCKDIR/quiet-lane.lock")"; yielded=0
+    while grep -E -q -- "-> FLOCK +ADVISORY +WRITE +[0-9]+ +[0-9a-f]+:[0-9a-f]+:$ino " /proc/locks; do
+      yielded=$((yielded + 5)); sleep 5
+    done
+    echo "[$(date -u +%FT%T.%3NZ)] shared yield: waited ${yielded}s for queued exclusive waiters"
+  fi
   flock -s 8
   acq="$(date -u +%FT%T.%3NZ)"; la_acq="$(la)"
   jitter
   ( cd "$WT" && "${session[@]}" ); rc=$?
-  line=$(printf '{"lane":"R2-07f","label":"r207f-%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
-    "$LABEL" "$$" "$acq" "$(date -u +%FT%T.%3NZ)" "$rc" "$la_acq")
+  line=$(printf '{"lane":"R2-07f","label":"%s-%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
+    "$PFX" "$LABEL" "$$" "$acq" "$(date -u +%FT%T.%3NZ)" "$rc" "$la_acq")
   printf '%s\n' "$line" >> "$LEDGER"; printf '%s\n' "$line" >> "$LOCKDIR/quiet-lane-ledger.jsonl"
   flock -u 8
 else
   ( cd "$WT" && "${session[@]}" ); rc=$?
-  printf '{"lane":"R2-07f","label":"r207f-%s","mode":"none","released":"%s","rc":%d}\n' "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" >> "$LEDGER"
+  printf '{"lane":"R2-07f","label":"%s-%s","mode":"none","released":"%s","rc":%d}\n' "$PFX" "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" >> "$LEDGER"
 fi
 echo "[$(date -u +%FT%T.%3NZ)] chunk $LABEL rc=$rc loadavg=$(la)"
 exit $rc
