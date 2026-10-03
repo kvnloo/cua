@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# lane-local measured queue A (each chunk: cargo lock, then quiet-timed EXCLUSIVE; one acquisition per chunk)
+set -u
+. <tmp>/w4a2-r2-10r/env.sh
+mkdir -p $M
+st() { local name="$1"; shift; "$@" > $M/$name.log 2>&1; local r=$?; echo "[$(date -u +%FT%TZ)] $name rc=$r"; }
+st d1 timeout 2400 $B/hostless $B/hostless-strict $H/run_chunk.sh r2-10r-a2-d1 exclusive 1 0 $W $H/d1_drift.py --wt $W --driver $R --driver-sha256 $RS --block d1 --label d1 --out $M/drift-d1/raw --work $M/drift-d1/work
+st S1 timeout 3000 $B/hostless $H/run_chunk.sh r2-10r-a2-S1 exclusive 0 0 $W $H/r2_10_browser.py --driver $R --out $M/scripted --plan scripted --start-round 0 --rounds 16 --prefix S1-
+st S2 timeout 3000 $B/hostless $H/run_chunk.sh r2-10r-a2-S2 exclusive 0 0 $W $H/r2_10_browser.py --driver $R --out $M/scripted --plan scripted --start-round 16 --rounds 16 --prefix S2-
+st N1 timeout 2400 $B/hostless $H/run_chunk.sh r2-10r-a2-N1 exclusive 0 0 $W $H/r2_10_browser.py --driver $R --out $M/controls --routines $M/scripted --plan controls --rounds 5 --prefix N1-
+echo "[$(date -u +%FT%TZ)] mA done"

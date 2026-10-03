@@ -21,10 +21,16 @@
   "caf3d68a7": "attempt 1: verbatim harness copy from exp/r2-10-composition-20261002 030f6bdbf",
   "3028d8078": "attempt 1: PREREG.json, harness edits, D1 harness, raw/rebase (committed before any attempt-1 Phase 0 row)",
   "0bfd24053": "attempt 2: PREREG-AMENDMENT-1.json, harness fixes, salvaged verifier (2026-10-03T02:52:22Z, before the first counted row)",
-  "567d76e2b": "attempt 2: chunk cap inside the EXCLUSIVE acquisition, failed-session log packaging (2026-10-03T05:10:45Z, before S2r and later chunks)"
+  "567d76e2b": "attempt 2: chunk cap inside the EXCLUSIVE acquisition, failed-session log packaging (2026-10-03T05:10:45Z, before S2r and later chunks)",
+  "184b39b43": "attempt 2: results (Phase 0, D1, scripted and native re-measure), RECERTIFIED",
+  "(next commit after 184b39b43)": "attempt 2 fix after the fresh verifier: PREREG-AMENDMENT-2.json (post-hoc, no trial added or removed): S_direction gates all 18 R2-10 rows, nm2 external-interference disclosure + sensitivity_nm2.py, verifier reference fallback, redacted run scripts"
  },
- "control": {"branch": "exp/r2-10r-control-a2-20261003", "head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f", "rust_tree": "c609a7b606013fee2b2e0da9086a8555eea852f4",
-             "recipe": "0f1955d2f + cherry-picks of 7d6cbe377 (a4cda75bd) and 8f3a646b4 (8a2362770); range-diff vs 989cc76ce..1381014a3 all '='"},
+ "control": {
+  "branch": "exp/r2-10r-control-a2-20261003",
+  "head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f",
+  "rust_tree": "c609a7b606013fee2b2e0da9086a8555eea852f4",
+  "recipe": "0f1955d2f + cherry-picks of 7d6cbe377 (a4cda75bd) and 8f3a646b4 (8a2362770); range-diff vs 989cc76ce..1381014a3 all '='"
+ },
  "timeline_utc": {
   "amendment_commit": "2026-10-03T02:52:22Z",
   "first_counted_row_acquired": "2026-10-03T02:59:54Z (Phase 0 (a) and (b))",
@@ -33,11 +39,26 @@
   "last_measured_release": "2026-10-03T05:57:40Z (nd1)"
  },
  "binaries": {
-  "R_prime": {"name": "cua-driver-r2-10r-a2-45dff8f32", "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8", "version_in_session": "cua-driver 0.32.0",
-              "built_at_head": "3028d80780fabf39363cc9271778d9e124d0447a", "attempt_1_sha256": "d830ee779b5681496dd35c7ba524580684dbd1430fea82a836e8f977fb658f9a (built at 45dff8f32; not used)"},
-  "Cn_prime": {"name": "cua-driver-r2-10r-a2-ctl-8a2362770", "sha256": "e66fac2cac19bc7899598f4a3d8337de1fc69fcaf99163e5553f1dc2d9f91b0b", "version_in_session": "cua-driver 0.32.0",
-               "built_at_head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f", "attempt_1_sha256": "97dfc91e953132daa4ceb49056f1ac5a5ae046c9b6473acaaaca1496fd2b1c79 (not used)"},
-  "U": {"name": "cua-driver-b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version_in_session": "cua-driver 0.32.0", "use": "Phase 0 (b)/(c) positive control only"}
+  "R_prime": {
+   "name": "cua-driver-r2-10r-a2-45dff8f32",
+   "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+   "version_in_session": "cua-driver 0.32.0",
+   "built_at_head": "3028d80780fabf39363cc9271778d9e124d0447a",
+   "attempt_1_sha256": "d830ee779b5681496dd35c7ba524580684dbd1430fea82a836e8f977fb658f9a (built at 45dff8f32; not used)"
+  },
+  "Cn_prime": {
+   "name": "cua-driver-r2-10r-a2-ctl-8a2362770",
+   "sha256": "e66fac2cac19bc7899598f4a3d8337de1fc69fcaf99163e5553f1dc2d9f91b0b",
+   "version_in_session": "cua-driver 0.32.0",
+   "built_at_head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f",
+   "attempt_1_sha256": "97dfc91e953132daa4ceb49056f1ac5a5ae046c9b6473acaaaca1496fd2b1c79 (not used)"
+  },
+  "U": {
+   "name": "cua-driver-b02-560bd8247",
+   "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0",
+   "version_in_session": "cua-driver 0.32.0",
+   "use": "Phase 0 (b)/(c) positive control only"
+  }
  },
  "build": "hostless + flock cargo-build.lock build-driver.sh <worktree> <label> cua-release-r2-10; rustc 1.97.1; R' 91 s, Cn' 108 s; 0 Fresh workspace units (raw/provenance/builds.log). The first Cn' build was terminated by the agent tool's 120 s background limit and re-run.",
  "environment": {
@@ -45,7 +66,8 @@
   "isolation": "bin/hostless v2 for every code-executing command; native, D1 and native Phase 0 rows nested in bin/hostless-strict with CUA_SESSION_ATSPI=1; private Xvfb via cua-x11-session.sh; telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1)",
   "wrapper_sha256": "raw/provenance/wrappers-sha256.txt",
   "session_type": "x11 (private Xvfb 1920x1080x24, openbox, picom; private dbus-run-session)",
-  "loadavg": "1-minute loadavg recorded per trial; D1 ran at 18.5-25.0, scripted/native chunks at lower load (per-trial values in raw/)"
+  "loadavg": "1-minute loadavg recorded per trial; D1 ran at 18.5-25.0 with sustained other-track load inside its EXCLUSIVE window (its timing difference rows are indicative only), S2r started at 27.35 decaying from the previous holder, other chunks at lower load (per-trial values in raw/)",
+  "session_logs_note": "committed session logs contain ephemeral private-session D-Bus socket addresses from dbus-run-session; they carry no user or host name and are kept as recorded"
  },
  "live_heads": {
   "start": "raw/provenance/heads-start.json (2026-10-03T02:41:33Z): upstream main 41c34cb0d, libs/cua-driver tree df2b49c32e73 = 0f1955d2f's; trycua/cua PR 4316 OPEN a0bca7440; PR 4375 MERGED 920a42f10; PR 3489 MERGED 310cdfd58",
@@ -55,5 +77,17 @@
  },
  "harness_sources": "harness/ = R2-10 harness (exp/r2-10-composition-20261002 030f6bdbf) copied verbatim in caf3d68a7; every later edit is listed in PREREG.json harness.edits_disclosed_as_deviations, PREREG-AMENDMENT-1.json and README Deviations",
  "reference": "reference/r2-10-reference.json: verdicts extracted from the accepted R2-10 summary (exp/r2-10-composition-20261002 030f6bdbf, git blob recorded inside)",
- "provider": {"provider": "TypeSafe", "attempts": 0, "reached": 0, "lane_cap": 0}
+ "provider": {
+  "provider": "TypeSafe",
+  "attempts": 0,
+  "reached": 0,
+  "lane_cap": 0
+ },
+ "external_interference": {
+  "block": "r2-10r-a2-nm2 (EXCLUSIVE, ledger 2026-10-03T05:51:37.630Z-05:54:27.287Z)",
+  "interfering_work": "another track's verifier (bend-stack lane B389): a few seconds of single-core Python without the quiet-lane lock, about 05:52:45-05:53:32Z",
+  "source": "the other track's synthesis section 9; the session orchestrator's note EXTERNAL-INTERFERENCE.md in the lane mirror (written after 184b39b43)",
+  "handling": "disclosed, not re-run; nm2 stays counted as pre-registered; sensitivity in nm2-sensitivity.json (sensitivity_nm2.py, recomputed by verify_artifacts.py): nm1-only and drop-window native S keep the R2-10 direction 8/8; nm1 vs nm2 per-arm median T_oracle differ by at most 0.96 ms; 1-minute loadavg of the 27 overlapping nm2 trials 1.67-2.13"
+ },
+ "browser_driver_attribution": "The browser run manifests (raw/browser/*-manifests: S1, S2r, N1) do not record the Driver binary; the chunks ran with --driver R = cua-driver-r2-10r-a2-45dff8f32 (sha256 922111c5...) per the lane run scripts, committed as redacted copies in raw/provenance/run-scripts/ (absolute roots replaced by <lanes>/<tmp>). Native, D1 and Phase 0 raw record driver_bin_name and driver_sha256 directly."
 }

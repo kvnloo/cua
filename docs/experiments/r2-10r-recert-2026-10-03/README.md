@@ -6,8 +6,11 @@ accounting), kvnloo/cua#73 (E6 freshness). Upstream items are plain text (trycua
 **Disposition: RECERTIFIED** (pre-registered rule in PREREG.json `gates`: Phase 0 passes in full,
 validity 100% in every arm, 0 E4 violations, every R2-10 scripted/native S whose CI excluded 1 excludes
 1 again in the same direction, every component keeps its verdict mapping, D1 element digests identical
-40/40). All six gates pass; `recert-summary.json` lists 0 changed claims. One component crossed the
-5% line and is flagged below (not hidden). Provider: 0 attempts, 0 reached (lane cap 0).
+40/40). All six gates pass; `recert-summary.json` lists 0 changed claims; the S gate covers 18 gated S rows
+(the first version checked only 15; post-hoc correction in `PREREG-AMENDMENT-2.json`, Deviation 10). One
+component crossed the 5% line and is flagged below (not hidden). Native timing block nm2 had a few
+seconds of another track's unlocked CPU work inside its EXCLUSIVE window; the native claims hold without
+it (sensitivity below, Deviation 9). Provider: 0 attempts, 0 reached (lane cap 0).
 
 What this recertifies (E6): every Driver-side R2-10 claim survives trycua/cua PR 4375 (cua-driver-core
 snapshot_store.rs, tool_schema.rs, platform-linux tools/impl_.rs) and trycua/cua PR 3489 (cua-driver-sdk
@@ -24,15 +27,15 @@ return showing the expected final state); seeded paired bootstrap, 10000 resampl
 
 | layer | class/task | arm | n pairs | median T_BASE | median T_arm | S (T_oracle) | 95% CI | S (T_land) | 95% CI | class |
 |---|---|---|---|---|---|---|---|---|---|---|
-| L-scripted | fill->submit | COMP | n=32 | 3189.9 ms | 69.9 ms | 45.65 | [44.39, 48.36] | 45.65 | [44.39, 48.36] | REAL+BENCHMARK |
-| L-scripted | toggle->confirm | COMP | n=32 | 2503.4 ms | 53.5 ms | 46.82 | [45.21, 48.69] | 46.89 | [45.21, 48.62] | REAL+BENCHMARK |
-| L-scripted | modal->act | COMP | n=32 | 2491.4 ms | 55.5 ms | 44.86 | [43.56, 46.81] | 45.10 | [43.58, 46.78] | REAL+BENCHMARK |
-| L-scripted | fill->submit | COMP_E | n=32 | 3189.9 ms | 53.9 ms | 59.19 | [56.05, 63.91] | 59.21 | [57.07, 63.94] | REAL+BENCHMARK |
-| L-scripted | toggle->confirm | COMP_E | n=32 | 2503.4 ms | 37.6 ms | 66.56 | [63.47, 69.19] | 66.47 | [63.45, 70.73] | REAL+BENCHMARK |
-| L-scripted | modal->act | COMP_E | n=32 | 2491.4 ms | 37.3 ms | 66.88 | [63.45, 70.55] | 66.90 | [63.40, 70.50] | REAL+BENCHMARK |
-| L-scripted | fill->submit | COMP_K (KEEP-only) | n=32 | 3189.9 ms | 3168.0 ms | 1.01 | [1.00, 1.01] | 1.01 | [1.00, 1.01] | REAL+BENCHMARK |
-| L-scripted | toggle->confirm | COMP_K (KEEP-only) | n=32 | 2503.4 ms | 2481.4 ms | 1.01 | [1.01, 1.01] | 1.01 | [1.01, 1.01] | REAL+BENCHMARK |
-| L-scripted | modal->act | COMP_K (KEEP-only) | n=32 | 2491.4 ms | 2464.4 ms | 1.01 | [1.01, 1.01] | 1.01 | [1.01, 1.01] | REAL+BENCHMARK |
+| L-scripted | fill->submit | COMP | n=32 | 3189.9 ms | 69.9 ms | 45.65 | [44.39, 48.36] | 45.65 | [44.39, 48.36] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | toggle->confirm | COMP | n=32 | 2503.4 ms | 53.5 ms | 46.82 | [45.21, 48.69] | 46.89 | [45.21, 48.62] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | modal->act | COMP | n=32 | 2491.4 ms | 55.5 ms | 44.86 | [43.56, 46.81] | 45.10 | [43.58, 46.78] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | fill->submit | COMP_E | n=32 | 3189.9 ms | 53.9 ms | 59.19 | [56.05, 63.91] | 59.21 | [57.07, 63.94] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | toggle->confirm | COMP_E | n=32 | 2503.4 ms | 37.6 ms | 66.56 | [63.47, 69.19] | 66.47 | [63.45, 70.73] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | modal->act | COMP_E | n=32 | 2491.4 ms | 37.3 ms | 66.88 | [63.45, 70.55] | 66.90 | [63.40, 70.50] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | fill->submit | COMP_K (KEEP-only) | n=32 | 3189.9 ms | 3168.0 ms | 1.01 | [1.00, 1.01] | 1.01 | [1.00, 1.01] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | toggle->confirm | COMP_K (KEEP-only) | n=32 | 2503.4 ms | 2481.4 ms | 1.01 | [1.01, 1.01] | 1.01 | [1.01, 1.01] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | modal->act | COMP_K (KEEP-only) | n=32 | 2491.4 ms | 2464.4 ms | 1.01 | [1.01, 1.01] | 1.01 | [1.01, 1.01] | REAL+BENCHMARK (FIXTURE) |
 | native GTK3 | checkbox | S0 (KEEP-only) | n=24 | 334.3 ms | 282.9 ms | 1.18 | [1.18, 1.18] | 1.00 | [1.00, 1.04] | REAL+BENCHMARK (FIXTURE) |
 | native GTK3 | text entry | S0 (KEEP-only) | n=24 | 1761.3 ms | 1709.0 ms | 1.03 | [1.03, 1.03] | 1.00 | [1.00, 1.00] | REAL+BENCHMARK (FIXTURE) |
 | native GTK3 | checkbox | X | n=24 | 334.3 ms | 283.0 ms | 1.18 | [1.18, 1.18] | 1.00 | [0.98, 1.03] | REAL+BENCHMARK (FIXTURE) |
@@ -45,6 +48,9 @@ Fill, all invocations with the training invocation charged with compile + admiss
 (ratio of means) 42.62 [38.78, 45.88], warm-only 45.66 [44.39, 48.39]. KEEP-only fill (COMP_K)
 amortized ratio of means 0.98 [0.92, 1.01] (not gated: its R2-10 CI also included 1; the training
 invocation of the KEEP-only arm pays a full feedback-ON step loop plus a feedback-ON admission replay).
+The other gated fill rows (4 decimals, `recert-summary.json` `S_direction.rows`): COMP_E amortized
+56.4091 [52.6800, 59.9564], COMP_E warm-only 59.1965 [57.0584, 63.9202], COMP_K warm-only
+1.0069 [1.0032, 1.0081].
 
 T_land vs T_oracle: on the browser classes S_land equals S within the CI (the effect lands inside the
 last call). On native, the post-action sleep (S0) runs after the effect has already landed, so S0
@@ -61,15 +67,37 @@ arm x class/task cells). E4: 0 stale-ref dispatches, 0 duplicate mutations, 0 un
 | gate | result | class |
 |---|---|---|
 | Phase 0 (a)-(e) on R' | pass in full (table below) | UNIT, REAL |
-| validity 100% every arm | 18/18 cells at 1.0 | REAL+BENCHMARK |
+| validity 100% every arm | 18/18 cells at 1.0 | REAL+BENCHMARK (FIXTURE) |
 | 0 E4 violations | 0 in every arm, admission and control | REAL |
-| S direction: the 15 R2-10 S rows whose CI excluded 1 (all above 1) | 15/15 above 1 again (scripted COMP, COMP_E, COMP_K per class; fill amortized and warm-only; native S0 and X per task) | REAL+BENCHMARK |
-| verdict mapping | 0 verdict mismatches over 18 decomposition units (12 scripted arm x class, 6 native arm x task); 16/16 work-deleted signs kept for components whose R2-10 deletion was >= 5 ms | REAL+BENCHMARK |
+| S direction: every R2-10 scripted/native S row whose CI excluded 1 (18 gated S rows, all above 1) | 18/18 above 1 again (scripted COMP, COMP_E, COMP_K per class; COMP and COMP_E fill amortized and warm-only; COMP_K fill warm-only; native S0 and X per task). COMP_K fill amortized is reported, not gated (its R2-10 CI included 1; on R' it includes 1 again) | REAL+BENCHMARK (FIXTURE) |
+| verdict mapping | 0 verdict mismatches over 18 decomposition units (12 scripted arm x class, 6 native arm x task); 16/16 work-deleted signs kept for components whose R2-10 deletion was >= 5 ms | REAL+BENCHMARK (FIXTURE) |
 | D1 element digests | 1 distinct elements digest over 40/40 valid trials | REAL+BENCHMARK (FIXTURE) |
 
 Flagged (not hidden): `scripted/toggle/COMP:reval_other` (IRREDUCIBLE) crossed the 5% line downward
 (R' 2.68 ms = 4.9995% of mean T_runner; R2-10 just above 5%). Its verdict is unchanged; no E2 untested
 status changed (`recert-summary.json` `flagged_threshold_crossings`, `flagged_e2_status_changes`).
+
+## Native block nm2: external interference and sensitivity (post-hoc, PREREG-AMENDMENT-2)
+
+Another track's verifier (bend-stack lane B389) ran a few seconds of single-core Python without the
+quiet-lane lock at about 05:52:45-05:53:32Z, inside this lane's EXCLUSIVE window r2-10r-a2-nm2
+(05:51:37.630-05:54:27.287Z). The lane learned of it after the results commit, from the other track's
+synthesis (section 9) and the session orchestrator's note `EXTERNAL-INTERFERENCE.md` in the lane
+mirror. Correctness rows are unaffected. nm2 stays counted as pre-registered; it was not re-run.
+`sensitivity_nm2.py` recomputes the four gated native S rows with the same S rule
+(`nm2-sensitivity.json`, recomputed by `verify_artifacts.py`):
+
+| native S (T_oracle) | nm1 only (rounds 0-11) | 95% CI | n | nm2 window rounds dropped | 95% CI | n | class |
+|---|---|---|---|---|---|---|---|
+| checkbox S0 | 1.1837 | [1.1754, 1.1888] | n=12 | 1.1837 | [1.1793, 1.1853] | n=19 | REAL+BENCHMARK (FIXTURE) |
+| text S0 | 1.0305 | [1.0293, 1.0315] | n=12 | 1.0305 | [1.0298, 1.0315] | n=20 | REAL+BENCHMARK (FIXTURE) |
+| checkbox X | 1.1835 | [1.1782, 1.1881] | n=12 | 1.1835 | [1.1799, 1.1876] | n=19 | REAL+BENCHMARK (FIXTURE) |
+| text X | 5.8906 | [5.8614, 5.8972] | n=12 | 5.8910 | [5.8713, 5.8972] | n=20 | REAL+BENCHMARK (FIXTURE) |
+
+"Dropped" removes every round (all three arms) that has a main nm2 trial overlapping the window +/- 5 s:
+27 nm2 trials (nm2-025..nm2-051), checkbox rounds 16-20 and text rounds 16-19. All 8 rows exclude 1
+above 1, the R2-10 direction. Per-arm median T_oracle in nm1 vs nm2 differs by at most 0.96 ms, and the
+1-minute loadavg of the overlapping trials was 1.67-2.13.
 
 ## Drift row D1: first-snapshot grace (trycua/cua PR 4375) on the native observation
 
@@ -86,12 +114,16 @@ Driver and fresh fixture per trial, one EXCLUSIVE acquisition (`r2-10r-a2-d1`).
 | truncation | truncated=false 40/40, nodes_visited 9, nodes_pending 0 in every trial | REAL |
 | median T of the observation call | G 48.9 ms, E 50.6 ms | BENCHMARK |
 | median walk | G 9.5 ms walk, E 10.5 ms walk | BENCHMARK |
-| paired T difference G - E | median +4.95 ms, 95% CI [-5.02, +21.37] ms | BENCHMARK |
-| paired Driver span difference G - E | median +2.63 ms, 95% CI [-3.60, +16.71] ms | BENCHMARK |
+| paired T difference G - E | median +4.95 ms, 95% CI [-5.02, +21.37] ms | BENCHMARK (indicative: load-contaminated) |
+| paired Driver span difference G - E | median +2.63 ms, 95% CI [-3.60, +16.71] ms | BENCHMARK (indicative: load-contaminated) |
 
 The grace changes the walk budget only; the GTK3 walk takes ~10 ms, far below either budget, so the
 observation span difference is not distinguishable from 0 and the element set is identical. D1 ran at
-a 1-minute loadavg of 18.5-25.0 (other tracks' unlocked work); the tails (max T 327 ms) are load, in both arms.
+a 1-minute loadavg of 18.5-25.0: it rose from 22.0 to 25.0 inside the EXCLUSIVE window and was still
+18.5 after 80 s, so other tracks' unlocked work ran during it (not decay from the previous holder). The
+two paired-difference timing rows are therefore labelled indicative (load-contaminated); the gated D1
+correctness rows (digests, truncation, forced path, dispatch count) do not depend on load. The tails
+(max T 327 ms) are load, in both arms.
 
 Browser path: SOURCE call graph (`raw/drift/d1-callgraph-grep.txt`): the only call site of
 `resolve_timeout_ms_with_first_snapshot_grace` / `contains_semantic_window` outside tests is
@@ -265,7 +297,8 @@ tool calls the scripted layer makes on R', recertified above. The live-layer num
 | R' binary | `cua-driver-r2-10r-a2-45dff8f32`, sha256 `922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8`, in-session `cua-driver 0.32.0`; attempt 1 built `d830ee77...` from the same tree (the build embeds the worktree HEAD) |
 | Cn' binary | `cua-driver-r2-10r-a2-ctl-8a2362770`, sha256 `e66fac2cac19bc7899598f4a3d8337de1fc69fcaf99163e5553f1dc2d9f91b0b`, `cua-driver 0.32.0`; attempt 1 `97dfc91e...` (builds are not byte-reproducible here) |
 | U control | `cua-driver-b02-560bd8247`, sha256 `7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0`, `cua-driver 0.32.0` (Phase 0 (b)/(c) only) |
-| PREREG | `PREREG.json` committed in 3028d8078 (attempt 1, before any Phase 0 row); `PREREG-AMENDMENT-1.json` committed in 0bfd24053 at 2026-10-03T02:52:22Z, before the first counted row (02:59:54Z) and the first measured trial (03:45:11Z) |
+| PREREG | `PREREG.json` committed in 3028d8078 (attempt 1, before any Phase 0 row); `PREREG-AMENDMENT-1.json` committed in 0bfd24053 at 2026-10-03T02:52:22Z, before the first counted row (02:59:54Z) and the first measured trial (03:45:11Z); `PREREG-AMENDMENT-2.json` is post-hoc (after the results commit 184b39b43; no trial added, re-run or removed) |
+| browser Driver attribution | the browser run manifests (S1, S2r, N1) do not record the Driver binary; the lane run scripts (`raw/provenance/run-scripts/`, redacted copies, roots replaced by `<lanes>`/`<tmp>`) pass `--driver` = R' a2-45dff8f32 to every browser chunk; native, D1 and Phase 0 raw record `driver_bin_name` and `driver_sha256` directly |
 | environment | one Linux host; bin/hostless v2 for every code-executing command; native/D1 also in bin/hostless-strict with AT-SPI; private Xvfb (cua-x11-session.sh); telemetry off; wrapper hashes `raw/provenance/wrappers-sha256.txt`; 1-minute loadavg per trial in raw/ |
 | locks | every measured chunk (d1, S1, S2r, N1, nm1, nm2, nd1) under the cargo-build lock then `bin/quiet-timed` (receipts `raw/lock-receipts-global.jsonl`, lane `raw/lock-receipts-lane.jsonl`); Phase 0 rows and shakedowns under the SHARED lock with receipts; Phase 0 (a) cargo lock first |
 | live heads | start (02:41:33Z) upstream main 41c34cb0d, end (05:57:56Z) a8d5788fd: 2 commits / 11 files, 0 under libs/cua-driver; libs/cua-driver tree `df2b49c32e73` = 0f1955d2f's at both reads; trycua/cua PR 4316 OPEN a0bca7440 (unchanged), PR 4375 merged 920a42f10, PR 3489 merged 310cdfd58 (`raw/provenance/heads-*.json`) |
@@ -274,8 +307,10 @@ tool calls the scripted layer makes on R', recertified above. The live-layer num
 
 ## Evidence classes
 
-UNIT: Phase 0 (a). REAL: Phase 0 (b)-(e), controls, D1 validity/forced path/digests. REAL+BENCHMARK:
-scripted and native timing under the EXCLUSIVE lock (native and D1 on the GTK3 FIXTURE). SOURCE: the
+UNIT: Phase 0 (a). REAL: Phase 0 (b)-(e), controls, D1 validity/forced path/digests. REAL+BENCHMARK
+(FIXTURE): scripted timing (jev-use fixture server and kvnloo/cua#24 pages) and native timing (GTK3
+fixture) under the EXCLUSIVE lock; nm2 with the disclosed interference (Deviation 9). BENCHMARK
+(indicative): D1 timing differences (load-contaminated). SOURCE: the
 rebase range-diff, the D1 browser call graph, the live-layer argument. BLOCKED: live layer (paid
 budget). NOT_RUN: none of the pre-registered rows.
 
@@ -318,6 +353,23 @@ budget). NOT_RUN: none of the pre-registered rows.
 8. Near miss (no effect; `raw/provenance/near-misses.txt`): one `python3 -c 1` interpreter start in the
    plain host shell at ~02:41Z, typed by mistake inside a read-only grep command; no import, file,
    display, bus, socket or process effect.
+9. External interference in nm2 (disclosed post-hoc): another track's verifier ran a few seconds of
+   single-core Python without the quiet-lane lock at about 05:52:45-05:53:32Z inside the EXCLUSIVE
+   window r2-10r-a2-nm2 (05:51:37.630-05:54:27.287Z). Source: the other track's synthesis, section 9,
+   and the orchestrator's note `EXTERNAL-INTERFERENCE.md` in the lane mirror, written after 184b39b43.
+   Not re-run; nm1-only and window-dropped native S keep the R2-10 direction 8/8 (section above,
+   `nm2-sensitivity.json`).
+10. S_direction coverage (post-hoc correction, `PREREG-AMENDMENT-2.json`): the PREREG rule covers every
+   R2-10 S row whose CI excluded 1, but its enumeration and the first `recert_gates.s_paths` listed 15 of
+   the 18. Added: COMP_E fill amortized and warm-only, COMP_K fill warm-only (all three exclude 1 above
+   1 again on R'); COMP_K fill amortized is reported, not gated. `reference/r2-10-reference.json` was
+   re-extracted from the same R2-10 blob 5fe2549a and `recert-summary.json` recomputed; disposition and
+   changed claims are unchanged.
+11. Other fixes after the fresh verifier: `verify_artifacts.py` uses `git rev-parse --verify -q` for the
+   R2-10 reference blob, so a single-branch clone falls back to the recorded sha1 instead of crashing;
+   scripted rows are labelled REAL+BENCHMARK (FIXTURE); the D1 timing differences are labelled
+   indicative. Committed session logs contain ephemeral private-session D-Bus socket addresses
+   (no user or host name); they are kept as recorded.
 
 ## Limits
 
@@ -338,7 +390,9 @@ no default change is claimed.
 
 ## Files
 
-- `PREREG.json` (attempt 1, committed before any Phase 0 row), `PREREG-AMENDMENT-1.json` (attempt 2).
+- `PREREG.json` (attempt 1, committed before any Phase 0 row), `PREREG-AMENDMENT-1.json` (attempt 2,
+  before the first counted row), `PREREG-AMENDMENT-2.json` (post-hoc corrections and sensitivity).
+- `nm2-sensitivity.json` (sensitivity_nm2.py): native S without the interfered nm2 block.
 - `r2-10r-summary.json` (analyze_r2_10.py), `d1-summary.json` (analyze_d1.py), `recert-summary.json`
   (recert_gates.py vs `reference/r2-10-reference.json`), `headline-numbers.json` (make_headlines.py),
   `provenance.json`, `verify_artifacts.py`.
