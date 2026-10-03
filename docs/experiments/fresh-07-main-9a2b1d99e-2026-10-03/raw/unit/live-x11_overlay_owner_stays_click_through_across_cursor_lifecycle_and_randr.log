@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.64s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<targets>/cua-test-fresh07/debug/deps/platform_linux-3cc786579eba3d52)
+
+running 1 test
+test overlay::tests::x11_overlay_owner_stays_click_through_across_cursor_lifecycle_and_randr ... FAILED
+
+failures:
+
+---- overlay::tests::x11_overlay_owner_stays_click_through_across_cursor_lifecycle_and_randr stdout ----
+Error: click delivery failed during daemon startup: timed out waiting for an X11 button press
+
+
+failures:
+    overlay::tests::x11_overlay_owner_stays_click_through_across_cursor_lifecycle_and_randr
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 611 filtered out; finished in 1.10s
+
+error: test failed, to rerun pass `-p platform-linux --lib`
