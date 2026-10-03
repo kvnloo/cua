@@ -229,6 +229,20 @@ def pp_bucket(lane_verdict: str) -> str:
     return {"OWNER_DECISION": "OWNER_DECISION", "NOT_MATERIAL": "IRREDUCIBLE"}.get(lane_verdict, "UNTESTED")
 
 
+def unmarked_verify_poll_ms(t: dict[str, Any]) -> float:
+    """POST HOC, descriptive (README Deviation 4): the compiled routine's verify-poll waits inside T. B-04's harness
+    stamps routine reads (oracle_send / oracle_return label routine_read) but not the routine's 10 ms sleep between
+    them, so R2-10's decomposition files that wait under ``runner``. Sum of the gaps from a routine_read that did not
+    verify to the next oracle_send. Not a verdict input."""
+    ev = [e for e in t["events"] if e["event"] in ("oracle_send", "oracle_return")]
+    tot = 0.0
+    for a, b in zip(ev, ev[1:]):
+        if a["event"] == "oracle_return" and a.get("label") == "routine_read" and a.get("outcome") != "verified" \
+                and b["event"] == "oracle_send":
+            tot += (b["t_mono_ns"] - a["t_mono_ns"]) / 1e6
+    return tot
+
+
 def decompose_rows(trials: list[dict[str, Any]], rows: dict[str, dict[str, Any]], c_m: float) -> list[dict[str, Any]]:
     out = []
     for t in trials:
@@ -246,7 +260,7 @@ def decompose_rows(trials: list[dict[str, Any]], rows: dict[str, dict[str, Any]]
                     "by_comp": d["by_comp"], "by_comp_corr": d["by_comp_corr"], "n_marks_in_T": d["n_marks_in_T"],
                     "consistency_max_abs_ms": max(abs(e2c.get(k, 0.0) - mine.get(k, 0.0)) for k in set(e2c) | set(mine)),
                     "coverage_b05": cov, "coverage_r210": d210["coverage"], "E_ms": x.get("excess_b03_ms"),
-                    "T_j_ms": x.get("T_j_ms")})
+                    "T_j_ms": x.get("T_j_ms"), "unmarked_poll_ms": unmarked_verify_poll_ms(t)})
     return out
 
 
@@ -314,6 +328,10 @@ def part_e_arm(dec: list[dict[str, Any]], cls: str, view: str, bg: str, carve: d
             "below_gate_carried_with_corr_mean_ge_0_5ms": flags}
 
 
+def runner_ms(view: dict[str, Any]) -> float:
+    return next((c["mean_ms"] for c in view["components"] if c["component"] == "runner"), 0.0)
+
+
 def part_e(trials_by: dict[tuple[str, str], list[dict[str, Any]]], rows: dict[str, dict[str, Any]],
            verdicts: dict[str, str], D: dict[str, dict[str, Any]]) -> dict[str, Any]:
     nulls: list[float] = []
@@ -345,6 +363,16 @@ def part_e(trials_by: dict[tuple[str, str], list[dict[str, Any]]], rows: dict[st
             for view in ("corr", "raw"):
                 for bg in ("IRREDUCIBLE", "UNTESTED"):
                     res[arm][f"{view}:below_gate_as_{bg.lower()}"] = part_e_arm(dec[arm], cls, view, bg, carves[arm])
+            # POST HOC, descriptive only (README Deviation 4); never used by a gate or the pre-registered shares
+            up = mean([d["unmarked_poll_ms"] for d in ok]) or 0.0
+            res[arm]["post_hoc_unmarked_verify_poll"] = {
+                "mean_ms": up, "note": "compiled-routine 10 ms verify-poll waits filed under runner (UNTESTED) because "
+                "B-04's harness does not stamp them; descriptive only",
+                "untested_share_if_counted_as_sleeps_polls": {
+                    k: (res[arm][k]["untested_ms"] - min(up, runner_ms(res[arm][k]))) / res[arm][k]["mean_T_ms"]
+                    for k in list(res[arm]) if ":" in k},
+                "rule": "subtract min(poll-gap mean, runner component mean) from the UNTESTED ms (the part of the gap before "
+                        "the journal effect is already target_effect_lag)"}
         if pp_bucket(lane) == "UNTESTED":
             dmed = max(0.0, D[cls]["median"] or 0.0)
             res["sensitivity_D_sized"] = {
