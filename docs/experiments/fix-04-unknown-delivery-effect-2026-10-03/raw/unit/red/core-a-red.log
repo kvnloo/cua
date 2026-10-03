@@ -1,0 +1,44 @@
+   Compiling cua-driver-contract v0.32.0 (<scrubbed1>/w7-fix04/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling cua-driver-core v0.32.0 (<scrubbed1>/w7-fix04/libs/cua-driver/rust/crates/cua-driver-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.00s
+     Running unittests src/lib.rs (<scrubbed3>/cargo-targets/cua-release-fix02r/debug/deps/cua_driver_core-4f2d188a2089d4cb)
+
+running 4 tests
+test browser::refusal::tests::delivery_unknown_refusal_reports_an_unverifiable_effect ... FAILED
+test action_record::tests::refusal_that_declares_delivery_unknown_is_unverifiable_not_refused ... FAILED
+test browser::v2_tests::set_input_files_detached_after_the_check_is_never_a_success ... ok
+test browser::v2_tests::set_input_files_detached_after_the_check_reports_an_unverifiable_effect ... FAILED
+
+failures:
+
+---- browser::refusal::tests::delivery_unknown_refusal_reports_an_unverifiable_effect stdout ----
+
+thread 'browser::refusal::tests::delivery_unknown_refusal_reports_an_unverifiable_effect' (599165) panicked at crates/cua-driver-core/src/browser/refusal.rs:361:9:
+assertion `left == right` failed
+  left: Null
+ right: "unverifiable"
+
+---- action_record::tests::refusal_that_declares_delivery_unknown_is_unverifiable_not_refused stdout ----
+
+thread 'action_record::tests::refusal_that_declares_delivery_unknown_is_unverifiable_not_refused' (599164) panicked at crates/cua-driver-core/src/action_record.rs:1835:13:
+assertion `left == right` failed: browser_click browser_input_trust_unavailable
+  left: Refused
+ right: Unverifiable
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- browser::v2_tests::set_input_files_detached_after_the_check_reports_an_unverifiable_effect stdout ----
+
+thread 'browser::v2_tests::set_input_files_detached_after_the_check_reports_an_unverifiable_effect' (599167) panicked at crates/cua-driver-core/src/browser/v2_tests.rs:2955:5:
+assertion `left == right` failed: ToolResult { content: [Text { text: "refused (browser_ref_stale): the ref's node was not connected to the document after the file assignment; the files may have been assigned to the detached node, so delivery is unknown and must not be retried automatically", annotations: None }], is_error: None, structured_content: Some(Object {"refusal": Object {"code": String("browser_ref_stale"), "detail": Object {"delivery": String("unknown"), "retryable": Bool(false)}, "message": String("the ref's node was not connected to the document after the file assignment; the files may have been assigned to the detached node, so delivery is unknown and must not be retried automatically")}, "status": String("refused")}), action_record: None }
+  left: Null
+ right: "unverifiable"
+
+
+failures:
+    action_record::tests::refusal_that_declares_delivery_unknown_is_unverifiable_not_refused
+    browser::refusal::tests::delivery_unknown_refusal_reports_an_unverifiable_effect
+    browser::v2_tests::set_input_files_detached_after_the_check_reports_an_unverifiable_effect
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 827 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p cua-driver-core --lib`

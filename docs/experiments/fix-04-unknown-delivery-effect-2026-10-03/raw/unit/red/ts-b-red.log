@@ -1,0 +1,187 @@
+TAP version 13
+# Subtest: effect refused without isError is a refusal, not success
+ok 1 - effect refused without isError is a refusal, not success
+  ---
+  duration_ms: 1.239671
+  type: 'test'
+  ...
+# Subtest: status refused envelope keeps its structured code
+ok 2 - status refused envelope keeps its structured code
+  ---
+  duration_ms: 0.188787
+  type: 'test'
+  ...
+# Subtest: accepted unverifiable result is returned and MCP errors are not refusals
+ok 3 - accepted unverifiable result is returned and MCP errors are not refusals
+  ---
+  duration_ms: 0.190037
+  type: 'test'
+  ...
+# Subtest: one refusal gets one fresh observation and one fresh dispatch
+ok 4 - one refusal gets one fresh observation and one fresh dispatch
+  ---
+  duration_ms: 319.011379
+  type: 'test'
+  ...
+# Subtest: retryable is read from the refusal detail
+ok 5 - retryable is read from the refusal detail
+  ---
+  duration_ms: 0.184057
+  type: 'test'
+  ...
+# Subtest: a refusal whose delivery is unknown ends unknown without a re-dispatch
+ok 6 - a refusal whose delivery is unknown ends unknown without a re-dispatch
+  ---
+  duration_ms: 387.906735
+  type: 'test'
+  ...
+# Subtest: a refusal marked not retryable ends unknown without a re-dispatch
+ok 7 - a refusal marked not retryable ends unknown without a re-dispatch
+  ---
+  duration_ms: 315.233965
+  type: 'test'
+  ...
+# Subtest: second refusal stops without another dispatch
+ok 8 - second refusal stops without another dispatch
+  ---
+  duration_ms: 312.886163
+  type: 'test'
+  ...
+# Subtest: unconfirmed accepted click is never dispatched again
+ok 9 - unconfirmed accepted click is never dispatched again
+  ---
+  duration_ms: 324.58189
+  type: 'test'
+  ...
+# Subtest: accepted mutation is not repeated on a fresh ref
+ok 10 - accepted mutation is not repeated on a fresh ref
+  ---
+  duration_ms: 309.988658
+  type: 'test'
+  ...
+# Subtest: a post_assignment refusal is reconciled from state, not re-dispatched
+not ok 11 - a post_assignment refusal is reconciled from state, not re-dispatched
+  ---
+  duration_ms: 424.296437
+  type: 'test'
+  location: '<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:1:8844'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:290:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a post_assignment_f6 refusal is reconciled from state, not re-dispatched
+not ok 12 - a post_assignment_f6 refusal is reconciled from state, not re-dispatched
+  ---
+  duration_ms: 421.953199
+  type: 'test'
+  location: '<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:1:8844'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:290:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a post-assignment refusal that did not land ends unknown after reconcile
+not ok 13 - a post-assignment refusal that did not land ends unknown after reconcile
+  ---
+  duration_ms: 466.201226
+  type: 'test'
+  location: '<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:1:9253'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    [32mactual[39m [31mexpected[39m
+    
+    [39m'[39m[39mr[39m[39me[39m[32mf[39m[32mu[39m[32ms[39m[31mc[39m[31mo[39m[31mn[39m[31mc[39m[31mi[39m[31ml[39m[39me[39m[32md[39m[39m'[39m
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'reconcile'
+  actual: 'refused'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:303:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a declared unknown delivery without retryable is never re-dispatched
+not ok 14 - a declared unknown delivery without retryable is never re-dispatched
+  ---
+  duration_ms: 539.722608
+  type: 'test'
+  location: '<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:1:9605'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<scrubbed1>/w7-fix04/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts:308:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a pre-dispatch refusal declared not delivered may be rebound once
+ok 15 - a pre-dispatch refusal declared not delivered may be rebound once
+  ---
+  duration_ms: 546.050268
+  type: 'test'
+  ...
+# Subtest: ordinary path is unchanged
+ok 16 - ordinary path is unchanged
+  ---
+  duration_ms: 535.795086
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 12
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5550.84094

@@ -1,0 +1,409 @@
+diff --git i/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py w/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
+index 47d513e03..f85bf990b 100644
+--- i/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
++++ w/libs/cua-driver/examples/jev-use/python/tests/test_runner_refusal.py
+@@ -29,8 +29,35 @@ TRUST_UNKNOWN_TEXT = (
+ )
+ 
+ 
++POST_ASSIGNMENT_TEXT = (
++    "refused (browser_ref_stale): the ref's node was not connected to the document after the "
++    "file assignment; the files may have been assigned to the detached node, so delivery is "
++    "unknown and must not be retried automatically"
++)
++
++
++def detail_refusal(detail, effect=None, text=POST_ASSIGNMENT_TEXT):
++    """A status-refused browser envelope with a refusal detail (FIX-03 F5 / FIX-04 shapes)."""
++    structured = {"status": "refused", "refusal": {"code": "browser_ref_stale", "detail": detail}}
++    if effect:
++        structured["effect"] = effect
++    return SimpleNamespace(
++        isError=False, content=[SimpleNamespace(type="text", text=text)], structuredContent=structured
++    )
++
++
+ def refused_result(kind="stale"):
+     """An action result as the Driver's MCP boundary emits it: not an MCP error."""
++    if kind == "post_assignment":
++        # F5's post-assignment refusal (the input may have landed).
++        return detail_refusal({"delivery": "unknown", "retryable": False})
++    if kind == "post_assignment_f6":
++        # The same refusal with FIX-04's envelope effect.
++        return detail_refusal({"delivery": "unknown", "retryable": False}, effect="unverifiable")
++    if kind == "delivery_unknown_only":
++        return detail_refusal({"delivery": "unknown"})
++    if kind == "not_delivered":
++        return detail_refusal({"delivery": "not_delivered"}, text=STALE_TEXT)
+     if kind == "not_retryable":
+         return SimpleNamespace(
+             isError=False,
+@@ -73,11 +100,16 @@ class OneResult(Session):
+ class FixtureSession(Session):
+     """In-memory Driver; the HTTP fixture is the outcome oracle."""
+ 
+-    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True, refusal="stale"):
++    def __init__(
++        self, url, *, refuse_clicks=0, click_lands=True, type_kept=True, refusal="stale", refused_lands=False
++    ):
+         self.url = url
+         self.value = ""
+         self.refuse_clicks = refuse_clicks
+         self.refusal = refusal
++        # The refused click's effect lands anyway (Chromium assigned the files / the trusted
++        # click was delivered before the refusal): the fixture records the submit.
++        self.refused_lands = refused_lands
+         self.click_lands = click_lands
+         self.type_kept = type_kept
+         self.calls = []
+@@ -112,19 +144,24 @@ class FixtureSession(Session):
+         elif name == "browser_click":
+             if self.refuse_clicks > 0:
+                 self.refuse_clicks -= 1
++                if self.refused_lands:
++                    self.submit()
+                 return refused_result(self.refusal)
+             if self.click_lands:
+-                with urlopen(
+-                    Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
+-                    timeout=2,
+-                ):
+-                    pass
++                self.submit()
+             data = {"effect": "unverifiable", "route": "dom"}
+         else:
+             assert name == "browser_navigate", name
+             data = {}
+         return SimpleNamespace(isError=False, content=[], structuredContent=data)
+ 
++    def submit(self):
++        with urlopen(
++            Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
++            timeout=2,
++        ):
++            pass
++
+     def mutations(self):
+         return [name for name in self.calls if name in {"browser_type", "browser_click"}]
+ 
+@@ -245,6 +282,35 @@ class RunnerRefusalTest(unittest.TestCase):
+         self.assertEqual(events[-1]["phase"], "redispatch_blocked")
+         self.assertEqual(events[-1]["tool"], "browser_type")
+ 
++    # FIX-04 Part B (kvnloo/cua#105): a post-assignment refusal may have landed.
++    def test_post_assignment_refusal_is_reconciled_from_state_not_redispatched(self):
++        for kind in ("post_assignment", "post_assignment_f6"):
++            with self.subTest(kind=kind):
++                events, session = self.execute(
++                    "verified", refuse_clicks=1, refusal=kind, refused_lands=True
++                )
++                self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++                self.assertEqual(events[-1]["outcome"], "verified")
++                self.assertEqual(events[-1]["phase"], "reconcile")
++                self.assertEqual(events[-1]["action_refused"], "browser_ref_stale")
++
++    def test_post_assignment_refusal_that_did_not_land_ends_unknown_after_reconcile(self):
++        events, session = self.execute("unknown", refuse_clicks=1, refusal="post_assignment")
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++        self.assertEqual(events[-1]["outcome"], "unknown")
++        self.assertEqual(events[-1]["phase"], "reconcile")
++
++    def test_declared_unknown_delivery_without_retryable_is_never_redispatched(self):
++        events, session = self.execute("unknown", refuse_clicks=1, refusal="delivery_unknown_only")
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
++        self.assertEqual(events[-1]["outcome"], "unknown")
++
++    def test_pre_dispatch_refusal_declared_not_delivered_may_be_rebound_once(self):
++        events, session = self.execute("verified", refuse_clicks=1, refusal="not_delivered")
++        self.assertEqual(session.mutations(), ["browser_type", "browser_click", "browser_click"])
++        refused = [event for event in events if event.get("action_refused")]
++        self.assertEqual([event["event"] for event in refused], ["step"])
++
+     def test_ordinary_path_is_unchanged(self):
+         events, session = self.execute("verified")
+         self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
+diff --git i/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts w/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
+index 01fdb7652..e9db495e5 100644
+--- i/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
++++ w/libs/cua-driver/examples/jev-use/typescript/run_refusal.test.ts
+@@ -12,15 +12,55 @@ import { FixtureFormTask } from './tasks.js';
+ const TOKEN = 'fix01-private-token';
+ const STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document";
+ 
+-type Refusal = 'stale' | 'trust_unknown' | 'not_retryable';
+-type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean; refusal?: Refusal };
++type Refusal =
++  | 'stale'
++  | 'trust_unknown'
++  | 'not_retryable'
++  | 'post_assignment'
++  | 'post_assignment_f6'
++  | 'delivery_unknown_only'
++  | 'not_delivered';
++type Scenario = {
++  refuseClicks?: number;
++  clickLands?: boolean;
++  typeKept?: boolean;
++  refusal?: Refusal;
++  // The refused click's effect lands anyway (FIX-04 Part B).
++  refusedLands?: boolean;
++};
+ 
+ const TRUST_UNKNOWN_TEXT =
+   'refused (browser_input_trust_unavailable): trusted click was acknowledged but CDP focus ' +
+   'emulation could not be restored (x); delivery is unknown and must not be retried automatically';
+ 
++const POST_ASSIGNMENT_TEXT =
++  "refused (browser_ref_stale): the ref's node was not connected to the document after the " +
++  'file assignment; the files may have been assigned to the detached node, so delivery is ' +
++  'unknown and must not be retried automatically';
++
++// A status-refused browser envelope with a refusal detail (FIX-03 F5 / FIX-04 shapes).
++const detailRefusal = (detail: Record<string, unknown>, effect?: string, text = POST_ASSIGNMENT_TEXT) => ({
++  content: [{ type: 'text', text }],
++  structuredContent: {
++    status: 'refused',
++    refusal: { code: 'browser_ref_stale', detail },
++    ...(effect ? { effect } : {}),
++  },
++});
++
+ // An action result as the Driver's MCP boundary emits it: not an MCP error.
+ const refusedResult = (kind: Refusal = 'stale') =>
++  kind === 'post_assignment'
++    ? detailRefusal({ delivery: 'unknown', retryable: false })
++    : kind === 'post_assignment_f6'
++      ? detailRefusal({ delivery: 'unknown', retryable: false }, 'unverifiable')
++      : kind === 'delivery_unknown_only'
++        ? detailRefusal({ delivery: 'unknown' })
++        : kind === 'not_delivered'
++          ? detailRefusal({ delivery: 'not_delivered' }, undefined, STALE_TEXT)
++          : legacyRefusedResult(kind);
++
++const legacyRefusedResult = (kind: Refusal) =>
+   kind === 'not_retryable'
+     ? {
+         content: [{ type: 'text', text: 'refused (browser_reconnect_exhausted): x' }],
+@@ -84,6 +124,7 @@ async function runFixture(scenario: Scenario, log: string) {
+       } else if (name === 'browser_click') {
+         if (refuseClicks > 0) {
+           refuseClicks -= 1;
++          if (scenario.refusedLands) submitted = value;
+           return refusedResult(scenario.refusal);
+         }
+         if (scenario.clickLands !== false) submitted = value;
+@@ -242,6 +283,43 @@ if (process.argv[2] === '--fixture-run') {
+     assert.equal(events.at(-1)?.phase, 'redispatch_blocked');
+   });
+ 
++  // FIX-04 Part B (kvnloo/cua#105): a post-assignment refusal may have landed.
++  for (const refusal of ['post_assignment', 'post_assignment_f6'] as const) {
++    test(`a ${refusal} refusal is reconciled from state, not re-dispatched`, () => {
++      const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal, refusedLands: true });
++      assert.equal(status, 0);
++      assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++      assert.equal(events.at(-1)?.outcome, 'verified');
++      assert.equal(events.at(-1)?.phase, 'reconcile');
++      assert.equal(events.at(-1)?.action_refused, 'browser_ref_stale');
++    });
++  }
++
++  test('a post-assignment refusal that did not land ends unknown after reconcile', () => {
++    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'post_assignment' });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++    assert.equal(events.at(-1)?.outcome, 'unknown');
++    assert.equal(events.at(-1)?.phase, 'reconcile');
++  });
++
++  test('a declared unknown delivery without retryable is never re-dispatched', () => {
++    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'delivery_unknown_only' });
++    assert.equal(status, 1);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
++    assert.equal(events.at(-1)?.outcome, 'unknown');
++  });
++
++  test('a pre-dispatch refusal declared not delivered may be rebound once', () => {
++    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'not_delivered' });
++    assert.equal(status, 0);
++    assert.deepEqual(mutations, ['browser_type', 'browser_click', 'browser_click']);
++    assert.deepEqual(
++      events.filter((event) => event.action_refused).map((event) => event.event),
++      ['step']
++    );
++  });
++
+   test('ordinary path is unchanged', () => {
+     const { events, mutations, status } = runScenario();
+     assert.equal(status, 0);
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/action_record.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/action_record.rs
+index 9f4b03373..7fa9f88f0 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/action_record.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/action_record.rs
+@@ -1808,6 +1808,87 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn refusal_that_declares_delivery_unknown_is_unverifiable_not_refused() {
++        // FIX-04: a refusal issued after the input was acknowledged or assigned
++        // (trusted click/pointer focus-emulation cleanup, set_input_files
++        // post-assignment check) says the effect may have landed. It must not
++        // be recorded as `refused`, which means nothing was delivered.
++        for (tool, code) in [
++            ("browser_click", "browser_input_trust_unavailable"),
++            ("browser_pointer", "browser_input_trust_unavailable"),
++            ("browser_click", "browser_ref_stale"),
++        ] {
++            let record = ActionExecutionRecord::from_legacy(
++                tool,
++                &serde_json::json!({"input_route": "trusted"}),
++                &serde_json::json!({
++                    "status": "refused",
++                    "refusal": {
++                        "code": code,
++                        "message": "acknowledged; delivery is unknown",
++                        "detail": {"delivery": "unknown", "retryable": false}
++                    }
++                }),
++            )
++            .expect("delivery-unknown refusal should normalize");
++            assert_eq!(record.effect, ActionEffect::Unverifiable, "{tool} {code}");
++            assert_eq!(record.actual_delivery, Some(ActualDelivery::Unknown));
++            assert!(record.refusal.is_none());
++            let public = record.public_result().expect("should project");
++            assert_eq!(public.effect, cua_driver_contract::ActionEffect::Unverifiable);
++            assert!(public.error.is_none());
++        }
++
++        // Controls: a pre-dispatch refusal stays refused; a delivered prefix
++        // stays partial; an incomplete typing run with nothing delivered and
++        // no delivery declaration stays refused.
++        let pre_dispatch = ActionExecutionRecord::from_legacy(
++            "browser_click",
++            &serde_json::json!({}),
++            &serde_json::json!({
++                "status": "refused",
++                "refusal": {"code": "browser_ref_stale", "message": "refresh"}
++            }),
++        )
++        .unwrap();
++        assert_eq!(pre_dispatch.effect, ActionEffect::Refused);
++        let not_delivered = ActionExecutionRecord::from_legacy(
++            "browser_click",
++            &serde_json::json!({}),
++            &serde_json::json!({
++                "status": "refused",
++                "refusal": {
++                    "code": "browser_ref_stale",
++                    "message": "refresh",
++                    "detail": {"delivery": "not_delivered"}
++                }
++            }),
++        )
++        .unwrap();
++        assert_eq!(not_delivered.effect, ActionEffect::Refused);
++        for (delivered, effect) in [(3, ActionEffect::Partial), (0, ActionEffect::Refused)] {
++            let record = ActionExecutionRecord::from_legacy(
++                "browser_type",
++                &serde_json::json!({}),
++                &serde_json::json!({
++                    "status": "refused",
++                    "refusal": {
++                        "code": "browser_input_incomplete",
++                        "message": "typing stopped",
++                        "detail": {
++                            "requested_chars": 4,
++                            "delivered_chars": delivered,
++                            "retryable": false
++                        }
++                    }
++                }),
++            )
++            .unwrap();
++            assert_eq!(record.effect, effect, "delivered_chars={delivered}");
++        }
++    }
++
+     #[test]
+     fn browser_refusals_and_partial_delivery_survive_projection() {
+         let refused = ActionExecutionRecord::from_legacy(
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/refusal.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/refusal.rs
+index 5aa8d0f8c..23824bed7 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/refusal.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/refusal.rs
+@@ -346,6 +346,31 @@ mod tests {
+         assert!(text.contains("browser_requires_setup"), "{text}");
+     }
+ 
++    #[test]
++    fn delivery_unknown_refusal_reports_an_unverifiable_effect() {
++        // FIX-04: browser_set_input_files is not an ActionResult tool, so its
++        // receipt is this envelope. A refusal that declares the input may
++        // have landed carries the effect `unverifiable`, never just
++        // `refused`; other refusals carry no effect key.
++        let unknown = BrowserRefusal::new(BrowserRefusalCode::BrowserRefStale, "may have landed")
++            .with_detail(serde_json::json!({"delivery": "unknown", "retryable": false}))
++            .to_tool_result()
++            .structured_content
++            .unwrap();
++        assert_eq!(unknown["status"], "refused");
++        assert_eq!(unknown["effect"], "unverifiable");
++        assert_eq!(unknown["refusal"]["detail"]["delivery"], "unknown");
++        assert_eq!(unknown["refusal"]["detail"]["retryable"], false);
++
++        for detail in [None, Some(serde_json::json!({"delivery": "not_delivered"}))] {
++            let mut refusal = BrowserRefusal::new(BrowserRefusalCode::BrowserRefStale, "stale");
++            refusal.detail = detail;
++            let structured = refusal.to_tool_result().structured_content.unwrap();
++            assert_eq!(structured["status"], "refused");
++            assert!(structured.get("effect").is_none(), "{structured}");
++        }
++    }
++
+     #[test]
+     fn detail_is_omitted_when_absent() {
+         let refusal = BrowserRefusal::new(BrowserRefusalCode::BrowserRefStale, "ref p1:2 not live");
+diff --git i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
+index 2f7645519..6add82f39 100644
+--- i/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
++++ w/libs/cua-driver/rust/crates/cua-driver-core/src/browser/v2_tests.rs
+@@ -2937,6 +2937,38 @@ async fn set_input_files_detached_after_the_check_is_never_a_success() {
+     assert_eq!(page_dispatches(&f), vec![10], "assigned once, never retried");
+ }
+ 
++#[tokio::test]
++async fn set_input_files_detached_after_the_check_reports_an_unverifiable_effect() {
++    // FIX-04: the post-assignment refusal may have landed (Chromium assigns
++    // files to a detached node), so its receipt says effect unverifiable.
++    let f = fixture_with(|st| {
++        st.file_inputs.push(10);
++        st.detach_after_connected_check = Some(10);
++    })
++    .await;
++    let (target, tab) = bind(&f).await;
++    let snap = snapshot(&f, &target, &tab).await;
++    let input_ref = ref_of(&snap, "main", "main-btn");
++
++    let result = set_input_files(&f, &target, &tab, &input_ref).await;
++    let receipt = structured(&result);
++    assert_eq!(receipt["effect"], "unverifiable", "{result:?}");
++    assert_eq!(receipt["refusal"]["detail"]["delivery"], "unknown");
++
++    // The pre-assignment refusal (detached before the check) proves nothing was
++    // assigned and keeps no effect key.
++    let g = fixture_with(|st| st.file_inputs.push(10)).await;
++    let (target, tab) = bind(&g).await;
++    let snap = snapshot(&g, &target, &tab).await;
++    let input_ref = ref_of(&snap, "main", "main-btn");
++    detach(&g, 10);
++    let refused = set_input_files(&g, &target, &tab, &input_ref).await;
++    let receipt = structured(&refused);
++    assert_eq!(receipt["status"], "refused", "{refused:?}");
++    assert!(receipt.get("effect").is_none(), "{refused:?}");
++    assert!(page_dispatches(&g).is_empty());
++}
++
+ #[tokio::test]
+ async fn set_input_files_assigns_connected_and_reattached_file_inputs() {
+     let f = fixture_with(|st| st.file_inputs.push(10)).await;

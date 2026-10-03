@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: effect refused without isError is a refusal, not success
+ok 1 - effect refused without isError is a refusal, not success
+  ---
+  duration_ms: 1.910957
+  type: 'test'
+  ...
+# Subtest: status refused envelope keeps its structured code
+ok 2 - status refused envelope keeps its structured code
+  ---
+  duration_ms: 0.320531
+  type: 'test'
+  ...
+# Subtest: accepted unverifiable result is returned and MCP errors are not refusals
+ok 3 - accepted unverifiable result is returned and MCP errors are not refusals
+  ---
+  duration_ms: 0.351058
+  type: 'test'
+  ...
+# Subtest: one refusal gets one fresh observation and one fresh dispatch
+ok 4 - one refusal gets one fresh observation and one fresh dispatch
+  ---
+  duration_ms: 349.941224
+  type: 'test'
+  ...
+# Subtest: retryable is read from the refusal detail
+ok 5 - retryable is read from the refusal detail
+  ---
+  duration_ms: 0.224807
+  type: 'test'
+  ...
+# Subtest: a refusal whose delivery is unknown ends unknown without a re-dispatch
+ok 6 - a refusal whose delivery is unknown ends unknown without a re-dispatch
+  ---
+  duration_ms: 324.090659
+  type: 'test'
+  ...
+# Subtest: a refusal marked not retryable ends unknown without a re-dispatch
+ok 7 - a refusal marked not retryable ends unknown without a re-dispatch
+  ---
+  duration_ms: 323.632144
+  type: 'test'
+  ...
+# Subtest: second refusal stops without another dispatch
+ok 8 - second refusal stops without another dispatch
+  ---
+  duration_ms: 325.909473
+  type: 'test'
+  ...
+# Subtest: unconfirmed accepted click is never dispatched again
+ok 9 - unconfirmed accepted click is never dispatched again
+  ---
+  duration_ms: 320.945058
+  type: 'test'
+  ...
+# Subtest: accepted mutation is not repeated on a fresh ref
+ok 10 - accepted mutation is not repeated on a fresh ref
+  ---
+  duration_ms: 346.180867
+  type: 'test'
+  ...
+# Subtest: a post_assignment refusal is reconciled from state, not re-dispatched
+ok 11 - a post_assignment refusal is reconciled from state, not re-dispatched
+  ---
+  duration_ms: 482.645639
+  type: 'test'
+  ...
+# Subtest: a post_assignment_f6 refusal is reconciled from state, not re-dispatched
+ok 12 - a post_assignment_f6 refusal is reconciled from state, not re-dispatched
+  ---
+  duration_ms: 377.275543
+  type: 'test'
+  ...
+# Subtest: a post-assignment refusal that did not land ends unknown after reconcile
+ok 13 - a post-assignment refusal that did not land ends unknown after reconcile
+  ---
+  duration_ms: 318.979418
+  type: 'test'
+  ...
+# Subtest: a declared unknown delivery without retryable is never re-dispatched
+ok 14 - a declared unknown delivery without retryable is never re-dispatched
+  ---
+  duration_ms: 329.702677
+  type: 'test'
+  ...
+# Subtest: a pre-dispatch refusal declared not delivered may be rebound once
+ok 15 - a pre-dispatch refusal declared not delivered may be rebound once
+  ---
+  duration_ms: 329.788382
+  type: 'test'
+  ...
+# Subtest: ordinary path is unchanged
+ok 16 - ordinary path is unchanged
+  ---
+  duration_ms: 352.10747
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4680.408216

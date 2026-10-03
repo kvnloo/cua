@@ -1,0 +1,43 @@
+{
+ "schema": "cua.r2.provenance.v1",
+ "lane": "FIX-04",
+ "branch": "exp/fix-04-unknown-delivery-effect-20261003",
+ "shas": {
+  "upstream_base": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+  "lane_base_fix03_head": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+  "fix03_F5": "2237cf9c6328899583843a48f3a507af5ba0fb1f",
+  "fix03_F5_postcheck": "b235fabefd55f7e6b77e908db7fe00bb540f9846",
+  "fix03_seam": "5a1e209aba39b02fdc7b1dfe8f3afbf184405038",
+  "U_prime": "513e45fee0c5b02c7dd6d41a960f925a164b5066",
+  "F6a": "937ef7cfa969d226dff9ffa97956295c9a1bd897",
+  "F6b": "bb1e01f7be6ee37619b08d53453779787f5caf92",
+  "F6c_F6_source": "802700282e7302078c3f02c4b35970fd0518cdbb",
+  "partE_fix03_verifier": "e0fbc8129d91d667368e17f17fa3da52e5f040b0",
+  "prereg_harness": "d73eec78fed3ec726f7d95dccecbf0965246fb8a"
+ },
+ "trees": {
+  "rust_e300edbd3": "4a6f155eb73ab6eb65e34ef96ec04183a3e34b64",
+  "rust_F6_802700282": "05a52a13b7f9537835910c3caf68b5f2fd4c05d2",
+  "libs_cua_driver_F6_802700282_and_e0fbc8129": "f879e73c971ebbddb9f01e646ee5af7107e0fb8b"
+ },
+ "binaries": {
+  "F6": {"label": "cua-driver-fix04-f6-802700282", "sha256": "cb89fe03f6a737ce67dd2ef3aecede3ffa3b5e8da13bfcb94f2d14330814df0c", "version": "cua-driver 0.32.0", "source": "802700282 (built from the worktree at e0fbc8129; identical libs/cua-driver tree)", "build": "hostless -> sharedq (shared quiet-lane lock) -> flock cargo-build.lock -> build-driver.sh <wt> fix04-f6-802700282 cua-release-fix02r; 0 Fresh workspace units (raw/builds/)"},
+  "F5": {"label": "cua-driver-fix03-f5-2237cf9c6", "sha256": "10d710753ba85454632005cb9a40946abaf40d0ff0571885e08f85e9d7de1dd4", "version": "cua-driver 0.32.0", "source": "2237cf9c6 (FIX-03 provenance; re-hashed at lane start)"},
+  "U": {"label": "cua-driver-fix02r3-u-513e45fee", "sha256": "3d27b55b76bdfa64d8659100f995db23400c3b46c06543832aa3c8acb0b31acd", "version": "cua-driver 0.32.0", "source": "513e45fee (RECERT-FIX / FIX-03 provenance; re-hashed at lane start)"}
+ },
+ "unit_logs": {
+  "red_core_A": {"log": "raw/unit/red/core-a-red.log", "expect": "red", "tests": ["action_record::tests::refusal_that_declares_delivery_unknown_is_unverifiable_not_refused", "browser::refusal::tests::delivery_unknown_refusal_reports_an_unverifiable_effect", "browser::v2_tests::set_input_files_detached_after_the_check_reports_an_unverifiable_effect"], "tree": "e300edbd3 + raw/unit/red/red-tree.diff (tests only)"},
+  "red_linux_C": {"log": "raw/unit/red/linux-c-red.log", "expect": "red", "tests": ["atspi::window_scoped_fallback_tests::window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide"], "tree": "e300edbd3 + raw/unit/red/red-c-tree.diff (test only)"},
+  "red_py_B": {"log": "raw/unit/red/py-b-red.log", "expect": "red", "tests": ["test_declared_unknown_delivery_without_retryable_is_never_redispatched", "test_post_assignment_refusal_is_reconciled_from_state_not_redispatched", "test_post_assignment_refusal_that_did_not_land_ends_unknown_after_reconcile"], "tree": "e300edbd3 + raw/unit/red/red-tree.diff"},
+  "red_ts_B": {"log": "raw/unit/red/ts-b-red.log", "expect": "red", "tests": ["a post_assignment refusal is reconciled from state, not re-dispatched", "a post_assignment_f6 refusal is reconciled from state, not re-dispatched", "a post-assignment refusal that did not land ends unknown after reconcile", "a declared unknown delivery without retryable is never re-dispatched"], "tree": "e300edbd3 + raw/unit/red/red-tree.diff"},
+  "green_core": {"log": "raw/unit/green-F6/core-lib-tests.log", "expect": "green-cargo", "passed": 865, "cmd": "-p cua-driver-core --lib --tests --no-fail-fast (includes every browser:: test)"},
+  "green_linux": {"log": "raw/unit/green-F6/platform-linux-lib.log", "expect": "green-cargo", "passed": 606, "cmd": "-p platform-linux --lib --no-fail-fast"},
+  "green_py": {"log": "raw/unit/green-F6/jev-use/python-unittest-discover.log", "expect": "green-unittest", "ran": 245},
+  "green_ts": {"log": "raw/unit/green-F6/jev-use/ts-npm-test.log", "expect": "green-node", "pass": 121}
+ },
+ "lock_spacing_exceptions": [],
+ "environment": "Linux 7.2.2 x86_64, rustc 1.97.1; bin/hostless v2; cua-x11-session.sh (private rootless Xvfb, openbox, picom, private D-Bus; AT-SPI for native rows); jev-use venv Python 3.12.13, Node v22.23.2, uv 0.11.7; GTK3 fixture on system Python + gi; Chrome launched by the Driver (browser_prepare isolated_new); telemetry off",
+ "provider": {"attempts": 0, "reached": 0, "lane_cap": 0},
+ "live_heads": {"start": "raw/heads/start.txt", "end": "raw/heads/end.txt", "drift": "raw/heads/drift-start.txt, raw/heads/drift-end.txt"},
+ "publication_sha": "set by Publish; never equal-by-assumption to the tested SHAs"
+}

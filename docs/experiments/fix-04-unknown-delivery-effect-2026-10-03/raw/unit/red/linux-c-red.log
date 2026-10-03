@@ -1,0 +1,28 @@
+   Compiling cua-driver-contract v0.32.0 (<scrubbed1>/w7-fix04-redc/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.32.0 (<scrubbed1>/w7-fix04-redc/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-core v0.32.0 (<scrubbed1>/w7-fix04-redc/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<scrubbed1>/w7-fix04-redc/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<scrubbed1>/w7-fix04-redc/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 42.42s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<scrubbed3>/cargo-targets/cua-release-fix02r/debug/deps/platform_linux-6d020a7d4959d2d9)
+
+running 1 test
+test atspi::window_scoped_fallback_tests::window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide ... FAILED
+
+failures:
+
+---- atspi::window_scoped_fallback_tests::window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide stdout ----
+
+thread 'atspi::window_scoped_fallback_tests::window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide' (690779) panicked at crates/platform-linux/src/atspi/mod.rs:852:9:
+AT-SPI connect failed: ZBus Error: MethodError(OwnedErrorName("org.freedesktop.DBus.Error.NameHasNoOwner"), Some("Could not activate remote peer 'org.a11y.atspi.Registry': unit failed"), Msg { type: Error, serial: 4294967295, sender: UniqueName("org.freedesktop.DBus"), reply-serial: 4, body: Str, fds: [] })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    atspi::window_scoped_fallback_tests::window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 613 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p platform-linux --lib`

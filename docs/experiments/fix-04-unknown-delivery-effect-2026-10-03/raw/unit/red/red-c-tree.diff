@@ -1,0 +1,27 @@
+diff --git i/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs w/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs
+index ad5f56eab..9d5e9bd82 100644
+--- i/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs
++++ w/libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs
+@@ -835,3 +835,22 @@ mod budget_tests {
+         assert!(result.bounds_complete);
+     }
+ }
++
++#[cfg(test)]
++mod window_scoped_fallback_tests {
++    use super::*;
++
++    /// FIX-04 (kvnloo/cua#36): with the window known, an element index whose
++    /// window snapshot does not hold it is stale. It is never re-resolved
++    /// against a fresh walk of the whole application (pid-wide), where the same
++    /// index can name another window's control of the same process.
++    #[test]
++    fn window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide() {
++        // No snapshot was ever published for this (pid, window).
++        let (pid, xid) = (3_999_917_u32, 0x7fff_0f04_u64);
++        let typed = type_into_editable_at(pid, Some(xid), 6, "fix04").unwrap_err();
++        assert!(typed.is::<native::CachedElementGone>(), "{typed:#}");
++        let focused = focus_element(pid, Some(xid), 6).unwrap_err();
++        assert!(focused.is::<native::CachedElementGone>(), "{focused:#}");
++    }
++}

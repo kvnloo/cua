@@ -1,0 +1,57 @@
+{
+ "schema": "cua.r2.source-audit.v1",
+ "lane": "FIX-04",
+ "tree": "e300edbd3 (FIX-03 F5 head; line numbers are on this tree unless marked F6)",
+ "A_effect_mapping": {
+  "producers_with_delivery_unknown": [
+   {"where": "libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs:2573", "tool": "browser_set_input_files", "when": "F5 post-assignment isConnected re-check fails (b235fabef)", "envelope": "{status: refused, refusal: {code: browser_ref_stale, message, detail: {delivery: unknown, retryable: false}}}"},
+   {"where": "libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs:1323", "tool": "browser_click (trusted)", "when": "Input dispatch acknowledged, focus-emulation cleanup failed", "envelope": "{status: refused, refusal: {code: browser_input_trust_unavailable, detail: {delivery: unknown, retryable: false}}}"},
+   {"where": "libs/cua-driver/rust/crates/cua-driver-core/src/browser/pointer.rs:665", "tool": "browser_pointer (trusted)", "when": "same as browser_click", "envelope": "same"}
+  ],
+  "related_not_delivery_unknown": [
+   {"where": "libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs:2097-2116", "tool": "browser_type", "envelope": "browser_input_incomplete with detail {requested_chars, delivered_chars, retryable: false}; no delivery field", "mapping": "delivered_chars > 0 -> Partial (action_record.rs:665-674); 0 -> Refused (unchanged by F6a)"}
+  ],
+  "field_path": "refusal.detail.delivery (string) and refusal.detail.retryable (bool), serialized by BrowserRefusal::to_tool_result (browser/refusal.rs:232-238)",
+  "paths_to_legacy_effect": [
+   "tool.rs:1809-1825 (dispatch) -> ActionExecutionRecord::from_legacy (action_record.rs:464) -> legacy_effect (action_record.rs:478 -> 663-677)",
+   "from_legacy returns None unless is_action_tool(tool_name) (action_record.rs:469) = cua_driver_contract::ACTION_RESULT_TOOLS (cua-driver-contract/src/lib.rs:105-126): browser_click, browser_pointer, browser_type are listed; browser_set_input_files is NOT",
+   "public projection: tool.rs:1862 publish_action_result (tool.rs:3002) replaces structuredContent with the closed ActionResult for ActionResult tools (refusal detail dropped; code kept only in the text prefix)",
+   "history: history.rs:922-950 records the record's effect; no record -> effect unverifiable (or failed on isError)",
+   "recording: recording.rs write_turn_with_after keeps action_truth = record.debug_json()"
+  ],
+  "finding": "browser_click / browser_pointer delivery-unknown refusals were recorded and published as effect refused (legacy_effect: status refused -> Refused). browser_set_input_files never reaches legacy_effect: its receipt is the raw envelope with status refused and no effect field; consumers (jev-use runners, the server observer server.rs:735-741, the FIX-03 harness) read status refused. The FIX-03 limits text attributed set_input_files to the legacy mapping; the structured equivalent is the envelope's status.",
+  "fix_F6a": "legacy_effect: refused + refusal.detail.delivery present and != not_delivered -> Unverifiable, actual delivery Unknown (F6 action_record.rs refusal_delivery_may_have_landed); BrowserRefusal::to_tool_result adds effect: unverifiable to the same envelopes (covers browser_set_input_files)"
+ },
+ "B_runner": {
+  "python": {
+   "allowlist": "libs/cua-driver/examples/jev-use/python/run.py:89-106 PRE_DISPATCH_REFUSALS (includes browser_ref_stale)",
+   "decision": "run.py:109-111 may_redispatch_after = code in allowlist AND retryable is not False",
+   "parse": "run.py:151-164: status refused / refusal / effect refused -> DriverToolError(refused=True, retryable from refusal.detail.retryable); delivery not read",
+   "branch": "run.py:609-634: refusal_retried or not may_redispatch -> outcome unknown (phase refused) WITHOUT reading the oracle; else one fresh observation + decision",
+   "accepted_completion_reconcile": "run.py:669-684 bounded re-read (20 x 100 ms) of the target-owned oracle"
+  },
+  "typescript": {
+   "allowlist": "typescript/run.ts:114-129", "decision": "run.ts:132-138", "parse": "run.ts:185-200", "branch": "run.ts:626-650", "accepted_completion_reconcile": "run.ts:681-694"
+  },
+  "finding": "A post-assignment browser_ref_stale {delivery unknown, retryable false} is NOT re-dispatched on the base tree (retryable false wins). Two gaps: the possibly-landed completion is not reconciled (unknown without reading state), and a declared delivery unknown without retryable WAS re-dispatched (code in allowlist). No Driver producer emits the second shape today.",
+  "fix_F6b": "declarations first (retryable false or delivery not in {absent, not_delivered} -> never re-dispatch); possibly-landed completion refusals reconciled by the same bounded oracle re-read"
+ },
+ "C_native_fallbacks": {
+  "functions": [
+   {"where": "libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs:327-337", "fn": "focus_element(pid, xid, idx)", "fallback": "native::focus_element(pid, idx) at mod.rs:336 when the cached object is missing or its GrabFocus errors"},
+   {"where": "libs/cua-driver/rust/crates/platform-linux/src/atspi/mod.rs:473-483", "fn": "type_into_editable_at(pid, xid, idx, text)", "fallback": "native::type_into_editable_at(pid, idx, text) at mod.rs:482 when the cached object is missing or its write errors"},
+   {"where": "libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:2837-2849 and 2856-2865", "fn": "native::type_into_editable_at", "walk": "collect_visited(conn, pid) = every top-level of the application; target = nth indexable node"},
+   {"where": "libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:4861-4873", "fn": "native::focus_element", "walk": "same"}
+  ],
+  "index_space": "native.rs:2063-2068, 2095-2101 (render) documents application-wide indices, but the observed tokens of the same-process fixture give both windows' Note the same index (6) and checkbox the same index (2) (shakedown handles), so after w1 closes the pid-wide nth node is w2's control at that index",
+  "callers_after_F5": {
+   "type_into_editable_at": ["tools/impl_.rs:7357 (Hyprland foreground, native editables)", "tools/impl_.rs:7444 (Wayland inject mode)", "tools/impl_.rs:7562 (X11 / default element-addressed type_text: REACHABLE in the private X11 session)"],
+   "focus_element": ["tools/impl_.rs:3094 via grab_focus_for_background 3131-3149 (only when a focus-free real keyboard is available)", "tools/impl_.rs:3115 (background_key_route synthetic rung)", "tools/impl_.rs:4571 (Hyprland foreground)", "tools/impl_.rs:7127 (nested inject)", "tools/impl_.rs:7532, 7601 (Wayland)", "tools/impl_.rs:7698 (X11 foreground type_text inside with_x11_foreground)", "tools/impl_.rs:8339 (Wayland press_key)", "tools/impl_.rs:8391 (X11 foreground press_key inside with_x11_foreground_opts)", "tools/impl_.rs:8780 (hotkey)"]
+  },
+  "token_validity": "the runtime snapshot store and the (pid, xid) side index are published together (impl_.rs:1474-1487; snapshot_store.rs:174-210 retires the window's previous snapshot for every session), so a missing or evicted window snapshot makes the token stale before these readers run; the reachable forcing condition is a token whose cached object is gone while the token is still valid: its window closed (or widget rebuilt). Element tokens resolve at impl_.rs:7227 (type_text) with no window-liveness check.",
+  "cross_session": "yes: A's own valid token for its closed window w1 addresses B's window w2 in the same process through the type_text fallback (CT). The X11 focus routes are refused before the GrabFocus rung when the token's window is closed: background -> background_unavailable (no focus-free keyboard backend in the session), foreground -> foreground_unavailable (the closed window cannot be activated) (CF).",
+  "second_hole_after_the_fallback": "tools/impl_.rs:7565-7585: when the element-addressed write fails on X11, type_text falls through to focused_is_editable(pid) (7767-7772), the blind type_into_editable(pid) (7834) and insert_text(pid) (7902), which write into any editable of the process",
+  "fix_F6c": "re-resolution limited to the token's cached element's top-level frame (identity frame_bus_name/frame_path); window-scoped token without its snapshot entry -> CachedElementGone; type_text refuses CachedElementGone as stale_element_token before the blind searches",
+  "residue_not_changed": ["native::perform_action(pid, idx) (native.rs:3468)", "native::scroll_element(pid, idx, ..) (native.rs:4677; mod.rs:348)", "native::set_value(pid, idx, ..) as set_value / set_value_in fallback (native.rs:5276; mod.rs:489, 507)", "the Hyprland (7357) and Wayland-inject (7444) type_text paths fall through to window-targeted key paths after a failed addressed write"]
+ }
+}
