@@ -112,7 +112,9 @@ def main() -> int:
     ledger = jl(D / "cal2-results.jsonl")
     amend_ledger = jl(D / "cal2-amend-results.jsonl")
     amend_only = amend_ledger[len(ledger):]
-    for r in ledger + amend_only:
+    amend2_ledger = jl(D / "cal2-amend2-results.jsonl") if (D / "cal2-amend2-results.jsonl").exists() else []
+    amend2_only = amend2_ledger[len(amend_ledger):]
+    for r in ledger + amend_only + amend2_only:
         for e in evals:
             if e["eval_id"] == r["eval_id"]:
                 e["ledger"] = {k: r.get(k) for k in ("verdict", "failed_gate", "delta", "ci95", "p_value", "power",
@@ -272,6 +274,40 @@ def main() -> int:
                                                                        for x in by.get("delete50", [])],
                                       "R10_confirm_sigma_ln": [x.get("confirm_task_sigma_ln") for x in loaded]}})
 
+    # Owner-ruled rerun R10c (CALIB2-AMEND-R10C.json): R10 with the burner dose fixed (1.5 per logical CPU from
+    # getconf). Same pass_if as R10b, on the first two repeats that have confirm task rows. If it passes, the owner
+    # ruling resolves R10 and closes calibration 2; the original pre-registered overall verdict is kept beside it.
+    owner = None
+    if (D / "CALIB2-AMEND-R10C.json").exists():
+        l30c = sorted(by.get("delete50-load30c", []), key=lambda x: x["eval_id"])
+        per = []
+        for x in l30c:
+            if x.get("confirm_task_cpu_some_share_median") is None and x.get("g7_on_confirm_rows") is None:
+                continue  # not assessable (stopped before its confirm task rows); replaced by the next repeat
+            g7r = x.get("g7_on_confirm_rows")
+            share = x.get("confirm_task_cpu_some_share_median")
+            la = x.get("confirm_task_loadavg1_median")
+            per.append({"eval_id": x["eval_id"], "verdict": x["verdict"], "failed_gate": x.get("failed_gate"),
+                        "stage": x["stage"], "screen": (x.get("screen") or {}).get("verdict"),
+                        "g7_pass": bool(g7r and g7r["pass"]), "g7_reasons": (g7r or {}).get("reasons"),
+                        "g7_metrics": {k: (g7r or {}).get("metrics", {}).get(k) for k in ("share", "delta_on", "delta_off",
+                                                                                           "trace_off_band", "pairs_on", "pairs_off")},
+                        "cpu_some_share_median": share, "loadavg1_median": la,
+                        "screen_sigma_ln": sigma_of(x, "screen"), "confirm_sigma_ln": sigma_of(x, "confirm"),
+                        "champion_median_ms": x.get("confirm_champion_median_ms"),
+                        "confirm_failures": x.get("confirm_failures"),
+                        "manipulation_ok": base_med is not None and share is not None and share > base_med
+                        and la is not None and la >= 14})
+        per = per[:2]
+        r10c_pass = len(per) == 2 and all(q["screen"] == "RANKS" and q["g7_pass"] and q["manipulation_ok"] for q in per)
+        amend_rows.append({"row": "R10c", "candidate": "delete50 under CPU contention (owner-ruled rerun of R10, dose fixed)",
+                           "expect": "trace-off agreement passes under CPU contention",
+                           "pass": r10c_pass, "inconclusive": len(per) < 2,
+                           "detail": {"repeats": per, "all_repeats": [x["eval_id"] for x in l30c],
+                                      "unloaded_R3_cpu_some_share_median": base_med}})
+        owner = {"ruling": "CALIB2-AMEND-R10C.json owner_ruling", "r10c_pass": r10c_pass,
+                 "resolves_row": "R10"}
+
     # Diagnostics (not gate results): the G1 flake behind the sleep20/noop05 G1 REJECTs
     diag = {}
     gd = D / "diag" / "g1flake"
@@ -346,12 +382,16 @@ def main() -> int:
     tput["quiet_lane_held_min"] = round(sum(ts(r["released"]) - ts(r["acquired"]) for r in receipts) / 60, 1)
     out = {"schema": "ar.calibration2_summary.v1", "tau": tau, "metric": prereg["evaluator"]["decision_metric"],
            "rows": rows_out, "overall_pass": all(r["pass"] for r in rows_out) and len(rows_out) == 12,
+           "owner_ruling": owner,
+           "overall_pass_owner_ruling": (None if owner is None else
+                                         len(rows_out) == 12 and owner["r10c_pass"]
+                                         and all(r["pass"] for r in rows_out if r["row"] != "R10")),
            "evaluations": evals, "lord": lord_info, "cost": cost, "throughput": tput, "feedback": fb,
            "quiet_lane_receipts": len(receipts), "amendment_rows": amend_rows, "diagnostics": diag,
            "amendment_lord": [{"eval_id": r["eval_id"], **(r.get("lord") or {})} for r in amend_only if r.get("lord")]}
     Path(a.out).write_text(json.dumps(out, indent=1, sort_keys=True, default=str) + "\n")
     print(json.dumps([{k: r[k] for k in ("row", "candidate", "pass")} for r in rows_out]))
-    print("overall_pass", out["overall_pass"])
+    print("overall_pass", out["overall_pass"], "overall_pass_owner_ruling", out["overall_pass_owner_ruling"])
     return 0
 
 

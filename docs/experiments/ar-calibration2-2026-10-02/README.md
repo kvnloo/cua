@@ -9,8 +9,10 @@ fix-round A/A (`docs/experiments/ar-fix-2026-10-02/raw/aa/tau.json`).
 - No proposer and no provider of any kind took part. The caller is the frozen scripted caller.
 - The evaluator code was **not** changed for or during the calibration.
 
-**Overall: FAIL.** 11 of the 12 pre-registered rows pass. Only R10 fails, and only on its pre-registered
-*manipulation check*.
+**Pre-registered verdict: FAIL (R10 manipulation check). Owner-ruled verdict: PASS — R10 re-run as R10c with
+the dose fixed, PASS.**
+
+11 of the 12 pre-registered rows pass. Only R10 fails, and only on its pre-registered *manipulation check*.
 
 - In R10, the planted load did not create measurable CPU contention. The median per-trial CPU PSI stall share
   of the loaded repeats (0.0017, 0.0011) was below that of the unloaded R3 repeats (0.0035).
@@ -21,7 +23,13 @@ fix-round A/A (`docs/experiments/ar-fix-2026-10-02/raw/aa/tau.json`).
 - Following the pre-registration's own rule, the row stays FAIL.
 - A separately pre-registered amendment row, **R10b**, repeats it with 30 burners: **PASS**. Under real CPU contention (stall share 0.71–0.81, loadavg 21–24,
   T_act sigma_ln 0.056–0.066), G7's trace-off agreement holds on both repeats. See below.
-  R10b is reported next to R10 and does not change the overall verdict.
+  R10b is reported next to R10 and does not change the pre-registered verdict.
+- The owner then ruled that R10 be re-run once with the setup error fixed, and that calibration 2 is checked
+  off if that rerun passes. The rerun, **R10c**, was pre-registered with that rule before any R10c trial and
+  **passes**: both repeats rank and end KEEP, G7 passes (share 1.032 / 1.136), and the stall share is
+  0.65 / 0.67 against 0.0035 unloaded. R10 is resolved PASS by the owner ruling. The pre-registered verdict
+  stays recorded beside it (`raw/summary.json`: `overall_pass` false, `overall_pass_owner_ruling` true). See
+  below.
 
 The three evaluator fixes behave as intended on fresh data:
 
@@ -86,10 +94,65 @@ r02's verdict is **INFRA**, not a gate result:
   "whether or not an earlier gate stopped the pipeline", and r02's confirm task rows are complete.
 - The INFRA stop is reported as finding F8 below.
 
+## Owner-ruled rerun R10c (pre-registered in `raw/CALIB2-AMEND-R10C.json`, sha256 `39222e32…`, hashed 2026-10-03T06:30:48Z, committed `3a1d10646` after R10b and before any R10c trial)
+
+The owner's ruling, verbatim (recorded in the pre-registration):
+
+> ok can we run just that one test w/ the setup error fixed? then it can be fully checked off
+
+As pre-registered, this means: R10 is re-run once as R10c with the setup error fixed. If R10c passes, R10 is
+resolved PASS by this ruling and calibration 2 is checked off (`overall_pass_owner_ruling` true). The original
+pre-registered verdict (`overall_pass` false) stays recorded, unchanged, beside it. If R10c fails or is
+inconclusive, calibration 2 stays FAIL.
+
+**Dose.** The setup error was the burner count. R10 took "one per core" from `nproc`, which reports 10 in the
+lane shell because `OMP_NUM_THREADS=10`. R10c takes the logical CPU count from `getconf _NPROCESSORS_ONLN`,
+which `OMP_NUM_THREADS` does not cap (20 on this host), and runs 1.5 burners per logical CPU: 30 burners.
+`tools/run_r10c.sh` aborts if the logical CPU count is not 20. Its first log line records `logical_cpus` 20,
+`nproc` 10 and `burners` 30 (`raw/run_r10c.log`).
+
+Everything else is as in R10 and R10b:
+
+- the same branch and build (`ar/calib2/delete50`, `edddf26fa`), the same full pipeline and the same G7 rule;
+- burners only inside each screen and confirm task/spot_gtk3_text block; browser spot and soak sessions
+  unloaded;
+- R10b's pass_if, on each of the first two assessable repeats: the screen ranks, `gates.g7` passes on the
+  confirm rows, the median CPU-some PSI stall share of the confirm task trials exceeds the unloaded R3
+  median (0.00352), and their median loadavg1 is ≥ 14;
+- a repeat that stopped before its confirm task rows existed would have been replaced by the next repeat
+  number, at most twice. None was needed.
+
+R10c used seeds with i = 22. Its ledger `raw/cal2-amend2-results.jsonl` is a byte copy of the amendment
+ledger (13 lines) extended by the two R10c evaluations, so LORD++ continues from every earlier p-value. It
+ran 06:31Z–06:55Z on 2026-10-03, in 22 blocks, all rc 0.
+
+| Repeat | Screen (T_act) | Confirm T_act Delta | G7 share | trace-on / trace-off Delta (band) | CPU stall share / loadavg | Champion median T / T_act | Verdict |
+|---|---|---|---|---|---|---|---|
+| r01 | RANKS, −14.5%, sigma_ln 0.069 | −15.9% (CI −17.6% to −14.2%), p 5.0e-5 ≤ alpha 5.8e-3 | 1.032 | −16.1% / −15.0% (−20.1% to −12.1%) | 0.65 / 31.8 | 1092 / 335 ms | **KEEP** (all gates; soak 300/300; spots non-inferior) |
+| r02 | RANKS, −14.0%, sigma_ln 0.078 | −14.7% (CI −16.3% to −13.2%), p 5.0e-5 ≤ alpha 6.0e-3 | 1.136 | −14.5% / −15.2% (−18.2% to −10.8%) | 0.67 / 32.2 | 1083 / 337 ms | **KEEP** (all gates; soak 300/300; spots non-inferior) |
+
+**R10c: PASS.** Both screens rank, G7 passes on both repeats' confirm rows, and both manipulation checks hold:
+stall share 0.652 / 0.667 against 0.00352 unloaded, and loadavg 31.8 / 32.2 against a floor of 14. **R10 is
+therefore resolved PASS by the owner ruling, and calibration 2 is checked off.**
+
+- Paired confirm T_act sigma_ln is 0.054 / 0.050, close to R10b's 0.056–0.066.
+- With R10c, G7 passes on all 16 delete50 confirm runs (R3, R10, R10b, R10c; share 0.98–1.14), and all 15
+  fully soaked delete50 evaluations pass G2 with 300/300 soak trials.
+
+How R10c differs from R10b, which used the same dose and the same pass_if:
+
+- **Fresh seeds** (i = 22; R10b used i = 21). R10c is an independent replication, not a re-analysis of
+  R10b's data.
+- **Pre-registered with the owner's resolution rule before any trial.** R10b was registered as an extra row
+  that could not change the verdict. R10c's pre-registration fixed, before any R10c data existed, that a pass
+  resolves R10 and a fail or inconclusive result leaves calibration 2 FAIL.
+
 ## How it ran
 
 - **Prereg first.** `raw/CALIB2-PREREG.json` was hashed and committed (`ca7b2882d`) before the first G0.
   `verify_artifacts.py` checks that the hash time precedes every evaluation start and every quiet-lane block.
+  The R10b amendment and the R10c rerun were each hashed and committed (`afeb75ffa`, `3a1d10646`) after every
+  earlier evaluation had finished and before their own first one; the verifier checks both.
 - **Order.** Evaluations ran in the pre-registered order (`raw/run_all.log`) from 17:36Z to 22:46Z, then R8
   at 02:31–02:33Z on 2026-10-03.
   - An earlier attempt of this same task ran every evaluation, then stopped before R8, the analysis and the packet.
@@ -112,6 +175,7 @@ r02's verdict is **INFRA**, not a gate result:
     stage reached, the verdict, the failed gate and the costs (G0, build, test compile, test run, timed held,
     lock wait, wall).
   - `raw/cal2-amend-results.jsonl` is a byte-prefix copy of the calibration-2 ledger extended by R10b.
+  - `raw/cal2-amend2-results.jsonl` is a byte-prefix copy of that amendment ledger extended by R10c.
 - **Isolation.**
   - Every code-executing step ran under `hostless`.
   - Every GUI step ran inside a private `cua-x11-session.sh` (under `session-pidns.sh` for GTK sessions).
@@ -133,14 +197,14 @@ r02's verdict is **INFRA**, not a gate result:
      ln-ratio Delta of about −0.105.
    - Paired T_act sigma_ln is 0.003–0.008 (0.026 for r01, which overlapped another track's builds).
    - G7 puts 99–103% of the saving in the pre-registered phase `do_action_replied → post_sleep_done`.
-3. **G7 holds under moderate load (R10) and under real CPU contention (R10b).**
+3. **G7 holds under moderate load (R10) and under real CPU contention (R10b, R10c).**
    - With 10 burners, whole-task T rose from 507 to 553 ms and T_act sigma_ln doubled (0.010–0.012).
    - Trace-on and trace-off Deltas agreed within 0.4 points.
 4. **The R10 manipulation check measured the wrong dose.**
    - Root `/proc/pressure/cpu` "some" counts time a runnable task waits for a CPU.
    - With 10 burners on 20 logical CPUs, nothing waits. The measured slowdown came from shared cores and caches,
      which that statistic does not see.
-   - R10b fixes the dose, not the statistic.
+   - R10b and R10c fix the dose, not the statistic.
 5. **R7 noise floor.** The nine no-op screens give T_act Deltas between −0.61% and +0.21%, and every CI95
    includes 0. tau = 2% has headroom on a quiet host.
 6. **R9.**
@@ -163,7 +227,7 @@ r02's verdict is **INFRA**, not a gate result:
      REVERT (+0.27%), the expected answers (`raw/diag/g1flake/`).
 
 8. **F8 (runner robustness, INFRA stop).**
-   - One session in 166 calibration blocks failed at start-up: the GTK fixture did not publish its state file
+   - One session in 188 calibration blocks (166 before R10c) failed at start-up: the GTK fixture did not publish its state file
      while the host was loaded by other tracks. That was R10b r02's soak session s005.
    - `calib_eval.sh` (the calibration driver, not the evaluator) stops the evaluation on the first failed block,
      so a full pipeline evaluation is lost after ~1.5 h of lock waits.
@@ -176,7 +240,7 @@ r02's verdict is **INFRA**, not a gate result:
 |---|---|---|---|---|
 | G0 reject (R5a–c, R6) | 4 | 0.01 (G0 ≈ 0.2–0.4 s) | 0.01 | n/a |
 | Screen only (R1, R2, R4, R7, R9) | 14 | 8.0 (G1 build+tests ≈ 6.9 min mean, screen block ≈ 1 min held) | 9.1 | 7.5 / 6.6 per hour |
-| Full pipeline (R3, R10, R10b) | 14 | 16.6 (G1 6.6 + screen + confirm + spot + soak ≈ 10 blocks) | 37.8 | 3.6 / 1.6 per hour |
+| Full pipeline (R3, R10, R10b, R10c) | 16 | 16.8 (G1 6.6 + screen + confirm + spot + soak ≈ 10 blocks) | 35.4 | 3.6 / 1.7 per hour |
 
 - **G1 dominates the screen-only cost.** Build and tests run 2.8–12.6 min per branch, against a shared
   cargo-build lock.
@@ -184,8 +248,9 @@ r02's verdict is **INFRA**, not a gate result:
   - The ten R3 repeats waited 133 min in total for 99 min held.
   - The R10b repeats waited 161 min for 21 min held. Other lanes kept the shared lock busy, so this exclusive
     lane waited behind a stream of shared holders.
-- **Totals.** 166 quiet-lane receipts with 155 min held. Calibration-2 evaluations ran 17:36Z–22:46Z (R1–R10),
-  R8 ran at 02:31Z, and R10b ran 02:50Z–05:51Z.
+  - The R10c repeats waited under 1 min for 23 min held.
+- **Totals.** 188 quiet-lane receipts with 178 min held. Calibration-2 evaluations ran 17:36Z–22:46Z (R1–R10),
+  R8 ran at 02:31Z, R10b ran 02:50Z–05:51Z, and R10c ran 06:31Z–06:55Z.
 - Per candidate and per evaluation: `raw/summary.json` (`cost`, `throughput`) and `raw/calibration-ledger.jsonl`.
 
 ## Near misses (none had an effect)
@@ -193,7 +258,7 @@ r02's verdict is **INFRA**, not a gate result:
 - Two trivial Python invocations ran in the plain lane shell instead of under `hostless`: an `ar-eval prereg
   --help` (argparse output only) and an empty `python3` heredoc. Neither imported a GUI library or touched a
   display, bus or session. Every trial, test, analysis, packaging and verifier step ran under `hostless`.
-- Planted-load burners (R10, R10b) are plain shell busy loops. They were started and killed by `with-load.sh`
+- Planted-load burners (R10, R10b, R10c) are plain shell busy loops. They were started and killed by `with-load.sh`
   inside this lane's own exclusive `quiet-timed` blocks. They slowed other tracks' builds, which run outside
   the lock by design, only while those blocks were held. No other process was touched.
 - Earlier near misses of the first attempt (17:36Z–22:46Z) are not separately logged. Its scripts are in
@@ -203,8 +268,12 @@ r02's verdict is **INFRA**, not a gate result:
 
 - `raw/CALIB2-PREREG.json` and `.sha256` are the pre-registration (unchanged since `ca7b2882d`).
 - `raw/CALIB2-AMEND-R10B.json` and `.sha256` are the R10b amendment (unchanged since `afeb75ffa`).
-- `raw/cal2-results.jsonl` is the calibration-2 LORD++ ledger, and `raw/cal2-amend-results.jsonl` the amendment
-  ledger.
+- `raw/CALIB2-AMEND-R10C.json` and `.sha256` are the owner-ruled rerun R10c, with the ruling verbatim
+  (unchanged since `3a1d10646`).
+- `raw/cal2-results.jsonl` is the calibration-2 LORD++ ledger, `raw/cal2-amend-results.jsonl` the amendment
+  ledger, and `raw/cal2-amend2-results.jsonl` the R10c ledger.
+- `raw/run_all.log`, `raw/run_r10b.log` and `raw/run_r10c.log` are the runner logs (`run_r10c.log` records the
+  logical CPU count, `nproc` and the burner dose).
 - `raw/calibration-ledger.jsonl` is the per-evaluation verdict, failed gate, stage and cost.
 - `raw/summary.json` holds every row, evaluation, cost, throughput, LORD++ trajectory and diagnostic.
 - `raw/evals/<eval_id>/` holds, per evaluation:
@@ -221,8 +290,8 @@ r02's verdict is **INFRA**, not a gate result:
   The branches are local only.
 - `tools/` holds the calibration scripts as run, with host paths replaced.
 - `verify_artifacts.py` re-checks the packet. It recomputes every screen verdict, every ledger line with LORD++,
-  every row and the overall verdict, and R10b and the diagnostic screens from the raw rows with the evaluator's
-  own pure functions. It also runs the manifest and host-path/credential scans.
+  every row and the pre-registered overall verdict, R10b, R10c, the owner-ruled overall verdict and the
+  diagnostic screens from the raw rows with the evaluator's own pure functions. It also runs the manifest and host-path/credential scans.
 - `MANIFEST.sha256` covers every packet file.
 
 Reproduce: `hostless python3 docs/experiments/ar-calibration2-2026-10-02/verify_artifacts.py` (exit 0 = every

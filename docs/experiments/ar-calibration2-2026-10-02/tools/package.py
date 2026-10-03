@@ -45,7 +45,8 @@ def main() -> None:
     D, P = Path(a.run_dir), Path(a.packet)
     raw = P / "raw"
     keep = {"CALIB2-PREREG.json", "CALIB2-PREREG.sha256",  # committed before any trial; never rewritten
-            "CALIB2-AMEND-R10B.json", "CALIB2-AMEND-R10B.sha256"}  # committed before any R10b trial
+            "CALIB2-AMEND-R10B.json", "CALIB2-AMEND-R10B.sha256",  # committed before any R10b trial
+            "CALIB2-AMEND-R10C.json", "CALIB2-AMEND-R10C.sha256"}  # committed before any R10c trial (owner ruling)
     if raw.exists():
         for child in raw.iterdir():
             if child.name in keep:
@@ -55,7 +56,7 @@ def main() -> None:
         if (raw / name).read_bytes() != (D / name).read_bytes():
             raise SystemExit(f"{name} in the run dir differs from the committed pre-registration")
     for name in ("cal2-results.jsonl", "cal2-amend-results.jsonl", "summary.json", "calibration-ledger.jsonl",
-                 "submit.log", "run_all.log", "run_r10b.log"):
+                 "submit.log", "run_all.log", "run_r10b.log", "cal2-amend2-results.jsonl", "run_r10c.log"):
         put(D / name, raw / name)
     # diagnostics (not gate results): G1 flake reruns + diagnostic screens, the failed first R8 launch
     dg = D / "diag"

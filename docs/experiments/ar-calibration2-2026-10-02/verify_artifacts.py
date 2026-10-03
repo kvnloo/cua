@@ -9,15 +9,18 @@ stdlib-only), so every verdict is recomputed by the code that produced it.
 Checks:
   1. MANIFEST.sha256 covers every packet file and matches.
   2. The pre-registration hash matches, and it was hashed before the first evaluation started and before
-     the first calibration-2 quiet-lane block was acquired.
+     the first calibration-2 quiet-lane block was acquired. The R10b amendment and the owner-ruled R10c
+     rerun hashes match, each hashed after every earlier evaluation finished and before its own first one.
   3. Every evaluation block has a quiet-lane receipt with rc 0, and every planned trial of a run session
      has a raw row (or a recorded not_run event).
   4. Every screen verdict recomputes from the screen rows, the G0 verdict and the G1 rows (decision metric).
   5. Every ledger line recomputes (areval.gates.evaluate, ledger order, LORD++ from earlier p-values),
-     matches final.json; the hash chain and the LORD++ replay verify.
+     matches final.json; the hash chain and the LORD++ replay verify. The same for the R10b amendment
+     ledger and the R10c ledger, each a byte prefix copy of the one before it.
   6. The calibration ledger matches final.json for every evaluation.
   7. The row PASS/FAIL table (R1-R10) and the overall verdict recompute, including R8, the R9 planted-socket
-     reason and the R10 G7 + manipulation check.
+     reason and the R10 G7 + manipulation check. R10b and the owner-ruled rerun R10c recompute, and so
+     does the owner-ruled overall verdict (R1-R9 and R10c), with the pre-registered overall verdict kept.
   8. No packet file contains an absolute host path, this machine's host name, or a credential pattern.
 """
 
@@ -101,11 +104,23 @@ def main() -> int:
     am_hashed = am_line[-1].split("=", 1)[1]
     am_starts = [s["utc"] for e in (RAW / "evals").iterdir() if "-delete50-load30-" in e.name
                  for s in jl(e / "stages.jsonl") if s["stage"] == "start"]
-    other_done = [s["utc"] for e in (RAW / "evals").iterdir() if "-delete50-load30-" not in e.name
+    other_done = [s["utc"] for e in (RAW / "evals").iterdir()
+                  if "-delete50-load30-" not in e.name and "-delete50-load30c-" not in e.name
                   for s in jl(e / "stages.jsonl") if s["stage"] == "done"]
     check(am_line[0] == sha(RAW / "CALIB2-AMEND-R10B.json") and bool(am_starts) and am_hashed < min(am_starts)
           and am_hashed > max(other_done),
           f"R10b amendment hash matches; hashed ({am_hashed}) after every R1-R10 evaluation and before the first R10b one")
+    c_line = (RAW / "CALIB2-AMEND-R10C.sha256").read_text().split()
+    c_hashed = c_line[-1].split("=", 1)[1]
+    c_starts = [s["utc"] for e in (RAW / "evals").iterdir() if "-delete50-load30c-" in e.name
+                for s in jl(e / "stages.jsonl") if s["stage"] == "start"]
+    c_blocks = [r["acquired"] for r in receipts_l if "-delete50-load30c-" in r["label"]]
+    c_other_done = [s["utc"] for e in (RAW / "evals").iterdir() if "-delete50-load30c-" not in e.name
+                    for s in jl(e / "stages.jsonl") if s["stage"] == "done"]
+    check(c_line[0] == sha(RAW / "CALIB2-AMEND-R10C.json") and bool(c_starts) and bool(c_blocks)
+          and c_hashed < min(c_starts) and c_hashed < min(c_blocks) and c_hashed > max(c_other_done),
+          f"R10c owner-ruled rerun hash matches; hashed ({c_hashed}) after every R1-R10/R10b evaluation and before "
+          f"the first R10c one ({min(c_starts) if c_starts else None}) and block")
     prereg_cal = json.loads((RAW / "CALIB2-PREREG.json").read_text())
     tau = prereg_cal["evaluator"]["tau"]
     allow = json.loads((HARNESS / "allowlist.json").read_text())
@@ -212,6 +227,33 @@ def main() -> int:
                                          for a, b in zip(alog, arep)),
           f"LORD++ replay matches the {len(alog)} tests of the amendment ledger")
 
+    # 5c R10c ledger: a byte prefix copy of the amendment ledger, extended by the R10c evaluations
+    c_path = RAW / "cal2-amend2-results.jsonl"
+    check(c_path.read_bytes().startswith(am_path.read_bytes()),
+          "R10c ledger starts with the amendment ledger byte for byte")
+    c_extra = jl(c_path)[len(jl(am_path)):]
+    check(sorted(r["eval_id"] for r in c_extra) == sorted(k for k, f in finals.items() if "-delete50-load30c-" in k
+                                                           and f["stage"] == "confirm" and f["verdict"] != "INFRA"),
+          f"R10c ledger extends it by exactly the {len(c_extra)} R10c confirm-stage evaluations")
+    for rec in c_extra:
+        e = RAW / "evals" / rec["eval_id"]
+        pre = json.loads((e / "prereg.json").read_text())
+        rows = rows_of(e / "confirm" / "raw")
+        confirm_rows[rec["eval_id"]] = rows
+        ev = gates.evaluate(pre, rows, jl(e / "g1.rows.jsonl"), json.loads((e / "g0.inputs.json").read_text()),
+                            allow, manifest, rules, prior)
+        if ev["lord"]:
+            prior.append(ev["lord"]["p_value"])
+        same = (ev["verdict"], ev["failed_gate"]) == (rec["verdict"], rec["failed_gate"]) == (
+            finals[rec["eval_id"]]["verdict"], finals[rec["eval_id"]]["failed_gate"])
+        check(same, f"{rec['eval_id']}: R10c ledger verdict {rec['verdict']}/{rec['failed_gate']} recomputes")
+    check(not results.verify_chain(c_path), "R10c ledger hash chain verifies")
+    clog = [r["lord"] for r in jl(c_path) if r.get("lord")]
+    crep = lord.replay([x["p_value"] for x in clog])
+    check(len(clog) == len(crep) and all(abs(a["alpha_i"] - b["alpha_i"]) < 1e-12 and a["rejected"] == b["rejected"]
+                                         for a, b in zip(clog, crep)),
+          f"LORD++ replay matches the {len(clog)} tests of the R10c ledger")
+
     # 6 calibration ledger
     cal = {r["eval_id"]: r for r in jl(RAW / "calibration-ledger.jsonl")}
     check(set(cal) == set(finals) and all((cal[k]["verdict"], cal[k]["failed_gate"]) == (f["verdict"], f["failed_gate"])
@@ -302,7 +344,33 @@ def main() -> int:
     check("R10b" in am_rows and am_rows["R10b"]["pass"] == ok10b,
           f"amendment R10b: {'PASS' if ok10b else 'FAIL'} recomputes (not part of the overall verdict)")
 
-    # 7c diagnostic screens (G1 flake; not gate results) recompute
+    # 7c owner-ruled rerun R10c (CALIB2-AMEND-R10C.json): R10b's pass_if on the first two assessable repeats
+    # (a repeat is assessable if its confirm task rows exist)
+    l30c = sorted(by.get("delete50-load30c", []), key=lambda x: x["eval_id"])
+    assess = [f for f in l30c if gates.trials(rows_of(RAW / "evals" / f["eval_id"] / "confirm" / "raw"), kind="task")][:2]
+    ok10c = len(assess) == 2
+    for f in assess:
+        e = RAW / "evals" / f["eval_id"]
+        scr = json.loads((e / "screen.json").read_text())["verdict"] if (e / "screen.json").exists() else None
+        pre = json.loads((e / "prereg.json").read_text())
+        crow = rows_of(e / "confirm" / "raw")
+        g7r = gates.g7(crow, pre)
+        sm = share_med(f)
+        las = [r["loadavg_end"][0] for r in gates.trials(crow, kind="task") if r.get("loadavg_end")]
+        ok10c = ok10c and scr == "RANKS" and g7r["pass"] and base_med is not None and sm is not None \
+            and sm > base_med and bool(las) and median(las) >= 14
+    check("R10c" in am_rows and am_rows["R10c"]["pass"] == ok10c and am_rows["R10c"].get("inconclusive") == (len(assess) < 2),
+          f"owner-ruled rerun R10c: {'PASS' if ok10c else 'FAIL'} recomputes on {[f['eval_id'][-3:] for f in assess]}")
+
+    # 7d owner-ruled verdict: R10 resolved by R10c; the pre-registered overall verdict stays as recorded
+    owner_ok = len(summ["rows"]) == 12 and ok10c and all(x for k, x in expect.items() if k != "R10")
+    ruling = json.loads((RAW / "CALIB2-AMEND-R10C.json").read_text())["owner_ruling"]
+    check(summ.get("overall_pass_owner_ruling") == owner_ok and (summ.get("owner_ruling") or {}).get("r10c_pass") == ok10c
+          and summ["overall_pass"] is False and summ["overall_pass"] == all(expect.values()) and bool(ruling.get("verbatim")),
+          f"owner-ruled overall {'PASS' if owner_ok else 'FAIL'} recomputes (R1-R9 and R10c); "
+          f"pre-registered overall stays {'PASS' if summ['overall_pass'] else 'FAIL'}")
+
+    # 7e diagnostic screens (G1 flake; not gate results) recompute
     gd = RAW / "diag" / "g1flake"
     for n in ("sleep20", "noop05"):
         s = json.loads((gd / n / "screen.json").read_text())
