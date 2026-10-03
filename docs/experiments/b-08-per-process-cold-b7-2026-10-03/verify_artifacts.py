@@ -220,6 +220,8 @@ def cited() -> None:
             continue
         for m in CITE.findall(p.read_text()):
             m = m.rstrip(".")
+            if m not in tracked and "." in m.rsplit("/", 1)[-1] and m.rsplit(".", 1)[0] + ".py" in tracked:
+                m = m.rsplit(".", 1)[0] + ".py"  # module.function citation (b05_spans.decompose_b05) -> module file
             if "*" in m:
                 if not any(fnmatch.fnmatchcase(t, m) for t in tracked):
                     bad.append(m)
