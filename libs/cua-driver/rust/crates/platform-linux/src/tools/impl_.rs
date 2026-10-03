@@ -1477,7 +1477,11 @@ impl Tool for GetWindowStateTool {
                                 pid as i32,
                                 xid,
                                 crate::atspi::snapshot::update_snapshot(
-                                    pid, xid, &tr.nodes, &tr.bounds,
+                                    pid,
+                                    xid,
+                                    &tr.nodes,
+                                    &tr.bounds,
+                                    tr.generation,
                                 ),
                                 session_id.as_deref(),
                                 screenshot_scale,

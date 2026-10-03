@@ -187,44 +187,144 @@ fn runtime() -> &'static tokio::runtime::Runtime {
     })
 }
 
-static SHARED_CONNECTION: tokio::sync::OnceCell<AccessibilityConnection> =
-    tokio::sync::OnceCell::const_new();
+/// The process's AT-SPI connection and its generation.
+///
+/// The daemon keeps one connection (and its registry registration) for as
+/// long as the bus it was opened on lives. When that bus goes away (the
+/// accessibility bus daemon exits or is restarted, so the connection's socket
+/// reader stops and its event stream ends) the connection is dropped,
+/// everything observed through it is forgotten, and the next AT-SPI
+/// operation opens a connection to the bus that serves the session then.
+/// Snapshots carry the generation they were observed on: unique bus names
+/// restart on a new bus, so an element observed before the loss could name
+/// another application's object afterwards, and its token must never act.
+struct Link<C> {
+    live: Option<(C, u64)>,
+    generation: u64,
+    /// Observations made on an earlier generation went through a connection
+    /// that has since been lost.
+    valid_from: u64,
+}
 
-/// Keep one AT-SPI connection and registry registration alive for the daemon
-/// lifetime. WebKitGTK only publishes its WebProcess accessibility subtree
-/// while the registry reports an interested listener.
+impl<C: Copy> Link<C> {
+    const fn new() -> Self {
+        Self {
+            live: None,
+            generation: 0,
+            valid_from: 0,
+        }
+    }
+
+    /// The live connection and its generation, if there is one.
+    fn current(&self) -> Option<(C, u64)> {
+        self.live
+    }
+
+    /// Install a newly opened connection as the next generation.
+    fn install(&mut self, conn: C) -> u64 {
+        self.generation += 1;
+        self.live = Some((conn, self.generation));
+        self.generation
+    }
+
+    /// The connection of `generation` is gone. True when it was the live one;
+    /// a late report about an older generation changes nothing.
+    fn lose(&mut self, generation: u64) -> bool {
+        if self.live.is_some_and(|(_, live)| live == generation) {
+            self.live = None;
+            self.valid_from = generation + 1;
+            return true;
+        }
+        false
+    }
+
+    /// Whether what was observed on `generation` may still be addressed: no
+    /// connection it could have come through has been lost since.
+    fn observed_valid(&self, generation: u64) -> bool {
+        generation >= self.valid_from
+    }
+}
+
+static LINK: std::sync::Mutex<Link<&'static AccessibilityConnection>> =
+    std::sync::Mutex::new(Link::new());
+/// Serialises connection attempts (startup and reconnects).
+static CONNECTING: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+fn link() -> std::sync::MutexGuard<'static, Link<&'static AccessibilityConnection>> {
+    LINK.lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
+
+/// Generation of the live AT-SPI connection; 0 while there is none.
+pub(crate) fn connection_generation() -> u64 {
+    link().current().map_or(0, |(_, generation)| generation)
+}
+
+/// Whether elements observed on connection `generation` may still be
+/// addressed (no AT-SPI connection has been lost since).
+pub(crate) fn observed_valid(generation: u64) -> bool {
+    link().observed_valid(generation)
+}
+
+/// Keep one AT-SPI connection and registry registration alive while its bus
+/// lives (see [`Link`]). WebKitGTK only publishes its WebProcess
+/// accessibility subtree while the registry reports an interested listener.
 async fn shared_connection() -> Result<&'static AccessibilityConnection> {
-    SHARED_CONNECTION
-        .get_or_try_init(|| async {
-            let conn = AccessibilityConnection::new()
-                .await
-                .map_err(|error| anyhow!("AT-SPI connect failed: {error}"))?;
-            if let Err(error) = conn.add_registry_event::<atspi::ObjectEvents>().await {
-                dlog!("AT-SPI object-event registration failed: {error}");
-            }
-            // Subscribe to focus changes so `focused_is_editable` / typing can
-            // find the focused widget in O(1) instead of walking the tree.
-            if let Err(error) = conn
-                .register_event::<atspi::events::object::StateChangedEvent>()
-                .await
-            {
-                dlog!("AT-SPI state-changed subscription failed: {error}");
-            }
-            // Grids (LibreOffice Calc) keep the focus on the table and report
-            // the current cell as its active descendant.
-            if let Err(error) = conn
-                .register_event::<atspi::events::object::ActiveDescendantChangedEvent>()
-                .await
-            {
-                dlog!("AT-SPI active-descendant subscription failed: {error}");
-            }
-            Ok(conn)
-        })
+    Ok(connection().await?.0)
+}
+
+/// The live connection and its generation, opening one when there is none.
+async fn connection() -> Result<(&'static AccessibilityConnection, u64)> {
+    let current = link().current();
+    if let Some(live) = current {
+        return Ok(live);
+    }
+    let _connecting = CONNECTING.lock().await;
+    let current = link().current();
+    if let Some(live) = current {
+        return Ok(live);
+    }
+    let conn = AccessibilityConnection::new()
         .await
-        .inspect(|conn| {
-            static TRACKER: OnceLock<()> = OnceLock::new();
-            TRACKER.get_or_init(|| spawn_focus_tracker(conn));
-        })
+        .map_err(|error| anyhow!("AT-SPI connect failed: {error}"))?;
+    if let Err(error) = conn.add_registry_event::<atspi::ObjectEvents>().await {
+        dlog!("AT-SPI object-event registration failed: {error}");
+    }
+    // Subscribe to focus changes so `focused_is_editable` / typing can
+    // find the focused widget in O(1) instead of walking the tree.
+    if let Err(error) = conn
+        .register_event::<atspi::events::object::StateChangedEvent>()
+        .await
+    {
+        dlog!("AT-SPI state-changed subscription failed: {error}");
+    }
+    // Grids (LibreOffice Calc) keep the focus on the table and report
+    // the current cell as its active descendant.
+    if let Err(error) = conn
+        .register_event::<atspi::events::object::ActiveDescendantChangedEvent>()
+        .await
+    {
+        dlog!("AT-SPI active-descendant subscription failed: {error}");
+    }
+    // Callers borrow the connection for `'static`, so it is never freed; a
+    // lost one has its socket closed and keeps only this small handle.
+    let conn: &'static AccessibilityConnection = Box::leak(Box::new(conn));
+    let generation = link().install(conn);
+    spawn_focus_tracker(conn, generation);
+    Ok((conn, generation))
+}
+
+/// The connection of `generation` is gone: drop it and forget everything
+/// observed through it. True when it was the live connection.
+fn connection_lost(generation: u64) -> bool {
+    if !link().lose(generation) {
+        return false;
+    }
+    focus_map().lock().unwrap().clear();
+    active_descendant_map().lock().unwrap().clear();
+    hit::forget_frames();
+    super::snapshot::forget_all();
+    true
 }
 
 /// Object path of the accessible that most recently reported `focused=true`,
@@ -254,9 +354,12 @@ fn note_focus_event(bus: &str, path: &str, enabled: bool) {
     }
 }
 
-/// Consume the shared connection's event stream for the daemon lifetime,
-/// remembering the last focused accessible per application bus.
-fn spawn_focus_tracker(conn: &'static AccessibilityConnection) {
+/// Consume the connection's event stream for as long as it lives,
+/// remembering the last focused accessible per application bus. The stream
+/// ends only when the connection's socket reader stops (the bus closed the
+/// connection: daemon exit or restart, EOF, broken pipe, reset): the
+/// connection is then lost and the next operation reconnects.
+fn spawn_focus_tracker(conn: &'static AccessibilityConnection, generation: u64) {
     runtime().spawn(async move {
         use futures_util::StreamExt;
         let stream = conn.event_stream();
@@ -284,7 +387,10 @@ fn spawn_focus_tracker(conn: &'static AccessibilityConnection) {
             };
             note_focus_event(bus, changed.item.path_as_str(), changed.enabled);
         }
-        dlog!("AT-SPI focus tracker stream ended");
+        dlog!("AT-SPI connection {generation} lost: its event stream ended");
+        if connection_lost(generation) {
+            let _ = conn.connection().clone().close().await;
+        }
     });
 }
 
@@ -418,6 +524,82 @@ mod listener_startup_tests {
             completed.load(Ordering::SeqCst),
             "timed-out initialization worker was not allowed to finish"
         );
+    }
+}
+
+#[cfg(test)]
+mod link_tests {
+    use super::Link;
+
+    #[test]
+    fn a_lost_connection_is_dropped_and_the_next_one_is_a_new_generation() {
+        let mut link = Link::new();
+        assert_eq!(link.current(), None, "no connection before the first open");
+        let first = link.install("bus-1");
+        assert_eq!(link.current(), Some(("bus-1", first)));
+        assert!(link.lose(first));
+        assert_eq!(
+            link.current(),
+            None,
+            "a lost connection is never handed out"
+        );
+        let second = link.install("bus-2");
+        assert!(second > first);
+        assert_eq!(link.current(), Some(("bus-2", second)));
+    }
+
+    #[test]
+    fn a_late_loss_report_does_not_drop_the_newer_connection() {
+        let mut link = Link::new();
+        let first = link.install("bus-1");
+        assert!(link.lose(first));
+        assert!(!link.lose(first), "a loss is acted on once");
+        let second = link.install("bus-2");
+        assert!(
+            !link.lose(first),
+            "the first connection's tracker ends late"
+        );
+        assert_eq!(link.current(), Some(("bus-2", second)));
+    }
+
+    #[test]
+    fn observations_from_a_lost_connection_stay_invalid() {
+        let mut link = Link::new();
+        assert!(link.observed_valid(0), "nothing lost yet");
+        let first = link.install("bus-1");
+        assert!(link.observed_valid(0) && link.observed_valid(first));
+        assert!(link.lose(first));
+        assert!(!link.observed_valid(0));
+        assert!(
+            !link.observed_valid(first),
+            "observed before the bus restart"
+        );
+        let second = link.install("bus-2");
+        assert!(link.observed_valid(second));
+        assert!(
+            !link.observed_valid(first),
+            "a reconnect does not revive it"
+        );
+        assert!(!link.lose(first));
+        assert!(
+            link.observed_valid(second),
+            "a late report keeps the new one"
+        );
+        assert!(link.lose(second));
+        assert!(!link.observed_valid(second));
+    }
+
+    #[test]
+    fn generations_are_never_reused() {
+        let mut link = Link::new();
+        let mut seen = Vec::new();
+        for bus in ["a", "b", "c", "d"] {
+            let generation = link.install(bus);
+            assert!(generation > 0, "0 means no connection");
+            assert!(!seen.contains(&generation));
+            seen.push(generation);
+            assert!(link.lose(generation));
+        }
     }
 }
 
@@ -2361,6 +2543,9 @@ pub struct WalkedTree {
     pub bounds_complete: bool,
     /// Wall time of the walk + bounds phases.
     pub elapsed: Duration,
+    /// Generation of the AT-SPI connection the nodes were observed on (0:
+    /// no node was observed).
+    pub generation: u64,
 }
 
 /// Walk the AT-SPI tree with caller-supplied node + depth caps.
@@ -2395,10 +2580,12 @@ pub(super) fn walk_tree_bounded_with_timeout(
         // partial result; this guards the few un-wrapped awaits.
         let backstop = deadline + Duration::from_millis(500);
         let walk = OP_DEADLINE.scope(deadline, async {
-            let conn = shared_connection().await?;
-            collect_visited_bounded(conn, pid, xid, max_elements, max_depth).await
+            let (conn, generation) = connection().await?;
+            let collected =
+                collect_visited_bounded(conn, pid, xid, max_elements, max_depth).await?;
+            Ok::<_, anyhow::Error>((collected, generation))
         });
-        let walked = match before_snapshot_deadline(backstop, walk).await {
+        let (walked, generation) = match before_snapshot_deadline(backstop, walk).await {
             Ok(Ok(result)) => result,
             Ok(Err(error)) if error.to_string() == "app_lookup_timeout" => {
                 dlog!("walk_tree: application lookup timed out for pid {pid}");
@@ -2414,6 +2601,7 @@ pub(super) fn walk_tree_bounded_with_timeout(
                     }),
                     bounds_complete: false,
                     elapsed: walk_started.elapsed(),
+                    generation: 0,
                 }));
             }
             Ok(Err(error)) => return Err(error),
@@ -2431,6 +2619,7 @@ pub(super) fn walk_tree_bounded_with_timeout(
                     }),
                     bounds_complete: false,
                     elapsed: walk_started.elapsed(),
+                    generation: 0,
                 }));
             }
         };
@@ -2495,6 +2684,7 @@ pub(super) fn walk_tree_bounded_with_timeout(
             truncation,
             bounds_complete,
             elapsed: walk_started.elapsed(),
+            generation,
         }))
     })
 }

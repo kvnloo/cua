@@ -93,6 +93,9 @@ pub struct AtspiTreeResult {
     pub bounds_complete: bool,
     /// Wall time the native snapshot took (walk + bounds), in milliseconds.
     pub elapsed_ms: u128,
+    /// Generation of the AT-SPI connection the nodes were observed on; 0 for
+    /// the X11 fallback, whose nodes are never addressable.
+    pub generation: u64,
 }
 
 /// Total budget for callers that did not ask for one (browser flows, the
@@ -124,6 +127,7 @@ impl AtspiTreeResult {
             nodes_pending,
             bounds_complete: walked.bounds_complete,
             elapsed_ms: walked.elapsed.as_millis(),
+            generation: walked.generation,
         }
     }
 }
@@ -595,6 +599,7 @@ fn walk_via_x11_properties(xid: u64, query: Option<&str>) -> AtspiTreeResult {
                 nodes_pending: 0,
                 bounds_complete: true,
                 elapsed_ms: 0,
+                generation: 0,
             }
         }
     };
@@ -664,6 +669,7 @@ fn walk_via_x11_properties(xid: u64, query: Option<&str>) -> AtspiTreeResult {
         nodes_pending: 0,
         bounds_complete: true,
         elapsed_ms: 0,
+        generation: 0,
     }
 }
 
@@ -783,6 +789,7 @@ mod budget_tests {
             truncation,
             bounds_complete: false,
             elapsed: std::time::Duration::from_millis(1234),
+            generation: 0,
         }
     }
 

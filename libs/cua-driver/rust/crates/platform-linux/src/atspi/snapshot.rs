@@ -53,18 +53,22 @@ pub struct CachedElement {
 
 pub struct AtspiSnapshot {
     elements: Arc<HashMap<usize, CachedElement>>,
+    /// Generation of the AT-SPI connection the elements were observed on
+    /// ([`native::connection_generation`]).
+    generation: u64,
 }
 
 impl AtspiSnapshot {
     pub fn from_nodes(nodes: &[AtspiNode]) -> Self {
-        Self::from_nodes_with_bounds(nodes, &[])
+        Self::from_nodes_with_bounds(nodes, &[], native::connection_generation())
     }
 
     /// `bounds` are the screen frames the same walk produced, keyed by
-    /// element_index.
+    /// element_index; `generation` is the connection the walk ran on.
     pub fn from_nodes_with_bounds(
         nodes: &[AtspiNode],
         bounds: &[(usize, i32, i32, u32, u32)],
+        generation: u64,
     ) -> Self {
         let mut elements: HashMap<usize, CachedElement> = nodes
             .iter()
@@ -91,6 +95,7 @@ impl AtspiSnapshot {
         }
         Self {
             elements: Arc::new(elements),
+            generation,
         }
     }
 }
@@ -103,13 +108,19 @@ impl SnapshotPayload for AtspiSnapshot {
     fn retain(&self, index: usize) -> Option<CachedElement> {
         self.elements.get(&index).cloned()
     }
+    /// Observed on the live AT-SPI connection: after a bus loss its object
+    /// addresses may name another application's objects, so its tokens are
+    /// refused as stale.
+    fn is_current(&self) -> bool {
+        native::observed_valid(self.generation)
+    }
 }
 
 pub type Snapshots = SnapshotStore<AtspiSnapshot>;
 
 // -- (pid, xid) side index ----------------------------------------------------
 
-type SideIndex = HashMap<CacheKey, Arc<HashMap<usize, CachedElement>>>;
+type SideIndex = HashMap<CacheKey, (u64, Arc<HashMap<usize, CachedElement>>)>;
 
 fn store() -> &'static Mutex<SideIndex> {
     static STORE: OnceLock<Mutex<SideIndex>> = OnceLock::new();
@@ -118,17 +129,19 @@ fn store() -> &'static Mutex<SideIndex> {
 
 /// Build the payload for (pid, xid) and record its elements in the side index.
 /// Returns the payload for the caller to publish into the runtime cache.
+/// `generation` is the AT-SPI connection the walk ran on.
 pub(crate) fn update_snapshot(
     pid: u32,
     xid: u64,
     nodes: &[AtspiNode],
     bounds: &[(usize, i32, i32, u32, u32)],
+    generation: u64,
 ) -> AtspiSnapshot {
-    let snapshot = AtspiSnapshot::from_nodes_with_bounds(nodes, bounds);
-    store()
-        .lock()
-        .unwrap()
-        .insert(CacheKey { pid, xid }, snapshot.elements.clone());
+    let snapshot = AtspiSnapshot::from_nodes_with_bounds(nodes, bounds, generation);
+    store().lock().unwrap().insert(
+        CacheKey { pid, xid },
+        (generation, snapshot.elements.clone()),
+    );
     snapshot
 }
 
@@ -138,15 +151,24 @@ pub(crate) fn forget_window(pid: u32, xid: u64) {
     store().lock().unwrap().remove(&CacheKey { pid, xid });
 }
 
+/// Forget every side-index entry (the AT-SPI connection they were observed on
+/// is gone).
+pub(crate) fn forget_all() {
+    store().lock().unwrap().clear();
+}
+
 fn snapshot_for(pid: u32, xid: Option<u64>) -> Option<Arc<HashMap<usize, CachedElement>>> {
     let store = store().lock().unwrap();
+    let current = |(generation, elements): &(u64, Arc<HashMap<usize, CachedElement>>)| {
+        native::observed_valid(*generation).then(|| elements.clone())
+    };
     match xid {
-        Some(xid) => store.get(&CacheKey { pid, xid }).cloned(),
+        Some(xid) => store.get(&CacheKey { pid, xid }).and_then(current),
         // Callers that lack an xid get the first snapshot found for the pid.
         None => store
             .iter()
-            .find(|(key, _)| key.pid == pid)
-            .map(|(_, elements)| elements.clone()),
+            .filter(|(key, _)| key.pid == pid)
+            .find_map(|(_, entry)| current(entry)),
     }
 }
 
@@ -342,6 +364,23 @@ mod tests {
     }
 
     #[test]
+    fn a_degraded_tree_mints_no_token_that_resolves() {
+        // The X11 property fallback (AT-SPI unavailable, or its bus lost) has
+        // no proven identity: its window node is discovery-only.
+        let mut window = node_with_role(0, "window");
+        window.identity = None;
+        window.object_ref = None;
+        let cache = Snapshots::new();
+        let id = cache.publish(42, 7, AtspiSnapshot::from_nodes(&[window]));
+        assert!(cache
+            .resolve(
+                42,
+                &serde_json::json!({ "element_token": token_for(id, 0) })
+            )
+            .is_err());
+    }
+
+    #[test]
     fn snapshot_hit_test_prefers_smallest_real_actuator_and_keeps_refs() {
         let pid = 424_242;
         let nodes = vec![
@@ -358,6 +397,7 @@ mod tests {
                 (1, 100, 100, 50, 20),
                 (2, 105, 102, 40, 16),
             ],
+            native::connection_generation(),
         );
         assert_eq!(snapshot.retain(1).unwrap().bounds, Some((100, 100, 50, 20)));
         let (idx, element) = hit_test(pid, 77, 110, 110).expect("hit");

@@ -19,6 +19,11 @@ pub trait SnapshotPayload: Send + Sync + 'static {
         self.len() == 0
     }
     fn retain(&self, index: usize) -> Option<Self::Element>;
+    /// False once the elements can no longer be addressed (the connection
+    /// they were observed through is gone): their tokens are refused as stale.
+    fn is_current(&self) -> bool {
+        true
+    }
 }
 
 struct Snapshot<S> {
@@ -79,9 +84,10 @@ fn screenshot_context_refusal(pid: Option<i32>, window_id: Option<u64>) -> ToolR
     }))
 }
 
-fn stale_token_refusal<S>(pid: i32, lane: &[Snapshot<S>]) -> ToolResult {
+fn stale_token_refusal<S: SnapshotPayload>(pid: i32, lane: &[Snapshot<S>]) -> ToolResult {
     let current: Vec<_> = lane
         .iter()
+        .filter(|snapshot| snapshot.payload.is_current())
         .map(|snapshot| (format_snapshot_id(snapshot.id), snapshot.window_id))
         .collect();
     let message = match current.as_slice() {
@@ -387,7 +393,10 @@ impl<S: SnapshotPayload> SnapshotStore<S> {
         })?;
         let inner = self.inner.lock().unwrap();
         let lane = inner.get(&pid).map(Vec::as_slice).unwrap_or_default();
-        let Some(snapshot) = lane.iter().find(|snapshot| snapshot.id == snapshot_id) else {
+        let Some(snapshot) = lane
+            .iter()
+            .find(|snapshot| snapshot.id == snapshot_id && snapshot.payload.is_current())
+        else {
             return Err(stale_token_refusal(pid, lane));
         };
         if args["window_id"]
@@ -631,6 +640,39 @@ mod tests {
             structured["current_snapshots"],
             serde_json::json!([{ "snapshot_id": format_snapshot_id(current), "window_id": 555 }])
         );
+    }
+
+    #[test]
+    fn a_snapshot_whose_connection_is_gone_refuses_its_tokens_as_stale() {
+        struct Lost;
+        impl SnapshotPayload for Lost {
+            type Element = usize;
+            fn len(&self) -> usize {
+                1
+            }
+            fn retain(&self, index: usize) -> Option<usize> {
+                (index == 0).then_some(0)
+            }
+            fn is_current(&self) -> bool {
+                false
+            }
+        }
+        let cache = SnapshotStore::new();
+        let lost = cache.publish(1, 555, Lost);
+        let structured = token_refusal_of(&cache, 1, &token_for(lost, 0));
+        assert_eq!(structured["refusal"]["code"], "stale_element_token");
+        assert_eq!(structured["current_snapshots"], serde_json::json!([]));
+    }
+
+    fn token_refusal_of<S: SnapshotPayload>(
+        cache: &SnapshotStore<S>,
+        pid: i32,
+        token: &str,
+    ) -> serde_json::Value {
+        match cache.resolve(pid, &serde_json::json!({ "element_token": token })) {
+            Ok(_) => panic!("token resolved"),
+            Err(refusal) => refusal.structured_content.expect("structured refusal"),
+        }
     }
 
     #[test]

@@ -49,6 +49,11 @@ fn app_cache() -> &'static FrameCache {
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+/// Forget every cached frame list (the connection they were read on is gone).
+pub(super) fn forget_frames() {
+    app_cache().lock().unwrap().clear();
+}
+
 fn raw_of(acc: &AccessibleProxy<'_>) -> RawObjectRef {
     let inner = acc.inner();
     RawObjectRef {
