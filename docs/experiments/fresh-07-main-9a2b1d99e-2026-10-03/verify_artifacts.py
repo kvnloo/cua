@@ -88,13 +88,13 @@ def main() -> int:
     with tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as td:
         td = Path(td)
         subprocess.run([sys.executable, str(HERE / "orig/own-20p/analyze.py"), "--raw", str(HERE / "p2/own-20p/raw"),
-                        "--out", str(td / "p.json"), "--metrics", str(td / "p.jsonl.gz")], check=True, capture_output=True)
+                        "--out", str(td / "p.json"), "--metrics", str(td / "own20p-recert-trial-metrics.jsonl.gz")], check=True, capture_output=True)
         p_new, p_old = json.loads((td / "p.json").read_text()), json.loads((HERE / "p2/own-20p/own20p-recert-summary.json").read_text())
         check("OWN-20P analyzer reproduces committed summary", p_new == p_old)
         check("OWN-20P summary byte-identical after the privacy rewrite",
               (td / "p.json").read_bytes() == (HERE / "p2/own-20p/own20p-recert-summary.json").read_bytes())
         check("OWN-20P metrics byte-identical after the privacy rewrite",
-              (td / "p.jsonl.gz").read_bytes() == (HERE / "p2/own-20p/own20p-recert-trial-metrics.jsonl.gz").read_bytes())
+              (td / "own20p-recert-trial-metrics.jsonl.gz").read_bytes() == (HERE / "p2/own-20p/own20p-recert-trial-metrics.jsonl.gz").read_bytes())
         r1 = p_old["r1"]
         check("OWN-20P R1: G0m'' 20/40, checkbox grab_held 20, U0m'' silent 40/40, gate False",
               r1["G0m_restored"] == 20 and r1["checkbox/G0m"]["receipt_outcomes"] == {"grab_held": 20}
