@@ -1,0 +1,84 @@
+diff (FIX-03 harness/browser/fix03_browser.py -> FIX-04 copy)
+diff --git fix-03-toctou-session-routing-2026-10-03/harness/browser/fix03_browser.py fix-04-unknown-delivery-effect-2026-10-03/harness/browser/fix04_browser.py
+index 26b4e0f5a..535ecba22 100755
+--- fix-03-toctou-session-routing-2026-10-03/harness/browser/fix03_browser.py
++++ fix-04-unknown-delivery-effect-2026-10-03/harness/browser/fix04_browser.py
+@@ -1,5 +1,13 @@
+ #!/usr/bin/env python3
+-"""FIX-03 Part A browser rows: the F4 check-to-assignment (TOCTOU) window of browser_set_input_files.
++"""FIX-04 Part D browser rows (copy of FIX-03 harness/browser/fix03_browser.py; diff in
++fix04_browser.fix03.diff): the F4 check-to-assignment (TOCTOU) window of browser_set_input_files,
++re-run on F6. Additions: every set_input_files call also records the RAW structuredContent fields
++(status, effect, refusal code, detail delivery / retryable) from the MCP result, and the jev-use
++runner's own view of that same result object (run.Driver classification + run.may_redispatch_after),
++without a second dispatch. Arms F6 / F5 / U.
++
++Original FIX-03 docstring:
++FIX-03 Part A browser rows: the F4 check-to-assignment (TOCTOU) window of browser_set_input_files.
+ 
+ MEASUREMENT HARNESS ONLY. Run ONLY inside cua-x11-session.sh (refuses otherwise), under hostless,
+ with the shared quiet-lane lock taken OUTSIDE (harness/a3/qlock.sh). Reuses, imported unchanged:
+@@ -38,7 +46,7 @@ import uuid
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-W3 = HERE.parent / "fix02-w3"
++W3 = HERE.parents[2] / "fix-03-toctou-session-routing-2026-10-03" / "harness" / "fix02-w3"
+ for _p in (W3 / "browser", W3 / "fix-01", W3 / "r2-07"):
+     sys.path.insert(0, str(_p))
+ if "--examples" in sys.argv:
+@@ -190,12 +198,34 @@ async def file_trial(args, fixture, *, upload: Path, t0: int, watch: StderrWatch
+         refs = [r for r in snap.get("refs") or [] if r.get("name") == "attachment"]
+         return refs[0] if len(refs) == 1 else None
+ 
++    class OneResult:
++        """Replays one recorded MCP result to run.Driver (the runner's classification, no dispatch)."""
++
++        def __init__(self, result) -> None:
++            self.result = result
++
++        async def call_tool(self, _name, _args):
++            return self.result
++
+     async def set_files(driver, base_args, ref, label) -> dict:
+         entry = {"label": label, "ref_snapshot": ref["ref"].split(":")[0], "role": ref.get("role"),
+                  "t_send_ms": ms()}
++        arguments = {**base_args, "ref": ref["ref"], "files": [str(upload)]}
++        raw = await driver.session.call_tool("browser_set_input_files", {**arguments, "session": driver.label})
++        rec["set_input_files_dispatches"] = rec.get("set_input_files_dispatches", 0) + 1
++        sc = raw.structuredContent if isinstance(raw.structuredContent, dict) else {}
++        refusal = sc.get("refusal") if isinstance(sc.get("refusal"), dict) else {}
++        detail = refusal.get("detail") if isinstance(refusal.get("detail"), dict) else {}
++        entry["raw"] = {"is_error": bool(raw.isError), "status": sc.get("status"), "effect": sc.get("effect"),
++                        "keys": sorted(sc), "refusal_code": refusal.get("code"),
++                        "delivery": detail.get("delivery"), "retryable": detail.get("retryable", "absent")}
++        # The replay Driver shares the real Driver's session label, whose cursor feedback the
++        # launcher already held OFF; mark it so the feedback-off wrapper does not re-send through
++        # the replay (which would answer every tool with this one result).
++        replay = runner.Driver(OneResult(raw), driver.label)
++        replay._r207_feedback_label = driver.label
+         try:
+-            data = await driver.call("browser_set_input_files", {**base_args, "ref": ref["ref"],
+-                                                                 "files": [str(upload)]})
++            data = await replay.call("browser_set_input_files", arguments)
+             entry.update({"result": "accepted", "status": data.get("status"),
+                           "receipt_keys": sorted(data), "receipt": {k: data.get(k) for k in
+                                                                     ("status", "frame", "file_count")}})
+@@ -204,6 +234,8 @@ async def file_trial(args, fixture, *, upload: Path, t0: int, watch: StderrWatch
+                           "code": getattr(error, "code", None),
+                           "retryable": getattr(error, "retryable", "absent"),
+                           "delivery_unknown": "'delivery': 'unknown'" in str(error),
++                          "runner_may_redispatch": (runner.may_redispatch_after(error)
++                                                    if getattr(error, "refused", False) else None),
+                           "error": type(error).__name__, "message_head": str(error)[:240]})
+         entry["t_return_ms"] = ms()
+         rec["steps"].append(entry)
+@@ -342,7 +374,7 @@ def main() -> int:
+     ap.add_argument("--phase", required=True, choices=("a1", "a3"))
+     ap.add_argument("--examples", type=Path, required=True)
+     ap.add_argument("--driver", type=Path, required=True)
+-    ap.add_argument("--arm", required=True, choices=("FS", "F5", "F"))
++    ap.add_argument("--arm", required=True, choices=("F6", "F5", "U"))
+     ap.add_argument("--out", type=Path, required=True)
+     ap.add_argument("--reps", type=int, default=10)
+     ap.add_argument("--start-rep", type=int, default=1)

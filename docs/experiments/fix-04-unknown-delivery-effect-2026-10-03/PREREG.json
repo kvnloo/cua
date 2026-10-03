@@ -1,0 +1,155 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "lane": "FIX-04",
+  "wave": 7,
+  "title": "E4 residue: delivery-unknown refusals map to effect unknown; runner re-dispatch and reconcile; native pid-wide fallbacks cross-session",
+  "owners": [
+    "kvnloo/cua#105",
+    "kvnloo/cua#36",
+    "kvnloo/cua#73"
+  ],
+  "committed_before_first_counted_block": true,
+  "base": {
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "what": "FIX-03 packet head (F' + F5 b235fabef + 37d17e0b3 + 2237cf9c6; rust tree 68677a11d lineage)"
+  },
+  "commits_under_test": {
+    "F6a": {
+      "sha": "937ef7cfa",
+      "what": "delivery-unknown refusals -> ActionEffect::Unverifiable (legacy_effect) + envelope effect unverifiable (BrowserRefusal::to_tool_result)"
+    },
+    "F6b": {
+      "sha": "bb1e01f7b",
+      "what": "jev-use runners: retryable false / declared delivery != not_delivered come before the code allowlist; possibly-landed completion refusals reconciled from the target-owned oracle"
+    },
+    "F6c": {
+      "sha": "802700282",
+      "what": "native type/focus index re-resolution limited to the token window's top-level frame; type_text refuses a gone element as stale_element_token instead of the blind pid-wide editable searches"
+    },
+    "F6_source": "802700282 (= base + F6a + F6b + F6c); the FIX-03 seam 5a1e209ab (env-gated, default off) is an ancestor, so the F6 binary is also the F6S seam build"
+  },
+  "binaries": {
+    "F6": {
+      "label": "cua-driver-fix04-f6-802700282",
+      "sha256": "cb89fe03f6a737ce67dd2ef3aecede3ffa3b5e8da13bfcb94f2d14330814df0c",
+      "source": "802700282",
+      "built_from": "worktree at e0fbc8129 (= 802700282 + the Part E verifier commit); libs/cua-driver tree f879e73c9 identical at both"
+    },
+    "F5": {
+      "label": "cua-driver-fix03-f5-2237cf9c6",
+      "sha256": "10d710753ba85454632005cb9a40946abaf40d0ff0571885e08f85e9d7de1dd4",
+      "source": "2237cf9c6",
+      "role": "U-control (FIX-03 F5)"
+    },
+    "U": {
+      "label": "cua-driver-fix02r3-u-513e45fee",
+      "sha256": "3d27b55b76bdfa64d8659100f995db23400c3b46c06543832aa3c8acb0b31acd",
+      "source": "513e45fee",
+      "role": "U' discrimination control (RECERT U lineage)"
+    }
+  },
+  "provider": {
+    "lane_cap_requests_reaching_typesafe": 0,
+    "planned": 0
+  },
+  "unit_gates": {
+    "A": {
+      "rule": "KEEP iff red-before (on base + test-only diff) and green-after with the full suites passing",
+      "red_tests": [
+        "action_record::tests::refusal_that_declares_delivery_unknown_is_unverifiable_not_refused",
+        "browser::refusal::tests::delivery_unknown_refusal_reports_an_unverifiable_effect",
+        "browser::v2_tests::set_input_files_detached_after_the_check_reports_an_unverifiable_effect"
+      ],
+      "red_observed_before_prereg": "3 FAILED (rc 101) on base + test-only diff, 16:11Z",
+      "green": "cua-driver-core --lib --tests 0 failed (includes every browser:: test); platform-linux --lib 0 failed"
+    },
+    "B": {
+      "rule": "KEEP (no fix) if green on the base tree; KEEP (fix F6b) if red then green; KILL if a blind re-dispatch remains",
+      "spec_row": "post-assignment browser_ref_stale {delivery unknown, retryable false} is never re-dispatched and is reconciled by reading state",
+      "red_observed_before_prereg": "Python 4 FAIL / TS 4 FAIL on base + test-only diff: the no-re-dispatch clause passed (no blind re-dispatch on base), the reconcile clause failed (unknown without reading state), and delivery unknown without retryable WAS re-dispatched",
+      "green": "both runner suites pass; jev-use CI steps rc 0 (the two guarded-focused steps do not apply on this base, as in SETUP, RECERT-FIX and FIX-03)"
+    },
+    "C_unit_pin": {
+      "red": "platform-linux atspi::window_scoped_fallback_tests::window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide FAILED on base (it attempted the pid-wide AT-SPI walk), 16:22Z",
+      "green": "the same test plus token_frame_tests and frame_scope_tests pass on F6"
+    }
+  },
+  "real_rows": {
+    "environment": "private cua-x11-session.sh (Xvfb + openbox + private D-Bus); native rows with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV containing CUA_SESSION_ATSPI=1; every code-executing command under bin/hostless; one SHARED quiet-lane acquisition per block (harness/qlock_fix04.sh, <= 300 s hold, >= 30 s spacing, yields to queued exclusive waiters); at most 10 attempts per block; every attempt kept",
+    "plans": [
+      "plans/1-C-type.txt",
+      "plans/2-C-focus.txt",
+      "plans/3-D-browser.txt",
+      "plans/4-D-w2dx.txt"
+    ],
+    "C": {
+      "fixture": "this packet's GTK3 copy (harness/gtk3_main_two_windows.py; diff vs FIX-03 copy in harness/gtk3_main_two_windows.fix04.diff) in two-window mode with CUA_GTK3_NOTE_TEXT_STATE=1 and CUA_GTK3_FOCUS_STATE=1; one process, windows w1, w2; topology T2 (one serve daemon, two mcp --socket clients = sessions A and B); fresh fixture per attempt",
+      "forced_path": "A observes w1 (A's own token), B observes w2; the fixture closes w1 (SIGUSR1, confirmed on its state file), 0.5 s settle; A then uses its OWN still-valid w1 token. The cached object is gone, so on F5 the code re-resolves the index against a pid-wide walk (SOURCE). Shakedown on F5 before this PREREG: CT 2/2 wrote into w2; CF background refused background_unavailable (2/2) and CF foreground refused foreground_unavailable (1/1) before the GrabFocus rung",
+      "rows": {
+        "CT": {
+          "call": "A type_text {element_token: A's w1 Note, text fix04A} (background)",
+          "tail": "B type_text own w2 Note token changes w2",
+          "arms_n": {
+            "F5": 20,
+            "F6": 20,
+            "U": 20
+          }
+        },
+        "CF": {
+          "call": "A press_key {element_token: A's w1 checkbox, key space, delivery_mode foreground}",
+          "tail": "B clicks own w2 checkbox token changes w2",
+          "arms_n": {
+            "F5": 20,
+            "F6": 20
+          }
+        }
+      },
+      "oracle": "the fixture's own state file read before and after every call; cross-window effect = any change of w2's keys (note_text, agreed, focus, active, counter, size, note_saved) during A's call",
+      "validity": "w1 close confirmed and B's tail changed w2; invalid attempts stay in the denominator and are counted",
+      "predictions": {
+        "CT_F5": "cross-window 20/20 (A's text lands in w2)",
+        "CT_U": "cross-window (any count; discrimination control)",
+        "CT_F6": "0/20 cross-window, A refused stale_element_token 20/20",
+        "CF_F5": "0/20 (refused foreground_unavailable before the focus fallback; non-discriminating)",
+        "CF_F6": "0/20 (same)"
+      },
+      "gate": "KEEP iff 0/20 cross-window effects on F6 in every row (CT, CF); a cross-window effect on F6 is FAIL = a new E4 finding, reported"
+    },
+    "D": {
+      "browser_a1": {
+        "arm": "F6",
+        "n": 20,
+        "harness": "harness/browser/fix04_browser.py (FIX-03 copy + raw structuredContent capture + the runner's own classification of the same result object)",
+        "forced_path": "CUA_DRIVER_EXP_SET_FILES_GAP_MS=50 (seam 5a1e209ab); the harness releases the page re-render on the seam marker (FIX-03 method)",
+        "oracle": "the fixture server's journal (generation-0 change event reached the server)",
+        "gate": "KEEP iff 0/20 success receipts (raw status ok) and 20/20 receipts with raw status refused + effect unverifiable + refusal.detail.delivery unknown + retryable false",
+        "reported_as_measured": "cells where a generation-0 change reached the server (IRREDUCIBLE: CDP cannot make the check and the assignment atomic), rebind (A2) verified count, race_forced count",
+        "e4": "blind replays = cells with the runner's may_redispatch_after true + cells with more than one generation-0 dispatch + cells with more than one generation-0 change event; expected 0"
+      },
+      "browser_a3_control": {
+        "arm": "F6",
+        "n": 10,
+        "expect": "10/10 verified, status ok, no effect key (default path unchanged)"
+      },
+      "W2dX": {
+        "arms_n": {
+          "U": 20,
+          "F6": 20
+        },
+        "row": "FIX-03 row unchanged (A observes w1 and w2; close w1; B dispatches A's w2 token; tail A's own w2 token)",
+        "prediction": "U landed 20/20; F6 refused stale_element_token 20/20, tail verified 20/20",
+        "note": "the spec text says 'F6 unknown'; a cross-session token refusal is a pre-dispatch refusal and stays refused under Part A, so the predicted F6 receipt is refused"
+      }
+    }
+  },
+  "analysis": "analyze.py (committed with this file) -> summary.json, dispositions.json; verify_artifacts.py recomputes independently",
+  "timing": "descriptive only (median cell wall time); SHARED locks with >= 30 s spacing; no speed claim",
+  "invariants": "no new service; fixes stay inside the existing receipt mapping, runner rule and AT-SPI lookup; events are never the oracle; passive state mints no authority; a possibly landed effect stays unknown until reconciled and is never blind-replayed",
+  "shakedowns_before_prereg": [
+    "F5 CT x2 (2/2 wrote A text into w2)",
+    "F5 CF background x2 (background_unavailable)",
+    "F5 CF foreground x1 (foreground_unavailable)",
+    "F6 CT x1 (stale_element_token, w2 unchanged)",
+    "F6 A1 x2 (first: harness replay bug, fixed; second: refused + effect unverifiable + delivery unknown + retryable false, gen0 change reached server, rebind verified)"
+  ]
+}

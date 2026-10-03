@@ -1,0 +1,43 @@
+diff (FIX-03 copy blob b475a00bf -> FIX-04 copy)
+diff --git fix-03-toctou-session-routing-2026-10-03/harness/gtk3_main_two_windows.py fix-04-unknown-delivery-effect-2026-10-03/harness/gtk3_main_two_windows.py
+index b475a00bf..e96bfca8d 100644
+--- fix-03-toctou-session-routing-2026-10-03/harness/gtk3_main_two_windows.py
++++ fix-04-unknown-delivery-effect-2026-10-03/harness/gtk3_main_two_windows.py
+@@ -428,8 +428,27 @@ class TaskWindow(Gtk.Window):
+ 
+         root.pack_start(self.button("Exit", lambda *_: Gtk.main_quit()), False, False, 0)
+         self.connect("destroy", Gtk.main_quit if shared is None else self.on_closed)
++        # FIX-04 (measurement only, two-window mode only): CUA_GTK3_FOCUS_STATE=1 also publishes each
++        # window's focused widget (its label or accessible name) and whether the window is active, so a
++        # GrabFocus that lands in the wrong window is target-observed.
++        self.focus_state = shared is not None and os.environ.get("CUA_GTK3_FOCUS_STATE") == "1"
++        if self.focus_state:
++            self.connect("set-focus", lambda *_: GLib.idle_add(self.publish_once))
++            self.connect("notify::is-active", lambda *_: GLib.idle_add(self.publish_once))
+         self.publish()
+ 
++    def publish_once(self):
++        if self.open:
++            self.publish()
++        return GLib.SOURCE_REMOVE
++
++    def focus_name(self):
++        widget = self.get_focus()
++        if widget is None:
++            return None
++        label = widget.get_label() if hasattr(widget, "get_label") else None
++        return label or widget.get_accessible().get_name() or type(widget).__name__
++
+     def add_distractors(self, root, density):
+         buttons, checkboxes, groups, fields = DENSITY_COUNTS[density]
+         grid = Gtk.Grid(column_spacing=6, row_spacing=6)
+@@ -513,6 +532,9 @@ class TaskWindow(Gtk.Window):
+         }
+         if self.note_text_state:
+             state["note_text"] = self.note.get_text()
++        if getattr(self, "focus_state", False) and self.open:
++            state["focus"] = self.focus_name()
++            state["active"] = self.is_active()
+         if self.density is not None:
+             state["density"] = self.density
+             state["distractor_actions"] = self.distractor_actions
