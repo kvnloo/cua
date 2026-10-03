@@ -28,9 +28,18 @@ la() { cut -d' ' -f1-3 /proc/loadavg; }
 jitter() { sleep "$((RANDOM % 3)).$((RANDOM % 10))"; }
 echo "[$(date -u +%FT%T.%3NZ)] chunk $LABEL mode=$MODE live=$LIVE loadavg=$(la)"
 if [ "$MODE" = exclusive ]; then
-  ( cd "$WT" && flock "$LOCKDIR/cargo-build.lock" "$LANES/bin/quiet-timed" "$LABEL" \
+  # Hold the cargo lock only while the quiet-lane lock is free: with the cargo lock held, probe the
+  # quiet-lane lock non-blocking (exclusive); if any holder has it, release the cargo lock and exit
+  # 74 (lock busy: nothing ran, no receipt) so the caller retries. (Post-PREREG change: Q2 waited
+  # 30 min holding cargo-build.lock while SHARED holders starved the EXCLUSIVE request.)
+  # The probe is a blocking exclusive wait capped at 240 s (bounded cargo hold), released at once;
+  # quiet-timed then takes the lock for the chunk.
+  ( cd "$WT" && flock "$LOCKDIR/cargo-build.lock" bash -c '
+      flock -w 240 -x "$1/quiet-lane.lock" true || exit 74
+      shift; exec "$@"' probe "$LOCKDIR" "$LANES/bin/quiet-timed" "$LABEL" \
       bash -c 'sleep "$((RANDOM % 3)).$((RANDOM % 10))"; exec "$@"' jitter "${session[@]}" )
   rc=$?
+  [ "$rc" = 74 ] && exit 74
   printf '{"lane":"R2-07d","label":"%s","mode":"exclusive","cargo_lock":true,"released":"%s","rc":%d,"loadavg_at_release":"%s"}\n' \
     "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" "$(la)" >> "$LEDGER"
 elif [ "$MODE" = shared ]; then

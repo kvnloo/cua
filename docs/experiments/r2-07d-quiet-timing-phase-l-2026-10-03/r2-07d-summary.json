@@ -1,0 +1,933 @@
+{
+ "artifacts": {
+  "ctl-artifact-scripted-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "ctl-artifact-scripted-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "q-artifact-timed-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "q-artifact-timed-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "shake-c-artifact-scripted-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "shake-c-artifact-scripted-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  }
+ },
+ "authority_clean": true,
+ "controls": {
+  "E4": {
+   "ambiguous_dispatch": 0,
+   "blind_replay": 0,
+   "caller_stale_dispatch": 0,
+   "dispatches_after_unknown": 0,
+   "duplicate_mutation": 0,
+   "refusal_returned_as_success": 0,
+   "unverified_success": 0
+  },
+  "E4_clean": true,
+  "G1_G2": {
+   "modal": {
+    "G1": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    },
+    "G2": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    }
+   },
+   "toggle": {
+    "G1": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    },
+    "G2": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    }
+   }
+  },
+  "G3": {
+   "accepted_fresh": 36,
+   "accepted_mutations": 36,
+   "cells": 27,
+   "nonfresh_attempts": 2,
+   "nonfresh_attempts_refused_effect_refused": 2,
+   "pass": true
+  },
+  "cells": 39,
+  "expected_cells": 35,
+  "first_trial_utc": "2026-10-03T07:28:41.639Z",
+  "pass": true,
+  "pass_cells": 35,
+  "rows": {
+   "default_smoke": {
+    "modal": {
+     "n": 5,
+     "pass": 5
+    },
+    "toggle": {
+     "n": 5,
+     "pass": 5
+    }
+   },
+   "g5:applied_ack_lost": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C024-modal-COMP_CR-g5-applied_ack_lost-r00: PASS applied_ack_lost: verified_by_reconcile fired=True cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C023-toggle-COMP_CR-g5-applied_ack_lost-r00: PASS applied_ack_lost: verified_by_reconcile fired=True cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "g5:withheld_unresolved": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C026-modal-COMP_CR-g5-withheld_unresolved-r00: PASS withheld_unresolved: unknown fired=True cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C025-toggle-COMP_CR-g5-withheld_unresolved-r00: PASS withheld_unresolved: unknown fired=True cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n1": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C003-modal-COMP_CR-n1-r00: PASS fallback=target_not_found cm=0 outcome=unknown"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C002-toggle-COMP_CR-n1-r00: PASS fallback=requires_present cm=0 outcome=budget_exhausted"
+     ],
+     "pass": 1
+    }
+   },
+   "n2": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C005-modal-COMP_CR-n2-r00: PASS fallback=target_not_found cm=0 outcome=unknown"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C004-toggle-COMP_CR-n2-r00: PASS fallback=requires_present cm=0 outcome=budget_exhausted"
+     ],
+     "pass": 1
+    }
+   },
+   "n3": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C007-modal-COMP_CR-n3-r00: PASS fallback=target_ambiguous cm=0 dropped=[['confirm-choice'], ['confirm-choice'], ['confirm-choice'], ['confirm-choice']]"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C006-toggle-COMP_CR-n3-r00: PASS fallback=requires_present_ambiguous cm=0 dropped=[['click-confirm'], ['click-confirm'], ['click-confirm']]"
+     ],
+     "pass": 1
+    }
+   },
+   "n4a": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C009-modal-COMP_CR-n4a-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': True}] obs=3 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C008-toggle-COMP_CR-n4a-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': True}] obs=3 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n4b": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C011-modal-COMP_CR-n4b-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': False}] obs=3 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C010-toggle-COMP_CR-n4b-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': False}] obs=3 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n5": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C013-modal-COMP_CR-n5-r00: PASS probe=refused:authorization_host_failed cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C012-toggle-COMP_CR-n5-r00: PASS probe=refused:authorization_host_failed cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n6": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C015-modal-COMP_CR-n6-r00: PASS dialog=1 fallback={'index': 1, 'reason': 'target_not_found'} cm=0"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C014-toggle-COMP_CR-n6-r00: PASS dialog=1 fallback={'index': 1, 'reason': 'target_not_found'} cm=0"
+     ],
+     "pass": 1
+    }
+   },
+   "n7": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C017-modal-COMP_CR-n7-r00: PASS fallback=requires_absent accepted=1 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C016-toggle-COMP_CR-n7-r00: PASS fallback=checked_state accepted=1 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:modal-on-toggle": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C020-modal-on-toggle-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:toggle-on-fill": {
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C018-toggle-on-fill-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:toggle-on-modal": {
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C019-toggle-on-modal-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "nw2": {
+    "modal": {
+     "n": 1,
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "pass": 1
+    }
+   }
+  }
+ },
+ "disposition": {
+  "disposition": "REVISE",
+  "e4_kill_candidate": false,
+  "failing_gates": [
+   "timing:modal"
+  ],
+  "phase_L_status": "NOT_RUN (pre-registered precondition: Phase S passes in both classes)",
+  "provider_decision_component": "UNTESTED (Phase L NOT_RUN)"
+ },
+ "first_measured_trial_utc": "2026-10-03T07:28:41.639Z",
+ "phase_L": {
+  "first_trial_utc": null,
+  "kind_changes": [],
+  "manifests": 0,
+  "modal": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G3": {
+    "accepted_fresh": 0,
+    "accepted_mutations": 0,
+    "cells": 0,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": false
+   },
+   "T_training_ms": [],
+   "admission": [],
+   "decisions_per_invocation": 0.0,
+   "decisions_total": 0,
+   "decomposition_all": {
+    "n": 0
+   },
+   "decomposition_training": {
+    "n": 0
+   },
+   "decomposition_warm": {
+    "n": 0
+   },
+   "invocations_run": 0,
+   "loadavg_1m": {
+    "max": null,
+    "median": null,
+    "min": null
+   },
+   "mean_all_ms": null,
+   "planned": 30,
+   "provider_decision_share_all": null,
+   "ratio_of_means": null,
+   "training": [],
+   "verdict": "REVISE",
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "invalid": [],
+    "mean_T_oracle_ms": null,
+    "median_T_oracle_ms": null,
+    "n_run": 0,
+    "planned": 29,
+    "provider_requests": 0,
+    "valid": 0,
+    "validity": 0.0
+   }
+  },
+  "not_run": [],
+  "provider_models": {},
+  "run": false,
+  "shakedown": [],
+  "stopped_for_budget": [],
+  "toggle": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G3": {
+    "accepted_fresh": 0,
+    "accepted_mutations": 0,
+    "cells": 0,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": false
+   },
+   "T_training_ms": [],
+   "admission": [],
+   "decisions_per_invocation": 0.0,
+   "decisions_total": 0,
+   "decomposition_all": {
+    "n": 0
+   },
+   "decomposition_training": {
+    "n": 0
+   },
+   "decomposition_warm": {
+    "n": 0
+   },
+   "invocations_run": 0,
+   "loadavg_1m": {
+    "max": null,
+    "median": null,
+    "min": null
+   },
+   "mean_all_ms": null,
+   "planned": 30,
+   "provider_decision_share_all": null,
+   "ratio_of_means": null,
+   "training": [],
+   "verdict": "REVISE",
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "invalid": [],
+    "mean_T_oracle_ms": null,
+    "median_T_oracle_ms": null,
+    "n_run": 0,
+    "planned": 29,
+    "provider_requests": 0,
+    "valid": 0,
+    "validity": 0.0
+   }
+  }
+ },
+ "phase_S": {
+  "cells": 164,
+  "first_trial_utc": "2026-10-03T11:57:35.181Z",
+  "interrupted_units": [],
+  "load_gate": {
+   "attempts": 83,
+   "chunks": [
+    "1",
+    "3"
+   ],
+   "end_chunk": 1,
+   "load_at_start_max": 2.96,
+   "load_at_start_median": 2.29,
+   "started_after_wait": 1,
+   "starts": 82
+  },
+  "modal": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G1": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G2": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G3": {
+    "accepted_fresh": 84,
+    "accepted_mutations": 84,
+    "cells": 42,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": true
+   },
+   "admission": [
+    {
+     "T_oracle_ms": 49.918078,
+     "trial": "Q001-modal-COMP_CR-train-r-1-admission",
+     "valid": true
+    }
+   ],
+   "decomposition": {
+    "COMP": {
+     "components_ms": {
+      "client_validation": 0.38643175,
+      "dispatch": 1.206121225,
+      "input_prep": 0.0,
+      "mcp_admission": 1.55635915,
+      "mcp_transport": 4.443891225,
+      "observation": 13.578162825,
+      "provider_decision": 0.011799975,
+      "resolution": 1.0449039,
+      "reval_endpoint": 20.491149325000002,
+      "reval_other": 2.06846485,
+      "runner": 0.23882575,
+      "settles": 0.0,
+      "sleeps_polls": 0.24615642499999998,
+      "target_effect_lag": 0.04201875,
+      "unattributed": 0.687270525,
+      "verification_reads": 1.03800325,
+      "visualization": 1.7350871
+     },
+     "coverage_mean": 0.985874527710499,
+     "irreducible_ms": 18.178927325,
+     "mean_T_oracle_ms": 48.721605225,
+     "mean_T_runner_ms": 48.774646025,
+     "n": 40,
+     "share": {
+      "client_validation": 0.007922799681661041,
+      "dispatch": 0.024728446504394697,
+      "input_prep": 0.0,
+      "mcp_admission": 0.03190918390678367,
+      "mcp_transport": 0.09111068120765516,
+      "observation": 0.2783856764032763,
+      "provider_decision": 0.0002419284600025962,
+      "resolution": 0.021423095504669015,
+      "reval_endpoint": 0.4201188731230777,
+      "reval_other": 0.04240860813094952,
+      "runner": 0.004896514264349292,
+      "settles": 0.0,
+      "sleeps_polls": 0.005046811100870516,
+      "target_effect_lag": 0.0008614875437222612,
+      "unattributed": 0.014090733219216632,
+      "verification_reads": 0.021281615236489047,
+      "visualization": 0.035573545712882494
+     },
+     "untested_share": 0.17135300778433482
+    },
+    "COMP_CR": {
+     "components_ms": {
+      "client_validation": 0.37581485,
+      "dispatch": 1.2140955,
+      "input_prep": 0.0,
+      "mcp_admission": 1.5437864000000001,
+      "mcp_transport": 4.4664343749999995,
+      "observation": 13.86090285,
+      "provider_decision": 0.0,
+      "resolution": 1.074365175,
+      "reval_endpoint": 20.458050575,
+      "reval_other": 2.315499075,
+      "runner": 0.3096305,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.03603825,
+      "unattributed": 0.6852705,
+      "verification_reads": 0.5013399,
+      "visualization": 1.72695065
+     },
+     "coverage_mean": 0.9858592662278568,
+     "irreducible_ms": 17.927875575,
+     "mean_T_oracle_ms": 48.851759975,
+     "mean_T_runner_ms": 48.5681786,
+     "n": 40,
+     "share": {
+      "client_validation": 0.007737882309632257,
+      "dispatch": 0.024997756452822793,
+      "input_prep": 0.0,
+      "mcp_admission": 0.031785964483337655,
+      "mcp_transport": 0.09196215513422608,
+      "observation": 0.28539062508718416,
+      "provider_decision": 0.0,
+      "resolution": 0.022120763140992074,
+      "reval_endpoint": 0.42122334344652573,
+      "reval_other": 0.04767522978512519,
+      "runner": 0.006375172158504621,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0007420136195924793,
+      "unattributed": 0.01410945437430919,
+      "verification_reads": 0.010322394507089872,
+      "visualization": 0.03555724550065791
+     },
+     "untested_share": 0.17409139160100187
+    }
+   },
+   "phase_S_pass": false,
+   "sensitivity_load_le_3": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9914106987854182,
+     "ci95": [
+      0.986928101377705,
+      1.0267475615449415
+     ],
+     "median_arm_ms": 47.9339925,
+     "median_base_ms": 47.522273,
+     "n": 40
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      -1.3712370000000007,
+      2.396339000000001
+     ],
+     "max": 8.482899000000003,
+     "median": 0.5744725000000024,
+     "min": -7.446360000000006,
+     "n": 40,
+     "positive": 25
+    },
+    "median_T_COMP_CR_ms": 47.9339925,
+    "median_T_COMP_ms": 47.522273,
+    "n": 40
+   },
+   "timing": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9914106987854182,
+     "ci95": [
+      0.986928101377705,
+      1.0267475615449415
+     ],
+     "median_arm_ms": 47.9339925,
+     "median_base_ms": 47.522273,
+     "n": 40
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      -1.3712370000000007,
+      2.396339000000001
+     ],
+     "max": 8.482899000000003,
+     "median": 0.5744725000000024,
+     "min": -7.446360000000006,
+     "n": 40,
+     "positive": 25
+    },
+    "failed_pairs": [],
+    "gate_ci_upper_le_2ms": false,
+    "loadavg_1m": {
+     "max": 2.96,
+     "median": 2.295,
+     "min": 1.82
+    },
+    "median_T_COMP_CR_ms": 47.9339925,
+    "median_T_COMP_ms": 47.522273,
+    "n": 40,
+    "not_run_rounds": [],
+    "valid_pairs": 40
+   },
+   "training": [
+    {
+     "T_oracle_ms": 47.677038,
+     "admitted": true,
+     "compile_ms": 0.110443,
+     "decisions": 2,
+     "trial": "Q001-modal-COMP_CR-train-r-1"
+    }
+   ],
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "n": 40,
+    "valid": 40
+   }
+  },
+  "phase_S_pass_both": false,
+  "toggle": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G1": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G2": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G3": {
+    "accepted_fresh": 84,
+    "accepted_mutations": 84,
+    "cells": 42,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": true
+   },
+   "admission": [
+    {
+     "T_oracle_ms": 47.815829,
+     "trial": "Q000-toggle-COMP_CR-train-r-1-admission",
+     "valid": true
+    }
+   ],
+   "decomposition": {
+    "COMP": {
+     "components_ms": {
+      "client_validation": 0.359636325,
+      "dispatch": 1.0263611,
+      "input_prep": 0.0,
+      "mcp_admission": 1.54404215,
+      "mcp_transport": 4.3342673750000005,
+      "observation": 13.317315475,
+      "provider_decision": 0.01129235,
+      "resolution": 1.174431575,
+      "reval_endpoint": 20.2603439,
+      "reval_other": 2.197183425,
+      "runner": 0.254470875,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.005433200000000001,
+      "unattributed": 0.683634575,
+      "verification_reads": 1.095401575,
+      "visualization": 1.7565306
+     },
+     "coverage_mean": 0.9857244080601771,
+     "irreducible_ms": 17.641694774999998,
+     "mean_T_oracle_ms": 48.2175252,
+     "mean_T_runner_ms": 48.0203445,
+     "n": 40,
+     "share": {
+      "client_validation": 0.007489249166048777,
+      "dispatch": 0.021373463907573588,
+      "input_prep": 0.0,
+      "mcp_admission": 0.032153916555096765,
+      "mcp_transport": 0.0902589812740723,
+      "observation": 0.2773265292796889,
+      "provider_decision": 0.00023515762157849576,
+      "resolution": 0.02445695855014118,
+      "reval_endpoint": 0.42191167329089024,
+      "reval_other": 0.04575526160583875,
+      "runner": 0.005299230516765659,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.00011314371141173301,
+      "unattributed": 0.014236352989929093,
+      "verification_reads": 0.022811197762231797,
+      "visualization": 0.036578883768732647
+     },
+     "untested_share": 0.17389468905205377
+    },
+    "COMP_CR": {
+     "components_ms": {
+      "client_validation": 0.365037325,
+      "dispatch": 1.045634825,
+      "input_prep": 0.0,
+      "mcp_admission": 1.534081375,
+      "mcp_transport": 4.3133229,
+      "observation": 13.903367675,
+      "provider_decision": 0.0,
+      "resolution": 1.1558699,
+      "reval_endpoint": 20.141270325,
+      "reval_other": 2.2684746500000004,
+      "runner": 0.3203693,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0,
+      "unattributed": 0.6816527,
+      "verification_reads": 0.495156975,
+      "visualization": 1.7736091
+     },
+     "coverage_mean": 0.9857802815512241,
+     "irreducible_ms": 17.712634125,
+     "mean_T_oracle_ms": 48.104499,
+     "mean_T_runner_ms": 47.99784705,
+     "n": 40,
+     "share": {
+      "client_validation": 0.0076052853916496665,
+      "dispatch": 0.021785035981108657,
+      "input_prep": 0.0,
+      "mcp_admission": 0.03196146221729335,
+      "mcp_transport": 0.0898649244726905,
+      "observation": 0.289666485676257,
+      "provider_decision": 0.0,
+      "resolution": 0.02408170305630406,
+      "reval_endpoint": 0.4196286200924506,
+      "reval_other": 0.04726200839043677,
+      "runner": 0.006674659796016831,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0,
+      "unattributed": 0.014201734908857752,
+      "verification_reads": 0.010316233027789525,
+      "visualization": 0.036951846989145325
+     },
+     "untested_share": 0.17438976984281218
+    }
+   },
+   "phase_S_pass": true,
+   "sensitivity_load_le_3": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9911046434234435,
+     "ci95": [
+      0.9865664016564379,
+      1.028170275788223
+     ],
+     "median_arm_ms": 47.875259,
+     "median_base_ms": 47.449391500000004,
+     "n": 40
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      -1.3437945000000013,
+      0.7718150000000001
+     ],
+     "max": 6.481493,
+     "median": 0.481164500000002,
+     "min": -10.913214999999994,
+     "n": 40,
+     "positive": 21
+    },
+    "median_T_COMP_CR_ms": 47.875259,
+    "median_T_COMP_ms": 47.449391500000004,
+    "n": 40
+   },
+   "timing": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9911046434234435,
+     "ci95": [
+      0.9865664016564379,
+      1.028170275788223
+     ],
+     "median_arm_ms": 47.875259,
+     "median_base_ms": 47.449391500000004,
+     "n": 40
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      -1.3437945000000013,
+      0.7718150000000001
+     ],
+     "max": 6.481493,
+     "median": 0.481164500000002,
+     "min": -10.913214999999994,
+     "n": 40,
+     "positive": 21
+    },
+    "failed_pairs": [],
+    "gate_ci_upper_le_2ms": true,
+    "loadavg_1m": {
+     "max": 2.96,
+     "median": 2.29,
+     "min": 1.82
+    },
+    "median_T_COMP_CR_ms": 47.875259,
+    "median_T_COMP_ms": 47.449391500000004,
+    "n": 40,
+    "not_run_rounds": [],
+    "valid_pairs": 40
+   },
+   "training": [
+    {
+     "T_oracle_ms": 81.063217,
+     "admitted": true,
+     "compile_ms": 0.181081,
+     "decisions": 2,
+     "trial": "Q000-toggle-COMP_CR-train-r-1"
+    }
+   ],
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "n": 40,
+    "valid": 40
+   }
+  },
+  "units_done": 82
+ },
+ "provider": {
+  "attempts": 0,
+  "blocked_by_cap": 0,
+  "by_layer": {},
+  "hosts": [],
+  "lane_cap": {
+   "attempts": 22,
+   "reached": 18
+  },
+  "reached": 0,
+  "reached_by_layer": {},
+  "request_id_present": 0,
+  "status": {}
+ },
+ "schema": "r2-07d.summary.v1"
+}

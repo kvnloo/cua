@@ -1,0 +1,8 @@
+[2026-10-03T07:38:30Z] start chunk Q1 host load1=2.94
+[2026-10-03T07:46:13Z] chunk Q1 rc=75
+[2026-10-03T07:46:43Z] start chunk Q2 host load1=2.87
+[2026-10-03T08:17:22Z] chunk Q2 rc=aborted-by-lane (killed while queued: it held cargo-build.lock 30 min waiting for the EXCLUSIVE quiet-lane lock starved by SHARED holders; quiet lock never acquired, 0 trials, no gate attempt)
+[2026-10-03T10:56:06Z] loop restarted (v3: quiet-lock probe polls up to 90 s while holding cargo); no chunk ran since Q2
+[2026-10-03T11:55:54Z] loop restarted (v4: blocking quiet-lock probe capped at 240 s while holding cargo); no chunk ran since Q2
+[2026-10-03T12:00:47Z] chunk Q3 rc=0 (host load1 before try=2.61, busy tries so far=0)
+[2026-10-03T12:00:47Z] plan complete

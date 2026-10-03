@@ -1,0 +1,27 @@
+{
+ "lane": "R2-07d",
+ "wave": 5,
+ "branch": "exp/r2-07d-quiet-timing-phase-l-20261003",
+ "tested_source": {
+  "base_commit": "7f46edd1681fbf58586f8b4972636c3da56e3be6",
+  "binary_source": "8f3a646b4818b757648835cf89db8886626b1cf0",
+  "libs_cua_driver_tree": "bf8e7bdc90fdce295e44743f2754a6502d5d6e0e",
+  "driver_changes": "none"
+ },
+ "prereg_commit": {"sha": "935d6f67a", "committed_utc": "2026-10-03T07:28:22Z", "first_post_prereg_trial_utc": "2026-10-03T07:28:41.639Z", "first_timing_trial_utc": "2026-10-03T11:57:35.181Z"},
+ "harness_identity": {"path": "docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03/harness/", "tree": "66bad345b1736b97b66884bbf40a1505c16083bf", "analyze_r2_07c.py_blob": "dab482887210fc68ab13a325aae55bd09388ac4d", "checked_by": "verify_artifacts.py at every branch commit"},
+ "driver": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version_in_session": "cua-driver 0.32.0", "host_rehash_start_utc": "2026-10-03T07:20Z", "host_rehash_end_utc": "2026-10-03T12:01:38Z", "rehash_result": "identical at start and end"},
+ "browser": "Google Chrome 151.0.7922.71 (the Driver's first root-owned candidate), isolated_new profile",
+ "environment": "one Linux host; every code-executing command under hostless (env scrub + Landlock); Driver/Chrome inside cua-x11-session.sh (private Xvfb, private D-Bus), xdpyinfo probe before every session's trials; telemetry off; Chromium sandbox on; default Driver safety settings; TYPESAFE key never forwarded",
+ "live_heads": {
+  "start_utc": "2026-10-03T07:18:54Z",
+  "start": {"upstream_main": "cb685fad7aef1df6a35ffec653295a0cea4daee6", "trycua_cua_PR_4316": {"head": "a0bca744067d04f05904319d3d919be30c336556", "state": "OPEN"}},
+  "end_utc": "2026-10-03T12:01:38Z",
+  "end": {"upstream_main": "379085c5e267451db8d52989f47bd9fb85ab38ef", "trycua_cua_PR_4316": {"head": "a0bca744067d04f05904319d3d919be30c336556", "state": "OPEN"}},
+  "upstream_main_drift_during_lane": "14 commits; libs/cua-driver paths touched: rust/Skills/cua-driver, rust/crates/cua-driver-e2e, rust/crates/platform-macos, rust/crates/platform-windows, tests/fixtures/apps, tests/fixtures/shared (no Linux platform, browser or jev-use path)"
+ },
+ "publication_sha": null,
+ "live_heads_at_publication": null,
+ "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "lane_cap": {"reached": 18, "attempts": 22}, "note": "Phase L NOT_RUN by its pre-registered precondition"},
+ "lock_receipts": {"global": "raw/lock-receipts-global.jsonl", "lane": "raw/lock-receipts-lane.jsonl", "timing_window": "R2-07d-Q3 (bin/quiet-timed, EXCLUSIVE, cargo-build.lock held) 2026-10-03T11:57:28.210Z-12:00:47.653Z"}
+}
