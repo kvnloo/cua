@@ -1,0 +1,5 @@
+guard tests 7431f03d1 replayed onto MF9 0b43df3ab as ee98acf91 (detached, UNIT only).
+Conflict: positional only. 7431f03d1 inserts its 107 lines before the BUG-01 part B repro section (ec88394cd) in browser/v2_tests.rs; MF9 does not carry that section.
+Resolution: v2_tests.rs = MF9 version + the 107 added lines of 7431f03d1 appended verbatim at the end of the file.
+Check: the added-line set of ee98acf91 is byte-identical to the added-line set of 7431f03d1 (cmp exit 0).
+patch-id 7431f03d1 = 414bb03deed7638da30cebc65c47c40a943066e0; ee98acf91 = 93237e412be6da221b651d2e270dbc5f3dd699ec (differ by hunk position only).

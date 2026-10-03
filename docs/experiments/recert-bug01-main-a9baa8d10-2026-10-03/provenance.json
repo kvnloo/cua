@@ -1,0 +1,51 @@
+{
+  "schema": "cua.recert-bug01.provenance.v1",
+  "lane": "RECERT-BUG01 (wave 8)",
+  "branch": "exp/recert-bug01-main-a9baa8d10-20261003 (local; publication SHA assigned by the Publish agent; no PR head, nothing posted)",
+  "heads_kept_separate": {
+    "bug01_base_tested": "c4d0c6625b5c93849aa8bec610782410e9d45f69 (BUG-01 wave 1; Driver 0.32.0; libs/cua-driver/rust tree == 229b65b2849c3a595ddbc85200d7181b18bd2e47)",
+    "bug01_packet": "097b4f0974d5c161360fc3683c17f298ff681c70 on exp/bug-01-delivery-cdp-sessions-20261002",
+    "tested_source_base": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0 (upstream main at lane start; cua-driver 0.33.1)",
+    "upstream_main_live_at_packet_time": "fe6d89d8049d61e4beab66dbeabc176c216e114f (gh read 2026-10-03, committer 21:23:01Z): compare a9baa8d10...main = 1 ahead, 0 files under libs/cua-driver",
+    "fix_commits_original": {"test": "147f2adec6efb3bf9604e2e34a1217fdc296ba9c", "fix_1": "2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e", "fix_2": "49a3adf0f0b33446e77c1413fec579090ff2f29a", "guard_tests": "7431f03d1b34d9a98934b4c7fbef19ecc01457c8", "instrumentation": "a99ee937a536408671d27ee345648bca072ed51f"},
+    "harness_commit": "c45164d2b (harness copy)",
+    "prereg_commit": "5816bc2c32c67c3f3fefae669ceec77df3a8192b (2026-10-03T21:23:05Z, before the first measured REAL block at 21:23:41Z)",
+    "anchor_merge": "8e1beaa46 (merge -s ours of 46f9b05ff and ee98acf91; tree unchanged; keeps the build sources reachable)",
+    "packet_commit": "the latest commit touching README.md on this branch"
+  },
+  "sources": {
+    "M9": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+    "M9_test (UNIT red)": "1473e00d8dfef241c228eb82463998e99c06e79b = a9baa8d10 + 147f2adec",
+    "M9i": "46f9b05fff4c150eae803e34d55fe9eb0e7744ec = a9baa8d10 + a99ee937a",
+    "MF9": "0b43df3abff01836222d8fcb2250a667a8ce98c2 = 1473e00d8 + 2533db6d5 (a4695856e) + 49a3adf0f",
+    "MF9_guard (UNIT only)": "ee98acf91231dab9c46e219a17700459551ea33f = 0b43df3ab + 7431f03d1 (positional conflict resolved, raw/guard-resolution.txt)"
+  },
+  "replays": {
+    "147f2adec6efb3bf9604e2e34a1217fdc296ba9c": {"commit": "1473e00d8dfef241c228eb82463998e99c06e79b", "patch_id": "5f471840002d943bea73223386276240d83a4ffd", "patch_id_equal": true},
+    "a99ee937a536408671d27ee345648bca072ed51f": {"commit": "46f9b05fff4c150eae803e34d55fe9eb0e7744ec", "patch_id": "390a80e60bb20cd538f1a36b583f3bcee450f804", "patch_id_equal": true},
+    "2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e": {"commit": "a4695856e36e814893cf92a683b2ccd330d41591", "patch_id": "1b3abda5bc9e3db079879b6841982c56ae20a337", "patch_id_equal": true},
+    "49a3adf0f0b33446e77c1413fec579090ff2f29a": {"commit": "0b43df3abff01836222d8fcb2250a667a8ce98c2", "patch_id": "bc982e26ff611d72f8c8bcd9b09967144e525de3", "patch_id_equal": true},
+    "7431f03d1b34d9a98934b4c7fbef19ecc01457c8": {"commit": "ee98acf91231dab9c46e219a17700459551ea33f", "patch_id": "414bb03deed7638da30cebc65c47c40a943066e0 vs 93237e412be6da221b651d2e270dbc5f3dd699ec", "patch_id_equal": false}
+  },
+  "commits_cited": [
+    "c4d0c6625b5c93849aa8bec610782410e9d45f69", "229b65b2849c3a595ddbc85200d7181b18bd2e47", "097b4f0974d5c161360fc3683c17f298ff681c70",
+    "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0", "147f2adec6efb3bf9604e2e34a1217fdc296ba9c", "a99ee937a536408671d27ee345648bca072ed51f",
+    "2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e", "49a3adf0f0b33446e77c1413fec579090ff2f29a", "7431f03d1b34d9a98934b4c7fbef19ecc01457c8",
+    "1473e00d8dfef241c228eb82463998e99c06e79b", "46f9b05fff4c150eae803e34d55fe9eb0e7744ec", "a4695856e36e814893cf92a683b2ccd330d41591",
+    "0b43df3abff01836222d8fcb2250a667a8ce98c2", "ee98acf91231dab9c46e219a17700459551ea33f", "5816bc2c32c67c3f3fefae669ceec77df3a8192b"
+  ],
+  "binaries": {
+    "M9": {"label": "cua-driver-recert-bug01-m9-a9baa8d10", "sha256": "4ac1ea5be1803bfa6f00551606f6c50d84d5198b84910b508fbae483209adcb0", "version_in_session": "cua-driver 0.33.1", "head_line": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0", "build_seconds": 97},
+    "M9i": {"label": "cua-driver-recert-bug01-m9i-46f9b05ff", "sha256": "9261f8617229a89eb0e57ba4c25ea9351e90f87d75cae980fd95086da6e1c324", "version_in_session": "cua-driver 0.33.1", "head_line": "46f9b05fff4c150eae803e34d55fe9eb0e7744ec", "build_seconds": 98},
+    "MF9": {"label": "cua-driver-recert-bug01-mf9-0b43df3ab", "sha256": "ea73294b9f4838fe2342631e279eea6385fb7820097e757a16c9015854c3fb32", "version_in_session": "cua-driver 0.33.1", "head_line": "0b43df3abff01836222d8fcb2250a667a8ce98c2", "build_seconds": 96},
+    "build": "bin/hostless; SHARED quiet hold; flock cargo-build.lock build-driver.sh <wt> <label> cua-release-bug01 (cargo build -v --locked --release -p cua-driver --features portal-input; rustc 1.97.1); 0 Fresh workspace units in each build (raw/builds/). The family target dir was seeded by a reflink copy of the cua-release-fresh07 third-party dependency cache (Cargo.lock differs only in workspace crate versions); build-driver.sh touches every workspace file, so all four workspace crates were recompiled from each worktree.",
+    "unit_target_dir": "cua-test-bug01 (reflink-seeded from cua-test-fresh07 the same way)"
+  },
+  "environment": {
+    "session": "bin/hostless -> quiet-shared.sh (SHARED) -> cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom, private dbus, AT-SPI off) -> run_recert.sh",
+    "chrome": "Google Chrome 151.0.7922.71 (in session), Driver-launched isolated_new profile, sandbox on",
+    "driver_settings": "defaults; no permission-mode override, no approval bypass, no *-e2e wrapper, no no-sandbox variable",
+    "kernel": "Linux 7.2.2",
+    "provider": "none; TypeSafe attempts 0, reached 0"
+  }
+}
