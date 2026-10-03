@@ -1,0 +1,72 @@
+{
+ "schema": "fix20o.prereg.v1",
+ "lane": "FIX-20O (wave 8, CUA RFC loop)",
+ "owners": ["kvnloo/cua#20", "kvnloo/cua#73", "kvnloo/cua#93"],
+ "provider": {"name": "TypeSafe", "cap_requests_reaching_provider": 0},
+ "committed_before": "the first REAL trial of this lane (builds, unit runs and a Driver-free fixture smoke precede it)",
+ "hypothesis": "On upstream main a9baa8d10 the idle X11 agent-cursor overlay is unmapped, and a native click's cursor reveal maps it during the guarded AT-SPI action (trycua/cua PR 4529, 5e13eb777). focus_guard::mapped_popups counts every VIEWABLE override-redirect root child, so it counts the Driver's own overlay as a new popup, sets grab_held_by and skips the focus restore. F20 (the overlay module registers the exact X11 ids of the windows it creates; mapped_popups skips those ids) removes the false popup and restores the guard rows without hiding real popups.",
+ "fix": {"name": "F20", "commit": "dd7f33b581038220d8176350ab075dda1b036205", "base": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+         "files": ["libs/cua-driver/rust/crates/platform-linux/src/overlay.rs", "libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs"],
+         "rejected_alternative": "title-prefix rule as in tools/impl_.rs:983 ('Cua.' on a pid-less window): any client can name an override-redirect popup 'Cua.*' (and many toolkits set no _NET_WM_PID on popups), which would hide a real keyboard grab. Built only as the control binary G0m8T."},
+ "builds": {
+  "family_target_dir": "cua-release-fresh07",
+  "M8": {"source": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0", "recipe": "plain upstream main"},
+  "M8F": {"source": "dd7f33b581038220d8176350ab075dda1b036205", "recipe": "a9baa8d10 + F20"},
+  "G0m8": {"source": "cddc825352ac909e93068ec23723293aa9223777", "recipe": "a9baa8d10 + a761f1f1f + 47f0f7c1b + ae2308d08 + 16d21fd56"},
+  "G0m8F": {"source": "35c776b03117a52ab0c88652f965205361ce4707", "recipe": "G0m8 + F20"},
+  "G08F": {"source": "293f541faf17de58271733e0302d156830c2f62b", "recipe": "a9baa8d10 + a761f1f1f + F20"},
+  "U0m8F": {"source": "a0a889b5eacf037e917029de97ca8ed209c89543", "recipe": "a9baa8d10 + 1185d8a05 + 54ebd11cb + 0944feb31 + F20"},
+  "GA8F": {"source": "d21d13aea898fbe6cb98da76365b68a25b565d04", "recipe": "G08F + 064d2e4ad"},
+  "GQ8": {"source": "ec4603afd5b10967765afbbc3b5f2557fff227e3", "recipe": "a9baa8d10 + a761f1f1f + 064d2e4ad + 31318e374 + 4ac191a7c"},
+  "GQ8F": {"source": "a37329576f0520cd7f1225017cd2b398b205ad2b", "recipe": "GQ8 + F20"},
+  "G0m8A": {"source": "9ecf113a107fd980eaaf52a8810d0ec6f550b3c6", "recipe": "a9baa8d10 + revert of 5e13eb777 (3b3f18ba0; clean, no conflict; overlay.rs equals 5e13eb777^) + the G0m chain, WITHOUT F20"},
+  "G0m8T": {"source": "bcab979559e6351bdba29881fce0254e0c4b58f3", "recipe": "G0m8 + the rejected title rule in mapped_popups (control only, never a candidate)"},
+  "binary_sha256": "recorded per build in provenance.json and in every raw trial (driver_sha256); the harness refuses a binary whose sha256 differs"
+ },
+ "harness": {
+  "original": "orig/own-20p, orig/own-20q: blob-identical copies of FRESH-07's orig/ (exp/fresh-07-main-9a2b1d99e-20261003 @ 88ec3d5e6); orig/fresh-07: FRESH-07's probe.py, xtree.py, run_probe.sh, summarize_probe.py (same commit). Manifest raw/source/orig-manifest.tsv.",
+  "packet": "harness/run_rows.sh (derived from the original run_all.sh: queued-EXCLUSIVE yield, >= 30 s spacing, flock -s -o, FIX-20O receipts, focus-log env), harness/focuslog/sitecustomize.py (fixture focus log), harness/popup_fixture.py + popup_harness.py + popup_entry.sh (POPUP and INTEGRITY rows), harness/passes.json (role -> binary per pass), harness/plans/*.json",
+  "environment": "hostless + hostless-strict, cua-x11-session.sh (private Xvfb + openbox + picom, private session bus and AT-SPI bus, CUA_SESSION_ATSPI=1), telemetry off, no provider (non-loopback connects refused and counted)"
+ },
+ "oracle": "The fixture's own focus log (focus_in / focus_out per GtkWindow, written by the fixture) plus the final X input focus / _NET_ACTIVE_WINDOW read by an independent observer client (2 ms FocusSampler), plus the fixture state file for the action effect. Never the Driver receipt alone. A restore counts only when the original analyzer's definition holds AND the fixture log shows the task window lost and regained the focus (fx_restored).",
+ "rows": {
+  "R1": "OWN-20P replystall, n = 40 per binary (20 checkbox + 20 text), passes P1 (G0m8 vs G0m8F) and P2 (U0m8F vs G0m8A), AB/BA per block as in the original plan.",
+  "R1_control": "OWN-20P replyonly qc1/qc2 in P1: 10 trials per binary (G0m8, G0m8F); 0 false restores.",
+  "NORMAL": "OWN-20P nosteal n1-n8 in P3: G08F 40 vs M8 40.",
+  "R1m": "OWN-20Q mfstall q1-q4/qt1-qt4 in Q1: G08F 40 vs M8 40; controls qc1/qct1 (mfonly).",
+  "DLG": "OWN-20Q dlgsteal d1-d4: Q2 GA8F 20 vs GQ8F 20; Q3 GQ8 20 vs GQ8F 20.",
+  "DLG_dialog_control": "OWN-20Q dlgdialog dd1/dd2 in Q2: GA8F 10, GQ8F 10.",
+  "normal_GQ8F": "OWN-20Q nosteal n1/n2/nt1/nt2 in Q2 (both slots GQ8F): 40.",
+  "PROBE": "FRESH-07 probe.py, plain background click on 'I agree', n = 20 runs each on M8 and M8F (4 blocks x 5 reps, order rotated). Oracle: the guard summary text in the click reply plus the xtree window tree.",
+  "POPUP": "popup_harness.py: decoy focused, background element-token click on 'Open menu'; the fixture presents itself and pops up a real GtkMenu holding the seat grab; its override-redirect windows are titled 'Cua.PopupControl' with _NET_WM_PID removed. n = 20 on G0m8F and 20 on G0m8T (4 blocks of 10, AB/BA).",
+  "INTEGRITY": "PROBE S2 map stamps on M8F (overlay VIEWABLE after the reveal), and tools/list sha256 of M8F equals M8 (3 reads each)."
+ },
+ "gates": {
+  "G1": "G0m8F R1 restores 40/40 (original OWN-20P 'pass' AND fx_restored) with 0 silent misses.",
+  "G2": "GQ8F DLG verified restore 20/20 with 0 same_app_dialog misclassifications and fx_restored 20/20, in Q2 and again in Q3.",
+  "G3": "G0m8 reproduces the failure: checkbox restored <= 2/20.",
+  "G4": "Ablation G0m8A restores >= 38/40 (attributes the failure to the overlay map transition of PR 4529).",
+  "G5": "Real-popup control on G0m8F holds 20/20: the guard reports the popup ('A popup menu is open'), no restore/not_restored outcome, the final focus is not on the decoy and the active window is the app, the menu is still mapped and a keyboard grab is held (observer XGrabKeyboard = AlreadyGrabbed).",
+  "G6": "Positive controls hold: U0m8F R1 silent miss >= 36/40; GA8F DLG misclassifies >= 16/20.",
+  "G7": "E4 = 0: 0 false restores in the control / no-steal rows, 0 unverified successes, 0 stale-token actions.",
+  "G8": "UNIT red/green: the live census test fails by assertion on a9baa8d10 + the test-only diff and passes on F20; the platform-linux and cua-driver-core suites pass on F20."
+ },
+ "secondary_reported": {
+  "S_replyonly": "R1 control: 0 false restores, 10 per binary on G0m8F.",
+  "S_normal_G08F": "G08F verified 40/40, 0 false restores.",
+  "S_r1m_G08F": "G08F R1m verified restore 40/40.",
+  "S_dlg_GQ8_fails": "GQ8 DLG restores 0/20 (expected failure on unfixed main).",
+  "S_dialog_control": "app's own dialog left focused 10/10 on GA8F and GQ8F.",
+  "S_normal_GQ8F": "40/40 verified, 0 false restores, 0 spurious reconnects.",
+  "S_probe": "false 'popup menu is open' text 20/20 on M8 and 0/20 on M8F.",
+  "S_integrity": "M8F overlay VIEWABLE after the click reply 20/20; tools/list sha256 M8F == M8.",
+  "S_popup_discriminates": "the title-rule control G0m8T fails the POPUP control in >= 16/20 (holds <= 4/20); if not, the POPUP row is reported as non-discriminating against that design."
+ },
+ "decision": {
+  "KEEP": "iff G1, G2 and G5-G8 hold.",
+  "attribution": "G3 and G4 both hold -> causal attribution to trycua/cua PR 4529 KEEP; either fails -> attribution REVISE, reported as measured.",
+  "denominator": "every trial of every counted block; a block is re-run only when its session never reached a trial (display collision, rc 97); every attempt is kept in raw/"
+ },
+ "locks": "non-timing REAL rows; quiet lane SHARED per block <= 300 s, >= 30 s spacing, yield while a queued EXCLUSIVE waiter is in /proc/locks; lock order quiet SHARED then cargo. Wall times are descriptive only.",
+ "claim_boundary": "Linux X11 (private Xvfb + openbox + picom) with the canonical GTK3 fixture. Wayland/Hyprland guard rows stay BLOCKED (real seat). A fork fix candidate only; upstream items are plain text."
+}

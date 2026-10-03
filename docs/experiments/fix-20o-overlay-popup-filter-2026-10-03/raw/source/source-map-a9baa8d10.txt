@@ -1,0 +1,55 @@
+# FIX-20O SOURCE map on a9baa8d107fba8b0aef5a4ed6233e498e88d14d0 (git grep -n against the commit; no working tree)
+## overlay.rs: creation / map / unmap
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:736:pub fn revive_cursor(key: CursorKey) {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:751:pub fn run_on_thread() {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:792:        .name("cua-overlay-x11".into())
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:1130:fn run_overlay_thread(cfg: CursorConfig, rx: std::sync::mpsc::Receiver<OverlayMsg>) {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:1254:        .override_redirect(1u32)
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:1258:    conn.create_window(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:1276:    let title = format!("Cua.AgentCursorOverlay.{}", cfg.cursor_id);
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:1293:    // GNOME starts compositing; keep the idle window unmapped until paint.
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:1294:    if let Err(e) = prepare_x11_overlay_with_empty_input(&conn, win) {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2457:fn x11_visual_readback_reliable(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2487:    conn.create_window(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2502:            .override_redirect(1u32)
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2525:        conn.map_window(win)?;
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2571:    conn.destroy_window(win).ok();
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2608:fn blank_x11_overlay_shape(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2616:    conn.unmap_window(target.win)?.check()?;
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2647:fn paint_x11_tiles(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2776:            conn.map_window(target.win)?.check()?;
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/overlay.rs:2778:            conn.unmap_window(target.win)?.check()?;
+## input/focus_guard.rs: mapped_popups and its diff site
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:191:    fn mapped_popups(&self) -> HashSet<Window> {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:204:            .filter(|(_, a)| a.override_redirect && a.map_state == MapState::VIEWABLE)
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:381:            "grab_held"
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:484:                " A popup menu is open, so pid {pid} holds a keyboard grab until it closes."
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:494:    pub fn capture() -> Option<Self> {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:506:            popups: x.mapped_popups(),
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:622:            .mapped_popups()
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:623:            .difference(&self.popups)
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:627:            report.grab_held_by = new_popups
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:630:                .or(target_pid);
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:685:        if report.grab_held_by.is_some() {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:781:pub fn guarded<T>(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:968:        assert_eq!(report.outcome(), Some("grab_held"));
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:969:        assert_eq!(report.to_json()["focus_outcome"], "grab_held");
+## tools/impl_.rs: reveal / ClickPulse ordering and the guarded AT-SPI click
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:983:            && (popup.title.contains("guard window") || popup.title.starts_with("Cua."))
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:3093:        let delivered = crate::input::focus_guard::guarded(Some(pid), || {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5290:async fn overlay_glide_to_for(cursor_id: &str, sx: f64, sy: f64) {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5295:        cursor_overlay::OverlayCommand::SetEnabled(true),
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5305:    if pos.0 < 0.0 && pos.1 < 0.0 {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5308:            cursor_overlay::OverlayCommand::ClickPulse { x: sx, y: sy },
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5318:async fn reveal_pointer_action_for(
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5331:    overlay_glide_to_for(cursor_id, sx, sy).await;
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5332:    if click_pulse {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5336:            cursor_overlay::OverlayCommand::ClickPulse { x: sx, y: sy },
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:5534:    send(cursor_overlay::OverlayCommand::SetEnabled(true));
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:6380:                reveal_pointer_action_for(&self.state, &cursor_id, sx, sy, true).await;
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:6454:                            Some(pid) => crate::input::focus_guard::guarded(Some(pid), || {
+## other override-redirect census (not changed by F20; same class, pointer path)
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/mod.rs:1820:fn mapped_popups(display: *mut x11::xlib::Display) -> Vec<PopupWindow> {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/mod.rs:2233:fn new_popups(before: &[PopupWindow], after: Vec<PopupWindow>) -> Vec<PopupWindow> {
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/mod.rs:2530:    let popups = new_popups(popups_before, mapped_popups(display));
+a9baa8d107fba8b0aef5a4ed6233e498e88d14d0:libs/cua-driver/rust/crates/platform-linux/src/input/foreground.rs:205:        super::mapped_popup_windows()

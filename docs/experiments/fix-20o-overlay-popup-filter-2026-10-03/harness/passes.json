@@ -1,0 +1,30 @@
+{
+ "schema": "fix20o.passes.v1",
+ "note": "Each pass runs run_rows.sh with one plan and one role->binary map. Original plans are used unchanged (orig/own-20p/plan.json, orig/own-20q/plan.json); the analyzer re-keys every trial by its recorded driver_sha256, never by the role name.",
+ "passes": [
+  {"pass": "P1", "mode": "own20p", "plan": "orig/own-20p/plan.json", "roles": {"U0m": "G0m8", "G0m": "G0m8F"},
+   "blocks": ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "qc1", "qc2"],
+   "rows": "R1 (replystall) G0m8 vs G0m8F; R1 control replyonly (qc1/qc2)"},
+  {"pass": "P2", "mode": "own20p", "plan": "orig/own-20p/plan.json", "roles": {"U0m": "U0m8F", "G0m": "G0m8A"},
+   "blocks": ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8"],
+   "rows": "R1 (replystall) U0m8F positive control vs G0m8A ablation"},
+  {"pass": "P3", "mode": "own20p", "plan": "orig/own-20p/plan.json", "roles": {"U0": "M8", "G0": "G08F"},
+   "blocks": ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8"],
+   "rows": "NORMAL (nosteal) G08F vs M8"},
+  {"pass": "Q1", "mode": "own20q", "plan": "orig/own-20q/plan.json", "roles": {"U0": "M8", "G0": "G08F"},
+   "blocks": ["q1", "q2", "q3", "q4", "qt1", "qt2", "qt3", "qt4", "qc1", "qct1"],
+   "rows": "R1m (mark-free mfstall) G08F vs M8; r1m_control (mfonly)"},
+  {"pass": "Q2", "mode": "own20q", "plan": "orig/own-20q/plan.json", "roles": {"GA": "GA8F", "GQ": "GQ8F"},
+   "blocks": ["d1", "d2", "d3", "d4", "dd1", "dd2", "n1", "n2", "nt1", "nt2"],
+   "rows": "DLG GA8F (positive control) vs GQ8F; dialog control; normal path GQ8F (U=G=GQ)"},
+  {"pass": "Q3", "mode": "own20q", "plan": "orig/own-20q/plan.json", "roles": {"GA": "GQ8", "GQ": "GQ8F"},
+   "blocks": ["d1", "d2", "d3", "d4"],
+   "rows": "DLG GQ8 (unfixed, expected to fail) vs GQ8F"},
+  {"pass": "X", "mode": "probe", "plan": "harness/plans/probe.json", "roles": {"M8": "M8", "M8F": "M8F"},
+   "blocks": ["x1", "x2", "x3", "x4"],
+   "rows": "PROBE (plain background click, guard summary text) + OVERLAY INTEGRITY map stamps"},
+  {"pass": "C", "mode": "popup", "plan": "harness/plans/popup.json", "roles": {"G0m8F": "G0m8F", "G0m8T": "G0m8T", "M8": "M8", "M8F": "M8F"},
+   "blocks": ["p1", "p2", "p3", "p4", "t1"],
+   "rows": "POPUP real-GtkMenu negative control G0m8F vs G0m8T (title-rule control); INTEGRITY tools/list M8 vs M8F"}
+ ]
+}
