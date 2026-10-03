@@ -173,7 +173,9 @@ def main() -> None:
     glines = [x for x in Path(args.global_ledger).read_text().splitlines()
               if '"label":"r2-10r-a2-' in x or '"label": "r2-10r-a2-' in x]  # attempt 2 only
     put_text(raw / "lock-receipts-global.jsonl", "\n".join(glines) + "\n")
-    for f in sorted(list(runs.glob("*.log")) + list(m.glob("*.log")) + list(p0.glob("*.log"))):
+    # R2-10R attempt 2: failed session-start blocks (display probe rc 97) keep their logs here
+    fails = sorted((runs / "failed-sessions").glob("*.log")) if (runs / "failed-sessions").is_dir() else []
+    for f in sorted(list(runs.glob("*.log")) + list(m.glob("*.log")) + list(p0.glob("*.log"))) + fails:
         text = "\n".join(x for x in f.read_text(errors="replace").splitlines() if "WARN" not in x)
         put_text(raw / "logs" / f"{f.parent.name}-{f.name}", text + "\n")
     put_text(raw / "package-report.json", json.dumps(report, indent=1, sort_keys=True) + "\n")
