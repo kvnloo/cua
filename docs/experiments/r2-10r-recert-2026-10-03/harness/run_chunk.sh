@@ -24,7 +24,9 @@ la() { cut -d' ' -f1-3 /proc/loadavg; }
 echo "[$(date -u +%FT%T.%3NZ)] chunk $LABEL mode=$MODE atspi=$ATSPI live=$LIVE loadavg=$(la)"
 if [ "$MODE" = exclusive ]; then
   # R2-10R: cargo-build lock FIRST, then the EXCLUSIVE quiet lock (loop lock order).
-  ( cd "$WT" && flock "$LOCKDIR/cargo-build.lock" "$LANES/bin/quiet-timed" "$LABEL" "${session[@]}" )
+  # R2-10R attempt 2: the 25 min cap runs INSIDE the EXCLUSIVE acquisition (an outer timeout also counted the
+  # lock-queue wait and cut S2 short); lock waits are not capped here.
+  ( cd "$WT" && flock "$LOCKDIR/cargo-build.lock" "$LANES/bin/quiet-timed" "$LABEL" timeout "${R2_10_CHUNK_TIMEOUT:-1500}" "${session[@]}" )
   rc=$?
   printf '{"lane":"R2-10R","label":"%s","mode":"exclusive+cargo","released":"%s","rc":%d,"loadavg_at_release":"%s"}\n' \
     "$LABEL" "$(date -u +%FT%T.%3NZ)" "$rc" "$(la)" >> "$LEDGER"

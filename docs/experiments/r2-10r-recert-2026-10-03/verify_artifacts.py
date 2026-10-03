@@ -82,7 +82,7 @@ ALLOW = {
     ("a0bca7440", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
     ("6f438492b", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
 }
-TOP = ["README.md", "PREREG.json", "provenance.json", "r2-10r-summary.json", "d1-summary.json", "recert-summary.json",
+TOP = ["README.md", "PREREG.json", "PREREG-AMENDMENT-1.json", "provenance.json", "r2-10r-summary.json", "d1-summary.json", "recert-summary.json",
        "headline-numbers.json", "analyze_r2_10.py", "analyze_d1.py", "recert_gates.py", "make_headlines.py",
        "verify_artifacts.py", ".gitignore", "reference/r2-10-reference.json"]
 CHECKS: list[tuple[str, bool, str]] = []
