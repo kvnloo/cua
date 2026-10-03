@@ -1,0 +1,133 @@
+test_per_commit_scan_message_paths_members (test_pub04_scan.CommitWalk.test_per_commit_scan_message_paths_members) ... FAIL
+test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) ... 
+  test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) (case='url-lower') ... FAIL
+  test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) (case='url-upper') ... FAIL
+  test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) (case='url-partial') ... FAIL
+test_owner_token_in_paths_members_and_raw (test_pub04_scan.OwnerTokenNegatives.test_owner_token_in_paths_members_and_raw) ... FAIL
+test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) ... 
+[real case] local user name is a prefix of the fork owner token: True
+
+  test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) (case='url-lower') ... FAIL
+  test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) (case='url-upper') ... FAIL
+  test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) (case='url-partial') ... FAIL
+test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) ... 
+  test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) (case='url-lower') ... FAIL
+  test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) (case='url-upper') ... FAIL
+  test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) (case='url-partial') ... FAIL
+test_clean_text_has_no_finding (test_pub04_scan.PlantedPositives.test_clean_text_has_no_finding) ... ok
+test_dummy_name_every_encoding_hits (test_pub04_scan.PlantedPositives.test_dummy_name_every_encoding_hits) ... ok
+test_dummy_name_in_raw_file_tar_and_gz_members_and_path_names (test_pub04_scan.PlantedPositives.test_dummy_name_in_raw_file_tar_and_gz_members_and_path_names) ... ok
+test_local_root_abs_path_and_secret (test_pub04_scan.PlantedPositives.test_local_root_abs_path_and_secret) ... ok
+test_tmp_dbus_plain_url_base64_gz (test_pub04_scan.PlantedPositives.test_tmp_dbus_plain_url_base64_gz) ... ok
+
+======================================================================
+FAIL: test_per_commit_scan_message_paths_members (test_pub04_scan.CommitWalk.test_per_commit_scan_message_paths_members)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 180, in test_per_commit_scan_message_paths_members
+    self.assertEqual(per[commits[0]] & self.P.PRIVATE, set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) (case='url-lower')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 132, in test_owner_token_every_encoding_is_not_private
+    self.assertEqual(self.private(self.kinds_text(f"line: {text} end")), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) (case='url-upper')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 132, in test_owner_token_every_encoding_is_not_private
+    self.assertEqual(self.private(self.kinds_text(f"line: {text} end")), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_owner_token_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_owner_token_every_encoding_is_not_private) (case='url-partial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 132, in test_owner_token_every_encoding_is_not_private
+    self.assertEqual(self.private(self.kinds_text(f"line: {text} end")), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_owner_token_in_paths_members_and_raw (test_pub04_scan.OwnerTokenNegatives.test_owner_token_in_paths_members_and_raw)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 141, in test_owner_token_in_paths_members_and_raw
+    self.assertEqual(self.private(self.kinds_blob(f"raw/{OWNER}-t.tar.gz", tg)), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) (case='url-lower')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 151, in test_real_case_reported
+    self.assertFalse(any("(user)" in f["detail"] for f in hits))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) (case='url-upper')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 151, in test_real_case_reported
+    self.assertFalse(any("(user)" in f["detail"] for f in hits))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_real_case_reported (test_pub04_scan.OwnerTokenNegatives.test_real_case_reported) (case='url-partial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 151, in test_real_case_reported
+    self.assertFalse(any("(user)" in f["detail"] for f in hits))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) (case='url-lower')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 137, in test_synthetic_prefix_handle_every_encoding_is_not_private
+    self.assertEqual(self.private(self.kinds_text(f"line: {text} end")), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) (case='url-upper')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 137, in test_synthetic_prefix_handle_every_encoding_is_not_private
+    self.assertEqual(self.private(self.kinds_text(f"line: {text} end")), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+======================================================================
+FAIL: test_synthetic_prefix_handle_every_encoding_is_not_private (test_pub04_scan.OwnerTokenNegatives.test_synthetic_prefix_handle_every_encoding_is_not_private) (case='url-partial')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<packet>/tools/test_pub04_scan.py", line 137, in test_synthetic_prefix_handle_every_encoding_is_not_private
+    self.assertEqual(self.private(self.kinds_text(f"line: {text} end")), set())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'url-encoded'
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.058s
+
+FAILED (failures=11)
