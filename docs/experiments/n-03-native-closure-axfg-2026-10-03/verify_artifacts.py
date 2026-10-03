@@ -12,7 +12,9 @@ Checks:
     that added PREREG.json precedes the earliest 'acquired' of this attempt's EXCLUSIVE (quiet-timed)
     receipts in raw/locks/quiet-lane-receipts.jsonl.
  6. Privacy: no absolute local path pattern in any tracked packet text file (gzip members included);
-    pass --forbid <token> (repeatable) to also forbid e.g. a host name without writing it here.
+    pass --forbid <token> (repeatable) to also forbid e.g. a host name without writing it here;
+    with CUA_PRIVACY_NAMES_FILE set, every non-empty line of that untracked file is forbidden too as a
+    whole word, case-insensitive (the names are never printed).
  7. Lock evidence: every measured block label has an EXCLUSIVE receipt (rc 0) and every control/pilot
     block label a SHARED receipt with the required fields.
 
@@ -26,6 +28,7 @@ import datetime as dt
 import gzip
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -133,6 +136,13 @@ def main() -> None:
             nolock.append(lab)
     check(not nolock, f"lock receipts for {len(labels)} block labels; missing {nolock}")
     # 6 privacy
+    names_file = os.environ.get("CUA_PRIVACY_NAMES_FILE", "")
+    names = ([x.strip() for x in Path(names_file).read_text(encoding="utf-8").splitlines() if x.strip()]
+             if names_file else [])
+    # whole-word, case-insensitive: a private name must not match inside a public handle
+    name_pat = (re.compile("|".join(r"(?<![A-Za-z0-9])" + re.escape(n) + r"(?![A-Za-z0-9])" for n in names), re.I)
+                if names else None)
+    print(f"privacy: CUA_PRIVACY_NAMES_FILE {'set' if names_file else 'not set'}; {len(names)} private names")
     # built from fragments so this file does not match itself
     pat = re.compile("(" + "|".join(["/" + "mnt/", "/" + "home/", "/" + "Users/", "/" + "root/", "cua-lane" + "-tmp", "cua-" + "lanes/"]) + ")")
     hits = []
@@ -147,7 +157,8 @@ def main() -> None:
             text = data.decode("utf-8")
         except UnicodeDecodeError:
             continue
-        if pat.search(text) or any(tok and tok in text for tok in args.forbid):
+        if (pat.search(text) or any(tok and tok in text for tok in args.forbid)
+                or (name_pat is not None and name_pat.search(text))):
             hits.append(rel)
     check(not hits, f"privacy: {len(tracked)} tracked files scanned, hits {hits[:5]}")
     print("VERIFY", "FAILED" if FAILS else "OK", f"({len(FAILS)} failures)")

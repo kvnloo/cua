@@ -2,6 +2,12 @@
  "schema": "n03.provenance.v1",
  "lane": "N-03 (wave 4, attempt 2)",
  "branch": "exp/n-03-native-closure-axfg-a2-20261003",
+ "fix_pass_attempt_3": {
+  "branch": "exp/n-03-native-closure-axfg-a3-20261003",
+  "parent_head": "63d419034fdbc837572052029e2205b2367cee07",
+  "stale_lane_result_commit": "960bc20aa (superseded by 63d419034 and this fix pass)",
+  "scope": "text only: README wording (Method, Part B order disclosure and bound, ax_fg scope, focus-steal FAIL wording, drift row), this provenance block, and verify_artifacts.py privacy input CUA_PRIVACY_NAMES_FILE; no trial, raw file, analysis, summary or headline number changed"
+ },
  "base_commit": "85a73c2c71e44ca512b8cc6023cf5c77c0f35bdc",
  "base_composition": {
   "r2_10_source": "8f3a646b4818b757648835cf89db8886626b1cf0 (R2-10 accepted wave 3; upstream base 989cc76cec262ff8bcf6968b637820340fb9caaa)",
@@ -21,7 +27,7 @@
  "upstream_freshness": {
   "planning_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (libs/cua-driver tree df2b49c32e73756f0ef1ee2338f51626d5921d92)",
   "live_main_at_start": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (gh read 2026-10-03T02:40:05Z; compare planning...main = 0 ahead)",
-  "drift_vs_tested_upstream_base": "989cc76ce..41c34cb0d touches 8 libs/cua-driver files (trycua/cua PR 4375 snapshot cold-start budget + tool description text, PR 3489 macOS key gap). Claim-relevant: platform-linux tools/impl_.rs changes only get_window_state's default walk budget for a window's first snapshot (2000 ms instead of 1000 ms when timeout_ms is omitted; the fixture walk takes about 10 ms) and its description text; cua-driver-core tool_schema.rs adds the helper. No change to output schemas, atspi/native.rs, foreground.rs, proxy.rs, server.rs or sdk_adapter.rs.",
+  "drift_vs_tested_upstream_base": "989cc76ce..41c34cb0d touches 8 libs/cua-driver files (trycua/cua PR 4375 snapshot cold-start budget + tool description text, PR 3489 macOS key gap). Claim-relevant: platform-linux tools/impl_.rs changes only get_window_state's default walk budget for a window's first snapshot (2000 ms instead of 1000 ms when timeout_ms is omitted; the fixture walk takes about 10 ms) and its description text; cua-driver-core tool_schema.rs adds the helper. No change to output schemas, atspi/native.rs, foreground.rs, proxy.rs, server.rs or sdk_adapter.rs. Also in tools/impl_.rs: get_window_state's screenshot-only snapshot publish switches from publish_for_session to the new publish_capture_for_session; that branch runs only when no semantic snapshot was published and every N-03 observation requests the tree, so no claim impact (added in the attempt-3 fix pass).",
   "live_main_at_end": "a8d5788fddee3d851beaabd0d626bbc5e9fdf7cc (gh read 2026-10-03T05:45:40Z; compare 41c34cb0d...main = 2 ahead, 0 libs/cua-driver files)"
  },
  "live_heads_at_start": {
@@ -34,6 +40,6 @@
   "kvnloo/cua#106": "c45845797b714ccfd76a9569d3238a0724107a83 (open, unchanged)"
  },
  "publication_sha": "set by the Publish agent",
- "environment": "one Linux host (10 CPUs); hostless v2 for every code-executing command; native blocks inside hostless-strict + cua-x11-session.sh (private Xvfb, private AT-SPI bus); Driver telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); jev-use venv (uv sync --frozen, Python 3.12; mcp 1.30.0, jsonschema 4.26.0, referencing 0.37.0); other tracks kept the host loaded outside the quiet lock (loadavg per trial in raw)",
+ "environment": "one Linux host (20 logical CPUs, getconf _NPROCESSORS_ONLN; nproc reports 10 under an OpenMP thread cap); hostless v2 for every code-executing command; native blocks inside hostless-strict + cua-x11-session.sh (private Xvfb, private AT-SPI bus); Driver telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); jev-use venv (uv sync --frozen, Python 3.12; mcp 1.30.0, jsonschema 4.26.0, referencing 0.37.0); other tracks kept the host loaded outside the quiet lock (loadavg per trial in raw)",
  "provider": {"attempts": 0, "reached": 0}
 }
