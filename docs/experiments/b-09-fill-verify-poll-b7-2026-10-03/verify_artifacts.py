@@ -229,7 +229,8 @@ def receipts(prereg: dict) -> None:
           "ledger window", n > 0 and not bad, f"{n} manifests; {bad[:5]}")
     check("receipts: every completed round started at 1-min loadavg <= 4.0", not load_bad, f"{load_bad[:5]}")
     shared = {x["label"] for x in ledger if x.get("mode") == "shared"}
-    need = {"b09-pilot-r00-01", "b09-analyze-final", "b09-versions-start", "b09-versions-end"}
+    need = {"b09-pilot-r00-01", "b09-versions-start", "b09-versions-end",  # wave 7 (B-09)
+            "b09r-versions-start", "b09r-versions-end", "b09r-analyze-final"}  # wave 8 (B-09R resume)
     check("receipts: SHARED-lock receipts for the pilot, the version reads and the final analysis", need <= shared,
           f"missing {sorted(need - shared)}")
     common_receipts(sha, ver)

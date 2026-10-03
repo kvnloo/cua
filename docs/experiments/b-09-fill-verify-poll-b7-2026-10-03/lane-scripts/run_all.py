@@ -48,7 +48,7 @@ def cargo_free() -> bool:
 def log(msg: str) -> None:
     line = f"[{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}] run_all {msg}"
     print(line, flush=True)
-    with (LT / "logs" / "b09-run_all.log").open("a") as f:
+    with (LT / "logs" / "b09r-run_all.log").open("a") as f:
         f.write(line + "\n")
 
 

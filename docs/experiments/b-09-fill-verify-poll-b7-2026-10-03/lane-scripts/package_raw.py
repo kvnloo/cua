@@ -10,7 +10,8 @@ CUA_PRIVACY_PATTERNS_FILE environment variable (one regex per line), never from 
 - raw/{main,pilot}-trials.tar.gz: every trial file (event log +
   summary + Driver trace), cut attempts included; sorted members, mtime 0, uid/gid 0 (deterministic);
 - raw/{main,pilot}/run-manifest-*.json: chunk manifests (scrubbed);
-- raw/lock-ledger.jsonl: this lane's quiet-lane ledger lines (labels starting b09-), verbatim;
+- raw/lock-ledger.jsonl: this lane's quiet-lane ledger lines (labels starting b09- or b09r-), verbatim;
+- raw/locks/*.jsonl: B-09R read-only lock-holder snapshots (pid, ppid, elapsed, executable name, lock type);
 - raw/logs/*.log: session and chunk logs with local paths and private names replaced by placeholders.
 Trial files are scrubbed too (paths only) before archiving.
 """
@@ -86,9 +87,13 @@ def main() -> None:
         for m in sorted(d.glob("run-manifest-*.json")):
             (raw / plan / m.name).write_text(scrub(m.read_text()))
     lines = [x for x in Path(a.ledger).read_text().splitlines()
-             if x.strip() and json.loads(x).get("label", "").startswith("b09-")]
+             if x.strip() and json.loads(x).get("label", "").startswith(("b09-", "b09r-"))]
     (raw / "lock-ledger.jsonl").write_text("\n".join(lines) + "\n")
     (raw / "logs").mkdir(parents=True, exist_ok=True)
+    if (lt / "locks").is_dir():  # B-09R holder snapshots (no paths, no command lines)
+        (raw / "locks").mkdir(parents=True, exist_ok=True)
+        for s in sorted((lt / "locks").glob("*.jsonl")):
+            (raw / "locks" / s.name).write_text(scrub(s.read_text()))
     for log in sorted((lt / "logs").glob("*.log")):
         (raw / "logs" / log.name).write_text(scrub(log.read_text(errors="replace")))
     print(json.dumps({"trial_files": counts, "ledger_lines": len(lines),
