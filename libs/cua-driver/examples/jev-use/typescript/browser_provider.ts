@@ -29,6 +29,13 @@ export type BrowserDecision = Readonly<{
   backend: 'mock' | 'typesafe' | 's1';
 }>;
 
+/**
+ * Name the configured decision client for receipts. On a decision record it
+ * names the client that returned the decision. On a decide-phase failure
+ * receipt (`outcome=unknown, phase=decide`) it names the backend that was
+ * attempted: no decision was received, and that receipt carries no candidate,
+ * confidence or probabilities.
+ */
 export function backendName(
   provider: BrowserProvider
 ): BrowserDecision['backend'] {

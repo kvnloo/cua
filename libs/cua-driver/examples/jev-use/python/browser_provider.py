@@ -18,6 +18,13 @@ BrowserProvider = Literal["mock", "live", "typesafe", "s1"]
 
 
 def backend_name(provider: BrowserProvider) -> str:
+    """Name the configured decision client for receipts.
+
+    On a decision record it names the client that returned the decision. On a
+    decide-phase failure receipt (``outcome=unknown, phase=decide``) it names the
+    backend that was attempted: no decision was received, and that receipt
+    carries no candidate, confidence or probabilities.
+    """
     return "typesafe" if provider in {"live", "typesafe"} else provider
 
 
