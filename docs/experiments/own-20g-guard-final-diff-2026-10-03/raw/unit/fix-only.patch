@@ -1,0 +1,33 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+index 7fb025b7f..d89cd69c7 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+@@ -841,8 +841,10 @@ fn settle(
+         watch_until = started + SETTLE_WATCH_NEW_WINDOW;
+     }
+     let clamp = settle_clamp();
++    let mut read_at = started;
+     while changes.is_empty() && own_window.is_none() && Instant::now() < watch_until {
+         std::thread::sleep(settle_poll_sleep(clamp, Instant::now(), watch_until));
++        read_at = Instant::now();
+         changes = diff();
+         cua_driver_core::phase_trace::mark("focus_guard", "settle_poll");
+         (new_clients, own_window) = windows();
+@@ -851,7 +853,16 @@ fn settle(
+             watch_until = started + SETTLE_WATCH_NEW_WINDOW;
+         }
+     }
+-    (changes, new_clients, own_window, started)
++    // The watch ended on its deadline with nothing seen, but its last read
++    // began before the deadline (an X call stalled across it): read once
++    // more, so a change that landed during the stall is not missed, and give
++    // its restore the whole budget from this read.
++    let mut restore_from = started;
++    if changes.is_empty() && own_window.is_none() && read_at < watch_until {
++        restore_from = Instant::now();
++        changes = diff();
++    }
++    (changes, new_clients, own_window, restore_from)
+ }
+ 
+ /// Run `body` (a background delivery) between a snapshot and a restore.

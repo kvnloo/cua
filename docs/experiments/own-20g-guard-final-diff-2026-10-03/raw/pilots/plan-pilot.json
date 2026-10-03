@@ -1,0 +1,167 @@
+{
+ "band_ms": [
+  216,
+  220,
+  225,
+  230,
+  235,
+  240,
+  245
+ ],
+ "band_rounds": 6,
+ "band_rounds_max": 10,
+ "blocks": [
+  {
+   "block": "p01",
+   "kind": "mixed",
+   "lock": "shared",
+   "trials": [
+    {
+     "arm": "S0",
+     "bin": "U",
+     "block": "p01",
+     "id": "p01-001",
+     "kind": "stall",
+     "pair": 0,
+     "task": "checkbox"
+    },
+    {
+     "arm": "S0",
+     "bin": "G",
+     "block": "p01",
+     "id": "p01-002",
+     "kind": "stall",
+     "pair": 0,
+     "task": "checkbox"
+    },
+    {
+     "arm": "X",
+     "bin": "G",
+     "block": "p01",
+     "id": "p01-003",
+     "kind": "stall",
+     "pair": 1,
+     "task": "text"
+    },
+    {
+     "arm": "X",
+     "bin": "U",
+     "block": "p01",
+     "id": "p01-004",
+     "kind": "stall",
+     "pair": 1,
+     "task": "text"
+    },
+    {
+     "arm": "S0",
+     "bin": "G",
+     "block": "p01",
+     "delay_ms": 230,
+     "group": "band",
+     "id": "p01-005",
+     "kind": "steal",
+     "pair": 0,
+     "task": "checkbox"
+    },
+    {
+     "arm": "S0+CL",
+     "bin": "G",
+     "block": "p01",
+     "delay_ms": 230,
+     "group": "band",
+     "id": "p01-006",
+     "kind": "steal",
+     "pair": 0,
+     "task": "checkbox"
+    },
+    {
+     "arm": "S0",
+     "bin": "G",
+     "block": "p01",
+     "group": "nosteal",
+     "id": "p01-007",
+     "kind": "nosteal",
+     "pair": 0,
+     "task": "checkbox"
+    },
+    {
+     "arm": "S0",
+     "bin": "U",
+     "block": "p01",
+     "id": "p01-008",
+     "kind": "stallonly",
+     "pair": 0,
+     "task": "checkbox"
+    },
+    {
+     "arm": "S0",
+     "bin": "G",
+     "block": "p01",
+     "id": "p01-009",
+     "kind": "stallonly",
+     "pair": 0,
+     "task": "checkbox"
+    }
+   ]
+  },
+  {
+   "block": "p02",
+   "harness": "r3_harness.py",
+   "kind": "r3",
+   "lock": "shared",
+   "trials": [
+    {
+     "bin": "G",
+     "block": "p02",
+     "id": "p02-001",
+     "kind": "r3",
+     "pair": 0,
+     "variant": "noop"
+    },
+    {
+     "bin": "G",
+     "block": "p02",
+     "id": "p02-002",
+     "kind": "r3",
+     "pair": 0,
+     "variant": "registry"
+    },
+    {
+     "bin": "G",
+     "block": "p02",
+     "id": "p02-003",
+     "kind": "r3",
+     "pair": 0,
+     "variant": "bus"
+    },
+    {
+     "bin": "U",
+     "block": "p02",
+     "id": "p02-004",
+     "kind": "r3",
+     "pair": 0,
+     "variant": "bus"
+    }
+   ]
+  }
+ ],
+ "edge_ms": [
+  205,
+  206,
+  207,
+  208,
+  209,
+  210,
+  211,
+  212,
+  213,
+  214,
+  215
+ ],
+ "schema": "own20g.plan.v1",
+ "task_arm": {
+  "checkbox": "S0",
+  "text": "X"
+ },
+ "which": "pilot"
+}

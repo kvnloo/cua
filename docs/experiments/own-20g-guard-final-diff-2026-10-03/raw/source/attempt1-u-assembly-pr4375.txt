@@ -1,0 +1,112 @@
+# U assembly: base 0f1955d2f1ee2b01b40775aa53ea2af0b5544218 + cherry-picks (git cherry-pick, no conflicts, no manual resolution)
+bdf33d9fe4d716033089244a6571db21934374d6 exp(cua-driver): measurement-only N-02 settle clamp knob and MCP span marks (default off)
+20243ea208eae7bac6dd1490f75c643a5fc6a3d4 exp(cua-driver): measurement-only N-01R native wait knobs (default off)
+74d1785752a263725c667b8ac68e5b968adadeb1 exp(cua-driver): measurement-only phase marks for the R2-04 AT-SPI profile
+
+# files touched by trycua/cua PR 4375 (920a42f10) and PR 3489 (310cdfd58)
+920a42f1043a04400924f797d5430543a0ff99ad fix(cua-driver): extend first Linux snapshot budget (#4375)
+ .../crates/cua-driver-core/src/snapshot_store.rs   | 67 ++++++++++++++++++++++
+ .../rust/crates/cua-driver-core/src/tool_schema.rs | 31 ++++++++++
+ .../cli-specs/cua-driver-mcp-linux.json            |  2 +-
+
+# overlap with cherry-picked commits
+28b915ae9:
+libs/cua-driver/rust/crates/cua-driver-core/src/lib.rs
+libs/cua-driver/rust/crates/cua-driver-core/src/phase_trace.rs
+libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs
+libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs
+b9b357bc7:
+libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+194a6342e:
+libs/cua-driver/rust/crates/cua-driver/src/proxy.rs
+libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+
+# per-file diff of cherry-picked result vs original commits (range-diff)
+1:  1280a9e5e < -:  --------- docs(experiments): pre-register R2-04 AT-SPI phase/RPC profile
+2:  28b915ae9 = 1:  74d178575 exp(cua-driver): measurement-only phase marks for the R2-04 AT-SPI profile
+3:  b9b357bc7 = 2:  20243ea20 exp(cua-driver): measurement-only N-01R native wait knobs (default off)
+4:  8ff42418d < -:  --------- docs(experiments): pre-register N-01R native causal wait A/B
+5:  9421e1ccd < -:  --------- docs(experiments): N-01R native causal wait A/B packet
+6:  3bb4a7fc7 < -:  --------- docs(experiments): N-01R verifier fix round (tracked build evidence, H_S scope)
+7:  194a6342e = 3:  bdf33d9fe exp(cua-driver): measurement-only N-02 settle clamp knob and MCP span marks (default off)
+
+# full PR 4375 file list
+docs/content/docs/cua-driver/reference/mcp-tools/window-state.mdx
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs
+libs/cua-driver/rust/crates/cua-driver-core/src/tool_schema.rs
+libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs
+scripts/docs-generators/cli-specs/cua-driver-mcp-linux.json
+
+# overlap: platform-linux/src/tools/impl_.rs (28b915ae9 hunks vs 4375 hunks): auto-merged by cherry-pick, no conflict markers
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs b/libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs
+index d5d3855a8..41864c548 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs
+@@ -6317,6 +6317,7 @@ impl Tool for ClickTool {
+         }
+ 
+         if let Some(idx) = elem_idx_resolved {
++            cua_driver_core::phase_trace::mark("click", "element_resolved");
+             // The observed element: its proven AT-SPI identity and the frame
+             // the snapshot recorded. Every route below acts on that identity
+             // (or its cached frame); the live ordinal `idx` is only an
+@@ -6355,6 +6356,7 @@ impl Tool for ClickTool {
+             .ok()
+             .and_then(Result::ok)
+             .and_then(Result::ok);
++            cua_driver_core::phase_trace::mark("click", "placement_done");
+             // X11 foreground element click: behave like a user — activate the
+             // window and XTest-click the element's screen centre. No AT-SPI
+             // action, no second tree walk. Element bounds come from the
+@@ -6379,6 +6381,7 @@ impl Tool for ClickTool {
+                 }
+                 reveal_pointer_action_for(&self.state, &cursor_id, sx, sy, true).await;
+             }
++            cua_driver_core::phase_trace::mark("click", "reveal_done");
+ 
+             // Chromium can execute a genuine AT-SPI action without focus. Try
+             // that route before applying its background synthetic-input gate.
+@@ -6444,6 +6447,7 @@ impl Tool for ClickTool {
+             {
+                 let observed_for_ax = observed.clone();
+                 let guard_pid = (!delivery.is_foreground()).then_some(pid);
++                cua_driver_core::phase_trace::mark("click", "ax_start");
+                 let ax_result = match tokio::time::timeout(
+                     ELEMENT_AX_BUDGET,
+                     tokio::task::spawn_blocking(move || {
+@@ -6473,6 +6477,7 @@ impl Tool for ClickTool {
+                         }));
+                     }
+                 };
++                cua_driver_core::phase_trace::mark("click", "ax_joined");
+                 if let Ok(Ok(((_action, suspected_noop, unacknowledged), guard))) = ax_result {
+                     let mut structured = json!({
+                         "path": "ax",
+@@ -8925,13 +8930,16 @@ impl Tool for SetValueTool {
+         let xid_opt = Some(xid);
+         let delivery = crate::input::delivery::DeliveryMode::from_args(&args);
+         let cursor_id = resolve_cursor_key(&args);
++        cua_driver_core::phase_trace::mark("set_value", "element_resolved");
+         position_named_session_keyboard_cursor(&self.state, &args, pid, xid, Some(idx), None, true)
+             .await;
++        cua_driver_core::phase_trace::mark("set_value", "cursor_done");
+         // 1. Focus-free accessibility write on the exact snapshot object.
+         let ax = spawn_blocking_bounded("set_value", foreground_budget(0), move || {
+             crate::atspi::set_value_in(pid, xid_opt, idx, &value_for_task)
+         })
+         .await;
++        cua_driver_core::phase_trace::mark("set_value", "write_done");
+         let ax_error = match ax {
+             Ok(Ok(())) => {
+                 let readback = tokio::task::spawn_blocking(move || {
+@@ -8940,6 +8948,7 @@ impl Tool for SetValueTool {
+                 .await
+                 .ok()
+                 .flatten();
++                cua_driver_core::phase_trace::mark("set_value", "readback_done");
+                 return set_value_result(idx, &value, "ax", readback, None);
+             }
+             Ok(Err(error)) if crate::atspi::native::is_no_value_route(&error) => error,

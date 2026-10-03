@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import re
 import socket
 from pathlib import Path
 
@@ -39,6 +40,8 @@ def scrubber(pairs: list[str]):
             text = text.replace(prefix, token)
         if host and len(host) > 2:
             text = text.replace(host, "<host>")
+        # private session-bus / runtime socket paths minted per session (dbus-XXXX under the session tmp)
+        text = re.sub(r"/[t]mp/dbus-[A-Za-z0-9]+", "<session-bus-socket>", text)
         return text
     return scrub
 
