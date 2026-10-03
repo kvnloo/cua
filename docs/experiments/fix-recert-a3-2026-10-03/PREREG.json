@@ -1,0 +1,80 @@
+{
+  "schema": "recert-fix-a3-prereg-v1",
+  "lane": "RECERT-FIX",
+  "wave": 5,
+  "attempt": 3,
+  "title": "Recertify FIX-02 F1-F4, the kvnloo/cua#84 revision (OWN-09R) and OWN-16W on 0f1955d2f, plus the kvnloo/cua#36 same-process two-window row",
+  "owners": ["kvnloo/cua#36", "kvnloo/cua#9", "kvnloo/cua#84", "kvnloo/cua#16", "kvnloo/cua#93", "kvnloo/cua#73"],
+  "advances": {
+    "E6": "freshness: trycua/cua PR 4375 and PR 3489 changed snapshot_store.rs, tool_schema.rs, platform-linux tools/impl_.rs and sdk embedded.rs between 989cc76ce and 0f1955d2f; FIX-02 F1/F2, the #84 revision and OWN-16W are re-measured at the rebased SHAs",
+    "E1": "kvnloo/cua#36 same-process two-window row (was NOT_RUN)",
+    "E4": "the fork fixes behind the E4 caveats (FIX-02) recertified on current main"
+  },
+  "tested_source": {
+    "base": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (libs/cua-driver tree df2b49c32e73756f0ef1ee2338f51626d5921d92, libs/cua-driver-fixtures tree f23585116935ef61e220c3b59b18d64ecf045b6f; equal to upstream main cb685fad7 at start)",
+    "FIX-02": {"U_prime": "513e45fee0c5b02c7dd6d41a960f925a164b5066 (0f1955d2f + FIX-01 picks 0fd76ecc5, 513e45fee)", "F_prime": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c (U' + F1 8e0e8aea0, F2 205a4ecb2, F3 cdffb3213, F4 a357d061d, test df4f1edf5)", "branch": "exp/fix-02r-a3-20261003"},
+    "OWN-09R": {"M": "0f1955d2f + test-only m-tree.patch (wave-3 patch, applies unchanged; test blobs equal the branch)", "P_prime": "ba611b51a (merge 4e3e90776 of kvnloo/cua#84 head 566b9c732, then 3a84dca3d, cf72bb328, 17cb66d1d, 24980c8cd, harness ba611b51a)", "branch": "exp/own-09r2-a3-20261003"},
+    "OWN-16W": {"U_dprime": "57e3564cac9e998d40bddea35fb0228699861141 (0f1955d2f + measurement-only marks fa277577a, 57e3564ca)", "F_dprime": "7e31eae59d2316c3e41d31a3eb872837bb945283", "branch": "exp/own-16w2-a3-20261003"},
+    "packet": "exp/fix-recert-a3-20261003 from 0f1955d2f (adds the env-gated two-window fixture variant and this packet)",
+    "rebase_salvage": "14/14 rebased commits are range-diff '=' against their wave-3 sources (rebase/ in raw); df4f1edf5 reviewed line by line and kept (README)"
+  },
+  "binaries": {
+    "fix02r3-u-513e45fee": "3d27b55b76bdfa64d8659100f995db23400c3b46c06543832aa3c8acb0b31acd",
+    "fix02r3-f-df4f1edf5": "e438980aa6812ac43a63793fca001fc1e2d86515a105eeb099f6a9c269fd64a1",
+    "own16w3-u-57e3564ca": "6649483fc258130bbc958366c68831b670f81394626b9bc71edb918ff06b246c",
+    "own16w3-f-7e31eae59": "recorded in provenance.json when its build completes; built before any OWN-16W session",
+    "own09r_test_binaries": "frozen before the first counted OWN-09R invocation; sha256 in raw/own09r/frozen-bins.sha256",
+    "rule": "every block header / session-env records the Driver sha256 and --version read inside the private session; a block whose sha256 differs from its arm's binary is excluded and reported"
+  },
+  "environment": "hostless v2; private X11 session (cua-x11-session.sh: Xvfb 1920x1080x24, openbox, picom, private D-Bus, private AT-SPI via CUA_SESSION_ATSPI=1 + CUA_SESSION_EXTRA_ENV) for every native, browser and unit run; headless sway (cua-sway-session.sh under hostless) for S-W; telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); 0-3 s jitter and an xdpyinfo probe before trusting a session; no permission-mode, approval-bypass, e2e or sandbox overrides; TMPDIR under the lane temp dir",
+  "locks": "every counted block holds the SHARED quiet-lane lock (harness/a3/qlock.sh: receipt in raw/*/lock-ledger.jsonl and the loop-wide quiet-lane-ledger.jsonl), at most 10 attempts/cells per acquisition; cargo work holds the cargo-build lock. Correctness only: no timing claim is made from any row",
+  "provider": {"name": "TypeSafe", "cap_reached": 0, "use": "none; every browser chooser is the jev-use mock; socket guard counts non-loopback connects"},
+  "refusal_classification": "a call is REFUSED iff its response is not a success: isError true, or structuredContent.refusal present, or structuredContent.effect == 'refused', or an rpc error; and it changed no fixture state (state file equal before/after). A non-error response that changed nothing is an UNVERIFIED SUCCESS (counted, gate failure). A call is LANDED iff the target-owned state file changed. A positive is VERIFIED iff the call is not refused and the expected key of the state file changed.",
+  "rows": {
+    "FIX-02 native (canonical GTK3 TaskWindow, harness/fix02-w3/native, wave-3 copy)": {
+      "I2": {"n": "T1 20 + T2 20 per arm", "forced_path": "B presents A's element_token on pid_B and on pid_A; A's own token tail", "F_gate": "both B calls REFUSED in 40/40 attempts, 0 mutations; A's tail VERIFIED 40/40", "U_prediction": "B's call on pid_A LANDS (wave 3: 40/40); discriminating iff >= 1"},
+      "I2d": {"n": "T1 20 + T2 20 per arm", "F_gate": "derived/minted token REFUSED 40/40, A's handle disclosed 0/40, A's tail VERIFIED 40/40", "U_prediction": "probe discloses A's handle and the derived token LANDS (wave 3: 40/40)"},
+      "I5p": {"n": "T3 20 'same' order (row I5p) + 20 'swapped' order (row I5ps) per arm", "F_gate": "gen1 token and gen1 capture REFUSED 20/20 in each order, gen1 and gen2 token strings differ 20/20", "U_prediction": "'same': gen1 token string equals gen2's and is accepted 20/20 (wave 3); 'swapped': recorded"},
+      "I5pt": {"n": "T3 10 per arm", "F_gate": "gen1 token REFUSED 10/10 (tree differs between generations)", "U_prediction": "dispatched to the element at the same index in gen2 ('Zoom out' in wave 3) 10/10"},
+      "P": {"n": "T1 10 + T2 10 per arm", "gate": "each session's own token VERIFIED 20/20 on F' (both sessions, both orders)"},
+      "I3s": {"n": "T2 10 per arm", "class": "diagnostic, OWNER_DECISION unchanged; recorded only"},
+      "forged": {"n": "5 per row per arm: I2 T1, I2 T2 (forged tokens) and I1 T1, I1 T2 (forged/garbled captures)", "gate": "every forged value REFUSED with 0 mutations on F' (U' recorded; predicted refused too); the A tail VERIFIED"}
+    },
+    "FIX-02 F3 (jev-use runners, REAL with injection at the stdio seam)": {
+      "n": "per arm: py stale 10, py trust_unknown 10 (harness/fix02-w3 in-process seam via a3/fix02_browser_a3.py); ts stale 10, ts trust_unknown 10 (a3/seam_proxy.py at the process boundary)",
+      "F_gate": "post-dispatch unknown (trust_unknown, journal hold after_unchanged:1): 0 re-dispatches, run ends 'unknown', journal applied exactly 1, 10/10 per runtime; pre-dispatch (stale): exactly 1 re-observation-backed re-dispatch and journal applied 1 with the token (verified) 10/10 per runtime. Blind re-dispatches (a re-dispatch after a refusal that may have landed) = 0",
+      "U_prediction": "trust_unknown re-dispatched (duplicate submit) per wave 3 (py 10/10); ts recorded"
+    },
+    "FIX-02 F4 (browser_set_input_files on a detached file input)": {"n": "20 per arm", "F_gate": "old-ref call refused (browser_ref_stale) 20/20, 0 old-node events, fresh-ref rebind verified 20/20", "U_prediction": "accepted 20/20 with old-node events", "disposition_note": "the TOCTOU (check-to-assignment) boundary stays REVISE"},
+    "Part B: kvnloo/cua#36 same-process two-window (CUA_GTK3_TWO_WINDOWS=1, T2, harness/w2)": {
+      "W2a": {"n": "20 per arm", "refusal": "B dispatches A's w1 token: must be REFUSED on F'", "positives": "A's own w1 token and B's own w2 token VERIFIED"},
+      "W2b": {"n": "20 per arm", "positives": "A observes w1, then w2, then its w1 token VERIFIED, then its w2 token VERIFIED"},
+      "W2c": {"n": "20 per arm", "refusal": "a w1 capture presented for a coordinate click inside w2 REFUSED with 0 mutations", "positives": "the same point with the w2 capture VERIFIED"},
+      "W2d": {"n": "20 per arm", "refusal": "after w1 closes (fixture-owned close, confirmed on the state file) A's w1 token REFUSED", "positives": "A's w2 token VERIFIED"},
+      "oracle": "the fixture's per-window keys in its state file (target-owned); route from each call's structuredContent",
+      "rule": "KEEP iff on F' every refusal row refuses 100%, every positive verifies 100%, and there are 0 cross-session mutations; otherwise KILL naming the exact row. U' results are reported as default-path findings, not gated",
+      "smokes": "S1 (no env: one window, v1 state keys unchanged) and S2 (two windows) run before PREREG; not counted"
+    },
+    "OWN-09R (kvnloo/cua#84 revision for #9; harness from the wave-3 OWN-09R packet, frozen test binaries)": {
+      "invocations": "per arm M and P': sdk-main (--test-threads=1) and sdk-stress (8): R1 variants 100 per pass, other variants 20 per pass; cabi: 40 per variant (R1D, R4C)",
+      "P_gates": "R1D flag_before_admission PASS 40/40; R6 PASS 80/80 (shutdown_after_cancel 40 + end_session_after_cancel 40); R2 cancel_after_admission PASS 40/40; R4 SDK after_completion/after_inflight_cancel PASS 40/40 each and R4C retained-token variants PASS 40/40 each; R7 ack_lost_guarded_retry PASS 40/40; R5 PASS 40/40; every no-cancel control PASS; every broken control FAIL (detected)",
+      "M_reproduces": "R1D 40/40 FAIL (gate), and R2 40/40, R6 80/80, R7 40/40 FAIL as in wave 3",
+      "not_rerun": "R8 and the bounded coordinator-wait question are OWNER_DECISION; R3 BLOCKED (macOS)"
+    },
+    "OWN-16W (harness/own16w-w3, wave-3 copy)": {
+      "X11": {"n": "per binary 2 truth sessions (rotation 0 and 3) x 21 calls per row; rows both, string_false, string_true", "F_gate": "string_false and string_true REFUSED invalid_arguments 42/42 each with capture == walk == 0 by the Driver marks AND the X RECORD (GetImage/ShmGetImage) and AT-SPI GetState oracles; positive control 'both' passes", "U_gate": "string rows silently accepted 42/42 (both producers run)"},
+      "S-W": {"n": "F'' 2 truth sessions (rotation 0 and 3) x 21 calls per row, all 8 rows, headless sway native Wayland with WAYLAND_DEBUG=server", "gate": "the wave-3 S-W per-row gates on F'': omission rows (omitted producer 0 by marks AND the compositor-side capture oracle / AT-SPI GetState oracle, remaining modality complete) 42/42, legacy honored 42/42, neither/unknown_field rejected, string rows refused 42/42, token click verified per session"}
+    }
+  },
+  "unit_gates": {
+    "FIX-02": "the FIX-02 tests (snapshot_session_ownership incl. the df4f1edf5 tests, snapshot_runtime_generation, the F4 v2_tests, the py/ts runner refusal tests) FAIL on U' (red tree = U' + those test files) and PASS on F'; F' cargo test -p cua-driver-core --lib --tests and -p platform-linux --lib: 0 failed",
+    "OWN-09R": "per commit: c1 red (merge does not compile the slice A fixture) / green (slice A passes); c2 red (admission check disabled) / green; c3 red (c3 test on c2) / green; c4 converter check red (unconverted sites) / green (0); head suites cua-driver-core, cua-driver-sdk (incl. own09_arm_p) and cua-driver: 0 failed",
+    "OWN-16W": "get_window_state_selector_tests red on U'' (test added) and green on F''; F'' platform-linux lib 0 failed"
+  },
+  "disposition_rule": "Each fix is RECERT_PASS iff its gating rows match its wave-3 disposition (F1 KEEP, F2 KEEP, F3 KEEP, F4 REVISE with the measured narrower claim; OWN-09R KEEP; OWN-16W S-W KEEP and X11 string fix KEEP). Otherwise it moves to REVISE, naming the exact failing row. A harness error that prevents a row from running is reported as such and the row is NOT_RUN (never silently dropped); every attempt stays in the denominator.",
+  "e4_counters": "per arm: cross-session mutations, stale dispatches (an old-generation or closed-window token that changed state), duplicates (journal applied > 1, OWN-09R duplicate effects), unverified successes",
+  "claim_boundary": "Linux X11 GTK3 (plus headless sway for S-W) at the exact SHAs above; fork candidates only, nothing upstream; macOS/Windows BLOCKED (hardware)",
+  "evidence_classes": ["UNIT", "REAL+FIXTURE", "FIXTURE", "SOURCE", "BLOCKED"],
+  "plans": ["plans/native-1.txt", "plans/native-2.txt", "plans/w2.txt", "plans/browser.txt", "harness/a3/own16w_a3.sh (x11, sw)", "harness/a3/own09r_rows_a3.sh (sdk-main, sdk-stress, cabi per arm)"],
+  "shakedown_disclosure": "before this commit: fixture smokes S1/S2 and 1-attempt shakedowns of W2a (U', F'), W2b, W2c, W2d (2 attempts), I5ps (U', F'), f3ts stale (F'), f3ts trust_unknown (U'), f3 stale (F'); kept outside the packet denominators (raw/shakedown/)"
+}

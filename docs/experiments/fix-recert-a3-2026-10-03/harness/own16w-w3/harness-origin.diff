@@ -1,0 +1,824 @@
+diff --git own16/harness-origin/modality_truth.py own16w/modality_truth.py
+index 30252b53b..fe39c84ae 100644
+--- own16/harness-origin/modality_truth.py
++++ own16w/modality_truth.py
+@@ -1,29 +1,35 @@
+ #!/usr/bin/env python3
+-"""OWN-16: Linux observation-modality selector truth table at the producer boundary.
++"""OWN-16W: observation-modality producer truth on headless sway (native Wayland + Xwayland) and X11.
+ 
+-Runs INSIDE the isolated X11 session (cua-x11-session.sh). Starts the canonical
+-GTK3 fixture in its task mode (``CUA_GTK3_TASK_STATE``), opens Driver MCP stdio
+-session(s) and calls ``get_window_state`` on the task window with each modality
+-selector row. Per call it records the Driver's measurement-only producer marks
+-(``CUA_DRIVER_PHASE_TRACE_FILE``: capture_window / capture_root_region /
+-atspi_walk enter+exit with invocation ordinals), the response shape and
+-metadata verbatim, element/coordinate integrity, client wall time and MCP
+-response bytes.
++Copied from the OWN-16 packet (7a4f3252a, docs/experiments/own-16-modality-truth-2026-10-02/
++modality_truth.py, sha256 ead359ea...) and adapted; the diff is harness-origin.diff.
+ 
+-Modes:
+-  measured  pre-registered rows: 1 cold call per row, then the warm block
+-            (n rounds, rotating row order) under the EXCLUSIVE quiet-lane lock,
+-            then the independent producer-boundary oracle block (X RECORD of
+-            GetImage/ShmGetImage + dbus-monitor on the private AT-SPI bus) and
+-            one usability action per session.
+-  negative  a session started without the private AT-SPI bus: accessibility
+-            requested; records what the metadata says and whether the walk ran.
+-  smoke     default-off smoke: the same binary with the marks unset (and set to
+-            an empty string), then set; plus the unmodified main binary.
+-            Compares response shape per row and checks that no trace file appears.
++Runs INSIDE a private session (cua-sway-session.sh or cua-x11-session.sh). Starts the canonical
++GTK3 fixture in task mode (CUA_GTK3_TASK_STATE), opens one Driver MCP stdio session and calls
++get_window_state on the task window with each selector row. Per call it records the Driver's
++measurement-only producer marks (CUA_DRIVER_PHASE_TRACE_FILE: capture_window /
++capture_root_region / atspi_walk enter+exit with invocation ordinals), the response shape and
++metadata verbatim, element/coordinate integrity, client wall time and MCP response bytes.
+ 
+-Nothing here changes Driver behaviour. The Driver gets jev-use's
+-``driver_environment()`` plus, when marks are on, CUA_DRIVER_PHASE_TRACE_FILE.
++Environment modes (--env-mode):
++  sway-wayland   GTK3 as a native Wayland client (GDK_BACKEND=wayland); Driver opted into its
++                 native-Wayland backend (CUA_DRIVER_RS_ENABLE_WAYLAND=1, WAYLAND_DISPLAY, SWAYSOCK).
++  sway-xwayland  GTK3 under the private Xwayland (GDK_BACKEND=x11, WAYLAND_DISPLAY removed);
++                 Driver on its X11 backend (WAYLAND_DISPLAY removed, no opt-in).
++  x11            private Xvfb (cua-x11-session.sh); as OWN-16.
++
++Run modes (--mode):
++  truth     1 cold call per row, then --warm-rounds rounds (row order rotated), with the
++            independent oracles running for the WHOLE block so every counted call is covered:
++            X RECORD (GetImage / ShmGetImage from all X clients), dbus-monitor on the private
++            AT-SPI bus, and (sway, WAYLAND_DEBUG=server in the compositor) the compositor's own
++            protocol log. 100 ms gap between calls for attribution. Then one token click.
++  timing    no oracles: warm-up call per row, then --pairs AB/BA pairs per comparison
++            (both vs screenshot_only, both vs accessibility_only).
++  negative  session without the private AT-SPI registry: accessibility requested.
++  smoke     default-off smoke: --driver with marks unset / empty / on, then --alt-driver unset.
++
++Nothing here changes Driver behaviour.
+ """
+ 
+ from __future__ import annotations
+@@ -31,7 +37,6 @@ from __future__ import annotations
+ import argparse
+ import asyncio
+ import base64
+-import fcntl
+ import hashlib
+ import json
+ import os
+@@ -49,7 +54,7 @@ FIXTURE_REL = "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py"
+ JEV_REL = "libs/cua-driver/examples/jev-use"
+ WINDOW_TITLE = "CuaTestHarness GTK3 Tasks"
+ 
+-# Pre-registered selector rows (PREREG.json "matrix").
++# Pre-registered selector rows (PREREG.json "rows").
+ ROWS: dict[str, dict[str, Any]] = {
+     "both": {"include_accessibility_tree": True, "include_screenshot": True},
+     "screenshot_only": {"include_accessibility_tree": False},
+@@ -57,9 +62,9 @@ ROWS: dict[str, dict[str, Any]] = {
+     "neither": {"include_accessibility_tree": False, "include_screenshot": False},
+     "legacy_omitted": {},
+     "unknown_field": {"include_tree": False},
+-    "wrong_type_supplementary": {"include_screenshot": "false"},
++    "string_false": {"include_screenshot": "false"},
++    "string_true": {"include_screenshot": "true"},
+ }
+-ROW_ORDER = list(ROWS)
+ PRODUCER_SCOPES = ("capture_window", "capture_root_region", "atspi_walk")
+ META_KEYS = (
+     "element_count", "total_element_count", "returned_element_count", "elements_complete",
+@@ -69,6 +74,15 @@ META_KEYS = (
+     "screenshot_original_width", "screenshot_mime_type", "window_bounds", "code", "refusal",
+     "coordinate_frame", "screenshot_composited", "popup",
+ )
++CALL_GAP_S = 0.1
++GRACE_NS = 30_000_000
++# Compositor-side capture requests (wlr-screencopy and ext-image-copy-capture).
++WL_CAPTURE_REQ = re.compile(
++    r"^(zwlr_screencopy_manager_v1\.capture_output(_region)?"
++    r"|ext_image_copy_capture_manager_v1\.create_session"
++    r"|ext_output_image_capture_source_manager_v1\.create_source"
++    r"|ext_foreign_toplevel_image_capture_source_manager_v1\.create_source)$")
++WL_LINE = re.compile(r"^\[(\d\d):(\d\d):(\d\d)\.(\d{6})\]\s+(->\s+)?([A-Za-z0-9_]+)#(\d+)\.([A-Za-z0-9_]+)\(")
+ 
+ 
+ def now() -> tuple[int, int]:
+@@ -106,13 +120,24 @@ def png_dims(data: bytes) -> tuple[int, int] | None:
+     return struct.unpack(">II", data[16:24])
+ 
+ 
++def title_matches(title: Any) -> bool:
++    # Native Wayland titles carry a " [app_id]" suffix (stack-sway finding).
++    return isinstance(title, str) and (title == WINDOW_TITLE or title.startswith(WINDOW_TITLE + " ["))
++
++
+ # --------------------------------------------------------------------------- integrity
+ def integrity(structured: dict[str, Any], png: tuple[int, int] | None) -> dict[str, Any]:
+-    """Element frames inside the window bounds; screenshot frames inside the image and
+-    consistent with frame - window origin (scaled) when both modalities are present."""
++    """Screenshot dims checks (always, fixing OWN-16 D1) + element frame checks when elements exist."""
+     wb = structured.get("window_bounds") or {}
+     elements = structured.get("elements")
+     out: dict[str, Any] = {"window_bounds": wb or None}
++    sw, sh = structured.get("screenshot_width"), structured.get("screenshot_height")
++    scale = structured.get("frame_scale") or 1.0
++    if sw is not None and wb:
++        out["screenshot_matches_window"] = (abs(sw - wb["width"] * scale) <= 1.0
++                                            and abs(sh - wb["height"] * scale) <= 1.0)
++    if png is not None and sw is not None:
++        out["png_matches_reported_dims"] = (png[0] == sw and png[1] == sh)
+     if not isinstance(elements, list):
+         out["elements_present"] = False
+         return out
+@@ -122,8 +147,6 @@ def integrity(structured: dict[str, Any], png: tuple[int, int] | None) -> dict[s
+     out["framed"] = len(framed)
+     outside, overshoot = 0, 0.0
+     sf_outside, sf_mismatch, sf_count = 0, 0, 0
+-    sw, sh = structured.get("screenshot_width"), structured.get("screenshot_height")
+-    scale = structured.get("frame_scale") or 1.0
+     for e in framed:
+         f = e["frame"]
+         if wb:
+@@ -146,17 +169,13 @@ def integrity(structured: dict[str, Any], png: tuple[int, int] | None) -> dict[s
+     out.update({"frames_outside_window": outside, "max_overshoot_px": overshoot,
+                 "screenshot_frames": sf_count, "screenshot_frames_outside_image": sf_outside,
+                 "screenshot_frames_inconsistent": sf_mismatch})
+-    if sw is not None and wb:
+-        out["screenshot_matches_window"] = (abs(sw - wb["width"] * scale) <= 1.0
+-                                            and abs(sh - wb["height"] * scale) <= 1.0)
+-    if png is not None and sw is not None:
+-        out["png_matches_reported_dims"] = (png[0] == sw and png[1] == sh)
+     canon = sorted(
+         (e.get("element_index"), e.get("role"), e.get("label"), e.get("value"),
+          json.dumps(e.get("frame"), sort_keys=True))
+         for e in elements
+     )
+     out["elements_digest"] = hashlib.sha256(json.dumps(canon).encode()).hexdigest()[:16]
++    out["frames"] = {str(e.get("label")): e.get("frame") for e in framed if e.get("label")}
+     return out
+ 
+ 
+@@ -180,6 +199,25 @@ def parse_monitor(text: str) -> list[dict[str, Any]]:
+     return out
+ 
+ 
++def parse_wayland_log(lines: list[str], anchor_ns: int) -> list[dict[str, Any]]:
++    """libwayland server debug lines '[HH:MM:SS.uuuuuu] iface#id.msg(' (UTC time of day; requests have
++    no '->'). Converted to epoch ns on the UTC day of anchor_ns (next day if it wraps)."""
++    day0 = (anchor_ns // 1_000_000_000) // 86400 * 86400
++    out = []
++    for line in lines:
++        m = WL_LINE.match(line)
++        if not m:
++            continue
++        hh, mm, ss, us, arrow, iface, _oid, msg = m.groups()
++        sod = int(hh) * 3600 + int(mm) * 60 + int(ss)
++        t_ns = (day0 + sod) * 1_000_000_000 + int(us) * 1000
++        if t_ns < anchor_ns - 43200 * 10**9:
++            t_ns += 86400 * 10**9
++        out.append({"t_ns": t_ns, "dir": "event" if arrow else "request", "iface": iface,
++                    "msg": msg, "sig": f"{iface}.{msg}"})
++    return out
++
++
+ def bus_pid(address: str, name: str) -> int | None:
+     try:
+         out = subprocess.run(
+@@ -211,27 +249,32 @@ def child_pids(comm_prefix: str) -> list[int]:
+ 
+ 
+ class Oracle:
+-    """X RECORD (GetImage/ShmGetImage from all clients) + dbus-monitor on the a11y bus."""
++    """X RECORD (GetImage/ShmGetImage from all clients) + dbus-monitor on the a11y bus +
++    the compositor's own protocol log (sway, WAYLAND_DEBUG=server)."""
+ 
+-    def __init__(self, out: Path, python: str, recorder: str, address: str | None) -> None:
++    def __init__(self, out: Path, python: str, recorder: str, address: str | None,
++                 wl_log: Path | None) -> None:
+         self.out = out
+         self.address = address
+         self.xlog = out / "xrecord.jsonl"
+         self.dlog = out / "dbus-monitor.log"
+-        self.xproc = subprocess.Popen([python, recorder, str(self.xlog)],
+-                                      stdout=subprocess.DEVNULL, stderr=open(out / "xrecord.err", "w"))
++        self.wl_log = wl_log
++        self.wl_offset = wl_log.stat().st_size if wl_log and wl_log.exists() else 0
++        self.xproc = (subprocess.Popen([python, recorder, str(self.xlog)], stdout=subprocess.DEVNULL,
++                                       stderr=open(out / "xrecord.err", "w"))
++                      if os.environ.get("DISPLAY") else None)
+         self.dstream = open(self.dlog, "w", encoding="utf-8")
+         self.dproc = (subprocess.Popen(["dbus-monitor", "--address", address, "--monitor"],
+                                        stdout=self.dstream, stderr=subprocess.STDOUT)
+                       if address else None)
+         deadline = time.monotonic() + 5
+-        while time.monotonic() < deadline:
++        while self.xproc is not None and time.monotonic() < deadline:
+             if self.xlog.exists() and "ready" in self.xlog.read_text():
+                 break
+             time.sleep(0.02)
+         time.sleep(0.3)
+ 
+-    def stop(self) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
++    def stop(self, anchor_ns: int):
+         time.sleep(0.2)
+         for proc in (self.xproc, self.dproc):
+             if proc is None:
+@@ -243,28 +286,26 @@ class Oracle:
+                 proc.kill()
+                 proc.wait()
+         self.dstream.close()
+-        xev = [json.loads(x) for x in self.xlog.read_text().splitlines() if x.strip()]
++        xev = ([json.loads(x) for x in self.xlog.read_text().splitlines() if x.strip()]
++               if self.xlog.exists() else [])
+         dev = parse_monitor(self.dlog.read_text(errors="replace"))
+-        return xev, dev
++        wev: list[dict[str, Any]] = []
++        wl_meta: dict[str, Any] = {"enabled": False}
++        if self.wl_log is not None and self.wl_log.exists():
++            with open(self.wl_log, "rb") as stream:
++                stream.seek(self.wl_offset)
++                lines = stream.read().decode(errors="replace").splitlines()
++            wev = parse_wayland_log(lines, anchor_ns)
++            # Keep only capture-related protocol lines (sway's own log lines carry local paths).
++            keep = [ln for ln in lines if WL_LINE.match(ln) and re.search(
++                r"screencopy|image_copy_capture|image_capture_source", ln)]
++            (self.out / "wayland-capture-lines.log").write_text("\n".join(keep) + ("\n" if keep else ""))
++            wl_meta = {"enabled": True, "protocol_lines": len(wev), "capture_lines_kept": len(keep),
++                       "requests": sum(1 for e in wev if e["dir"] == "request")}
++        return xev, dev, wev, wl_meta
+ 
+ 
+ # --------------------------------------------------------------------------- harness
+-class Lock:
+-    """The quiet-lane timing lock, held SHARED except for the warm block (EXCLUSIVE)."""
+-
+-    def __init__(self, path: str | None) -> None:
+-        self.fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o644) if path else None
+-        self.events: list[dict[str, Any]] = []
+-
+-    def take(self, mode: str) -> None:
+-        if self.fd is None:
+-            return
+-        t0 = time.monotonic_ns()
+-        fcntl.flock(self.fd, fcntl.LOCK_EX if mode == "exclusive" else fcntl.LOCK_SH)
+-        self.events.append({"mode": mode, "wait_ms": (time.monotonic_ns() - t0) / 1e6,
+-                            "w_ns": time.time_ns(), "loadavg": loadavg()})
+-
+-
+ class MarkReader:
+     def __init__(self, path: Path | None) -> None:
+         self.path = path
+@@ -311,6 +352,28 @@ def producer_counts(marks: list[dict[str, Any]]) -> dict[str, Any]:
+     }
+ 
+ 
++def fixture_environment(env_mode: str) -> dict[str, str]:
++    env = dict(os.environ)
++    if env_mode == "sway-wayland":
++        env["GDK_BACKEND"] = "wayland"
++    elif env_mode == "sway-xwayland":
++        env.pop("WAYLAND_DISPLAY", None)
++        env["GDK_BACKEND"] = "x11"
++    return env
++
++
++def driver_env_for(env_mode: str, base: dict[str, str]) -> dict[str, str]:
++    env = dict(base)
++    env.pop("CUA_DRIVER_RS_ENABLE_WAYLAND", None)
++    if env_mode == "sway-wayland":
++        env["CUA_DRIVER_RS_ENABLE_WAYLAND"] = "1"
++        if os.environ.get("SWAYSOCK"):
++            env["SWAYSOCK"] = os.environ["SWAYSOCK"]
++    elif env_mode == "sway-xwayland":
++        env.pop("WAYLAND_DISPLAY", None)
++    return env
++
++
+ async def run(args: argparse.Namespace) -> int:
+     wt = Path(args.wt).resolve()
+     sys.path.insert(0, str(wt / JEV_REL / "python"))
+@@ -324,15 +387,17 @@ async def run(args: argparse.Namespace) -> int:
+     work = Path(args.work).resolve()
+     work.mkdir(parents=True, exist_ok=True)
+     state_path = work / "gtk3-task-state.json"
+-    lock = Lock(args.lock)
+-    lock.take("shared")
+     ledger = open(out / "calls.jsonl", "w", encoding="utf-8")
++    rows_selected = args.rows.split(",") if args.rows else list(ROWS)
++    for row in rows_selected:
++        if row not in ROWS:
++            raise SystemExit(f"unknown row {row}")
+ 
+     def emit(rec: dict[str, Any]) -> None:
+         ledger.write(json.dumps(rec, sort_keys=True) + "\n")
+         ledger.flush()
+ 
+-    fixture_env = dict(os.environ)
++    fixture_env = fixture_environment(args.env_mode)
+     fixture_env["CUA_GTK3_TASK_STATE"] = str(state_path)
+     fixture = subprocess.Popen(["/usr/bin/python3", str(wt / FIXTURE_REL)], env=fixture_env,
+                                stdout=open(work / "fixture.log", "w"), stderr=subprocess.STDOUT)
+@@ -343,16 +408,21 @@ async def run(args: argparse.Namespace) -> int:
+         time.sleep(0.05)
+     time.sleep(1.0)
+     address = a11y_address()
+-    emit({"event": "meta", "mode": args.mode, "label": args.label, "rotation": args.rotation,
+-          "warm_rounds": args.warm_rounds, "oracle_rounds": args.oracle_rounds,
+-          "fixture_pid": fixture.pid, "window_title": WINDOW_TITLE,
++    sway_run = os.environ.get("CUA_SWAY_RUN")
++    wl_debug = "server" in os.environ.get("WAYLAND_DEBUG", "")
++    wl_log = Path(sway_run) / "sway.log" if (sway_run and wl_debug) else None
++    emit({"event": "meta", "mode": args.mode, "env_mode": args.env_mode, "label": args.label,
++          "binary_tag": args.binary_tag, "rotation": args.rotation, "warm_rounds": args.warm_rounds,
++          "pairs": args.pairs, "fixture_pid": fixture.pid, "window_title": WINDOW_TITLE,
++          "fixture_gdk_backend": fixture_env.get("GDK_BACKEND"),
++          "fixture_wayland_display_set": "WAYLAND_DISPLAY" in fixture_env,
+           "a11y_bus_address_kind": (address.split(":")[0] if address else None),
+-          "env_atspi_session": os.environ.get("CUA_SESSION_ATSPI"), "rows": ROWS,
+-          "loadavg": loadavg()})
++          "env_atspi_session": os.environ.get("CUA_SESSION_ATSPI"), "rows": {r: ROWS[r] for r in rows_selected},
++          "compositor_protocol_log": wl_log is not None, "loadavg": loadavg()})
+ 
+-    async def driver_session(binary: str, marks: str, tag: str, rows: list[str], plan) -> None:
++    async def driver_session(binary: str, marks: str, tag: str, plan) -> None:
+         """marks: 'on' (file path), 'unset', 'empty'."""
+-        env = driver_environment()
++        env = driver_env_for(args.env_mode, driver_environment())
+         env.pop("CUA_DRIVER_PHASE_TRACE_FILE", None)
+         phase_path = work / f"phase-{tag}.jsonl"
+         if marks == "on":
+@@ -362,7 +432,7 @@ async def run(args: argparse.Namespace) -> int:
+             env["CUA_DRIVER_PHASE_TRACE_FILE"] = ""
+         reader = MarkReader(phase_path if marks == "on" else None)
+         params = StdioServerParameters(command=binary, args=["mcp"], env=env)
+-        label = f"own16-{uuid.uuid4().hex[:8]}"
++        label = f"own16w-{uuid.uuid4().hex[:8]}"
+         async with stdio_client(params) as (read, write):
+             async with ClientSession(read, write) as session:
+                 t0 = time.perf_counter_ns()
+@@ -371,30 +441,36 @@ async def run(args: argparse.Namespace) -> int:
+                 driver_pids = child_pids("cua-driver")
+                 window_id = None
+                 seen: list[Any] = []
++                res = None
+                 t_find = time.monotonic()
+                 for _ in range(args.window_attempts):
+                     res = await session.call_tool("list_windows", {"pid": fixture.pid, "session": label})
+                     wins = (res.structuredContent or {}).get("windows", [])
+                     seen = [(w.get("title"), w.get("is_on_screen")) for w in wins]
+-                    hits = [w for w in wins if w.get("title") == WINDOW_TITLE and w.get("is_on_screen") is not False]
++                    hits = [w for w in wins if title_matches(w.get("title")) and w.get("is_on_screen") is not False]
+                     if hits:
+                         window_id = int(hits[0]["window_id"])
+                         break
+                     await asyncio.sleep(0.25)
+                 if window_id is None:
+-                    emit({"event": "window_not_found", "tag": tag, "seen": seen, "is_error": bool(res.isError),
+-                          "content_head": [getattr(c, "text", "")[:300] for c in (res.content or [])]})
++                    emit({"event": "window_not_found", "tag": tag, "seen": seen,
++                          "is_error": bool(res.isError) if res is not None else None,
++                          "content_head": [getattr(c, "text", "")[:300] for c in ((res.content if res else None) or [])]})
+                     raise RuntimeError("task window did not appear")
+                 reader.take()
+                 emit({"event": "driver_session", "tag": tag, "binary": Path(binary).name, "marks": marks,
+-                      "init_ms": init_ms, "window_found": True, "driver_child_count": len(driver_pids),
++                      "init_ms": init_ms, "window_found": True, "window_title_seen": seen,
++                      "driver_child_count": len(driver_pids),
++                      "driver_env_wayland_optin": env.get("CUA_DRIVER_RS_ENABLE_WAYLAND"),
++                      "driver_env_wayland_display_set": "WAYLAND_DISPLAY" in env,
++                      "driver_env_swaysock_set": "SWAYSOCK" in env,
+                       "window_find_ms": (time.monotonic() - t_find) * 1e3})
+ 
+-                async def call(row: str, phase: str, index: int, rnd: int | None) -> dict[str, Any]:
++                async def call(row: str, phase: str, index: int, rnd: int | None, **extra: Any) -> dict[str, Any]:
+                     arguments = {"pid": fixture.pid, "window_id": window_id, **ROWS[row], "session": label}
+                     reader.take()
+                     rec: dict[str, Any] = {"event": "call", "tag": tag, "row": row, "phase": phase,
+-                                           "index": index, "round": rnd, "loadavg": loadavg(),
++                                           "index": index, "round": rnd, "loadavg": loadavg(), **extra,
+                                            "arguments": {k: v for k, v in arguments.items() if k not in ("pid", "window_id", "session")}}
+                     m0, w0 = now()
+                     try:
+@@ -445,127 +521,164 @@ async def run(args: argparse.Namespace) -> int:
+                         rec["error_text"] = next((p["head"] for p in parts if p["type"] == "text"), None)
+                     return rec
+ 
+-                await plan(call, tag, rows, session, label, window_id, driver_pids, reader)
++                await plan(call, tag, session, label, window_id, driver_pids, reader)
+ 
+     def rotated(rows: list[str], k: int) -> list[str]:
+         k %= len(rows)
+         return rows[k:] + rows[:k]
+ 
++    async def usability(call, session, label, window_id, index) -> None:
++        """Act on an accessibility-only token; the fixture's own state file is the oracle."""
++        before = read_state(state_path) or {}
++        rec = await call("accessibility_only", "usability", index, None)
++        emit(rec)
++        use: dict[str, Any] = {"event": "usability", "before_counter": before.get("counter"),
++                               "before_seq": before.get("seq"), "observe_index": rec["index"]}
++        result = await session.call_tool("get_window_state", {
++            "pid": fixture.pid, "window_id": window_id, "include_screenshot": False, "session": label})
++        structured = result.structuredContent or {}
++        token = next((e.get("element_token") for e in structured.get("elements", [])
++                      if e.get("label") == "Increment"), None)
++        use["token_found"] = token is not None
++        if token:
++            clk = await session.call_tool("click", {"pid": fixture.pid, "window_id": window_id,
++                                                    "element_token": token, "delivery_mode": "background",
++                                                    "session": label})
++            use["click_is_error"] = bool(clk.isError)
++            sc = clk.structuredContent or {}
++            use["click_structured"] = {k: sc.get(k) for k in ("path", "route", "effect", "verified", "code") if k in sc}
++            if clk.isError:
++                use["click_error_text"] = next((getattr(c, "text", "")[:600] for c in (clk.content or [])), None)
++            end = time.monotonic() + 3
++            after = before
++            while time.monotonic() < end:
++                after = read_state(state_path) or {}
++                if after.get("seq", -1) > before.get("seq", -1):
++                    break
++                time.sleep(0.005)
++            use["after_counter"] = after.get("counter")
++            use["after_seq"] = after.get("seq")
++            use["oracle_verified"] = (after.get("counter") == (before.get("counter") or 0) + 1
++                                      and after.get("seq") == before.get("seq", -1) + 1)
++        emit(use)
++
+     try:
+-        if args.mode == "measured":
+-            async def plan(call, tag, rows, session, label, window_id, driver_pids, reader):
++        if args.mode == "truth":
++            async def plan(call, tag, session, label, window_id, driver_pids, reader):
+                 index = 0
+-                # Cold: the first call of each row in this session (rows in rotated order).
+-                for row in rotated(rows, args.rotation):
+-                    emit(await call(row, "cold", index, None))
+-                    index += 1
+-                # Warm block under the EXCLUSIVE quiet-lane lock.
+-                lock.take("exclusive")
+-                emit({"event": "lock", **lock.events[-1]})
+-                for rnd in range(args.warm_rounds):
+-                    for row in rotated(rows, args.rotation + rnd):
+-                        emit(await call(row, "warm", index, rnd))
+-                        index += 1
+-                lock.take("shared")
+-                emit({"event": "lock", **lock.events[-1]})
+-                # Independent producer-boundary oracle block (perturbs timing: never timed).
+                 oracle_dir = out / "oracle"
+                 oracle_dir.mkdir(exist_ok=True)
+-                orc = Oracle(oracle_dir, args.oracle_python, args.recorder, address)
++                anchor = time.time_ns()
++                orc = Oracle(oracle_dir, args.oracle_python, args.recorder, address, wl_log)
+                 idle0 = time.time_ns()
+                 await asyncio.sleep(1.0)
+                 idle1 = time.time_ns()
+                 windows = [{"kind": "idle", "w0": idle0, "w1": idle1}]
+-                for rnd in range(args.oracle_rounds):
+-                    for row in rotated(rows, args.rotation + rnd):
+-                        rec = await call(row, "oracle", index, rnd)
++                for rnd in range(args.warm_rounds + 1):
++                    for row in rotated(rows_selected, args.rotation + rnd):
++                        rec = await call(row, "cold" if rnd == 0 else "warm", index, rnd)
+                         emit(rec)
+                         windows.append({"kind": "call", "index": index, "row": row, "w0": rec["w0"], "w1": rec["w1"]})
+                         index += 1
+-                        await asyncio.sleep(0.25)
+-                xev, dev = orc.stop()
++                        await asyncio.sleep(CALL_GAP_S)
++                idle2 = time.time_ns()
++                await asyncio.sleep(1.0)
++                windows.append({"kind": "idle", "w0": idle2, "w1": time.time_ns()})
++                xev, dev, wev, wl_meta = orc.stop(anchor)
+                 names = sorted({m["sender"] for m in dev if m["sender"].startswith(":")}
+                                | {m["dest"] for m in dev if m["dest"].startswith(":")})
+                 pid_of = {n: bus_pid(address, n) for n in names} if address else {}
+                 fixture_names = [n for n, p in pid_of.items() if p == fixture.pid]
+                 driver_names = [n for n, p in pid_of.items() if p in driver_pids]
+-                grace = 30_000_000
++                wl_req = [e for e in wev if e["dir"] == "request"]
+                 for wdw in windows:
+-                    lo, hi = wdw["w0"], wdw["w1"] + (grace if wdw["kind"] == "call" else 0)
++                    lo, hi = wdw["w0"], wdw["w1"] + (GRACE_NS if wdw["kind"] == "call" else 0)
+                     x_in = [e for e in xev if "op" in e and lo <= e["t_ns"] <= hi]
+                     d_in = [m for m in dev if lo <= m["t_ns"] <= hi and m["type"] == "method call"]
++                    w_in = [e for e in wl_req if lo <= e["t_ns"] <= hi]
+                     wdw["x_getimage"] = sum(1 for e in x_in if e["op"] == 73)
+                     wdw["x_shmgetimage"] = sum(1 for e in x_in if e["op"] != 73)
+                     wdw["atspi_calls_to_fixture"] = sum(1 for m in d_in if m["dest"] in fixture_names)
++                    # Walk signature: per-node state reads. The native-Wayland window-identity lookup
++                    # (crate::atspi::list_windows via list_windows_dispatch) sends no GetState.
++                    wdw["atspi_getstate_to_fixture"] = sum(
++                        1 for m in d_in if m["dest"] in fixture_names
++                        and m.get("interface") == "org.a11y.atspi.Accessible" and m.get("member") == "GetState")
+                     wdw["atspi_calls_from_driver"] = sum(1 for m in d_in if m["sender"] in driver_names)
+                     wdw["atspi_calls_total"] = len(d_in)
++                    wdw["wl_capture_requests"] = sum(1 for e in w_in if WL_CAPTURE_REQ.match(e["sig"]))
++                    wdw["wl_capture_sigs"] = sorted({e["sig"] for e in w_in if WL_CAPTURE_REQ.match(e["sig"])})
++                    wdw["wl_requests_total"] = len(w_in)
+                     emit({"event": "oracle_window", **wdw})
+-                unattributed = [e for e in xev if "op" in e and not any(
+-                    w["w0"] <= e["t_ns"] <= w["w1"] + grace for w in windows if w["kind"] == "call")]
+-                emit({"event": "oracle_summary", "x_events_total": sum(1 for e in xev if "op" in e),
+-                      "x_events_unattributed": len(unattributed), "x_ready": any(e.get("event") == "ready" for e in xev),
+-                      "dbus_messages_total": len(dev), "fixture_bus_names": len(fixture_names),
+-                      "driver_bus_names": len(driver_names), "a11y_bus": address is not None})
+-                # Usability of the remaining modality: act on an accessibility-only token.
+-                before = read_state(state_path) or {}
+-                rec = await call("accessibility_only", "usability", index, None)
+-                index += 1
+-                use: dict[str, Any] = {"event": "usability", "before_counter": before.get("counter"),
+-                                       "before_seq": before.get("seq"), "observe_index": rec["index"]}
+-                result = await session.call_tool("get_window_state", {
+-                    "pid": fixture.pid, "window_id": window_id, "include_screenshot": False, "session": label})
+-                structured = result.structuredContent or {}
+-                token = next((e.get("element_token") for e in structured.get("elements", [])
+-                              if e.get("label") == "Increment"), None)
+-                use["token_found"] = token is not None
+-                if token:
+-                    clk = await session.call_tool("click", {"pid": fixture.pid, "window_id": window_id,
+-                                                            "element_token": token, "delivery_mode": "background",
+-                                                            "session": label})
+-                    use["click_is_error"] = bool(clk.isError)
+-                    sc = clk.structuredContent or {}
+-                    use["click_structured"] = {k: sc.get(k) for k in ("path", "route", "effect", "verified") if k in sc}
+-                    end = time.monotonic() + 3
+-                    after = before
+-                    while time.monotonic() < end:
+-                        after = read_state(state_path) or {}
+-                        if after.get("seq", -1) > before.get("seq", -1):
+-                            break
+-                        time.sleep(0.005)
+-                    use["after_counter"] = after.get("counter")
+-                    use["after_seq"] = after.get("seq")
+-                    use["oracle_verified"] = (after.get("counter") == (before.get("counter") or 0) + 1
+-                                              and after.get("seq") == before.get("seq", -1) + 1)
+-                reader.take()
+-                emit(use)
++                call_windows = [w for w in windows if w["kind"] == "call"]
+ 
+-            await driver_session(args.driver, "on", "m", ROW_ORDER, plan)
++                def attributed(t: int) -> bool:
++                    return any(w["w0"] <= t <= w["w1"] + GRACE_NS for w in call_windows)
++                emit({"event": "oracle_summary",
++                      "x_events_total": sum(1 for e in xev if "op" in e),
++                      "x_events_unattributed": sum(1 for e in xev if "op" in e and not attributed(e["t_ns"])),
++                      "x_ready": any(e.get("event") == "ready" for e in xev),
++                      "dbus_messages_total": len(dev), "fixture_bus_names": len(fixture_names),
++                      "driver_bus_names": len(driver_names), "a11y_bus": address is not None,
++                      "atspi_calls_to_fixture_unattributed": sum(
++                          1 for m in dev if m["type"] == "method call" and m["dest"] in fixture_names
++                          and not attributed(m["t_ns"])),
++                      "atspi_getstate_to_fixture_unattributed": sum(
++                          1 for m in dev if m["type"] == "method call" and m["dest"] in fixture_names
++                          and m.get("member") == "GetState" and not attributed(m["t_ns"])),
++                      "wl": wl_meta,
++                      "wl_capture_requests_total": sum(1 for e in wl_req if WL_CAPTURE_REQ.match(e["sig"])),
++                      "wl_capture_requests_unattributed": sum(
++                          1 for e in wl_req if WL_CAPTURE_REQ.match(e["sig"]) and not attributed(e["t_ns"]))})
++                await usability(call, session, label, window_id, index)
++                reader.take()
++
++            await driver_session(args.driver, "on", "t", plan)
++
++        elif args.mode == "timing":
++            async def plan(call, tag, session, label, window_id, driver_pids, reader):
++                index = 0
++                for row in ("both", "screenshot_only", "accessibility_only"):
++                    emit(await call(row, "warmup", index, None))
++                    index += 1
++                comparisons = ["screenshot_only", "accessibility_only"]
++                for p in range(args.pairs):
++                    for comp in rotated(comparisons, p):
++                        order = ["both", comp] if (p + args.rotation) % 2 == 0 else [comp, "both"]
++                        for pos, row in enumerate(order):
++                            emit(await call(row, "timed", index, p, pair=p, comparison=comp,
++                                            order="AB" if order[0] == "both" else "BA", position=pos))
++                            index += 1
++
++            await driver_session(args.driver, "on", "b", plan)
+ 
+         elif args.mode == "negative":
+-            async def plan(call, tag, rows, session, label, window_id, driver_pids, reader):
++            async def plan(call, tag, session, label, window_id, driver_pids, reader):
+                 index = 0
++                rows = ["both", "accessibility_only", "screenshot_only"]
+                 for rnd in range(args.warm_rounds + 1):
+                     for row in rotated(rows, rnd):
+                         emit(await call(row, "cold" if rnd == 0 else "warm", index, rnd))
+                         index += 1
+                 emit({"event": "atspi_state", "a11y_bus_address_kind": (a11y_address() or "none").split(":")[0]})
+ 
+-            await driver_session(args.driver, "on", "n", ["both", "accessibility_only", "screenshot_only"], plan)
++            await driver_session(args.driver, "on", "n", plan)
+ 
+         elif args.mode == "smoke":
+-            async def plan(call, tag, rows, session, label, window_id, driver_pids, reader):
++            async def plan(call, tag, session, label, window_id, driver_pids, reader):
+                 index = 0
+                 for rnd in range(3):
+-                    for row in rotated(rows, rnd):
++                    for row in rotated(rows_selected, rnd):
+                         emit(await call(row, "smoke", index, rnd))
+                         index += 1
+ 
+             for tag, binary, marks in (("off_unset", args.driver, "unset"), ("off_empty", args.driver, "empty"),
+-                                       ("on", args.driver, "on"), ("main_unset", args.main_driver, "unset")):
++                                       ("on", args.driver, "on"), ("alt_unset", args.alt_driver, "unset")):
+                 before_files = sorted(p.name for p in work.iterdir())
+-                await driver_session(binary, marks, tag, ROW_ORDER, plan)
++                await driver_session(binary, marks, tag, plan)
+                 after_files = sorted(p.name for p in work.iterdir())
+-                emit({"event": "smoke_files", "tag": tag, "new_files": sorted(set(after_files) - set(before_files)),
++                emit({"event": "smoke_files", "tag": tag, "binary": Path(binary).name,
++                      "new_files": sorted(set(after_files) - set(before_files)),
+                       "trace_file_exists": (work / f"phase-{tag}.jsonl").exists()})
+     finally:
+         fixture.terminate()
+@@ -573,7 +686,7 @@ async def run(args: argparse.Namespace) -> int:
+             fixture.wait(timeout=5)
+         except subprocess.TimeoutExpired:
+             fixture.kill()
+-        emit({"event": "end", "loadavg": loadavg(), "lock_events": lock.events})
++        emit({"event": "end", "loadavg": loadavg()})
+         ledger.close()
+     print(f"done: {out / 'calls.jsonl'}")
+     return 0
+@@ -583,22 +696,31 @@ def main() -> None:
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--wt", required=True)
+     parser.add_argument("--driver", required=True)
+-    parser.add_argument("--main-driver", default=None)
++    parser.add_argument("--alt-driver", default=None)
++    parser.add_argument("--binary-tag", default=None)
+     parser.add_argument("--out", required=True)
+     parser.add_argument("--work", required=True)
+-    parser.add_argument("--mode", choices=("measured", "negative", "smoke"), required=True)
++    parser.add_argument("--env-mode", choices=("sway-wayland", "sway-xwayland", "x11"), required=True)
++    parser.add_argument("--mode", choices=("truth", "timing", "negative", "smoke"), required=True)
+     parser.add_argument("--label", required=True)
++    parser.add_argument("--rows", default=None)
+     parser.add_argument("--rotation", type=int, default=0)
+     parser.add_argument("--warm-rounds", type=int, default=20)
+-    parser.add_argument("--oracle-rounds", type=int, default=3)
+-    parser.add_argument("--lock", default=None)
++    parser.add_argument("--pairs", type=int, default=21)
+     parser.add_argument("--window-attempts", type=int, default=60)
+     parser.add_argument("--oracle-python", default=None)
+     parser.add_argument("--recorder", default=None)
+     args = parser.parse_args()
+-    if os.environ.get("WAYLAND_DISPLAY") or any(k.startswith("HYPRLAND_") for k in os.environ) \
+-            or not os.environ.get("DISPLAY"):
+-        raise SystemExit("refusing: not inside the isolated X11 session")
++    if any(k.startswith("HYPRLAND_") for k in os.environ):
++        raise SystemExit("refusing: HYPRLAND_* set")
++    if args.env_mode == "x11":
++        if os.environ.get("WAYLAND_DISPLAY") or not os.environ.get("DISPLAY"):
++            raise SystemExit("refusing: not inside the isolated X11 session")
++    else:
++        run_dir = os.environ.get("CUA_SWAY_RUN", "")
++        if not run_dir or not os.environ.get("XDG_RUNTIME_DIR", "").startswith(run_dir) \
++                or not os.environ.get("WAYLAND_DISPLAY"):
++            raise SystemExit("refusing: not inside the private sway session")
+     sys.exit(asyncio.run(run(args)))
+ 
+ 
+diff --git own16/harness-origin/run_in_session.sh own16w/run_in_session.sh
+old mode 100644
+new mode 100755
+index 6ca081cba..b5ef6654d
+--- own16/harness-origin/run_in_session.sh
++++ own16w/run_in_session.sh
+@@ -1,16 +1,33 @@
+ #!/usr/bin/env bash
+-# usage (inside cua-x11-session.sh):
++# usage (inside cua-sway-session.sh or cua-x11-session.sh):
+ #   run_in_session.sh <worktree> <driver-bin> <raw-out-dir> <scratch-dir> [modality_truth.py args]
+-# Records the Driver version inside the session, then runs the harness.
++# Adapted from OWN-16 run_in_session.sh: accepts the private sway session too. Records the Driver
++# version/sha256 and the session facts inside the session, then runs the harness.
+ set -uo pipefail
+ WT="$1"; DRV="$2"; OUT="$3"; WORK="$4"; shift 4
+-[ -n "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ] && [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] \
+-  || { echo "refusing: not inside isolated X11 session" >&2; exit 97; }
++[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || { echo "refusing: HYPRLAND_* set" >&2; exit 97; }
++if [ -n "${CUA_SWAY_RUN:-}" ]; then
++  case "${XDG_RUNTIME_DIR:-}" in "$CUA_SWAY_RUN"/*) ;; *) echo "refusing: not in private sway session" >&2; exit 97;; esac
++  KIND=sway
++else
++  [ -n "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ] || { echo "refusing: not inside isolated X11 session" >&2; exit 97; }
++  KIND=x11
++fi
+ mkdir -p "$OUT" "$WORK"
+-{ echo "driver_version=$("$DRV" --version 2>&1 | head -1)"
++{ echo "session_kind=$KIND"
++  echo "driver_version=$("$DRV" --version 2>&1 | head -1)"
+   echo "driver_sha256=$(sha256sum "$DRV" | cut -d' ' -f1)"
+   echo "session_atspi=${CUA_SESSION_ATSPI:-unset}"
+-  echo "xvfb_display_set=$([ -n "${DISPLAY:-}" ] && echo yes)"; } > "$OUT/session-env.txt"
++  echo "wayland_debug=${WAYLAND_DEBUG:-unset}"
++  echo "wayland_display_set=$([ -n "${WAYLAND_DISPLAY:-}" ] && echo yes || echo no)"
++  echo "x_display_set=$([ -n "${DISPLAY:-}" ] && echo yes || echo no)"
++  echo "swaysock_set=$([ -n "${SWAYSOCK:-}" ] && echo yes || echo no)"
++  if [ "$KIND" = sway ]; then
++    echo "sway_version=$(sway --version 2>&1 | head -1)"
++    echo "x_record=$(xdpyinfo -queryExtensions -display "$DISPLAY" 2>/dev/null | grep -c ' RECORD ')"
++  fi
++  echo "telemetry=${CUA_DRIVER_RS_TELEMETRY_ENABLED:-unset} dnt=${DO_NOT_TRACK:-unset}"
++  echo "utc_offset=$(date +%z)"; } > "$OUT/session-env.txt"
+ exec "$WT/libs/cua-driver/examples/jev-use/.venv/bin/python" \
+-  "$WT/docs/experiments/own-16-modality-truth-2026-10-02/modality_truth.py" \
++  "$WT/docs/experiments/own-16w-sway-modality-2026-10-02/modality_truth.py" \
+   --wt "$WT" --driver "$DRV" --out "$OUT" --work "$WORK" "$@"
+diff --git own16/harness-origin/run_batch.sh own16w/run_batch.sh
+index 776f601e7..5ed1e1b76 100644
+--- own16/harness-origin/run_batch.sh
++++ own16w/run_batch.sh
+@@ -1,30 +1,58 @@
+ #!/usr/bin/env bash
+-# usage: run_batch.sh <lanes-dir> <worktree> <lane-driver> <main-driver> <tmp-root> <oracle-python>
+-# Pre-registered OWN-16 sessions, each in its own isolated X11 session, every session kept:
+-#   S1 measured (rotation 0) -> N1 negative (no AT-SPI bus) -> S2 measured (rotation 3) -> D1 smoke.
+-# Measured sessions take the quiet-lane lock themselves (SHARED, EXCLUSIVE for the warm block);
+-# N1 and D1 run under flock -s on the same lock.
++# usage (under hostless): run_batch.sh <lanes-dir> <worktree> <U-driver> <F-driver> <tmp-root> <oracle-python> [phase]
++# Pre-registered OWN-16W sessions (PREREG.json "sessions"), each in its own private session and each
++# under quiet-timed (EXCLUSIVE quiet-lane lock + ledger receipt; every session is far below 15 min).
++# Adapted from OWN-16 run_batch.sh. phase: truth1 | negative | truth2 | timing | smoke | all (default).
+ set -uo pipefail
+-LANES="$1"; WT="$2"; LANE="$3"; MAIN="$4"; TMPR="$5"; OPY="$6"
+-LOCK="$TMPR/locks/quiet-lane.lock"; OUT="$TMPR/own16/runs"; mkdir -p "$OUT"
+-PKT="$WT/docs/experiments/own-16-modality-truth-2026-10-02"
+-SESSION="$LANES/cua-x11-session.sh"
+-measured() {  # name rotation
+-  local d="$OUT/$1"; mkdir -p "$d"
+-  ( cd "$WT" && CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV="CUA_SESSION_ATSPI=1" "$SESSION" "$PKT/run_in_session.sh" \
+-      "$WT" "$LANE" "$d/raw" "$d/work" --mode measured --label "$1" --rotation "$2" --warm-rounds 20 \
+-      --oracle-rounds 3 --lock "$LOCK" --oracle-python "$OPY" --recorder "$PKT/xrecord_capture.py" > "$d/session.log" 2>&1 )
+-  echo "[$(date -u +%FT%TZ)] $1 rc=$? loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
++LANES="$1"; WT="$2"; U="$3"; F="$4"; TMPR="$5"; OPY="$6"; PHASE="${7:-all}"
++OUT="$TMPR/runs"; mkdir -p "$OUT"
++PKT="$WT/docs/experiments/own-16w-sway-modality-2026-10-02"
++QT="$LANES/bin/quiet-timed"
++BASE_ENV="CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1"
++log() { echo "[$(date -u +%FT%TZ)] $* loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"; }
++drv() { [ "$1" = U ] && echo "$U" || echo "$F"; }
++
++session() {  # mode(SW|SX|X11) bin(U|F) id kind(truth|negative|timing) rotation [extra harness args...]
++  local mode="$1" bin="$2" id="$3" kind="$4" rot="$5"; shift 5
++  local d="$OUT/$mode/$bin/$id"; mkdir -p "$d"
++  local envmode script extra
++  local -a E=(env -u CUA_SESSION_ATSPI)
++  case "$mode" in SW) envmode=sway-wayland;; SX) envmode=sway-xwayland;; X11) envmode=x11;; esac
++  if [ "$mode" = X11 ]; then script="$LANES/cua-x11-session.sh"; else script="$LANES/cua-sway-session.sh"; fi
++  extra="$BASE_ENV"
++  if [ "$kind" != negative ]; then E+=(CUA_SESSION_ATSPI=1); extra="CUA_SESSION_ATSPI=1 $extra"; fi
++  if [ "$kind" = truth ] && [ "$mode" != X11 ]; then extra="$extra WAYLAND_DEBUG=server"; fi
++  ( cd "$WT" && "${E[@]}" CUA_SWAY_TIMEOUT=900 CUA_SESSION_EXTRA_ENV="$extra" \
++      "$QT" "own16w-$mode-$bin-$id" "$script" "$PKT/run_in_session.sh" "$WT" "$(drv "$bin")" "$d/raw" "$d/work" \
++      --env-mode "$envmode" --mode "$kind" --label "$mode-$bin-$id" --binary-tag "$bin" --rotation "$rot" \
++      --oracle-python "$OPY" --recorder "$PKT/xrecord_capture.py" "$@" > "$d/session.log" 2>&1 )
++  log "$mode-$bin-$id rc=$?"
+ }
+-echo "[$(date -u +%FT%TZ)] batch start"
+-measured S1 0
+-d="$OUT/N1"; mkdir -p "$d"
+-( cd "$WT" && env -u CUA_SESSION_ATSPI -u CUA_SESSION_EXTRA_ENV flock -s "$LOCK" "$SESSION" "$PKT/run_in_session.sh" \
+-    "$WT" "$LANE" "$d/raw" "$d/work" --mode negative --label N1 --warm-rounds 5 > "$d/session.log" 2>&1 )
+-echo "[$(date -u +%FT%TZ)] N1 rc=$? loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
+-measured S2 3
+-d="$OUT/D1"; mkdir -p "$d"
+-( cd "$WT" && CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV="CUA_SESSION_ATSPI=1" flock -s "$LOCK" "$SESSION" "$PKT/run_in_session.sh" \
+-    "$WT" "$LANE" "$d/raw" "$d/work" --mode smoke --label D1 --main-driver "$MAIN" > "$d/session.log" 2>&1 )
+-echo "[$(date -u +%FT%TZ)] D1 rc=$? loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
+-echo "[$(date -u +%FT%TZ)] batch done"
++
++X11_ROWS="both,string_false,string_true"
++log "batch start phase=$PHASE"
++if [ "$PHASE" = all ] || [ "$PHASE" = truth1 ]; then
++  session SW U T1 truth 0; session SW F T1 truth 0
++  session SX U T1 truth 0; session SX F T1 truth 0
++  session X11 U T1 truth 0 --rows "$X11_ROWS"; session X11 F T1 truth 0 --rows "$X11_ROWS"
++fi
++if [ "$PHASE" = all ] || [ "$PHASE" = negative ]; then
++  session SW U N1 negative 0 --warm-rounds 5; session SX U N1 negative 0 --warm-rounds 5
++fi
++if [ "$PHASE" = all ] || [ "$PHASE" = truth2 ]; then
++  session SW F T2 truth 3; session SW U T2 truth 3
++  session SX F T2 truth 3; session SX U T2 truth 3
++  session X11 F T2 truth 3 --rows "$X11_ROWS"; session X11 U T2 truth 3 --rows "$X11_ROWS"
++fi
++if [ "$PHASE" = all ] || [ "$PHASE" = timing ]; then
++  session SW U B1 timing 0 --pairs 21; session SX U B1 timing 0 --pairs 21
++  session SX U B2 timing 1 --pairs 21; session SW U B2 timing 1 --pairs 21
++fi
++if [ "$PHASE" = all ] || [ "$PHASE" = smoke ]; then
++  d="$OUT/SW/D1"; mkdir -p "$d"
++  ( cd "$WT" && CUA_SESSION_ATSPI=1 CUA_SWAY_TIMEOUT=900 CUA_SESSION_EXTRA_ENV="CUA_SESSION_ATSPI=1 $BASE_ENV" \
++      "$QT" own16w-SW-D1 "$LANES/cua-sway-session.sh" "$PKT/run_in_session.sh" "$WT" "$U" "$d/raw" "$d/work" \
++      --env-mode sway-wayland --mode smoke --label SW-D1 --binary-tag U --alt-driver "$F" > "$d/session.log" 2>&1 )
++  log "SW-D1 rc=$?"
++fi
++log "batch done phase=$PHASE"

@@ -1,0 +1,104 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "lane": "OWN-09R",
+  "wave": 3,
+  "title": "kvnloo/cua#84 revision for kvnloo/cua#9: authoritative cancel before admission, guards owned to native exit, production spawn_blocking_owned; re-run R1/R2/R4/R5/R6/R7/R8",
+  "owners": ["kvnloo/cua#9", "kvnloo/cua#84 (read-only, not modified)", "kvnloo/cua#73", "kvnloo/cua#105", "kvnloo/cua#36 (R5)"],
+  "provider": {"name": "TypeSafe", "cap_requests": 0, "planned_attempts": 0},
+  "sources": {
+    "base_upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+    "pr84_head": "566b9c73245266005c958d40e93d46ee5d463325",
+    "branch": "exp/own-09r-84-revision-20261002",
+    "merge_commit": "065ee203b",
+    "revision_commits": {
+      "1_rebase_fix": "aacc7beb6",
+      "2_cancel_before_admission": "6024e3e7f",
+      "3_guards_owned_to_native_exit": "890c41d1a",
+      "4_production_spawn_blocking_owned": "965762041",
+      "5_r8_notifications_cancelled": "not implemented: OWNER_DECISION (see question below)"
+    },
+    "harness_commit": "26e97138c",
+    "harness_origin": "OWN-09 packet branch exp/own-09-cancel-barrier-rows-20261002 at bf07c8fe3 (tests/own09_arm_m.rs, own09_arm_p.rs, own09_harness/mod.rs, own09_harness/rows.rs, byte-identical)"
+  },
+  "arms": {
+    "M": "989cc76ce plus test-only files: tests/own09_arm_m.rs and own09_harness/* from bf07c8fe3, src/tests/own09r_cabi.rs (blob identical to the branch) and its cfg(test) mount line in src/abi.rs (raw/m-tree.patch). Barrier native closure: plain tokio::task::spawn_blocking (production behaviour on main).",
+    "P": "P' = the revision branch head at the PREREG commit (Driver code identical to 965762041). Barrier native closure: spawn_blocking_owned (what production Linux tools now use). P' also runs the harness's plain-closure broken controls. The raw directory name is P."
+  },
+  "routes": {
+    "sdk": "embedded SDK: CuaDriver::call_tool -> cua_driver_invoke_v1 -> spawn_completion -> DriverRuntime::invoke (lifecycle hold) -> ToolRegistry dispatch (session hold, desktop permit, admission point) -> barrier Tool::invoke -> native closure. Cancel = abort of the caller task -> OperationGuard::drop -> cua_driver_operation_cancel_v1.",
+    "c_abi": "exported C functions called with raw retained operation tokens (src/tests/own09r_cabi.rs, mounted under cfg(test) in abi.rs so it can wrap a runtime with the barrier tool in a CuaDriverHandle). Native closure plain spawn_blocking on both arms (R4C/R1D concern identity and the admission point).",
+    "mcp_stdio": "the built cua-driver binary, `cua-driver mcp`, raw JSON-RPC lines, inside cua-x11-session.sh (private Xvfb + private AT-SPI bus) under hostless; production set_value on the GTK3 task fixture's Note entry wrapped by r8/fixture_barrier.py (a fixture-owned barrier inside the AT-SPI SetTextContents call)."
+  },
+  "binaries": {
+    "driver_M": {"label": "own09r-m-989cc76ce", "source": "989cc76ce (clean tracked tree; untracked test-only files do not enter the binary)", "sha256": "aeb92723b2f05c30b8fb06c95af725c9451372ebf42606c404e33b931ee8fe00", "version": "cua-driver 0.32.0"},
+    "driver_P": {"label": "own09r-p-26e97138c", "source": "26e97138c (Driver code identical to 965762041)", "sha256": "df55093c21f385df5dfdd6356710d1f00d2442b924b7470e80623ad5ca30ea2c", "version": "cua-driver 0.32.0"},
+    "build": "flock cargo-build.lock build-driver.sh <wt> <label> cua-release-own09r (cargo build --locked --release -p cua-driver --features portal-input), under hostless",
+    "test_binaries_sha256": {
+      "own09_arm_m": "47934dff8a5c6bd05e5f4ba6ce960d1c02261f2a81cd72ae2140a789231712ea",
+      "own09_arm_p": "59cab38e54fdf75f1281899cdcf6ba27958bb713c6886afd2c8d9eaef69bfba9",
+      "sdk_lib_tests_m": "de0d8c5b084f46635212466fd70b7eff0047a5cb26c0a7e753dbb65eb51cf603",
+      "sdk_lib_tests_p": "1e0599a7b531251ea2fff8113205760e362389e94df0b481d628486ed3ede3be"
+    },
+    "test_build": "cargo test --locked -v -p cua-driver-sdk --test own09_arm_<m|p> --lib --no-run; target dirs cua-release-own09r-m (M) and cua-release-own09r (P'); binaries frozen by copy before the first counted run"
+  },
+  "oracles": {
+    "sdk_and_c_abi": "fixture-owned native entry/exit counters, a target journal written only by the native closure, an ordered ledger; C ABI rows also a callback journal written by the C completion callback. Driver receipts are not used.",
+    "mcp_stdio": "the fixture process's own JSONL journal (effect-enter, effect-applied per token). Driver responses are recorded but are not the effect oracle."
+  },
+  "rows": {
+    "R1": {
+      "variants": {
+        "sdk/cancel_while_queued": {"n_per_arm": 200, "split": "100 main (--test-threads=1) + 100 stress (--test-threads=8)", "gating": true},
+        "sdk/cancel_race": {"n_per_arm": 200, "split": "100 + 100", "gating": true},
+        "sdk/broken_detach_on_cancel": {"n_per_arm": 40, "control": "broken (weak: harness simulation)"},
+        "c_abi/R1D flag_before_admission": {"n_per_arm": 40, "gating": true, "note": "deterministic window: the queued operation's cancel flag is set while the asynchronous abort is withheld"},
+        "c_abi/R1D control_no_cancel": {"n_per_arm": 40, "control": "positive (no cancel: admitted after the holder, exactly one effect)"}
+      },
+      "pass_rule": "arm passes R1 iff cancel_while_queued, cancel_race and R1D flag_before_admission have 0 FAIL and 0 HARNESS_ERROR"
+    },
+    "R2": {"variants": {"sdk/cancel_after_admission": {"n_per_arm": 40, "gating": true}, "sdk/control_no_cancel": {"n_per_arm": 40, "control": "positive"}, "sdk/broken_plain_closure": {"n_per_arm": 40, "arm": "P only", "control": "broken"}}, "pass_rule": "cancel_after_admission 0 FAIL"},
+    "R3": {"status": "BLOCKED", "reason": "macOS-first held-input (drag/mouse-up) oracle; no Linux target oracle"},
+    "R4": {
+      "variants": {
+        "sdk/after_completion": {"n_per_arm": 40, "gating": true}, "sdk/after_inflight_cancel": {"n_per_arm": 40, "gating": true}, "sdk/broken_name_keyed": {"n_per_arm": 40, "control": "broken"},
+        "c_abi/R4C after_completion_retained_token": {"n_per_arm": 40, "gating": true},
+        "c_abi/R4C after_inflight_cancel_retained_token": {"n_per_arm": 40, "gating": true},
+        "c_abi/R4C broken_latest_token": {"n_per_arm": 40, "control": "broken (host registry keyed by tool name)"}
+      },
+      "pass_rule": "all gating R4 and R4C variants 0 FAIL"
+    },
+    "R5": {"variants": {"sdk/foreign_session_and_transport": {"n_per_arm": 40, "gating": "regression"}, "sdk/broken_session_keyed": {"n_per_arm": 40, "control": "broken"}}, "pass_rule": "0 FAIL"},
+    "R6": {"variants": {"sdk/shutdown_after_cancel": {"n_per_arm": 40, "gating": true}, "sdk/end_session_after_cancel": {"n_per_arm": 40, "gating": true}, "sdk/shutdown_no_cancel": {"n_per_arm": 40, "control": "positive"}, "sdk/end_session_no_cancel": {"n_per_arm": 40, "control": "positive"}, "sdk/broken_ready_on_cancel": {"n_per_arm": 40, "control": "broken (weak)"}, "sdk/broken_plain_closure_shutdown_after_cancel": {"n_per_arm": 40, "arm": "P only", "control": "broken"}}, "pass_rule": "both after-cancel variants 0 FAIL"},
+    "R7": {"variants": {"sdk/ack_lost_guarded_retry": {"n_per_arm": 40, "gating": true}, "sdk/control_ack": {"n_per_arm": 40, "control": "positive"}, "sdk/broken_blind_retry": {"n_per_arm": 40, "control": "broken"}, "sdk/broken_plain_closure": {"n_per_arm": 40, "arm": "P only", "control": "broken"}, "sdk/delayed_after_native_exit": {"n_per_arm": 40, "characterization": "effect committed after native exit; expected to duplicate on both arms; only reconciliation (#105) can cover it; non-gating"}}, "pass_rule": "ack_lost_guarded_retry 0 FAIL"},
+    "R8": {
+      "status": "OWNER_DECISION (not implemented)",
+      "owner_question": "Should the direct stdio MCP loop (cua-driver/src/proxy.rs) honor MCP notifications/cancelled for an in-flight tools/call by routing it into the same caller-cancellation path as the C ABI (cancel flag + abort; owned native work runs to exit; a possibly landed effect stays unknown)? Doing so requires (a) reading stdin concurrently with an in-flight request instead of the current strictly serial loop, and (b) a response contract for the cancelled id: suppress the response as MCP recommends, or answer it with execution_state=unknown. Or does plain MCP keep ignoring the notification, with cancellation offered only by the opt-in envelope control cua/driver/v1/cancel (mcp_envelope.rs: notifications retain the legacy behavior; no cancellation is invented)?",
+      "variants": {
+        "sdk/notification_in_flight": {"n_per_arm": 40, "characterization": true}, "sdk/broken_honoring_transport": {"n_per_arm": 40, "control": "broken (classifier discriminates)"},
+        "mcp_stdio/notification_mid_native": {"n_per_arm": 40, "characterization": true, "classification": "IGNORED = effect landed exactly once and the response for the id was delivered as a success; HONORED = no success response for the id; DUPLICATE = a second effect-applied for the token"},
+        "mcp_stdio/control_no_cancel": {"n_per_arm": 10, "control": "negative (no notification): PASS = one effect, success response, transport alive"}
+      },
+      "gate": "not gating for the disposition (not implemented). E4 invariant on every R8 trial: 0 DUPLICATE."
+    }
+  },
+  "controls": {
+    "negative": "every no-cancel variant has 0 failures on both arms: R1D control_no_cancel, R2 control_no_cancel, R6 shutdown/end_session_no_cancel, R7 control_ack, R8 stdio control_no_cancel",
+    "discriminating": "M must reproduce the R2, R6 and R7 gaps (at least one FAIL each; predicted 40/40) and R1D (predicted 40/40 FAIL). Broken controls must FAIL (or HONOR for R8 sdk) on both arms."
+  },
+  "unit_gate": "cua-driver-sdk, cua-driver-core and cua-driver test suites green on P' (platform-linux also run, informational)",
+  "disposition_rule": {
+    "question": "revised #84 answers the #9 Linux rows",
+    "KEEP": "P' passes R1, R2, R4, R6, R7 with 0 FAIL and 0 HARNESS_ERROR, R5 holds, the unit gate is green, negative controls 0 failures, discriminating controls behave",
+    "REVISE": "some gating rows fail (name them), with no duplicate effect and no readiness-while-running on P'",
+    "KILL": "P' shows a duplicate effect (R7 ack_lost_guarded_retry FAIL, R5 target_has_exactly_own_effect FAIL, or any R8 stdio DUPLICATE) or readiness while running (any R6 after-cancel FAIL)",
+    "harness_errors": "kept in the denominator; a gating variant with any HARNESS_ERROR cannot PASS"
+  },
+  "predictions": {
+    "M": "R1 sdk cancel_while_queued: low rate (0-5/200, load dependent); R1D flag_before_admission 40/40 FAIL; R2, R6 after-cancel, R7 guarded retry 40/40 FAIL; R4, R4C, R5 PASS; R8 stdio IGNORED 40/40",
+    "P": "every gating row 0 FAIL; plain-closure controls FAIL; R7 delayed_after_native_exit duplicates (characterization); R8 stdio IGNORED 40/40"
+  },
+  "caveat_restated": "OWN-09's M R1 PASS was by rule only (0 counted FAIL in 40, but 3/200 exploratory); it was never evidence that main is free of the race. The same holds for any 0/200 here: absence of a race in 200 iterations is a rate bound, not proof; R1D is the deterministic evidence.",
+  "order": "SDK main M, P; SDK stress M, P; C ABI M, P; R8 stdio M, P. Each invocation under hostless + quiet-timed; receipts in raw/receipts.jsonl.",
+  "shakedowns_before_prereg": "uncounted 2-iteration C ABI shakedown on P' (mirrored outside the packet); uncounted R8 stdio shakedowns on both binaries while the stdio harness was developed (mirrored outside the packet). No counted data exists before this commit.",
+  "timing": "no timing claims; correctness lane"
+}

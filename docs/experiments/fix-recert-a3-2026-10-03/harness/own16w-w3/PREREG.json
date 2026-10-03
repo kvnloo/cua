@@ -1,0 +1,100 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "OWN-16W",
+  "title": "Observation-modality producer truth on headless sway (native Wayland + Xwayland) and the non-boolean selector refusal",
+  "owners": ["kvnloo/cua#16 (P2 directive: producer-truth matrix only)", "kvnloo/cua#73 (invariants)"],
+  "advances": [
+    "E1: terminal disposition for the #16 wlroots/headless-sway row (was 'deferred' to the stack track's cua-sway-session.sh)",
+    "closes the OWN-16 follow-up 'reject non-boolean selectors'",
+    "E6: re-checks the OWN-16 X11 string-value row on upstream main 989cc76ce"
+  ],
+  "written_utc": "2026-10-02T17:50Z",
+  "tested_source": {
+    "upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa (trycua/cua main; includes trycua/cua PR 4318 db5573914, element_token schema pattern only)",
+    "U": "b39b866f7 = 989cc76ce + 709b0e004 (cherry-pick of R2-04 phase_trace sink 28b915ae9) + b39b866f7 (cherry-pick of OWN-16 producer counts cd9d6d169); measurement-only, env-gated CUA_DRIVER_PHASE_TRACE_FILE, default off",
+    "F": "dd205d17b = U + the one-commit fix (get_window_state refuses non-boolean include_screenshot / include_accessibility_tree with invalid_arguments at the top of invoke)",
+    "branch": "exp/own-16w-sway-modality-20261002"
+  },
+  "pre_check_U_refusal": {
+    "question": "Does upstream PR 4318 (on 989cc76ce) already refuse string selector values?",
+    "SOURCE": "No. PR 4318 adds an element_token pattern to tool schemas only. Linux get_window_state still reads both selectors with as_bool() (impl_.rs), so a string becomes None = default true.",
+    "pilot_REAL": "Pilots 2-4 (U binary) returned is_error=false with capture=1 and walk=1 for include_screenshot:\"false\" and \"true\" in S-W, S-X and X11. The fix is therefore NOT skipped.",
+    "unit_red_green": "get_window_state_selector_tests: FAILED on U + test only (no invalid_arguments code; the call proceeded to window resolution), ok after dd205d17b"
+  },
+  "binaries": {
+    "U": {"label": "own16w-u-b39b866f7", "sha256": "e4ebdff907188f9e84bae9945b1706a6bed4bec3d863e26567bba3eca4899cb4", "version": "cua-driver 0.32.0 (read in-session, pilot 2)", "build": "build-driver.sh into cua-release-own16w, 0 Fresh workspace units"},
+    "F": {"label": "own16w-f-dd205d17b", "sha256": "066ed4ef1310440dba1592e436006d65513084db42527a15c7439707c089ed8b", "build": "build-driver.sh into cua-release-own16w"}
+  },
+  "pilot_disclosure": "Pilots before this file, excluded and not copied into raw/: pilot1 environment probe (no Driver): WAYLAND_DEBUG=server passed through CUA_SESSION_EXTRA_ENV reaches the private sway (protocol lines in its log, UTC time of day); private Xwayland has RECORD + MIT-SHM; GTK3 maps as xdg_shell with GDK_BACKEND=wayland and as xwayland with GDK_BACKEND=x11, tiled 1920x1053. pilot2 S-W truth (U, 1 warm round): compositor log shows exactly 1 zwlr_screencopy_manager_v1.capture_output per capturing call, 0 otherwise, 0 unattributed; AT-SPI: walk rows 148 calls to the fixture, but screenshot_only and neither ALSO show 6 calls (window-identity lookup via list_windows_dispatch -> wayland_atspi_windows -> atspi::list_windows: Properties.Get x2, GetChildren x2, GetRoleName, GetInterfaces, GetExtents) and 0 GetState; token click verified. pilot3 S-X truth: 1 ShmGetImage per capture, walk 142 calls, screenshot_only 0 AT-SPI calls; token click verified. pilot4 X11 string rows: string_false/string_true silently accepted on U. After pilot2 the harness gained the walk-signature count (GetState to the fixture).",
+  "environment": {
+    "S-W": "cua-sway-session.sh (hostless v2, headless sway 1.12 / wlroots 0.20.2 kit, 1 seat, 1920x1080, Xwayland, private dbus + private AT-SPI). Fixture: GTK3 task window, GDK_BACKEND=wayland (native xdg_shell client). Driver: jev-use driver_environment() + CUA_DRIVER_RS_ENABLE_WAYLAND=1 + SWAYSOCK (native-Wayland opt-in).",
+    "S-X": "same session kind. Fixture: GDK_BACKEND=x11, WAYLAND_DISPLAY removed (Xwayland client). Driver: driver_environment() with WAYLAND_DISPLAY removed and no opt-in (X11 backend on the private Xwayland).",
+    "X11": "cua-x11-session.sh (private Xvfb 1920x1080x24, openbox, picom), as OWN-16.",
+    "all": "CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1\" (+ WAYLAND_DEBUG=server for sway truth sessions); negative sessions omit CUA_SESSION_ATSPI. CUA_SWAY_NO_NS not used. No permission-mode override, no approval bypass, no provider."
+  },
+  "rows": {
+    "both": {"include_accessibility_tree": true, "include_screenshot": true},
+    "screenshot_only": {"include_accessibility_tree": false},
+    "accessibility_only": {"include_screenshot": false},
+    "neither": {"include_accessibility_tree": false, "include_screenshot": false},
+    "legacy_omitted": {},
+    "unknown_field": {"include_tree": false},
+    "string_false": {"include_screenshot": "false"},
+    "string_true": {"include_screenshot": "true"}
+  },
+  "rows_per_mode": {"S-W": "all 8", "S-X": "all 8", "X11": "both, string_false, string_true (string rows + positive control; recertifies OWN-16 on 989cc76ce)"},
+  "forced_path": "the selector argument(s) of get_window_state (pid + window_id of the fixture's task window), one MCP stdio session per private session",
+  "actual_producer": {
+    "marks": "U/F measurement-only marks: capture count = enter marks of capture_window (screenshot_dispatch_for_pid, covers the Wayland output-screencopy+crop path and the X11 path) + capture_root_region; walk count = enter marks of atspi_walk (walk_tree_bounded_within). Ordinals gap-free per scope; every producer mark inside a get_window_state dispatch.",
+    "independent_oracles": {
+      "walk (all modes)": "dbus-monitor --monitor on the private AT-SPI bus (target side). Walk signature = method calls to the fixture's unique name with org.a11y.atspi.Accessible.GetState (per-node state read). Total method calls to the fixture also reported. The 6-call native-Wayland window-identity lookup (no GetState) is reported separately, never counted as a walk.",
+      "capture S-X / X11": "X RECORD on the X server (private Xwayland / Xvfb): core GetImage + MIT-SHM ShmGetImage from ALL clients.",
+      "capture S-W": "the compositor's own protocol log: sway started with WAYLAND_DEBUG=server via CUA_SESSION_EXTRA_ENV (no script edit); count of zwlr_screencopy_manager_v1.capture_output(_region) and ext-image-copy-capture create_session/create_source requests. Target-owned (compositor side), so the S-W capture claim is NOT REVISE-bounded. Limitation: lines carry no client id; attribution is by time window and by the fact that no other client in the session uses capture protocols (idle windows and non-capturing calls must show 0)."
+    },
+    "attribution": "oracles run for the whole truth block (every counted call), 100 ms gap between calls; an event belongs to a call if its time is in [call start, call end + 30 ms]; 1 s idle windows before and after must show 0; unattributed capture events and GetState calls must be 0."
+  },
+  "n": "per mode and binary: 2 truth sessions x (1 cold + 20 warm) = 21 calls per row per session, 42 per row (as OWN-16). Rotations: T1 0, T2 3.",
+  "sessions": {
+    "order": "truth1: SW-U-T1, SW-F-T1, SX-U-T1, SX-F-T1, X11-U-T1, X11-F-T1; negative: SW-U-N1, SX-U-N1; truth2: SW-F-T2, SW-U-T2, SX-F-T2, SX-U-T2, X11-F-T2, X11-U-T2; timing: SW-U-B1, SX-U-B1, SX-U-B2, SW-U-B2; smoke: SW-D1",
+    "lock": "every session runs under quiet-timed (EXCLUSIVE quiet-lane lock, receipt in quiet-lane-ledger.jsonl), one lock acquisition per session (each well under 15 min) so R2-10 can interleave"
+  },
+  "controls": {
+    "positive": "row both: capture mark == 1 and walk mark == 1 in 42/42 per mode and binary, and the oracles agree (capture oracle > 0, GetState > 0). Otherwise STOP for that mode (counters untrusted).",
+    "negative": "SW-U-N1 / SX-U-N1: session without CUA_SESSION_ATSPI; rows both, accessibility_only, screenshot_only; 1 cold + 5 warm. PASS iff every accessibility-requesting call has walk == 1, degraded == true, non-empty degraded_reason (expected atspi_walk_failed) and elements_complete == false.",
+    "fallback_refusals": "neither and unknown_field: is_error in 42/42, capture == walk == 0 by marks, capture oracle 0 and GetState 0, the error names the field(s).",
+    "default_off_smoke": "SW-D1: U with marks unset / empty / on, then F unset; 3 rounds x 8 rows. PASS iff no trace file appears for unset/empty/F-unset, the per-row shape (structured keys minus invalidated_snapshot_ids, content part types, is_error) is identical across U unset/empty/on, and F-unset equals U-unset for every non-string row.",
+    "token_click": "in every truth session: an element_token from an accessibility_only observation ('Increment') is clicked with delivery_mode background; verified only by the fixture's own state file (counter +1, seq +1)."
+  },
+  "gates_per_row": {
+    "omission rows (screenshot_only: omitted=walk; accessibility_only: omitted=capture)": "omitted producer count 0 in 42/42 by the marks AND by the independent oracle, AND the remaining modality complete in 42/42 (screenshot: image part, PNG IHDR == reported dims, screenshot_frame_valid, no screenshot_error, dims == window_bounds x frame_scale within 1 px, capture == 1; accessibility: elements, elements_complete, not truncated, not degraded, element_count and digest equal to the same session's both-row modal values, walk == 1).",
+    "legacy_omitted": "capture == walk == 1 in 42/42 (default honored).",
+    "string rows on F": "is_error, structured code invalid_arguments, text names the field, capture == walk == 0 by marks and oracles, in 42/42.",
+    "string rows on U": "recorded and classified (expected silently_accepted_default); not gated."
+  },
+  "disposition_per_mode": {
+    "KEEP": "positive control passes; omission rows meet their gates on U and F by marks AND a target-owned oracle; neither/unknown_field rejected; legacy honored; string rows refused on F (U behaviour recorded); token click verified in every truth session; negative control passes.",
+    "REVISE": "the capture or walk oracle is only library-level, or any row/control is partial (listed).",
+    "KILL": "an omitted producer ever runs (mark or oracle) in any counted call.",
+    "NOT_SUPPORTED": "the Driver cannot run the mode at all (exact Driver error recorded).",
+    "X11 mode": "string rows only: KEEP (recertified) iff the positive control passes and F refuses both string rows in 42/42 with 0 producers by marks and oracles; U behaviour recorded.",
+    "Hyprland": "BLOCKED (needs a real Omarchy/Hyprland seat)."
+  },
+  "timing": {
+    "class": "BENCHMARK, reported, not gating",
+    "design": "S-W and S-X, U binary, marks on, no oracles, no WAYLAND_DEBUG. Per session: 1 warm-up call per row (excluded), then 21 pairs per comparison (both vs screenshot_only, both vs accessibility_only), comparison order rotated per pair, AB/BA alternating per pair, flipped between B1 (rotation 0) and B2 (rotation 1): 42 paired calls per comparison per mode. Statistic: median of per-pair differences (row - both), seeded stratified bootstrap 95% CI (10000 resamples within session, seed 1616), plus AB vs BA medians. Loadavg per call. Every call kept.",
+    "comparability": "never compared across modes, binaries or with OWN-16's X11 numbers"
+  },
+  "observations_not_fixed": "element-frame scaling (stack track: frame x 1.326 = original_width/screenshot_width) and seat-binding gaps belong to the #100 track; reported only.",
+  "claim_boundary": "headless sway 1.12 / wlroots 0.20.2 kit (S-W, S-X) and X11 Xvfb, GTK3 task window, binaries U/F on 989cc76ce. Not Hyprland, macOS or Windows. Per get_window_state call, not whole-task.",
+  "invariants": "no new service, no schema redesign (#16 directive), producer truth only; marks are measurement-only and default off; event absence is not freshness authority; the fix is a reviewed product fix limited to argument validation.",
+  "provider": "TypeSafe cap 0; attempts 0, reached 0",
+  "files_frozen_with_this_prereg": {
+      "modality_truth.py": "cca72a011ee750ccfc9f026579a9f9066d100402342f95aa0cb1c9f0c5c8188b",
+      "run_in_session.sh": "5efb93d038d0fbf53e93efff019117be76f1b3c198e1da687e02b7fc2e9d4055",
+      "run_batch.sh": "45bfd96389f98589d1eab0180534801cbc2cd9b48b2b2b31c40545c21dd106da",
+      "xrecord_capture.py": "247738cef5d55258e991162f7bdfed3d5d98be5e4896da4b3cd3f9d639dd58ed",
+      "collect.py": "cdf8d635e7498945b3662720c8c42ebd2604e6b672d1f33cf2c5343a795f2e25",
+      "analyze.py": "a9e7ef43f71cc1efdb01968956c033f1aad42a05090cd5efd6f807be92973116",
+      "harness-origin.diff": "7cc5a92c43acb32c7fdafdd962f77c3d22b088372769022bf0788acceda0f66a"
+  }
+}

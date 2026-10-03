@@ -18,11 +18,12 @@
 
 import json
 import os
+import signal
 
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk  # noqa: E402
+from gi.repository import GLib, Gtk, Gdk  # noqa: E402
 
 
 def aid(widget, name):
@@ -364,11 +365,18 @@ class TaskWindow(Gtk.Window):
     on Cua Driver output. Ordinary launches never create this window.
     """
 
-    def __init__(self, state_path, density=None):
-        super().__init__(title="CuaTestHarness GTK3 Tasks")
+    def __init__(self, state_path, density=None, key=None, shared=None):
+        title = "CuaTestHarness GTK3 Tasks"
+        super().__init__(title=f"{title} {key}" if key else title)
         self.set_default_size(480, 320)
         self.state_path = state_path
         self.density = density
+        # Two-window mode (TwoWindowState): this window's key in the shared state file.
+        self.key = key
+        self.shared = shared
+        self.open = True
+        if shared is not None:
+            shared.windows[key] = self
         self.distractor_actions = 0
         self.counter = 0
         self.agreed = False
@@ -414,7 +422,7 @@ class TaskWindow(Gtk.Window):
         root.pack_start(note_row, False, False, 0)
 
         root.pack_start(self.button("Exit", lambda *_: Gtk.main_quit()), False, False, 0)
-        self.connect("destroy", Gtk.main_quit)
+        self.connect("destroy", Gtk.main_quit if shared is None else self.on_closed)
         self.publish()
 
     def add_distractors(self, root, density):
@@ -485,13 +493,14 @@ class TaskWindow(Gtk.Window):
         self.saved_note = self.note.get_text()
         self.publish()
 
-    def publish(self):
-        self.counter_label.set_text(f"counter={self.counter}")
-        self.sequence += 1
+    def on_closed(self, *_):
+        self.open = False
+        self.publish()
+        if not any(window.open for window in self.shared.windows.values()):
+            Gtk.main_quit()
+
+    def task_state(self):
         state = {
-            "schema": TASK_STATE_SCHEMA,
-            "pid": os.getpid(),
-            "seq": self.sequence,
             "counter": self.counter,
             "agreed": self.agreed,
             "size": self.size,
@@ -500,14 +509,79 @@ class TaskWindow(Gtk.Window):
         if self.density is not None:
             state["density"] = self.density
             state["distractor_actions"] = self.distractor_actions
-        temporary = f"{self.state_path}.{os.getpid()}.tmp"
-        with open(temporary, "w", encoding="utf-8") as stream:
-            json.dump(state, stream, sort_keys=True)
-        os.replace(temporary, self.state_path)
+        return state
+
+    def publish(self):
+        self.counter_label.set_text(f"counter={self.counter}")
+        if self.shared is not None:
+            self.shared.publish()
+            return
+        self.sequence += 1
+        state = {"schema": TASK_STATE_SCHEMA, "pid": os.getpid(), "seq": self.sequence}
+        state.update(self.task_state())
+        write_state(self.state_path, state)
+
+
+def write_state(path, state):
+    temporary = f"{path}.{os.getpid()}.tmp"
+    with open(temporary, "w", encoding="utf-8") as stream:
+        json.dump(state, stream, sort_keys=True)
+    os.replace(temporary, path)
+
+
+TWO_WINDOWS_ENV = "CUA_GTK3_TWO_WINDOWS"
+
+
+class TwoWindowState:
+    """Opt-in same-process two-window mode (kvnloo/cua#36), CUA_GTK3_TWO_WINDOWS=1 with
+    CUA_GTK3_TASK_STATE set: two TaskWindows ("w1", "w2") in one GTK3 process, each with its
+    own controls, sharing one app-owned state file in which each window has its own key.
+    SIGUSR1 closes w1 only; the process exits when both windows are closed."""
+
+    def __init__(self, state_path):
+        self.state_path = state_path
+        self.windows = {}
+        self.sequence = 0
+
+    def publish(self):
+        self.sequence += 1
+        write_state(self.state_path, {
+            "schema": TASK_STATE_SCHEMA,
+            "pid": os.getpid(),
+            "seq": self.sequence,
+            "two_windows": True,
+            "windows": {
+                key: dict(window.task_state(), open=window.open)
+                for key, window in self.windows.items()
+            },
+        })
+
+    def close_first(self):
+        first = self.windows.get("w1")
+        if first is not None and first.open:
+            first.destroy()
+        return GLib.SOURCE_REMOVE
+
+
+def two_windows():
+    raw = os.environ.get(TWO_WINDOWS_ENV, "").strip()
+    if raw not in ("", "0", "1"):
+        raise SystemExit(f"{TWO_WINDOWS_ENV} must be 0 or 1, not {raw!r}")
+    return raw == "1"
 
 
 def main():
     task_state = os.environ.get(TASK_STATE_ENV, "").strip()
+    if task_state and two_windows():
+        shared = TwoWindowState(task_state)
+        for index, key in enumerate(("w1", "w2")):
+            win = TaskWindow(task_state, task_density(), key=key, shared=shared)
+            # Side by side, so neither window covers the other.
+            win.move(40 + index * 640, 40)
+            win.show_all()
+        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, shared.close_first)
+        Gtk.main()
+        return
     win = TaskWindow(task_state, task_density()) if task_state else HarnessWindow()
     win.show_all()
     Gtk.main()
