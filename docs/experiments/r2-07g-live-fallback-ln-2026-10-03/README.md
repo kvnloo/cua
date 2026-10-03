@@ -49,7 +49,7 @@ plain text (trycua/cua PR 4316).
 | Toggle LN `n1_renamed`, live (descriptive) | 1/1 run | refused at the failed precondition (`requires_present`); decisions `toggle-feature`, `reobserve` x2, `abstain`; 1 accepted non-completion click; 0 completion; outcome `abstained`; no success reported | LIVE_PROVIDER+REAL |
 | E2: live modal provider-decision component | - | live modal provider-decision component: OWNER_DECISION; fallback-continuation decisions IRREDUCIBLE | LIVE_PROVIDER+REAL (R2-07e warm + this LF) |
 | Provider | 16 attempts / 16 reached | lane cap 16 reached / 20 attempts; all 200; request id 16/16; 0 blocked by the cap; model `jev-1.13.0` | LIVE_PROVIDER |
-| Unit | 10/10 + 8/8 | `driver/test_r2_07g.py`; R2-07e `driver/test_r2_07e.py` carry-over | UNIT |
+| Unit | 10/10 + 8/8 | `driver/test_r2_07g.py`; R2-07e `test_r2_07e.py` carry-over (in the R2-07e packet) | UNIT |
 | Paired live BASE vs COMP+CR S | - | BLOCKED: budget (needs >= 120 reached) | BLOCKED |
 
 ## The five mechanism requirements (kvnloo/cua#73)
