@@ -2405,6 +2405,23 @@ fn validated_upload_paths(args: &Value) -> Result<Vec<String>, ToolResult> {
         .collect()
 }
 
+/// Measurement-only seam (FIX-03), default off: with
+/// `CUA_DRIVER_EXP_SET_FILES_GAP_MS` set to 1..=5000, `browser_set_input_files`
+/// waits that long between its connectedness check and the assignment and
+/// writes one stderr marker when the wait starts, so a harness can detach the
+/// input inside the window. Unset, empty or out of range: no wait, no output.
+async fn exp_set_files_gap() {
+    let Some(ms) = std::env::var("CUA_DRIVER_EXP_SET_FILES_GAP_MS")
+        .ok()
+        .and_then(|value| value.trim().parse::<u64>().ok())
+        .filter(|ms| (1..=5000).contains(ms))
+    else {
+        return;
+    };
+    eprintln!("[cua-exp] set_files_gap_begin ms={ms}");
+    tokio::time::sleep(std::time::Duration::from_millis(ms)).await;
+}
+
 #[async_trait]
 impl Tool for BrowserSetInputFilesTool {
     fn def(&self) -> &ToolDef {
@@ -2538,6 +2555,7 @@ impl Tool for BrowserSetInputFilesTool {
         if !connected {
             return detached_node_refusal();
         }
+        exp_set_files_gap().await;
         match validated
             .conn
             .call(
