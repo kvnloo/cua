@@ -1,0 +1,15 @@
+PASS  r2-07e-summary.json recomputes from raw/                                                                
+PASS  headline numbers equal their recomputed values                                                          19 numbers; bad: []
+PASS  headline numbers appear verbatim in README.md                                                           absent: []
+PASS  every compiled artifact passes the authority scan                                                       9 artifacts; problems: []
+PASS  provider ledger within the lane cap (18 reached / 22 attempts), no blocked send, summary equals ledger  15 attempts / 15 reached / 0 blocked_by_cap
+PASS  identity: R2-07c packet (harness tree 66bad345) and R2-07d packet trees unchanged at every commit       4 commits; 4 paths; bad: []
+PASS  paired_gate and its constants unchanged since the PREREG commit                                         097c71313
+PASS  PREREG committed before the first measured trial                                                        PREREG 097c71313 2026-10-03T08:13:12-05:00; first measured trial 2026-10-03T13:13:46.036Z
+PASS  every cited file exists, is tracked and not ignored; no untracked file under raw/                       67 cited; missing/untracked: [] []
+PASS  privacy: no absolute local paths / host or user names in any commit                                     3 commits, 69 blobs; private names: 2 (CUA_PRIVACY_NAMES_FILE + host name); hits: []
+PASS  privacy: no secret-like values in any commit                                                            hits: []
+PASS  privacy: no committed list of encoded name-like strings                                                 hits: []
+PASS  privacy: author/committer identity + Co-Authored-By trailer on every commit                             bad: []
+
+13/13 checks passed

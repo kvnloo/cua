@@ -1,0 +1,12 @@
+{"lane": "PUB-02", "wave": 5, "attempt": 1, "class": "SOURCE+UNIT", "provider": {"attempts": 0, "reached": 0},
+ "heads": {
+  "A exp/r2-10r-recert-a3-20261003": "d22eeb2ecf8a679d1425c21120a599775aa0817d (base 45dff8f32; worktree w5-pub-r2-10r)",
+  "B exp/r2-10-composition-r1c-20261003": "eaca68df9d7f4757028ba787f2e2fa82c92bafe7 (base 8f3a646b4; worktree w5-pub-r2-10-r1c; DO NOT PUSH before the owner rules)",
+  "C docs/packet-template-privacy-20261003": "c4342323bf51d9dcaea824c10aad59a5dd7a3c1c (base cca59642d; worktree w5-pub-template; template 49301c1a2, PKT-01 text fixes 58d17492a, packet c4342323b)"},
+ "verify": {"A": "189/189 without and with CUA_PRIVACY_NAMES_FILE; red-before 187/189",
+            "B": "133/133 both ways; red-before 131/133; 8f3a646b4 history: 0 of 264 local commits add/remove the list or a name encoding",
+            "C": "PUB-02 verifier 29/29 both ways; PKT-01 audit verifier 77/77; template 11/11; plants 3/3 + 1/1 + 1/1, clean passes; red-before 0/3",
+            "privacy_all_commits": "final-branch-scan.txt: 0 private-class findings in 16 + 12 + 5 commits"},
+ "audit": "AUDIT-TABLE.md / packet/raw/audit/*.json (counts, tags, SHAs; no values)",
+ "untouched": "exp/r2-10r-recert-a2-20261003 c183b95e3, exp/r2-10-composition-r1b-20261003 36ccdd766, exp/r2-10-composition-20261002 030f6bdbf, main da46c4bc8; no refs/original",
+ "tools": "transform_verifier.py, rewrite.sh, verify_clean.sh, red_control.sh, ancestor_check.py, verify_c.sh (lane-local helpers; not committed)"}

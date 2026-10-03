@@ -1,0 +1,2377 @@
+{
+ "runs": [
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run01",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run02",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run03",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run04",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run05",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run06",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run07",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run08",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run09",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  },
+  {
+   "attempts": [
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p1:0",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 11,
+     "target_owner": "A",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p2:0",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 13,
+     "target_owner": "B",
+     "tool": "browser_type"
+    },
+    {
+     "call_session_label": "jev-isolation-b",
+     "calling_session": "B",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 21,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 0,
+      "B": 0
+     },
+     "journal_submissions_before": {
+      "A": 0,
+      "B": 0
+     },
+     "kind": "cross_session",
+     "ref": "p6:2",
+     "ref_minted_by": "B",
+     "refusal_code": "browser_binding_stale",
+     "seq": 22,
+     "target_owner": "B",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "ended_session",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "session_ended",
+     "seq": 26,
+     "target_owner": "A",
+     "tool": "browser_click"
+    },
+    {
+     "call_session_label": "jev-isolation-a",
+     "calling_session": "A",
+     "dispatch_reached_target": false,
+     "driver_result": "refused",
+     "journal_submissions_after": {
+      "A": 1,
+      "B": 1
+     },
+     "journal_submissions_before": {
+      "A": 1,
+      "B": 1
+     },
+     "kind": "retired_after_same_label_restart",
+     "ref": "p5:2",
+     "ref_minted_by": "A",
+     "refusal_code": "browser_binding_stale",
+     "seq": 28,
+     "target_owner": "A",
+     "tool": "browser_click"
+    }
+   ],
+   "cross_session_mutations": [],
+   "foreign_value_landed": false,
+   "journals_match_expected": true,
+   "observed_journals": {
+    "A": [
+     [
+      "submit",
+      "session-a-owned"
+     ],
+     [
+      "reset",
+      null
+     ]
+    ],
+    "B": [
+     [
+      "submit",
+      "session-b-owned"
+     ],
+     [
+      "reset",
+      null
+     ],
+     [
+      "submit",
+      "session-b-after-a-end"
+     ]
+    ]
+   },
+   "own_session_actions_accepted": [
+    {
+     "ref": "p1:1",
+     "seq": 12,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p2:1",
+     "seq": 14,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p3:0",
+     "seq": 17,
+     "session": "A",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p4:0",
+     "seq": 19,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p5:2",
+     "seq": 23,
+     "session": "A",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p6:2",
+     "seq": 24,
+     "session": "B",
+     "tool": "browser_click"
+    },
+    {
+     "ref": "p7:0",
+     "seq": 31,
+     "session": "B",
+     "tool": "browser_type"
+    },
+    {
+     "ref": "p8:2",
+     "seq": 33,
+     "session": "B",
+     "tool": "browser_click"
+    }
+   ],
+   "run": "run10",
+   "script_complete": true,
+   "summary": {
+    "cross_fresh_completion": {
+     "a_to_a_verified": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_to_a_refusal": "browser_binding_stale",
+     "b_to_b_verified": true,
+     "cross_mutation_count": 0
+    },
+    "cross_pre_mutation": {
+     "a_journal_unchanged": true,
+     "a_to_b_refusal": "browser_binding_stale",
+     "b_journal_unchanged": true,
+     "b_to_a_refusal": "browser_binding_stale"
+    },
+    "session_end": {
+     "a_ended_session_refusal": "session_ended",
+     "a_old_authority_after_restart_refusal": "browser_binding_stale",
+     "a_old_journal_unchanged": true,
+     "b_existing_target_survived_a_end": true
+    }
+   }
+  }
+ ],
+ "verdict": {
+  "attempt_refusal_codes": [
+   [
+    "cross_session",
+    "browser_click",
+    "A",
+    "B",
+    "browser_binding_stale"
+   ],
+   [
+    "cross_session",
+    "browser_click",
+    "B",
+    "A",
+    "browser_binding_stale"
+   ],
+   [
+    "cross_session",
+    "browser_type",
+    "A",
+    "B",
+    "browser_binding_stale"
+   ],
+   [
+    "cross_session",
+    "browser_type",
+    "B",
+    "A",
+    "browser_binding_stale"
+   ],
+   [
+    "ended_session",
+    "browser_click",
+    "A",
+    "A",
+    "session_ended"
+   ],
+   [
+    "retired_after_same_label_restart",
+    "browser_click",
+    "A",
+    "A",
+    "browser_binding_stale"
+   ]
+  ],
+  "attempts_accepted_by_driver": 0,
+  "attempts_total": 60,
+  "cross_session_mutations_total": 0,
+  "foreign_values_landed_total": 0,
+  "runs": 10,
+  "runs_complete": 10,
+  "runs_with_expected_journals": 10
+ }
+}

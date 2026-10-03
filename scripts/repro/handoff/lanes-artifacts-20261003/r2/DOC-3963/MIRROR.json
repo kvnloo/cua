@@ -1,0 +1,16 @@
+{
+  "lane": "DOC-3963",
+  "wave": 6,
+  "branch": "docs/rfc3963-rewrite-draft-20261003",
+  "head": "088fe745ae299964a6de1fb3bf1d138331b7afca",
+  "base": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
+  "worktree": "w6-doc3963 (left for the verifier)",
+  "packet_dir": "docs/rfc/3963-rewrite/",
+  "pushed": false,
+  "provider": {"attempts": 0, "reached": 0},
+  "verify": "verify_artifacts.py --state STATE.json --all-commits under hostless: FAIL=0 DIFF=3 (N-03, BUG-01, OWN-75, each with a reason) FLAG=1 (OWN-75 UNPUBLISHED hard-stop record) PASS=15; minimal mode (--offline, no state, no names) FAIL=0 SKIP=3",
+  "negative_controls": "raw/verify/negctl.txt: clean copy passes; 9 mutated copies (upstream autolink, bare hash-number, disposition flip, wrong needle, hex-encoded private name, absolute path, missing section, wrong SHA, blocker without class) each FAIL as intended",
+  "comment_draft": "comment-73.md (for the Publish agent; not posted)",
+  "privacy_names_file": "lane tmp only, never committed or mirrored",
+  "near_miss": "four stdlib python3 JSON reads of STATE.json in the plain host shell at lane start (no GUI/display/bus import; no effect); every later code execution ran under bin/hostless"
+}

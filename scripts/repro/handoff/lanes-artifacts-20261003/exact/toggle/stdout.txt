@@ -1,0 +1,9 @@
+baseline n 10 verified 10 provider decisions [2] routes [('provider', 'provider')] ms_to_verified p50 2650.2
+guarded n 10 verified 10 provider decisions [1] routes [('provider', 'guarded-completion')] ms_to_verified p50 2642.8999999999996
+neg-duplicate-target-at-plan route ['provider', 'provider'] provider_decisions 2 verified False toggle_posts 1 confirm_posts 0 old_ref None
+neg-duplicate-target-after-toggle route ['provider', 'provider'] provider_decisions 2 verified False toggle_posts 1 confirm_posts 0 old_ref None
+neg-rebound-target-renamed route ['provider', 'provider'] provider_decisions 2 verified False toggle_posts 1 confirm_posts 0 old_ref None
+neg-toggle-rejected-by-app route ['provider', 'provider'] provider_decisions 2 verified False toggle_posts 1 confirm_posts 0 old_ref None
+neg-three-step-task-stays-chooser route ['provider', 'provider'] provider_decisions 2 verified True toggle_posts 1 confirm_posts 1 old_ref None
+neg-may-have-landed-no-replay route ['provider', 'provider'] provider_decisions 2 verified True toggle_posts 1 confirm_posts 1 old_ref None
+ctl-old-ref-reuse-refuses route ['provider', 'guarded-completion'] provider_decisions 1 verified True toggle_posts 1 confirm_posts 1 old_ref {'accepted': False, 'refusal_code': 'browser_ref_stale'}

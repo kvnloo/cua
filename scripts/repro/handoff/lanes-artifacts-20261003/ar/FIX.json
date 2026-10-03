@@ -1,0 +1,92 @@
+{
+ "schema": "ar.fix_artifact.v1",
+ "created_utc": "2026-10-02T17:45Z",
+ "worker": "Evaluator fix round (evaluator builder, D9; Claude Code workflow subagent). No provider of any kind; scripted caller only; feedback code frozen (D1/D13); no Driver or wait code changed.",
+ "overall": "PASS",
+ "overall_reason": "F1, F2, F3 fixed test-first without weakening any gate; decision metric T_act with a whole-task guardrail chosen on evidence and pre-registered; short A/A under that design passes (T_act Delta_AA CI95 includes 0); live F1 check on a real candidate-only soak session passes with the fixed evaluator and fails with the calibrated one; diagnostic replay of the recorded R3 rows gives 8/10 KEEP. The real R3 re-calibration (10 fresh repeats) is the next phase.",
+ "git": {
+  "worktree": "/mnt/zer0models/github/cua-lanes/ar-harness",
+  "branch": "exp/ar-harness-20261002",
+  "pushed": false,
+  "commits": {
+   "harness_fix": "f56422868403857a032e069f33686efbbc0b48b6 (gates/stats/lord/aa/cli/session.py, schemas, tests, README, manifest)",
+   "prereg": "9cd19cfe4 (docs/experiments/ar-fix-2026-10-02/raw/FIX-PREREG.json, hashed 17:18:43Z, before the first A/A block 17:19:01Z)",
+   "packet": "75abf40d2 (docs/experiments/ar-fix-2026-10-02/)",
+   "logs": "48e031709 (block logs of both packets force-added; the repo-wide *.log ignore had dropped them, so a fresh clone failed the calibration packet's manifest check with 145 missing files)"
+  },
+  "harness_manifest_sha256": "836a646e5b0e8acd439b9ed27c7aaa0f868b05eca8c1e8a4a810fa06230faa41",
+  "selfcheck": "ok",
+  "prereg_sha256": "fa0f2c4d2600393bdc53b01be669f37460234e99c1e5af5583e977283e0d9b94"
+ },
+ "fixes": {
+  "F1_G2": {
+   "change": "runner/session.py records session_binds (x11, dbus, a11y, xauthority: the paths sandbox-driver.sh binds at their own path, computed the same way) in each ar.session.v1 start record; gates.session_names maps exactly those paths, plus parents bwrap creates below /tmp, /run/user/trial, /home/trial, to <session:...> for rows of the same (eval_id, session) only. No blanket /tmp rule; no manifest -> no collapsing (fail closed).",
+   "enumeration": "all calibration raw logs: the only per-session random name in any GTK footprint is /tmp/dbus-<random> (106 sessions, 106 names); /tmp/.X11-unix and /tmp/.X11-unix/X99 are session-owned but constant; browser footprints list only the trial HOME",
+   "tests": ["session dbus socket in candidate-only soak session passes", "no manifest -> still new_file:gtk:/tmp/dbus-", "planted /tmp/dbus-<other>, /tmp/ar-settle.sock, /run/user/trial/bus, /tmp/.X11-unix/X5, HOME socket -> new_file", "another session's dbus name -> fails", "extra socket fd -> new_socket", "session_binds parse == sandbox-driver.sh binds"]
+  },
+  "F2_G5": {
+   "change": "one-sided paired sign-flip test (Monte Carlo) on per-pair ln ratios with b = max(20000, ceil(20/alpha_i)); alpha_i = lord.next_alpha(prior) depends only on earlier rejections, so b is fixed before the data; p floor 1/(b+1) <= alpha_i/20 at every level; valid for any b; no normality assumption (AB/BA randomisation justifies the null). LORD++ unchanged: FDR 0.05, W0 0.025, C 0.0722. Bootstrap p removed; bootstrap CI kept for reporting.",
+   "w0_rationale": "W0 = alpha/2 = 0.025. ~30 tests/night without rejection: alpha 1.25e-3 (t=1), 2.3e-4 (t=3), 9.1e-5 (t=10), 3.2e-5 (t=30), spending 0.0037 of 0.025 wealth; larger W0 raises those at most 2x but shrinks the first rejection's reward; after a rejection levels are nearly W0-independent (alpha_30 ~6.5e-5). 80% power at n=37, sigma 0.0376 needs ~2.4% (t=1) to ~3.0% (t=30). Recorded in lord.W0_RATIONALE, prereg fdr.w0_rationale and FIX-PREREG.json.",
+   "tests": ["-8% effect, n=38, sigma 0.0592, rejected at alpha_4 = 1.93e-4 (< 1/4001)", "same at alpha_30", "null n=38 not rejected (5 seeds)", "sign-flip p matches exact enumeration", "p floor = 1/(b+1)", "resamples >= 10/alpha", "next_alpha independent of own p"]
+  },
+  "F3_G7": {
+   "change": "trace-unset pairs' Delta (all of them) must lie inside the traced pairs' bootstrap CI95 widened by ln(1+tau) each side",
+   "tests": ["loaded-host rows sigma 0.0376, 40 seeds: 1/40 reject vs old point rule 6/40 (at sigma 0.0592: 4/40 vs 14/40)", "r02-shaped 1 s start-up stall on a trace-off pair passes", "real on/off disagreement under load fails"]
+  },
+  "metric_and_guardrail": "design.metric = T_act (prereg const) drives G5, G6 p90, G7, GS; G6 adds whole-task guardrail: mean paired ln ratio of whole-task T <= ln(1 + guardrail.tau); guardrail tau from the A/A whole-task T (tau.json guardrail)"
+ },
+ "tests": {
+  "python": "103 OK (84 before, 19 new; 3 changed for the metric), under hostless",
+  "itemcheck": "14 passed (cargo test --offline --release, lane target ar-itemcheck, nice 19, hostless)",
+  "red_first": "18 of the new/changed tests failed before the implementation"
+ },
+ "layout_bias_decision": {
+  "chosen": "(a) T_act decision metric, whole-task T guardrail",
+  "evidence": {
+   "first_aa": "whole-task +1.68% CI [+0.35, +3.07] excludes 0 (startup); T_act +0.78% CI [-0.06, +1.64] includes 0",
+   "this_aa": "whole-task -1.46% CI [-4.0, +1.3], sigma 0.096 (bias reversed sign; largest deviations are Driver spawn->initialize 200-430 ms); T_act +0.23% CI [-0.26, +0.71], sigma 0.017",
+   "noop_builds_R7": "10 builds x 24 pairs: whole-task 2/10 CIs exclude 0, between-build sd ~0.13%; T_act 0/10, between-build sd ~0.06%",
+   "calibration": "R3 T_act Delta -18% vs whole-task -10.5% (same ~50 ms; every segment-1 wait is after first dispatch); r02 whole-task trace-off sd 0.418 vs 0.014 T_act"
+  },
+  "rejected_b": "randomised padding doubles serialized G1 builds (~16/h cap), a 2-level random effect does not average out with 2 builds per arm, and it inflates sigma"
+ },
+ "aa_rerun": {
+  "design": "base 8464c444...c35209 vs env-padded rebuild 5ce01b3c...599819 (the pair that failed whole-task); plan.py --pairs 48 --soak 24 --seed 20261012: 2 GTK sessions x 24 AB/BA pairs (20% trace-off, 2 warm-ups, 4 controls) + 1 candidate-only soak session",
+  "blocks": "quiet-timed ar-fix-aa-20261002-s000/s001/s002: 64.4/60.8/31.5 s held, rc 0 (17:19:01-17:21:38Z)",
+  "primary": {"T_act_delta_aa_ln": 0.00231, "ci95_ln": [-0.00258, 0.00706], "ci_includes_zero": true, "result": "PASS"},
+  "secondary": {
+   "whole_task_guardrail": "Delta_AA -0.0146 <= ln(1.0311) 0.0306: PASS (whole-task CI also includes 0 this time)",
+   "live_F1": "G2 PASS on all rows incl. candidate-only soak session (own D-Bus name, binds recorded in every session); calibrated evaluator 2615af74f FAILS the same rows: new_file:gtk:/tmp/dbus-Aug#ZxvLaz",
+   "G3_G4": "PASS; A/A not kept by G5",
+   "correctness": "96/96 task, 24/24 soak verified, 0 failures"
+  },
+  "tau_json": "T_act tau 2.0% (floor), sigma 0.0173, n by power 8 (prereg min 10); guardrail tau 4.18% (whole-task sigma 0.096). Loaded-host values: freeze after an idle-host A/A.",
+  "host_load": "loadavg 7.5-12 during the blocks, from another track's rustc builds (builds run outside the quiet lock by design); lock held exclusively for every block"
+ },
+ "replay_diagnostic": {
+  "what": "recorded R3 delete50 r01-r10 confirm rows, fixed evaluator, fresh LORD++ sequence; session binds from each session's own [session] log line; prereg + T_act, tau 2%, n 37, guardrail 3.11%. Not a calibration result.",
+  "keeps": 8,
+  "by_failed_gate": {"GS": 1, "G8": 1, "None": 8},
+  "detail": "r03-r10 KEEP: T_act Delta -18.3..-18.5%, p 5e-5 (b 20000) rejected at every level, G7 share 0.99-1.01 with trace-off Delta inside band, whole-task -10.3..-10.7%, soak 300/300, spots non-inferior; r01 GS spot_not_run (browser spot never ran), r02 G8 soak_short (soak never ran)"
+ },
+ "verification": {
+  "fix_packet": "verify_artifacts.py 14/14 from a fresh git archive of HEAD (manifest, prereg-before-trials, A/A recompute, live F1 non-vacuous, R3 replay recompute from the calibration packet, leak scan)",
+  "calibration_packet": "its verify_artifacts.py imports the live harness, so at HEAD it stops at KeyError 'metric' (old preregs lack the new pre-registered fields); run against harness 2615af74f with HEAD's packet files: 0 failing (before 48e031709 a fresh clone failed 145 manifest entries: untracked logs)"
+ },
+ "next": [
+  "R3 re-calibration: 10 fresh delete50 repeats through the fixed evaluator on a fresh ledger, >= 8/10 KEEP, preferably on an idle host",
+  "idle-host A/A, then freeze tau (T_act) and guardrail tau",
+  "n_pairs is sized at alpha 0.01 (plan formula) while LORD++ levels are 1e-3..3e-5: owner may want n sized at the expected alpha_i for marginal effects"
+ ],
+ "n01_reference": "N-01R (RFC loop, local exp/n-01r-native-wait-ab-20261002 at 3bb4a7fc7) cited, not duplicated: rules the 50 ms post-DoAction sleep DELETED on GTK3 AT-SPI background delivery. This round changed no wait and measured champion builds only.",
+ "paths": {
+  "packet": "/mnt/zer0models/github/cua-lanes/ar-harness/docs/experiments/ar-fix-2026-10-02/",
+  "run_dir": "/mnt/zer0models/cua-lane-tmp/ar-fix (aa/, replay.json, evidence.json, package.py, old/ = git archive of 2615af74f)"
+ },
+ "near_misses": [
+  "Several trivial python3 invocations ran in the plain host shell (heredoc string-replace edits of harness/test/schema files, a json.load of the prereg, a no-op 'python3 -c 1'); none imported a GUI library or touched a display, bus or session; all code under test, the A/A, analyses and verifiers ran under hostless.",
+  "FIX-PREREG.json created_utc (17:20:00Z) was hand-written and is wrong; the hash timestamp 17:18:43Z and commit 9cd19cfe4 are authoritative (documented in the packet README).",
+  "A read-only 'ps' in the plain shell to identify the host load (another track's rustc)."
+ ],
+ "hard_rule_breach": "none"
+}

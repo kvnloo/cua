@@ -1,0 +1,11 @@
+bend-stack E2E lane raw mirror (2026-10-02/03). UNSANITIZED, local only, never committed.
+packet: kvnloo/bend-native exp/e2e-20261002 (worktree /mnt/zer0models/github/bend-native-wt/e2e), docs/experiments/e2e-2026-10-02
+  ce1e2d85 PREREG + harness + fixtures (before measured runs)
+  9ca6e78  PREREG amendment 1 (fail-open supplement)
+  a7a041f  results packet (verify_artifacts.py RESULT PASS; 3 tamper copies FAIL: work/tamper/{a,b,c})
+runs/      every launcher run (M-* measured, M-fo_* fail-open supplement, K-* latency, S-/S2-/S3-* scoring, X-* probes/diag, P-*/pilot-* pilots); overlay homes without skills copies
+cua-out/   CUA per-run fixture state, oracle, session timeline
+logs/      driver logs, launcher logs, oracle logs, fail-open stop records, GPU samples, failed scoring attempts
+work/      plans, analysis (runs.jsonl, metrics.json, events.jsonl), scoring inputs/outputs, pilots.json, tamper copies
+bin/ config/ fixtures/ lane.json   the exact harness used (absolute paths)
+z0svc/     private z0 service run dirs (e2e-svc-01 battery, e2e-svc-fo-01..03 supplement, e2e-svc-pilot)

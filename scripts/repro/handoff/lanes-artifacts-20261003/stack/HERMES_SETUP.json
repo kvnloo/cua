@@ -1,0 +1,193 @@
+{
+  "schema": "stack.hermes_setup.v1",
+  "created": "2026-10-01",
+  "lane": "stack-integration",
+  "scope_note": "Setup only (kvnloo/hermes-agent#319 2026-10-01 directive): no new architecture, protocol, question family or active controller. No GitHub writes, nothing pushed, no measured latency numbers reported.",
+  "read_first": {
+    "hermes_319": "Directive: stop adding architecture; collect joined receipts from ordinary workload without changing behaviour; freeze dataset; compare base-rate/deterministic vs installed z0int backends (Brier/log-loss/calibration/latency/coverage).",
+    "hermes_322": "Common receipt + failure-injection runner (S4); replay must not mint a second side effect; unknown stays unknown; no observer self-credits success. Latest comment: Wave-0 F14 guard gate, forbids new schema/runner features.",
+    "hermes_prs": {
+      "385": {"head_ref": "lab/z0int/full-observer-v0", "head": "ce5c027bbacc2c4d60a17eb61f80a76910410313", "base": "main", "state": "OPEN"},
+      "386": {"head_ref": "lab/z0int/retry-shadow-v0", "head": "521d43548a1f74e14db8f2999c26e6b4e9c2b32e", "base": "lab/z0int/full-observer-v0", "state": "OPEN"},
+      "387": {"head_ref": "lab/z0int/shadow-eval-v0", "head": "b82038890f8756a575a507e7962524150c19c03a", "base": "lab/z0int/retry-shadow-v0", "state": "OPEN"}
+    },
+    "cua_94": "Omarchy structured desktop control plane; native qualification (#92/#100/#101) before more architecture; no new coordinator daemon/shadow state.",
+    "cua_36": "Multi-session isolation; browser row done upstream (4317); remaining rows capture ownership / native token ownership / cancellation; no new session/revision abstraction."
+  },
+
+  "model": {
+    "evidence": "REAL",
+    "server": {"url": "http://127.0.0.1:11434", "version": "0.16.1", "process": "system ollama service (user 'ollama', /usr/bin/ollama)", "store_partition_free": "14G on / (model store is on the root partition)"},
+    "inventory": [
+      {"name": "qwen2.5:3b", "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b", "size_bytes": 1929912432, "params": "3.1B", "quant": "Q4_K_M", "capabilities": ["completion", "tools"], "native_context": 32768, "structured_tool_calls": true},
+      {"name": "qwen2.5-coder:7b", "digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364", "size_bytes": 4683087561, "params": "7.6B", "quant": "Q4_K_M", "capabilities": ["completion", "tools", "insert"], "native_context": 32768, "structured_tool_calls": false, "note": "Advertises 'tools' but on /v1/chat/completions it returns the call as plain-text JSON (finish_reason=stop, tool_calls=null). Reproduced in Hermes run smoke-01 (assistant_tool_call_count=0)."},
+      {"name": "qwen2.5vl:3b", "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1", "size_bytes": 3200627168, "capabilities": ["completion", "vision"], "native_context": 128000, "structured_tool_calls": false, "note": "no tools capability"},
+      {"name": "nomic-embed-text:latest", "digest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f", "size_bytes": 274302450, "note": "embedding only"}
+    ],
+    "selected": {"name": "qwen2.5:3b", "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b", "size_bytes": 1929912432, "native_context": 32768, "served_context": 4096, "reason": "Only installed model that makes structured tool calls through Ollama's OpenAI-compatible endpoint (the endpoint Hermes's 'custom' provider uses)."},
+    "pulled": "none. qwen2.5:7b (about 4.7 GB) would fit the <=6 GB size rule, but the store is on / with 14G free, so the pull would leave under 10 GB free. Forbidden by the disk rule.",
+    "gaps": [
+      {"id": "ctx-window", "evidence": "BLOCKED", "summary": "Hermes needs a context window of at least 64K (MINIMUM_CONTEXT_LENGTH=64000). The template sets model.ollama_num_ctx=65536 and Hermes sends extra_body.options.num_ctx=65536, but Ollama 0.16.1's /v1 endpoint ignores it: /api/ps reports context_length=4096 after a direct /v1 probe that passed options.num_ctx=65536. Hermes therefore believes it has 64K while Ollama serves 4K, and silently truncates any prompt over 4096 tokens. The non-GUI smoke prompts (about 2.6K-2.9K tokens) fit. A computer-use turn (Driver tool schema plus AX tree or screenshot) will not.", "remedies_need_owner_decision": ["(a) Run ollama create for a derived tag with 'PARAMETER num_ctx 65536' on the 11434 server. This writes a small manifest under the system store via the daemon, so it is a /var write and was not done.", "(b) Point the lane at a user-local Ollama under /mnt started with OLLAMA_CONTEXT_LENGTH=65536 and pull qwen2.5:3b or qwen2.5:7b there (1.6T free on /mnt). This conflicts with the 'use 127.0.0.1:11434' rule.", "(c) Add a Hermes provider that calls native /api/chat, which honours options. That is new integration code and out of scope."]},
+      {"id": "cpu-only", "evidence": "BLOCKED", "summary": "The 11434 server runs models on CPU: /api/ps size_vram=0 for qwen2.5:3b and qwen2.5-coder:7b, and nvidia-smi lists no Ollama compute process (841 MiB of 12288 MiB used). Latency from this lane would be CPU latency, not RTX 3080 Ti latency. Nothing was timed."}
+    ]
+  },
+
+  "worktree": {
+    "evidence": "SOURCE",
+    "repo": "/mnt/zer0models/hermes-wt/h.git",
+    "path": "/mnt/zer0models/hermes-wt/stack-integration",
+    "branch": "exp/stack-integration-20261002",
+    "head": "0d60437a3329448bb9d2992e34cec81b0afd36df",
+    "head_tree": "f4d9a737a97b69d9a1fc1f379a45a22c694db0c1",
+    "pushed": false,
+    "base": {"choice": "fork main (kvnloo/hermes-agent main)", "commit": "4d3555e5ca1ae3a8babfc33831c3f91eae3a825c", "why": "It is the declared base of #385. Fork main is a strict ancestor of upstream main (0 ahead, 250 behind upstream 5bba024d8ddd388f56f354c1f789be825e3d8a3c)."},
+    "fetch": {
+      "command": "git -C /mnt/zer0models/hermes-wt/h.git fetch --no-tags --filter=blob:none https://github.com/kvnloo/hermes-agent.git +refs/heads/main:refs/stack/fork/main +refs/heads/lab/z0int/full-observer-v0:refs/stack/fork/pr385 +refs/heads/lab/z0int/retry-shadow-v0:refs/stack/fork/pr386 +refs/heads/lab/z0int/shadow-eval-v0:refs/stack/fork/pr387 ; git -C /mnt/zer0models/hermes-wt/h.git fetch --no-tags --filter=blob:none https://github.com/NousResearch/hermes-agent.git +refs/heads/main:refs/stack/upstream/main",
+      "namespace": "refs/stack/* (new). Existing refs/fork/lab/z0int/* and refs/fork/main were stale (for example refs/fork/lab/z0int/full-observer-v0=1662a990a, which lacks 3 fixes now on the #385 head) and were left unmoved, verified after the merges.",
+      "fetched_heads_match_gh": true
+    },
+    "merge_notes": {
+      "topology": "The three PR branches share 4 common commits from merge-base bddd22be7c2e5f7630c3d90507e6e7280ff092e3 but are not linear: #385 has 4 later fixes (scratch dir, profile-scoped spool, non-blocking writer, subagent_stop join), and #386/#387 each carry their own 'scratch directory'/'$TMPDIR' doc commits. #386 is not an ancestor of #387.",
+      "dry_runs": ["merge-tree fork-main + pr387: clean (tree c0ef53e2)", "merge-tree pr385 + pr386: clean (cce2de25)", "merge-tree pr385 + pr387: clean (088fa577)", "merge-tree pr386 + pr387: clean (83eceb02)"],
+      "merges": [
+        {"commit": "80ae4d4d3c5a8f30e51409f22217d499a818a021", "merged": "pr385 ce5c027bb", "conflicts": []},
+        {"commit": "533f43c43c8c8c84d3fdbc2e17df7e434a7831aa", "merged": "pr386 521d43548", "conflicts": []},
+        {"commit": "0d60437a3329448bb9d2992e34cec81b0afd36df", "merged": "pr387 b82038890", "conflicts": []}
+      ],
+      "conflicts_resolved": 0,
+      "diff_vs_base": "13 files changed, 1313 insertions(+), all under lab/z0_hermes_observer/ and tests/lab/",
+      "merge_command": "git -C <wt> -c user.name='Kevin Rajan' -c user.email='7121943+kvnloo@users.noreply.github.com' -c core.hooksPath=/dev/null merge --no-ff --no-edit refs/stack/fork/pr<N> -m 'Merge kvnloo/hermes-agent#<N> into stack integration' -m 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'",
+      "commit_scan": "Merge messages contain no absolute paths, host name or secrets. Author and committer are both Kevin Rajan <7121943+kvnloo@users.noreply.github.com>. The repo had no hooks; core.hooksPath=/dev/null was set anyway."
+    },
+    "computer_use_tool": {
+      "files": ["tools/computer_use_tool.py", "tools/computer_use/cua_backend.py", "tools/computer_use/cua_backend_driver.py", "tools/computer_use/cua_backend_session.py", "toolsets.py (toolset 'computer_use' -> tool 'computer_use')"],
+      "driver_resolution": "resolve_cua_driver_cmd() in tools/computer_use/cua_backend_driver.py uses the HERMES_CUA_DRIVER_CMD env var (explicit override, used verbatim when it is a path). Otherwise it asks PM: pm.installed_package('cua-driver').binary under HERMES_HOME. There is no config.yaml key for the path. The MCP spawn command comes from '<driver> manifest' -> mcp_invocation, falling back to '<driver> mcp'. Runtime contract min 0.20.0 (mcp --socket/--grant, serve ..., stop --socket).",
+      "child_env": "cua_driver_child_env(): os.environ plus the Bot Desktop overlay plus CUA_DRIVER_RS_TELEMETRY_ENABLED=0 (computer_use.cua_telemetry=false). sanitized_cua_driver_env() strips provider secrets. Native Wayland is only enabled with computer_use.native_wayland=true and WAYLAND_DISPLAY set; both are off or unset here.",
+      "driver": {"path": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version": "cua-driver 0.32.0", "manifest_mcp_invocation": ["<driver>", "mcp"], "contract_ok": true, "probe": "--version and manifest under hostless with env -i (no display); no session was started"},
+      "gui_turn": {"evidence": "NOT_RUN", "why": "Out of scope for this step (non-GUI proof only), and blocked by the ctx-window gap. A GUI turn must run inside cua-x11-session.sh, or cua-sway-session.sh once it is canary-verified."}
+    }
+  },
+
+  "venv": {
+    "evidence": "REAL",
+    "path": "/mnt/zer0models/hermes-wt/stack-venv",
+    "python": "CPython 3.14.7 (/usr/bin/python3.14; matches the worktree .python-version 3.14)",
+    "install": "editable worktree with extra [computer-use] (mcp, httpx2, starlette) plus dependency group dev (pytest 9.1.1, pytest-asyncio, ...)",
+    "commands": [
+      "cd /mnt/zer0models/hermes-wt/stack-integration && /mnt/zer0models/github/cua-lanes/bin/hostless env TMPDIR=/mnt/zer0models/cua-lane-tmp/stack-tmp UV_CACHE_DIR=/mnt/zer0models/cua-lane-tmp/stack-uv-cache uv venv --python 3.14 /mnt/zer0models/hermes-wt/stack-venv",
+      "cd /mnt/zer0models/hermes-wt/stack-integration && /mnt/zer0models/github/cua-lanes/bin/hostless env TMPDIR=/mnt/zer0models/cua-lane-tmp/stack-tmp UV_CACHE_DIR=/mnt/zer0models/cua-lane-tmp/stack-uv-cache VIRTUAL_ENV=/mnt/zer0models/hermes-wt/stack-venv uv pip install --python /mnt/zer0models/hermes-wt/stack-venv/bin/python -e '.[computer-use]' --group dev"
+    ],
+    "log": "/mnt/zer0models/github/cua-lanes/artifacts/stack/logs/venv-install.log",
+    "live_install_touched": false,
+    "uv_cache": "/mnt/zer0models/cua-lane-tmp/stack-uv-cache"
+  },
+
+  "home_template": {
+    "path": "/mnt/zer0models/cua-lane-tmp/stack-hermes-home/template/home",
+    "hermes_home_in_template": "/mnt/zer0models/cua-lane-tmp/stack-hermes-home/template/home/.hermes",
+    "config": "/mnt/zer0models/cua-lane-tmp/stack-hermes-home/template/home/.hermes/config.yaml",
+    "config_sha256": "08c3c507af851edb35cfe663848307e32901e6b9e66fe08b5ed039a47e87d7f8",
+    "config_summary": {
+      "model": {"default": "qwen2.5:3b", "provider": "custom", "base_url": "http://127.0.0.1:11434/v1", "api_key": "placeholder (Ollama needs none)", "context_length": 65536, "ollama_num_ctx": 65536},
+      "plugins": {"enabled": ["z0-hermes-observer"], "auto_update_check_hours": 0, "auto_apply": false},
+      "updates": {"check": false, "refresh_cua_driver": false, "pre_update_backup": "off"},
+      "model_catalog": {"enabled": false},
+      "computer_use": {"cua_telemetry": false, "permission_mode": "standard", "autostart": false, "native_wayland": false},
+      "bot_desktop": {"auto_start": false}
+    },
+    "observer": {
+      "install": "symlink template/home/.hermes/plugins/z0-hermes-observer -> /mnt/zer0models/hermes-wt/stack-integration/lab/z0_hermes_observer (follows the worktree head)",
+      "privacy": "defaults: metadata only. Z0INT_HERMES_CAPTURE_SANITIZED_CONTENT is unset, so no prompt/tool/result content is written. Z0INT_HERMES_EVENT_PATH is unset, so the spool is <HERMES_HOME>/plugin-data/z0-hermes-observer/events.jsonl.",
+      "schema": "z0int.hermes_observer_event.v1"
+    },
+    "shadow_family": {
+      "id": "api.attempt_will_fail",
+      "mode": "Offline shadow only. #386/#387 add no runtime hook or config key. lab/z0_hermes_observer/shadow_api_failure.py builds DecisionRequest-shaped examples from the observer spool after a run; evaluate_shadow.py scores them. A prediction can never reach Hermes's execution path because nothing in the Hermes process reads it. No backend is wired in yet (--backend omitted); z0int backends are for the next step."
+    },
+    "launcher": {
+      "path": "/mnt/zer0models/cua-lane-tmp/stack-hermes-home/run-hermes.sh",
+      "sha256": "96aac9950122ab458ffff49f9bb11c36ec0f5a3afb660b79e64774e4ab459ee6",
+      "usage": "run-hermes.sh <run-id> <python args...>",
+      "does": [
+        "Copies the template to runs/<run-id>/home (HOME) and sets HERMES_HOME=runs/<run-id>/home/.hermes, plus tmp, cwd (optional STACK_FIXTURE_DIR copied in) and meta.",
+        "hostless, then a nested bwrap that masks /workspace/hermes-home (target of ~/.hermes) and ~ with empty tmpfs, so neither can be read or written.",
+        "env -i allow-list: PATH (venv first), VIRTUAL_ENV, HOME, HERMES_HOME, TMPDIR, XDG_{CONFIG,CACHE,DATA,STATE}_HOME inside the run dir, LANG, TZ, TERM, NO_COLOR, CUA_HOSTLESS=1, HERMES_CUA_DRIVER_CMD=<driver>, CUA_DRIVER_RS_TELEMETRY_ENABLED=0, HERMES_API_TIMEOUT. HTTP(S)/ALL_PROXY point at the dead port 127.0.0.1:9 with NO_PROXY=127.0.0.1,localhost. The inherited shell's HERMES_HOME (live profile), API keys and tokens are dropped.",
+        "Records meta/env.inside, meta/mask.inside, live-home stat before/after, worktree head and status, argv, stdout, stderr and exit_code."
+      ],
+      "gui_note": "For GUI runs the launcher must be wrapped by or exec inside the private session script. STACK_MASK_HOME may need to leave ~/.local/opt/cua-e2e-x11/root reachable (for example as a read-only bind)."
+    }
+  },
+
+  "runs": [
+    {
+      "id": "smoke-01", "evidence": "REAL", "outcome": "FAIL (model)",
+      "command": "STACK_FIXTURE_DIR=/mnt/zer0models/cua-lane-tmp/stack-hermes-home/fixtures/smoke /mnt/zer0models/cua-lane-tmp/stack-hermes-home/run-hermes.sh smoke-01 -m hermes_cli.main chat -Q -t file --max-turns 4 -q 'Use the read_file tool to read stack_fixture.txt in the current directory, then reply with only the canary value it contains.'",
+      "model": "qwen2.5-coder:7b",
+      "exit_code": 0, "session_id": "20261002_042650_ca6061",
+      "result": "The turn completed, but the model printed the read_file call as text. 1 API call, finish_reason=stop, assistant_tool_call_count=0, no tool executed, canary not returned.",
+      "observer_rows": 6,
+      "raw": "/mnt/zer0models/github/cua-lanes/artifacts/stack/raw/smoke-01/"
+    },
+    {
+      "id": "smoke-02", "evidence": "REAL", "outcome": "PASS",
+      "command": "STACK_FIXTURE_DIR=/mnt/zer0models/cua-lane-tmp/stack-hermes-home/fixtures/smoke /mnt/zer0models/cua-lane-tmp/stack-hermes-home/run-hermes.sh smoke-02 -m hermes_cli.main chat -Q -t file --max-turns 4 -q 'Use the read_file tool to read stack_fixture.txt in the current directory, then reply with only the canary value it contains.'",
+      "model": "qwen2.5:3b",
+      "exit_code": 0, "session_id": "20261002_043214_45e76e",
+      "oracle": "Independent fixture oracle: stdout contains STACK-CANARY-7f3a91, a value that exists only in the fixture file. The observer is not the judge.",
+      "result": "3 API calls (tool_calls, tool_calls, stop) and 2 read_file executions (status ok), all under one trace_id (754d2014...). Each pre_api_request has a matching post_api_request with the same api_request_id.",
+      "observer": {"path": "<run>/home/.hermes/plugin-data/z0-hermes-observer/events.jsonl", "rows": 14, "schema": "z0int.hermes_observer_event.v1", "events": ["on_session_start", "pre_llm_call", "pre_api_request x3", "post_api_request x3", "pre_tool_call x2", "post_tool_call x2", "on_session_end", "pre_auxiliary_call x1"], "content_free": "rows hold only metadata scalars, tool_name and arg_keys; no prompt/args/result text", "sha256": "4e69e66b9520d656f2f1c9ab23a59bbbe8f799c18ea09679dd7c63760132aa2d", "observation": "The trailing title-generation auxiliary call has a pre row with no post row: the one-shot process exited first. #386 joins only pre/post_api_request, so this row is excluded, not mislabelled."},
+      "raw": "/mnt/zer0models/github/cua-lanes/artifacts/stack/raw/smoke-02/"
+    },
+    {
+      "id": "shadow-02", "evidence": "FIXTURE", "outcome": "PASS",
+      "command": "/mnt/zer0models/cua-lane-tmp/stack-hermes-home/run-hermes.sh shadow-02 /mnt/zer0models/hermes-wt/stack-integration/lab/z0_hermes_observer/shadow_api_failure.py <smoke-02 events.jsonl> --output /mnt/zer0models/cua-lane-tmp/stack-hermes-home/runs/shadow-02/cwd/examples.jsonl",
+      "result": "3 joined api.attempt_will_fail examples, all verified_outcome=false (outcome_source=post_api_request), 0 orphans dropped. No backend scored.",
+      "sha256": "66c03887437d94b3b686df8122e24e1ff7d403a811908986ca551cefc5c67c8a",
+      "raw": "/mnt/zer0models/github/cua-lanes/artifacts/stack/raw/shadow-02/"
+    }
+  ],
+  "denominators": {"isolated_hermes_turns": 2, "turns_completed_exit0": 2, "turns_with_structured_tool_execution": 1, "turns_oracle_pass": 1, "turns_oracle_fail": 1},
+
+  "unit_tests": {
+    "evidence": "UNIT",
+    "command": "cd /mnt/zer0models/hermes-wt/stack-integration && /mnt/zer0models/github/cua-lanes/bin/hostless bwrap --dev-bind / / --tmpfs /workspace/hermes-home --tmpfs ~ --chdir /mnt/zer0models/hermes-wt/stack-integration --die-with-parent -- env -i PATH=/mnt/zer0models/hermes-wt/stack-venv/bin:/usr/local/bin:/usr/bin:/bin HOME=/mnt/zer0models/cua-lane-tmp/stack-hermes-home/runs/unit-01/home TMPDIR=/mnt/zer0models/cua-lane-tmp/stack-hermes-home/runs/unit-01/tmp LANG=C.UTF-8 CUA_HOSTLESS=1 HERMES_PYTHON=/mnt/zer0models/hermes-wt/stack-venv/bin/python bash scripts/run_tests.sh tests/lab/test_z0_hermes_observer.py tests/lab/test_z0_hermes_observer_delivery.py tests/lab/test_z0_hermes_observer_storage_scope.py tests/lab/test_z0_hermes_observer_subagent_identity.py tests/lab/test_z0_hermes_shadow_api_failure.py tests/lab/test_z0_hermes_shadow_eval.py -q",
+    "files": {
+      "tests/lab/test_z0_hermes_observer.py": "4 passed",
+      "tests/lab/test_z0_hermes_observer_delivery.py": "6 passed",
+      "tests/lab/test_z0_hermes_observer_storage_scope.py": "2 passed",
+      "tests/lab/test_z0_hermes_observer_subagent_identity.py": "2 passed",
+      "tests/lab/test_z0_hermes_shadow_api_failure.py": "3 passed",
+      "tests/lab/test_z0_hermes_shadow_eval.py": "3 passed"
+    },
+    "total": "20 passed, 0 failed, 6 files",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/artifacts/stack/raw/unit-01/run_tests.log",
+    "worktree_clean_after": true
+  },
+
+  "isolation_checks": {
+    "evidence": "REAL",
+    "live_paths": {"~/.hermes": "symlink to /workspace/hermes-home", "mount": "/workspace is mounted noatime,lazytime, so access times cannot prove non-access. Masking was used instead."},
+    "masking": "In every Hermes, shadow and unit run the process saw /workspace/hermes-home and ~ as empty tmpfs (meta/mask.inside: live_hermes_home_entries=0, real_home_entries=0). Host X11 and /run/user were empty too (x11_entries=0, run_user_entries=0). The processes could not open any file in the live home.",
+    "environment": "meta/env.inside for smoke-01, smoke-02 and shadow-02 has 0 values containing /workspace/hermes-home or ~. HOME and HERMES_HOME point into runs/<id>/home. The inherited shell's HERMES_HOME (live profile) and API key/token variables are absent. unit-01 ran through run_tests.sh's own env -i, with HOME in the run dir.",
+    "stat_before_after": "Unchanged across every run: state.db, config.yaml, .env, auth.json and logs in /workspace/hermes-home (stat metadata only, contents never read). The live home directory's own mtime/ctime did move, including between runs when none of my processes existed (smoke-01 ended 23:30:29, smoke-02 began 23:32:05). That is the concurrently running live Hermes, and my processes could only see that directory as an empty tmpfs.",
+    "stray_refs": "No file in the smoke-02 private home references /workspace/hermes-home, ~/.hermes or the live profile name.",
+    "live_console_scripts_run": false,
+    "egress": "HTTP(S) proxy env points at the dead port 127.0.0.1:9 except loopback. Config disables update checks, the remote model catalog, plugin update checks and Driver telemetry. Not proven against raw sockets: no packet capture was taken."
+  },
+
+  "timing": {"evidence": "NOT_RUN", "note": "No latency numbers measured or reported. quiet-timed was not used. Test-runner durations in the logs are incidental and are not results."},
+
+  "artifacts": {
+    "dir": "/mnt/zer0models/github/cua-lanes/artifacts/stack",
+    "sha256sums": "/mnt/zer0models/github/cua-lanes/artifacts/stack/setup/SHA256SUMS",
+    "setup_copies": ["setup/run-hermes.sh", "setup/config.yaml"],
+    "raw": ["raw/smoke-01/", "raw/smoke-02/", "raw/shadow-02/", "raw/unit-01/"]
+  },
+
+  "next_steps_blocked_on": [
+    "Owner decision on the ctx-window gap (remedy a, b or c) before any computer-use turn. A GUI prompt will exceed the 4096 tokens actually served and be silently truncated.",
+    "GPU: the 11434 server is CPU-only. Any latency claim must say 'CPU inference', or the server choice changes (owner decision).",
+    "cua-sway-session.sh is not built or canary-verified yet. Use cua-x11-session.sh for the first GUI turns."
+  ]
+}

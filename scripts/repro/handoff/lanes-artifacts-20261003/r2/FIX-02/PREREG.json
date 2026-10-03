@@ -1,0 +1,91 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "FIX-02",
+ "wave": 3,
+ "title": "Native element tokens bound to their session and runtime generation; FIX-01 Part B retry scope; browser_set_input_files detached check",
+ "owners": ["kvnloo/cua#36 (native ownership rows)", "kvnloo/cua#105 (runner rule)", "kvnloo/cua#73", "kvnloo/cua#93"],
+ "branch": "exp/fix-02-token-ownership-retry-scope-20261002",
+ "sources": {
+  "base_upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+  "fix01_cherry_picks": {"8cfa8c1db": "35041124c", "6eb9319fe": "bd0cc9de7"},
+  "U_head": "bd0cc9de764369b6afa31aca1fc348a1e05a0abf",
+  "fix_commits": {
+   "F1": "80e625acc SnapshotStore::resolve binds tokens to the publishing session; stale refusals list only the caller's snapshots",
+   "F2": "3930dd7d0 snapshot ids start at a random per-process u32 base",
+   "F3": "6e9f9dfff jev-use run.py/run.ts re-dispatch only after pre-dispatch refusal codes with retryable not false",
+   "F4": "e8b1064f6 browser_set_input_files refuses a detached file input with browser_ref_stale"
+  },
+  "F_head": "e8b1064f6 (Rust tree of the F binary; later commits on the branch touch docs/experiments only)",
+  "binaries": {"U": "build-driver.sh label fix02-u-bd0cc9de7, target cua-release-fix02", "F": "build-driver.sh label fix02-f-e8b1064f6, target cua-release-fix02"},
+  "harness_copied_by_path": {
+   "native": "ff77554f4 docs/experiments/own-36-session-isolation-native-2026-10-02/harness/{mcpclient.py,run_block.py,campaign.sh,locked_block.sh}",
+   "r2-07": "2d71548b4 docs/experiments/r2-07-2026-10-02/harness/{fault_transport.py,fixture.py,compiled_routine.py,r2_07_harness.py,r2_07_launcher.py}",
+   "fix-01": "4a301d32a docs/experiments/fix-01-detached-node-refusal-2026-10-02/harness/{fix01_harness.py,fix01_fixture.py,fix01_launcher.py,locked.sh,run_block.sh}"
+  }
+ },
+ "provider": {"name": "TypeSafe", "cap_reached": 0, "use": "none: every chooser is the mock; a socket guard refuses non-loopback connects"},
+ "environment": "hostless v2 -> flock quiet-lane.lock (shared for correctness blocks, exclusive via bin/quiet-timed for timing) -> cua-x11-session.sh (private Xvfb, openbox, private dbus; native rows with private AT-SPI: CUA_SESSION_ATSPI=1, CUA_SESSION_EXTRA_ENV includes CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1). Default Driver safety settings; no permission-mode, approval or manifest variables.",
+ "definitions": {
+  "native_mutation": "a fixture's post-call state file differs from its pre-call state (both fixtures read before and after every call; settle 0.8 s for calls expected to change nothing, 3.0 s poll + 0.2 s for calls expected to land)",
+  "native_refused": "isError (or JSON-RPC error) and no mutation of either fixture",
+  "native_verified": "target's agreed flipped, seq advanced by exactly 1, other fixture unchanged",
+  "browser_oracle": "the target-owned journal of the jev-use fixture (received/applied per POST /submit, state equals trial token) and page beacons naming the node (old/fresh) that received each event; caller records are used only for producer attribution",
+  "redispatch": "a second browser_click by the caller after the first Submit click returned a refusal",
+  "U": "989cc76ce + FIX-01 (U_head): U binary for the Driver rows; U runner = run.py at U_head (loaded from git) for F3",
+  "F": "U + F1..F4: F binary for the Driver rows; F runner = run.py at the branch head for F3"
+ },
+ "rows": {
+  "native": {
+   "fixture": "libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py TaskWindow (canonical); I5pt relaunches A with CUA_GTK3_TASK_DENSITY=12 between Driver generations",
+   "I2": {"n": "40 per arm: T1 20 (two session labels on one stdio connection) + T2 20 (two MCP clients on one daemon)", "steps": "B presents A's token with pid_B, then with pid_A; tail: A uses its own token", "U_prediction": "B + A's token on pid_A lands (OWN-36: 40/40)", "F_gate": "B's both calls refused 40/40 with 0 mutations of either fixture; A's own-token tail verified 40/40"},
+   "I2d": {"n": "40 per arm: T1 20 + T2 20", "steps": "B's stale probe sffffffff:<B index> on pid_A; B mints <A handle>:<B index> from the refusal's current_snapshots when disclosed, else from A's handle supplied out of band by the harness (derived_source=harness); B presents it on pid_A; tail: A's own token", "U_prediction": "the probe discloses A's handle and the minted token lands (OWN-36: 40/40)", "F_gate": "minted token refused 40/40 with 0 mutations; the probe refusal discloses A's handle 0/40; A's tail verified 40/40"},
+   "I5p": {"n": "20 per arm (T3 sequential, same observation order in every attempt)", "steps": "Driver gen1 observes A and exits; gen2 observes A first; gen2 is handed gen1's token and capture", "U_prediction": "gen1 token string equals gen2's and is accepted, A toggles (OWN-36 same arm: 10/10)", "F_gate": "gen1 token refused 20/20 with 0 mutations; gen1 capture refused 20/20; gen1 token string differs from gen2's 20/20 (attributes the refusal to F2)"},
+   "I5pt": {"n": "10 per arm (T3)", "steps": "as I5p, but A is relaunched with CUA_GTK3_TASK_DENSITY=12 (distractors precede the task controls) between generations and gen2 observes the relaunched A first; the gen1 token is presented for it", "U_prediction": "gen1 token resolves in gen2 to whatever element now has that index (wrong-element dispatch; a mutation of the relaunched A)", "F_gate": "refused 10/10 with 0 mutations"},
+   "regressions_F_only": {
+    "I1": {"n": "20 (T1 10 + T2 10)", "gate": "B's use of A's capture refused with 0 mutation and A's own capture verified, 20/20"},
+    "I3": {"n": "20 (T1 10 + T2 10)", "gate": "B's pre-replacement own token verified and A's superseded token refused, 20/20"},
+    "I4": {"n": "20 (T1 10 + T2 10)", "gate": "after A ends: B's own token verified, B + A's token refused, A + own token refused, 20/20"},
+    "I5": {"n": "20 (T1 10 + T2 10)", "gate": "same-label restart: old token and old capture refused, new token verified, B verified, 20/20"},
+    "I6": {"gate": "scan every F envelope returned for a cross-session call and every refusal: 0 occurrences of the other session's note marker, PNG base64 signature, image items or base64 runs >= 256; positive control finds each session's own marker in its own observation in every block-session; plus 0 refusals listing another session's snapshot handle in current_snapshots"}
+   }
+  },
+  "browser": {
+   "fixture": "jev-use fixture page via the FIX-01/R2-07 journaled fixture (copied by path) + FIX-02 variants: spa_submit (in-page submit, form stays after an effect lands) and file_rerender (file input replaced on signal; old-node events and old-node files are reported by beacon)",
+   "F3": {
+    "path": "jev-use run.py --provider mock, real cua-driver mcp over stdio; the stdio seam (refusal_seam.py on the R2-07 fault transport) answers the first Submit browser_click with an injected refusal",
+    "stale": {"n": "10 per arm", "injection": "browser_ref_stale, action projection shape, click NOT forwarded (pre-dispatch)", "gate_F": "exactly 1 re-observation between the two clicks and exactly 1 re-dispatch, verified by the journal (applied 1, token) 10/10", "U_prediction": "same (FIX-01 rule)"},
+    "trust_unknown": {"n": "10 per arm", "injection": "browser_input_trust_unavailable with the Driver's delivery-unknown message, action projection shape; the click IS forwarded and lands, the Driver's response is replaced", "gate_F": "0 re-dispatches, run ends unknown 10/10, journal applied exactly 1 (no duplicate)", "U_prediction": "re-dispatches (duplicate submit on the journal)"},
+    "not_retryable": {"n": "10 per arm", "injection": "browser_reconnect_exhausted in the Driver's refusal envelope with refusal.detail.retryable=false, click NOT forwarded", "gate_F": "0 re-dispatches, ends unknown 10/10, journal applied 0", "U_prediction": "re-dispatches"},
+    "control": {"n": "20, F runner + F binary, unchanged page, no injection", "gate": "0 refusals seen, verified 20/20, 1 click each"}
+   },
+   "F4": {
+    "path": "direct MCP caller (no provider): semantic_v2 observation, bind the file input by name, trigger the page re-render and wait for its acknowledgement, browser_set_input_files with the OLD ref, then one fresh observation, bind and browser_set_input_files on the fresh ref",
+    "n": "20 per arm",
+    "U_prediction": "the old-ref call is accepted (and the detached node receives the files or events)",
+    "gate_F": "old-ref call refused browser_ref_stale 20/20 with 0 old-node events/files; rebind control verified (fresh-node change with 1 file) 20/20"
+   }
+  },
+  "unit": {
+   "suites": "cargo test -p cua-driver-core (lib + integration) and -p cua-driver-contract; jev-use run-unit.sh (python unittest discover, CLI verifiers, npm test, typecheck)",
+   "new_tests": "F1 tests/snapshot_session_ownership.rs (4); F2 tests/snapshot_runtime_generation.rs (1); F3 python test_runner_refusal.py (+3) and typescript run_refusal.test.ts (+3); F4 browser::v2_tests set_input_files (2)",
+   "gate": "all green on F; the new tests fail on U (red tree = U + the new test files/hunks only)"
+  },
+  "timing": {
+   "class": "BENCHMARK, report-only, not gated",
+   "design": "one bin/quiet-timed chunk (<= 15 min): 10 alternating blocks (UFFUUFFUUF), each a fresh T1 cua-driver mcp with one fixture; 20 (get_window_state, click element_token) pairs per block -> 100 pairs = 200 calls per arm; client-side call latency; loadavg per block; report medians and the paired U-F difference with a bootstrap CI (seed 20261002)"
+  }
+ },
+ "dispositions": {
+  "per_fix": "KEEP if the F rows pass 100%, U is discriminating where predicted, and every regression holds; REVISE with the measured narrower claim; KILL if any F row mutates the target or any regression fails",
+  "row_36_update": "native token ownership KILL -> KEEP only if F1 and F2 are both KEEP",
+  "I3s": "shared-window replacement stays an OWNER_DECISION and is not changed or re-measured here"
+ },
+ "pre_declared_deviations": [
+  "F4 mechanism: browser_set_input_files dispatches with DOM.setFileInputFiles (a DOM-domain command), not a Runtime.callFunctionOn, so the isConnected check cannot run inside the dispatching call as FIX-01 Part A does. F4 runs it as a read-only callFunctionOn immediately before the assignment. A re-render between the check and the assignment (one CDP round trip) is not covered and is not measured by the F4 row (re-render completes before the call). Unless that window is measured, F4's best disposition is REVISE with this narrower claim.",
+  "F3 retryable visibility: the Driver's public action projection for browser_click drops refusal.detail, so retryable=false is visible to a caller only in the refusal envelope shape (non-action browser tools, or before projection). The not_retryable row injects that envelope; for projected browser_click refusals the code allowlist is the operative guard.",
+  "I2d on F: with F1 the probe no longer discloses A's handle, so the minted token uses A's handle supplied out of band by the harness (recorded as derived_source=harness).",
+  "I5pt presents the gen1 token for the relaunched A (new pid): the fixture cannot change its tree in process, and a token carries no pid."
+ ],
+ "shakedown": "post-PREREG harness shakedown blocks (harness mechanics only, excluded from every denominator) live in raw/shakedown/; no row, n, prediction, gate or oracle may change after this file is committed",
+ "claim_boundary": "Linux X11 Xvfb, GTK3 TaskWindow + jev-use fixture, Chrome launched by the Driver, binaries U/F on 989cc76ce. Fix candidates on the fork only; no upstream claim."
+}

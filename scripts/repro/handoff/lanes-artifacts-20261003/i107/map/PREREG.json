@@ -1,0 +1,256 @@
+{
+  "schema": "cua.i107.prereg.v1",
+  "issue": "kvnloo/cua#107",
+  "parents": ["kvnloo/cua#93", "kvnloo/cua#73", "kvnloo/cua#10", "kvnloo/cua#74"],
+  "frozen_utc": "2026-10-02T04:50:00Z",
+  "status": "FROZEN before any measured trial of any i107 lane. Lanes may add only the harness details this file leaves to them; any change to arms, scope, cohorts, conditions, requirements, budgets, thresholds, controls, statistics, continuation or decision table is an amendment that needs its own commit before the affected trials and must be disclosed.",
+  "map": "MAP.md (seam map, B feasibility, event sources, span decomposition)",
+
+  "pins": {
+    "upstream_main": "352507b6c03162ab286b21d5ed509125cc3daece",
+    "upstream_main_libs_cua_driver_tree": "892fdddb07de3f12deb09c78619e043549ee06cd (identical to 229b65b28)",
+    "caller_main_jev_use_tree": "635a4f588c6817ccb6cb6f5b7baacddbfc42f786",
+    "guarded_continuation_source": {
+      "ref": "trycua/cua PR 4316",
+      "head": "a0bca744067d04f05904319d3d919be30c336556",
+      "state_at_pin": "OPEN, not merged, not draft",
+      "scope": "caller-only (jev-use + CI workflow)",
+      "merged_jev_use_tree": "72bf8156136771da9a767ec12ae7c364e426d910"
+    },
+    "tested_source": {
+      "branch": "exp/i107-map-20261002",
+      "driver_build_commit": "092b065d5e1f6e0b9ba3abe4f5fbcd37c339303b",
+      "libs_cua_driver_tree": "a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497",
+      "composition": "352507b6c + merge a0bca7440 (2251da142) + R2-01 phase trace (fe424500d = 7d3a28b66) + B-01 marks/knob (a5e344291 = f5c991e59) + i107 producer-RPC ledger (092b065d5)",
+      "instrumentation": "env-gated by CUA_DRIVER_PHASE_TRACE_FILE, default off; CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS stays unset in every arm"
+    },
+    "driver_binary": {
+      "name": "cua-driver-i107-092b065d5",
+      "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed",
+      "version": "cua-driver 0.32.0",
+      "rule": "Every arm of every A/B-proj/D comparison uses this binary. Lane CSHADOW builds one mirror binary on top of 092b065d5 and runs both sides of each C comparison (mirror off vs on) on that one binary. No number is compared across binaries."
+    },
+    "uninstrumented_reference_binary": {
+      "name": "cua-driver-r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "use": "default-off distortion check only"
+    },
+    "browser": "Driver-selected Google Chrome (record exact version per lane), isolated_new profile, Chromium sandbox on, no permission-mode override, no approval bypass, no *-e2e wrapper",
+    "provider": {
+      "chooser": "choose_mock_for_task (jev-use python/jev_adapter.py), deterministic, 0 provider HTTP",
+      "label": "FIXTURE/BENCHMARK (scripted chooser named). Never LIVE_PROVIDER.",
+      "live_provider_cells": "BLOCKED pending owner budget (remaining TypeSafe budget reserved for #93 R2-10)"
+    },
+    "runner": "Python jev-use runner only; the TypeScript runner is NOT_RUN"
+  },
+
+  "fixed_settings_all_arms": {
+    "feedback": "agent cursor OFF via the existing per-session set_agent_cursor_enabled(enabled=false) before browser_prepare, identical in every arm. Rationale: at defaults the glide is ~94% of T (R2-01 KEEP_H1, B-01) and is a separate owner decision; arms here compare observation and decision work. A default-feedback A run is context only, never an arm.",
+    "focus_settle": "Driver default (knob unset)",
+    "completion_poll": "runner default (20 reads, 100 ms sleep)",
+    "visual_observation": "runner default auto",
+    "phase_trace": "ON (file sink) in every measured arm so instrumentation load is equal; distortion check: 10 AB/BA pairs of A on the i107 binary with trace on vs A on the uninstrumented reference binary, W-quiet, diagnostic only",
+    "session_regime": {
+      "primary": "fresh cua-driver mcp process + isolated_new browser per trial (cold; includes mirror bootstrap in C)",
+      "secondary_C_only": "resident: one Driver session runs 10 consecutive tasks (fixture reset + re-navigate between tasks); session age and CDP-session count recorded as covariates (BUG-01 part B)"
+    },
+    "fixture_reset": "reset + unique token per trial; fixture server process separate from the runner process where the lane can arrange it (B-01 deviation 5: in-process GIL contention); if in-process, identical in every arm and disclosed",
+    "oracle": "fixture /state, read by an independent harness thread every 2 ms (T_oracle) plus the server-side CLOCK_MONOTONIC mutation journal; the runner's own outcome is logged but is not the oracle"
+  },
+
+  "arms": {
+    "A": {
+      "status": "SUPPORTED",
+      "observation": "run.py loop unchanged: one full get_browser_state semantic_v2 (no scope_ref/query) per step",
+      "decision": "choose_mock_for_task every step",
+      "flags": "no --guarded-completion"
+    },
+    "B": {
+      "status": "BLOCKED",
+      "reason": "No producer-side scoped fresh read is expressible through the existing contract: scope_ref/query/continuation are post-acquisition projections (full DOM.getDocument depth -1, full DOMSnapshot.captureSnapshot, Page.getLayoutMetrics, Accessibility.getFullAXTree per frame, OOPIF walk always run); continuation reads stored state; a subtree implementation cannot reproduce document-wide occlusion and query semantics; dom_refs_v1 lacks value/role and mints legacy refs. See MAP.md section 4. Read-cost comparison A vs B: BLOCKED."
+    },
+    "B_proj": {
+      "status": "SUPPORTED as DIAGNOSTIC (named fallback)",
+      "observation": "same loop; each snapshot adds query = lowercase(FIELD_NAME + ' ' + SUBMIT_NAME) = 'verification value submit' (task-spec constants, never fixture answers)",
+      "decision": "same as A",
+      "claim_boundary": "payload projection only: acquisition must be identical to A (producer-RPC ledger: same CDP methods, bytes within noise, same acquired DOM/layout/AX node counts). Only projection/encoding/transport/validation savings may be reported. No read-cost claim.",
+      "validity_gate": "if B_proj's candidate set differs from A's on any trial (field or Submit missing, or a different ref chosen for the same logical control), the trial is recorded as a semantic-equivalence failure and B_proj is reported as not equivalent"
+    },
+    "C_shadow_M": {
+      "status": "SUPPORTED (qualification only)",
+      "observation": "A's reads unchanged + resident mirror maintained (bootstrap, event intake, invalidation) with the shadow compare disabled",
+      "decision": "same as A",
+      "env": "CUA_DRIVER_EXP_I107_MIRROR=shadow (forwarded by the jev-use runner because of the CUA_DRIVER_ prefix); default off",
+      "purpose": "maintenance overhead (T, Driver/browser CPU, memory, events) vs A on the same binary"
+    },
+    "C_shadow_audit": {
+      "status": "SUPPORTED (fidelity diagnostic)",
+      "env": "CUA_DRIVER_EXP_I107_MIRROR=shadow_audit",
+      "purpose": "at every normal fresh semantic_v2 snapshot, compare the mirror's covered fields with the fresh read; timings from this arm are diagnostics and never compared with A as a production result"
+    },
+    "C_active": {
+      "status": "EXPECTED NOT_ADMISSIBLE",
+      "admissibility_rule": "A Driver read may be replaced by mirror state only if it is none of: (a) a ref-minting snapshot before a mutation, (b) a binding/revalidation read inside a mutation tool, (c) a post-effect verification read, (d) a #105 reconciliation read. Event absence, an unchanged mirror revision or a confident model never authorizes skipping a required fresh read.",
+      "procedure": "Lane CSHADOW classifies every get_browser_state call in A traces (a)-(d). If every call is (a)-(d) on this fixture, active C is reported NOT_ADMISSIBLE with the classification, and no active-C trial runs. If a read outside (a)-(d) exists, an amendment registering the active-C arm, its removed work and its gates is committed before any active-C trial."
+    },
+    "D": {
+      "status": "SUPPORTED as D(A-reads)",
+      "observation": "A's full fresh reads (B is BLOCKED, so 'B's fresh scoped reads' falls back to A's)",
+      "decision": "run.py --guarded-completion (PR 4316): mock chooser picks the first mutation; the continuation is planned from the admitted task (FIXTURE_TASK_ID, SUBMIT_NAME), never from fixture answers; the second decision is skipped only when the fresh snapshot re-proves the completion facts and the fresh ref",
+      "counts": "program creation (plan) and verification (resolve) are counted and timed as resolution/validation, not hidden",
+      "claim_boundary": "with the mock chooser the deleted decision costs ~0 ms (B-01 K0n vs K0: -2.1 [-9.3, 3.5] ms). Work deleted (provider decisions/requests per task) is reported structurally; wall-clock value of the deleted decision with a real provider is BLOCKED here (R2-03 measured it live on 0.31.0; not transferable)."
+    },
+    "E": {
+      "status": "NOT_RUN unless C_active is admissible and shows meaningful value AND D shows meaningful value, each against A on its own binary; then a separate amendment registers E before any E trial"
+    }
+  },
+
+  "supported_scope": {
+    "platform": "Linux X11 (private Xvfb + openbox + picom), Chrome as selected by the Driver, isolated_new profile",
+    "task": "jev-use FixtureFormTask fill->submit (type token, click Submit, dom_event route)",
+    "unsupported": [
+      "existing/approved personal profiles (mirror event domains outside the existing-profile allowlist would need a permission change: BLOCKED)",
+      "Wayland/Hyprland, macOS, Windows, native desktops (NOT_RUN; browser results do not qualify them)",
+      "TypeScript runner (NOT_RUN)",
+      "live provider (BLOCKED)",
+      "OOPIF/iframe pages (NOT_RUN: no admitted iframe fixture)"
+    ]
+  },
+
+  "cohorts": [
+    {"id": "K1", "name": "same task, same app", "status": "SUPPORTED, PRIMARY", "note": "warm replay only; unique token per trial does not make it a generalization test"},
+    {"id": "K2", "name": "held-out parameters, same app", "status": "SUPPORTED, SECONDARY", "definition": "64-character token with a different character class from the 16-hex default; no arm has a preparation artifact, so K2 only checks that nothing in the harness or arms is tuned to K1 tokens; run for D and A only, 30 pairs W-quiet, after K1 is complete; preparation (shakedown) uses K1 tokens only"},
+    {"id": "K3", "name": "held-out combinations of already-verified operations, same app", "status": "NOT_RUN", "reason": "the PR 4316 continuation binds only FIXTURE_TASK_ID (B-01: 0/240 binds on toggle/modal); no composition engine is authorized"},
+    {"id": "K4", "name": "unfamiliar app", "status": "NOT_RUN", "reason": "no warm-reuse claim is possible; discovery/fallback costs are out of this round's scope"}
+  ],
+
+  "workload_conditions": [
+    {"id": "W-quiet", "role": "primary", "page": "jev-use FixtureServer page byte-for-byte"},
+    {"id": "W-churn", "role": "primary", "page": "same form + experiment-local unrelated region of 500 nodes, seeded RNG, mutated at 20 Hz (per tick: 10 random region nodes get a text change, attribute flip or insert/remove pair); no region node contains 'submit' or 'verification'; form subtree untouched; churn starts before navigation completes and runs through the trial"},
+    {"id": "W-idle-quiet", "role": "primary for C", "interval": "20 s, session open, page loaded, no tool calls, W-quiet page"},
+    {"id": "W-idle-churn", "role": "primary for C", "interval": "20 s, as above with W-churn background"},
+    {"id": "W-static", "role": "secondary (may be NOT_RUN if the lane's time box is exhausted; declare in the packet)", "page": "W-churn page with churn stopped"}
+  ],
+
+  "comparisons": [
+    {"id": "CMP-AB", "arms": ["A", "B_proj"], "kind": "DIAGNOSTIC (B BLOCKED)", "conditions": ["W-quiet", "W-churn"], "min_pairs_per_condition": 30},
+    {"id": "CMP-C-overhead", "arms": ["A", "C_shadow_M"], "kind": "PRIMARY qualification", "conditions": ["W-quiet", "W-churn"], "min_pairs_per_condition": 30, "binary": "lane CSHADOW mirror binary, both sides"},
+    {"id": "CMP-C-idle", "arms": ["A", "C_shadow_M"], "kind": "PRIMARY qualification", "conditions": ["W-idle-quiet", "W-idle-churn"], "min_pairs_per_condition": 30, "unit": "paired 20 s intervals"},
+    {"id": "CMP-C-fidelity", "arms": ["C_shadow_audit"], "kind": "PRIMARY fidelity", "conditions": ["W-quiet", "W-churn"], "min_trials_per_condition": 30, "plus": "every dependency control applicable to C"},
+    {"id": "CMP-D", "arms": ["A", "D"], "kind": "PRIMARY", "conditions": ["W-quiet", "W-churn"], "min_pairs_per_condition": 30},
+    {"id": "CMP-D-K2", "arms": ["A", "D"], "kind": "SECONDARY (cohort K2)", "conditions": ["W-quiet"], "min_pairs_per_condition": 30},
+    {"id": "CMP-distortion", "arms": ["A trace-on (i107 binary)", "A (uninstrumented reference)"], "kind": "DIAGNOSTIC", "conditions": ["W-quiet"], "min_pairs_per_condition": 10},
+    {"id": "CMP-C-resident", "arms": ["A", "C_shadow_M"], "kind": "SECONDARY", "regime": "resident session, 10 tasks per session", "conditions": ["W-churn"], "min_session_pairs": 6}
+  ],
+
+  "design": {
+    "pairing": "each pair = the two arms on consecutive trials in AB or BA order; order alternates ABBA across pairs; conditions blocked, block order counterbalanced",
+    "isolation": "fresh Driver + isolated_new browser per trial (primary regime); fixture reset; unique token",
+    "timing_lock": "every measured block runs under <lanes>/bin/quiet-timed (EXCLUSIVE quiet-lane lock, ledger receipt); the lock is taken before the Driver MCP session opens; per trial record loadavg (1/5/15) and /proc/pressure/cpu and /proc/pressure/memory before and after",
+    "all_trials_kept": "every attempted trial is in the ledger, including failures, refusals, timeouts and excluded shakedowns (flagged)"
+  },
+
+  "metrics": {
+    "primary_latency": "T_oracle: send of the first semantic_v2 call -> first independent 2 ms harness read showing the expected state (spec T)",
+    "secondary_latency": ["T_runner (runner's verified read)", "runner lifetime through cleanup (stdio client exit + browser processes gone)", "cold startup (Driver spawn -> navigate done) kept separate from warm execution"],
+    "spans_10": ["observation acquisition", "projection/encoding/transport", "provider inference", "resolution/validation", "dispatch", "wait", "fresh verification", "cleanup", "residual/unattributed"],
+    "span_source": "caller monotonic_ns events + Driver CUA_DRIVER_PHASE_TRACE_FILE marks (B-01 taxonomy, b01_analysis.py) + i107 ledger marks cdp.send/cdp.reply/cdp.event, snap.acquired_dom, snap.acquired_ax; all CLOCK_MONOTONIC, same host",
+    "accounting_gate": "named spans explain > 90% of T_oracle per arm before any latency claim; nested/overlapping spans never double-counted",
+    "counts_per_task": ["semantic observations (full vs query)", "producer RPCs by CDP method", "CDP request/response bytes", "acquired DOM/layout/AX node counts", "semantic nodes total/selected, refs returned", "MCP response bytes", "screenshots/visual parses", "polls and explicit sleeps", "provider/chooser decisions", "guard accepted/declined + reason", "Driver mutations", "target mutations (journal)", "CDP events received by type (C)", "mirror bootstrap/resync/overflow/unknown counts (C)"],
+    "resources_per_trial": ["Driver CPU (utime+stime from /proc/<pid>/stat at session end)", "Driver VmHWM and VmRSS", "Driver-launched browser process tree CPU and RSS sum", "C: mirror nodes, queue high-water mark"],
+    "mirror_fidelity": ["agreement on covered fields", "false-current (mirror claims a covered field current and it differs from the fresh read)", "unknown coverage share", "action-relevant match-set equality (count of role=button,name=Submit)", "event lag: mirror apply time - fixture journal ack time (server receipt, bias stated)", "fallback/resync reasons"],
+    "outcome_vocabulary": ["verified", "refuted", "abstained", "unknown", "timeout", "budget_exhausted"],
+    "work_vs_wallclock": "structural work deleted and measured wall-clock saved are reported separately for every comparison"
+  },
+
+  "outcome_and_safety_requirements": {
+    "outcome_equivalence": "A and each treatment arm must have the same verified rate in W-quiet and W-churn (every non-verified trial explained); any drop is a failure of the treatment arm",
+    "required_zero_counts": ["stale-ref dispatch that lands an effect", "unauthorized action", "wrong-target effect (journal shows a mutation on anything but the intended form endpoint)", "duplicate effect (> 1 journal submit per trial)", "unverified success (runner says verified, oracle disagrees)", "mirror false-current on an action-relevant field (C)"],
+    "known_driver_gap": "Driver dom_event browser_click accepts a click on a detached node that still resolves (no isConnected check; R2-07 N4a). Controls that exercise it are run in every arm and reported per arm as 'Driver stale acceptance'; any arm whose own logic leads to such a dispatch cannot be promoted. This gap is a shared baseline defect, recorded separately, and blocks promotion of every arm in which it produces an effect.",
+    "effect": "any non-zero required count stops promotion of the affected arm (sample limits reported)"
+  },
+
+  "resource_budget_C": {
+    "per_task_T": "paired (C_shadow_M - A) median <= threshold and its 95% CI upper bound <= 2 x threshold, threshold = max(5 ms, 5% of A median T_oracle in that condition)",
+    "per_task_driver_cpu": "delta <= max(5 ms CPU, 10%)",
+    "idle_20s": {"driver_cpu_delta_s": {"W-idle-quiet": 0.2, "W-idle-churn": 1.0}, "browser_tree_cpu_delta_s": {"W-idle-quiet": 1.0, "W-idle-churn": 2.0}},
+    "memory": {"driver_vmhwm_delta_mib": 32, "browser_tree_rss_delta_mib": 64},
+    "hard_caps_in_code": {"nodes": 20000, "queued_events": 10000, "on_overflow": "coverage -> unknown, counted, full resync from a fresh read; never silently continue"}
+  },
+
+  "minimum_useful_improvement": {
+    "threshold": "max(5 ms absolute, 5% of A's median T_oracle) per task, per condition",
+    "meaningful": "paired median delta <= -threshold AND 95% CI upper bound < 0",
+    "no_meaningful_benefit": "95% CI lower bound > -threshold",
+    "otherwise": "INCONCLUSIVE -> continuation rule"
+  },
+
+  "statistics": {
+    "per_pair": "delta = treatment - A (ms)",
+    "estimate": "median of paired deltas; seeded percentile bootstrap over pairs, 10000 resamples, seed 20261002, 95% CI",
+    "also_report": "arm medians and nearest-rank p95 (estimates, not tail guarantees), sign counts, denominators per outcome, loadavg/PSI per trial and a sensitivity re-analysis excluding trials with 1-min loadavg above 8",
+    "no_pooling": "never pool conditions, cohorts, regimes or binaries into one headline"
+  },
+
+  "continuation_rule": "After the first 30 pairs of a primary comparison in a condition: if the result is INCONCLUSIVE under minimum_useful_improvement (or budget_C is straddled), run exactly one more pre-declared block of 30 interleaved pairs in the same condition and analyze all 60. If still INCONCLUSIVE, report INCONCLUSIVE. Never stop early on a favorable first result and never add a third block.",
+
+  "dependency_controls": [
+    {"id": "DC01", "control": "selected field value changes (page script sets input.value to another string) after the type step, before the next snapshot / between plan and resolve", "arms": ["A", "B_proj", "D", "C_shadow_audit"], "expect": "A/B_proj re-type; D guard declines field_not_proven and the chooser re-types; mirror must not claim the typed value current (no property event): value field unknown or invalidated; oracle: submitted == token only"},
+    {"id": "DC02", "control": "unrelated churn (W-churn) throughout", "arms": ["A", "B_proj", "D", "C_shadow_M", "C_shadow_audit"], "expect": "no outcome change; mirror false-current 0; over-invalidation of the form subtree counted"},
+    {"id": "DC03", "control": "a new competing Submit inserted in the form after the type step", "arms": ["A", "B_proj", "D", "C_shadow_audit"], "expect": "D declines submit_not_unique; A's candidate builder takes the first match (BrowserSemanticSource.find), so A's behaviour is recorded as is; any submit by the competing button is a wrong-target effect; mirror match-set count must change or be unknown"},
+    {"id": "DC04", "control": "Submit removed after the type step", "arms": ["A", "B_proj", "D", "C_shadow_audit"], "expect": "no click, no false success; outcome abstained/budget_exhausted; D declines"},
+    {"id": "DC05a", "control": "same-looking replacement R1 (benign re-render, same form) before the step-2 snapshot", "arms": ["A", "B_proj", "D", "C_shadow_audit"], "expect": "fresh ref minted, verified; D accepts with a fresh ref != prior ref"},
+    {"id": "DC05b", "control": "same-looking replacement R1 inside the check-to-dispatch interval (after the step-2 snapshot, before browser_click)", "arms": ["A", "D"], "expect": "detached node: the Driver resolves and clicks it (known gap) or refuses browser_ref_stale; no effect; outcome unknown/budget_exhausted; 0 duplicates; reported as Driver stale acceptance per arm"},
+    {"id": "DC06", "control": "relocated look-alike R2: the real Submit removed and an identical 'Submit' button placed in a different form (posting to a decoy endpoint) after the type step", "arms": ["A", "D"], "expect": "a correct checked continuation declines (scope changed); PR 4316 retains role+name+uniqueness only, so D is expected to accept and the decoy journal shows a wrong-target effect; A's behaviour recorded; any decoy submit blocks promotion of that arm and is reported as a missing dependency fact"},
+    {"id": "DC07", "control": "document replacement (location.replace to the same URL) between the step-2 snapshot and dispatch", "arms": ["A", "D", "C_shadow_audit"], "expect": "frame identity fails -> browser_ref_stale before dispatch, 0 effect from the old ref; mirror coverage -> unknown on documentUpdated/frameNavigated"},
+    {"id": "DC08", "control": "frame replacement", "status": "NOT_RUN (no admitted iframe fixture)"},
+    {"id": "DC09", "control": "tab replacement", "status": "NOT_RUN (no authorized tab-creation path without a user gesture)"},
+    {"id": "DC10", "control": "Driver session replacement: reuse the old target_id/tab_id/ref in a new MCP session", "arms": ["A", "D", "C_shadow_audit"], "expect": "browser_binding_stale / browser_ref_stale 100%; mirror state dropped with the session"},
+    {"id": "DC11", "control": "renderer/browser restart: terminate the renderer of the lane's own Driver-launched browser, only after verifying it descends from the lane's own private session process tree", "arms": ["A", "C_shadow_audit"], "expect": "refusal (target not found / binding stale) before any effect; mirror coverage -> unknown on Inspector.targetCrashed/detached; if descent cannot be proven the control is NOT_RUN"},
+    {"id": "DC12", "control": "visibility change: Submit hidden by an ancestor class change (display:none) after the type step", "arms": ["A", "D", "C_shadow_audit"], "expect": "fresh snapshot omits Submit (css_hidden) -> no click; mirror must mark visibility unknown (class attribute event does not establish layout)"},
+    {"id": "DC13", "control": "geometry change: Submit moved offscreen by a class/transform change", "arms": ["A", "D", "C_shadow_audit"], "expect": "record visibility class from the fresh read and arm behaviour; mirror visibility unknown"},
+    {"id": "DC14", "control": "overlay: a fixed, pointer-events:auto element covering Submit inserted (a) before the step-2 snapshot, (b) in the check-to-dispatch interval", "arms": ["A", "D", "C_shadow_audit"], "expect": "(a) page_occluded -> no Submit candidate; (b) dom_event this.click() bypasses hit-testing; record whether the effect lands (route property, not an arm property); mirror occlusion unknown"},
+    {"id": "DC15", "control": "focus moved away from the field between type and submit", "arms": ["A", "D", "C_shadow_audit"], "expect": "no outcome change; mirror focus unknown (no focus event)"},
+    {"id": "DC16", "control": "enabled-state change without an attribute on the button: an ancestor fieldset gets disabled, and separately aria-disabled=true", "arms": ["A", "D", "C_shadow_audit"], "expect": "record the fresh read's states/actions and the effect; mirror must not claim enabled-state current from the button's own attributes"},
+    {"id": "DC17", "control": "text/property change outside subscribed events: input.value set by script; Submit's visible name changed via CSS ::before content", "arms": ["A", "D", "C_shadow_audit"], "expect": "mirror false-current 0 (fields unknown); D declines when the name no longer matches"},
+    {"id": "DC18", "control": "mirror event faults injected at the mirror intake seam (env-gated, experiment only): missing, duplicate, delayed, reordered, early (before bootstrap), unrelated-session, stale-generation events; queue overflow; consumer reconnect", "arms": ["C_shadow_audit"], "expect": "each fault ends in unknown/resync, never false-current; overflow and reconnect counted"},
+    {"id": "DC19", "control": "mutation during bootstrap, during reconciliation (a churn burst aligned with the shadow compare) and in the check-to-dispatch interval", "arms": ["A", "D", "C_shadow_audit"], "expect": "bootstrap race resolves to unknown until a fresh read; no false-current; check-to-dispatch covered by DC01/DC05b/DC07"},
+    {"id": "DC20", "control": "applied-but-acknowledgement-lost (drop the tools/call result after the Driver applied the click, in-process MCP seam as R2-05/OWN-105) and delayed effect (fixture delays the /submit handler by 300 ms) after an initially negative read", "arms": ["A", "D"], "expect": "runner ends unknown or verifies late; never redispatches; journal duplicates 0"}
+  ],
+  "dependency_control_rules": "Fixture-side mutations go through the page's own EventSource control channel with a server-side CLOCK_MONOTONIC ack journal, never through the Driver. Grading uses the fixture /state + journal only; the mirror and the chooser never grade their own success. >= 5 trials per control per applicable arm (correctness, not timing). Unsupported cases stay explicit qualification gaps.",
+
+  "evidence_labels": ["SOURCE", "UNIT", "FIXTURE", "REAL", "BENCHMARK", "LIVE_PROVIDER", "BLOCKED", "NOT_RUN"],
+
+  "decision_table": [
+    {"result": "B BLOCKED (producer-side scoping not expressible) and B_proj shows equal acquisition", "disposition": "BLOCKED for the read-cost question; report B_proj projection savings separately; any producer-side scoping is a #73/#74 contract question"},
+    {"result": "C shadow fidelity holds (false-current 0) and C_active NOT_ADMISSIBLE", "disposition": "park the persistent mirror (no deletable read on this fixture); keep the shadow evidence as qualification data"},
+    {"result": "C shadow false-current > 0 on any action-relevant field", "disposition": "KILL the mirror mechanism as built"},
+    {"result": "C_shadow_M exceeds resource_budget_C", "disposition": "narrow or KILL the affected mechanism"},
+    {"result": "C_active admissible (amendment) and improves A after all maintenance/reconciliation costs", "disposition": "keep only the demonstrated scoped mechanism; E eligible"},
+    {"result": "D improves A meaningfully (scripted chooser)", "disposition": "prioritize checked continuation under #93 R2-07; do not credit the cache"},
+    {"result": "D deletes decisions but wall-clock not meaningful with the scripted chooser", "disposition": "report work deleted; live value BLOCKED pending owner budget (R2-03/R2-10 own it)"},
+    {"result": "D accepts a wrong target in DC06 or any required-zero count is non-zero", "disposition": "REVISE D (missing dependency fact); no promotion"},
+    {"result": "benefit only in K1 warm identical-task replay", "disposition": "publish that scope; no arbitrary-computer-use claim"},
+    {"result": "churn, startup, fallback or memory costs erase a benefit", "disposition": "narrow or KILL the affected mechanism"},
+    {"result": "evidence incomplete, baseline unavailable, or a cell needs a new permission", "disposition": "BLOCKED / INCONCLUSIVE; do not weaken the gate"}
+  ],
+
+  "blocked_and_not_run_cells": [
+    {"cell": "A vs B read cost", "status": "BLOCKED", "reason": "MAP.md section 4"},
+    {"cell": "any live-provider cell", "status": "BLOCKED", "reason": "TypeSafe budget reserved for R2-10; owner budget needed"},
+    {"cell": "mirror on existing/approved profiles", "status": "BLOCKED", "reason": "event domains outside the existing-profile CDP allowlist (permission change)"},
+    {"cell": "E", "status": "NOT_RUN", "reason": "requires C_active and D each meaningful"},
+    {"cell": "cohorts K3, K4", "status": "NOT_RUN"},
+    {"cell": "TypeScript runner, OOPIF pages, native, Wayland, macOS, Windows", "status": "NOT_RUN"}
+  ],
+
+  "infrastructure_blocker_at_freeze": {
+    "status": "BLOCKED for every REAL browser cell until resolved",
+    "finding": "Under <lanes>/bin/hostless (bubblewrap with an unprivileged user namespace) host root-owned files appear owned by the overflow uid 65534, so the Driver's isolated-launch check (platform-linux browser_platform.rs trusted_root_owned_installation) refuses: browser_prepare -> browser_route_unavailable 'no root-owned, non-writable system Chromium executable is available for isolated launch'. Observed in this map's smoke (REAL, i107 binary, 2026-10-02T04:44Z). Unit tests, builds and --version work under hostless.",
+    "not_a_workaround": "weakening or bypassing the Driver's executable trust check, or running the Driver outside hostless, is not allowed",
+    "needed": "an orchestrator/owner decision on a host-isolation wrapper that does not remap file ownership (e.g. a Landlock-based variant with abstract-unix-socket scoping + filesystem allow-list + the same environment scrub), then a re-run of this map's smoke"
+  },
+
+  "ledger_format": "kvnloo/cua#10 task x arm x trial ledger: one JSON object per attempted trial with lane, comparison, condition, cohort, regime, pair id, order, arm, binary sha256, caller tree, token hash, outcome, route, decision routes, guard telemetry, counts, spans, T_oracle, T_runner, lifetime, resources, loadavg/PSI, lock receipt id, control id (if any) and exclusion flag",
+  "packet": "docs/experiments/i107-<lane>-2026-10-02/ with README.md, raw/, summary JSON, provenance.json, verify_artifacts.py (recomputes every headline from raw/ and scans for local paths, host name and secrets), as kvnloo/cua PR #106 does"
+}

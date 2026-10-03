@@ -1,0 +1,93 @@
+{
+ "schema": "n04.prereg.v1",
+ "lane": "N-04 (wave 5, experiment)",
+ "title": "Native one-source composition and closure on R'n: BASE vs X vs X+V vs X+V+HCL",
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#20", "kvnloo/cua#73"],
+ "registered_utc": "2026-10-03T07:40Z (commit time of this file is the binding timestamp)",
+ "provider": {"name": "none (scripted chooser)", "cap_reaching": 0},
+ "source": {
+  "branch": "exp/n-04-native-composition-rprime-20261003",
+  "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a (0f1955d2f + R2-10 steps 1-8, R2-10R's tested source; libs/cua-driver tree 11ee32235d5e)",
+  "tested_source": "11a03bf513a9b9ab107852ade67e13dbda5d30e7 = R' + cherry-pick of 4c786178bb214e1a7b0f9e7af5e9dc9991524fc1 (N-02 settle clamp knob and MCP span marks, measurement-only, default off; the patch N-03 used as 85a73c2c7); libs/cua-driver tree e047f85a42e1, rust tree 3054612b8e99. Range-diff: commit message only (one added sentence); patch lines identical.",
+  "unit": "touched suites on 11a03bf51 under hostless: cua-driver proxy:: 20/20 pass, platform-linux focus_guard 14/14 pass (before registration).",
+  "upstream_base": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (libs/cua-driver tree df2b49c32e73 = live upstream main b4ffcd651 at 2026-10-03T07:37Z, 13 ahead, 0 libs/cua-driver files)"
+ },
+ "binaries": {
+  "Rn": {"name": "cua-driver-n04-11a03bf51", "sha256": "78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc",
+         "build": "build-driver.sh under hostless, cargo-build lock + SHARED quiet lock, family cua-release-r2-10", "role": "every arm"},
+  "R_prime": {"name": "cua-driver-r2-10r-a2-45dff8f32", "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+              "role": "default-off smoke comparator only; never a timing comparator"}
+ },
+ "hypotheses": {
+  "H_V": "V (CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1) deletes >= 0.5 ms of T per task on R'n.",
+  "H_E2": "With the best composed arm, the native text untested share of T falls below 5% on one source.",
+  "H_E3": "S = median T(BASE) / median T(best composed) has a 95% CI above 1 on each task."
+ },
+ "arms": {
+  "BASE": "product defaults = R2-10 native BASE: default cursor motion (set_agent_cursor_motion {} -> glide_duration_ms 0.0 = default reveal glide), default 50 ms post-action sleep, default focus-guard settle; no CUA_DRIVER_EXP_* variable; phase trace on (measurement only). N-03 harness arm B.",
+  "X": "C + S0 = R2-10R native X: CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0 + set_agent_cursor_motion {glide_duration_ms: 1}; library output validation (mcp ClientSession).",
+  "X+V": "X + CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1.",
+  "X+V+HCL": "X+V + caller-side lazy per-schema output validators (N-03 HCL: compiled at a schema's first use inside the call with jsonschema.validate's acceptance rule; re-checked by the library path after the trial, outside T). N-03 harness arm X+HCL+V, renamed.",
+  "S0": "supplement only (KEEP-only): CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0 with the default cursor; library validation.",
+  "D": "default-off smoke: no CUA_DRIVER_EXP_* and no phase trace file in the Driver environment."
+ },
+ "harness": {
+  "n03_copy": "harness/n03/ = the N-03 packet harness at 63d419034, blob-identical: n03_harness.py 6680473a26a99516e1aff17831e38534bfb159f3, xprobe.py f17d83691faacc9397dc4c91a1f4018622c0d75d, fixture_axfg.py ba5af6d878e97d5ffc0649c5e3d784caa3b6bbe9, make_plan.py a448769f632be30c54f3bc6b8a876f1849489fac, run_block.sh 6565df9ed6816a7b467803e8918d9a68b6be54f5, run_all.sh f9086d6aba552be3c979432e7d46e7fbd9f26b25 (git blob ids; verify_artifacts.py re-checks them).",
+  "n04_files": "harness/n04_harness.py (adds ARMS BASE = B and X+V+HCL = X+HCL+V; round loop with the load rule and the soft cap; no other change), harness/run_block_n04.sh (0-3 s jitter + xdpyinfo probe, sha256 check, version read inside the session), harness/run_chunks.sh (locks, chunks), harness/make_plan_n04.py.",
+  "sha256_at_registration": {
+   "plan.json": "dbb12aa07bb3ce491fdfa30cf795b09105421fd0a8f65bb9fa8800d8ede88233",
+   "analyze_n04.py": "f8492362a520985f359d69600569a89a46c12bd73dc0ccc64b569302271dcbdc",
+   "hc_control.py": "a9d11e4b5ab609a8a5656065db729cad4c162f0ead33f1dc9fc7ab24b336d3d9",
+   "harness/n04_harness.py": "7b1131c8b357c072e2943e23d66008ed2c25f8335e61a2c4d652e03d9bc0b25e",
+   "harness/run_block_n04.sh": "d0b6f5a47e7e13e12d261f6b4bf2cf7d600ea1fa8ed81ca2a020c9370ebdd49e",
+   "harness/run_chunks.sh": "f829b19ceb94688c64dbc691a78bb2bdba8745cda3eb1b921f2d975c30b8e262",
+   "harness/make_plan_n04.py": "1f99b4cfe088ad839246b3ccff6178fd7e478d55e704308a501cbdbf34cc716b"
+  }
+ },
+ "fixture_and_tasks": "Canonical GTK3 fixture libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py (the R2-04 tasks): checkbox toggle ('I agree', click background) and text entry (set_value 'Note' with a fresh token, then click 'Save note' background). One get_window_state (tree + screenshot) observation per task, then the scripted jev-use lookup (NativeObservation + eligible_controls, unique exact label). Private Xvfb (cua-x11-session.sh) with a private AT-SPI bus, under hostless + hostless-strict.",
+ "design": {
+  "k1": "4x4 Williams square over BASE, X, X+V, X+V+HCL; 24 rounds per task (6 squares) = 24 pairs per contrast per task; both tasks per round (first task alternating by round); one fresh Driver and one fresh fixture per trial; blocks k1-r00..k1-r23 (one round each).",
+  "k5": "12 sessions per arm per task for X+V and X+V+HCL; 5 tasks per Driver session and fixture; AB/BA by session: per task, X+V first iff (round + fixed task index) is even (checkbox 0, text 1), so the order alternates across rounds for each task (6/6); blocks k5-r00..k5-r11.",
+  "s0_supplement": "BASE vs S0, 24 rounds per task, AB/BA by round with the same fixed-index rule (12/12 per task); blocks s0-r00..s0-r23. Reported for S0 (KEEP-only); never used by a V/HCL gate.",
+  "order": "k1 rounds, then k5 rounds, then s0 rounds, then the SHARED controls (smoke R'n, smoke R', V control, focus steal).",
+  "balance_asserted_by": "harness/make_plan_n04.py check_balance (recorded in plan.json 'balance')"
+ },
+ "load_and_locks": {
+  "load_rule": "A measured round starts only at 1-minute loadavg <= 4.0 (read inside the lock, before the round). Otherwise /proc/loadavg is re-read every second for up to 60 s; if it never reaches <= 4.0 the chunk ends (exit 75), the locks are released, and the chunk resumes after 90 s. Every check is logged (raw load-gate.jsonl).",
+  "measured_chunk": "cargo-build lock first, then bin/quiet-timed <chunk> (EXCLUSIVE quiet-lane lock, receipt in the shared ledger), hard cap timeout 600 s inside; the harness starts no new round after 420 s. One private X session per chunk; the session is trusted only after a random 0-3 s wait and a passing xdpyinfo probe.",
+  "controls": "SHARED quiet-lane lock with receipt lines (lane ledger + shared ledger); load gate not applied.",
+  "keep_every_trial": "Every trial, every round attempt and every chunk log is kept. A round interrupted by the hard cap (no DONE) is kept and re-run under the next label suffix; its rows are reported and excluded from pairs only because its round is incomplete."
+ },
+ "forced_path_and_route": {
+  "every_action": "receipt route 'accessibility'; the full R2-04 mark sequence in order (click: element_resolved, placement_done, reveal_done, ax_start, focus_guard captured, atspi_action connected/live_checked/metadata_done/do_action_replied/post_sleep_done, focus_guard body_done/restored, click ax_joined; set_value: element_resolved, cursor_done, write_done, readback_done).",
+  "every_call": "dispatch_enter/dispatch_exit marks; the N-02 MCP span marks request_read, parse_done, handler_start, handler_end, serialize_done, response_written in order; client stamps client_send, client_recv, validate_start, validate_end.",
+  "V": "V arms show mcp.inner_validation_skipped inside every in-T tools/call; non-V arms never show it and show mcp.inner_tools_list_built.",
+  "HCL": "HCL arms show a compile span inside the first call of each tool only (task 0) and none afterwards; non-HCL arms show none.",
+  "knobs": "exp_knob marks equal the arm's knobs ({post_action_sleep_ms=0} for X, X+V, X+V+HCL, S0; none for BASE and D); cursor glide_duration_ms 1.0 for X, X+V, X+V+HCL and 0.0 (default) for BASE and S0; cursor enabled.",
+  "violation": "any violation makes the row invalid (it stays in its cell's denominator)."
+ },
+ "oracle": "The fixture's CUA_GTK3_TASK_STATE file (fresh path per trial, written by the app with atomic replace), read every 2 ms by a harness thread independent of the Driver. A task is verified iff the first sample at/after the last action's return shows the expected state and the final state has seq == before.seq + 1. T_oracle (R2-10 definition) = first observation send -> read-end of that sample. T_land = first observation send -> read-end of the first sample showing the expected state (at any time).",
+ "statistics": {
+  "paired": "within-round differences a - b, median with a seeded percentile bootstrap 95% CI over pairs (10000 resamples, seed 20261003); a pair with an invalid side is dropped from the pair statistic only.",
+  "S": "S = median T(BASE) / median T(arm) over paired rounds; paired bootstrap over rounds (10000, seed 20261003) - the R2-10 ratio_stat rule.",
+  "best_composed": "per task, the composed arm (X, X+V, X+V+HCL) with the lowest median T_oracle among arms whose cell validity is >= 95%; ties -> the earlier of X, X+V, X+V+HCL. Selected on the same data (disclosed: a min over three arms; S is also reported for every composed arm)."
+ },
+ "gates": {
+  "V": "DELETED iff the paired T saving (X - X+V, k=1) is >= 0.5 ms with a 95% CI excluding 0 on BOTH tasks. Otherwise KILL. The V control is reported next to it.",
+  "HCL": "per task: DELETED iff the k=1 saving (X+V - X+V+HCL) is >= 0.5 ms with a 95% CI excluding 0; otherwise OWNER_DECISION (session-shape dependent). Overall DELETED iff both tasks are DELETED. The k=5 per-session savings (sum of the 5 T's, X+V - X+V+HCL) are reported per session and as a paired median with CI.",
+  "E3": "S_best per task with CI; also S for every composed arm, S0 (KEEP-only, from the supplement) and T_land S. H_E3 holds on a task iff the S_best CI lower bound > 1.",
+  "E2": "decompose the best arm with N-03's sub-spans; primary reading = R2-10 taxonomy with the action transport split; conservative reading = also split the observation transport. Verdicts: settle IRREDUCIBLE (CL settle clamp KILL per OWN-20G); reveal residual OWNER_DECISION; post-action sleep DELETED (N-01R); driver serialize/write IRREDUCIBLE (N-02); client output validation OWNER_DECISION if HCL is OWNER_DECISION, residual UNTESTED if HCL is DELETED; V-targeted admission residual UNTESTED if V is DELETED, IRREDUCIBLE if V is KILL; other R2-10 labels as N-03 carried them; every other sub-span UNTESTED. Report the untested share per task in both readings; target < 5%.",
+  "validity": ">= 95% valid per cell (task x arm for k=1, k=5 and the supplement). Failures stay in the denominators.",
+  "work_vs_wall": "Report work deleted (component and sub-span means, BASE - best; admission and validation work per contrast) separately from wall-clock saved (paired median T)."
+ },
+ "controls": {
+  "V_control": "5 X+V rows and 5 X reference rows (vctl): tools/list re-listed mid-session returns the identical inventory; an unknown tool is refused before and after the re-list with the same error as in X; known tools are admitted in the modern and legacy eras; the task verifies.",
+  "HCL_offline": "hc_control.py on the measured k=1 corpus (rounds 0 and 12, X+V+HCL): 10 injected invalid outputs per tool, each rejected by both the lazy and the library path, for every tool used (list_windows, set_agent_cursor_motion, get_agent_cursor_state, get_window_state, set_value, click); every real output accepted by both. N-03's mutation strategies unchanged (including its appended array-item strategies).",
+  "HCL_online": "every lazily validated call re-checked by the library path after the trial (outside T); verdicts must agree.",
+  "default_off_smoke": "R'n vs R' with no knobs and no trace file (arm D), 5 per task each: identical tools/list sha256, 5/5 verified per task on both, identical receipt shapes and routes, no non-empty trace file, no exp env.",
+  "focus_steal": "20 rows on X+V+HCL (10 per task), focus stolen ~100 ms after the app's state change: reported, no gate. The deadline-exit gap in the focus guard is known (OWN-20G) and R'n does not carry OWN-20G's guard final diff G."
+ },
+ "e4": "Per arm, 0 of each: duplicate mutation (seq advanced by more than 1), success claimed by the receipt before the oracle, stale dispatch, blind replay, authority from passive state.",
+ "deviation_to_state": "Native T excludes provider decisions (scripted chooser). This needs an owner ruling and is stated, not hidden.",
+ "claim_boundary": "One host, private Xvfb + AT-SPI, GTK3 canonical fixture, binary R'n only, no provider. Never compared with R' 922111c5 timings or N-03 (N3) numbers. Knobs env-gated and default-off; no new service; events are never the oracle."
+}

@@ -1,0 +1,47 @@
+{
+ "lane": "R2-10",
+ "packet": "docs/experiments/r2-10-composition-2026-10-02/",
+ "branch": "exp/r2-10-composition-20261002",
+ "base_upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+ "tested_source_head": "8f3a646b4818b757648835cf89db8886626b1cf0",
+ "tested_rust_tree": "f1f93375453d0b18b7bde77cbf1f945ed91de62b",
+ "tested_commits": {
+  "f3f7ff473732ee74b0bb30d1382ee91f7923c8b7": "cherry-pick 7d3a28b66 (R2-01 phase trace)",
+  "b10cd09f23a3a8e748a03d204d2114e2e0500319": "merge --no-ff a0bca7440 (trycua/cua PR 4316 head)",
+  "c7e9c2a06c607f1097844548c48ac2a2137eeab3": "cherry-pick f5c991e59 (B-01)",
+  "96195e3b7510b5cd20f304bd0cd89ff4bf8de45e": "cherry-pick 560bd8247 (B-02)",
+  "0cc03fbed867323594fa5d35f5a1cd9d3d7b8a19": "cherry-pick 28b915ae9 (R2-04), phase_trace.rs union resolution",
+  "8f5ec81bc4bb3aa3bc4c554bdab58e366aec5952": "cherry-pick b9b357bc7 (N-01R knobs)",
+  "7d6cbe37758fe5c93d25719c0de1fb141204b1c2": "cherry-pick 8cfa8c1db (FIX-01 Part A) + 4a301d32a raw/b01-resolution-tools.rs.diff (tools.rs blob 00628e773 -> a82aabad6)",
+  "8f3a646b4818b757648835cf89db8886626b1cf0": "cherry-pick 6eb9319fe (FIX-01 Part B)"
+ },
+ "control": {"branch": "exp/r2-10-control-20261002", "head": "1381014a3403272cedeb657c3e9d16e7cf36a1ca", "rust_tree": "fb828e03f0edfd182e804b50a4d78f12a510bfce"},
+ "prereg_commit": "2cedaa9a4",
+ "prereg_commit_utc": "2026-10-02T17:54:12Z",
+ "first_phase0_row_utc": "2026-10-02T17:56:53Z",
+ "first_measured_trial_utc": "2026-10-02T18:13:34Z",
+ "binaries": {
+  "R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version": "cua-driver 0.32.0"},
+  "Cn": {"name": "cua-driver-r2-10-ctl-1381014a3", "sha256": "bd656a2c73128323b010e2c81267a2c397f78a1e2921857d3f50efd7889938f2", "version": "cua-driver 0.32.0"},
+  "U": {"name": "cua-driver-b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version": "cua-driver 0.32.0"}
+ },
+ "build": "hostless flock cargo-build.lock build-driver.sh <worktree> <label> cua-release-r2-10; rustc 1.97.1; R 206 s, Cn 108 s; 0 Fresh workspace units",
+ "harness_sources_copied_by_path": {
+  "b282ff3894fa85a7b82257cb1edd5088c2f0ac37": "docs/experiments/b-02-browser-driver-sites-2026-10-02/{run_b02,run_critpath,b01_tasks,b01_fixtures,analyze,analyze_b02,analyze_browser,b01_analysis,cdp_raw}.py",
+  "2d71548b46114cd1a1bc58ccdef323ce185c9965": "docs/experiments/r2-07-2026-10-02/harness/{compiled_routine,r2_07_harness,fault_transport,fixture,r2_07_launcher,test_compiled_routine}.py + raw/learn/artifact.json",
+  "4a301d32a96d0a5d54a77d7147af1191c7df4c4e": "docs/experiments/fix-01-detached-node-refusal-2026-10-02/harness/*",
+  "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa": "docs/experiments/n-01r-native-wait-ab-2026-10-02/{n01r_harness,fixture_late,make_plan,xprobe,analyze}.py + run scripts",
+  "0cd63f786290f967f41a5a6b615d54f98045ebec": "docs/experiments/b-01-browser-critpath-2026-10-02/R2-10-PREREG-DRAFT.json"
+ },
+ "live_heads": {
+  "start_utc": "2026-10-02T17:18Z",
+  "start": {"upstream_main": "989cc76cec262ff8bcf6968b637820340fb9caaa", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"},
+  "end_utc": "2026-10-02T19:54:49Z",
+  "end": {"upstream_main": "9313551ef3460ba9dbc035ce6528174138ab5000 (4 ahead of 989cc76ce; 8 libs/cua-driver files)", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open, unchanged)"}
+ },
+ "publication_sha": "the branch commit carrying this file (recorded by Publish)",
+ "environment": {"hostless": "v2 (Landlock + env scrub); native also hostless-strict", "session": "cua-x11-session.sh private Xvfb (+ private AT-SPI bus for native)", "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1", "cpus": 10},
+ "provider": {"name": "TypeSafe", "attempts": 306, "reached": 306, "shakedown": {"attempts": 5, "reached": 5}, "live_layer": {"attempts": 301, "reached": 301}, "lane_caps": {"reached": 330, "attempts": 363}, "key": "forwarded by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY); value never printed or stored"},
+ "lock_receipts": "raw/lock-receipts-global.jsonl (loop ledger lines for r2-10-* labels) and raw/lock-receipts-lane.jsonl",
+ "mirror": "raw/ mirrored to the loop artifacts directory R2-10/"
+}

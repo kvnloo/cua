@@ -1,0 +1,91 @@
+{
+ "candidate": {
+  "binary_label": "cua-driver-ar-base-457bc65d4",
+  "binary_sha256": "8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209",
+  "commit": "f5533299d631da97073db12562bd72e625164a5b"
+ },
+ "champion": {
+  "binary_label": "cua-driver-ar-base-457bc65d4",
+  "binary_sha256": "8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209",
+  "commit": "457bc65d45b2a87ac080b281ea777f8914002c29"
+ },
+ "created_utc": "2026-10-02T05:11:46Z",
+ "design": {
+  "alpha_one_sided": 0.01,
+  "block_max_minutes": 10,
+  "fresh_driver_per_trial": true,
+  "n_pairs": 10,
+  "order": "AB/BA alternating",
+  "power": 0.8,
+  "psi_hz": 10,
+  "sandbox": "harness/ar/sandbox/sandbox-driver.sh",
+  "seed": 20261002,
+  "session_trials": 48,
+  "sigma_ln": 0.011733938187270618,
+  "trace_off_fraction": 0.2
+ },
+ "eval_id": "ar-20261002-dryrun",
+ "fdr": {
+  "alpha": 0.05,
+  "gamma_constant": 0.0722,
+  "procedure": "LORD++",
+  "w0": 0.025
+ },
+ "frozen": {
+  "allowlist_sha256": "2ee00e0893f0cf7ca38a28f1f11087fe29c6e482c48f32a6d01320d9adbf529f",
+  "harness_commit": "457bc65d45b2a87ac080b281ea777f8914002c29",
+  "manifest_sha256": "8a9513e4a318d6d61a51d19284c417822954b54320351bf872759a333ce287cd",
+  "scanner_rules_sha256": "cb15ddd04089ab10d9174206bb8dff60a90a4bd22d8c9d687be3847318c63eb4"
+ },
+ "g1_required_suites": [
+  "cua-driver-core --lib",
+  "platform-linux --lib"
+ ],
+ "gates": [
+  "G0",
+  "G1",
+  "G2",
+  "G3",
+  "G4",
+  "G5",
+  "G6",
+  "G7",
+  "G8",
+  "GS"
+ ],
+ "invariants": {
+  "expected_path": null,
+  "expected_route": "accessibility"
+ },
+ "mechanism": {
+  "end_mark": "focus_guard/restored",
+  "min_share": 0.7,
+  "start_mark": "focus_guard/body_done"
+ },
+ "n01_reference": null,
+ "request": {
+  "branch": "ar/dryrun/settle-watch-120",
+  "hypothesis": "Dry run: a 120 ms settle watch.",
+  "request_sha256": "10732f775b4eea77e4b84c8bf8d507904b4cd62689c1811ac7c240fd67d8fe3d",
+  "submitted_utc": "2026-10-02T05:11:43Z"
+ },
+ "schema": "ar.prereg.v1",
+ "segment": "segment-1",
+ "soak": {
+  "min_trials": 1000
+ },
+ "spot_checks": [
+  "spot_gtk3_text",
+  "spot_browser_fill_submit"
+ ],
+ "spot_min_pairs": 10,
+ "task": "gtk3_checkbox_toggle",
+ "tau": {
+  "aa_pairs": 6,
+  "aa_rows_sha256": "437ef655c807feeddd36b68b2213772439700d0e603d7b9a1fd8082c8b3e8b90",
+  "batch": 6,
+  "floor": 0.02,
+  "q975_abs_delta_aa_ln": 0.00952384486321988,
+  "value": 0.02
+ }
+}

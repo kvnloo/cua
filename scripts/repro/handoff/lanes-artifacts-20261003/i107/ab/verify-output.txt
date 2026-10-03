@@ -1,0 +1,77 @@
+PASS 1 i107ab-summary.json equals a fresh recomputation from raw/
+PASS 1 ledger.jsonl equals a fresh recomputation (296 rows)
+PASS 2 README quotes 'status: RAN'
+PASS 2 README quotes 'trials attempted: 289'
+PASS 2 README quotes 'trials measured: 285'
+PASS 2 README quotes 'W-churn: 30 pairs, acquisition equal = True'
+PASS 2 README quotes 'W-churn: semantic equivalence 30/30'
+PASS 2 README quotes 'W-churn: response bytes B_proj - A median -94324.5'
+PASS 2 README quotes 'W-churn: T_oracle B_proj - A median -23.506 ms'
+PASS 2 README quotes 'W-quiet: 30 pairs, acquisition equal = True'
+PASS 2 README quotes 'W-quiet: semantic equivalence 30/30'
+PASS 2 README quotes 'W-quiet: response bytes B_proj - A median -2735.0'
+PASS 2 README quotes 'W-quiet: T_oracle B_proj - A median -0.658 ms'
+PASS 2 README quotes 'W-static: 30 pairs, acquisition equal = True'
+PASS 2 README quotes 'W-static: semantic equivalence 30/30'
+PASS 2 README quotes 'W-static: response bytes B_proj - A median -94237.0'
+PASS 2 README quotes 'W-static: T_oracle B_proj - A median -9.05 ms'
+PASS 2 README quotes 'W-churn: A T_oracle median 859.312 ms, coverage min 1.0'
+PASS 2 README quotes 'W-quiet: A T_oracle median 246.407 ms, coverage min 1.0'
+PASS 2 README quotes 'W-static: A T_oracle median 883.608 ms, coverage min 1.0'
+PASS 2 README quotes 'control DC01|A: n 5, verified 5, budget_exhausted 0, other outcomes 0, submits 5, wrong-target 0'
+PASS 2 README quotes 'control DC01|B_proj: n 5, verified 5, budget_exhausted 0, other outcomes 0, submits 5, wrong-target 0'
+PASS 2 README quotes 'control DC03|A: n 10, verified 10, budget_exhausted 0, other outcomes 0, submits 10, wrong-target 10'
+PASS 2 README quotes 'control DC03|B_proj: n 10, verified 10, budget_exhausted 0, other outcomes 0, submits 10, wrong-target 10'
+PASS 2 README quotes 'control DC04|A: n 10, verified 0, budget_exhausted 10, other outcomes 0, submits 0, wrong-target 0'
+PASS 2 README quotes 'control DC04|B_proj: n 10, verified 0, budget_exhausted 10, other outcomes 0, submits 0, wrong-target 0'
+PASS 2 README quotes 'control DC05a|A: n 5, verified 5, budget_exhausted 0, other outcomes 0, submits 5, wrong-target 0'
+PASS 2 README quotes 'control DC05a|B_proj: n 5, verified 5, budget_exhausted 0, other outcomes 0, submits 5, wrong-target 0'
+PASS 2 README quotes 'control stale_ref|A: n 10, verified 0, budget_exhausted 0, other outcomes 10, submits 0, wrong-target 0'
+PASS 2 README quotes 'control stale_ref|B_proj: n 10, verified 0, budget_exhausted 0, other outcomes 10, submits 0, wrong-target 0'
+PASS 3 non-loopback connects across 289 trials = 0
+PASS 3 run-manifest-ab.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-controls.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-controls2.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-controls3.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-default_off.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-distortion.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-shakedown.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-static.json: provider=mock, 0 non-loopback connects
+PASS 4 run-manifest-ab.json: quiet-timed receipt for label i107-ab-main2
+PASS 4 run-manifest-ab.json: 239 trials inside the EXCLUSIVE window 2026-10-02T06:41:01.926Z .. 2026-10-02T06:51:17.408Z
+PASS 4 run-manifest-controls.json: quiet-timed receipt for label i107-ab-main2
+PASS 4 run-manifest-controls.json: 239 trials inside the EXCLUSIVE window 2026-10-02T06:41:01.926Z .. 2026-10-02T06:51:17.408Z
+PASS 4 run-manifest-controls2.json: quiet-timed receipt for label i107-ab-controls2
+PASS 4 run-manifest-controls2.json: 30 trials inside the EXCLUSIVE window 2026-10-02T07:00:01.737Z .. 2026-10-02T07:02:05.406Z
+PASS 4 run-manifest-controls3.json: quiet-timed receipt for label i107-ab-controls3
+PASS 4 run-manifest-controls3.json: 20 trials inside the EXCLUSIVE window 2026-10-02T08:02:13.185Z .. 2026-10-02T08:03:02.008Z
+PASS 4 run-manifest-default_off.json: quiet-timed receipt for label i107-ab-main2
+PASS 4 run-manifest-default_off.json: 239 trials inside the EXCLUSIVE window 2026-10-02T06:41:01.926Z .. 2026-10-02T06:51:17.408Z
+PASS 4 run-manifest-distortion.json: quiet-timed receipt for label i107-ab-main2
+PASS 4 run-manifest-distortion.json: 239 trials inside the EXCLUSIVE window 2026-10-02T06:41:01.926Z .. 2026-10-02T06:51:17.408Z
+PASS 4 run-manifest-shakedown.json: quiet-timed receipt for label i107-ab-main2
+PASS 4 run-manifest-shakedown.json: 239 trials inside the EXCLUSIVE window 2026-10-02T06:41:01.926Z .. 2026-10-02T06:51:17.408Z
+PASS 4 run-manifest-static.json: quiet-timed receipt for label i107-ab-main2
+PASS 4 run-manifest-static.json: 239 trials inside the EXCLUSIVE window 2026-10-02T06:41:01.926Z .. 2026-10-02T06:51:17.408Z
+PASS 5 PREREG commit ffefa30c2 (2026-10-02T00:10:40-05:00) precedes the first REAL trial (2026-10-02T06:41:08.088000+00:00)
+PASS 5 PREREG.json unchanged since its commit
+PASS 6 harness unit tests: OK
+PASS 6 Rust acquisition-equality test: 2 passed, 0 failed
+PASS 7 default-off: 5/5 verified, trace unset, no trace file
+PASS 8 stale-ref controls refused before dispatch: ['stale_ref|A', 'stale_ref|B_proj']
+PASS 9 no file under libs/ changed since the map base
+PASS 10 privacy scan over every packet file (offenders: [])
+PASS 10 secret scan (9 token/key/email patterns) over every packet file (offenders: [])
+PASS 12 DC01/DC05a on A and B_proj: >=5 each, every op acked and self-checked ({'DC01|A': 5, 'DC01|B_proj': 5, 'DC05a|A': 5, 'DC05a|B_proj': 5})
+PASS 12 DC01-DC20 coverage table present for arms A and B_proj (21 controls)
+PASS 11 every ledger row carries an evidence label or cell status (296 rows)
+SKIP 13 run-manifest-ab.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+SKIP 13 run-manifest-controls.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+SKIP 13 run-manifest-controls2.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+PASS 13 run-manifest-controls3.json: harness files equal the blobs at the recorded harness commit 5f9e1c1abb83cb61ca7476e28624135b25bcb6ba
+SKIP 13 run-manifest-default_off.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+SKIP 13 run-manifest-distortion.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+SKIP 13 run-manifest-shakedown.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+SKIP 13 run-manifest-static.json: no harness_sha256 (block predates the field; mapping in provenance.json harness_by_block)
+
+0 failure(s)

@@ -1,0 +1,55 @@
+{
+ "schema": "cua.i107.ab.provenance.v1",
+ "issue": "kvnloo/cua#107",
+ "lane": "AB",
+ "path_placeholders": {"<lanes>": "lanes root", "<tmp>": "lane temp root", "<home>": "user home"},
+ "upstream": {
+  "pinned_main": "352507b6c03162ab286b21d5ed509125cc3daece (map pin; libs/cua-driver tree 892fdddb07de3f12deb09c78619e043549ee06cd)",
+  "live_main_at_lane_read": {"sha": "6fbcdf97b6ed953e70ea5efad5a61d3ffb490a2f", "read": "gh api repos/trycua/cua/commits/main (read-only), 2026-10-02T05:2xZ", "note": "main moved after the pin; nothing in this lane is rebased onto it"}
+ },
+ "guarded_continuation_pr": {
+  "ref": "trycua/cua PR 4316",
+  "live_read": "gh pr view 4316 -R trycua/cua --json headRefOid,state,mergedAt,isDraft,updatedAt,baseRefOid (read-only) during this lane",
+  "headRefOid": "a0bca744067d04f05904319d3d919be30c336556",
+  "state": "OPEN", "mergedAt": null, "isDraft": false, "updatedAt": "2026-10-01T17:03:24Z",
+  "baseRefOid_reported": "242667fa99ae6ffe8067ee1a76e094ff50ed6d43",
+  "use_in_this_lane": "none functional: arms A and B_proj run without --guarded-completion; the jev-use tree at the tested source contains the PR's flag-gated code",
+  "re_read_at_fix_round": "2026-10-02T08:01:56Z, same command: head a0bca744067d04f05904319d3d919be30c336556, OPEN, mergedAt null, not draft, updatedAt 2026-10-01T17:03:24Z (unchanged)"
+ },
+ "harness_by_block": {
+  "note": "Each block runs one Python process (run_block.sh execs run_critpath.py once), so the harness code is the code on disk when the block started. Blocks main2 and controls2 predate the manifest harness_sha256 field; their mapping is inferred from commit times and the shape of the raw records.",
+  "i107-ab-main2": {"harness_commit": "9405bc6fc", "evidence": "block 06:41:02-06:51:17Z; a23e7c6bb (which changed run_critpath.py, file mtime 06:42Z) was written after the process had loaded the script; main2 stale_ref records carry the 9405bc6fc stale_envelope shape (no error code)"},
+  "i107-ab-controls2": {"harness_commit": "a23e7c6bb", "evidence": "block 07:00:02-07:02:05Z, after a23e7c6bb; stale_ref records carry the error code"},
+  "i107-ab-controls3": {"harness_commit": "5f9e1c1ab", "evidence": "recorded by the block itself: session-env harness_commit 5f9e1c1ab plus run-manifest harness_sha256 per harness file; verify_artifacts.py check 13 compares each sha256 with the blob at that commit. session-env shows harness_dirty_files 2: verify_artifacts.py and provenance.json were being edited (neither is loaded by the runner)"}
+ },
+ "driver_telemetry": "The Driver's product telemetry is on by default. Each private session starts with a fresh HOME, so every session log shows the Driver's first-run telemetry notice, and its lifecycle worker may have sent content-free events to the vendor's analytics endpoint. The runner's '0 non-loopback connects' guard covers the runner process only, not the Driver. This is a project-wide condition (r2 SETUP) and is identical across arms; it is not a provider request.",
+ "tested_source": {
+  "branch": "exp/i107-ab-20261002 (worktree from be68363bc on exp/i107-map-20261002)",
+  "driver_build_commit": "092b065d5e1f6e0b9ba3abe4f5fbcd37c339303b",
+  "libs_cua_driver_tree": "a87dc39dc3b27b7b207e2bc9c85db7d1b6b1d497 (unchanged by every lane-AB commit)",
+  "jev_use_tree": "72bf8156136771da9a767ec12ae7c364e426d910 (main 635a4f588c68 + PR 4316, flag off in both arms)",
+  "harness_source": "kvnloo/cua exp/b-01-browser-critpath-20261002 commit 6689610d5a2619cb45dd4328b2921c89f88967be: run_critpath.py (blob 673c7f5a7350) and b01_analysis.py (blob 6632de0f9814), copied verbatim in 22e2ec829 and adapted in later commits",
+  "lane_prereg": {"commit": "ffefa30c2", "committed_utc": "2026-10-02T05:10:40Z", "inherits_map_prereg_sha256": "8eeb837ffa24425cfc36ba2c72a8ea65df4207e1a39a7d261f1cda85496b2c53"}
+ },
+ "binaries": {
+  "i107": {"name": "cua-driver-i107-092b065d5", "sha256": "f3a5c01a2c1b5bce75ccb611d0bacd491a7c3b1a8c3fac65889a1fc9d6977aed", "version": "cua-driver 0.32.0", "built_by": "map lane (receipt <lanes>/artifacts/i107/map/i107-build-092b065d5.out); not rebuilt by this lane"},
+  "reference": {"name": "cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "use": "CMP-distortion only"}
+ },
+ "browser": {"product": "Google Chrome", "version": "151.0.7922.71", "read": "<lanes>/bin/hostless /opt/google/chrome/google-chrome --version (no display)", "profile": "isolated_new (Driver-launched), Chromium sandbox on"},
+ "provider": {"chooser": "choose_mock_for_task", "live_requests": 0, "label": "FIXTURE/BENCHMARK; live-provider cells BLOCKED"},
+ "isolation": {
+  "wrapper_at_lane_start": {"name": "hostless (v1)", "kind": "bubblewrap, unprivileged user namespace, tmpfs over host X11/ICE/runtime dirs, env scrub", "effect": "host root files appear as uid 65534: the Driver refuses isolated launch (map PREREG infrastructure_blocker_at_freeze)"},
+  "wrapper_used_for_REAL": {
+   "name": "hostless (v2)", "sha256": "367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+   "replaced_utc": "2026-10-02T05:06:31Z (file mtime)",
+   "kind": "env scrub (DISPLAY, WAYLAND_*, HYPRLAND_*, SWAYSOCK, I3SOCK, session bus, AT-SPI, XAUTHORITY, session type/desktop, keyring, ssh agent), private XDG_RUNTIME_DIR, exec under landlock-scope (Landlock scope: no connect to abstract unix sockets bound outside, no signals outside)",
+   "landlock_scope_sha256": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8",
+   "v1_kept_as": "hostless-strict (sha256 d22d755bd488fa34b64183a2b78d8eeedfea125210f44e37db45c6130c769d16)",
+   "approval": "No separate approval record was found. The lane treats bin/hostless v2 as the orchestrator-provided wrapper because it is the wrapper the hard rules name, and its header states it replaces v1 to unblock the Driver's isolated browser launch (the remedy the map lane proposed). Disclosed as an interpretation.",
+   "residual_exposure": "no mount masking: host pathname sockets (for example the host X11 path socket) stay reachable to a process that explicitly targets them; protection relies on the env scrub plus the private session's DISPLAY/XDG_RUNTIME_DIR (same reliance the map lane recorded for v1's abstract sockets). Network namespace shared."
+  },
+  "session": {"name": "cua-x11-session.sh", "sha256": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b", "kind": "private rootless Xvfb + private dbus + openbox + picom, env -i"},
+  "quiet_lock": {"name": "quiet-timed", "sha256": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b"}
+ },
+ "host": {"kernel": "7.2.2 (Landlock ABI >= 6)", "nproc": 10}
+}

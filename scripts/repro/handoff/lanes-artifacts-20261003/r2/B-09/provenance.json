@@ -1,0 +1,343 @@
+{
+ "schema": "b-09.provenance.v1",
+ "lane": "B-09",
+ "branch": "exp/b-09-fill-verify-poll-b7-20261003",
+ "base_commit": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3 (B-08 packet head)",
+ "tested_source_sha": "ac319cbe90d6cdf0cc8cd8984f99f5b04b68fdac",
+ "tested_source_note": "R' 45dff8f32 + B-05 marks + the default-off POST_FAST knob; libs/cua-driver Linux tree = upstream 0f1955d2f; nothing built in this lane",
+ "driver": {
+  "name": "cua-driver-b07-231f6e8bb",
+  "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+  "version": "cua-driver 0.32.0",
+  "rehash": {
+   "host_start": {
+    "utc": "2026-10-03T15:56:45Z",
+    "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+   },
+   "session_start": {
+    "utc": "2026-10-03T16:03:39Z",
+    "log": "raw/logs/versions-start.log"
+   },
+   "host_end": {
+    "utc": "2026-10-03T17:21:01Z",
+    "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+   },
+   "session_end": {
+    "utc": "2026-10-03T17:21Z",
+    "log": "raw/logs/versions-end.log"
+   },
+   "identical": true
+  }
+ },
+ "copied_from_b08": {
+  "first_commit": "13defc3f16f22129cddf908bb45d766696cdbfb0",
+  "blobs": {
+   ".gitignore": "9d903db81e618302c03602d2b3da4db8a90f6b52",
+   "analyze_b09.py": "228fde1a2d3ec1df141851c838a9a1ed9b63c2b7",
+   "b09_rows.py": "51ad0e32a08fdb4dd5d3274bdae21da5abdc41d4",
+   "harness/b04/b04_rows.py": "129bfb74c030e9904078e847a5374caeb034f040",
+   "harness/b04/harness/b01_fixtures.py": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+   "harness/b04/harness/b01_tasks.py": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+   "harness/b04/harness/cdp_raw.py": "6f103930dc543ad0bb69b8ea132c6ef7fb719c7d",
+   "harness/b04/harness/compiled_routine.py": "3be4518318d7e77fbbc46d0eb2855ad65a0a007e",
+   "harness/b04/harness/r2-10-scripted-COMP-routine.json": "60ff1569896a4aac80e9dade247a6c89bf30ed1d",
+   "harness/b04/harness/run_b02.py": "528966ddade37bfa076d716720f03efd696bb807",
+   "harness/b04/harness/run_b03.py": "bfdae8a11154ca6cc0e597430b0503ce5c7d7204",
+   "harness/b04/harness/run_critpath.py": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+   "harness/b04/run_b04.py": "464cc9eade3de1dafbe40b4295b0905dccae1859",
+   "harness/b05/b05_spans.py": "bf1f90f830eda8cb7e36d9e6e3af91bc5a9c1969",
+   "harness/b07/b07_stdio.py": "da6f2bd45735319a153972bb68f5f75845e8caf4",
+   "harness/r2-10r/analyze_r2_10.py": "af3a691c3b4e6f1681fdfa4df107a560ff9c612b",
+   "harness/r2-10r/r2_10_browser.py": "83bccc2f351689ecd6f0d2103e61012130d84af4",
+   "harness/r2-10r/scripted-COMP.json": "c7a6e71ba93e2a875f38dde6bb81a80d891c97dc",
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/analyze_browser.py": "43f4e8db0076c03f71879084a91b99f9785b0b9d",
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/b01_analysis.py": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+   "lane-scripts/in-session.sh": "b1681fbac43320eb1529917e5c279ab9bd4f3869",
+   "lane-scripts/package_raw.py": "cc8f734a1992b43803854f9184e43ac8d204918a",
+   "lane-scripts/run-chunk.sh": "ffbfb5c8e0d04ad2bb2515644dd6e386d5b74c23",
+   "lane-scripts/run-pilot.sh": "eed3973eeac0808e31af098c4f4be1a6fec91ee8",
+   "lane-scripts/run_all.py": "d90d1cb222e37d7bc940e11dee958717db43ff70",
+   "lane-scripts/session-retry.sh": "618ea704a61c18a3baab6ac9c909f6b144c5b83f",
+   "lane-scripts/shared-locked.sh": "b238e56e0d73a57ae4cfb5a6322450e9c7cb797e",
+   "make_headlines.py": "0b2c1fb1f547726a8132304c9b049b8c785a9ada",
+   "run_b09.py": "d807d0fe731e12fcaf4faa8274aaac4eecf3efee",
+   "verify_artifacts.py": "08595589f6f09777d5359f53b5a9083df6fd4648",
+   "verify_helper.py": "23a3af67da58c1e9398ecb28f8587fe344e25669"
+  },
+  "source_check": {
+   ".gitignore": {
+    "b08_path": ".gitignore",
+    "b08_blob": "9d903db81e618302c03602d2b3da4db8a90f6b52",
+    "equal": true
+   },
+   "analyze_b09.py": {
+    "b08_path": "analyze_b08.py",
+    "b08_blob": "228fde1a2d3ec1df141851c838a9a1ed9b63c2b7",
+    "equal": true
+   },
+   "b09_rows.py": {
+    "b08_path": "b08_rows.py",
+    "b08_blob": "51ad0e32a08fdb4dd5d3274bdae21da5abdc41d4",
+    "equal": true
+   },
+   "harness/b04/b04_rows.py": {
+    "b08_path": "harness/b04/b04_rows.py",
+    "b08_blob": "129bfb74c030e9904078e847a5374caeb034f040",
+    "equal": true
+   },
+   "harness/b04/harness/b01_fixtures.py": {
+    "b08_path": "harness/b04/harness/b01_fixtures.py",
+    "b08_blob": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+    "equal": true
+   },
+   "harness/b04/harness/b01_tasks.py": {
+    "b08_path": "harness/b04/harness/b01_tasks.py",
+    "b08_blob": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+    "equal": true
+   },
+   "harness/b04/harness/cdp_raw.py": {
+    "b08_path": "harness/b04/harness/cdp_raw.py",
+    "b08_blob": "6f103930dc543ad0bb69b8ea132c6ef7fb719c7d",
+    "equal": true
+   },
+   "harness/b04/harness/compiled_routine.py": {
+    "b08_path": "harness/b04/harness/compiled_routine.py",
+    "b08_blob": "3be4518318d7e77fbbc46d0eb2855ad65a0a007e",
+    "equal": true
+   },
+   "harness/b04/harness/r2-10-scripted-COMP-routine.json": {
+    "b08_path": "harness/b04/harness/r2-10-scripted-COMP-routine.json",
+    "b08_blob": "60ff1569896a4aac80e9dade247a6c89bf30ed1d",
+    "equal": true
+   },
+   "harness/b04/harness/run_b02.py": {
+    "b08_path": "harness/b04/harness/run_b02.py",
+    "b08_blob": "528966ddade37bfa076d716720f03efd696bb807",
+    "equal": true
+   },
+   "harness/b04/harness/run_b03.py": {
+    "b08_path": "harness/b04/harness/run_b03.py",
+    "b08_blob": "bfdae8a11154ca6cc0e597430b0503ce5c7d7204",
+    "equal": true
+   },
+   "harness/b04/harness/run_critpath.py": {
+    "b08_path": "harness/b04/harness/run_critpath.py",
+    "b08_blob": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+    "equal": true
+   },
+   "harness/b04/run_b04.py": {
+    "b08_path": "harness/b04/run_b04.py",
+    "b08_blob": "464cc9eade3de1dafbe40b4295b0905dccae1859",
+    "equal": true
+   },
+   "harness/b05/b05_spans.py": {
+    "b08_path": "harness/b05/b05_spans.py",
+    "b08_blob": "bf1f90f830eda8cb7e36d9e6e3af91bc5a9c1969",
+    "equal": true
+   },
+   "harness/b07/b07_stdio.py": {
+    "b08_path": "harness/b07/b07_stdio.py",
+    "b08_blob": "da6f2bd45735319a153972bb68f5f75845e8caf4",
+    "equal": true
+   },
+   "harness/r2-10r/analyze_r2_10.py": {
+    "b08_path": "harness/r2-10r/analyze_r2_10.py",
+    "b08_blob": "af3a691c3b4e6f1681fdfa4df107a560ff9c612b",
+    "equal": true
+   },
+   "harness/r2-10r/r2_10_browser.py": {
+    "b08_path": "harness/r2-10r/r2_10_browser.py",
+    "b08_blob": "83bccc2f351689ecd6f0d2103e61012130d84af4",
+    "equal": true
+   },
+   "harness/r2-10r/scripted-COMP.json": {
+    "b08_path": "harness/r2-10r/scripted-COMP.json",
+    "b08_blob": "c7a6e71ba93e2a875f38dde6bb81a80d891c97dc",
+    "equal": true
+   },
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/analyze_browser.py": {
+    "b08_path": "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/analyze_browser.py",
+    "b08_blob": "43f4e8db0076c03f71879084a91b99f9785b0b9d",
+    "equal": true
+   },
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/b01_analysis.py": {
+    "b08_path": "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/b01_analysis.py",
+    "b08_blob": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+    "equal": true
+   },
+   "lane-scripts/in-session.sh": {
+    "b08_path": "lane-scripts/in-session.sh",
+    "b08_blob": "b1681fbac43320eb1529917e5c279ab9bd4f3869",
+    "equal": true
+   },
+   "lane-scripts/package_raw.py": {
+    "b08_path": "lane-scripts/package_raw.py",
+    "b08_blob": "cc8f734a1992b43803854f9184e43ac8d204918a",
+    "equal": true
+   },
+   "lane-scripts/run-chunk.sh": {
+    "b08_path": "lane-scripts/run-chunk.sh",
+    "b08_blob": "ffbfb5c8e0d04ad2bb2515644dd6e386d5b74c23",
+    "equal": true
+   },
+   "lane-scripts/run-pilot.sh": {
+    "b08_path": "lane-scripts/run-pilot.sh",
+    "b08_blob": "eed3973eeac0808e31af098c4f4be1a6fec91ee8",
+    "equal": true
+   },
+   "lane-scripts/run_all.py": {
+    "b08_path": "lane-scripts/run_all.py",
+    "b08_blob": "d90d1cb222e37d7bc940e11dee958717db43ff70",
+    "equal": true
+   },
+   "lane-scripts/session-retry.sh": {
+    "b08_path": "lane-scripts/session-retry.sh",
+    "b08_blob": "618ea704a61c18a3baab6ac9c909f6b144c5b83f",
+    "equal": true
+   },
+   "lane-scripts/shared-locked.sh": {
+    "b08_path": "lane-scripts/shared-locked.sh",
+    "b08_blob": "b238e56e0d73a57ae4cfb5a6322450e9c7cb797e",
+    "equal": true
+   },
+   "make_headlines.py": {
+    "b08_path": "make_headlines.py",
+    "b08_blob": "0b2c1fb1f547726a8132304c9b049b8c785a9ada",
+    "equal": true
+   },
+   "run_b09.py": {
+    "b08_path": "run_b08.py",
+    "b08_blob": "d807d0fe731e12fcaf4faa8274aaac4eecf3efee",
+    "equal": true
+   },
+   "verify_artifacts.py": {
+    "b08_path": "verify_artifacts.py",
+    "b08_blob": "08595589f6f09777d5359f53b5a9083df6fd4648",
+    "equal": true
+   },
+   "verify_helper.py": {
+    "b08_path": "verify_helper.py",
+    "b08_blob": "23a3af67da58c1e9398ecb28f8587fe344e25669",
+    "equal": true
+   }
+  },
+  "all_equal_to_b08": true
+ },
+ "untouched_harness_blob_identity_vs_49ae94590": {
+  "files": {
+   "harness/b04/b04_rows.py": {
+    "blob_at_49ae94590": "129bfb74c030e9904078e847a5374caeb034f040",
+    "blob_now": "129bfb74c030e9904078e847a5374caeb034f040",
+    "identical": true
+   },
+   "harness/b04/harness/b01_fixtures.py": {
+    "blob_at_49ae94590": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+    "blob_now": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+    "identical": true
+   },
+   "harness/b04/harness/b01_tasks.py": {
+    "blob_at_49ae94590": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+    "blob_now": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+    "identical": true
+   },
+   "harness/b04/harness/cdp_raw.py": {
+    "blob_at_49ae94590": "6f103930dc543ad0bb69b8ea132c6ef7fb719c7d",
+    "blob_now": "6f103930dc543ad0bb69b8ea132c6ef7fb719c7d",
+    "identical": true
+   },
+   "harness/b04/harness/r2-10-scripted-COMP-routine.json": {
+    "blob_at_49ae94590": "60ff1569896a4aac80e9dade247a6c89bf30ed1d",
+    "blob_now": "60ff1569896a4aac80e9dade247a6c89bf30ed1d",
+    "identical": true
+   },
+   "harness/b04/harness/run_b02.py": {
+    "blob_at_49ae94590": "528966ddade37bfa076d716720f03efd696bb807",
+    "blob_now": "528966ddade37bfa076d716720f03efd696bb807",
+    "identical": true
+   },
+   "harness/b04/harness/run_b03.py": {
+    "blob_at_49ae94590": "bfdae8a11154ca6cc0e597430b0503ce5c7d7204",
+    "blob_now": "bfdae8a11154ca6cc0e597430b0503ce5c7d7204",
+    "identical": true
+   },
+   "harness/b04/harness/run_critpath.py": {
+    "blob_at_49ae94590": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+    "blob_now": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+    "identical": true
+   },
+   "harness/b04/run_b04.py": {
+    "blob_at_49ae94590": "464cc9eade3de1dafbe40b4295b0905dccae1859",
+    "blob_now": "464cc9eade3de1dafbe40b4295b0905dccae1859",
+    "identical": true
+   },
+   "harness/b05/b05_spans.py": {
+    "blob_at_49ae94590": "bf1f90f830eda8cb7e36d9e6e3af91bc5a9c1969",
+    "blob_now": "bf1f90f830eda8cb7e36d9e6e3af91bc5a9c1969",
+    "identical": true
+   },
+   "harness/b07/b07_stdio.py": {
+    "blob_at_49ae94590": "da6f2bd45735319a153972bb68f5f75845e8caf4",
+    "blob_now": "da6f2bd45735319a153972bb68f5f75845e8caf4",
+    "identical": true
+   },
+   "harness/r2-10r/analyze_r2_10.py": {
+    "blob_at_49ae94590": "af3a691c3b4e6f1681fdfa4df107a560ff9c612b",
+    "blob_now": "af3a691c3b4e6f1681fdfa4df107a560ff9c612b",
+    "identical": true
+   },
+   "harness/r2-10r/r2_10_browser.py": {
+    "blob_at_49ae94590": "83bccc2f351689ecd6f0d2103e61012130d84af4",
+    "blob_now": "83bccc2f351689ecd6f0d2103e61012130d84af4",
+    "identical": true
+   },
+   "harness/r2-10r/scripted-COMP.json": {
+    "blob_at_49ae94590": "c7a6e71ba93e2a875f38dde6bb81a80d891c97dc",
+    "blob_now": "c7a6e71ba93e2a875f38dde6bb81a80d891c97dc",
+    "identical": true
+   },
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/analyze_browser.py": {
+    "blob_at_49ae94590": "43f4e8db0076c03f71879084a91b99f9785b0b9d",
+    "blob_now": "43f4e8db0076c03f71879084a91b99f9785b0b9d",
+    "identical": true
+   },
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/b01_analysis.py": {
+    "blob_at_49ae94590": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+    "blob_now": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+    "identical": true
+   }
+  },
+  "all_identical": true
+ },
+ "changed_harness_file": {
+  "path": "harness/b04/harness/compiled_routine.py",
+  "blob_at_49ae94590": "3be4518318d7e77fbbc46d0eb2855ad65a0a007e",
+  "blob_now": "5e9f3cae6794598905926274b6524cb7097b10d4"
+ },
+ "r207_test_copy": {
+  "path": "tests/test_compiled_routine_r207.py",
+  "from": "exp/r2-07-compiled-routine-20261002 @ 2d71548b4",
+  "blob": "e9c7ff81e6ea39fb493a328d38b920d56165141d"
+ },
+ "live_heads": {
+  "start": {
+   "utc": "2026-10-03T15:56:45Z",
+   "trycua_cua_main": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+   "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"
+  },
+  "end": {
+   "utc": "2026-10-03T17:21:01Z",
+   "trycua_cua_main": "3a784c5c32fc834f387f47f4835dd869ef505eee",
+   "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"
+  },
+  "read_with": "read-only gh api"
+ },
+ "upstream_drift_note": "upstream main moved during the lane. c8edda06b (B-08's head) -> 9a2b1d99e touches libs/cua-driver platform-linux/src/overlay.rs (trycua/cua PR 4529, idle X11 cursor overlays kept unmapped: the feedback-on path BASE uses) and cua-driver-core/src/expectation.rs (trycua/cua PR 4531, macOS verify_state); 9a2b1d99e -> 3a784c5c3 touches only platform-macos and Skills docs. B7's tested source is fixed (ac319cbe9 on upstream 0f1955d2f); any claim carried to current main needs recertification (FRESH-07 track)",
+ "publication_sha": null,
+ "publication_sha_note": "set by Publish; never equal-by-assumption to the tested SHA or the lane head",
+ "provider": {
+  "name": "TypeSafe",
+  "cap": 0,
+  "attempts": 0,
+  "reached": 0
+ }
+}

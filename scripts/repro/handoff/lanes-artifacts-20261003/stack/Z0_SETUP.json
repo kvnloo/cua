@@ -1,0 +1,248 @@
+{
+  "schema": "stack.z0_setup.v1",
+  "track": "kvnloo/hermes-agent#319 (z0intelligence side of the CUA x Hermes x z0int stack)",
+  "written_at": "2026-10-02T04:45Z",
+  "evidence_legend": "SOURCE=read in code/docs; UNIT=unit test; FIXTURE=synthetic input through real code; REAL=real local service/weights exercised; BENCHMARK=quiet-lane timed; BLOCKED=policy/infra prevents; NOT_RUN=not attempted",
+  "commit_scrub_note": "This file contains absolute local paths for the orchestrator. Do not commit it verbatim; commands below use the $VARS in paths{} so they can be committed with the variables left unexpanded.",
+
+  "paths": {
+    "Z0_CLONE": "/mnt/zer0models/z0-wt/z0intelligence",
+    "Z0_WT": "/mnt/zer0models/z0-wt/stack-z0",
+    "Z0_VENV": "/mnt/zer0models/z0-wt/venv-stack-z0",
+    "JULIA_PY": "~/tmp/julia-venv/bin/python",
+    "HF_HUB": "/mnt/zer0models/zer0-models/huggingface/hub (reached via ~/.cache/huggingface symlink)",
+    "NANOJEV_CKPT": "~/.z0int/models/nanojev_06b (symlink into /mnt/zer0models/home-offload/...)",
+    "HOSTLESS": "/mnt/zer0models/github/cua-lanes/bin/hostless",
+    "QUIET": "/mnt/zer0models/github/cua-lanes/bin/quiet-timed",
+    "LANE_TMP": "/mnt/zer0models/cua-lane-tmp/z0setup",
+    "RAW": "/mnt/zer0models/github/cua-lanes/artifacts/stack/z0_setup_raw",
+    "HERMES_BARE": "/mnt/zer0models/hermes-wt/h.git"
+  },
+
+  "checkout": {
+    "canonical_checkout": {
+      "path": "~/tmp/z0int-canonical",
+      "head": "a9cbbed2b92a2ef2f4c2215328f156f16fc90ba1",
+      "branch": "feat/promote-local-cognition-extension",
+      "status": "DIRTY (4 modified + 7 untracked incl. uncommitted Julia backend files) and its local refs are stale; head is in neither origin/master nor origin/dev. Treated read-only, NOT used.",
+      "evidence": "SOURCE"
+    },
+    "used_clone": "/mnt/zer0models/z0-wt/z0intelligence (fresh clone of kvnloo/z0intelligence, default branch master)",
+    "used_worktree": "/mnt/zer0models/z0-wt/stack-z0 (detached, no local changes)",
+    "pinned_ref": "origin/dev",
+    "pinned_head": "6764ae784f66b902bd6c07e4f7f76848a409423a",
+    "why_dev_not_master": "origin/master 0563ed7a52071cca63ccc91b8c9040207ad23e5d is an ancestor of dev. dev's only difference under backends/ and adapters/ is +15 lines in backends/decider.py: health(load=False) no longer resolves an uncached revision. On master that call could start a ~3.7 GB Decider download.",
+    "venv": {
+      "path": "$Z0_VENV",
+      "python": "3.11.14",
+      "created_with": "uv venv --python 3.11 + uv pip install -e $Z0_WT laya==0.1.6 (under hostless, UV_CACHE_DIR and TMPDIR on /mnt)",
+      "key_versions": {"torch": "2.10.0+cu128", "transformers": "5.17.0", "huggingface_hub": "1.31.0", "laya": "0.1.6"},
+      "freeze_sha256_16_excluding_editable": "05f5cce65b4265db (56 pkgs)",
+      "julia_worker_python": "$JULIA_PY (3.11.14, torch 2.14.0+cpu, transformers 5.0.0, supersonic-julia 0.1.0 editable). Julia pins transformers>=5.0,<5.1, so it runs in its own interpreter."
+    }
+  },
+
+  "hermes_side_identities": {
+    "pr385_observer": {"branch": "lab/z0int/full-observer-v0", "head": "ce5c027bbacc2c4d60a17eb61f80a76910410313", "schema": "z0int.hermes_observer_event.v1"},
+    "pr386_shadow": {"branch": "lab/z0int/retry-shadow-v0", "head": "521d43548a1f74e14db8f2999c26e6b4e9c2b32e", "file": "lab/z0_hermes_observer/shadow_api_failure.py", "file_sha256": "32acbfe3be090cb5884606b00e5cc83124e97b4499602018c7bf2d144babc4f7", "schemas": ["z0int.hermes_shadow_example.v1"]},
+    "pr387_eval": {"branch": "lab/z0int/shadow-eval-v0", "head": "b82038890f8756a575a507e7962524150c19c03a", "file": "lab/z0_hermes_observer/evaluate_shadow.py", "file_sha256": "c86234ecb55df2daf10d554bb8ba3eab6835efb4a1a94ae98b4e3be0057e33a6", "schemas": ["z0int.hermes_shadow_eval.v1"]},
+    "integration_lane_stack_commit_read": "0d60437a3329448bb9d2992e34cec81b0afd36df (exp/stack-integration-20261002: fork main + #385/#386/#387; read via git show only, worktree not touched)"
+  },
+
+  "decision_backend_interface": {
+    "module": "src/z0int/backends/base.py (stdlib-only import)",
+    "protocol": "DecisionBackend: capabilities -> BackendCapabilities; health(load=False) -> BackendHealth; evaluate(DecisionRequest) -> DecisionResult",
+    "request": "DecisionRequest(state: nonempty str|dict|list of finite JSON, questions: tuple[DecisionQuestion], request_id). Questions are boolean | choice (2..255 options) | score (2..10 levels). request_from_mapping accepts the CLI/fixture JSON shape {state, questions:[{id,type,instructions,criteria}], request_id}.",
+    "answer": "DecisionAnswer(question_id, type, probabilities{label->p} validated finite, in [0,1] and summing to 1 +/- 1e-5; value; confidence). A boolean answer always has keys 'false'/'true' (named_questions.answer_from_named maps noul -> {false: 1-p, true: p}).",
+    "result_wire": "result_to_dict -> z0int.decision_result.v1 {backend, model, revision, latency_ms, answers[], diagnostics}",
+    "registry": "src/z0int/backends/registry.py, lazy. Registered ids: laya_421m (alias laya), nanojev (alias nanojev_06b), decider_2b (alias decider), julia_1 (aliases julia, julia-1). NOT registered (so not reachable by #386 --backend): openjev_06b/openjev_4b (bench roster only, OpenJevDirectBackend), image_decision (Qwen2.5-VL-3B), TypeSafe Jev (function-level verify.evidence_sufficiency), any Ollama model.",
+    "cli": "python -m z0int backends list|doctor|capabilities|eval|bench (eval default --backend laya_421m)",
+    "identity_quirk": "decision.backend is the adapter class ID ('laya', 'decider', 'nanojev', 'julia_1'), not the registry id, so packets must also record backend_arg. NanoJev's revision field reports the Qwen3-0.6B backbone revision c1899de2..., not the NanoJev bundle pin 4a19595e..., so packets must record the bundle pin and best.safetensors sha256 themselves."
+  },
+
+  "runnable_backend_matrix": [
+    {
+      "id": "deterministic_baseline",
+      "what": "No registered backend exists. The only implemented baselines: (a) evaluate_shadow.py base_rate_brier, a constant predictor at the IN-SAMPLE prevalence and so optimistic; (b) bench 'trivial random baseline + margin' competence gate (decision-capability-v1). No rule baseline exists for api.attempt_will_fail.",
+      "runtime": "pure Python, CPU, no model", "model_files": "none",
+      "cold_start": "n/a", "warm": "n/a",
+      "full_distribution": "constant p (degenerate distribution by construction)",
+      "runnable_here": true, "via_386_backend_flag": false,
+      "evidence": "SOURCE",
+      "note": "For a non-leaky deterministic row, freeze the prior from a session-grouped prior fold, or use a preregistered constant. This is evaluation arithmetic over existing output and adds no new backend."
+    },
+    {
+      "id": "jev_reference_observer",
+      "what": "TypeSafe Jev 1.13.0 via jevkit.client -> api.typesafe.ai /v1/systemone (src/z0int/functions/jev.py). Function-level verify.evidence_sufficiency, not a registered DecisionBackend.",
+      "runtime": "remote paid API", "model_files": "none local",
+      "full_distribution": "yes (typed probabilities)",
+      "runnable_here": false, "via_386_backend_flag": false,
+      "evidence": "BLOCKED",
+      "blocked_reason": "Track policy: no paid providers and no TypeSafe. The credential resolver also reads host env files, so it must not even be imported in this track. The only Jev numbers are historical SOURCE (authored144 95.1%, p50 267.6 ms), on a different task."
+    },
+    {
+      "id": "laya_421m",
+      "role": "CURRENT DEFAULT CANDIDATE: `z0int backends eval` default; docs/backends.md calls it the 'Default local typed-decision backend'; models.z0int.json resident_preferred",
+      "hf": "convaiinnovations/laya@7c76b622dfc5cac71b2dc1c29873efe2ce509a05", "model_files": "HF snapshot 808 MB (ModernBERT-large decision head, model.safetensors)",
+      "runtime": "upstream `laya` 0.1.6 runtime in $Z0_VENV; CPU by default (Z0INT_LAYA_DEVICE=cpu); non-autoregressive [MASK] softmax",
+      "cold_start_ms": 34916, "cold_load_ms": 27315, "warm_eval_p50_ms": 482, "warm_eval_ms_all": [596.4, 476.46, 668.81, 481.97, 434.87],
+      "full_distribution": true, "supports_boolean": true,
+      "fixture_reading_api_attempt_will_fail": {"false": 0.4196, "true": 0.5804},
+      "runnable_here": true, "via_386_backend_flag": true,
+      "evidence": "REAL + BENCHMARK(canary-grade, n_warm=5, quiet lane label stack-z0-canary-laya_421m)",
+      "caveat": "On a benign fixture request (healthy local call, retry_count 0) it puts p(fail)=0.58, i.e. a positive at 0.5. If the base rate is ~0, Laya will score worse than the constant baseline."
+    },
+    {
+      "id": "julia_1",
+      "hf": "SupersonicLabs/Julia-1@a85b127321d580d65176c89ced8273f305745d85", "model_files": "HF snapshot 585 MB complete repo (model.safetensors sha256 df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72 = setup-julia.sh pin)",
+      "runtime": "subprocess backends/julia_worker.py under Z0INT_JULIA_PYTHON=$JULIA_PY; CPU float32 by default (Z0INT_JULIA_DEVICE=cpu)",
+      "cold_start_ms": 31301, "cold_load_ms": 17613, "warm_eval_p50_ms": 241, "warm_eval_ms_all": [241.42, 180.18, 227.93, 281.9, 281.88],
+      "full_distribution": true, "supports_boolean": "yes (noul over 2 supplied criteria)",
+      "fixture_reading_api_attempt_will_fail": {"false": 0.98616, "true": 0.01384},
+      "runnable_here": true, "via_386_backend_flag": true,
+      "evidence": "REAL + BENCHMARK(canary-grade, label stack-z0-canary-julia_1)",
+      "caveat": "Docs record it as default-off/rejected for z0 decision domains, with confidence anti-correlated with correctness. Warm latency through the worker (~241 ms incl. JSON IPC) does not reproduce the documented in-process 28.6 ms."
+    },
+    {
+      "id": "decider_2b",
+      "hf": "Mapika/decider-2b@1d96be0093133e194fe18105a521b3e69be931d2", "model_files": "HF snapshot 3.6 GB (Qwen3.5-2B; runtime code shipped in the snapshot as decider/infer.py)",
+      "runtime": "torch CUDA bf16 on the RTX 3080 Ti (Z0INT_DECIDER_DEVICE=cuda); torch.compile/inductor on first call",
+      "cold_start_ms": 302877, "cold_load_ms": 26492, "cold_note": "~276 s of the cold start is first-call compilation (inductor/CUDA graphs), so one process should score a whole frozen cohort",
+      "warm_eval_p50_ms": 22.6, "warm_eval_ms_all": [41.77, 21.94, 22.28, 22.62, 23.1],
+      "full_distribution": "yes, but diagnostics say 'upstream rounded probabilities renormalized once' (4-decimal resolution)",
+      "fixture_reading_api_attempt_will_fail": {"false": 0.8013, "true": 0.1987},
+      "runnable_here": true, "via_386_backend_flag": true,
+      "evidence": "REAL + BENCHMARK(canary-grade, label stack-z0-canary-decider_2b)",
+      "gpu_rule": "large GPU model: never co-resident with system_one_4b; run alone"
+    },
+    {
+      "id": "qwen_3b_baseline",
+      "what": "Ollama qwen2.5:3b (Q4_K_M, 3.1B, 1.93 GB, digest 357c53fb659c) on 127.0.0.1:11434 (system ollama 0.16.1; OLLAMA_CONTEXT_LENGTH=4096; NUM_PARALLEL=1). Also present: qwen2.5vl:3b (no tool support) and Qwen2.5-VL-3B HF weights 7.1 GB for the separate image_decision protocol.",
+      "runtime": "OBSERVED CPU: /api/ps size_vram=0 even though CUDA_VISIBLE_DEVICES is set. ollama-bin 0.16.1 and ollama-cuda 0.32.15 libs are mismatched. Not fixable here (no system changes).",
+      "cold_start_ms": 13420, "cold_load_ms": 9025, "warm_call_p50_ms": 440, "warm_ms_all": [581.6, 466.4, 418.7, 415.0, 439.9],
+      "full_distribution": "Ollama returns top_logprobs (REAL); first-token mass over {true,false} covered 1.0, giving a full 2-way distribution. The existing z0int code path cannot produce it: cognition/adapters/local_slm.py emits ONE-HOT distributions, and no registered DecisionBackend wraps Ollama.",
+      "fixture_reading_api_attempt_will_fail_via_logprobs": {"false": 0.0051, "true": 0.9949},
+      "runnable_here": "model yes; as a z0int DecisionBackend NO",
+      "via_386_backend_flag": false,
+      "evidence": "REAL + BENCHMARK(canary-grade, label stack-z0-canary-ollama-qwen2.5-3b); the logprob scorer is lane-local canary code ($RAW/canary_ollama.py), not z0int code",
+      "decision_needed": "Using this as a comparison row needs a thin DecisionBackend-protocol adapter over Ollama logprobs. That is new adapter code, though not a new question family or protocol. Orchestrator must either approve it as baseline hygiene or mark the row NOT_RUN. One-hot local_slm output must not be fed to log-loss."
+    },
+    {
+      "id": "nanojev",
+      "hf": "C-Tianyu/NanoJev@4a19595eada0857133c0d2be024f879a4077054b (managed bundle $NANOJEV_CKPT, 2.3 GB; backbone Qwen3-0.6B@c1899de2)",
+      "runtime": "torch CUDA bf16 (device cuda:0)",
+      "cold_start_ms": 20287, "warm_eval_p50_ms": 38.3, "warm_eval_ms_all": [37.34, 49.94, 38.29, 36.21, 39.73],
+      "full_distribution": true,
+      "fixture_reading_api_attempt_will_fail": {"false": 0.68679, "true": 0.31321},
+      "runnable_here": true, "via_386_backend_flag": true,
+      "evidence": "REAL + BENCHMARK(canary-grade, label stack-z0-canary-nanojev)",
+      "verify_truth": "NEVER verify truth. Registry description: 'Legacy ... not verification-default'. It is a comparison row only; its readings never label or adjudicate anything."
+    },
+    {
+      "id": "openjev_06b / openjev_4b",
+      "hf": "Qwen/Qwen3-0.6B@c1899de2 (1.5 GB) / Qwen/Qwen3.5-4B@851bf6e8 (8.8 GB), both cached",
+      "runnable_here": "weights yes; only through `z0int backends bench` roster (OpenJevDirectBackend), not registry create_backend",
+      "via_386_backend_flag": false, "evidence": "SOURCE", "note": "Not in the requested set. openjev_4b must not co-reside with other GPU models."
+    }
+  ],
+
+  "doctor_receipt": "$RAW/doctor.json: `z0int backends doctor --json` with HF_HUB_OFFLINE=1. All 4 registered backends configured=ready=true, returns_distribution=true, supports_boolean=true.",
+
+  "schema_mapping": {
+    "opportunity_unit_api_lane": "One physical provider attempt. Hermes fires pre_api_request per attempt inside _run_api_retry_loop (agent/conversation_loop.py:1506-1530). It fires api_request_error per failed attempt (turn_api_error / turn_response_check invalid_response / turn_truncation content_filter). It fires post_api_request once, after the retry loop exits (turn_response_intake). api_request_id = f'{turn_id}:api:{api_call_count}' is SHARED by all retries of one call; the attempt-unique key is (api_request_id, retry_count from pre).",
+    "fields": [
+      {"z0int_contract_field": "trace_id (#14/#54/#62)", "hermes_385_source": "identity.trace_id = explicit trace_id, else sha256(session_id + NUL + turn_id), else session/task id"},
+      {"z0int_contract_field": "opportunity_id (#53 trace.opportunity_id)", "hermes_385_source": "identity.api_request_id + '#r' + fields.retry_count (api lane); identity.trace_id (turn lane)"},
+      {"z0int_contract_field": "work_item_id", "hermes_385_source": "NOT in Hermes events; comes from the fixture/oracle task id recorded by the run driver against session_id"},
+      {"z0int_contract_field": "attempt_lineage_id", "hermes_385_source": "identity.session_id / identity.task_id (+ subagent.parent_session_id/child_session_id)"},
+      {"z0int_contract_field": "harness / environment", "hermes_385_source": "identity.harness_id='hermes'; fields.platform, provider, model, api_mode (base_url deliberately not captured)"},
+      {"z0int_contract_field": "event_index", "hermes_385_source": "spool line order + observed_at. No monotonic sequence field exists; preserve the file and never re-sort."},
+      {"z0int_contract_field": "state / state_hash / pinned evidence revision", "hermes_385_source": "#386 request_for(pre).state = metadata counters only {provider, model, api_mode, api_call_count, retry_count, message_count, tool_count, approx_input_tokens, request_char_count, max_tokens, platform}, with absent keys dropped (unknown != 0). state_hash = sha256(canonical JSON of state), computed at freeze."},
+      {"z0int_contract_field": "candidate action set / actual action", "hermes_385_source": "api lane: Hermes' actual action is always 'send attempt'. The prediction is never applied (execution='shadow')."},
+      {"z0int_contract_field": "question_pack_id + version", "hermes_385_source": "'api.attempt_will_fail' @ #386 head 521d4354 / file sha 32acbfe3"},
+      {"z0int_contract_field": "backend/model/revision + full distribution + confidence + latency", "hermes_385_source": "scored row .decision = z0int.decision_result.v1 (backend, model, revision, answers[].probabilities, value, confidence, latency_ms). Also record backend_arg, plus the NanoJev bundle pin."},
+      {"z0int_contract_field": "repeat_index", "hermes_385_source": "scorer run index (to be added by the packet runner; not in #386)"},
+      {"z0int_contract_field": "execution_completed (separate from verified)", "hermes_385_source": "turn-level: on_session_end fields.completed / failed / interrupted / turn_exit_reason. adapters.hermes_z0int.close_observation(execution_completed=..., verified_success=None)"},
+      {"z0int_contract_field": "independent verified outcome", "hermes_385_source": "api lane: verified_outcome = (terminal event == api_request_error), outcome_source = event name (an objective lifecycle fact, not a judgment). Turn lane: fixture oracle verdict via adapters.hermes_z0int.join_outcome(gold_verified=oracle); judge_verified unused."},
+      {"z0int_contract_field": "retries / corrections / escalations", "hermes_385_source": "fields.retry_count, max_retries, retryable, reason, status_code on api_request_error; subagent_stop rows"},
+      {"z0int_contract_field": "measurement completeness", "hermes_385_source": "observer_rows_dropped rows (fields.dropped_rows), orphan pre rows, terminal rows without pre, usage presence on post_api_request"},
+      {"z0int_contract_field": "label provenance class (#54)", "hermes_385_source": "api lane: deterministic lifecycle fact. Turn lane: deterministic gold from the fixture oracle. Never teacher/JEV/NanoJev."},
+      {"z0int_contract_field": "credit level (#54)", "hermes_385_source": "observational only"},
+      {"z0int_contract_field": "privacy class", "hermes_385_source": "metadata-only. Z0INT_HERMES_CAPTURE_SANITIZED_CONTENT must stay unset."}
+    ],
+    "z0int_receipt_projection_optional": "To hand to z0evals, project each scored example to z0int.decision_receipt.v1 with execution='shadow', route='shadow', capability_id=question id, prediction=argmax, confidence, latency_ms, extra=receipt.EXPERIMENT_KEYS + identity. Join the outcome with receipt.join_outcome -> z0int.outcome_join.v1 using Outcome(verified_success=..., verification_source='hermes.lifecycle' or 'fixture_oracle:<id>'). Z0INT_HOME MUST point at a private run dir, because receipts and outcomes are appended under paths.home(). This is projection into an existing schema, not a new one. #53 DecisionOpportunity v0 (z0int.decision_opportunity.v0) needs a State Packet + intent + AODL and is NOT built for this run. #54 episode/credit and #62 cross-harness records are RFCs with no implemented versioned schema on dev.",
+    "adapter_quirks": [
+      "adapters.hermes_z0int.normalize_envelope falls back to os.getpid() and time.time() of the OFFLINE joiner, so identity.process_id and received_at are scorer-side values. Pass trace_id explicitly from the observer row, and never join on process_id.",
+      "normalize_envelope trace_id falls back to session_id when no trace_id is given, which differs from the observer's sha256(session,turn). Always pass identity.trace_id."
+    ]
+  },
+
+  "join_procedure": {
+    "api_lane_api.attempt_will_fail": [
+      "1. Run Hermes from a stack worktree/venv with the observer plugin enabled, HOME/HERMES_HOME inside a private run dir, and Z0INT_HERMES_EVENT_PATH=$RUN/raw/events.jsonl. Never use the ~/.hermes path printed in SHADOW_API_FAILURE.md.",
+      "2. Freeze: sha256 events.jsonl; count observer_rows_dropped (report; must be 0 or the cohort is flagged incomplete).",
+      "3. Build examples (no model): $Z0_VENV/bin/python <hermes-wt>/lab/z0_hermes_observer/shadow_api_failure.py $RUN/raw/events.jsonl --output $RUN/examples.jsonl. The joiner keys on (api_request_id, api_call_count) and pairs pre with the next post|error SEQUENTIALLY.",
+      "4. Denominator audit (read-only pass over the same events, required because #386 silently drops these): n_pre, n_joined, n_orphan_pre (no terminal by EOF, or overwritten by a later pre with the same key), n_terminal_without_pre, n_positive, n_negative.",
+      "5. Score per backend, one process per backend, GPU backends sequentially: $Z0_VENV/bin/python .../shadow_api_failure.py $RUN/raw/events.jsonl --backend <id> --output $RUN/scored-<id>.jsonl. The scorer is offline and post-hoc, so no backend output can reach the Hermes process.",
+      "6. Evaluate: $Z0_VENV/bin/python .../evaluate_shadow.py $RUN/scored-<id>.jsonl --output $RUN/eval-<id>.json. Report n_examples vs eval n per backend (coverage); a backend that crashed is a coverage-0 row, never omitted.",
+      "7. The deterministic row uses a preregistered constant or a session-grouped prior-fold prevalence. The in-sample base_rate_brier is reported as an oracle-optimistic reference only."
+    ],
+    "turn_lane_verification_needed": [
+      "1. The run driver records (fixture_task_id, hermes session_id, turn_id) when it launches each task; the independent fixture oracle writes its verdict keyed by fixture_task_id.",
+      "2. From events.jsonl take each turn's on_session_end (or final post_api_request with assistant_tool_call_count=0) → execution_completed.",
+      "3. env = adapters.hermes_z0int.normalize_envelope({session_id, turn_id, trace_id: <observer identity.trace_id>}); obs = close_observation(env, execution_completed=..., verified_success=None, model=fields.model); joined = join_outcome(obs, gold_verified=<oracle verdict or None>).",
+      "4. Label y = (joined.verified_success is False). verified_success None → 'unknown': excluded from Brier but counted in denominators.",
+      "5. DecisionRequest: the existing decision-capability-v1 verification_needed question VERBATIM ('Does this turn require an explicit verification pass before responding?', criteria false='Safe to respond without extra verification', true='Run verification before responding'), with state = content-free turn counters from the observer (api_call_count, tool calls, tool error_type counts, retry/error counts, token usage, subagent count).",
+      "6. evaluate_shadow.py hard-codes QUESTION_ID='api.attempt_will_fail', so it must be parameterized by question id (minimal hygiene change) or scored via z0int bench metrics."
+    ]
+  },
+
+  "expected_base_rate": {
+    "api.attempt_will_fail": {
+      "verdict": "DEGENERATE on a healthy local-Ollama workload: expected natural positive rate ~0",
+      "evidence": [
+        "SOURCE: api_request_error fires only on (a) transport/HTTP exceptions, (b) invalid/empty response shape (no choices), (c) content_filter refusals. Empty-content retries, length truncation and the 'suspicious Ollama stop treated as truncated' path do NOT fire it. The local stale-stream ceiling is 900 s (HERMES_LOCAL_STREAM_STALE_TIMEOUT), so stale kills are unlikely.",
+        "REAL ($RAW/probe-ollama-failure-modes.json): a prompt over num_ctx with 24 tools returns HTTP 200 with prompt_tokens silently capped at 4096 (finish=length). Errors appear only for configuration faults: missing model → 404; tools on a non-tool model (qwen2.5vl:3b) → 400. Those are constant per session config and come with neither a provider outage nor content filtering on loopback.",
+        "The pre-request state has no server-health features, so any positives that do occur (outage, config error, injected fault) cannot be predicted from the state."
+      ],
+      "residual_risk": "Not measured on a real Hermes workload yet (NOT_RUN). One plausible natural source is Ollama HTTP 500 on malformed small-model tool-call JSON, seen in older Ollama releases and unverified on 0.16.1. Preregister: if a frozen cohort has <5 positives, report api.attempt_will_fail as DEGENERATE with exact counts and make no backend-ranking claim. With 0 positives in n, the one-sided 95% upper bound is ~3/n. Injected-outage positives (#322 failure suite) are experimenter-set labels and must be reported separately, never pooled into a natural base rate.",
+      "consequence": "With 0 positives, the constant p≈0 predictor has Brier ~0, and every model row (fixture readings p(fail): Laya 0.58, Qwen3B 0.995, NanoJev 0.31, Decider 0.20, Julia 0.014) can only score worse. The comparison would measure miscalibration, not signal."
+    },
+    "lane_that_carries_signal": {
+      "id": "verification_needed",
+      "already_implemented_where": "z0int decision-capability-v1 contract (src/z0int/backends/bench/contract.py CAPABILITIES; benchmarks/fixtures/decision-capability-v1/examples.jsonl), scored by every registered backend through `z0int backends bench`. docs/decision-capability-v2-plan.md ranks it priority 3 ('Laya CPU niche; ship-gate signal'). The outcome join reuses the already-implemented adapters.hermes_z0int.close_observation/join_outcome (execution_completed kept separate from verified_success).",
+      "why_signal": "Its label is the independent fixture-oracle verdict on the turn's outcome. With a 3B local executor on CUA fixtures, oracle failures are expected to be common, so the base rate should be far from 0 (expected, not yet measured).",
+      "label_semantics_caveat": "In v1 fixtures, verification_needed gold is normative ('should verify'). Here the label is the proxy 'the unverified outcome failed the oracle'. PREREG must state this mapping before any measured run.",
+      "not_chosen": "retry_or_escalate needs counterfactual labels ('currently no safe model'); context_compress_needed needs counterfactual compaction outcomes; verify.evidence_sufficiency routes Laya→Jev (TypeSafe, BLOCKED); rlm.worker_needed has no Hermes analogue in the observer events."
+    }
+  },
+
+  "gaps_blocking_measured_runs": [
+    "#386 joined_examples drops orphan pre rows and unmatched terminals without counting them, and score_examples aborts the whole run on the first backend exception. #387 evaluate_shadow silently excludes rows without a probability (the PR body claims 'explicit coverage gaps'). Together these violate 'every failure in denominators'. Fix with a denominator audit + per-row failure capture in the packet runner, or a minimal hygiene fix on an exp/stack-* branch.",
+    "evaluate_shadow.py QUESTION_ID is hard-coded, so the verification_needed lane needs a question-id parameter.",
+    "Qwen 3B baseline has no DecisionBackend adapter (see matrix). JEV is BLOCKED by policy. OpenJev is not reachable via --backend.",
+    "model_cached() hard-codes Path.home()/.cache/huggingface, and the nanojev path defaults to Z0INT_HOME/models. The z0int scorer must therefore run with the real HOME (it reads no Hermes state), plus HF_HUB_OFFLINE=1, Z0INT_HOME=$RUN/z0int-home and Z0INT_NANOJEV_CHECKPOINT=$NANOJEV_CKPT. Without HF_HUB_OFFLINE, a cache miss downloads weights."
+  ],
+
+  "exact_commands": {
+    "env_common": "export Z0_WT=/mnt/zer0models/z0-wt/stack-z0 Z0_VENV=/mnt/zer0models/z0-wt/venv-stack-z0 HOSTLESS=/mnt/zer0models/github/cua-lanes/bin/hostless QUIET=/mnt/zer0models/github/cua-lanes/bin/quiet-timed RUN=<private run dir under /mnt>",
+    "scorer_env": "env HF_HUB_OFFLINE=1 TMPDIR=$RUN/tmp Z0INT_HOME=$RUN/z0int-home Z0INT_NANOJEV_CHECKPOINT=~/.z0int/models/nanojev_06b Z0INT_JULIA_PYTHON=~/tmp/julia-venv/bin/python Z0INT_LAYA_DEVICE=cpu Z0INT_JULIA_DEVICE=cpu",
+    "recreate_worktree": "git -C /mnt/zer0models/z0-wt/z0intelligence fetch origin && git -C /mnt/zer0models/z0-wt/z0intelligence worktree add --detach /mnt/zer0models/z0-wt/stack-z0 6764ae784f66b902bd6c07e4f7f76848a409423a",
+    "recreate_venv": "$HOSTLESS env UV_CACHE_DIR=/mnt/zer0models/cua-lane-tmp/uv-cache TMPDIR=$RUN/tmp bash -c 'uv venv --python 3.11 $Z0_VENV && uv pip install --python $Z0_VENV/bin/python -e $Z0_WT laya==0.1.6'",
+    "backends_doctor": "$HOSTLESS <scorer_env> $Z0_VENV/bin/python -m z0int backends doctor --json",
+    "backend_canary": "$QUIET stack-z0-canary-<id> $HOSTLESS <scorer_env> $Z0_VENV/bin/python $RAW/canary_backend.py <laya_421m|julia_1|decider_2b|nanojev> 5   (needs r386/ next to it, as in $LANE_TMP)",
+    "ollama_inventory": "$HOSTLESS curl -s 127.0.0.1:11434/api/tags ; $HOSTLESS curl -s 127.0.0.1:11434/api/ps",
+    "ollama_logprob_canary": "$QUIET stack-z0-canary-ollama-qwen2.5-3b $HOSTLESS python3 $LANE_TMP/canary_ollama.py qwen2.5:3b   (unloads with keep_alive=0)",
+    "build_examples": "$HOSTLESS $Z0_VENV/bin/python <hermes-stack-wt>/lab/z0_hermes_observer/shadow_api_failure.py $RUN/raw/events.jsonl --output $RUN/examples.jsonl",
+    "score_one_backend": "$HOSTLESS <scorer_env> $Z0_VENV/bin/python <hermes-stack-wt>/lab/z0_hermes_observer/shadow_api_failure.py $RUN/raw/events.jsonl --backend <laya_421m|julia_1|decider_2b|nanojev> --output $RUN/scored-<id>.jsonl   (wrap in $QUIET <label> when the latency_ms values will be reported)",
+    "evaluate": "$HOSTLESS $Z0_VENV/bin/python <hermes-stack-wt>/lab/z0_hermes_observer/evaluate_shadow.py $RUN/scored-<id>.jsonl --output $RUN/eval-<id>.json",
+    "gpu_order": "decider_2b and nanojev each run in their own process, one after the other; Ollama models unloaded (keep_alive=0) before any GPU backend; laya/julia are CPU"
+  },
+
+  "measurement_provenance": {
+    "quiet_lane_ledger": "$RAW/quiet-lane-ledger.stack-z0.jsonl (5 entries, labels stack-z0-canary-*, all rc=0, 2026-10-02T04:29Z-04:37Z)",
+    "raw_outputs": "$RAW/canary-*.json, probe-ollama-failure-modes.json, doctor.json, plus the scripts that produced them",
+    "script_sha256": {"canary_backend.py": "7e2d3d48904db8ba20dddb7e54d1946733f579181030f6f034513ba45adcba65", "canary_ollama.py": "95e9a04c8cc7e6dc9e8279425352f96c1bcff7716d7e7c18e845a0472a9ca565", "probe_ollama_failure_modes.py": "57c643ed427cc909096ba844c8029168c490f7e2197e34a2422fe92885123c26"},
+    "grade": "Canary-grade: 1 fixture request, 1 cold + 5 warm per backend. These are setup facts, not a PREREG'd benchmark. GPU showed ~29% utilisation from a foreign process before the runs (lane lock held, but GPU not exclusive)."
+  }
+}

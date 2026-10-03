@@ -1,0 +1,255 @@
+{
+  "schema": "bend_stack.setup.v1",
+  "written_at": "2026-10-03T03:10Z",
+  "track": "Hermes x CUA x z0 x Bend integration (kvnloo/bend-native as a native Hermes plugin)",
+  "evidence_legend": "SOURCE=read in code/docs; UNIT=unit test; FIXTURE=synthetic input through real code; REAL=real local toolchain/service/model exercised; BENCHMARK=quiet-lane timed; BLOCKED=policy/infra prevents; NOT_RUN=not attempted",
+  "commit_scrub_note": "This file holds absolute local paths and the host layout for the orchestrator and lanes. Never commit it verbatim; packets must re-express paths as variables. No latency number in this file or its raw/ records is a result: nothing was run under quiet-timed, and duration_ms fields in receipts/smoke output are incidental.",
+
+  "context": {
+    "what_bend_native_is": "kvnloo/bend-native @ e85e65e5d2e11caba8412d6dbd19aad03fd785ad (plugin.yaml name 'bend', version 0.4.0, kind standalone, AGPL-3.0 with the inherited Hermes MIT notice). A native Hermes plugin extracted from the Hermes experiment kvnloo/hermes-agent#325 with its commit history. It adds one model tool (bend_verify), the 'hermes bend' CLI (doctor, verify, replay, last-receipt) and the bend:workflow skill. Version 0.4 also bundles the downstream z0 stack: the Hermes observer (kvnloo/hermes-agent#385 code at 0d60437a), the api.attempt_will_fail shadow joins/scorer/evaluator (#386/#387), and the z0intelligence State Packet reducer and DecisionOpportunity builder (z0intelligence f80da337). These are copied unchanged, with hashes in stack/sources.json. It also adds the 'hermes z0' CLI (status, report, state, opportunity, score, evaluate, runtime) and the bend:z0-stack skill. stack_mode defaults to off. In shadow mode it records metadata only, never changes prompts or actions, and every hook returns None.",
+    "role_in_the_hermes_z0_bend_integration": "bend-native is the packaging seam. It lets the stack track's pieces (isolated Hermes, observer and shadow lanes, z0 reducers and scorers) plus Bend proof evidence ship as one opt-in plugin, with no Hermes core change. Ownership (README + stack/STACK.md): Hermes orchestrates and executes tools. Bend checks proof evidence only over the emitted BendTT book (verification_scope bend-emitted-book, source_semantics_attested false). z0intelligence owns admission and outcome decisions. AODL owns intent and authority. z0 owns the repository map. The plugin never grants authority, never blocks unrelated work and never mints task success. A proof PASS is not whole-task success. Independent oracles grade outcomes.",
+    "rfc_state_from_issues": {
+      "kvnloo/hermes-agent#324": "Adapter RFC. Waves 1-3 green: 225 real runs, 200 concurrency runs and 25 TOCTOU attacks with 0 forged passes. The 2026-10-01 meta triage says: no further broad semantic matrix. Focus only on (1) compiled BendTT kernel/cache provenance and deliberate cache poisoning, (2) Bend release qualification for source to BendTT semantic drift, and (3) remote/BendHub dependency provenance and replayable receipts.",
+      "kvnloo/hermes-agent#388": "Kernel provenance decided: build a fresh kernel once per Hermes process/session, pin its path and SHA, and bypass the mutable global cache. Before/after kernel hashing runs on every verdict. With shared-cache poisoning, 10/10 forged passes; with the session-pinned kernel, 0/10. The plugin implements this as kernel_strategy session-bootstrap/session-pinned.",
+      "kvnloo/hermes-agent#389": "Release qualification. Stock 2.0.32, 2.0.33 and 2.0.34 all mis-certify the bendlang/bend issue 1212 oracle: the source computes False, but the certified BendTT value is True. The patched kvnloo/bend@17db447a (kvnloo/bend#2) gives no mismatch. Next gate: run the patched candidate over the existing Bend proof corpus plus the Hermes local-input/kernel-provenance matrix before it becomes the preferred verifier.",
+      "kvnloo/hermes-agent#390": "Hub dependency provenance (no comments yet). The plugin already snapshots named and content-hash Hub imports from an existing cache, records package identities and replays offline. The issue's matrix (cold/warm, online/offline, present/missing/mutated, concurrent resolution, mutation during verdict) is the open lane work.",
+      "kvnloo/bend#2": "Draft. A two-line group-routing fix in bend2/safe.ts plus a regression law (tests/proof/group_name_collision_semantics*.bend)."
+    }
+  },
+
+  "toolchains": {
+    "evidence": "REAL",
+    "root": "/mnt/zer0models/bend-stack",
+    "downloads": {
+      "bend_official_tarball": {"url": "https://github.com/bendlang/bend/releases/download/v2.0.34/bend-2.0.34-linux-x64.tar.gz", "sha256": "78106a97af242429dcc057258eb8d10f69cddebcd5e263022185a52d003e09bf", "verified": true, "path": "/mnt/zer0models/bend-stack/dl/bend-2.0.34-linux-x64.tar.gz"},
+      "lean_tarball": {"url": "https://github.com/leanprover/lean4/releases/download/v4.34.0/lean-4.34.0-linux.tar.zst", "sha256": "caaa98356098c85dc0fcbbd28e1ec66f39eb6551829972b752ff20e1286b646b", "verified": true, "path": "/mnt/zer0models/bend-stack/dl/lean-4.34.0-linux.tar.zst"}
+    },
+    "bend_official": {
+      "bin": "/mnt/zer0models/bend-stack/official/bend/bin/bend",
+      "layout": "official/bend/{bin/bend, bend2/{base.bend,bendtt.lean,effs/}, guide/}",
+      "version_cmd": "hostless env -i ... /mnt/zer0models/bend-stack/official/bend/bin/bend version  ->  'bend 2.0.34' rc 0  (note: Bend has no --version flag; 'bend --version' exits 1 'unknown option'; the plugin uses 'bend version')",
+      "sha256": {"bin/bend": "7fafb749dd33df446a0cb5839c5694df237312a8e8048d2e9420480164ff5934", "bend2/base.bend": "c742fae9c49b14f0cc9128429a2c6109364c8a933a142f2c90b9f2e5fd976661", "bend2/bendtt.lean (kernel source)": "61e0d2d9f4ddd7dd8bb1497fa612fb49a7274fcac647bf70702ba22321d7c292", "effs tree (sha256 of sorted sha256sum listing)": "ca73275f57d80493a349455d75782eba7e3ffa36b6a93395455d7dacc911728e"},
+      "compiled_kernel_sha256": "a7e5203de58d989b97e759c014d2347d4355ebc652d696012c7552db0716bfca (session-bootstrap build, identical in smoke-official-01/02 and verify-01)"
+    },
+    "bend_patched": {
+      "source": "kvnloo/bend @ 17db447a8b8c17b51517de42b35d3216e563f40f (kvnloo/bend#2), clone /mnt/zer0models/github/bend-fork (detached, clean)",
+      "bin": "/mnt/zer0models/bend-stack/bend-patched/bend/bin/bend",
+      "version_cmd_output": "bend 2.0.34 (rc 0). The patched build reports the same version string as stock, so identity comes only from hashes.",
+      "sha256": {"bin/bend": "b8473e168c200d676440a4079479d16d6e8583610d3447a97c1d8be9108ad981", "bend2/base.bend": "c742fae9c49b14f0cc9128429a2c6109364c8a933a142f2c90b9f2e5fd976661 (same as official)", "bend2/bendtt.lean (kernel source)": "e15042434e73aab07ab05cea4b77b5619082c00a6d4924ea2d4a2cdec05facce (DIFFERS from official)", "effs tree": "ca73275f57d80493a349455d75782eba7e3ffa36b6a93395455d7dacc911728e (same as official)"},
+      "compiled_kernel_sha256": "72e11a86f44563e9decb26fe1c586ed7d5465e98ca282ada5ae8753b1156cad5",
+      "lineage_finding": "17db447a = upstream tag v2.0.34 (7d8a3eb0) + 6 later upstream main commits (777ee0b5..01875127, including bendlang/bend PR 1192 'The kernel's proofs say the same in fewer tokens', which changes bendtt.lean, plus bendlang/bend issues 1157/1168/1178 --verdict elaboration changes in safe.ts) + the 2-line kvnloo/bend#2 patch. The patched candidate therefore differs from stock 2.0.34 in its kernel source and elaborator, not just in the 2-line patch. Qualification lanes must attribute results to the whole 7-commit delta, or build v2.0.34+patch-only as an extra control.",
+      "build": {
+        "recipe": "/mnt/zer0models/bend-stack/build-bend.sh <checkout> <dest> <workdir> under hostless (env -i PATH=~/.bun/bin:/usr/bin:/bin HOME/TMPDIR/BUN_INSTALL_CACHE_DIR under /mnt/zer0models/cua-lane-tmp/bend-build, DO_NOT_TRACK=1)",
+        "toolchain": "Bun 1.3.14 (~/.bun/bin/bun; the same version is embedded in the official binary: 'Bun v1.3.14 (0d9b296a) Linux x64')",
+        "command": "bun build --compile --no-compile-autoload-dotenv --no-compile-autoload-bunfig ../../../../bend4/bend2/main.ts --outfile bend   (cwd <work>/a/b/c/d; then bend2/{base.bend,bendtt.lean,effs} and guide/*.md copied alongside)",
+        "reproducibility_control": "REAL: the same recipe on upstream tag v2.0.34 (worktree /mnt/zer0models/github/bend-fork-v2.0.34) reproduces the official release tree byte for byte. bin/bend sha256 7fafb749... matches, and 'diff -r official/bend control-v2.0.34/bend' is empty. The official release.ts lives in a private site repo (bendlang/bend-lang.com returns 404). The recipe was reconstructed from the official binary: the embedded relative source comments, the root module /$bunfs/root/bend, and the standalone flags byte 0x0f.",
+        "finding": "A plain 'bun build --compile' (my first build) leaves bunfig/.env autoload ON (flags 0x0c), so the binary would read an untrusted project's .env/bunfig.toml. That breaks the official 'this bend ignores a project's bunfig.toml and .env' property. It was caught by byte comparison and rebuilt before any use. The patched build used by lanes has the official flags.",
+        "log": "/mnt/zer0models/github/cua-lanes/artifacts/bend-stack/logs/bend-build.log"
+      }
+    },
+    "lean": {
+      "bin": "/mnt/zer0models/bend-stack/lean-4.34.0-linux/bin",
+      "version": "Lean (version 4.34.0, x86_64-unknown-linux-gnu, commit 293d5d0c0c3f3dded4688b3ccd6a33939ac5102b, Release); Lake 5.0.0-src+293d5d0; leanc = clang 22.1.4",
+      "sha256": {"bin/lean": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550", "bin/leanc": "68a45f8329e2d79133cdcc7b1fa494e37844282d7b5f8908ce1deda7cfdf161a"}
+    },
+    "manifest": "/mnt/zer0models/bend-stack/SHA256SUMS (228 lines: tarballs, all files of official/control/patched trees, lean/leanc/lake, build-bend.sh); copy in artifacts/bend-stack/setup/SHA256SUMS"
+  },
+
+  "hermes": {
+    "evidence": "REAL",
+    "repo": "/mnt/zer0models/hermes-wt/h.git",
+    "worktree": "/mnt/zer0models/hermes-wt/bend-integration",
+    "branch": "exp/bend-stack-integration-20261002",
+    "head": "ad31bbf079f0ee559ce1b61c5f85178c4c3d9396",
+    "head_tree": "07e430dead3cddf5b61ae9e3c69441f69a91d914",
+    "pushed": false,
+    "base": {
+      "choice": "NousResearch/hermes-agent 50a6abca7cff83afb0ebfe930a77c67311aa1044 (the kvnloo/bend-native CI pin)",
+      "evidence": "The CI pin is known to pass 'hermes plugins validate' and the plugin tests, and does so here too (val-03, unit-03). Current upstream main a5e7df27 (fetched to refs/bend/upstream/main) is 356 commits ahead after about 9 hours, with the pin as an ancestor. It was not evaluated, because a moving base would weaken the CI-equivalence claim. The older stack base (fork main 4d3555e5 + #385-387) is 434 commits behind the pin. The pin's tools/computer_use is unchanged versus the stack base, so the element_token fix applies cleanly. The base object already resolves in the kvnloo/hermes-agent network (gh api), and the 434 upstream commits contain no owner/repo#N references.",
+      "refs_created": ["refs/bend/upstream/main", "refs/bend/ci-pin"]
+    },
+    "cherry_picks": {
+      "source_branch": "exp/stack-addr-20261002 (stack v2 ADDR fix, accepted)",
+      "map": [
+        {"from": "70cfc7a5b325372c689147cd1398147bdb7f2bca", "to": "8d3749e2eafb55010a5472bd85e9ea9957a124e1", "subject": "fix(computer-use): address elements by snapshot token on token-only cua-driver", "message_change": "'trycua/cua#3873' reworded to 'trycua/cua PR 3873' (no upstream autolink); otherwise identical, author date preserved"},
+        {"from": "c3d96b0488", "to": "3675caf64c752fe802a419ece6184bed55b66fe0", "subject": "fix(computer-use): never replay an ended session's element token", "message_change": "none"},
+        {"from": "d39e1175f3", "to": "ad31bbf079f0ee559ce1b61c5f85178c4c3d9396", "subject": "fix(computer-use): drop cached element tokens whenever the driver session ended", "message_change": "none"}
+      ],
+      "conflicts": 0,
+      "equivalence": "The tools/computer_use diff is line-identical to 0d60437a..d39e1175. The test file and fixture are byte-identical to d39e1175.",
+      "commit_scan": "Author and committer are Kevin Rajan <7121943+kvnloo@users.noreply.github.com> on all 3, each with the Co-Authored-By: Claude Opus 5.5 trailer. Messages and diffs contain no /home, /mnt, /workspace or /tmp/claude path, no host name, no token pattern, and no owner/repo#N.",
+      "red_green": {"evidence": "UNIT", "red": "base 50a6abca + new test file: 6 passed, 10 failed (raw/cu-red-01; scratch worktree removed afterwards)", "green": "HEAD: 16/16 (raw/cu-green-01)", "computer_use_suite": "tests/tools/test_computer_use*.py on HEAD: 24 files, 256 passed, 0 failed, 8 skipped (raw/cu-suite-02, locked venv)"}
+    },
+    "venv": {
+      "path": "/mnt/zer0models/hermes-wt/bend-integration-venv",
+      "python": "CPython 3.14.7 (/usr/bin/python3.14; worktree .python-version 3.14)",
+      "install": "uv sync --locked --extra computer-use --group dev (UV_PROJECT_ENVIRONMENT=<venv>); exact to uv.lock sha256 de17d70bc999fb0f8fe50dbf8590ac979f43b5a84cd8320caeac1c695ce63c01; 88 packages; freeze sha256-16 (excluding editable) c027e511f3450ac5",
+      "commands": [
+        "cd /mnt/zer0models/hermes-wt/bend-integration && /mnt/zer0models/github/cua-lanes/bin/hostless env TMPDIR=/mnt/zer0models/cua-lane-tmp/bend-tmp UV_CACHE_DIR=/mnt/zer0models/cua-lane-tmp/bend-uv-cache uv venv --python /usr/bin/python3.14 /mnt/zer0models/hermes-wt/bend-integration-venv",
+        "cd /mnt/zer0models/hermes-wt/bend-integration && /mnt/zer0models/github/cua-lanes/bin/hostless env TMPDIR=/mnt/zer0models/cua-lane-tmp/bend-tmp UV_CACHE_DIR=/mnt/zer0models/cua-lane-tmp/bend-uv-cache UV_PROJECT_ENVIRONMENT=/mnt/zer0models/hermes-wt/bend-integration-venv uv sync --locked --python /usr/bin/python3.14 --extra computer-use --group dev"
+      ],
+      "note": "An earlier 'uv pip install -e .[computer-use] --group dev' resolved unpinned versions. It was replaced by the locked sync. unit-01/val-01/val-02/unit-02/cu-*-01/smoke-*-01 ran on the unlocked set. val-03/unit-03/doctor-02+/cu-suite-02/smoke-official-02/smoke-aodl-*/chat-smoke-01 ran on the locked set.",
+      "logs": ["/mnt/zer0models/github/cua-lanes/artifacts/bend-stack/logs/venv-install.log", "/mnt/zer0models/github/cua-lanes/artifacts/bend-stack/logs/venv-sync-locked.log"]
+    },
+    "pm_runtime": {
+      "why": "The supported 'hermes plugins install' publishes through Hermes PM. It needs a PM tool store with PM's own Python (first attempt: 'python: install failed', raw/setup-01-install) and a per-profile PM install environment under HERMES_HOME/installs (second attempt: 'venv: uv sync' fetch refused by the dead proxy, raw/setup-03-install-probe). This mirrors CI, where 'source ./activate' provisions the same.",
+      "store": "/mnt/zer0models/hermes-wt/bend-integration-runtime (HERMES_RUNTIME_DIR; 1.6G): python-3.14.7+20260901, uv-0.12.3, node-26.7.0, npm-12.0.2, ripgrep-15.2.0, ffmpeg-9.0.1, chromium-1208, agent-browser-0.26.0, cua-driver-0.21.0. All are pinned and sha256-verified by pm/lock.json. chromium, agent-browser and the PM cua-driver 0.21.0 were downloaded but never executed; computer use uses HERMES_CUA_DRIVER_CMD.",
+      "provisioning_command": "BEND_EXEC=raw BEND_RUN_TIMEOUT=1500 BEND_EXTRA_ENV='HTTP_PROXY= HTTPS_PROXY= ALL_PROXY= http_proxy= https_proxy= all_proxy=' run-hermes.sh setup-02-pm-runtime bash /mnt/zer0models/hermes-wt/bend-integration/setup-hermes.sh --runtime-only   (network only for this setup step and setup-04)",
+      "profile_install_env": "<template>/.hermes/installs/e6e3a218156f87a4 (232M): environments/425bae9437bb4d629f29b706e9564aca/venv (PM Hermes env from uv.lock) and pm-runtime/generations/3f330c67a2ec4319a6ab12286c363b7c. Selectable with BEND_PYTHON=<that venv>/bin/python. The default lane interpreter is the dedicated uv venv.",
+      "side_effects": "The worktree gained the ignored .hermes/bin/{hermes,hermes-acp} install stamp (git status clean). runs/setup-02-pm-runtime/home (1.3G, copy-mode run before the overlay launcher) is a throwaway PM profile and is not used by lanes."
+    },
+    "home_template": {
+      "lane_dir": "/mnt/zer0models/cua-lane-tmp/bend-hermes-home",
+      "home": "/mnt/zer0models/cua-lane-tmp/bend-hermes-home/template/home",
+      "hermes_home": "/mnt/zer0models/cua-lane-tmp/bend-hermes-home/template/home/.hermes",
+      "config_sha256": "35c17ca75629a8ebb86b7aefa356b87dedfb986870ef0dbfc2006984a6d124e8",
+      "config_summary": {
+        "model": {"default": "qwen2.5:7b-instruct", "provider": "custom", "base_url": "http://127.0.0.1:11500/v1", "api_key": "placeholder", "context_length": 65536, "ollama_num_ctx": 65536},
+        "plugins": {"enabled": ["bend"], "auto_update_check_hours": 0, "auto_apply": false, "entries.bend.settings": {"executable": "/mnt/zer0models/bend-stack/official/bend/bin/bend", "dependency_cache": "/mnt/zer0models/cua-lane-tmp/bend-hermes-home/template/home/bend-hub-cache (empty; per-run overlay keeps writes private)", "stack_service_port": 11521, "stack_mode": "off (default)", "stack_opportunities": "false (default)"}},
+        "updates": {"check": false, "refresh_cua_driver": false, "pre_update_backup": "off"},
+        "model_catalog": {"enabled": false},
+        "tools.tool_search.enabled": "off (small local models misuse the bridge; stack SAMPLES finding)",
+        "computer_use": {"cua_telemetry": false, "permission_mode": "standard", "autostart": false, "native_wayland": false},
+        "bot_desktop": {"auto_start": false}
+      },
+      "safety_note": "stack_service_port is pinned to 11521, the private-instance port. The plugin's runtime bridge builds its opener with ProxyHandler({}), so the dead proxy does NOT fence it, and the plugin default (11501) would reach the user's live service. REAL probe raw/z0port-probe-01: 'hermes z0 runtime providers' got 'Connection refused' on 11521 with no private instance running, and never contacted 11501.",
+      "patched_variant": "/mnt/zer0models/cua-lane-tmp/bend-hermes-home/config-patched.yaml (identical except settings.executable = /mnt/zer0models/bend-stack/bend-patched/bend/bin/bend). Selected with BEND_VERIFIER=patched, which binds a per-run copy over config.yaml (raw/doctor-patched-01 shows the patched hashes; the template is unchanged)."
+    },
+    "launcher": {
+      "path": "/mnt/zer0models/cua-lane-tmp/bend-hermes-home/run-hermes.sh",
+      "sha256": "4252f75927cd123c6e05dbf0a26e385fc5853208eafdc2e5ce2380f834fc26d0 (final; earlier runs used intermediate versions of the same script, so the copy-mode runs setup-00..03 predate the overlay)",
+      "usage": "run-hermes.sh <run-id> <python args...>",
+      "does": [
+        "hostless (unless CUA_HOSTLESS=1 inside a private session), then bwrap: tmpfs over /workspace/hermes-home, ~, /run/user/<uid> and /tmp/.X11-unix (BEND_GUI=1 re-binds only the private display socket)",
+        "per-run overlay of the template home at its own absolute path (writes in runs/<id>/home-upper, listed in meta/home-upper.list); the PM runtime store is mounted read-only; BEND_TEMPLATE_EDIT=1 (setup only) writes the template in place",
+        "env -i allow-list: PATH (venv, Lean bin), VIRTUAL_ENV, HOME/HERMES_HOME (template path inside the overlay), TMPDIR/XDG_* in the run dir, HERMES_RUNTIME_DIR, UV_CACHE_DIR, PYTHONPYCACHEPREFIX=<run>/pycache, CUA_HOSTLESS=1, BEND_NO_TELEMETRY=1, HF_HUB_OFFLINE=1, HERMES_CUA_DRIVER_CMD, CUA_DRIVER_RS_TELEMETRY_ENABLED=0, HERMES_API_TIMEOUT, HTTP(S)/ALL_PROXY=127.0.0.1:9 with NO_PROXY loopback, plus BEND_EXTRA_ENV",
+        "records meta/{argv,env.inside,mask.inside,python,worktree-head,worktree-status,live-home-stat.before/after,started_at,ended_at,stdout,stderr,exit_code,home-upper.list}; timeout BEND_RUN_TIMEOUT (default 900 s)"
+      ],
+      "knobs": ["BEND_FIXTURE_DIR", "BEND_RUN_TIMEOUT", "BEND_EXTRA_ENV", "BEND_GUI=1", "BEND_EXEC=raw", "BEND_TEMPLATE_EDIT=1 (setup only)", "BEND_VERIFIER=patched", "BEND_CUA_DRIVER", "BEND_PYTHON", "BEND_RUNTIME_DIR", "BEND_API_TIMEOUT"]
+    },
+    "computer_use": {
+      "driver": {"path": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-r2-main-229b65b28", "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3", "version": "cua-driver 0.32.0", "manifest_mcp_invocation": ["<driver>", "mcp"], "probe": "REAL: --version and manifest under hostless env -i (no display, no session started)"},
+      "fresher_build": "cua-driver-main-b8d619f57 is 0.30.4 (older); not used.",
+      "wiring": "HERMES_CUA_DRIVER_CMD set by the launcher. The element_token fix (above) makes element actions work on 0.32.0. The Hermes 'type' still ignores 'element', and double_click still sends 'button' (stack v2 findings, unchanged).",
+      "gui_turn": {"evidence": "NOT_RUN", "why": "Setup scope. Command for lanes is under lane_commands.cua_gui_turn."}
+    }
+  },
+
+  "plugin": {
+    "evidence": "REAL",
+    "install": {
+      "command": "BEND_TEMPLATE_EDIT=1 BEND_EXTRA_ENV='<proxies cleared>' run-hermes.sh setup-04-install -m hermes_cli.main plugins install file:///mnt/zer0models/github/bend-native --ref e85e65e5d2e11caba8412d6dbd19aad03fd785ad --enable",
+      "path": "supported local path: file:// clone of the shared clone /mnt/zer0models/github/bend-native at the pinned SHA (Hermes printed its insecure/local-scheme warning; the security scan passed)",
+      "result": "rc 0, 'Plugin bend enabled'. The installed checkout HEAD is e85e65e5d2e11caba8412d6dbd19aad03fd785ad. .install-metadata.json = {bend: {pinned: true, revision: e85e65e5..., source: file:///mnt/zer0models/github/bend-native}}",
+      "settings_commands": [
+        "BEND_TEMPLATE_EDIT=1 run-hermes.sh setup-06-set-exe -m hermes_cli.main config set plugins.entries.bend.settings.executable /mnt/zer0models/bend-stack/official/bend/bin/bend",
+        "BEND_TEMPLATE_EDIT=1 run-hermes.sh setup-07-set-cache -m hermes_cli.main config set plugins.entries.bend.settings.dependency_cache /mnt/zer0models/cua-lane-tmp/bend-hermes-home/template/home/bend-hub-cache",
+        "BEND_TEMPLATE_EDIT=1 run-hermes.sh setup-08-set-port -m hermes_cli.main config set plugins.entries.bend.settings.stack_service_port 11521"
+      ],
+      "failed_attempts_kept": ["setup-01-install (no PM python in store, dead proxy)", "setup-03-install-probe (no profile PM env, dead proxy)"]
+    },
+    "test_worktree": "/mnt/zer0models/github/bend-native-wt/setup (detached e85e65e5; created with 'git -C /mnt/zer0models/github/bend-native worktree add'). Lanes create their own bend-native-wt/<lane> on exp/<lane>-20261002.",
+    "results": [
+      {"id": "val-03", "evidence": "REAL", "command": "run-hermes.sh val-03 -m hermes_cli.main plugins validate /mnt/zer0models/github/bend-native-wt/setup", "result": "Validation passed (14/14 checks: manifest, schema, loadable, python deps none, capability probe, declared tools/hooks/middleware match, no collisions, security scan safe, no core override)"},
+      {"id": "doctor-02", "evidence": "REAL", "command": "run-hermes.sh doctor-02 -m hermes_cli.main bend doctor", "result": "available true, bend_version 2.0.34, runtime_identity {bend 7fafb749..., base.bend c742fae9..., bendtt.lean 61e0d2d9...}, verification_scope bend-emitted-book, source_semantics_attested false, kernel_ready false (no kernel before first verify)"},
+      {"id": "doctor-patched-01", "evidence": "REAL", "command": "BEND_VERIFIER=patched run-hermes.sh doctor-patched-01 -m hermes_cli.main bend doctor", "result": "bend b8473e16..., bendtt.lean e1504243..."},
+      {"id": "unit-03", "evidence": "UNIT", "command": "BEND_EXEC=raw BEND_EXTRA_ENV='HERMES_PYTHON=/mnt/zer0models/hermes-wt/bend-integration-venv/bin/python' run-hermes.sh unit-03 bash /mnt/zer0models/hermes-wt/bend-integration/scripts/run_tests.sh /mnt/zer0models/github/bend-native-wt/setup/tests --import-mode=importlib", "result": "1 file, 6 passed, 0 failed"},
+      {"id": "smoke-official-02", "evidence": "REAL", "command": "run-hermes.sh smoke-official-02 /mnt/zer0models/github/bend-native-wt/setup/scripts/smoke.py --hermes-root /mnt/zer0models/hermes-wt/bend-integration --bend /mnt/zer0models/bend-stack/official/bend/bin/bend --lean-bin /mnt/zer0models/bend-stack/lean-4.34.0-linux/bin --output <run>/cwd/bend-smoke.json", "result": "rc 0; profile-a pass, replay pass (replay_match), invalid-proof fail (expected), cached-hub pass, cached-hub-replay pass, profile-b pass, profile-a-return pass (kernel_strategy session-pinned): 7/7 as expected"},
+      {"id": "smoke-aodl-official-01", "evidence": "REAL", "command": "same + --aodl-project /mnt/zer0models/z0-wt/bend-aodl-gate/bend/aodl_gate", "result": "rc 0; 8/8 as expected (aodl pass, invalid-proof fail)"},
+      {"id": "smoke-patched-01 / smoke-aodl-bend-patched-01", "evidence": "REAL", "command": "same with --bend /mnt/zer0models/bend-stack/bend-patched/bend/bin/bend", "result": "rc 0; 7/7 and 8/8 as expected. Kernel source e1504243..., kernel 72e11a86..."},
+      {"id": "verify-01", "evidence": "REAL", "command": "BEND_FIXTURE_DIR=/mnt/zer0models/github/bend-native-wt/setup/examples/basic run-hermes.sh verify-01 -m hermes_cli.main bend verify <run>/cwd --receipt <run>/receipt.json", "result": "pass through the INSTALLED plugin: 'ALL PROOFS CHECK', input_manifest 9f130826..., kernel a7e5203d..., cache_mode isolated, receipt_saved true"},
+      {"id": "chat-smoke-01", "evidence": "REAL", "command": "BEND_FIXTURE_DIR=<examples/basic> run-hermes.sh chat-smoke-01 -m hermes_cli.main chat -Q -t bend --max-turns 4 -q 'Use the bend_verify tool with project_dir set to <run>/cwd, then reply with only the verdict field it returned.'", "result": "rc 0, session 20261003_025822_340ee3. agent.log shows 'tool bend_verify completed' and the plugin state.json was written. The model replied {\"verdict\": \"pass\"}. Setup wiring check only (n=1). The known fixture verdict is the oracle; no task-success claim."},
+      {"id": "z0status-01", "evidence": "REAL", "command": "run-hermes.sh z0status-01 -m hermes_cli.main z0 status", "result": "mode off, sources listed, model_runtime_loaded false (local only)"},
+      {"id": "z0port-probe-01", "evidence": "REAL", "result": "fail-closed: Connection refused on 11521; 11501 not contacted"}
+    ],
+    "isolation": {
+      "evidence": "REAL",
+      "masks": "All 34 recorded runs: mask.inside live_hermes_home_entries=0, real_home_entries=0, run_user_entries=0, x11_entries empty",
+      "live_home_stat": "state.db, state.db-wal, config.yaml, .env, auth.json and logs in /workspace/hermes-home are unchanged before/after in 34/34 runs (stat metadata only, contents never read). The live home dir mtime itself is excluded (the user's running Hermes touches it).",
+      "env": "chat-smoke-01 env.inside has 0 values containing /workspace/hermes-home or ~",
+      "egress": "Dead proxy except loopback. Network was enabled only for setup-02 (PM runtime) and setup-04 (plugin publication: PM profile env from uv.lock). No packet capture."
+    }
+  },
+
+  "model": {
+    "evidence": "REAL",
+    "server": {"url": "http://127.0.0.1:11500", "version": "0.35.0", "binary": "/mnt/zer0models/ollama-stack/root/bin/ollama (sha256 0b0650a962dda61ec0598141ea11e3b688d225e926c9c00bc2c299d0ed34c4f8; release tarball sha256 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525 matches its sha256sum.txt)", "started_by": "this setup (bend-stack)", "pid": 2602721, "start_command": "/mnt/zer0models/github/cua-lanes/bin/hostless setsid -f /mnt/zer0models/bend-stack/ollama-serve.sh", "stop_command": "kill \"$(cat /mnt/zer0models/bend-stack/ollama.pid)\"   (Publish agent; only this pid)", "pid_file": "/mnt/zer0models/bend-stack/ollama.pid", "log": "/mnt/zer0models/bend-stack/logs/ollama-serve.log", "claim_record": "/mnt/zer0models/ollama-stack/users.d/bend-stack.json", "env": "OLLAMA_CONTEXT_LENGTH=65536, NUM_PARALLEL=2, MAX_LOADED_MODELS=1, KEEP_ALIVE=30m, FLASH_ATTENTION=1, KV_CACHE_TYPE=q8_0, NO_CLOUD=1, NOPRUNE=1, egress via dead proxy; model store shared /mnt/zer0models/ollama-stack/models (no pull)"},
+    "model": {"name": "qwen2.5:7b-instruct", "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e", "weights_blob": "sha256-2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730", "quant": "Q4_K_M", "params": "7.6B", "capabilities": ["completion", "tools"], "native_context": 32768},
+    "gpu": "29/29 layers offloaded to the RTX 3080 Ti. /api/ps size_vram 6564274502 bytes. nvidia-smi showed 6554 MiB for the runner and 7244 MiB device-wide at write time.",
+    "served_context": {"evidence": "REAL", "n_ctx_total": 65536, "n_ctx_per_slot": 32768, "api_ps_context_length": 32768, "log": "WARN 'requested context size too large for model' num_ctx=65536 n_ctx_train=32768; n_slots=2, n_ctx_slot=32768"},
+    "context_gap": {"evidence": "BLOCKED", "summary": "The task requires context >= 65536. Ollama 0.35.0 clamps each sequence to the model's n_ctx_train (32768). The server allocates 65536 split over 2 slots, but a single request gets at most 32768 tokens, and longer prompts are truncated by the server. Hermes is configured with context_length 65536 because it refuses below 64000. Lanes must check per-request prompt tokens < 32768 (stack peak was 23.6K on 0.21.0 and 12.8-17.3K on 0.32.0). Remedies need an owner decision: a model whose n_ctx_train >= 65536, or a GGUF with YaRN rope-scaling metadata. Both are model changes, so none was made."},
+    "gpu_budget_rule": "Unload the chat model (POST /api/generate {model, keep_alive: 0}) before loading decider_2b or nanojev on the GPU. Never run the chat model together with GPU z0 backends beyond 12 GB."
+  },
+
+  "z0": {
+    "scoring": {
+      "evidence": "REAL (offline readiness only; no scoring run)",
+      "worktree": "/mnt/zer0models/z0-wt/stack-z0 (detached 6764ae784f66b902bd6c07e4f7f76848a409423a = origin/dev, clean; stack track, reused read-only)",
+      "venv": "/mnt/zer0models/z0-wt/venv-stack-z0 (CPython 3.11.14, torch 2.10.0+cu128, transformers 5.17.0, laya 0.1.6)",
+      "private_home": "/mnt/zer0models/cua-lane-tmp/bend-z0score/template-home (only .cache/huggingface/hub -> /mnt/zer0models/zer0-models/huggingface/hub, so models_mgmt.model_cached, which hardcodes ~/.cache/huggingface/hub, finds the snapshots without exposing the HF token files that sit beside hub/)",
+      "scorer_env": "hostless env -i PATH=/mnt/zer0models/z0-wt/venv-stack-z0/bin:/usr/bin:/bin HOME=/mnt/zer0models/cua-lane-tmp/bend-z0score/template-home TMPDIR=$RUN/tmp HF_HUB_OFFLINE=1 HF_HOME=$RUN/hf-home HF_HUB_CACHE=/mnt/zer0models/zer0-models/huggingface/hub PYTHONDONTWRITEBYTECODE=1 Z0INT_HOME=$RUN/z0home Z0INT_NANOJEV_CHECKPOINT=/mnt/zer0models/home-offload/kvn/offload-2026-09-21/z0int-models/nanojev_06b Z0INT_JULIA_PYTHON=~/tmp/julia-venv/bin/python Z0INT_LAYA_DEVICE=cpu Z0INT_JULIA_DEVICE=cpu",
+      "readiness": "python -m z0int backends list under scorer_env: decider_2b ready (weights present), julia_1 ready, laya_421m ready, nanojev ready (checkpoint complete; not loaded). Without the private-home hub symlink, decider_2b reports 'weights not cached locally' and would attempt a (blocked) download.",
+      "pins": "laya convaiinnovations/laya@7c76b622; julia SupersonicLabs/Julia-1@a85b1273; decider Mapika/decider-2b@1d96be00; nanojev bundle C-Tianyu/NanoJev@4a19595e (record best.safetensors sha256 yourself; the revision field reports the Qwen3-0.6B backbone). From Z0_SETUP.json.",
+      "note": "The julia worker interpreter lives under ~/tmp/julia-venv. Scorers therefore run under hostless WITHOUT the ~ tmpfs mask used for Hermes runs (same as the stack track). They never run inside run-hermes.sh."
+    },
+    "aodl_lane": {
+      "evidence": "REAL",
+      "worktree": "/mnt/zer0models/z0-wt/bend-aodl-gate (detached a0e95785fe810ae0d1cfbb128096b5deca5c2712 = kvnloo/z0intelligence exp/bend-aodl-gate, fetched to refs/bend/exp/bend-aodl-gate)",
+      "lineage": "merge-base with dev is c4a4554 (2026-09-28); 5 exp(bend) commits on top; not based on 6764ae78",
+      "proof_project": "/mnt/zer0models/z0-wt/bend-aodl-gate/bend/aodl_gate (LAWS.bend, PROOF.bend, gate/core/rules/transition/main.bend)",
+      "result": "PASS under both official and patched Bend (raw/smoke-aodl-*-01); worktree clean afterwards"
+    },
+    "private_service": {
+      "decision": "FEASIBLE; started, health-checked and stopped once (REAL, raw/z0svc-probe-01)",
+      "code": "/mnt/zer0models/z0-wt/bend-service (detached 6764ae784f66b902bd6c07e4f7f76848a409423a, dev)",
+      "why_not_the_tested_revision": "bend-native stack/sources.json names the tested live service revision 0563ed7a (master). At master, worker_routing hardwires the 'local' provider to http://127.0.0.1:11434 (the system Ollama, forbidden) with no host override. dev adds only the keyless-local override (_host_overrides from $Z0INT_HOME/config/worker_routing.local.json). intelligence_service.py, provider_saturation.py and manifests/worker_routing.v1.json are identical between the two.",
+      "z0int_home_template": "/mnt/zer0models/cua-lane-tmp/bend-z0svc/template/z0home (config/worker_routing.local.json: local -> http://127.0.0.1:11500, model qwen2.5:7b-instruct); copied per run",
+      "script": "/mnt/zer0models/cua-lane-tmp/bend-z0svc/run-z0svc.sh start <run-id> [port=11521] | stop <run-id>",
+      "launch": "hostless setsid -f bwrap (tmpfs /workspace/hermes-home, ~, /run/user/<uid>, /tmp/.X11-unix) env -i PATH=<venv-stack-z0>/bin HOME/Z0INT_HOME/HERMES_HOME/TMPDIR private, PYTHONPATH=/mnt/zer0models/z0-wt/bend-service/src, HF_HUB_OFFLINE=1, HF_HUB_CACHE=<hub>, dead proxy except loopback, no provider keys or credential loader -> python -m z0int.intelligence_service --bind 127.0.0.1 --port 11521. The script refuses 11501 and stops only its own recorded pid.",
+      "probe": "/readyz -> {ok: true, authority_protocol_version: 2, scope: 'dispatch ready; model availability checked on call', max_active: 4}. /v1/providers -> 10 providers, all 'eligible_unprobed' (saturation state only). Boot check: default provider openrouter ok=false (no credential). No state files written; no model loaded.",
+      "lane_rules": "The profile's stack_service_port is already 11521. Start the instance, run the bridge test, stop it. Remote providers have no keys and no egress, so they fail closed. Any POST that routes 'local' goes to 11500 (the chat model, so mind the GPU rule). The only allowed call to the user's 11501 is an optional read-only GET /v1/providers; none was made in setup."
+    }
+  },
+
+  "lane_commands": {
+    "vars": "L=/mnt/zer0models/cua-lane-tmp/bend-hermes-home; RUNH=$L/run-hermes.sh; S=/mnt/zer0models/bend-stack; OFFICIAL=$S/official/bend/bin/bend; PATCHED=$S/bend-patched/bend/bin/bend; LEAN=$S/lean-4.34.0-linux/bin; HWT=/mnt/zer0models/hermes-wt/bend-integration; HPY=/mnt/zer0models/hermes-wt/bend-integration-venv/bin/python; QUIET=/mnt/zer0models/github/cua-lanes/bin/quiet-timed; HOSTLESS=/mnt/zer0models/github/cua-lanes/bin/hostless",
+    "plugin_worktree": "git -C /mnt/zer0models/github/bend-native worktree add -b exp/<lane>-20261002 /mnt/zer0models/github/bend-native-wt/<lane> e85e65e5d2e11caba8412d6dbd19aad03fd785ad   (never write in the shared clone; the test runner and validate write __pycache__ into the tree they test)",
+    "validate": "$RUNH <lane>-val-NN -m hermes_cli.main plugins validate /mnt/zer0models/github/bend-native-wt/<lane>",
+    "plugin_tests": "BEND_EXEC=raw BEND_EXTRA_ENV=\"HERMES_PYTHON=$HPY\" $RUNH <lane>-unit-NN bash $HWT/scripts/run_tests.sh /mnt/zer0models/github/bend-native-wt/<lane>/tests --import-mode=importlib",
+    "smoke": "$RUNH <lane>-smoke-NN /mnt/zer0models/github/bend-native-wt/<lane>/scripts/smoke.py --hermes-root $HWT --bend $OFFICIAL|$PATCHED --lean-bin $LEAN [--aodl-project /mnt/zer0models/z0-wt/bend-aodl-gate/bend/aodl_gate] --output $L/runs/<lane>-smoke-NN/cwd/bend-smoke.json",
+    "doctor_verify_replay": "[BEND_VERIFIER=patched] [BEND_FIXTURE_DIR=<project>] $RUNH <id> -m hermes_cli.main bend doctor | bend verify $L/runs/<id>/cwd --receipt $L/runs/<id>/receipt.json | bend replay <receipt> --project <dir> --receipt <new>",
+    "installed_plugin_note": "The template has the plugin installed at e85e65e5. To test lane changes to the plugin through Hermes discovery, use smoke.py (it copies the lane worktree into disposable profiles) or a run with BEND_EXEC=raw that installs the lane worktree into the run's overlay ('hermes plugins install file://<lane wt> --ref <sha> --force --enable' needs network for PM; prefer smoke.py).",
+    "hermes_turn": "[BEND_FIXTURE_DIR=<dir>] $RUNH <id> -m hermes_cli.main chat -Q -t bend[,file] --max-turns N -q '<prompt>'   (check per-request prompt tokens < 32768)",
+    "cua_gui_turn": "$HOSTLESS env CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV='CUA_HOSTLESS=1' /mnt/zer0models/github/cua-lanes/cua-x11-session.sh bash -c 'BEND_GUI=1 BEND_EXTRA_ENV=\"DISPLAY=$DISPLAY DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS\" /mnt/zer0models/cua-lane-tmp/bend-hermes-home/run-hermes.sh <id> -m hermes_cli.main chat -Q -t computer_use,bend --max-turns N -q \"<prompt>\"'   (NOT_RUN in setup; pattern from the stack SAMPLES/CONFIRM launchers; CONFIRM-style /run/user and X11 masks are built in)",
+    "kernel_provenance_388": "Use the plugin's session-pinned kernel. The compiled kernel hashes are reproducible here: official a7e5203d..., patched 72e11a86.... Poison experiments go in disposable profiles and caches under $L/runs/<id>.",
+    "release_qualification_389": "Compare $OFFICIAL vs $PATCHED (plus optionally a v2.0.34 + 2-line-patch-only build with build-bend.sh on a branch of /mnt/zer0models/github/bend-fork) on the bendlang/bend issue 1212 oracle, the proof corpus (/mnt/zer0models/github/bend-fork/tests/proof) and the provenance matrix. Commit PREREG.json first.",
+    "dependency_provenance_390": "Named and content-hash Hub fixtures in a per-run dependency_cache (the template cache is empty; smoke.py shows the fixture shape). No network: verification never downloads.",
+    "z0_scoring": "$HOSTLESS <z0.scoring.scorer_env> /mnt/zer0models/z0-wt/venv-stack-z0/bin/python -m z0int backends list|doctor; scored latency only under $QUIET <label> (<= 10 min blocks)",
+    "z0_private_service": "/mnt/zer0models/cua-lane-tmp/bend-z0svc/run-z0svc.sh start <id> 11521 ; $RUNH <id>-bridge -m hermes_cli.main z0 runtime providers|route|worker --request-file <json> ; /mnt/zer0models/cua-lane-tmp/bend-z0svc/run-z0svc.sh stop <id>",
+    "timing": "$QUIET <label> <cmd>; never report durations from receipts or smoke output as results"
+  },
+
+  "artifacts": {
+    "dir": "/mnt/zer0models/github/cua-lanes/artifacts/bend-stack",
+    "setup_copies": "setup/{run-hermes.sh, hermes-config.yaml, hermes-config-patched.yaml, run-z0svc.sh, z0home-worker_routing.local.json, ollama-serve.sh, build-bend.sh, SHA256SUMS (toolchains), plugin-install-metadata.json, SHA256SUMS.setup}",
+    "raw": "raw/<run-id>/meta/* for setup-01..08, val-01..03, doctor-01..03, doctor-patched-01, unit-01..03, smoke-official-01/02, smoke-patched-01, smoke-aodl-{official,bend-patched}-01 (+ bend-smoke.json), verify-01 (+ receipt.json), chat-smoke-01 (+ agent-log), z0status-01, z0port-probe-01, cu-red-01, cu-green-01, cu-suite-01/02, z0svc-probe-01",
+    "logs": "logs/{venv-install.log, venv-sync-locked.log, bend-build.log, ollama-serve.env, ollama-serve-excerpt.log}"
+  },
+
+  "denominators": {
+    "launcher_runs_total": 34,
+    "runs_rc0": 30,
+    "runs_nonzero": ["setup-01-install rc1 (PM python missing; failed install attempt)", "setup-03-install-probe rc1 (PM env fetch blocked; failed install attempt)", "z0port-probe-01 rc2 (intended fail-closed probe)", "cu-red-01 rc1 (intended red: 10 failed / 6 passed on base)"],
+    "helper_runs_included": "setup-00-help, setup-05-config-help, x-smoke-official-01-keys, x-smoke-patched-01-keys (help output and receipt-field extraction)",
+    "outside_launcher": "toolchain builds (3 bun builds and 1 byte-repro build under hostless), 2 version probes per Bend, the driver probe, Ollama start and warm-up (1 generate request), z0 backends list (3 under hostless), the private z0 service start/health/stop (1)",
+    "all_records": "raw/<run-id>/meta for all 34 runs plus raw/z0svc-probe-01"
+  },
+
+  "open_items": [
+    "Context: served per-request context is 32768, not >= 65536 (BLOCKED; owner decision on model).",
+    "Patched candidate lineage: 7-commit delta versus stock 2.0.34 (kernel source differs), not only the 2-line patch.",
+    "Private z0 service runs dev 6764ae78, not the plugin's tested 0563ed7a (reason above).",
+    "GUI computer-use turn not exercised in setup.",
+    "Upstream Hermes main (356 commits past the CI pin) not evaluated."
+  ]
+}

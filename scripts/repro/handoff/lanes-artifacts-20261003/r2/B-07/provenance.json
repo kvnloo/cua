@@ -1,0 +1,61 @@
+{
+ "schema": "cua-rfc-loop.provenance.v1",
+ "lane": "B-07 (wave 5)",
+ "branch": "exp/b-07-transport-residual-rprime-20261003",
+ "shas": {
+  "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a",
+  "R_prime_base": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (libs/cua-driver tree df2b49c32e73 = upstream main cb685fad7)",
+  "R_prime_libs_cua_driver_tree": "11ee32235d5eedd24f8e9c6ad0d8e4d9ea76c4d8",
+  "cherry_picks": {
+   "a175304660cda6f06dc4c4f0a61571ff1ad15455": "4c786178b",
+   "c65b1d2f2affb83227322c36e2cbb59313dcdb25": "3116b6981",
+   "501158460e4adc997b9c6909ee9529159fb00c37": "b376f1ff3"
+  },
+  "lane_driver_commit": "ac319cbe90d6cdf0cc8cd8984f99f5b04b68fdac",
+  "tested_rust_tree": "20c9f051248a98641deec0029717f7ca77e9a6de",
+  "prereg_commit": "231f6e8bb4149c11151191a7841b94405325cdf7",
+  "amendment_commit": "f9ab56947",
+  "binary_built_at": "231f6e8bb (rust tree identical to ac319cbe9)",
+  "harness_copies": {
+   "r2-10r": "c183b95e3",
+   "b05": "a91a86a4a",
+   "b04": "8620ebfa2",
+   "template": "cca59642d"
+  },
+  "publication_sha": "set by the Publish agent"
+ },
+ "binaries": {
+  "B7": {
+   "label": "b07-231f6e8bb",
+   "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "version": "cua-driver 0.32.0 (read inside the private session at every chunk start; raw/run-plans/run-plans.json)",
+   "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+   "build": "build-driver.sh, family target dir cua-release-r2-10, under hostless + cargo lock"
+  },
+  "R_prime": {
+   "label": "r2-10r-a2-45dff8f32",
+   "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+   "version": "cua-driver 0.32.0",
+   "use": "default-off smoke reference only"
+  }
+ },
+ "browser": "Google Chrome 151.0.7922.71 and Chromium 151.0.7922.173 installed (raw/source/browser-versions.txt)",
+ "live_heads": {
+  "start_2026-10-03T09:19Z": {
+   "trycua_cua_main": "410578a4a18e91fbee5d0a169342e3fb669a5bb9",
+   "vs_0f1955d2f": "18 ahead, 7 libs/cua-driver files (platform-macos, platform-windows only)",
+   "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"
+  },
+  "end_2026-10-03T12:02Z": {
+   "trycua_cua_main": "379085c5e",
+   "vs_0f1955d2f": "26 ahead, 14 libs/cua-driver files (macOS/Windows platform sources, macOS docs/tests/fixtures, shared scenarios fixture; none on the tested Linux path)",
+   "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"
+  },
+  "live_heads_at_publication": "set by the Publish agent"
+ },
+ "environment": "one Linux host shared with other tracks; bin/hostless for every code-executing command; private Xvfb (cua-x11-session.sh) with 0-3 s jitter and xdpyinfo probe; telemetry off; provider key never forwarded; jev-use venv mcp 1.30.0, Python 3.12",
+ "provider": {
+  "attempts": 0,
+  "reached": 0
+ }
+}

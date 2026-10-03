@@ -1,0 +1,68 @@
+{
+  "schema": "cua.r2.r2-04.provenance.v1",
+  "captured_utc": "2026-10-01T22:40Z",
+  "tested_source_base": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "tested_source_base_note": "trycua/cua main pinned by the R2 setup (git upstream/main and gh api agreed at ~21:46Z). Arm M binary is built from this exact tree.",
+  "prereg_commit": "1280a9e5eba7e8804a6bcc9c12f7228636f4150b",
+  "prereg_sha256": "ff0b076be39f2c0b82e07309bf393228756b77b96b48e89a85042f303ebfefeb",
+  "instrumentation_commit": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49",
+  "instrumentation_scope": "cua-driver-core/src/phase_trace.rs (new), lib.rs (+1), tool.rs (dispatch marks), platform-linux tools/impl_.rs (click AX route + set_value marks), input/focus_guard.rs (guarded marks), atspi/native.rs (perform_action_ref marks). Env-gated by CUA_DRIVER_PHASE_TRACE_FILE, default off.",
+  "branch": "exp/r2-04-atspi-profile-20261001 (local, kvnloo/cua fork clone; not pushed by this worker)",
+  "live_heads_read_with_gh": {
+    "read_utc": "2026-10-01T22:20Z",
+    "trycua_cua_main": "effd9b298942d7e9808077adef4ef575d561141d",
+    "trycua_cua_main_vs_tested": "1 commit ahead of 229b65b28 (effd9b298 fix(release): drop the first-release version pins, #4431); only release-please-config.json changed (gh api compare). No Driver source difference, but this packet does not certify effd9b298.",
+    "r2_04_pull_request": "none (R2-04 has no PR; tested source is upstream main)",
+    "revision_read_utc": "2026-10-01T23:00Z",
+    "trycua_cua_main_at_revision": "021b87ddf0faa0853ba7417303b05a283ca3b491",
+    "trycua_cua_main_at_revision_vs_tested": "3 commits ahead of 229b65b28 (gh api compare); release, docs and libs/cua-spacesd files only, no libs/cua-driver file. Not certified by this packet; the orchestrator re-reads at publication."
+  },
+  "publication_sha": null,
+  "publication_note": "Filled by the orchestrator after publication; tested source, live head and publication SHA are kept separate.",
+  "binaries": {
+    "M": {
+      "role": "unmodified main Driver",
+      "file": "<lanes>/bin/cua-driver-r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "version": "cua-driver 0.32.0",
+      "source": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+      "build": "build-driver.sh <r2-base> r2-main-229b65b28 cua-release-r2-base (R2 setup worker; cargo build --locked --release -p cua-driver --features portal-input, rustc 1.97.1, 0 Fresh workspace units)"
+    },
+    "P": {
+      "role": "main + measurement-only phase marks",
+      "file": "<lanes>/bin/cua-driver-r2-04-phase-28b915ae9",
+      "sha256": "940eb2c2da4a92c450ad887be6ffac95d88ead4395df11103ef76b4f16bc161a",
+      "version": "cua-driver 0.32.0",
+      "source": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49",
+      "build": "flock <tmp>/locks/cargo-build.lock build-driver.sh <worktree> r2-04-phase-28b915ae9 cua-release-r2-04; logged head=28b915ae9ec2b1330ad3104f281e0bf4bfde2c49, rustc 1.97.1, 0 Fresh workspace units, 184 s; copied binary sha256 equals the lane target artifact"
+    }
+  },
+  "environment": {
+    "kernel": "Linux 7.2.2 x86_64 (10 CPUs, i9-10900KF, 23 GiB RAM)",
+    "session": "cua-x11-session.sh (sha256 de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b): private rootless Xvfb 1920x1080x24 -nolisten tcp, private dbus-run-session, openbox + picom (xrender), env -i scrub (no WAYLAND_DISPLAY / HYPRLAND_* / host XDG_RUNTIME_DIR); CUA_SESSION_ATSPI=1 + CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" -> private at-spi-bus-launcher + at-spi2-registryd",
+    "atspi": "at-spi2-core 2.60.6, dbus 1.16.2 (dbus-monitor --monitor on the private AT-SPI bus)",
+    "gtk3": "3.24.52 via /usr/bin/python3 3.14.7 + PyGObject 3.56.3",
+    "caller": "jev-use .venv (uv sync --frozen, Python 3.12) MCP stdio client; Driver env = jev-use driver_environment() (+ CUA_DRIVER_PHASE_TRACE_FILE in arm P)",
+    "driver_settings": "defaults: no permission-mode override, no approval bypass, telemetry default (fresh HOME per session), no *-e2e wrapper",
+    "timing_lock": "<tmp>/locks/quiet-lane.lock held per session; loadavg recorded per trial (1-min loadavg medians 0.76-0.95 across arm x type)"
+  },
+  "unit_and_source_checks": "raw/unit/*.txt (sanitized; renamed from .log because the repository .gitignore ignores *.log): in-session-tests.txt is authoritative (cua-driver-core tool:: + phase_trace 77 passed, platform-linux input::focus_guard + atspi:: + tools:: 177 passed, inside cua-x11-session.sh); host-shell-*.txt is the disclosed earlier host-shell run",
+  "pilot_runs_excluded": [
+    "pilot1 (M, 2 rounds; before the PREREG commit, disclosed in PREREG)",
+    "pilot2 (M, 1 round + 4 negatives; before the PREREG commit, disclosed in PREREG)",
+    "smokeP (P marks on, 1 round; after the PREREG commit, ~22:15Z, before the first measured session; disclosed in README Deviations)",
+    "smokePoff (P marks off, 1 round; after the PREREG commit, ~22:17Z; packaged as raw/controls/smoke-P-marks-off)"
+  ],
+  "pilot_raw_mirror": "<lanes>/artifacts/r2/r2-04/pilots/ (not in this packet)",
+  "session_binary_attribution": "The raw meta row records the arm label, not the binary sha256, and run_batch.sh arguments were not saved. P sessions are attested by phase marks; M sessions rest on run_batch.sh's M->main mapping and the absence of marks. Both binaries re-hash to the recorded sha256 values.",
+  "revision": {
+    "reason": "fresh verification review",
+    "changes": [
+      "unit logs committed as .txt",
+      "supplementary_tree_size + dispositions.H_A_scope added to analyze.py (other summary keys unchanged)",
+      "H_A KILL and claim boundary scoped to the 9-element fixture",
+      "verify_artifacts.py checks README numbers in context, recomputes tree size and per-call RPCs, and checks unit evidence is present"
+    ],
+    "new_trials": 0
+  }
+}

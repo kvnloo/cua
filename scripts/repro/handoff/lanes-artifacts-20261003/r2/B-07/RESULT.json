@@ -1,0 +1,58 @@
+{
+ "schema": "cua-rfc-loop.lane-result.v1",
+ "lane": "B-07",
+ "wave": 5,
+ "branch": "exp/b-07-transport-residual-rprime-20261003",
+ "packet": "docs/experiments/b-07-transport-residual-rprime-2026-10-03/",
+ "disposition": "REVISE",
+ "terminal_subspan_verdicts": {
+  "c_out.route": "BELOW_GATE (0.34-0.39 ms; ROUTE_FAST not selected)",
+  "adm.inner": "BELOW_GATE (0.09-0.11 ms; removed from the menu; IRREDUCIBLE (invariant) at the x_pooled scale)",
+  "d_out.post": "IRREDUCIBLE (POST_FAST KILL in every class)",
+  "c_in.prep": "IRREDUCIBLE for toggle and modal (PREP_FAST KILL); DELETED (fragile) for fill by the pre-registered gate, carried by one chunk-first cold pair; KILL without round 0"
+ },
+ "candidates": {
+  "POST_FAST": {
+   "fill": "KILL",
+   "toggle": "KILL",
+   "modal": "KILL"
+  },
+  "PREP_FAST": {
+   "fill": "DELETED (KEEP)",
+   "toggle": "KILL",
+   "modal": "KILL"
+  },
+  "ROUTE_FAST": {
+   "fill": "NOT_SELECTED",
+   "toggle": "NOT_SELECTED",
+   "modal": "NOT_SELECTED"
+  }
+ },
+ "e2_rprime_untested_share_corr_r2_10_mapping": {
+  "fill": {
+   "BG_as_IRREDUCIBLE": 0.0164,
+   "BG_as_UNTESTED": 0.0395,
+   "b04_mapping_BG_as_IRREDUCIBLE": 0.2617
+  },
+  "toggle": {
+   "BG_as_IRREDUCIBLE": 0.0059,
+   "BG_as_UNTESTED": 0.0352,
+   "b04_mapping_BG_as_IRREDUCIBLE": 0.1912
+  },
+  "modal": {
+   "BG_as_IRREDUCIBLE": 0.0056,
+   "BG_as_UNTESTED": 0.0347,
+   "b04_mapping_BG_as_IRREDUCIBLE": 0.0056
+  }
+ },
+ "binary_B7_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+ "provider": {
+  "attempts": 0,
+  "reached": 0
+ },
+ "near_misses": [
+  "plain-shell python3 --version (output discarded) during read-only inspection",
+  "plain-shell pgrep -f inside a read-only ps listing of the lock queue (no signal)"
+ ],
+ "hard_rule_breach": ""
+}

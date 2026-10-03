@@ -1,0 +1,116 @@
+{
+ "schema": "cua.stack.sway.setup.v1",
+ "created_utc": "2026-10-02T05:20Z",
+ "worker": "stack-sway setup worker (Claude Code workflow subagent)",
+ "kit": {
+  "path": "~/.local/opt/cua-sway",
+  "layout": {"root": "extracted packages (usr/bin/sway, usr/lib/libwlroots-0.20.so, ...)", "bin": "landlock-scope, seatctl, seatprobe", "pkgs": "downloaded packages + urls.txt", "dbcheck": "sha256-verify.txt", "src": "sway-1.12 / wlroots-0.20.2 reference sources", "build": "generated protocol code"},
+  "method": "pacman -Sp (URLs only) against existing sync dbs -> curl into pkgs/ -> sha256 vs %SHA256SUM% in /var/lib/pacman/sync/cachyos-extra-v3.db -> bsdtar extract (no dot-files). No root, no pacman -S/-U, no writes under /etc /usr /var.",
+  "packages": [
+   {"name": "sway", "version": "1:1.12-4.1", "sha256": "7d63ee31fa64ec8f400ce277ffdfed9629772467b1514a70ef171935c23d2997", "db_match": true},
+   {"name": "wlroots0.20", "version": "0.20.2-1.1", "sha256": "a772066641ff90c458141652ca84161643d4aecc7b9827765d1b3ce1db293a59", "db_match": true},
+   {"name": "libliftoff", "version": "0.5.0-1.1", "sha256": "4b787fc79652ba8a41256ae07ba857556912d87f9283db3423f4e63b1169a228", "db_match": true},
+   {"name": "wtype", "version": "0.4-2.2", "sha256": "0ab8c7faf301233c5e86cc7b0bf60ef8bf79475789896ded89de00363b5a6b15", "db_match": true},
+   {"name": "xorg-xwayland", "version": "24.1.13-1.1", "sha256": "acaeff2fba5626df25d0226bfc699726cbce55d1ad8a8421007321885a594081", "db_match": true, "note": "system copy is the same version and byte-identical Xwayland (61e2ffd4...); wlroots uses /usr/bin/Xwayland"}
+  ],
+  "unavailable": {"wlrctl": "not in sync dbs (AUR only); replaced by bin/seatctl (minimal zwlr_virtual_pointer_v1 + zwp_virtual_keyboard_v1 client bound to a named wl_seat)"},
+  "helper_tools": {
+   "landlock-scope": {"sha256": "d0416ddb37ad879a4187ec92ce44bfaf282044163eb940d4a3dadb858abfeaa8", "what": "exec under a Landlock domain scoped for abstract unix sockets + signals (ABI >= 6; host kernel ABI 10)"},
+   "seatctl": {"sha256": "2da9f12a409ba2cea11c351a0b47f69d6c41a029253102515d78983b6ad3fb32", "usage": "seatctl --list | seatctl --seat NAME [--extent W H] [--move X Y] [--click] [--type TEXT] [--hold MS]"},
+   "seatprobe": {"sha256": "8179ca0a78ccd05f80c9f69794728f6fed998e5ba7c9ebe1e6a53eaaff5dbf27", "usage": "seatprobe TITLE SECONDS  (xdg_toplevel; logs per-seat pointer/keyboard events as JSON lines)"},
+   "sources": "/mnt/zer0models/github/cua-lanes/artifacts/stack/sway/tools/ (build: hostless tools/build-tools.sh <kit> <wlroots-src>)"
+  },
+  "disk": "kit ~12 MB (pkgs 6 MB + extracted root + sources)"
+ },
+ "session_script": {
+  "path": "/mnt/zer0models/github/cua-lanes/cua-sway-session.sh",
+  "sha256": "c3e54bc46d35da2277295708fdabd8d0ae1dcd3489201dd3110189ecb42bd3a9",
+  "usage": "cd <worktree> && [CUA_SWAY_SEATS=n] [CUA_SWAY_OUTPUTS=WxH[,WxH...]] [CUA_SESSION_ATSPI=1] [CUA_SWAY_TIMEOUT=secs] [CUA_SESSION_EXTRA_ENV=\"K=V ...\"] /mnt/zer0models/github/cua-lanes/bin/hostless /mnt/zer0models/github/cua-lanes/cua-sway-session.sh <cmd> [args...]",
+  "payload_env": "the payload is exec'd by the private sway and inherits WAYLAND_DISPLAY (private wayland-1), SWAYSOCK (private), DISPLAY (private Xwayland, a number the host does not use, currently :3), DBUS_SESSION_BUS_ADDRESS (private), XDG_RUNTIME_DIR/HOME/TMPDIR under <run>, CUA_SWAY_RUN=<run>, CUA_LANDLOCK_SCOPE=abstract-unix,signal",
+  "stdout_stderr_rc": "payload stdout/stderr go to the caller; exit code of the session = payload exit code (97 refusal, 98 readiness failed, 99 sway died early)",
+  "refuses": ["CUA_HOSTLESS != 1 (verified rc 97)", "SWAYSOCK/I3SOCK set (verified rc 97)", "WAYLAND_DISPLAY/WAYLAND_SOCKET or any HYPRLAND_* set (SOURCE: not executed, to avoid setting those variables)", "bad CUA_SWAY_SEATS (verified rc 97)", "private Xwayland display number collides with a host display (guard in payload)"],
+  "readiness": "N active outputs + N seats in swaymsg + xdpyinfo on DISPLAY, polled up to 30 s",
+  "teardown": "payload ends -> swaymsg exit -> dbus-run-session ends -> bwrap PID namespace dies, killing exactly the session tree (0 leftover processes measured); watchdog kills sway after CUA_SWAY_TIMEOUT",
+  "run_dirs": "/mnt/zer0models/cua-lane-tmp/sway-session.XXXXXX (left behind; contain absolute paths, sanitize before copying)",
+  "gotchas": [
+   "Run from the worktree directory you want as the payload cwd (the script records $PWD).",
+   "CUA_SESSION_ATSPI=1 is forwarded into the scrubbed env by this script (unlike cua-x11-session.sh, which needs CUA_SESSION_EXTRA_ENV too).",
+   "Virtual devices are attached to the seat passed at creation; a runtime 'swaymsg seat ...' re-applies attachment rules and moves them to the fallback seat0.",
+   "Freshly created virtual devices: clients bind wl_pointer/wl_keyboard after the capability event and miss earlier events; wait ~250 ms (seatctl does) or hold devices for the session.",
+   "The private D-Bus activates host-installed portal backends (xdg-desktop-portal-hyprland started and failed: no compositor reachable from the dbus-daemon environment). Harmless; no route to the host compositor exists.",
+   "Network namespace is shared on purpose (Ollama on 127.0.0.1:11434 stays reachable); abstract sockets are fenced by Landlock instead."
+  ]
+ },
+ "canary": {
+  "evidence_class": "REAL",
+  "result": "PASS",
+  "runs": "3/3 PASS after fix (29-31 rows each, all pass; 6/6 env checks); 1 earlier run FAIL (display shadowing, retained)",
+  "script": "/mnt/zer0models/github/cua-lanes/artifacts/stack/sway/canary-run.sh + isolation_canary.py",
+  "host_targets": {
+   "hyprland .socket.sock/.socket2.sock": "ENOENT",
+   "host wayland-0/1/2": "ENOENT",
+   "host session bus /run/user/1000/bus": "ENOENT",
+   "host AT-SPI bus": "ENOENT",
+   "host X11 path sockets (every host display number)": "ENOENT",
+   "host X11 abstract sockets": "EPERM (bound outside the session: Landlock scope) or ECONNREFUSED (unbound name, e.g. :1)",
+   "host Hyprland pid": "ESRCH (private PID namespace)"
+  },
+  "private_targets": {"private wayland socket": "REACHABLE", "private sway IPC": "REACHABLE", "seatprobe (Wayland) mapped in private tree": true, "glxgears (X11) mapped via Xwayland": true, "own /tmp/.X11-unix/X3 is the private /tmp inode": true, "abstract X11 listeners added by the session": "exactly [@/tmp/.X11-unix/X3]"},
+  "sabotage": "decoys bound outside the session (hostless private tmpfs + an abstract name): control probe from hostless without Landlock -> REACHABLE x3; inside -> hypr-layout decoy REACHABLE (sensitivity), abstract decoy EPERM, /tmp decoy ENOENT; decoy accept logs agree (control 1/1/1, inside 1/0/0). Host abstract sockets were only probed after the abstract decoy was refused (gate).",
+  "receipts": "/mnt/zer0models/github/cua-lanes/artifacts/stack/sway/canary/run{1,2,3}"
+ },
+ "multiseat": {
+  "evidence_class": "REAL",
+  "result": "PASS",
+  "reps": "5/5 PASS, 16/16 checks each, final session script",
+  "config": "CUA_SWAY_SEATS=2 CUA_SWAY_OUTPUTS=1280x720",
+  "what": "per seat one virtual pointer + keyboard (seatctl against that wl_seat); seat0 -> window L, seat1 -> window R concurrently; independent cursor positions (seatprobe surface coords per seat; grim shows two cursors), independent focus (get_seats seat0.focus=L, seat1.focus=R; swapped in phase D), concurrent typing lands only in each seat's focused window, no cross-seat clicks",
+  "receipts": "/mnt/zer0models/github/cua-lanes/artifacts/stack/sway/multiseat/rep{1..5} (summary.json per rep)"
+ },
+ "driver": {
+  "binary": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-r2-main-229b65b28 (sha256 8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3, 0.32.0; libs/cua-driver identical at upstream main 352507b6c)",
+  "capability_matrix": {
+   "native_wayland": {"verdict": "PARTIAL", "evidence": [
+     "SOURCE: opt-in only (CUA_DRIVER_RS_ENABLE_WAYLAND=1 and WAYLAND_DISPLAY); enumeration via wlr-foreign-toplevel/ext-foreign-toplevel + sway IPC (SWAYSOCK) for pid/geometry; capture via wlr-screencopy; input via zwlr_virtual_pointer_v1 + zwp_virtual_keyboard_v1; libei/RemoteDesktop portal fallback compiled in (portal-input)",
+     "REAL: health_report: all wlroots globals advertised; list_windows + get_window_state (screenshot + AT-SPI 15/15 names) OK with or without SWAYSOCK",
+     "REAL: foreground click + type_text delivered (seatprobe: enter/press/release, keys c,u,a); background refused (no libei/RemoteDesktop portal backend on sway: only gtk/hyprland/gnome-keyring/kwallet portals installed)",
+     "REAL: GTK3 task fixture native 0/3 + 0/1 single-seat: element frames = true window-local x 1.326 (= original_width/screenshot_width), clicks overshoot; GTK3 accepts seatctl clicks at the true point on seat0 and seat1 (counter 0->1->2)",
+     "REAL: jev-use AT-SPI smoke native arm fails: native titles are 'title [app_id]', jev-use find_window matches exact title",
+     "REAL: 2 px x offset on server-decorated windows (window bounds x=0 vs content x=2): click window x=100 -> surface x=98"]},
+   "xwayland": {"verdict": "PARTIAL", "evidence": [
+     "REAL: GTK3 AT-SPI smoke (WAYLAND_DISPLAY removed, private AT-SPI): PASS, 18 elements, 6/6 expected",
+     "REAL: foreground XTEST input on GTK3 task fixture: 1/3 full PASS; first click lost 2/3, later click + typing + save 3/3",
+     "REAL: background: buttons via AT-SPI action (path x11_atspi, not real input); pointer/keyboard to entry fail (XI2 master pointer needs a uinput slave device: timed out)",
+     "BLOCKED: browser smoke (hostless uid mapping, see blockers)"]},
+   "portal_input_libei": {"verdict": "NO", "evidence": ["REAL: background delivery -> structured 'no focus-free input backend' refusal; no RemoteDesktop/EIS on sway"]},
+   "seat_binding": {"verdict": "NO", "evidence": [
+     "SOURCE: wayland/primary_seat.rs Seats::selected() = last advertised wl_seat not named Cua-Agent, Cua-Agent-2, Cua-Test-Agent*; used by virtual pointer (wayland/mod.rs) and virtual keyboard (wayland/virtual_keyboard.rs); no tool/env parameter selects a seat",
+     "REAL: 2-seat sway: every Driver pointer/keyboard event arrived on seat1 (seatprobe)",
+     "SOURCE/REAL: Xwayland path injects inside the X server (XTEST/XSendEvent/AT-SPI), not through sway seats"]},
+   "multicursor": {"verdict": "PARTIAL", "evidence": [
+     "REAL: one Driver process drew 3 per-session agent cursors simultaneously via the layer-shell overlay with session badges (screen-after-move-cursor-2s.png)",
+     "SOURCE: cursor-overlay render_map.rs keyed per-session cursors on every backend; overlay is off when WAYLAND_DISPLAY is set without the Wayland opt-in (overlay.rs should_start_x11_overlay + is_wayland)",
+     "SOURCE: parallel_mouse_drag on Wayland requires the cua-compositor inject socket (CUA_INJECT_SOCKET); X11 needs XI2 MPX + uinput",
+     "REAL: input is not per cursor: all sessions use the one implicit seat; session B refused until it captured its own snapshot (per-session capture ownership)"]}
+  },
+  "receipts": "/mnt/zer0models/github/cua-lanes/artifacts/stack/sway/driver/"
+ },
+ "blockers": [
+  "Browser smoke BLOCKED under hostless (any compositor): bwrap user namespace maps only uid 1000, so /opt/google/chrome/chrome and /usr/lib/chromium/chromium appear owned by nobody and the Driver refuses isolated launch (browser_route_unavailable). Verified identical in an Xvfb control under hostless. Needs an orchestrator decision; do not weaken the Driver policy.",
+  "wlrctl unavailable (AUR only); seatctl used instead."
+ ],
+ "findings_for_shared_infra": [
+  "hostless shares the network namespace: host abstract unix sockets remain connectable from plain hostless (host @/tmp/.X11-unix/X0 owned by a non-user process, @/tmp/.X11-unix/X2 owned by a host sway/Xwayland pair not started by this worker). Demonstrated with a decoy only. cua-x11-session.sh under hostless inherits this exposure.",
+  "cua-x11-session.sh under hostless writes its X lock and D-Bus socket into the host /tmp (observed /tmp/dbus-* and :101 in the control run).",
+  "jev-use driver_environment() does not forward SWAYSOCK (Driver copes without it)."
+ ],
+ "packet": {
+  "worktree": "/mnt/zer0models/github/cua-lanes/stack-sway",
+  "branch": "exp/stack-sway-20261002",
+  "base": "352507b6c03162ab286b21d5ed509125cc3daece",
+  "dir": "docs/experiments/stack-sway-2026-10-02/",
+  "verify": "python3 docs/experiments/stack-sway-2026-10-02/verify_artifacts.py -> RESULT PASS (manifest, 5 multiseat regrades, 3 canary rechecks, failed attempt retained, path/secret scan); tamper test -> FAIL as expected",
+  "commit": "d7317fd2f56217b27742bf9c2186bdd864633787 (540 files incl. force-added *.log receipts; clean git-archive checkout verifies PASS; commit scanned: no local paths/host name/signature)",
+  "pushed": false
+ }
+}

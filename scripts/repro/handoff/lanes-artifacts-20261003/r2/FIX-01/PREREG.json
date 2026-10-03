@@ -1,0 +1,213 @@
+{
+  "schema": "cua-rfc-loop.prereg.v1",
+  "lane": "FIX-01",
+  "wave": 2,
+  "title": "Reviewed Driver fix: dom_event dispatch refuses detached nodes; jev-use runners treat refused as refused and never re-dispatch; R2-07 N4a re-run; R2-07b compiled-replay re-qualification",
+  "owners": [
+    "kvnloo/cua#93 (R2-07)",
+    "kvnloo/cua#73",
+    "kvnloo/cua#74",
+    "kvnloo/cua#105",
+    "kvnloo/cua#10"
+  ],
+  "written_utc_note": "authoritative time = the commit time of the commit that adds this file; it precedes the first measured trial (checked by verify_artifacts.py)",
+  "planner_ruling_verbatim": "PLANNER RULING (record verbatim in the packet). R2-07's proposed REVISE amendment is NOT adopted: it was written after the shakedown showed N4a, and a lane PREREG cannot amend the binding spec. R2-07 stays KILL at its tested source 031ee5f58 / Driver 8b037961. Compiled replay can re-enter R2-10 only through the R2-07b re-qualification in this lane, on the fixed source.",
+  "provider": {
+    "name": "TypeSafe",
+    "lane_cap_reached": 0,
+    "policy": "no key forwarded into any session; every chooser is the mock; a socket guard refuses and counts any non-loopback connect in the harness process and in every launcher subprocess"
+  },
+  "sources": {
+    "base": "2d71548b46114cd1a1bc58ccdef323ce185c9965",
+    "base_rust_tree": "ceadcc0e60ba811ba6ff926f63834561be3c9e30",
+    "base_rust_equals": [
+      "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+      "352507b6c03162ab286b21d5ed509125cc3daece"
+    ],
+    "fix_part_a_driver": "8cfa8c1dbd281da84f9acf8745dc8bea73da96e3",
+    "fix_part_a_rust_tree": "e24808eff03761bacd52240a702180c2f45c83b2",
+    "fix_part_b_caller": "6eb9319fe785a7eb7d5e156a9221edf818a3697f",
+    "upstream_main": "352507b6c03162ab286b21d5ed509125cc3daece",
+    "b01_r2_10_source": "f5c991e5927513c8b94da4330c94276dc5f8ce22",
+    "old_run_py_blob": "462554e695250cf84f8469751f69965afb9a50e0",
+    "r2_07_artifact_blob": "4ffbe21d7d105f0ca77ec623c0e53f0180d866b7"
+  },
+  "binaries": {
+    "U": {
+      "name": "cua-driver-r2-main-229b65b28",
+      "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+      "version_expected": "cua-driver 0.32.0",
+      "source": "229b65b28 (Rust tree == base)"
+    },
+    "F": {
+      "name": "cua-driver-fix01-8cfa8c1db",
+      "sha256": "6ce995b8cc7637af0c46d4a67854a73352a437d03c1de1b272a9eadcf942ac04",
+      "version_expected": "cua-driver 0.32.0",
+      "source": "worktree head 6eb9319fe, Rust tree e24808eff (== 8cfa8c1db); build-driver.sh label fix01-8cfa8c1db, target cua-release-fix01, 0 Fresh workspace units, under locked.sh shared + cargo lock (receipt in raw/lock-ledger.jsonl)"
+    },
+    "versions": "read inside the private session in every block (validity.json)"
+  },
+  "observed_before_this_prereg": {
+    "note": "SOURCE/UNIT facts established while writing the fix, before any trial; disclosed, not measured trials",
+    "merge_tree": {
+      "onto_352507b6c": "Part A rc 0 and Part B rc 0 (clean)",
+      "onto_f5c991e59": "Part A CONFLICT in libs/cua-driver/rust/crates/cua-driver-core/src/browser/tools.rs (f5c991e59's measurement-only marks rewrite the same dom_event dispatch match: `.await {` -> `.await; mark; return match dispatched {`, adjacent to the inserted detached arm); Part B rc 0 (clean)"
+    },
+    "dev_unit_runs": "new Rust tests 5/5 green on the fix (under locked.sh shared + cargo lock); new Python (9) and TypeScript (8) refusal tests green in dev runs that ran under hostless but WITHOUT the shared quiet-lane lock receipt (deviation, see README)"
+  },
+  "environment": "hostless (bwrap: host X11/ICE sockets, user runtime dir masked; desktop vars dropped) -> lock wrapper -> cua-x11-session.sh (private rootless Xvfb 1920x1080x24 -nolisten tcp, openbox, picom, private dbus, scrubbed env) -> harness/run_block.sh; Chrome launched by the Driver with an isolated_new profile; default Driver safety settings; agent-cursor feedback held OFF per session label (R2-07 launcher wrapper)",
+  "locks": {
+    "correctness_blocks": "locked.sh shared (flock -s quiet-lane.lock), at most 10 trials per acquisition, receipt in raw/lock-ledger.jsonl and the loop ledger",
+    "timing_block_g6": "bin/quiet-timed (EXCLUSIVE) wraps the whole private session, so the lock is held before the Driver session opens; receipt in the loop ledger, copied to raw/lock-ledger.jsonl",
+    "builds_and_unit_tests": "locked.sh shared + flock cargo-build.lock (Rust) / locked.sh shared (jev-use)"
+  },
+  "oracles": {
+    "target_journal": "fixture-owned journal (R2-07 fixture.py, extended by harness/fix01_fixture.py): received/applied per POST /submit; submit_src (form | detached) per POST /submit; page_event per sendBeacon from the page (which Submit node, old|fresh|same, saw click/pointer events, page clock); toggle/opened/modal events",
+    "caller_records": "never the oracle; used only for producer attribution (Driver call receipts, refusal codes)"
+  },
+  "unit_plan": {
+    "rust": "cargo test -p cua-driver-core and -p cua-driver-contract (harness/rust_tests.sh) at (a) a red tree = base + new tests + the two new symbols as unused stubs (behaviour unchanged), (b) the fix head, (c) the upstream-applied tree (352507b6c + both fix commits, detached worktree w2-fix01-upmain)",
+    "jev_use": "CI steps (lanes run-unit.sh: Python unittest discover, guarded focused, 4 CLI verifiers, npm test, TS guarded focused, typecheck) at (a) red = base + new test files only, (b) fix head, (c) upstream-applied tree"
+  },
+  "rows": {
+    "C1": {
+      "what": "N4a with the R2-07 compiled routine (in-process, mock fallback): the page replaces Submit between bind and dispatch (variant n4a_instr = R2-07 rerender_on_signal + sendBeacon click listeners on old and fresh node)",
+      "n": {
+        "U": 20,
+        "F": 20
+      },
+      "predict": {
+        "U": "first click accepted 20/20 (effect unverifiable), old-node page click events >=1, journal applied 0, routine ends unknown (bounded re-read)",
+        "F": "first click refused browser_ref_stale 20/20 (isError false), 0 old-node page events, 0 detached submits; then exactly one rebind from a fresh observation and a fresh dispatch -> verified (journal applied 1) or explicit stop; 0 duplicates"
+      },
+      "class": "REAL"
+    },
+    "C2": {
+      "what": "N4a_ord: same injection before run.py's first browser_click (mock provider, in-process)",
+      "n": {
+        "U+old": 10,
+        "U+fixed": 10,
+        "F+fixed": 10
+      },
+      "oracle": "re-dispatches = browser_click calls after the first accepted click whose return saw journal applied 0",
+      "predict": {
+        "U+old": "1 re-dispatch per trial (R2-07 N4a_ord)",
+        "U+fixed": "0 re-dispatches; outcome unknown (phase reconcile)",
+        "F+fixed": "first click refused -> >=1 fresh observation -> exactly one fresh dispatch -> verified; 0 re-dispatches"
+      },
+      "class": "REAL"
+    },
+    "C3": {
+      "what": "could-land hazard: variant n4a_handler, the detached old Submit keeps a JS click handler that POSTs the token itself (src=detached); compiled routine",
+      "n": {
+        "U": 10,
+        "F": 10
+      },
+      "predict": {
+        "U": "accepted, detached-handler submit lands (submits_from_detached 1) - hazard shown",
+        "F": "refused 10/10, submits_from_detached 0 and old-node page events 0 in 10/10; rebind -> fresh -> verified"
+      },
+      "class": "REAL"
+    },
+    "C4": {
+      "what": "trusted (coordinate) route, same injection before dispatch: direct fresh-bound caller, browser_click input_route trusted, delivery_mode foreground",
+      "n": {
+        "U": 10,
+        "F": 10
+      },
+      "predict": {
+        "U": "refused browser_ref_stale (DOM.getBoxModel fails for the detached node), nothing lands, one rebind -> verified",
+        "F": "identical to U (trusted route unchanged)"
+      },
+      "class": "REAL"
+    },
+    "C4w": {
+      "what": "residual-window control (trusted route, F): the re-render is triggered d ms after the click request is sent, d in 0..60 step 3 (21 cells, 1 each); page records the replacement time and which node got pointerdown",
+      "n": {
+        "F": 21
+      },
+      "report": "for each d: refused | accepted-landed-on-fresh | accepted-landed-on-old | other; window estimate = max(page first pointerdown - page replacement time) over accepted cells whose events landed on the fresh node; reported, not gated",
+      "class": "REAL"
+    },
+    "C5": {
+      "what": "refused-as-success: N4b (a superseding semantic snapshot is taken just before run.py's first browser_click -> browser_ref_stale), F binary",
+      "n": {
+        "F+fixed": 10,
+        "F+old": 10
+      },
+      "predict": {
+        "F+fixed": "first click classified refused (DriverToolError refused=true, code browser_ref_stale) 10/10, runner step event action_refused, then one fresh observation and one dispatch -> verified",
+        "F+old": "the same refusal returned as success by Driver.call (effect refused, no exception) 10/10 - misclassification shown"
+      },
+      "class": "REAL"
+    },
+    "C6": {
+      "what": "positive controls on F",
+      "n": {
+        "fill (fixed run.py, mock)": 20,
+        "toggle->confirm (#24 page, dom_event)": 10,
+        "modal->act (#24 page, dom_event)": 10,
+        "reattach (compiled routine; the SAME Submit node is detached and re-attached before dispatch)": 10
+      },
+      "predict": "all verified by the journal, 0 refusals (no false refusal on connected or re-attached nodes)",
+      "class": "REAL"
+    }
+  },
+  "r2_07b": {
+    "artifact": "docs/experiments/r2-07-2026-10-02/raw/learn/artifact.json, git blob 4ffbe21d7d105f0ca77ec623c0e53f0180d866b7, logical identity only (role+name targets, param slot, preconditions, depends_on, expected outcome, fallback points); checked: no refs, element tokens, captures, capabilities, session epochs or coordinates (compiled_routine.check_artifact_authority + verify_artifacts.py injections)",
+    "G2": {
+      "what": "clean-reset admission replay on F: fresh fixture, Driver and Chrome, compiled replay, no fallback, subprocess launcher with receipts",
+      "n": 1,
+      "pass": "journal applied 1 with the token, routine outcome verified, 0 provider attempts"
+    },
+    "G3": {
+      "what": "fresh binding before every mutation",
+      "pass": "every compiled-routine mutation uses a ref minted by the routine's latest observation taken after the previous mutation: independently from launcher Driver-call receipts (G2 and every G6 F cell), self-recorded for in-process rows (C1-F, C3-F, C6 reattach, G4, G5); 100%"
+    },
+    "G4": {
+      "what": "negatives N1-N8 (R2-07 NEG_ROWS, R2-07 page variants) 3 reps each on F, plus N4a n=20 = the C1 F cells",
+      "pass": "every rep stops or falls back safely; 0 stale dispatches (an accepted dispatch onto a detached node: accepted first N4a click or any old-node page event), 0 ambiguous dispatches (N3), N8 0 dispatches, 0 duplicates, 0 unverified successes",
+      "predict": "as R2-07 (N1/N2/N3/N6 stopped, N4b/N5 verified, N7 fallback_verified, N8 0 dispatches) except N4a: refused -> one rebind -> verified"
+    },
+    "G5": {
+      "what": "P6 reconcile rows on F through the R2-07 fault seam",
+      "n": {
+        "applied_ack_lost": 5,
+        "delayed_after_first_unchanged_read": 5,
+        "withheld_unresolved": 3
+      },
+      "pass": "0 duplicates, 0 dispatches after unknown; applied/delayed verified_by_reconcile, withheld unknown"
+    },
+    "G6": {
+      "what": "cost of the fix: warm compiled replay C on F vs C on U, subprocess cells (fresh Driver, Chrome, fixture, token each), 20 pairs, order UF on even pairs and FU on odd pairs",
+      "lock": "EXCLUSIVE via quiet-timed around the whole session",
+      "metric": "T = first semantic_v2 send -> first 4 ms harness poll that sees the token (R2-07 definition)",
+      "analysis": "paired median of T(F)-T(U) over pairs where both verified, percentile bootstrap 95% CI, seed 20261002, 10000 resamples; loadavg per trial",
+      "gate": "reported, not gated, unless the CI lower bound is >= +5 ms, which must be explained",
+      "not_reclaimed": "the live C-vs-B saving from R2-07 (-273.0 ms) is NOT re-claimed; R2-10 measures compiled replay live over all invocations"
+    }
+  },
+  "dispositions": {
+    "fix_keep_if": [
+      "F refuses detached-node dispatch 20/20 in C1",
+      "F shows 0 effects from the detached node in C3 (10/10)",
+      "0 false refusals in C6",
+      "all unit tests pass on the base and on the upstream-applied tree",
+      "cherry-picks cleanly onto 352507b6c AND f5c991e59",
+      "fixed run.py gives 0 re-dispatches in C2",
+      "fixed run.py classifies C5 as refused 10/10"
+    ],
+    "fix_otherwise": "REVISE or KILL with the failing row named",
+    "r2_07b_keep_if": "G2-G5 pass with 0 stale or ambiguous dispatches, 0 duplicates, 0 unverified successes and 0 authority fields -> compiled replay eligible for the R2-10 fill composed arm on a source that contains this fix",
+    "r2_07b_otherwise": "KILL",
+    "g6": "reported, not gated, unless the fix adds >= 5 ms (CI lower bound), which must be explained"
+  },
+  "denominators": "every trial is kept. A block whose validity.json is not ok, or whose private session logs an openbox 'already running' collision, is kept in raw/, counted in totals, excluded from row evaluation and re-run as a new block; no other exclusion",
+  "shakedown": "one mock harness shakedown block is allowed AFTER this commit and before the measured blocks, to catch harness bugs; its cells live in raw/shakedown/ and are never analysed. Any harness change after this commit is recorded by sha256 in every block's validity.json and listed in the README; no row, n, prediction, oracle, gate or disposition rule may change.",
+  "claim_boundary": "jev-use fill fixture and #24 pages, X11 Xvfb, Chrome 151, mock chooser, Driver 0.32.0 U/F as hashed; reviewed fix candidate staged downstream only: nothing posted upstream, nothing merged, no PR opened",
+  "live_heads_at_prereg": {
+    "read_utc": "2026-10-02T05:04:44Z",
+    "trycua_cua_pr_4316_head": "a0bca744067d04f05904319d3d919be30c336556 (open)",
+    "upstream_main": "bc55ff2d236a62075c981ebadf0ff97dd90d45be (2 commits past 352507b6c, 0 files under libs/cua-driver)"
+  }
+}

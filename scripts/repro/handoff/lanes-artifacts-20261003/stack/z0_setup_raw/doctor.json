@@ -1,0 +1,177 @@
+{
+  "schema": "z0int.backends.doctor.v1",
+  "load": false,
+  "backends": [
+    {
+      "id": "decider_2b",
+      "kind": "calibrated_decision",
+      "description": "Mapika Decider-2B typed decision model",
+      "aliases": [
+        "decider"
+      ],
+      "local": true,
+      "configured": true,
+      "ready": true,
+      "loaded": false,
+      "model": "decider_2b",
+      "checkpoint": "/mnt/zer0models/zer0-models/huggingface/hub/models--Mapika--decider-2b/snapshots/1d96be0093133e194fe18105a521b3e69be931d2",
+      "detail": "weights present",
+      "diagnostics": {
+        "hf": "Mapika/decider-2b",
+        "manifest_id": "decider_2b",
+        "revision": "1d96be0093133e194fe18105a521b3e69be931d2",
+        "device": "cuda",
+        "runtime": "decider",
+        "base_model": "Qwen/Qwen3.5-2B-Base",
+        "license": "apache-2.0",
+        "commercial_use": true,
+        "readout": "single-pass option-letter logits at answer slots"
+      },
+      "capabilities": {
+        "id": "decider",
+        "local": true,
+        "supports_boolean": true,
+        "supports_choice": true,
+        "supports_score": true,
+        "max_choice_options": 255,
+        "max_score_levels": 10,
+        "kind": "calibrated_decision",
+        "description": "Mapika Decider-2B one-pass typed probabilities (Qwen3.5-2B-Base)",
+        "trainable": false,
+        "returns_distribution": true,
+        "autoregressive_decode": false,
+        "shared_prefix": false,
+        "supports_batch_questions": true,
+        "supports_observed_outcome_training": false,
+        "supports_soft_distribution_training": false
+      }
+    },
+    {
+      "id": "julia_1",
+      "kind": "finite_choice_decision",
+      "description": "SupersonicLabs Julia-1 144.3M finite-choice decision model (choice/score/noul, 2-20 options); CPU-resident by default",
+      "aliases": [
+        "julia",
+        "julia-1"
+      ],
+      "local": true,
+      "configured": true,
+      "ready": true,
+      "loaded": false,
+      "model": "julia_1",
+      "checkpoint": "/mnt/zer0models/zer0-models/huggingface/hub/models--SupersonicLabs--Julia-1/snapshots/a85b127321d580d65176c89ced8273f305745d85",
+      "detail": "checkout present",
+      "diagnostics": {
+        "hf": "SupersonicLabs/Julia-1",
+        "manifest_id": "julia_1",
+        "revision": "a85b127321d580d65176c89ced8273f305745d85",
+        "device": "cpu",
+        "autocast": "auto",
+        "runtime": "julia-worker",
+        "strict_encoding": true,
+        "max_length": 8192,
+        "head_length": 512,
+        "license": "apache-2.0",
+        "commercial_use": true,
+        "python": "~/tmp/julia-venv/bin/python",
+        "python_detail": "transformers 5.0.0",
+        "model_dir": "/mnt/zer0models/zer0-models/huggingface/hub/models--SupersonicLabs--Julia-1/snapshots/a85b127321d580d65176c89ced8273f305745d85",
+        "missing_entries": []
+      },
+      "capabilities": {
+        "id": "julia_1",
+        "local": true,
+        "supports_boolean": true,
+        "supports_choice": true,
+        "supports_score": true,
+        "max_choice_options": 20,
+        "max_score_levels": 10,
+        "kind": "finite_choice_decision",
+        "description": "SupersonicLabs Julia-1 144.3M finite-choice decision model; choice/score/noul over 2-20 supplied options",
+        "trainable": false,
+        "returns_distribution": true,
+        "autoregressive_decode": false,
+        "shared_prefix": false,
+        "supports_batch_questions": true,
+        "supports_observed_outcome_training": false,
+        "supports_soft_distribution_training": false
+      }
+    },
+    {
+      "id": "laya_421m",
+      "kind": "typed_decision",
+      "description": "Local Laya 421M fast-path typed decision backend",
+      "aliases": [
+        "laya"
+      ],
+      "local": true,
+      "configured": true,
+      "ready": true,
+      "loaded": false,
+      "model": "laya_421m",
+      "checkpoint": "/mnt/zer0models/zer0-models/huggingface/hub/models--convaiinnovations--laya/snapshots/7c76b622dfc5cac71b2dc1c29873efe2ce509a05",
+      "detail": "weights present",
+      "diagnostics": {
+        "hf": "convaiinnovations/laya",
+        "manifest_id": "laya_421m",
+        "revision": "7c76b622dfc5cac71b2dc1c29873efe2ce509a05",
+        "device": "cpu",
+        "runtime": "laya",
+        "license": "apache-2.0",
+        "commercial_use": true
+      },
+      "capabilities": {
+        "id": "laya",
+        "local": true,
+        "supports_boolean": true,
+        "supports_choice": true,
+        "supports_score": true,
+        "max_choice_options": 16,
+        "max_score_levels": 10,
+        "kind": "decision",
+        "description": "",
+        "trainable": false,
+        "returns_distribution": true,
+        "autoregressive_decode": false,
+        "shared_prefix": false,
+        "supports_batch_questions": false,
+        "supports_observed_outcome_training": false,
+        "supports_soft_distribution_training": false
+      }
+    },
+    {
+      "id": "nanojev",
+      "kind": "semantic_model",
+      "description": "Legacy NanoJev Qwen3-0.6B benchmark backend; not verification-default",
+      "aliases": [
+        "nanojev_06b"
+      ],
+      "local": true,
+      "configured": true,
+      "ready": true,
+      "loaded": false,
+      "model": "nanojev_06b",
+      "checkpoint": "~/.z0int/models/nanojev_06b",
+      "detail": "checkpoint complete; not loaded",
+      "diagnostics": {},
+      "capabilities": {
+        "id": "nanojev",
+        "local": true,
+        "supports_boolean": true,
+        "supports_choice": true,
+        "supports_score": true,
+        "max_choice_options": 255,
+        "max_score_levels": 10,
+        "kind": "decision",
+        "description": "",
+        "trainable": true,
+        "returns_distribution": true,
+        "autoregressive_decode": false,
+        "shared_prefix": false,
+        "supports_batch_questions": false,
+        "supports_observed_outcome_training": true,
+        "supports_soft_distribution_training": true
+      }
+    }
+  ]
+}

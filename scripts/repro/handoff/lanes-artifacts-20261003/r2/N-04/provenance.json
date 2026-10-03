@@ -1,0 +1,37 @@
+{
+ "schema": "n04.provenance.v1",
+ "lane": "N-04 (wave 5)",
+ "branch": "exp/n-04-native-composition-rprime-20261003",
+ "base": {
+  "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a (R2-10R's tested source = 0f1955d2f + R2-10 steps 1-8; libs/cua-driver tree 11ee32235d5e)",
+  "cherry_pick": "4c786178bb214e1a7b0f9e7af5e9dc9991524fc1 (N-02 settle clamp knob + MCP span marks; the patch N-03 used as 85a73c2c7) -> 11a03bf513a9b9ab107852ade67e13dbda5d30e7; no conflict; range-diff raw/provenance/range-diff.txt: commit message only (one sentence added), patch lines identical",
+  "upstream_base": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218 (libs/cua-driver tree df2b49c32e73)"
+ },
+ "tested_source": {
+  "commit": "11a03bf513a9b9ab107852ade67e13dbda5d30e7",
+  "libs_cua_driver_tree": "e047f85a42e1a1a6d71d5ccbf43b30577dcf3960",
+  "rust_tree": "3054612b8e996c0d01c47be8471acffe44d66582",
+  "driver_changes_after_cherry_pick": "none (packet commits only)"
+ },
+ "prereg_commit": "aa1c2a346 (committed 2026-10-03T07:38:35Z; first EXCLUSIVE measured receipt n04-c01 acquired 07:47:13Z, first measured trial 08:41:44Z; last measured trial ended 09:07:59Z)",
+ "binaries": {
+  "Rn": {"name": "cua-driver-n04-11a03bf51", "sha256": "78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc",
+         "version": "cua-driver 0.32.0 (read inside each private session at chunk start and end; raw/chunks/*-session-log.txt)",
+         "build": "build-driver.sh (cargo build --locked --release -p cua-driver --features portal-input; rustc 1.97.1) under hostless with the cargo-build lock and a SHARED quiet-lane lock; target family cua-release-r2-10; 96 s; label n04-11a03bf51"},
+  "R_prime": {"name": "cua-driver-r2-10r-a2-45dff8f32", "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+              "role": "default-off smoke comparator only (block n04c-smk-rp); never a timing comparator"}
+ },
+ "unit": "touched suites on 11a03bf51 under hostless (cargo lock + SHARED quiet lock): cua-driver proxy:: 20/20 pass (incl. mcp_trace_scope_names_the_tool_or_method), platform-linux focus_guard 14/14 pass (incl. the three clamp tests)",
+ "upstream_freshness": {
+  "live_main_at_start": "b4ffcd651a32872c7c362c26efe037946fda58df (gh read 2026-10-03T07:37Z; 0f1955d2f...main = 13 ahead, 158 files, 0 under libs/cua-driver)",
+  "live_main_at_end": "410578a4a18e91fbee5d0a169342e3fb669a5bb9 (gh read 2026-10-03T09:12Z; 0f1955d2f...main = 18 ahead, 197 files, 7 under libs/cua-driver: platform-macos ax/bindings.rs, ax/exact_target.rs, windows.rs; platform-windows browser_platform.rs, tools/impl_.rs, win32/mod.rs, win32/windows.rs - trycua/cua PR 4505, 4506, 4507, 4509). None touches platform-linux, cua-driver-core, cua-driver (proxy/server) or the jev-use example, so no Linux claim of this packet depends on the drift."
+ },
+ "live_heads": {
+  "start": {"trycua/cua PR 4316": "a0bca744067d04f05904319d3d919be30c336556 (open)", "kvnloo/cua#106": "c45845797b714ccfd76a9569d3238a0724107a83 (open)"},
+  "end": {"trycua/cua PR 4316": "a0bca744067d04f05904319d3d919be30c336556 (open, unchanged)", "kvnloo/cua#106": "c45845797b714ccfd76a9569d3238a0724107a83 (open, unchanged)"}
+ },
+ "publication_sha": "set by the Publish agent",
+ "live_heads_at_publication": "set by the Publish agent",
+ "environment": "one Linux host (kernel 7.2.2; 20 logical CPUs, getconf _NPROCESSORS_ONLN); bin/hostless v2 for every code-executing command, nested bin/hostless-strict for session work; cua-x11-session.sh (private Xvfb 1920x1080, private D-Bus, private AT-SPI bus via CUA_SESSION_ATSPI=1 + CUA_SESSION_EXTRA_ENV), openbox; Driver telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); session TMPDIR in the lane tmp; jev-use venv (uv sync --frozen, Python 3.12; mcp 1.30.0, jsonschema 4.26.0, referencing 0.37.0); 1-minute loadavg per trial in raw (measured trials 0.48-1.77, gate checks 0.52-2.88)",
+ "provider": {"name": "none (scripted chooser)", "attempts": 0, "reached": 0, "non_loopback_connects_refused": 0}
+}

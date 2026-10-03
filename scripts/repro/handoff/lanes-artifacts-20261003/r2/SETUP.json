@@ -1,0 +1,260 @@
+{
+ "schema": "cua.r2.setup.v1",
+ "created_utc": "2026-10-01T21:55Z",
+ "worker": "R2 P0 setup worker (Claude Code workflow subagent)",
+ "pins": {
+  "upstream_main": {
+   "sha": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+   "read_via": "git rev-parse upstream/main AND gh api repos/trycua/cua/commits/main (both agree at 2026-10-01T21:46Z)",
+   "subject": "chore(cua-driver): advance published installer version to 0.32.0 [skip ci]"
+  },
+  "trycua_cua_4316": {
+   "live_head_gh": "a0bca744067d04f05904319d3d919be30c336556",
+   "matches_expected": true,
+   "state": "OPEN",
+   "draft": false,
+   "head_ref": "perf/guarded-completion-main-v2",
+   "parent": "345ff6d9db458a9d37b0f420dc4555553f4a4ce5",
+   "commits_behind_main": 28,
+   "updatedAt": "2026-10-01T17:03:24Z",
+   "mergeable": "UNKNOWN (gh)"
+  },
+  "trycua_cua_4394": {
+   "live_head_gh": "039257811e0bbb2348c616c52562409923d2856f",
+   "state": "OPEN",
+   "draft": false,
+   "head_ref": "feat/browser-provider-parity-s1-20261001",
+   "parent": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
+   "updatedAt": "2026-10-01T15:16:55Z",
+   "local_object": "fetched by SHA into main clone (no ref written)"
+  },
+  "kvnloo_cua_105": {
+   "live_head_gh": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+   "matches_expected": true,
+   "state": "OPEN",
+   "draft": true,
+   "head_ref": "research/mutation-outcome-ack-loss-v0",
+   "parent": "ec83a3a807968782d82ec50cacf1759604ae1cc7",
+   "updatedAt": "2026-10-01T21:44:26Z",
+   "local_object": "fetched by SHA into main clone (no ref written)"
+  },
+  "packet_format_reference": {
+   "pr": "kvnloo/cua#106",
+   "head": "c45845797b714ccfd76a9569d3238a0724107a83",
+   "dir": "docs/experiments/latency-2026-10-01/"
+  }
+ },
+ "base_worktree": {
+  "path": "/mnt/zer0models/github/cua-lanes/r2-base",
+  "head": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "detached": true,
+  "deps_installed": "lane-deps.sh (uv sync --frozen --python 3.12; npm ci --ignore-scripts)",
+  "keep": true,
+  "branch_recipe": "git -C /mnt/zer0models/github/cua worktree add -b exp/r2-0N-<slug>-20261001 /mnt/zer0models/github/cua-lanes/r2-<lane> 229b65b2849c3a595ddbc85200d7181b18bd2e47 && /mnt/zer0models/github/cua-lanes/lane-deps.sh /mnt/zer0models/github/cua-lanes/r2-<lane>"
+ },
+ "binaries": {
+  "main": {
+   "use_for": [
+    "R2-01",
+    "R2-02",
+    "R2-04",
+    "R2-06"
+   ],
+   "path": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-r2-main-229b65b28",
+   "sha256": "8b03796185055cc40c1a9ef0b2b4bbe9595a3eefa4f9a3aa64f34e5ce1974cd3",
+   "version": "cua-driver 0.32.0",
+   "provenance": {
+    "source": "229b65b2849c3a595ddbc85200d7181b18bd2e47 (clean detached worktree r2-base)",
+    "build_cmd": "flock /mnt/zer0models/cua-lane-tmp/locks/cargo-build.lock /mnt/zer0models/github/cua-lanes/build-driver.sh /mnt/zer0models/github/cua-lanes/r2-base r2-main-229b65b28 cua-release-r2-base",
+    "target_dir": "/mnt/zer0models/cargo-targets/cua-release-r2-base",
+    "cargo": "cargo build -v --locked --release -p cua-driver --features portal-input",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "fresh_workspace_units": 0,
+    "build_seconds": 239,
+    "build_log": "/mnt/zer0models/github/cua-lanes/logs/cargo-build-r2-main-229b65b28.log",
+    "build_stdout": "/mnt/zer0models/github/cua-lanes/logs/r2-build-main-229b65b28.out",
+    "target_artifact_sha256_matches": true
+   }
+  },
+  "pr4316": {
+   "use_for": [
+    "R2-03"
+   ],
+   "path": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-4316-a0bca7440",
+   "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95",
+   "version": "cua-driver 0.31.0",
+   "rebuilt": false,
+   "provenance": {
+    "source": "a0bca744067d04f05904319d3d919be30c336556 (worktree p0-4316-v3, branch perf/guarded-completion-main-v3)",
+    "build_cmd": "build-driver.sh <p0-4316-v3> 4316-a0bca7440 cua-release-4316-v3",
+    "target_dir": "/mnt/zer0models/cargo-targets/cua-release-4316-v3",
+    "build_log": "/mnt/zer0models/github/cua-lanes/logs/cargo-build-4316-a0bca7440.log",
+    "evidence": [
+     "build log is build-driver.sh format (cargo -v --release, portal-input) and compiles cua-driver/platform-linux from the p0-4316-v3 worktree path; 0 Fresh units (full build)",
+     "worktree HEAD became a0bca7440 at 11:48:33 -0500 (reflog), no later HEAD moves; build-driver touch of all Rust workspace files at 11:49:50.53; cargo finished 4m16s later; binary copied 11:54:07",
+     "no file in the worktree (Rust workspace or elsewhere, excluding .venv/node_modules/__pycache__) has mtime after the build-start touch; git status clean now => built tree == a0bca7440",
+     "binary sha256 equals target-dir artifact sha256; equals sha256 recorded on kvnloo/cua#93 for head a0bca7440"
+    ],
+    "gap": "build-driver.sh stdout (head= line) for this build was not saved; provenance established by the evidence above rather than a logged head line"
+   },
+   "do_not_use": "/mnt/zer0models/github/cua-lanes/bin/cua-driver-4316-a0bca7440-e2e (wrapper exporting CUA_E2E_BROWSER_NO_SANDBOX=1; sandbox-bypass flags are denied in this environment and are not needed)"
+  },
+  "cross_compare_warning": "main (0.32.0) and #4316 (0.31.0, base 345ff6d9, 28 commits behind main) are different sources/binaries: never compare numbers across them"
+ },
+ "smoke": {
+  "browser": {
+   "result": "PASS",
+   "evidence_class": "REAL",
+   "binary": "main 8b037961...",
+   "date_utc": "2026-10-01T21:51Z",
+   "command": "cd /mnt/zer0models/github/cua-lanes/r2-base && /mnt/zer0models/github/cua-lanes/cua-x11-session.sh /mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/browser-smoke.sh /mnt/zer0models/github/cua-lanes/r2-base /mnt/zer0models/github/cua-lanes/bin/cua-driver-r2-main-229b65b28 /mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/browser-main",
+   "script": "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/browser-smoke.sh (sha256 53bf5268d33c57d3f787f8a565e68849fca95026ab63e65b95f045ceb7a7f64f)",
+   "what_it_runs": [
+    "jev-use verify_mcp_tools.py (MCP initialize + tools/list, 6 required browser tools; capture-bound visual adapter advertised=True)",
+    "jev-use verify_setup.py --output-dir <out> (mock provider): browser_prepare {allow_launch, profile isolated_new} -> browser_navigate loopback fixture -> browser_type (step 1) + browser_click (step 2, DOM page_structure) -> fixture /state"
+   ],
+   "observed": {
+    "rc_mcp_tools": 0,
+    "rc_verify_setup": 0,
+    "summary_complete": true,
+    "independent_state": {
+     "submitted": "jev-guide-mock"
+    },
+    "submit_tool": "browser_click",
+    "acted_path": "page_structure",
+    "action_ms": {
+     "browser_type": 1621.79,
+     "browser_click": 1546.74
+    },
+    "note_action_ms": "single smoke trial, not a measurement; not taken under quiet-lane lock"
+   },
+   "browser_actually_launched": "/opt/google/chrome/chrome (google-chrome 151.0.7922.71-1), selected by Driver's root-owned candidate list (first of /opt/google/chrome/google-chrome, /usr/lib/chromium/chromium, ...); not overridable on the production path",
+   "profile": "Driver-owned isolated_new profile under the session XDG_STATE_HOME (<session>/home/.local/state/cua-driver/browser-profiles), deleted on cleanup; no user profile touched",
+   "driver_safety_settings": "defaults: no CUA_DRIVER_PERMISSION_MODE override, no approval bypass, Chromium sandbox ON",
+   "artifacts": [
+    "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/browser-main.log",
+    "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/browser-main/summary.json",
+    "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/browser-main/python-mock.jsonl"
+   ]
+  },
+  "atspi": {
+   "result": "PASS",
+   "evidence_class": "REAL",
+   "binary": "main 8b037961...",
+   "date_utc": "2026-10-01T21:52Z",
+   "command": "cd /mnt/zer0models/github/cua-lanes/r2-base && CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" /mnt/zer0models/github/cua-lanes/cua-x11-session.sh /mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-smoke.sh /mnt/zer0models/github/cua-lanes/r2-base /mnt/zer0models/github/cua-lanes/bin/cua-driver-r2-main-229b65b28 /mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-main-2",
+   "script": "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-smoke.sh (sha256 4d4e82d11883fa3540978cf090eafb03bada521871494eee4d4bcf4b921c1a11)",
+   "what_it_runs": [
+    "/usr/bin/python3 libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py (default scenario, window 'CuaTestHarness GTK3')",
+    "jev-use python/capture_window_state.py --pid <gtk pid> --title 'CuaTestHarness GTK3' (MCP stdio get_window_state, include_accessibility_tree+include_screenshot)"
+   ],
+   "observed": {
+    "rc_capture": 0,
+    "degraded": false,
+    "element_count": 18,
+    "walk_elapsed_ms": 29,
+    "truncated": false,
+    "named_controls_present": [
+     "btn-clicktarget",
+     "btn-context",
+     "btn-exit",
+     "btn-increment",
+     "btn-open-popover",
+     "btn-reset",
+     "chk-agree",
+     "scroll-tall-vertical",
+     "scroll-tall-viewport",
+     "selection-alpha",
+     "selection-beta",
+     "selection-gamma",
+     "sld-value",
+     "txt-input"
+    ]
+   },
+   "failed_first_attempt": {
+    "command": "same but with CUA_SESSION_ATSPI=1 only",
+    "result": "get_window_state degraded: atspi_walk_failed (org.a11y.atspi.Registry activation 'unit failed'), 1 element (window only)",
+    "artifacts": [
+     "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-main.log",
+     "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-main/gtk3-window-state.json"
+    ]
+   },
+   "artifacts": [
+    "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-main-2.log",
+    "/mnt/zer0models/github/cua-lanes/artifacts/r2/smoke/atspi-main-2/gtk3-window-state.json"
+   ]
+  }
+ },
+ "unit_baseline_main": {
+  "command": "/mnt/zer0models/github/cua-lanes/run-unit.sh /mnt/zer0models/github/cua-lanes/r2-base /mnt/zer0models/github/cua-lanes/artifacts/r2/setup-unit",
+  "head": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "env": "node v22.23.2, uv 0.11.7, Python 3.12.13",
+  "python_unittest_discover": {
+   "rc": 0,
+   "ran": 229,
+   "skipped": 1,
+   "passed": 228,
+   "failed": 0
+  },
+  "ts_npm_test": {
+   "rc": 0,
+   "tests": 105,
+   "pass": 105,
+   "fail": 0
+  },
+  "ts_typecheck": {
+   "rc": 0
+  },
+  "verify_choice_cli": 0,
+  "verify_decision_cli_mock": 0,
+  "verify_choice_cli_v2": 0,
+  "verify_decision_cli_native": 0,
+  "not_applicable_on_main": {
+   "python-guarded-focused": "rc=5 NO TESTS RAN (test_guarded_completion.py exists only on #4316)",
+   "ts-guarded-focused": "rc=1 file typescript/guarded_completion.test.ts absent on main (#4316-only)"
+  },
+  "artifacts": "/mnt/zer0models/github/cua-lanes/artifacts/r2/setup-unit/"
+ },
+ "environment": {
+  "kernel": "Linux 7.2.2-1-cachyos x86_64",
+  "nproc": 10,
+  "cpu": "Intel Core i9-10900KF @ 3.70GHz",
+  "ram_gib": 23,
+  "loadavg_at_setup_end": "2.45 7.07 4.64 (other agents active)",
+  "display": "private rootless Xvfb 1920x1080x24 -nolisten tcp (user-local xvfb-run), openbox + picom xrender, private dbus-run-session; HOME/XDG_* under a fresh <cua-lane-tmp>/x11-session.XXXXXX; host WAYLAND_DISPLAY/HYPRLAND_*/XDG_RUNTIME_DIR scrubbed by env -i",
+  "atspi": "at-spi2-core 2.60.6 (private bus via at-spi-bus-launcher + at-spi2-registryd when enabled)",
+  "gtk3": "3.24.52",
+  "python_gobject": "3.56.3 (system /usr/bin/python3 3.14.7)",
+  "chromium": {
+   "driver_selected": "/opt/google/chrome/google-chrome -> /opt/google/chrome/chrome, Google Chrome 151.0.7922.71",
+   "also_installed": "/usr/lib/chromium/chromium (Chromium 151.0.7922.173 Arch Linux), /usr/bin/chromium and /usr/bin/google-chrome-stable are PATH shims the Driver does not use"
+  },
+  "rust": "rustc 1.97.1, CARGO_HOME /mnt/zer0models/cargo-home-cua",
+  "node": "v22.23.2",
+  "uv": "0.11.7",
+  "script_sha256": {
+   "cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b",
+   "build-driver.sh": "0d5fb029f44c77a682649aaf71395a517c2d2e46ba10ee802073ac9e2a0269ce",
+   "run-unit.sh": "f9b67231f94b0dbca23145d94a807215f5b9ee0ec6ab11a45f18922471538e49",
+   "lane-deps.sh": "896282d0c51f3b6670aca5b27496e6284f2e603c6091239c224b89e1d851ad14"
+  }
+ },
+ "locks": {
+  "cargo_build": "/mnt/zer0models/cua-lane-tmp/locks/cargo-build.lock",
+  "quiet_lane_timing": "/mnt/zer0models/cua-lane-tmp/locks/quiet-lane.lock",
+  "tmp_root": "/mnt/zer0models/cua-lane-tmp"
+ },
+ "gotchas": [
+  "CUA_SESSION_ATSPI=1 by itself does NOT start the private AT-SPI bus: cua-x11-session.sh runs inner.sh under env -i, which scrubs the variable. Pass it through too: CUA_SESSION_ATSPI=1 CUA_SESSION_EXTRA_ENV=\"CUA_SESSION_ATSPI=1\" (combine with other extra env in the same string). Without it get_window_state is degraded (atspi_walk_failed, window-only). The shared script was NOT edited (editing a bash script while other lanes execute it can corrupt running sessions).",
+  "Do not use CUA_DRIVER_DANGEROUSLY_BYPASS_APPROVALS / CUA_DRIVER_PERMISSION_MODE=unrestricted / CUA_E2E_BROWSER_NO_SANDBOX (incl. the older *-e2e wrappers such as bin/cua-driver-4316-a0bca7440-e2e): the auto-mode permission classifier denied a run using them, and the default-safety run passes (Chromium sandbox works in the rootless session). Use the plain binaries.",
+  "Driver launches /opt/google/chrome/chrome (Google Chrome 151.0.7922.71), not /usr/bin/chromium: it takes the first root-owned candidate. Record that as the browser in packets.",
+  "Every new worktree needs lane-deps.sh <worktree> before run-unit.sh or the smokes (.venv and node_modules are per worktree).",
+  "run-unit.sh steps python-guarded-focused / ts-guarded-focused fail on main by construction (#4316-only files); count them as not applicable on main, not as regressions.",
+  "In sessions without AT-SPI, Driver logs a harmless WARN 'could not activate the persistent AT-SPI listener'. The private dbus also activates xdg-desktop-portal(-gtk), gvfs and a notification daemon inside the private bus; they exit with the session (verified: no leftover processes after either smoke).",
+  "Driver prints 'content-free product telemetry by default'; every session has a fresh HOME, so telemetry config is identical across arms. jev-use runners forward only CUA_DRIVER_* plus desktop vars to the Driver, so CUA_TELEMETRY_DISABLED/DO_NOT_TRACK in the session do not reach a runner-spawned Driver. Keep it identical across arms; do not compare against runs with different telemetry settings.",
+  "#4316 (a0bca7440) is based on 345ff6d9, 28 commits behind main 229b65b28, and reports 0.31.0 vs main 0.32.0. #4394 and #105 heads were fetched by SHA into the main clone without writing refs; use git worktree add --detach <sha> (or -b exp/...).",
+  "build-driver.sh itself runs '<bin> --version' outside the isolated session (no display access); all smoke runs went through cua-x11-session.sh.",
+  "Session run dirs (<cua-lane-tmp>/x11-session.*) are left behind after exit and include the session HOME; they contain absolute paths, so never copy them into packets unsanitized.",
+  "loadavg was 7 during setup because other agents were active: take latency only under quiet-lane.lock and record loadavg per trial."
+ ]
+}

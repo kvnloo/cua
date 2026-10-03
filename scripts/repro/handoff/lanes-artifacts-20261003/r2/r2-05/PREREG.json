@@ -1,0 +1,81 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "experiment": "R2-05",
+  "title": "Real acknowledgement loss and delayed effects on the real MCP stdio transport",
+  "owners": ["kvnloo/cua#105 (recovery owner)", "kvnloo/cua#93 R2-05", "kvnloo/cua#9 keeps cancellation/native lifetime (not tested here)"],
+  "registered_utc": "2026-10-01T22:16Z",
+  "status_at_registration": "harness built; plumbing pilot run (raw/pilot, excluded from denominators); no measured trial run",
+  "hypothesis": "With a real Driver, real Chromium and the real MCP stdio transport, and with the owned fixture's target journal as the oracle, a caller that follows the #105 mutation_outcome receipt produces 0 duplicate target mutations. Following the receipt means: observe and reconcile when the effect is unknown, and reconsider only when the MCP SDK write call proves the request was never written. This must hold for a proven pre-dispatch failure, an applied effect whose acknowledgement is lost, a delayed effect that lands after an initially unchanged read, and a delayed effect that lands only after the caller's reconciliation deadline. A naive restart-from-step-one policy produces a duplicate when the original effect is still in flight.",
+  "tested_source": {
+    "repo": "kvnloo/cua",
+    "pr": "kvnloo/cua#105",
+    "sha": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+    "live_head_gh_at_registration": "98a45e6c528da9e2715288c20c2a0feeeef8e73f (OPEN, draft; read 2026-10-01T22:14Z)",
+    "base": "trycua/cua#4316 a0bca744067d04f05904319d3d919be30c336556 (live head re-read 2026-10-01T22:14Z, OPEN)",
+    "driver_source_identity": "git diff a0bca7440..98a45e6c5 outside libs/cua-driver/examples is empty: the Driver source under test equals a0bca7440"
+  },
+  "driver_binary": {
+    "name": "cua-driver-4316-a0bca7440 (plain; not the -e2e wrapper)",
+    "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95",
+    "version": "cua-driver 0.31.0",
+    "rebuilt": false,
+    "safety_settings": "Driver defaults: Chromium sandbox on, no permission-mode override, no approval bypass"
+  },
+  "driver_code_changes": "none (no instrumentation added; default Driver behaviour unchanged)",
+  "caller_under_test": "UNMODIFIED jev-use python/run.py run() at the tested source, args: --provider mock --guarded-completion --visual-observation off --max-steps 4. Step 1: the provider picks browser_type. Step 2: guarded completion re-proves Submit and dispatches browser_click with input_route=dom_event. The runner runs in-process. Its run.stdio_client name is pointed at harness/fault_transport.fault_stdio_client, which wraps the SDK's real mcp.client.stdio.stdio_client and the real `cua-driver mcp` child process.",
+  "fault_seam": "Between the MCP ClientSession and the SDK stdio streams, in the caller process. Every byte otherwise crosses the real stdio pipes to the real Driver. EOF on the caller-facing read stream is the same state the SDK reaches when the Driver's stdout closes.",
+  "fixture": "harness/ackloss_fixture.py serves the unchanged jev-use form page (fixture_server.PAGE). The target journal records received/applied per POST /submit and every GET /state read. The caller only ever reads /state, through the runner's own fixture_state. The harness reads the journal in process after the caller finishes. The runner's POST /reset is journaled and ignored; the harness resets the target between trials.",
+  "rows": {
+    "R0_control": {"fault": "none", "fixture": "immediate", "arms": ["typed"], "forced_path": "plain relay; guarded Submit applies normally"},
+    "RA_pre_dispatch": {"fault": "pre_dispatch", "fixture": "immediate", "arms": ["typed", "naive"], "forced_path": "When the Driver answers the step-2 semantic snapshot, the seam closes the session write stream, delivers the answer, then sends EOF. The Submit click fails inside the SDK write call (ClosedResourceError) and is never written."},
+    "RA2_request_lost": {"fault": "request_lost", "fixture": "immediate", "arms": ["typed", "naive"], "forced_path": "The seam takes the Submit request from the session (the write call returns), does not forward it, then sends EOF; the caller gets McpError CONNECTION_CLOSED. Negative control: the caller cannot prove non-dispatch, so it must not infer pre-dispatch."},
+    "RB_ack_lost_applied": {"fault": "ack_lost", "barrier": "applied", "fixture": "immediate", "arms": ["typed", "naive"], "forced_path": "The Submit request reaches the real Driver, which clicks in real Chromium and the POST lands. The seam holds the Driver's response until the journal records applied, drops it, then sends EOF; the caller gets McpError CONNECTION_CLOSED."},
+    "RC_delayed_after_unchanged": {"fault": "ack_lost", "barrier": "received", "fixture": "after_unchanged:1", "arms": ["typed", "naive"], "forced_path": "As RB, but the seam waits only for received. The target holds op 1 and applies it only after it has served one /state read that returned unchanged."},
+    "RD_delayed_withheld": {"fault": "ack_lost", "barrier": "received", "fixture": "withheld", "arms": ["typed", "naive"], "forced_path": "As RC, but the target holds op 1 until the harness releases it after the caller has finished, which is beyond the reconciliation deadline."},
+    "RE_runner_loop_withheld": {"fault": "none", "fixture": "withheld", "arms": ["runner"], "forced_path": "Probe of the runner's own loop: the acknowledgement is delivered normally and op 1 is held, with its HTTP response, until the caller finishes. Does the runner dispatch Submit again after its negative verification reads?"}
+  },
+  "arms": {
+    "typed": "Experiment-side consumer of the runner outcome and #105 receipt. (1) verified: done. (2) unknown with mutation_outcome and error class ClosedResourceError/BrokenResourceError, which the SDK raises from the write call before handing the message to the transport: classify not_dispatched_proven and reconsider once with a fresh runner run (new transport, Driver and browser; no target reset). (3) unknown with any other error: classify unknown_effect, read the oracle (fixture_state) every 0.1 s up to a 3.0 s deadline, never dispatch; effect seen gives reconciled_applied/verified, deadline gives unresolved_unknown. (4) any other outcome: no recovery.",
+    "naive": "Counterexample. On unknown, restart the runner from step one at once (fresh run, no target reset, no reconciliation wait). The runner's own step-start oracle read is its only check.",
+    "runner": "No recovery; the runner's own loop only (RE)."
+  },
+  "n": {"blocks": 10, "per_cell": 10, "cells": 12, "trials": 120},
+  "interleaving": "harness/run_trials.py schedule(10): each block contains all 12 cells once. Block b rotates the base cell order by b, and odd blocks are reversed (AB/BA). One private session runs trials sequentially; every trial is kept.",
+  "oracle": "Target-owned fixture journal: received/applied counts and order, release reason, whether the submitted value equals the trial token, and whether the POST user agent was Chrome. Seam journal (caller side, content-free) for the forwarded/withheld/dropped attribution. The runner and the recovery policy never read the journal.",
+  "metrics": ["per cell: N, predicate-held count, trials with duplicate_mutations>0, sum of duplicates (applied-1)", "first outcome, error class and #105 receipt fields", "typed classification and resolution", "dispatches after the first attempt", "reconciliation read count and first-read visibility", "journal received/applied before recovery and after settle", "fault fired / barrier reached (placement validity)", "loadavg at trial start and end", "resolution_ms (informational only; not a benchmark and not taken under quiet-lane.lock)"],
+  "typed_predicates": {
+    "R0_control": "first verified; classification none; applied==1; dup==0",
+    "RA_pre_dispatch": "fault fired; first error class in {ClosedResourceError,BrokenResourceError}; classification not_dispatched_proven; journal received==0 before recovery; seam forwarded no browser_click in attempt 1; final verified; applied==1; dup==0",
+    "RA2_request_lost": "fault fired; classification unknown_effect (never not_dispatched_proven); 0 dispatches after; final unknown/unresolved_unknown; received==0; applied==0",
+    "RB_ack_lost_applied": "fault fired; barrier applied reached; applied==1 before recovery; classification unknown_effect; 0 dispatches after; resolution reconciled_applied; final verified; applied==1 after settle; dup==0",
+    "RC_delayed_after_unchanged": "fault fired; barrier received reached; applied==0 before recovery; classification unknown_effect; first reconciliation read effect_visible==false; 0 dispatches after; resolution reconciled_applied; final verified; applied==1; dup==0",
+    "RD_delayed_withheld": "fault fired; barrier received reached; applied==0 before recovery; classification unknown_effect; every reconciliation read negative; 0 dispatches after; resolution unresolved_unknown; final unknown; applied==1 after settle; dup==0"
+  },
+  "predictions_not_gates": {
+    "naive": "RA verified, applied 1. RA2 verified, applied 1 (a lucky retry). RB: no duplicate, because the restart's step-1 read sees the landed effect. RC: no duplicate, because the restart's step-1 read releases op 1 and its step-2 read sees it. RD: duplicate (applied 2).",
+    "runner_RE": "From the pilot: no second dispatch. The step-3 snapshot is refused after a CDP DOM.getDocument timeout while the POST navigation is pending, and the run ends in an uncaught DriverToolError after about 100 s.",
+    "receipt": "In RA the #105 receipt reads attempted=true, effect=unknown, retryDisposition=observe, because the runner cannot tell a pre-write failure apart. This is a safe over-approximation and is reported as a finding."
+  },
+  "controls": {
+    "positive_control": "R0 (plain relay through the seam)",
+    "negative_control_no_false_predispatch": "RA2 (request lost after the write call): the typed caller must classify it unknown_effect",
+    "counterexample_validity": "RD naive must show >=1 duplicate, or the rows do not discriminate",
+    "placement_validity": "fault_fired and barrier reached, from the seam journal; target journal received/applied before recovery"
+  },
+  "decision_gates": {
+    "KILL": "Any typed trial in R0/RA/RA2/RB/RC/RD with any of: duplicate_mutations>0; any dispatch after an unknown_effect classification; a landed effect (applied>=1 before recovery) classified not_dispatched_proven or reported refuted; RA2 classified not_dispatched_proven.",
+    "KEEP": "No KILL event; every typed cell meets its predicate in >=9/10 trials, and every miss is a placement or liveness miss, never a safety failure; R0 >=9/10; RD naive >=1 duplicate.",
+    "REVISE": "No KILL event, but any of: a typed cell below 9/10 for liveness/placement; the RE runner loop produced a duplicate (the runner must treat an unverified completion as unresolved); RD naive 0 duplicates (harness does not discriminate).",
+    "BLOCKED": "The isolated session, Driver or browser cannot run the trials."
+  },
+  "claim_boundary": "Linux, private rootless Xvfb session, Google Chrome 151 launched by Driver 0.31.0 (sha256 e57bb9ae...). Python jev-use runner only; TypeScript NOT_RUN. One mutation: the fixture form Submit, guarded completion, dom_event. Mock provider. The fault is injected at the caller's MCP SDK transport-stream boundary, not by killing the Driver process or cutting the OS pipe. The typed and naive recovery policies are experiment-side consumers of the #105 receipt, not product code; the #105 runner itself stops at unknown and does not reconcile. The pre-dispatch proof relies on MCP Python SDK 1.30.0 / anyio 4.15.1 semantics. No exactly-once or idempotency claim, no timing claim, no cross-platform inference. Cancellation and native lifetime (#9) are not tested.",
+  "pilot_disclosure": "Before registration, three plumbing pilots ran: pilot1 (2 trials) and pilot2 (1 trial) hit a harness keyword bug in the ack_lost path, which is now fixed; pilot3 ran one trial of each of the 12 cells with the registered harness. Their raw files are kept in raw/pilot/ and excluded from the registered denominators.",
+  "harness_sha256": {
+    "harness/ackloss_fixture.py": "730cbfe5657d54b3859d7f25d9b50216039425bb83b2e6f9eb6f116bf928f36e",
+    "harness/fault_transport.py": "6f32e4c1be9cdbdeedf060453c558e80fbfc12e8a47edf945cdf7c60b9410b71",
+    "harness/run_trials.py": "08031b3204f2a8c591a84193b3c276121e00b103da848be224e66c06360d1155",
+    "harness/test_harness.py": "d408089de879fd059aece6b914e300c557ad8be233be7669d7cd7e5bac37248f",
+    "harness/session_entry.sh": "cb01173a29bf024d1ed7661e1c23d92444347a10829cecd6ad5aebb0140f3ef0"
+  },
+  "run_command": "cd <lanes>/r2-05 && <lanes>/cua-x11-session.sh docs/experiments/r2-05-2026-10-01/harness/session_entry.sh <lanes>/r2-05 <lanes>/bin/cua-driver-4316-a0bca7440 <artifacts>/r2-05/measured <tmp>/r2-05/measured --blocks 10"
+}

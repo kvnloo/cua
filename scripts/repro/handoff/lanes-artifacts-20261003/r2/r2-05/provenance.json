@@ -1,0 +1,28 @@
+{
+  "experiment": "R2-05",
+  "captured_utc": "2026-10-01T22:14Z",
+  "upstream_main_sha": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+  "tested_source_sha": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+  "tested_source_parent": "ec83a3a807968782d82ec50cacf1759604ae1cc7",
+  "tested_source_pr": "kvnloo/cua#105 (research/mutation-outcome-ack-loss-v0)",
+  "live_pr_head_gh": {
+    "kvnloo/cua#105": {"head": "98a45e6c528da9e2715288c20c2a0feeeef8e73f", "state": "OPEN", "draft": true, "read_utc": "2026-10-01T22:14Z"},
+    "trycua/cua#4316": {"head": "a0bca744067d04f05904319d3d919be30c336556", "state": "OPEN", "draft": false, "read_utc": "2026-10-01T22:14Z"}
+  },
+  "driver_source_sha": "a0bca744067d04f05904319d3d919be30c336556 (the 98a45e6c5 tree differs from it only under libs/cua-driver/examples)",
+  "driver_binary": {
+    "sha256": "e57bb9aef66a3ef0aed8bb1c09ff8828e1b2b89b7f57f9a60de631dee3eaff95",
+    "version": "cua-driver 0.31.0",
+    "build": "existing lane build of a0bca7440 (cargo build --locked --release -p cua-driver --features portal-input, rustc 1.97.1); not rebuilt. Its sha matches the target-dir artifact and the sha recorded on kvnloo/cua#93. Gap: that build's head= stdout line was not saved.",
+    "measured_in_session": "see raw/measured/session-env.txt (driver_version, driver_sha256 recomputed inside the session)"
+  },
+  "pre_registration": {"file": "PREREG.json", "commit": "6915dd75d", "sha256": "0ccae6dc66fe40b5929fd99f1b10b3e132ed80810b7d7d02fe18d8738445b750"},
+  "publication_sha": "not set in this packet: the lane commit SHA is reported to the orchestrator, which records the publication SHA after any push",
+  "python_dependencies": "uv sync --frozen --python 3.12 (uv.lock at tested source): mcp 1.30.0, anyio 4.15.1, Python 3.12.13",
+  "typescript_dependencies": "npm ci --ignore-scripts (used only for the unit baseline)",
+  "browser": "Google Chrome 151.0.7922.71 (the first root-owned candidate the Driver finds; Driver-owned isolated_new profile)",
+  "environment": "Linux 7.2.2 x86_64, i9-10900KF, 10 cores, 23 GiB. Private rootless Xvfb 1920x1080x24 with -nolisten tcp, openbox and picom (xrender), private dbus-run-session, scrubbed env (no WAYLAND_DISPLAY, HYPRLAND_* or host XDG_RUNTIME_DIR), no AT-SPI bus. Other agents shared the host: loadavg is recorded per trial.",
+  "session_script_sha256": {"cua-x11-session.sh": "de01a439efbf6af99a0ccd820e31ebcae4d696b67ba86c14f84c3c67dfef3a4b"},
+  "driver_code_changed": false,
+  "artifacts_source_classification": "REAL (real Driver, Chrome, MCP stdio, owned fixture journal) for the fault rows; UNIT for the harness self-tests and the jev-use suites; SOURCE for the Driver-source identity"
+}

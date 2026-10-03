@@ -1,0 +1,100 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "B-07",
+ "wave": 5,
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#73"],
+ "question": "On R' code, which of the residual UNTESTED browser MCP transport sub-spans left by B-05 (c_in.prep, c_out.route, d_out.post, toggle adm.inner) can be deleted with byte- or decoded-identical requests and responses, and what is the R'-source transport / resolution / admission decomposition?",
+ "branch": "exp/b-07-transport-residual-rprime-20261003",
+ "source": {
+  "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a (0f1955d2f + R2-10 steps 1-8; libs/cua-driver tree df2b49c32e73 = upstream main cb685fad7 and 0f1955d2f)",
+  "cherry_picks": {"4c786178b": "a17530466 (N-02 MCP span marks + settle clamp knob, default off)",
+                   "3116b6981": "c65b1d2f2 (B-05 resolution and stdout sub-span marks, default off)",
+                   "b376f1ff3": "501158460 (B-05 single-write stdout knob, default off)"},
+  "cherry_pick_conflicts": 0,
+  "range_diff": "raw/source/range-diff-picks-vs-b05.txt: all three '=' (patch-identical)",
+  "lane_driver_commit": "ac319cbe9 (B-07 output-validator prewarm knob CUA_DRIVER_EXP_OUTPUT_VALIDATOR_PREWARM, default off)",
+  "binary": "B7 = build-driver.sh label b07-ac319cbe9, family target dir cua-release-r2-10; sha256 and --version read inside a private session and recorded in provenance.json",
+  "reference_binary": "R' = bin/cua-driver-r2-10r-a2-45dff8f32, sha256 922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8 (default-off smoke only)"
+ },
+ "evidence_classes": ["SOURCE", "UNIT", "FIXTURE", "REAL", "BENCHMARK", "LIVE_PROVIDER", "BLOCKED", "NOT_RUN"],
+ "provider": {"cap_reached": 0, "use": "none: scripted chooser only; TYPESAFE_API_KEY never forwarded"},
+ "configuration": "R2-10R COMP (harness/r2-10r/r2_10_browser.py ARMS['COMP'], byte-identical to c183b95e3): feedback/cursor off, guarded completion, settle 0 on fill, 10 ms poll, admission tools-list cache (CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1), compiled client validators, compiled replay on fill after one training invocation per (layer, arm); fresh Driver, fresh isolated Chrome, fresh fixture state and token per trial; scripted chooser",
+ "arms": {
+  "COMP": "R2-10R COMP with the Driver phase trace ON (marks on)",
+  "COMP_OFF": "COMP with the phase trace OFF (marks off); the Phase B control",
+  "candidates": "PREP_FAST, ROUTE_FAST, POST_FAST below, each = COMP_OFF + one change; only the ones selected by selection_rule run in Phase B"
+ },
+ "subspans": {
+  "definition": "B-05's taxonomy, unchanged (B-05 PREREG.json 'subspans' at a91a86a4a; harness/b05/b05_spans.py byte-identical). Each in-T call is split at every Driver mark and caller stamp; each interval is labelled by its left point; per-mark correction subtracts c_m from every interval that starts at a Driver mark.",
+  "groups": {"transport_in_out": "c_in.* + pipe_in/pipe_out + d_in.* + d_out.* + c_out.* except c_out.validate",
+             "admission_residual": "adm.outer + adm.inner", "resolution": "res.*", "client_validation": "c_out.validate"},
+  "R2_10_mapping": "R2-10R's own analysis (harness/r2-10r/analyze_r2_10.py, b01_analysis, analyze_browser) on the trace with the B-05-new marks removed (R's mark set)"
+ },
+ "phase0_source_map": {
+  "class": "SOURCE (R' tree 45dff8f32 + picks; jev-use venv mcp 1.30.0)",
+  "c_in.prep": {
+   "interval": "call_send -> c.writer_got",
+   "code": ["harness RecDriver.call (r2_10_browser.py): call_send stamp", "jev-use python/run.py Driver.call: {**arguments, 'session': label}", "mcp/client/session.py ClientSession.call_tool: CallToolRequestParams -> CallToolRequest -> ClientRequest", "mcp/shared/session.py BaseSession.send_request: id, response stream, request.model_dump(by_alias, mode=json, exclude_none), JSONRPCRequest(**data), JSONRPCMessage, SessionMessage, write_stream.send (capacity-0 memory stream: hand-off to the stdin-writer task)", "mcp/client/stdio stdin_writer receives (c.writer_got)"],
+   "driver_side": "none (caller only)",
+   "candidate": "PREP_FAST"
+  },
+  "c_out.route": {
+   "interval": "c.parsed -> c.result_model_start",
+   "code": ["mcp/client/stdio stdout_reader: SessionMessage(message), read_stream_writer.send (capacity-0 hand-off to the session receive loop)", "mcp/shared/session.py BaseSession._receive_loop -> _handle_response: _normalize_request_id, response routers, _response_streams.pop(id), stream.send(root)", "send_request wakes from response_stream_reader.receive() and calls result_type.model_validate (c.result_model_start)"],
+   "driver_side": "none (caller only)",
+   "candidate": "ROUTE_FAST"
+  },
+  "d_out.post": {
+   "interval": "dispatch.exit, (<tool>, dispatch_exit|invoke_end), rt.*, sdk.*, mcp.invoke_end, mcp.conformed, mcp.handled, (mcp:*, handler_end) -> mcp.serialize_start",
+   "code": ["cua-driver-core/src/tool.rs invoke_authorized (dispatch.exit)", "cua-driver-sdk/src/runtime.rs invoke_with_context_and_evidence: activity observer (rt.registry_returned -> rt.observed)", "cua-driver-sdk/src/lib.rs CuaDriver::call_tool_from_trusted_adapter -> normalize_result (sdk.runtime_returned -> sdk.normalized)", "cua-driver/src/sdk_adapter.rs: raw_json parse, session mirror (sdk.call_end -> sdk.parsed)", "cua-driver-core/src/server.rs tools/call: provider.invoke_tool returns (mcp.invoke_end) -> mcp_result::conforming_tool_result (mcp.conformed)", "cua-driver-core/src/mcp_result.rs conforming_tool_result: validate_wire_output (per-tool-name lazily compiled jsonschema validator in OUTPUT_VALIDATORS) + validate_success_output (typed ActionResult check)", "cua-driver/src/proxy.rs run_direct: mcp.handled -> handler_end -> timer.finish, context.complete, observe_proxy_tool_completed -> mcp.serialize_start"],
+   "design_input": "B-05 A1 raw (binary B5, design input only, not a B-07 result): every d_out.post interval is 33-57 us per mark (about c_m = 34.5 us) except mcp.invoke_end -> mcp.conformed on the FIRST call of each action-result tool in a process (fill browser_type 276 us, browser_click 306 us; toggle/modal first browser_click 267/307 us) against 48-51 us on the second call: the lazy per-tool-name compile of the shared ActionResult output validator, once per fresh Driver process",
+   "candidate": "POST_FAST"
+  },
+  "adm.inner": {
+   "interval": "mcp.admitted, identity_applied, session_begun, timer_started, (mcp:*, handler_start), inner_classified, inner_tools_list_built, inner_validation_skipped -> mcp.inner_validated",
+   "code": ["cua-driver/src/proxy.rs run_direct: apply_direct_session_identity (writes _session_id / _transport_session_id), sdk.begin_tool_call (session observation context), tool_observation_timer", "cua-driver-core/src/server.rs handle_request_with_transport_session_prevalidated: inner classification; the B-02 cached path already skips the repeated inner validation (inner_validation_skipped)"],
+   "design_input": "B-05 A1 raw: per-mark intervals 33-77 us (c_m + 0-43 us); the only intervals clearly above c_m are identity_applied (+20-34 us) and session_begun (+4-43 us)",
+   "candidate": null,
+   "removed_from_menu": "No byte-preserving deletion exists that keeps the invariants. The work above c_m is (1) applying the transport-minted session identity to the arguments, which is how the Driver binds the call to its session (logical routine identity may persist, but session epochs/identity are applied per call, never cached as authority), and (2) opening the per-call session observation context that completion accounting closes after the call. The rest of adm.inner is mark cost and an already-deleted repeat validation (B-02). Verdict rule for adm.inner in admission_rule below."
+  }
+ },
+ "candidates": {
+  "PREP_FAST": {"target": "c_in.prep", "kind": "measured caller change (harness only; jev-use client stack, mcp 1.30.0)", "implementation": "harness/b07_stdio.py _call_tool: for a plain-JSON tools/call (arguments of str / bool / int within +-2**53 / list / dict only; no meta, progress callback or read timeout) build the JSON-RPC line directly ('{\"method\":\"tools/call\",\"params\":{\"name\":...,\"arguments\":...},\"jsonrpc\":\"2.0\",\"id\":N}') and write it to the Driver's stdin from the calling task; same id allocation, response stream, result model and output validation as the library. Anything else: library path", "equivalence": "byte-identical request lines: every tools/call request line of every Phase B trial in both arms equals the library serialisation of the same (name, arguments, id) (harness/b07_equivalence.py); FIXTURE edge cases (harness/b07_controls.py prep_bytes) identical between arms and to the library, fallback types take the library path", "driver_knobs": {}},
+  "ROUTE_FAST": {"target": "c_out.route", "kind": "measured caller change (harness only)", "implementation": "harness/b07_stdio.py stdout_reader: a parsed JSONRPCResponse/JSONRPCError with an int id that has a pending waiter, on a session without response routers, is sent with send_nowait to that waiter's response stream (the object the receive loop would have sent); anything else, or any failure, takes the library path", "equivalence": "decoded-identical responses: the canonical JSON of every result object handed to CallToolResult.model_validate equals that of the corresponding tools/call response line, in order, in both arms (harness/b07_equivalence.py); identical validation verdicts (same compiled validators on identical objects); malformed-frame negative control (harness/b07_controls.py malformed): identical outcome per frame in both arms and every malformed frame rejected", "driver_knobs": {}},
+  "POST_FAST": {"target": "d_out.post", "kind": "default-off Driver knob (ac319cbe9)", "implementation": "CUA_DRIVER_EXP_OUTPUT_VALIDATOR_PREWARM=1: the direct stdio transport compiles the shared ActionResult output validator once before the first request and enters it for every action-result tool name; unset = lazy per-tool compile as shipped", "equivalence": "byte-identical responses: every response line of every Phase B trial compared between arms after removing per-trial values is not possible (refs/tokens differ per trial), so: (a) UNIT b07_prewarm_shares_one_validator_and_keeps_results_identical (identical result bytes before/after for a valid and a schema-rejected payload on three tools); (b) per trial, the tools/call response lines' JSON key structure and the validation outcome are identical between arms (harness/b07_equivalence.py shape check); (c) N4a refusals identical", "driver_knobs": {"CUA_DRIVER_EXP_OUTPUT_VALIDATOR_PREWARM": "1"}, "work_note": "the compile moves to transport start (outside T); per process the action-result tools share one compile instead of one per tool name. Work deleted is reported for T (caller-observed Driver window) and the moved startup work is stated separately"}
+ },
+ "selection_rule": "After Phase A and before any Phase B trial, PREREG-AMENDMENT-1.json names the selected candidates. A candidate is selected iff its target sub-span has a Phase A corrected (per-mark c_m) per-task mean >= 0.5 ms in at least one class. Fixed here; the amendment only applies it.",
+ "phase_A": {
+  "design": "32 rounds, class order rotated per round (harness/b07_browser.py plan A), COMP marks on, 96 measured trials (32 per class)",
+  "c_m": "median of the in-situ null-pair intervals (b05_spans.NULL_PAIRS) over Phase A",
+  "coverage_gate": "B-05 sub-span coverage of T_runner (1 - other/T_runner) >= 0.98 on every valid trial; a trial below it is kept, reported and excluded from attribution means",
+  "outputs": "R'-source decomposition per class: every sub-span raw and corrected (mean, 95% CI, median), groups transport_in_out / admission_residual / resolution / client_validation, R2-10 component view (consistency with R2-10R's own code checked per trial)"
+ },
+ "overhead_control": {"design": "20 AB/BA rounds per class, COMP vs COMP_OFF (plan ovh)", "report": "paired T_runner and T_oracle penalty of marks on, per class, mean and 95% CI; predicted penalty marks x c_m; their ratio; corrected view at c_m and at the measured scale x_pooled (pooled measured/predicted) as sensitivity"},
+ "phase_B": {
+  "design": "per selected candidate: 30 AB/BA rounds per class, COMP_OFF vs candidate (plan B); N4a 5 per class in COMP_OFF and in each candidate arm (15 per arm)",
+  "primary_metric": "T_oracle (R2-10 rule: from task start to the first 2 ms independent-oracle sample at/after the last accepted mutation's return showing the expected final state), paired saving = COMP_OFF - candidate",
+  "secondary": "T_runner paired; work deleted per task from caller stamps (marks off): PREP_FAST sum of call_send -> c.req_written; ROUTE_FAST sum of c.parsed -> c.result_model_start; POST_FAST sum of the caller-observed Driver window c.req_written -> c.first_byte over the in-T calls",
+  "gate": "per candidate and class: DELETED iff mean T_oracle saving >= 0.5 ms AND its 95% CI excludes 0 (lower > 0) AND validity 100% AND equivalence 100% AND N4a 15/15 refused (effect=refused, then one rebind, verified) in both arms AND negative control passes AND no T_runner regression (CI upper < 0). DELETED -> KEEP as a default-off knob (POST_FAST) or a measured caller change (PREP_FAST/ROUTE_FAST). Otherwise KILL, and the target sub-span maps to IRREDUCIBLE for E2, or BELOW_GATE where its Phase A corrected mean is < 0.5 ms in that class"
+ },
+ "unselected_rule": "a candidate not selected: its target sub-span is BELOW_GATE in a class where the Phase A corrected CI upper is < 0.5 ms; otherwise UNTESTED (not selected)",
+ "admission_rule": "adm.inner (removed from the menu): per class, BELOW_GATE if its Phase A corrected CI upper < 0.5 ms, else IRREDUCIBLE (invariant: session identity and session observation context, phase0_source_map.adm.inner.removed_from_menu)",
+ "other_subspans": "B-05's terminal verdicts carry over as labels: c_out.parse and c_out.validate IRREDUCIBLE (candidate failed), res.frame_proof / res.type_focus / res.cdp_node_resolve / res.editable_check IRREDUCIBLE (invariant). Every other B-05 sub-span is re-evaluated on R' Phase A: BELOW_GATE if its corrected CI upper < 0.5 ms, else UNTESTED (no candidate)",
+ "modal_stall": {
+  "definition": "a caller stall is any single interval > 20 ms inside T between consecutive caller-side points of one call that the B-05 labels give to a c_in.* or c_out.* sub-span",
+  "report": "per class: c_in.prep (and T_oracle) with all valid Phase A trials and with the trials that contain a caller stall excluded",
+  "classification": "descriptive only: GC if a recorded gc start/stop pair (b07_stdio gc callback) overlaps >= 50% of the stall; otherwise scheduler/other, with the trial's 1-minute loadavg"
+ },
+ "e2_output": {
+  "share": "R'-source untested share of mean T_runner (corrected at c_m and raw) per class, BELOW_GATE counted as IRREDUCIBLE and as UNTESTED. Components outside the lane keep R2-10R's verdicts (analyze_r2_10.BROWSER_VERDICTS); lane sub-spans take the verdicts above",
+  "cold_excess": "two separate mappings, never combined with each other or with B-06 numbers: (a) R2-10's carry-over mapping (observation IRREDUCIBLE); (b) B-04: E = span(snapshot1) - span(snapshot2) on B7 Phase A (harness/b04/b04_rows.py snap_measures, byte-identical from 8620ebfa2); per-document part IRREDUCIBLE but unsized, per-process part pending B-06, so u = 1 and the whole E counts as UNTESTED for fill and toggle (modal unchanged, as in B-04)",
+  "never": "no number is added to or ratioed with another binary's (B5, R, R', B7)"
+ },
+ "load": "a round starts only at 1-minute loadavg <= 4.0; otherwise the harness waits up to 60 s (2 s polls) and then ends the chunk; the next chunk resumes at that round. Every gate attempt is in the run manifest. Loadavg is recorded per trial and every trial is kept",
+ "locks": "every measured chunk: cargo-build lock first, then bin/quiet-timed <label> (EXCLUSIVE quiet-lane lock, receipt in the shared ledger), then cua-x11-session.sh; <= 10 min per acquisition (harness --max-minutes 9, timeout 600 s)",
+ "oracle": "independent, target-owned jev-use fixture-server state sampled every 2 ms by a harness thread (R2-10 Sampler); a trial is verified only with the expected final state and exactly one completion mutation in the fixture journal",
+ "e4": "per arm: 0 stale-ref dispatches, 0 duplicate mutations, 0 unverified successes, 0 refusals returned as success (R2-10R e4_totals)",
+ "statistics": "seeded bootstrap (seed 20261003, 10000 resamples) of the mean; paired by (class, round); every trial kept; invalid trials stay in the denominator of validity",
+ "order_of_work": ["Phase 0 SOURCE map (this file)", "commit PREREG.json", "unit suites + B7 build", "default-off smoke B7 vs R' (5 per class each, BASE, no CUA_DRIVER_EXP_*, no trace)", "FIXTURE controls (harness/b07_controls.py)", "Phase A + overhead control", "commit PREREG-AMENDMENT-1.json (selection only)", "Phase B + N4a", "analysis, packet, verifier"],
+ "claim_boundary": "one host, private Xvfb, system Chrome (version read in session), binary B7 only for Part 1 (R' 922111c5 only for the default-off smoke), scripted chooser, no provider; knobs env-gated and default-off; no new service"
+}
