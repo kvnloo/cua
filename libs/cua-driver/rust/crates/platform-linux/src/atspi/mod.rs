@@ -364,14 +364,30 @@ fn token_frame(
 
 pub use native::ScrollProgress;
 
+/// Scroll element `idx` of the caller's snapshot of `xid`. As in
+/// [`type_into_editable_at`], the index stays in that window: it is resolved
+/// in the window's snapshot index space and must land on a node of the token's
+/// window frame; a token whose window snapshot no longer holds the element is
+/// stale ([`native::CachedElementGone`]) and never walks the whole application.
 pub fn scroll_element(
     pid: u32,
+    xid: Option<u64>,
     idx: usize,
     direction: &str,
     amount: usize,
     by: cua_driver_contract::ScrollBy,
 ) -> Result<ScrollProgress> {
-    native::scroll_element(pid, idx, direction, amount, by)
+    let cached = cache::cached_element(pid, xid, idx);
+    let frame = token_frame(pid, xid, idx, cached.as_ref())?;
+    native::scroll_element(
+        pid,
+        xid.unwrap_or(0),
+        idx,
+        direction,
+        amount,
+        by,
+        frame.as_ref(),
+    )
 }
 
 /// Enumerate top-level windows from the AT-SPI registry. The window-listing
@@ -518,17 +534,20 @@ pub fn type_into_editable_at(pid: u32, xid: Option<u64>, idx: usize, text: &str)
 /// Tries `EditableText.set_text_contents(value)` first, then
 /// `Value.set_current_value(float)`.
 pub fn set_value(pid: u32, idx: usize, value: &str) -> Result<()> {
-    native::set_value(pid, idx, value)
+    native::set_value(pid, 0, idx, value, None)
 }
 
 /// [`set_value`] on the exact object the caller's snapshot indexed, when the
-/// snapshot cache still knows it; a fresh walk (same index space as the
-/// snapshot of `xid`) otherwise. `Err` messages starting with
+/// snapshot cache still knows it; a fresh walk in the snapshot's index space,
+/// kept to the token's window frame, otherwise (as [`type_into_editable_at`]:
+/// a token whose window snapshot no longer holds the element is
+/// [`native::CachedElementGone`]). `Err` messages starting with
 /// [`native::NO_VALUE_ROUTE`] mean the element has no accessibility write
 /// route at all.
 pub fn set_value_in(pid: u32, xid: Option<u64>, idx: usize, value: &str) -> Result<()> {
-    if let Some(object_ref) = cache::cached_element(pid, xid, idx).and_then(|e| e.object_ref) {
-        match native::set_value_ref(&object_ref, value) {
+    let cached = cache::cached_element(pid, xid, idx);
+    if let Some(object_ref) = cached.as_ref().and_then(|e| e.object_ref.as_ref()) {
+        match native::set_value_ref(object_ref, value) {
             Ok(()) => return Ok(()),
             Err(error) if native::is_no_value_route(&error) => return Err(error),
             Err(error) => tracing::debug!(
@@ -536,7 +555,13 @@ pub fn set_value_in(pid: u32, xid: Option<u64>, idx: usize, value: &str) -> Resu
             ),
         }
     }
-    native::set_value(pid, idx, value)
+    native::set_value(
+        pid,
+        xid.unwrap_or(0),
+        idx,
+        value,
+        token_frame(pid, xid, idx, cached.as_ref())?.as_ref(),
+    )
 }
 
 /// Read the current value/text of a snapshot-cached element (for the
@@ -884,6 +909,65 @@ mod window_scoped_fallback_tests {
         assert!(typed.is::<native::CachedElementGone>(), "{typed:#}");
         let focused = focus_element(pid, Some(xid), 6).unwrap_err();
         assert!(focused.is::<native::CachedElementGone>(), "{focused:#}");
+    }
+}
+
+#[cfg(test)]
+mod residue_fallback_tests {
+    use super::*;
+
+    // FIX-05 (kvnloo/cua#36, kvnloo/cua#73 E4): the index fallbacks FIX-04 left
+    // pid-wide. No snapshot was ever published for this (pid, window), so the
+    // token's window snapshot is gone: every element-addressed path must refuse
+    // it as stale instead of resolving the index against another window.
+    const PID: u32 = 3_999_905;
+    const XID: u64 = 0x7fff_0f05;
+
+    /// set_value -> set_value_in: the fallback after the cached write is
+    /// set_value(pid, idx), a walk of the whole application.
+    #[test]
+    fn window_scoped_set_value_without_its_snapshot_is_stale_not_resolved_pid_wide() {
+        let error = set_value_in(PID, Some(XID), 6, "fix05").unwrap_err();
+        assert!(error.is::<native::CachedElementGone>(), "{error:#}");
+    }
+
+    /// scroll -> scroll_element: the element token's index was resolved
+    /// against a walk of the whole application, never against its window.
+    #[test]
+    fn window_scoped_scroll_without_its_snapshot_is_stale_not_resolved_pid_wide() {
+        let error = scroll_element(
+            PID,
+            Some(XID),
+            9,
+            "down",
+            1,
+            cua_driver_contract::ScrollBy::Line,
+        )
+        .unwrap_err();
+        assert!(error.is::<native::CachedElementGone>(), "{error:#}");
+    }
+
+    /// click -> perform_action_observed (pin, unchanged by FIX-05): the public
+    /// element action acts on the exact observed object and never re-walks by
+    /// index, so a gone object is stale. perform_action(pid, idx) has no public
+    /// element-token caller.
+    #[test]
+    fn observed_action_without_its_object_is_stale_and_never_re_walks() {
+        let element = cache::CachedElement {
+            key: 1,
+            identity: AtspiIdentity {
+                bus_name: ":1.7".into(),
+                path: "/node/2".into(),
+                frame_bus_name: ":1.7".into(),
+                frame_path: "/frame/w1".into(),
+            },
+            object_ref: None,
+            role: "check box".into(),
+            in_web_content: false,
+            bounds: None,
+        };
+        let error = perform_action_observed(&element).unwrap_err();
+        assert!(error.is::<native::CachedElementGone>(), "{error:#}");
     }
 }
 

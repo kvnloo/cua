@@ -4697,29 +4697,44 @@ async fn sample_page_probes(
     Ok(sample)
 }
 
+/// The application walk in the index space of a snapshot of window `xid`:
+/// that window's top-level is walked first, as the snapshot walk does, so an
+/// element index of that snapshot names the same node. `xid == 0` walks the
+/// whole application in its own order (window-less callers).
+async fn collect_visited_in<'a>(
+    conn: &'a AccessibilityConnection,
+    pid: u32,
+    xid: u64,
+) -> Result<Option<Vec<Visited<'a>>>> {
+    collect_visited_bounded(conn, pid, xid, None, None)
+        .await
+        .map(|walked| walked.map(|collected| collected.visited))
+}
+
 /// Invoke the original target's semantic actions, pacing multi-page requests
 /// with descendant motion. `Err` means no mutation was attempted; an incomplete
-/// `ScrollProgress` preserves uncertainty after an attempted mutation.
+/// `ScrollProgress` preserves uncertainty after an attempted mutation. With
+/// `frame` (the token's window), the index is resolved in that window's
+/// snapshot index space and a node outside the window is
+/// [`CachedElementGone`].
 pub fn scroll_element(
     pid: u32,
+    xid: u64,
     idx: usize,
     direction: &str,
     amount: usize,
     by: cua_driver_contract::ScrollBy,
+    frame: Option<&(String, String)>,
 ) -> Result<ScrollProgress> {
     let attempted = std::cell::Cell::new(false);
     let acknowledged = std::cell::Cell::new(0);
     let result = bounded(
         async {
             let conn = shared_connection().await?;
-            let visited = collect_visited(conn, pid)
+            let visited = collect_visited_in(conn, pid, xid)
                 .await?
                 .ok_or_else(|| anyhow!("no AT-SPI application for pid {pid}"))?;
-            let target = visited
-                .iter()
-                .filter(|v| is_indexable(v))
-                .nth(idx)
-                .ok_or_else(|| anyhow!("element {idx} not found (total: {})", visited.len()))?;
+            let target = indexed_node(&visited, idx, frame)?;
             let proxies = target
                 .acc
                 .proxies()
@@ -5295,18 +5310,23 @@ async fn set_value_on(
     ))
 }
 
-pub fn set_value(pid: u32, idx: usize, value: &str) -> Result<()> {
+/// Set element `idx`'s value; with `frame` (the token's window) the index is
+/// resolved in that window's snapshot index space (see [`scroll_element`]).
+pub fn set_value(
+    pid: u32,
+    xid: u64,
+    idx: usize,
+    value: &str,
+    frame: Option<&(String, String)>,
+) -> Result<()> {
     bounded_for(
         INDEX_RESOLVE_BUDGET,
         async {
             let conn = shared_connection().await?;
-            let visited = collect_visited(conn, pid)
+            let visited = collect_visited_in(conn, pid, xid)
                 .await?
                 .ok_or_else(|| anyhow!("no AT-SPI application for pid {pid}"))?;
-            let action_nodes: Vec<&Visited> = visited.iter().filter(|v| is_indexable(v)).collect();
-            let target = action_nodes.get(idx).ok_or_else(|| {
-                anyhow!("element {idx} not found (total: {})", action_nodes.len())
-            })?;
+            let target = indexed_node(&visited, idx, frame)?;
             set_value_on(
                 &target.acc,
                 target.has_value,

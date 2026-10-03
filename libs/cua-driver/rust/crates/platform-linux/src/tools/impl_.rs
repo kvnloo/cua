@@ -2505,6 +2505,20 @@ fn input_error_result(e: anyhow::Error) -> ToolResult {
     }
 }
 
+/// Pre-dispatch refusal for an element token whose AT-SPI element is gone from
+/// the window its snapshot observed ([`crate::atspi::native::CachedElementGone`]):
+/// nothing was dispatched, so the receipt says `effect: refused`.
+fn stale_element_refusal(tool: &str, idx: usize, error: &anyhow::Error) -> ToolResult {
+    ToolResult::error(format!(
+        "{tool}: stale_element_token: observed AT-SPI element [{idx}] is no longer present in \
+         its window ({error}); re-snapshot with get_window_state"
+    ))
+    .with_structured(json!({
+        "code": "stale_element_token",
+        "effect": "refused",
+    }))
+}
+
 /// Structured payload for a completed foreground transaction.
 fn foreground_structured(
     path: &str,
@@ -8801,6 +8815,9 @@ impl Tool for HotkeyTool {
                         "AT-SPI Component.GrabFocus returned false for element {element_index}"
                     ))
                 }
+                Ok(Err(error)) if error.is::<crate::atspi::native::CachedElementGone>() => {
+                    return stale_element_refusal("hotkey", element_index, &error);
+                }
                 Ok(Err(error)) => return ToolResult::error(error.to_string()),
                 Err(error) => return ToolResult::error(format!("Task error: {error}")),
             }
@@ -8967,6 +8984,9 @@ impl Tool for SetValueTool {
                 return set_value_result(idx, &value, "ax", readback, None);
             }
             Ok(Err(error)) if crate::atspi::native::is_no_value_route(&error) => error,
+            Ok(Err(error)) if error.is::<crate::atspi::native::CachedElementGone>() => {
+                return stale_element_refusal("set_value", idx, &error);
+            }
             Ok(Err(error)) => return input_error_result(error),
             Err(error) => return ToolResult::error(format!("Task error: {error}")),
         };
@@ -9477,12 +9497,18 @@ impl Tool for ScrollTool {
             if !(crate::wayland::wayland_input_enabled() && is_webkitgtk_embedder(pid)) {
                 let direction_for_ax = direction.clone();
                 let ax_result = tokio::task::spawn_blocking(move || {
-                    crate::atspi::scroll_element(pid, idx, &direction_for_ax, amount, by)
+                    crate::atspi::scroll_element(pid, xid_opt, idx, &direction_for_ax, amount, by)
                 })
                 .await;
                 match ax_result {
                     Ok(Ok(progress)) => {
                         return atspi_scroll_result(progress, delivery.is_foreground())
+                    }
+                    // The token's element is gone from its window: the pixel
+                    // and wheel fallbacks below would act on whatever the
+                    // window or process now shows, so refuse before dispatch.
+                    Ok(Err(error)) if error.is::<crate::atspi::native::CachedElementGone>() => {
+                        return stale_element_refusal("scroll", idx, &error);
                     }
                     Err(error) => {
                         return atspi_scroll_result(
@@ -14253,5 +14279,25 @@ mod cursor_hook_emission_tests {
             ("agent-7", 10.0, 20.0, false)
         );
         assert!(seen[1].pressed);
+    }
+}
+
+#[cfg(test)]
+mod stale_element_refusal_tests {
+    /// FIX-05: scroll, set_value and hotkey refuse a token whose element is gone from
+    /// its window before any dispatch, and say so (`effect: refused`, never
+    /// `unverifiable`).
+    #[test]
+    fn a_gone_element_is_refused_before_dispatch() {
+        let error = anyhow::Error::new(crate::atspi::native::CachedElementGone(
+            "element 9 is no longer in the window its snapshot observed".into(),
+        ));
+        for tool in ["scroll", "set_value", "hotkey"] {
+            let result = super::stale_element_refusal(tool, 9, &error);
+            assert_eq!(result.is_error, Some(true));
+            let structured = result.structured_content.expect("structured refusal");
+            assert_eq!(structured["code"], "stale_element_token");
+            assert_eq!(structured["effect"], "refused");
+        }
     }
 }
