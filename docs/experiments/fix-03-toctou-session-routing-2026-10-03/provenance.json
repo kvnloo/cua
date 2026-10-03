@@ -1,0 +1,34 @@
+{
+  "packet": "docs/experiments/fix-03-toctou-session-routing-2026-10-03/",
+  "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+  "base_upstream": {"sha": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218", "rust_tree": "03907b569c54", "libs_cua_driver_tree": "df2b49c32e73"},
+  "sources": {
+    "U": {"sha": "513e45fee0c5b02c7dd6d41a960f925a164b5066", "rust_tree": "c609a7b60601", "what": "0f1955d2f + FIX-01 picks (RECERT-FIX U')"},
+    "F": {"sha": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c", "rust_tree": "a15fd479763e", "what": "U' + FIX-02 F1-F4 + df4f1edf5 test (RECERT-FIX F')"},
+    "FS": {"sha": "5a1e209aba39b02fdc7b1dfe8f3afbf184405038", "rust_tree": "7211959d27c7", "what": "F' + measurement-only seam CUA_DRIVER_EXP_SET_FILES_GAP_MS (default off)"},
+    "F5": {"sha": "2237cf9c6328899583843a48f3a507af5ba0fb1f", "rust_tree": "4a6f155eb73a", "what": "F'S + PREREG/harness 5827f04d0 + b235fabef (F4 post-assignment check) + 37d17e0b3 (Part B test) + 2237cf9c6 (side-index readers use the token window); rust tree equal to the pre-registration draft 68677a11d"}
+  },
+  "prereg_commit": "5827f04d07e96f5ba2a4f9421fb1b7351ef9e2fb",
+  "prereg_committed_utc": "2026-10-03T13:55:41Z",
+  "binaries": {
+    "U": {"name": "cua-driver-fix02r3-u-513e45fee", "sha256": "3d27b55b76bdfa64d8659100f995db23400c3b46c06543832aa3c8acb0b31acd", "version": "cua-driver 0.32.0", "origin": "RECERT-FIX build (family cua-release-fix02); sha256 re-read at lane start equals RECERT-FIX provenance @ 939580fc6"},
+    "F": {"name": "cua-driver-fix02r3-f-df4f1edf5", "sha256": "e438980aa6812ac43a63793fca001fc1e2d86515a105eeb099f6a9c269fd64a1", "version": "cua-driver 0.32.0", "origin": "RECERT-FIX build; sha256 re-read at lane start equals RECERT-FIX provenance @ 939580fc6"},
+    "FS": {"name": "cua-driver-fix03-fs-5a1e209ab", "sha256": "d247ef8d7e3c94709716e6201155ba9e3651468613a9fad230a2d8ff0ba44dda", "version": "cua-driver 0.32.0", "origin": "this lane, family cua-release-fix02r, raw/builds/fix03-fs-5a1e209ab.log"},
+    "F5": {"name": "cua-driver-fix03-f5-2237cf9c6", "sha256": "10d710753ba85454632005cb9a40946abaf40d0ff0571885e08f85e9d7de1dd4", "version": "cua-driver 0.32.0", "origin": "this lane, family cua-release-fix02r, raw/builds/fix03-f5-2237cf9c6.log"}
+  },
+  "superseded_lane_binaries_not_cited": {
+    "cua-driver-fix03-f5pre-ea12e6f86": "b432d250fe684f98da0df4a06aa3dfbd73039e6d1ff25e1e4c358a807cbf4ea4 (shakedown only; carried the dropped routing draft)",
+    "cua-driver-fix03-f5pre3-68677a11d": "ea0e59abc17d7736559e80014d0ce8d6f87c67d26eee5d12391d24dfe20aa75a (shakedown only; same rust tree as F5)"
+  },
+  "units": {
+    "red_F4_on_FS": {"log": "raw/unit/final/red-FS/core-f4-toctou.log", "expect": "red", "test": "browser::v2_tests::set_input_files_detached_after_the_check_is_never_a_success"},
+    "red_B_on_U": {"log": "raw/unit/final/red-U/linux-recording-lookup.log", "expect": "red", "test": "recording_hooks::tests::recording_element_lookup_resolves_a_capture_publication_only_for_its_session"},
+    "green_core_F5": {"log": "raw/unit/final/green-F5/core-lib-tests.log", "expect": "green", "passed": 862},
+    "green_linux_F5": {"log": "raw/unit/final/green-F5/platform-linux-lib.log", "expect": "green", "passed": 603}
+  },
+  "environment": "Linux 7.2.2 x86_64, rustc 1.97.1; bin/hostless (v2); cua-x11-session.sh (private rootless Xvfb 1920x1080x24, openbox, picom, private D-Bus; AT-SPI for native rows); jev-use venv Python 3.12, Node v22.23.2; GTK3 fixture on system Python 3 + gi; Google Chrome launched by the Driver (browser_prepare isolated_new); X RECORD oracle on python-xlib 0.33 in a lane-temp venv outside the repo; telemetry off",
+  "publication_sha": "set by Publish; never equal-by-assumption to the tested SHAs",
+  "allowed_empty_raw": [],
+  "lock_spacing_exceptions": {"fix03-N-U-WR-wr1": "first block of plan 2 started 1 s after plan 1 released (plan boundary in the chain runner; Deviation 2)", "fix03-N-U-W2dX-dx1": "first block of plan 3 started 0 s after plan 2 released (Deviation 2)"},
+  "live_heads": {"start": {"utc": "2026-10-03T13:04:53Z", "trycua_main": "c8edda06be53e13a759c69de125ce37189023954", "pr4316": "a0bca744067d04f05904319d3d919be30c336556 OPEN", "kvnloo_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f OPEN"}, "end": {"utc": "2026-10-03T14:50:25Z", "trycua_main": "65bf638ba6dc55748747aa9ffd6739c1264733bc", "pr4316": "a0bca744067d04f05904319d3d919be30c336556 OPEN", "kvnloo_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f OPEN"}, "drift_0f1955d2f_to_end_libs_cua_driver_files": 35, "drift_files_under_linux_core_sdk_jevuse": 0}
+}

@@ -1,0 +1,25 @@
+diff --git a/gtk3_main_two_windows.py b/gtk3_main_two_windows.py  (RECERT-FIX blob 0c5821e8b -> FIX-03 copy)
+index 0c5821e..b475a00 100644
+--- a/gtk3_main_two_windows.py
++++ b/gtk3_main_two_windows.py
+@@ -417,6 +417,11 @@ class TaskWindow(Gtk.Window):
+         # An accessible name and no placeholder text, like the other harnesses.
+         self.note = aid(Gtk.Entry(), "Note")
+         self.note.set_width_chars(28)
++        # FIX-03 (measurement only, two-window mode only): CUA_GTK3_NOTE_TEXT_STATE=1 also publishes
++        # each window's live Note text, so a write into the wrong window's field is target-observed.
++        self.note_text_state = shared is not None and os.environ.get("CUA_GTK3_NOTE_TEXT_STATE") == "1"
++        if self.note_text_state:
++            self.note.connect("changed", lambda *_: self.publish())
+         note_row.pack_start(self.note, False, False, 0)
+         note_row.pack_start(self.button("Save note", self.on_save_note), False, False, 0)
+         root.pack_start(note_row, False, False, 0)
+@@ -506,6 +511,8 @@ class TaskWindow(Gtk.Window):
+             "size": self.size,
+             "note_saved": self.saved_note,
+         }
++        if self.note_text_state:
++            state["note_text"] = self.note.get_text()
+         if self.density is not None:
+             state["density"] = self.density
+             state["distractor_actions"] = self.distractor_actions

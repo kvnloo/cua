@@ -102,7 +102,7 @@ def record_main(path: str) -> int:
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, stop)
-    ctrl.flush()
+    ctrl.sync()  # FIX-03 deviation 3: the context must exist server-side before the data connection enables it
     data.record_enable_context(ctx, on_reply)
     return 0
 

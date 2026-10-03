@@ -1,0 +1,30 @@
+   Compiling cua-driver-contract v0.32.0 (<scrubbed1>/w6-fix03-red2/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.32.0 (<scrubbed1>/w6-fix03-red2/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-core v0.32.0 (<scrubbed1>/w6-fix03-red2/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.32.0 (<scrubbed1>/w6-fix03-red2/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.32.0 (<scrubbed1>/w6-fix03-red2/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 39.44s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<scrubbed3>/cargo-targets/cua-release-fix02r/debug/deps/platform_linux-6d020a7d4959d2d9)
+
+running 1 test
+test recording_hooks::tests::recording_element_lookup_resolves_a_capture_publication_only_for_its_session ... FAILED
+
+failures:
+
+---- recording_hooks::tests::recording_element_lookup_resolves_a_capture_publication_only_for_its_session stdout ----
+
+thread 'recording_hooks::tests::recording_element_lookup_resolves_a_capture_publication_only_for_its_session' (4186047) panicked at crates/platform-linux/src/recording_hooks.rs:336:13:
+assertion `left == right` failed: session B must not resolve A's capture
+  left: Some((7, None))
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    recording_hooks::tests::recording_element_lookup_resolves_a_capture_publication_only_for_its_session
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 612 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p platform-linux --lib`

@@ -62,6 +62,11 @@ class Recorder:
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             if os.path.exists(path) and '"ready"' in open(path, encoding="utf-8").read():
+                # FIX-03 deviation 3: the context is enabled after "ready"; a recorder that died there
+                # (F5-wr4: RECORD EnableContext XError) must fail the block, not run it unobserved.
+                time.sleep(1.0)
+                if self.proc.poll() is not None:
+                    raise RuntimeError(f"X RECORD oracle exited after ready (rc={self.proc.returncode})")
                 return
             time.sleep(0.05)
         raise RuntimeError("X RECORD oracle did not start")

@@ -18,6 +18,11 @@ ACT_OPS = {"SetInputFocus", "FocusIn"}
 
 
 def jsonl(path):
+    # Native block files are stored gzip-compressed in the packet (path + ".gz").
+    if not os.path.exists(path) and os.path.exists(path + ".gz"):
+        import gzip
+        with gzip.open(path + ".gz", "rt", encoding="utf-8") as stream:
+            return [json.loads(line) for line in stream if line.strip()]
     with open(path, encoding="utf-8") as stream:
         return [json.loads(line) for line in stream if line.strip()]
 
@@ -112,7 +117,7 @@ def native_records(raw, blocks):
         _, arm, row, block = parts[:4]
         for suffix in ("", "R"):
             path = os.path.join(raw, "native", arm, row, f"b{block}{suffix}.jsonl")
-            if not os.path.exists(path):
+            if not os.path.exists(path) and not os.path.exists(path + ".gz"):
                 continue
             for rec in jsonl(path):
                 key = (row, arm)
@@ -177,12 +182,18 @@ def part_c_d(rows):
             for att in atts:
                 wrec = data["windows"].get((att["block"], att["attempt"]))
                 items = data["xrecord"].get(att["block"], [])
+                # Deviation 3 (README): the X RECORD oracle is live for a block only if it recorded traffic
+                # beyond its "ready" line; attempts of a dead-oracle block are excluded from the X RECORD
+                # clauses (counted as oracle_unavailable) and kept for every state-oracle clause.
+                live = any("op" in it for it in items)
+                c["xrecord_live_attempts"] += int(live)
+                c["xrecord_unavailable_attempts"] += int(not live)
                 w1 = win_ids(wrec, "w1") if wrec else set()
                 for name in ("s1", "s2", "s3"):
                     call = step(att, name)
                     mut_w1 = changed(call, "w1", "agreed")
                     mut_w2 = changed(call, "w2", "agreed")
-                    side = activation_items(items, w1, call["t_send_ns"], call["t_settled_ns"])
+                    side = activation_items(items, w1, call["t_send_ns"], call["t_settled_ns"]) if live else []
                     c[f"{name}_refused"] += int(bool(call["is_error"]))
                     c[f"{name}_code_{call['refusal_code']}"] += 1
                     c[f"{name}_mutation_w1"] += int(mut_w1)
@@ -197,21 +208,24 @@ def part_c_d(rows):
                                               and not changed(s4, "w1", "agreed"))
                 c["s6_A_own_verified"] += int(not s6["is_error"] and changed(s6, "w1", "agreed")
                                               and not changed(s6, "w2", "agreed"))
-                c["s5_w1_activation_observed"] += int(bool(activation_items(
-                    items, w1, s5["t_send_ns"], s5["t_settled_ns"])))
+                if live:
+                    c["s5_w1_activation_observed"] += int(bool(activation_items(
+                        items, w1, s5["t_send_ns"], s5["t_settled_ns"])))
             res.update(c)
             n = len(atts)
-            res["gate_pass"] = (n == 20 and all(res.get(f"{s}_refused", 0) == 20 and res.get(f"{s}_mutation_w1", 0) == 0
-                                               and res.get(f"{s}_mutation_w2", 0) == 0 for s in ("s1", "s2", "s3"))
+            live_n = res.get("xrecord_live_attempts", 0)
+            res["gate_pass"] = (n >= 20 and all(res.get(f"{s}_refused", 0) == n and res.get(f"{s}_mutation_w1", 0) == 0
+                                                and res.get(f"{s}_mutation_w2", 0) == 0 for s in ("s1", "s2", "s3"))
+                                and live_n >= 20
                                 and res.get("s1_w1_side_effect", 0) == 0 and res.get("s2_w1_side_effect", 0) == 0
                                 and res.get("s3_w1_side_effect", 0) == 0
-                                and res["s4_B_own_verified"] == 20 and res["s6_A_own_verified"] == 20
-                                and res["s5_w1_activation_observed"] >= 18)
+                                and res["s4_B_own_verified"] == n and res["s6_A_own_verified"] == n
+                                and res.get("s5_w1_activation_observed", 0) >= 0.9 * live_n)
         elif row in ("WS", "WK"):
             field = "note_text" if row == "WS" else "agreed"
             c = defaultdict(int)
             for att in atts:
-                b = step(att, "B-")
+                b = step(att, "B-types" if row == "WS" else "B-presses")
                 a = step(att, "A-types" if row == "WS" else "A-presses")
                 b_w1, b_w2 = changed(b, "w1", field), changed(b, "w2", field)
                 a_w1, a_w2 = changed(a, "w1", field), changed(a, "w2", field)
@@ -221,8 +235,11 @@ def part_c_d(rows):
                 c["A_wrote_into_B_window"] += int(a_w2)
                 c["B_effect_" + str((b.get("response") or {}).get("structuredContent", {}).get("effect"))] += 1
                 e4[arm]["cross_session_mutation"] += int(b_w1) + int(a_w2)
-                if b_w1 and (b.get("response") or {}).get("structuredContent", {}).get("effect") == "confirmed":
-                    e4[arm]["unverified_success"] += 1
+                for call, wrong, own in ((b, b_w1, b_w2), (a, a_w2, a_w1)):
+                    effect = (call.get("response") or {}).get("structuredContent", {}).get("effect")
+                    if effect == "confirmed" and (wrong or not own):
+                        e4[arm]["unverified_success"] += 1
+                    c["confirmed_receipt_but_wrong_window"] += int(effect == "confirmed" and wrong)
             res.update(c)
             res["gate_pass"] = (len(atts) == 20 and res["B_own_window_verified"] == 20 and res["A_own_window_verified"] == 20
                                 and res["B_wrote_into_A_window"] == 0 and res["A_wrote_into_B_window"] == 0)
@@ -268,6 +285,31 @@ def main():
     summary["e4_F5_strict"] = sum(f5.values())
     with open(args.out, "w", encoding="utf-8") as stream:
         json.dump(summary, stream, indent=1, sort_keys=True)
+        stream.write("\n")
+    # Pre-registered disposition rules (PREREG.json "dispositions"); unit rows are read from the unit logs.
+    a1 = a["A1"]
+    if a1["gate_pass"] and a1["positive_control_pass"]:
+        f4 = "KEEP"
+    elif (a1["positive_control_pass"] and a1["gate_clause_no_success"] and a1["gate_clause_all_refused_or_unknown"]):
+        f4 = "REVISE (IRREDUCIBLE-with-honest-unknown)"
+    else:
+        f4 = "REVISE"
+    wr_ok = all(cd.get(f"WR-{arm}", {}).get("gate_pass") for arm in ("F", "F5"))
+    side_ok = all(cd.get(f"{row}-F5", {}).get("gate_pass") for row in ("WS", "WK"))
+    disp = {
+        "F4": {"verdict": f4, "A1_positive_control": a1["positive_control_pass"], "A1_gate": a1["gate_pass"],
+               "A1_clauses": {k: a1[k] for k in a1 if k.startswith("gate_clause")},
+               "A2": a["A2"]["gate_pass"], "A3": a["A3"]["gate_pass"]},
+        "C": {"verdict": "KEEP" if (wr_ok and side_ok) else "REVISE", "WR_F_and_F5": wr_ok, "WS_WK_F5": side_ok,
+              "routing_fix_needed": not all(cd.get(f"WR-{arm}", {}).get(f"s{n}_w1_side_effect", 1) == 0
+                                            for arm in ("F", "F5") for n in (1, 2))},
+        "D": {row: ("discriminating KEEP" if cd.get(f"{row}-discriminating") else "non-gating")
+              for row in ("W2dX", "W2cX")},
+        "E4_F5": {"excluding_seam_forced_A1_residue": summary["e4_F5_excluding_seam_forced_residue"],
+                  "strict": summary["e4_F5_strict"]},
+    }
+    with open(os.path.join(os.path.dirname(args.out), "dispositions.json"), "w", encoding="utf-8") as stream:
+        json.dump(disp, stream, indent=1, sort_keys=True)
         stream.write("\n")
     print(json.dumps({"A1_gate": a["A1"]["gate_pass"], "A1_pc": a["A1"]["positive_control_pass"],
                       "A2": a["A2"]["gate_pass"], "A3": a["A3"]["gate_pass"],
