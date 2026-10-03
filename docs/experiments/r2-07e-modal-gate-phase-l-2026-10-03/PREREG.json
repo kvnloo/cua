@@ -1,0 +1,100 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "R2-07e",
+ "wave": 6,
+ "title": "Compiled fresh-bound routine: alpha-adjusted modal non-regression block, then live TypeSafe Phase L per class on binary R",
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#74"],
+ "relation_to_prior": "A new block on top of R2-07c (exp/r2-07c-toggle-modal-compiled-a2-20261003, 7f46edd16) and R2-07d (exp/r2-07d-quiet-timing-phase-l-20261003, 79f6dd299). It edits neither: both packet directories are carried on this branch unchanged and their code runs in place. R2-07d's modal FAIL (+0.6 [-1.4, +2.4] ms, 95% CI) stands and is never reinterpreted.",
+ "advances": {
+  "E2": "terminal deletion verdict for the live provider-decision component in toggle/modal (R2-10 live COMP: 434.8 / 462.4 ms, 88-89% of T; UNTESTED until now)",
+  "E3": "compiled replay enters the composed toggle/modal configuration where it survives, measured over all invocations including training, compile, admission and fallback",
+  "E1": "terminal disposition for the R2-07 lineage",
+  "E4": "counters in every arm"
+ },
+ "hypotheses": {
+  "Q": "On modal->act, warm COMP+CR does not regress whole-task T_oracle against COMP by more than +2.0 ms (second, independent, pre-registered look after R2-07d's FAIL; alpha-adjusted).",
+  "L": "Under live TypeSafe, admitted compiled replay deletes both provider decisions on warm invocations with verified outcomes and E4 = 0 (toggle: R2-07d toggle Phase S PASS, accepted; modal only if Q passes). Training, compile, admission and fallback costs are measured over all invocations."
+ },
+ "source": {
+  "branch": "exp/r2-07e-modal-gate-phase-l-20261003",
+  "base": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+  "libs_cua_driver_tree": "bf8e7bdc90fdce295e44743f2754a6502d5d6e0e (identical at 8f3a646b4 = binary R source and at the base)",
+  "driver_changes": "none (no build)",
+  "binary_R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version_expected": "cua-driver 0.32.0", "source": "8f3a646b4 = 989cc76ce + R2-10 steps 1-8 (FIX-01 Part A+B included); same binary as R2-10, R2-07c, R2-07d", "rehash": "host-side at lane start and end; inside every session the runner refuses on a sha256 mismatch and records name/sha256/version in every trial"},
+  "identity": {
+   "r2_07c_packet_tree": "77b5128e435a24282f76238ac0558fc590659276 (docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03 at 7f46edd16 and at the base)",
+   "r2_07c_harness_tree": "66bad345b1736b97b66884bbf40a1505c16083bf",
+   "r2_07d_packet_tree": "90e0c0d875e12f592c7099ed5bc3570c11b8339e (docs/experiments/r2-07d-quiet-timing-phase-l-2026-10-03 at 79f6dd299)",
+   "r2_07d_runner_blob": "0989b68bc57d8fc16de3c0ab2cf80c61cd6bd334 (driver/r2_07d.py)",
+   "check": "verify_artifacts.py asserts these trees at every commit of this branch"
+  },
+  "new_code_this_lane": {
+   "driver/r2_07e.py": "Q plan (r2_07c.build_plan('timing', 0, 60) restricted to modal + a 10-pair toggle sanity block, store timed-e), controls plan (r2_07d.controls_plan relabelled to store scripted-e), live plan (r2_07c.build_plan('live', 0, 30) restricted to admitted classes + the per-class fallback invocations), and the runners; trials run through r2_07d.run_spec -> r2_07c.one_comp / one_c, rb10.nw2_one, rb10.one unchanged; load gate r2_07d.gate unchanged; provider ledger r2_07c.install_provider_ledger_c and model tap unchanged",
+   "driver/run_chunk_e.sh": "W6 lock order: quiet-timed (EXCLUSIVE) first, cargo-build.lock inside with flock -w 60 (exit 74 -> release quiet and retry); SHARED quiet lock for controls and the live shakedown; R2-07d probe_then.sh -> R2-07c in_session.sh; 600 s cap",
+   "driver/test_r2_07e.py": "unit tests of the plans, live budget rules and the gate statistic",
+   "analyze_r2_07e.py": "paired_gate (pre-registered here); the rest of the analysis is completed after this commit and implements the metrics below"
+  }
+ },
+ "configuration": {
+  "COMP": "R2-10 COMP for toggle/modal (r2_07c.one_comp -> rb10.one): feedback OFF, 10 ms completion poll, compiled validators, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, phase trace on; the step loop decides each click (scripted chooser in Q/C, TypeSafe in L training and fallback)",
+  "COMP_CR": "COMP + compiled fresh-bound replay of the admitted artifact (r2_07c.one_c): every click gets a fresh semantic_v2 observation and 0 decisions; a failed precondition -> guarded continuation from the current state, decisions counted",
+  "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=false passed through CUA_SESSION_EXTRA_ENV (disclosed). The R2-10 harness also sets CUA_DRIVER_RS_TELEMETRY_ENABLED=0 and DO_NOT_TRACK=1 in the Driver's own environment (rb10.driver_env_for, unchanged); the Driver parses both values as off. Absolute T is never compared with R2-07d."
+ },
+ "oracle": "jev-use #24 fixture server state + CLOCK_MONOTONIC journal (toggle: checked true; modal: opened and modal true), sampled every 2 ms by an independent harness thread (rb10.Sampler), never the runner's report; exactly one completion mutation per verified task. T_oracle = first expected-state sample at/after the caller return of the last accepted mutation, minus task_start (R2-10 rule).",
+ "part_Q": {
+  "evidence_class": "REAL+BENCHMARK",
+  "provider": "scripted chooser; 0 provider requests; key not forwarded (runner refuses if present)",
+  "plan": "units in r2_07c.build_plan('timing', 0, 60) order: training (+compile + clean-reset admission) per class into store timed-e (round -1; G1/G2; the toggle training only feeds the sanity block), then rounds 0..59: one modal AB/BA pair per round (AB = COMP first on even rounds, BA on odd), and on rounds 5, 10, 17, 22, 29, 34, 41, 46, 53, 58 also one toggle pair (arm order alternates BA, AB, ... with the round parity); class order inside a round as build_plan. 60 modal pairs + 10 toggle pairs. Fresh Driver, Chrome, loopback fixture servers, token and session label per trial.",
+  "load_rule": "a unit (a training, or both arms of one class in one round) starts only at 1-min loadavg <= 3.0; otherwise poll every 1 s for up to 60 s, then end the chunk (exit 75) and resume the same unit later (r2_07d.gate, unchanged). Every gate attempt is logged. An interrupted unit is kept and re-run under an -a<n> suffix.",
+  "locks": "each chunk under bin/quiet-timed R2-07e-Q<n> (EXCLUSIVE + receipt) with cargo-build.lock taken inside (flock -w 60); no new unit after 480 s; session cap 600 s",
+  "lane_deadline": "no new Q chunk after 2026-10-03T22:00:00Z; units not run by then are NOT_RUN (load) and stay in the denominators (the gate then fails as incomplete)",
+  "gate": {
+   "statistic": "modal: median paired diff T_oracle(COMP_CR warm) - T_oracle(COMP) over the 60 pairs; two-sided 97.5% seeded paired percentile bootstrap CI (analyze_r2_07e.paired_gate: seed 20261003, 10000 resamples)",
+   "pass": "CI upper <= +2.0 ms AND 60/60 pairs valid (every cell verified, exact match, 1 completion mutation; an invalid cell stays in the denominator and fails the gate) AND G1/G2 pass AND G3 100% fresh AND E4 0 over the modal Q cells",
+   "alpha_split": "two looks at the same hypothesis: look 1 = R2-07d (two-sided 95%, one-sided upper-bound error 0.025, FAILED), look 2 = this block (two-sided 97.5%, one-sided 0.0125). Bonferroni sum of one-sided error rates over both looks 0.0375 <= 0.05. Look 1 is never pooled into the gate.",
+   "side_by_side": "R2-07d's failing modal block (40 pairs, +0.6 [-1.4, +2.4] ms) is reported next to this block; a pooled 100-pair figure is descriptive only",
+   "toggle_sanity": "10 toggle pairs, descriptive only (no gate): median paired diff with the same statistic, to show the environment"
+  },
+  "also_reported": "medians, S = median T_COMP / median T_COMP_CR, decomposition (R2-10 e2_components) per arm, 95% CI with the b01 seed for comparison only, loadavg per trial, sensitivity view excluding pairs with a trial-start loadavg > 3.0"
+ },
+ "part_C": {
+  "evidence_class": "REAL; G5 rows FIXTURE (reconcile seam) + REAL",
+  "lock": "SHARED quiet-lane lock, <= 10 cells per acquisition",
+  "plan": "r2_07d.controls_plan relabelled to store scripted-e (37 specs): 1 training + admission per class (G1/G2); G4 1 rep per row per class (N1, N2, N3, N4a stale ref, N4b non-fresh dispatch refused, N5 old capability, N6, N7, N8 OOD toggle-on-fill, toggle-on-modal, modal-on-toggle); N-W2 1 per class (effect=refused, 0 detached effects); G5 applied_ack_lost and withheld_unresolved 1 per class (reconcile before replay, never blind replay); default smoke = R2-10 BASE arm with no CUA_DRIVER_EXP_*, 5 per class",
+  "pass_rules": "analyze_r2_07c.g4_pass / nw2_row unchanged; G3 non-fresh dispatch refused with effect=refused 2/2 (the N4b rows); default smoke verified, exact match, 1 completion, driver_env_exp empty, no trace",
+  "gate": "every control must pass before Part L"
+ },
+ "part_L": {
+  "evidence_class": "LIVE_PROVIDER+REAL",
+  "preconditions": {"toggle": "R2-07d toggle Phase S PASS (accepted) AND Part C pass", "modal": "Part Q PASS AND Part C pass; otherwise modal L is NOT_RUN and the reason is recorded"},
+  "runner": "driver/r2_07e.py --plan live --classes <admitted>: r2_07c.build_plan('live', 0, 30) restricted to the admitted classes and r2_07c.main_async's live rules (budget stop with LIVE_RESERVE 4; a warm invocation without an admitted routine retrains once, then the class stops, NOT_RUN no_admitted_routine). Round 0 = training (ordinary R2-10 step loop, 2 live decisions) + compile + clean-reset admission into store live; rounds 1-29 = warm compiled invocations (0 decisions expected). Class order alternates per round. Fresh Driver, Chromium and fixture per invocation; loadavg per invocation; every invocation kept.",
+  "fallback": {
+   "LF_verdict_bearing": "1 per class after round 29: fixture variant n7_presat (the checkbox starts checked / the dialog starts open). The compiled precondition fails on the fresh observation (toggle: checked_state 'false'; modal: requires_absent 'Confirm choice'), the routine dispatches nothing, the guarded continuation runs with LIVE decisions from the current state. Expected: verified, exactly 1 completion mutation, decisions counted (1 expected).",
+   "LN_descriptive": "1 per class after LF, only if the budget guard allows it: the lane spec's literal variant n1_renamed (the compiled step-2 role+name target is renamed: toggle 'Confirm' -> 'Save', modal 'Confirm choice' -> 'Accept choice'). The routine refuses at the failed precondition; the guarded continuation runs with live decisions. Expected: NOT verified and no success reported (by construction: jev-use BrowserSemanticSource.find and the ToggleConfirm/Modal task candidates match role+name exactly, so no candidate ever addresses the renamed target; R2-07c N1 10/10 and R2-07d N1 2/2 unverified with the scripted chooser), 0 completion mutations, E4 0, decisions counted.",
+   "deviation_from_lane_spec": "The lane spec asks for a single forced fallback that renames the compiled role+name target AND expects it to verify. With the jev-use task definitions those two cannot both hold (SOURCE: exact role+name matching in sources.py and b01_tasks.py; REAL: R2-07c/R2-07d N1 rows). Decided before any trial: the verdict-bearing forced fallback uses the precondition-failure variant that the guarded continuation can complete (n7_presat, R2-07c's G6 fallback cell), and the literal rename runs as a descriptive live negative."
+  },
+  "chunks": "under bin/quiet-timed R2-07e-L<n> (EXCLUSIVE, cargo lock inside); no load ceiling; scheduled in a quiet window; resume by live-progress.json (an interrupted invocation is kept and re-run as -a<n>; its provider requests stay counted)",
+  "shakedown": "optional, before Part L: one toggle training (+compile + admission) via the R2-07c harness r2_07c.py --plan live_shake (unchanged) under the SHARED lock, same provider ledger and caps; counts toward the cap; excluded from results",
+  "provider": "TypeSafe as configured by the jev-use runner; model id recorded from SystemOneResponse.model (r2_07c.install_model_tap); key forwarded by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY), never printed, read, copied or grepped",
+  "budget": {"lane_cap_reached": 18, "lane_cap_attempts": 22, "includes_shakedown": true, "expected": "shakedown 2 + per class (training 2 + LF 1) + LN up to 4 per class", "guard": "install_provider_ledger_c counts each HTTP attempt BEFORE sending and refuses once a cap would be exceeded; before each live invocation the runner stops if reached+4 or attempts+4 would exceed a cap; invocations not run are NOT_RUN (budget) and stay in the denominators", "ledger": "raw/provider-ledger.jsonl: host, path, status, request-id presence + sha256/16, latency, trial, class, arm, layer; no bodies, no headers"},
+  "metrics": {
+   "warm_validity": "denominator 29 per class: verified by the independent oracle with exactly 1 completion mutation, oracle exact match, route compiled only, two dom_event clicks, 0 decided events, 0 provider ledger lines; failures and NOT_RUN stay in the denominator",
+   "decisions_per_invocation": "decided events / 30 (training included), and / 31 including LF",
+   "warm_provider_lines": "provider ledger attempts on warm invocations (must be 0)",
+   "times": "median T_oracle warm; T_oracle training; compile ms; T_oracle admission; T_oracle LF",
+   "amortized": "mean_all = (sum T_oracle over the 30 invocations + compile_ms + T_oracle(admission)) / 30; mean_all_with_fallback = (that sum + T_oracle(LF)) / 31; ratio_of_means = mean_all / mean_warm (and with fallback)",
+   "decomposition": "R2-10 e2_components (analyze_r2_07c.decomposition) over warm invocations and over all invocations, with the provider-decision share",
+   "work_deleted": "decisions and provider requests removed per warm invocation vs the training invocation, reported separately from wall-clock"
+  },
+  "verdict": "per class: the live provider-decision component on admitted COMP+CR is DELETED (KEEP) iff warm validity 29/29 AND warm decisions 0 AND warm provider lines 0 AND E4 0 (every L cell of the class, LF and LN included) AND LF verified with its decisions counted AND the class's Phase S passed (toggle: R2-07d; modal: this Part Q). Otherwise REVISE with the measured rate and the failing gate named. Any routine-attributable E4 violation is flagged as a KILL candidate.",
+  "not_compared": "Phase L T is never presented as an S against R2-10 live numbers. The paired live BASE vs COMP+CR S stays BLOCKED (needs >= 120 reached)."
+ },
+ "disposition_rules": {
+  "per_class": "toggle and modal get their own verdict (DELETED/KEEP, REVISE, NOT_RUN with reason)",
+  "lineage": "R2-07 lineage: KEEP for a class whose Phase L verdict is DELETED; REVISE otherwise, naming the failing gate (Q gate, controls, L warm validity/decisions, LF, budget truncation); E4 violations named and flagged as a KILL candidate"
+ },
+ "failed_session_blocks": "a chunk whose private session fails to start (probe exit 97, or every browser exits before DevTools) is kept in raw/ as a failed session block, excluded from row evaluation, and its units re-run",
+ "excluded": {"pre_prereg_shakedowns": "SHARED scripted shakedowns of the new runner (labels R2-07e-shake-*), 0 TypeSafe requests; kept in raw/, excluded from results"},
+ "evidence_classes": ["SOURCE", "UNIT", "REAL", "REAL+BENCHMARK", "LIVE_PROVIDER+REAL", "FIXTURE (reconcile seam)", "BLOCKED", "NOT_RUN"],
+ "claim_boundary": "One shared host, private Xvfb, Chrome 151, binary R (the 989cc76ce lineage, not R'), TypeSafe as configured by the jev-use runner. The routine is caller-side only: no new service, registry, router or engine. Logical routine identity persists; refs, tokens, captures, capabilities and session epochs never do (authority scan on every artifact in raw/artifacts/)."
+}
