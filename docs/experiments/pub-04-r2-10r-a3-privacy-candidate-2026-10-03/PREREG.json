@@ -1,0 +1,21 @@
+{
+ "lane": "PUB-04 (wave 7, fix)",
+ "owners": ["kvnloo/cua#93 (packet hygiene)", "kvnloo/cua#73"],
+ "registered_before": "the first verifier, scanner or normalized-diff run on the candidate; the candidate commits exist (built by a scripted rewrite, not measured)",
+ "published": {"branch": "exp/r2-10r-recert-a3-20261003", "head": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
+               "finding": "tmp-dbus x25 in 8be812d0c (PUB-03 census)"},
+ "candidate": {"branch": "exp/r2-10r-recert-a3-r1c-20261003", "head": "a2ded080cac3f8bdd17e3076da1e3b4196b57fa5",
+               "rewritten": {"8be812d0c7cd1b1558f21b68e65ea271643f49fd": "a7fc59005e767819bd6bd68a4064234d56db2e48",
+                             "ac46b50323a6bf0dcb3be80c9d731e589be049d1": "4d496ed1e3c9f9a9b94953198e37fd4ddfb82e05",
+                             "d22eeb2ecf8a679d1425c21120a599775aa0817d": "a5ac8368fec372b06fedeb6cc9c6d6ab12e58dc2"},
+               "note_commit": "a2ded080cac3f8bdd17e3076da1e3b4196b57fa5"},
+ "gates": {
+  "G1_candidate_scan": "PUB-04 scanner (PUB-03 classes + word-boundary fix) over every commit of the candidate head and of this branch's tip, rev-list <tip> --not upstream/main: 0 findings in every private class (plain-name, user-name-in-raw, encoded-name, url-encoded, encoded-list, abs-path, tmp-dbus) on every commit. abs-path-generic and secret-like are non-private classes and are reported; expected: only the 2 abs-path-generic hits in upstream trycua/cua PR 4316 content (a0bca7440 and its merge 6f438492b, a public CI runner path); any other non-private hit is reported and explained.",
+  "G2_verifier_parity": "R2-10R a3 verify_artifacts.py on d22eeb2ec and on the candidate head, each from a clean shared clone under bin/hostless, without and with CUA_PRIVACY_NAMES_FILE: identical pass counts; every output difference explained by the rewrite (commit/blob counters +1 from the note commit) and nothing else.",
+  "G3_normalized_diff": "Every rewritten commit vs its published original, and the candidate head vs d22eeb2ec: the trees differ only at redacted paths plus the added note; for each redacted path the published bytes with the redaction pattern applied equal the candidate bytes exactly, and an independent pattern-free check (the candidate split at each placeholder must match the published bytes outside the placeholder spans) agrees; no path is removed; manifest entries changed = the number of manifest references found (expected 0).",
+  "G4_scanner_controls": "Unit tests: planted positive controls (dummy private name in plain, raw, hex, HEX, base64, percent-encoded, decoded hex/base64 runs, tar member name and content, gz member, path name, hex-encoded path name, commit message; tmp-dbus plain, url-encoded, base64, gz member; local-root abs path; secret-like) each hit their class; the public fork owner token in every encoding and the synthetic prefix-handle pair must give 0 private findings. Red before the word-boundary fix (owner token hits url-encoded), green after.",
+  "G5_rescan": "Read-only per-commit scan of the 7 wave-6 pushed heads (live origin heads checked by ls-remote and fetch into a clean clone), rev-list <head> --not main: findings reported per commit and per class; any private finding is reported as a finding, not fixed."
+ },
+ "provider": {"typesafe_cap": 0},
+ "nothing_pushed": true
+}
