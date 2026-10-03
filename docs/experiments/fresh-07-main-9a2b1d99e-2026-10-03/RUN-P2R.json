@@ -1,0 +1,46 @@
+{
+ "schema": "cua.r2.runnote.v1",
+ "lane": "FRESH-07R (wave 8)",
+ "what": "Run note for finishing PREREG-P2's timing rows. It is committed before the first FRESH-07R trial. PREREG-P2.json (f8859411b) is unchanged and remains the pre-registration. This note changes no row, n, arm, gate or prediction. It records the source-freshness result, the resumption, the binaries, the covariate and the run-time lock rules.",
+ "part1_source_freshness": {
+  "rule": "If anything under platform-linux, cua-driver-core, jev-use, the contract or the sdk changed in 9a2b1d99e..a9baa8d10 or 9a2b1d99e..<live main>, stop the timing parts and report AFFECTED.",
+  "result_at_start": "VERSION_ONLY_FOR_LINUX. git ls-remote at 2026-10-03T21:03:59Z: live trycua/cua main = a9baa8d10. 36 commits, 24 libs/cua-driver files: 8 version strings (Cargo.lock: version lines only), CHANGELOG, 6 macOS (platform-macos + Skills MACOS.md), and 9 uninstaller scripts with their pytest suite. 0 STOP paths. The classifier returns AFFECTED on the known range 0f1955d2f..9a2b1d99e (control).",
+  "files": ["raw/freshness/inventory-9a2b1d99e-a9baa8d10.json", "raw/freshness/inventory-9a2b1d99e-livemain-start.json", "raw/freshness/control-inventory-0f1955d2f-9a2b1d99e.json", "freshness_inventory.py"]
+ },
+ "binaries_rehashed_at_start": {
+  "Rpp": {"name": "cua-driver-fresh07-rpp-cec1a5b92", "sha256": "4d95eb4fad32aa9ae699a0c9cdc6353d79ac618aea2d1ca126d71ad0be1b6349", "version": "cua-driver 0.33.0"},
+  "Rppn": {"name": "cua-driver-fresh07-rppn-bbe2bd6e6", "sha256": "e48487aefbaa96c39a3620291b923ab83dc3aff19caf2d3800227e2073f1afc3", "version": "cua-driver 0.33.0"},
+  "Cnpp": {"name": "cua-driver-fresh07-cnpp-82e6d5227", "sha256": "015e2f54e9127248eddcbf15b671644455ad6d9570369acb140d5239e005e66e", "version": "cua-driver 0.33.0"},
+  "utc": "2026-10-03T21:10:55Z"
+ },
+ "order": [
+  "(a) R2-10R scripted rounds 28-31 on R'' (arms BASE, COMP, COMP_K, COMP_E). This completes PREREG-P2's rounds 0-31, which give 32 AB/BA pairs per contrast per class.",
+  "(b) R2-10R native nm1, nm2, nd1 on R'' (orig/r2-10r/harness/native-plan.json, 174 trials; nm1+nm2 give 24 per arm per task, at least the 20 pairs per native task required).",
+  "(c) N-04 k1-r00..r23, k5-r00..r11, s0-r00..r23 on R''n (EXCLUSIVE), then vctl, dec1, dec2 on R''n (non-timing controls; SHARED as PREREG-P2 non_timing_rows and the N-04 plan's lock field).",
+  "(d) Lowest priority, only after (a)-(c): N-03 under a PREREG-P3 addendum committed before its first trial."
+ ],
+ "resumption": {
+  "scripted": "The lane runs directory is seeded with the wave-7 FRESH-07 scripted run directory (rounds 0-27: DONE markers, run manifests and the routine store). All 28 run manifests are byte-identical to the committed p2/r2-10r/raw/browser/scripted-manifests. The 3 routines are byte-identical to the committed scripted-routines. r210r_session.sh skips rounds with a DONE marker, so only rounds 28-31 run. The analysis covers rounds 0-31. The packaged rounds 0-27 must reproduce the committed scripted-trials.tar.gz members.",
+  "n04_smoke": "smk-rn and smk-rp (ran in wave 7, SHARED, default-off) are seeded unchanged; they are not re-run.",
+  "worktree": "The harness runs from the lane worktree w8-fresh07r. Its libs tree 647401e12 is identical to the wave-7 worktree's (88ec3d5e6:libs = bbe2bd6e6:libs). The jev-use uv.lock, site-packages and node_modules listings are identical. System Chrome is 151.0.7922.71 (installed 2026-08-01, unchanged since)."
+ },
+ "analysis": "orig/r2-10r/analyze_r2_10.py and orig/r2-10r/recert_gates.py (reference = R2-10R's accepted summary); orig/n-04/analyze_n04.py and orig/n-04/hc_control.py. Gates exactly as PREREG-P2 rows.R2-10R.gates and rows.N-04.gates. In addition, N-04 untested share < 5% per native task with its decomposition, as N-04 reported it.",
+ "covariate": {
+  "why": "On the 9a2b1d99e line the idle overlay is unmapped and is mapped by the first cursor reveal, and the focus guard counts it as a popup (kvnloo/cua#20 regression, FRESH-07 probe). Every native row on main therefore carries it. It is recorded, never used to exclude a trial, and never compared across binaries (FIX-20O measures the fix).",
+  "guard_text": "Each native click's structured summary (already in the raw trial rows): grab_held when it contains 'popup menu is open' / 'keyboard grab', else none.",
+  "overlay_map_state": "harness/overlay_watch.py, started by harness/with_overlay_watch.sh around each native chunk inside the private session. It is a passive SubstructureNotify listener on the private root: one JSON line per create/map/unmap/destroy of an override-redirect root child, CLOCK_MONOTONIC and wall ns, plus an initial snapshot. It never redirects or grabs and never talks to the Driver. Per trial: overlay mapped at T0, and overlay map/unmap events inside [w_begin, w_end]. Measurement-only; harness files unchanged.",
+  "analysis": "covariate_native.py (descriptive; not a gate)"
+ },
+ "timing_rules": {
+  "exclusive": "harness/fresh07_chunks.sh exclusive with FRESH07_LABEL=fresh07r. The chunk waits until the cargo-build lock is free and the 1-min loadavg is <= 4.0 (FRESH07_QUEUE_LOAD_MAX=4.0). It then runs bin/quiet-timed fresh07r-<chunk> flock -w 60 <cargo-build.lock> timeout -k 15 900 <hostless private session>. Inside, the original load rule applies: a round or block starts only at 1-min loadavg <= 4.0. At most one EXCLUSIVE waiter is queued at a time, because the master runs the stages sequentially.",
+  "wait_budget": "FRESH07_WAIT_LEDGER records, per chunk, the seconds waited before the window and the seconds held. The lane stops with BLOCKED evidence after 8 h (28800 s) of cumulative waiting (FRESH07_WAIT_BUDGET_S=28800).",
+  "holder_snapshots": "harness/holder_snapshot.sh every 15 min while the lane waits or runs: a read-only /proc scan writing pid, ppid, elapsed time and executable name (no command lines) to p2/locks/holders/. Holders are never signalled.",
+  "shared": "Builds and non-timing rows (vctl, dec1, dec2, the optional a9baa8d10 tools/list corroboration and N-03 builds) take the SHARED quiet-lane lock only after no EXCLUSIVE waiter is queued (FRESH07_SHARED_YIELD=1 / /proc/locks); then they take the cargo lock if they build. No timing row runs under SHARED.",
+  "session": "Everything runs under bin/hostless + cua-x11-session.sh. Native rows add CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV containing CUA_SESSION_ATSPI=1, plus hostless-strict as in wave 7. Telemetry is off. No provider (cap 0)."
+ },
+ "deviations_from_wave7_runner": [
+  "fresh07_chunks.sh gains FRESH07_LABEL, FRESH07_QUEUE_LOAD_MAX, FRESH07_WAIT_LEDGER, FRESH07_WAIT_BUDGET_S and FRESH07_SHARED_YIELD. With all of them unset it behaves as in wave 7. The in-session harnesses, plans and analyzers are unchanged (orig/ 90/90 blob-identical).",
+  "Native chunks are wrapped in harness/with_overlay_watch.sh (covariate only)."
+ ],
+ "provider": {"cap": 0, "use": "none"}
+}

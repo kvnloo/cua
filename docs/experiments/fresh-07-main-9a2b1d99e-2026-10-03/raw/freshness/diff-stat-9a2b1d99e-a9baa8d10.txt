@@ -1,0 +1,25 @@
+ libs/cua-driver/python/pyproject.toml                                |   2 +-
+ libs/cua-driver/python/src/cua_driver/__init__.py                    |   2 +-
+ libs/cua-driver/rust/CHANGELOG.md                                    |  22 ++++++
+ libs/cua-driver/rust/Cargo.lock                                      |  28 ++++----
+ libs/cua-driver/rust/Cargo.toml                                      |   2 +-
+ libs/cua-driver/rust/Skills/cua-driver/MACOS.md                      |   9 ++-
+ libs/cua-driver/rust/Skills/cua-driver/SKILL.md                      |   2 +-
+ libs/cua-driver/rust/VERSION                                         |   2 +-
+ libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs        |  45 ++++++++++++
+ libs/cua-driver/rust/crates/platform-macos/src/tools/drag.rs         |  80 ++++++++++++++++++++--
+ libs/cua-driver/rust/crates/platform-macos/src/tools/list_windows.rs |   5 +-
+ libs/cua-driver/rust/crates/platform-macos/src/tools/mod.rs          |   6 +-
+ libs/cua-driver/rust/crates/platform-macos/src/windows.rs            |  98 ++++++++++++++++++++++++++
+ libs/cua-driver/scripts/tests/conftest.py                            |  67 ++++++++++++++++++
+ libs/cua-driver/scripts/tests/test_installer_bash32_syntax.py        |  16 +++++
+ libs/cua-driver/scripts/tests/test_uninstall_claude_mcp.py           | 112 ++++++++++++++++++++++++++++++
+ libs/cua-driver/scripts/tests/test_uninstall_claude_mcp_no_python.py |  16 +++++
+ libs/cua-driver/scripts/tests/test_uninstall_claude_mcp_safety.py    | 257 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ libs/cua-driver/scripts/tests/test_uninstall_windows_mcp_guidance.py |  20 ++++++
+ libs/cua-driver/scripts/tests/uninstall-history-purge-test.sh        |   4 +-
+ libs/cua-driver/scripts/uninstall.ps1                                |  31 ++++++---
+ libs/cua-driver/scripts/uninstall.sh                                 | 460 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------------------------
+ libs/cua-driver/typescript/package-lock.json                         |   4 +-
+ libs/cua-driver/typescript/package.json                              |   2 +-
+ 24 files changed, 1031 insertions(+), 261 deletions(-)

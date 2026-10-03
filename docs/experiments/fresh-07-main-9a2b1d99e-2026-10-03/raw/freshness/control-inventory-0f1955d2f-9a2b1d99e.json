@@ -1,0 +1,269 @@
+{
+ "from": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+ "to": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+ "commits": 41,
+ "files_changed": 39,
+ "counts": {
+  "UNCLASSIFIED": 6,
+  "version_string": 8,
+  "changelog": 1,
+  "macos": 9,
+  "STOP": 8,
+  "windows": 5,
+  "uninstall": 2
+ },
+ "stop_paths": [
+  "libs/cua-driver/docs/test-matrix.md",
+  "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md",
+  "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
+  "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs",
+  "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_winui3_test.rs",
+  "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_wpf_test.rs",
+  "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs",
+  "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+  "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift",
+  "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml",
+  "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml.cs",
+  "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml",
+  "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml.cs",
+  "libs/cua-driver/tests/fixtures/shared/scenarios.json"
+ ],
+ "verdict": "AFFECTED",
+ "harness_refs_to_changed_nonstop_files": [],
+ "files": [
+  {
+   "path": "libs/cua-driver/docs/test-matrix.md",
+   "added": 12,
+   "removed": 4,
+   "class": "UNCLASSIFIED"
+  },
+  {
+   "path": "libs/cua-driver/python/pyproject.toml",
+   "added": 1,
+   "removed": 1,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/python/src/cua_driver/__init__.py",
+   "added": 1,
+   "removed": 1,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/rust/CHANGELOG.md",
+   "added": 29,
+   "removed": 0,
+   "class": "changelog"
+  },
+  {
+   "path": "libs/cua-driver/rust/Cargo.lock",
+   "added": 14,
+   "removed": 14,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/rust/Cargo.toml",
+   "added": 1,
+   "removed": 1,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/rust/Skills/cua-driver/MACOS.md",
+   "added": 6,
+   "removed": 0,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+   "added": 1,
+   "removed": 1,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md",
+   "added": 1,
+   "removed": 1,
+   "class": "UNCLASSIFIED"
+  },
+  {
+   "path": "libs/cua-driver/rust/VERSION",
+   "added": 1,
+   "removed": 1,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
+   "added": 104,
+   "removed": 1,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs",
+   "added": 189,
+   "removed": 4,
+   "class": "UNCLASSIFIED"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_winui3_test.rs",
+   "added": 174,
+   "removed": 8,
+   "class": "UNCLASSIFIED"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_wpf_test.rs",
+   "added": 149,
+   "removed": 0,
+   "class": "UNCLASSIFIED"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs",
+   "added": 55,
+   "removed": 0,
+   "class": "UNCLASSIFIED"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+   "added": 112,
+   "removed": 27,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs",
+   "added": 76,
+   "removed": 9,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/ax/exact_target.rs",
+   "added": 125,
+   "removed": 3,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/browser/setup_ui.rs",
+   "added": 339,
+   "removed": 69,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/click.rs",
+   "added": 145,
+   "removed": 0,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs",
+   "added": 148,
+   "removed": 94,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/invoke_menu.rs",
+   "added": 79,
+   "removed": 0,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/set_value.rs",
+   "added": 112,
+   "removed": 3,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/windows.rs",
+   "added": 82,
+   "removed": 0,
+   "class": "macos"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/browser_platform.rs",
+   "added": 278,
+   "removed": 6,
+   "class": "windows"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/input/keyboard.rs",
+   "added": 99,
+   "removed": 4,
+   "class": "windows"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/tools/impl_.rs",
+   "added": 32,
+   "removed": 27,
+   "class": "windows"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/win32/mod.rs",
+   "added": 2,
+   "removed": 2,
+   "class": "windows"
+  },
+  {
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/win32/windows.rs",
+   "added": 118,
+   "removed": 1,
+   "class": "windows"
+  },
+  {
+   "path": "libs/cua-driver/scripts/_install-rust.sh",
+   "added": 1,
+   "removed": 1,
+   "class": "uninstall"
+  },
+  {
+   "path": "libs/cua-driver/scripts/install.ps1",
+   "added": 1,
+   "removed": 1,
+   "class": "uninstall"
+  },
+  {
+   "path": "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift",
+   "added": 59,
+   "removed": 0,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml",
+   "added": 7,
+   "removed": 0,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml.cs",
+   "added": 48,
+   "removed": 0,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml",
+   "added": 8,
+   "removed": 0,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml.cs",
+   "added": 26,
+   "removed": 0,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/tests/fixtures/shared/scenarios.json",
+   "added": 10,
+   "removed": 0,
+   "class": "STOP"
+  },
+  {
+   "path": "libs/cua-driver/typescript/package-lock.json",
+   "added": 2,
+   "removed": 2,
+   "class": "version_string"
+  },
+  {
+   "path": "libs/cua-driver/typescript/package.json",
+   "added": 1,
+   "removed": 1,
+   "class": "version_string"
+  }
+ ]
+}

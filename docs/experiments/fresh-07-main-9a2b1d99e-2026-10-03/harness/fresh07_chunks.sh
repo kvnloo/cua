@@ -11,6 +11,14 @@
 # In-session exit codes: 75 = the load rule ended the chunk (wait 90 s outside the locks), 76 = soft cap,
 # 93/97 = the private display failed its probe (new session). Every chunk's session log is kept.
 # Machine paths come from the environment: FRESH07_LANES, FRESH07_LOCKDIR.
+# FRESH-07R knobs (all optional; unset = the wave-7 behaviour):
+#   FRESH07_LABEL=<prefix>        receipt label prefix (default fresh07): bin/quiet-timed <prefix>-<chunk>
+#   FRESH07_QUEUE_LOAD_MAX=<x>    exclusive: queue the quiet-lane waiter only while the 1-min loadavg <= x
+#   FRESH07_WAIT_LEDGER=<file>    exclusive: append one JSON line per chunk with the seconds waited before the
+#                                 window (cargo-lock check + load rule + quiet-lane lock) and the seconds held
+#   FRESH07_WAIT_BUDGET_S=<s>     exclusive: stop (exit 4, BLOCKED) once the ledger's cumulative wait reaches s
+#   FRESH07_SHARED_YIELD=1        shared: before taking the SHARED lock, wait while any EXCLUSIVE waiter is
+#                                 queued on the quiet-lane lock (/proc/locks), so SHARED work never delays one
 set -uo pipefail
 MODE="$1"; ATSPI="$2"; PREFIX="$3"; RUNS="$4"; DONE_CMD="$5"; shift 5
 [ "$1" = "--" ] && shift
@@ -27,21 +35,43 @@ if [ "$ATSPI" = 1 ]; then envs+=(CUA_SESSION_ATSPI=1); extra="CUA_SESSION_ATSPI=
 envs+=("CUA_SESSION_EXTRA_ENV=$extra")
 session=("${envs[@]}" "$LANES/cua-x11-session.sh" "$@")
 la() { cut -d' ' -f1-3 /proc/loadavg; }
+LABEL="${FRESH07_LABEL:-fresh07}"
+waited_total() { [ -n "${FRESH07_WAIT_LEDGER:-}" ] && [ -s "$FRESH07_WAIT_LEDGER" ] \
+  && awk -F'"wait_s":' '{split($2,a,/[,}]/); s+=a[1]} END{printf "%d", s}' "$FRESH07_WAIT_LEDGER" || echo 0; }
+excl_waiters() { local ino; ino=$(stat -c %i "$LOCK"); grep -c -- "-> FLOCK *ADVISORY *WRITE [0-9]* [0-9a-f]*:[0-9a-f]*:$ino " /proc/locks || true; }
 n=0; fails=0
 until bash -c "$DONE_CMD"; do
   n=$((n + 1)); while [ -e "$RUNS/chunks/$PREFIX-c$(printf %02d $n).session.log" ]; do n=$((n + 1)); done
   chunk="$PREFIX-c$(printf %02d $n)"; slog="$RUNS/chunks/$chunk.session.log"
   if [ "$MODE" = exclusive ]; then
-    until flock -n "$CARGO" true; do sleep 5; done   # cargo-lock check before acquiring the quiet lane
-    echo "[$(date -u +%FT%T.%3NZ)] chunk $chunk mode=exclusive loadavg=$(la)"
-    "$LANES/bin/quiet-timed" "fresh07-$chunk" flock -w 60 "$CARGO" timeout -k 15 900 "${session[@]}" > "$slog" 2>&1
+    if [ -n "${FRESH07_WAIT_BUDGET_S:-}" ] && [ "$(waited_total)" -ge "$FRESH07_WAIT_BUDGET_S" ]; then
+      echo "[$(date -u +%FT%T.%3NZ)] BLOCKED: cumulative wait $(waited_total) s >= budget $FRESH07_WAIT_BUDGET_S s" >&2; exit 4
+    fi
+    q0=$(date +%s)
+    while :; do
+      until flock -n "$CARGO" true; do sleep 5; done   # cargo-lock check before acquiring the quiet lane
+      [ -z "${FRESH07_QUEUE_LOAD_MAX:-}" ] && break
+      awk -v l="$(cut -d' ' -f1 /proc/loadavg)" -v m="$FRESH07_QUEUE_LOAD_MAX" 'BEGIN{exit !(l <= m)}' && break
+      sleep 15
+    done
+    echo "[$(date -u +%FT%T.%3NZ)] chunk $chunk mode=exclusive queued loadavg=$(la) checks_s=$(( $(date +%s) - q0 ))"
+    "$LANES/bin/quiet-timed" "$LABEL-$chunk" bash -c 'echo "$(date +%s)" > "$1"; shift; exec "$@"' _ "$RUNS/chunks/$chunk.acquired" \
+      flock -w 60 "$CARGO" timeout -k 15 900 "${session[@]}" > "$slog" 2>&1
     rc=$?
+    if [ -n "${FRESH07_WAIT_LEDGER:-}" ]; then
+      a=$(cat "$RUNS/chunks/$chunk.acquired" 2>/dev/null || date +%s); e=$(date +%s)
+      printf '{"chunk":"%s","label":"%s-%s","queued_utc":"%s","wait_s":%d,"held_s":%d,"rc":%d,"loadavg_end":"%s"}\n' \
+        "$chunk" "$LABEL" "$chunk" "$(date -u -d @"$q0" +%FT%TZ)" $((a - q0)) $((e - a)) "$rc" "$(la)" >> "$FRESH07_WAIT_LEDGER"
+    fi
   else
+    if [ "${FRESH07_SHARED_YIELD:-0}" = 1 ]; then
+      while [ "$(excl_waiters)" -gt 0 ]; do sleep 10; done
+    fi
     echo "[$(date -u +%FT%T.%3NZ)] chunk $chunk mode=shared loadavg=$(la)"
     exec 8>"$LOCK"; flock -s 8
     acq="$(date -u +%FT%T.%3NZ)"; la_acq="$(la)"
     "${session[@]}" > "$slog" 2>&1; rc=$?
-    line=$(printf '{"lane":"FRESH-07","label":"fresh07-%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
+    line=$(printf '{"lane":"FRESH-07","label":"'"$LABEL"'-%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
       "$chunk" "$$" "$acq" "$(date -u +%FT%T.%3NZ)" "$rc" "$la_acq")
     printf '%s\n' "$line" >> "$RUNS/lock-ledger-shared.jsonl"; printf '%s\n' "$line" >> "$LEDGER"
     flock -u 8; exec 8>&-
