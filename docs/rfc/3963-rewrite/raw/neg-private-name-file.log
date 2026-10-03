@@ -1,0 +1,27 @@
+# NEGATIVE CONTROL: planted untracked file holding a private name (entry 1 of the names file); must FAIL on privacy
+# tested commit: 3a59fa571b63a011cbb4d89c806191a1a180fbe4 (lane head at run: 3a59fa571b63a011cbb4d89c806191a1a180fbe4)
+# clone: neg2 (shallow, 997 refs, alternates: no)
+# STATE.json sha256: ba636f47d3c00624bd0fe5351fade70598e8520c550da08390e6431024dcb673
+# command: hostless python3 docs/rfc/3963-rewrite/verify_artifacts.py --all-commits  (CUA_PRIVACY_NAMES_FILE set)
+# utc: 2026-10-03T16:29:54Z
+FAIL privacy         notes.txt: private-name entry 1 present (plain form)
+FLAG origin          UNPUBLISHED OWN-75: exp/own-75-timing-parity-4336-20261002 on the fork is absent, cited cd1878872
+FLAG origin          UNPUBLISHED PUB-03: exp/own-20g-guard-final-diff-r1c-20261003 on the fork is absent, cited cb18ebfbd
+SKIP regen           no --state given
+SKIP state           no --state given; STATE comparison, regeneration and state claims skipped
+PASS autolink        no upstream autolink form or at-mention in 11 files
+PASS claims          242 claims (152 generated, 90 curated) traced to their pointer (14 state claims skipped)
+PASS files           10 files present and parse
+PASS freshness       upstream main 9a2b1d99e is 41 commits past 0f1955d2f; the 2 Linux/core paths since the base are listed with their status
+PASS graph           31 nodes, 38 edges; mermaid and JSON agree; open-lane nodes match the OPEN rows
+PASS numbers         129 row templates: every number is a pointer (packet line / packet JSON / STATE)
+PASS open            13 OPEN rows across 6 wave-7 lanes; no claim cites a wave-7 result
+PASS origin          55 cited branch heads equal the fork
+PASS pending         30 moving rows and 6 wave-7 lanes named in PENDING.md
+PASS privacy-commits 0 findings in 2 commits since 5de1a3799 (18 blobs and every message)
+PASS rows            78 rows, 0 PENDING, table agrees; BLOCKED 21, KEEP 37, KILL 4, REVISE 15, SUPERSEDED 1
+PASS sections        README has all 10 required sections (section 11 = PENDING.md)
+PASS shas            census SHA ed6887c11 fetched read-only from the fork ref research/rfc3963-dependency-census-20260925
+PASS shas            145 SHA references checked: 145 resolve (1 refs fetched read-only), 0 NEED a ref
+SUMMARY FAIL=1 NEED=0 DIFF=0 FLAG=2 SKIP=2 PASS=14
+# exit: 1
