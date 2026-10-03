@@ -171,7 +171,7 @@ def main() -> None:
         put_text(raw / "provider-ledger.jsonl", (runs / "provider-ledger.jsonl").read_text())
     put_text(raw / "lock-receipts-lane.jsonl", Path(args.lane_ledger).read_text())
     glines = [x for x in Path(args.global_ledger).read_text().splitlines()
-              if '"label":"r2-10r-' in x or '"label": "r2-10r-' in x]
+              if '"label":"r2-10r-a2-' in x or '"label": "r2-10r-a2-' in x]  # attempt 2 only
     put_text(raw / "lock-receipts-global.jsonl", "\n".join(glines) + "\n")
     for f in sorted(list(runs.glob("*.log")) + list(m.glob("*.log")) + list(p0.glob("*.log"))):
         text = "\n".join(x for x in f.read_text(errors="replace").splitlines() if "WARN" not in x)

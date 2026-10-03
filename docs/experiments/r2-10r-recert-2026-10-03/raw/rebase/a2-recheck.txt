@@ -1,0 +1,20 @@
+# R2-10R attempt 2: re-verification of the inherited rebase evidence (read-only git, 2026-10-03T02:43Z)
+# R'  : git range-diff 989cc76ce..8f3a646b4 0f1955d2f..45dff8f32 -> all 8 patches '=' (byte-identical to range-diff.txt)
+# Cn' : git range-diff 989cc76ce..1381014a3 0f1955d2f..8a2362770 -> both patches '=' (range-diff-control.txt)
+# Regenerated with the same git commands and compared with the inherited files:
+#   range-diff.txt, files-both.txt, lib.rs.{drift,r2-10,rprime}.diff, impl_.rs.{drift,r2-10,rprime}.diff: byte-identical
+#   files-drift.txt (41 paths) and files-r2-10.txt (34 paths): same path sets (only the line order differs)
+# Files touched by both sides: cua-driver-core/src/lib.rs and platform-linux/src/tools/impl_.rs.
+#   lib.rs: drift adds 'pub mod key_pacing;' (trycua/cua PR 3489); R2-10 step 1 adds 'pub mod phase_trace;'.
+#     lib.rs.r2-10.diff vs lib.rs.rprime.diff: only the blob ids and the hunk offset (-83/+84) differ.
+#   impl_.rs: drift changes get_window_state's walk timeout and description (trycua/cua PR 4375); R2-10 step 5
+#     adds measurement-only phase marks in ClickTool / SetValueTool. impl_.rs.r2-10.diff vs impl_.rs.rprime.diff:
+#     only the blob ids and hunk offsets (+18 lines) differ; every added/removed line is identical.
+# Whole-step interdiff under libs/cua-driver (ordered +/- lines, file headers excluded, sha256):
+#   R2-10  git diff 989cc76ce 8f3a646b4: 5a52b76a6be7f45c13f7ccb09cc17c071f9428dc423d82b87bdf68027cc23aab (4543 lines)
+#   R'     git diff 0f1955d2f 45dff8f32: 5a52b76a6be7f45c13f7ccb09cc17c071f9428dc423d82b87bdf68027cc23aab (4543 lines)
+#   Cn     git diff 989cc76ce 1381014a3: e3b5eb102a7c04ee42d277742f34d67ff8babaa79dd8b0114800be6333b9d943
+#   Cn'    git diff 0f1955d2f 8a2362770: e3b5eb102a7c04ee42d277742f34d67ff8babaa79dd8b0114800be6333b9d943
+# Verdict: no semantic change in any R2-10 step on R' or Cn'.
+# Trees: R' 45dff8f32 libs/cua-driver/rust = 3ae6bd4408628fa098760e4886e3b2e45f89d807; libs/cua-driver = 11ee32235d5e
+#        (unchanged at the packet commits 3028d8078 and later); Cn' 8a2362770 libs/cua-driver/rust = c609a7b60601.

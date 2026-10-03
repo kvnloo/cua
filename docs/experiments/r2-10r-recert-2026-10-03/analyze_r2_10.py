@@ -215,6 +215,13 @@ def browser_row(t: dict[str, Any], type_route: str | None) -> dict[str, Any]:
     row["T_runner_ms"] = d["T_runner_ms"] if d else None
     if d:
         row["components"] = e2_components(d)
+        # R2-10R (attempt 2): mcp_transport split into its inbound and outbound parts (reporting only; the
+        # two parts sum to R2-10's mcp_transport, whose definition and verdict are unchanged).
+        sub, c = d["sub"], d["components"]
+        row["transport_split"] = {
+            "mcp_transport_in": sub.get("client_send", 0.0) + sub.get("pre_other", 0.0),
+            "mcp_transport_out": sub.get("client_return", 0.0) + sub.get("client_receive_parse", 0.0)
+            + c["driver_post_dispatch"]}
         row["coverage"] = d["coverage"]
         row["observations_ms"] = d["observations"]
     if row["T_oracle_ms"] is None:
@@ -407,6 +414,9 @@ def native_row(r: dict[str, Any], traced: bool = True) -> dict[str, Any]:
             comp[component] += (b - a) / 1e6
 
     add("observation_transport", t0m, tree["m0"])
+    split = {k: 0.0 for k in ("observation_transport_in", "observation_transport_out",
+                              "action_transport_in", "action_transport_out")}
+    split["observation_transport_in"] += (tree["m0"] - t0m) / 1e6 if (t0m is not None and tree["m0"] is not None) else 0.0
     prev = None
     for (name, c), cm in zip(calls, per_call):
         tool = "get_window_state" if name == "observe" else name
@@ -415,6 +425,8 @@ def native_row(r: dict[str, Any], traced: bool = True) -> dict[str, Any]:
         if prev is not None:
             add("runner", prev, c["m0"])
         add(tp, c["m0"], enter)
+        if c["m0"] is not None and enter is not None:  # R2-10R: inbound half of the transport (reporting only)
+            split[f"{tp}_in"] += (enter - c["m0"]) / 1e6
         if name == "observe":
             add("observation", enter, exit_)
         elif name == "click":
@@ -430,12 +442,15 @@ def native_row(r: dict[str, Any], traced: bool = True) -> dict[str, Any]:
             add("dispatch", cm.get(("set_value", "cursor_done")), cm.get(("set_value", "readback_done")))
             add("result", cm.get(("set_value", "readback_done")), exit_)
         add(tp, exit_, c["m1"])
+        if exit_ is not None and c["m1"] is not None:  # R2-10R: outbound half of the transport (reporting only)
+            split[f"{tp}_out"] += (c["m1"] - exit_) / 1e6
         prev = c["m1"]
     if t_end is not None:
         lag = max(0.0, (t_land or 0) - ret_us / 1000) if t_land is not None else 0.0
         comp["effect_lag"] = lag
         comp["verification_read"] = t_end - ret_us / 1000 - lag
     out["components"] = comp
+    out["transport_split"] = split
     out["coverage"] = (sum(comp.values()) / t_end) if t_end else None
     if r.get("kind") == "decoy":
         fs = r.get("focus_samples") or {}
@@ -522,6 +537,21 @@ def decomposition(rows: list[dict[str, Any]], verdicts: dict[str, Any], group: s
             "untested_share": untested / meanT if meanT else None, "T_irreducible_ms": irreducible,
             "floor_ratio_mean": meanT / irreducible if irreducible else None,
             "coverage_min": min(r["coverage"] for r in v if r.get("coverage") is not None)}
+
+
+def transport_split(rows: list[dict[str, Any]], whole: Any) -> dict[str, Any]:
+    """R2-10R (attempt 2): mean inbound/outbound transport per arm over the same valid rows as the
+    decomposition (reporting only; ``check_sum_ms`` = |sum of the parts - the R2-10 component mean|)."""
+    v = [r for r in rows if r["valid"] and r.get("components") and r.get("transport_split")]
+    if not v:
+        return {}
+    keys = sorted(v[0]["transport_split"])
+    out: dict[str, Any] = {"n": len(v), "mean_ms": {k: mean([r["transport_split"][k] for r in v]) for k in keys}}
+    names = [whole] if isinstance(whole, str) else list(whole)
+    total = sum(mean([r["components"][n] for r in v]) or 0.0 for n in names)
+    out["component_mean_ms"] = total
+    out["check_sum_ms"] = abs(sum(out["mean_ms"].values()) - total)
+    return out
 
 
 def e4_totals(rows: list[dict[str, Any]]) -> dict[str, int]:
@@ -630,6 +660,9 @@ def analyze(raw: Path) -> dict[str, Any]:
                        "wall_clock_saved_median_paired_ms": lo["S"]["COMP"][cls]["paired_diff_ms"]["median"],
                        "wall_clock_saved_ci95": lo["S"]["COMP"][cls]["paired_diff_ms"]["ci95"]}
         lo["work_deleted_vs_wall_clock"] = wd
+        lo["transport_split"] = {f"{cls}/{arm}": transport_split([r for r in rows if r["cls"] == cls and r["arm"] == arm],
+                                                                 "mcp_transport")
+                                 for cls in CLASSES for arm in arms}
         lo["e4"] = e4_totals(rows)
         lo["fallbacks"] = [{"trial": r["trial"], "routes": r["decision_routes"], "verified": r["verified"]}
                            for r in rows if any(x.startswith("fallback:") for x in r["decision_routes"])]
@@ -701,6 +734,9 @@ def analyze(raw: Path) -> dict[str, Any]:
                    for arm in ("S0", "X")}  # R2-10R: T_land S
     N["decomposition"] = {f"{t}/{a}": decomposition([{**r, "cls": r["task"]} for r in main if r["task"] == t and r["arm"] == a],
                                                     NATIVE_VERDICTS, t, "T_oracle_ms") for t in TASKS for a in ("BASE", "S0", "X")}
+    N["transport_split"] = {f"{t}/{a}": transport_split([r for r in main if r["task"] == t and r["arm"] == a],
+                                                        ("observation_transport", "action_transport"))
+                            for t in TASKS for a in ("BASE", "S0", "X")}
     N["work_deleted_vs_wall_clock"] = {
         f"{t}/{arm}": {"component_mean_ms_deleted": {c: N["decomposition"][f"{t}/BASE"]["components"][c]["mean_ms"]
                                                      - N["decomposition"][f"{t}/{arm}"]["components"][c]["mean_ms"]
