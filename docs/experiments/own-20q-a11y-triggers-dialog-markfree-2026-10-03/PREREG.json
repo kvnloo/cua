@@ -1,0 +1,98 @@
+{
+ "schema": "own20q.prereg.v1",
+ "lane": "OWN-20Q (wave 6, fix lane): #20 follow-ups",
+ "owners": ["kvnloo/cua#20", "kvnloo/cua#93", "kvnloo/cua#74"],
+ "advances": [
+  "E1: R1 runs mark-free on the product binaries U0/G0, which removes OWN-20P's marked-twin substitution for the gating row (pending owner reading); the open #20 follow-ups (A's trigger set, same_app_dialog) get terminal fix-candidate dispositions",
+  "E4: guard and reconnect safety counters in every arm"
+ ],
+ "provider": {"name": "TypeSafe", "cap_requests_reaching_provider": 0, "used": false},
+ "hypotheses": {
+  "R1m": "A stall keyed on observable protocol traffic rather than on Driver phase marks reproduces c08-017 on the product binaries: U0 misses the steal silently and G0 restores.",
+  "A2": "Reconnect triggers can be widened without reconnect churn: a name-owner change of the a11y bus address, and NoReply only when the bus daemon itself fails a Peer.Ping.",
+  "DLG": "The same_app_dialog classification is wrong under _NET_ACTIVE_WINDOW lag, and a minimal fix classifies correctly."
+ },
+ "sources": {
+  "branch_base": "64081dded4e0a3ddf144e68ab1ea43579f85f572 (OWN-20P packet head; libs/cua-driver tree = GA 064d2e4ad)",
+  "U0": "cb685fad7aef1df6a35ffec653295a0cea4daee6 (clean upstream main; libs/cua-driver tree df2b49c32e73)",
+  "G0": "a761f1f1f8850951a446b423c36d2dcce1e18611 (U0 + guard final read G)",
+  "GA": "064d2e4ad931e7a3b884c4621e3d5cbb4600f7b9 (G0 + AT-SPI reconnect A)",
+  "U0m": "0944feb31 (detached; marked twin of U0, calibration only)",
+  "G0m": "16d21fd56 (detached; marked twin of G0, calibration only)",
+  "A2_fix": "31318e374 = GA + the unanswered-call bus check (platform-linux/src/atspi/native.rs only)",
+  "DLG_fix": "4ac191a7c = 31318e374 + the core-focus-owner check (platform-linux/src/input/focus_guard.rs only)",
+  "GQ": "4ac191a7c1d5a77cf4ed98474b4d3ebf76cc27c2 = GA + 31318e374 + 4ac191a7c",
+  "red": "74acf32c0 (detached, worktree w6-own20q-red) = 4ac191a7c with both fix bodies replaced by GA behaviour (bus_lost_after_unanswered_call -> false; same_app_move -> the active window alone); the tests are kept",
+  "GD": "not built: GQ differs from GA only by the A2 commit (native.rs, no focus-guard code) and the DLG commit, so the GA-vs-GQ DLG pair isolates the DLG change; the UNIT red/green isolates each fix"
+ },
+ "binaries": {
+  "U0": {"name": "cua-driver-own20p-u0-cb685fad7", "sha256": "45ffb243ae5e2fddc66d452ce55586494e5da71fa1a927299d1158879c3598d4"},
+  "G0": {"name": "cua-driver-own20p-g0-a761f1f1f", "sha256": "77a28152330405eabb0c17cd99ba2594239b3ac82a0484cff772ba865c14a1e4"},
+  "GA": {"name": "cua-driver-own20p-ga-064d2e4ad", "sha256": "681627314e2f031641e7579ab8640a3cb673c58b8b029ef7399e277706ccc146"},
+  "U0m": {"name": "cua-driver-own20p-u0m-0944feb31", "sha256": "9c5e9fffb3b02fd24cd3ba54d9347153680ed1058c92f9ed66cd24f75b8b6ad1"},
+  "G0m": {"name": "cua-driver-own20p-g0m-16d21fd56", "sha256": "1568dc4a63ba4d09e19b4c254fa1c1f806a92ff0ea7f48934be7f26c6b02d13c"},
+  "GQ": {"name": "cua-driver-own20q-gq-4ac191a7c", "sha256": "2dbe3cd27f8258fdaf5f225d40235d64ae87b58a1cb50c4da41d62d41860b885"},
+  "provenance_check": "U0/G0/GA/U0m/G0m sha256 equal the OWN-20P provenance (exp/own-20p-guard-port-a11y-20261003 @ 64081dded, provenance.json); every harness refuses a mismatch",
+  "build": "GQ: build-driver.sh into the cua-release-own20p family dir under the cargo-build lock only, rustc 1.97.1, 0 Fresh workspace units"
+ },
+ "harness": {
+  "blob_identical_from_own20p": {
+   "harness/own20g_harness.py": "8b357c65adb56f82262ac220cae3f62a85f815fc",
+   "harness/r3_harness.py": "704b6ef0690df39eda992df1f0fbc6ac51342b8c",
+   "harness/harness_common.py": "c3d0e05bff2f88f310fe9333547553c1c966324a",
+   "harness/stealer.py": "6d0bc2d21e3e73c4cae5bd27250fe75da7d90912",
+   "harness/xstall_proxy.py": "0399289be67c1255515aa006758618c0afbdb3b6",
+   "harness/xprobe.py": "f17d83691faacc9397dc4c91a1f4018622c0d75d",
+   "harness/run_block.sh": "f18f32aa5cc36ae1f06ef1c582843706c9460078",
+   "harness/driver_versions.sh": "06dd66b2c85650689e8c5b43aa002ba51727c915"
+  },
+  "new_files": ["harness/markfree_proxy.py", "harness/q_common.py", "harness/bus_pid_helper.py", "harness/own20q_harness.py",
+                "harness/r3q_harness.py", "harness/dlg_fixture.py", "make_plan.py", "run_all.sh", "session_entry.sh",
+                "unit_run.sh", "unit_in_session.sh", "analyze.py"],
+  "plan": "plan.json from make_plan.py (39 blocks, 340 trials, deterministic ABBA per pair)"
+ },
+ "r1m": {
+  "trigger_choice": "the AT-SPI DoAction reply, as routed by the private a11y bus, observed by a bus monitor of the harness (option 1 of the spec)",
+  "trigger": "R = the wall time at which markfree_proxy.py's own bus monitor (dbus-monitor --binary, BecomeMonitor on the session's private a11y bus) receives the method return of the first org.a11y.atspi.Action.DoAction call made after the harness issued the click call (the harness writes 'click <wall_ns>' on the proxy's stdin just before the MCP call; set_value sends a DoAction of its own before it). Hold: on X connections the proxy accepted after that DoAction call was observed, the guard's first new-client read (the second _NET_CLIENT_LIST_STACKING GetProperty after a GetInputFocus) issued >= 80 ms after R has its reply held 2000 ms. Steal: at R + 217 ms the decoy is activated on the proxy's own X connection (EWMH request source 2, raise, XSetInputFocus). Nothing of the Driver is read.",
+  "why_this_option": [
+   "Precision: in the pilots on the marked twins the bus-observed reply was 0.01 and -1.49 ms from the Driver's do_action_replied mark, and the mark-free rule held the very request the OWN-20P mark-keyed rule would have held (difference 0.0 ms).",
+   "Option 2 (first GetInputFocus/_NET_ACTIVE_WINDOW read >= 80 ms after the click call) keys on a poll grid of 30 ms whose phase drifts with the click-to-DoAction latency (token resolution, snapshot capture), so the chosen poll would differ from the mark-keyed one; and holding a read inside a poll's diff lets the later reads of that diff see the steal, which is not c08-017.",
+   "Deviation from 'private D-Bus proxy': an in-path proxy between the fixture and the bus makes the bus daemon report the proxy's pid for the fixture's connection (GetConnectionUnixProcessID), and the Driver resolves applications by that pid (atspi/native.rs resolve_app_for_pid), so the forced path would change. A BecomeMonitor connection on the same private bus sees the same routed messages, alters no byte and leaves the attribution intact."
+  ],
+  "calibration": "blocks c1-c2 (no gate): U0m vs G0m, checkbox, arm P, 10 per binary, kind mfcal (the proxy also tails the Driver phase trace and records the request the OWN-20P mark-keyed rule would have held, without acting on it). Pass per trial: |mark-free hold - mark-keyed hold| <= 5 ms. Expected >= 18/20. Also reported: R minus the mark.",
+  "gate": "blocks q1-q4 (checkbox, arm P) and qt1-qt4 (text, arm PX), U0 vs G0, 20 per binary per task, ABBA: U0 silent miss >= 36/40 (steal landed during the hold, final focus on the decoy per the 2 ms X sampler, no focus_outcome in the click receipt); G0 verified restore 40/40 (focus_outcome=restored, final focus and active window equal the reference per the sampler, X RECORD shows a restore request from a non-WM, non-steal client after the steal and the window manager's last _NET_ACTIVE_WINDOW write equals the reference, and the fixture's state file confirms the task); 0 false restores in the controls.",
+  "controls": "blocks qc1 (checkbox) and qct1 (text): kind mfonly (proxy in pass mode, decoy mapped, no hold, no steal), U0 vs G0, 5 per binary per task: every trial verified, no focus_outcome, no focus movement after T0 (sampler) and no focus request from a non-WM client after the click (X RECORD).",
+  "validity": "a gate trial is valid when the harness, sampler, reference, X RECORD and bus monitor are all fine, the hold started <= 150 ms after R and lasted >= 1900 ms with >= 1 held chunk, the steal was issued <= 260 ms after R, the sampler saw the steal, and the steal landed during the hold. Invalid trials stay in the denominators: the gate counts against all 40 planned G0 trials (no re-runs)."
+ },
+ "dlg": {
+  "mechanism": "kind dlgsteal: markfree_proxy.py in lag mode serves every GetProperty(_NET_ACTIVE_WINDOW) reply to the Driver with the value the property had 1500 ms before the request (history from the proxy's own PropertyNotify subscription on the root), so the window manager's update after a steal reaches the Driver late while the core focus and the stacking list stay live; the true property is stable for >= 1800 ms before the click (the harness waits). The decoy steals at R + 100 ms, inside the guard's 220 ms settle watch. This is the OWN-20G same_app_dialog mechanism (core focus on the decoy while _NET_ACTIVE_WINDOW still names the target) made deterministic.",
+  "gate": "blocks d1-d4: GA vs GQ, checkbox, arm P, 20 per binary, ABBA. Positive control: GA misclassifies (receipt focus_outcome=same_app_dialog with the final focus on the decoy) in >= 16/20. GQ classifies 20/20 correctly: verified restore as in r1m (receipt restored, sampler final == reference, X RECORD restore request and final _NET_ACTIVE_WINDOW == reference, fixture state verified) and 0 same_app_dialog receipts.",
+  "dialog_control": "blocks dd1-dd2 (the 'while a same-app dialog maps' half): dlg_fixture.py (the canonical task window plus an 'Open dialog' button that maps a transient window of the same process), lag mode, no steal, GA vs GQ, 10 per binary. Both must leave the app's own dialog focused: the sampler's final active window and the WM's last _NET_ACTIVE_WINDOW write equal the dialog's window (from the fixture's state file), no restore request, no focus_outcome=restored. GQ < 10/10 here is a regression of the fix: DLG is then REVISE naming dialog_control.",
+  "unit": "a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog fails on red 74acf32c0 and passes on GQ 4ac191a7c"
+ },
+ "a2": {
+  "source_finding_name_owner": "REVISE from SOURCE, not implemented: watching the org.a11y.Bus name owner needs a persistent session-bus connection, and the X11 Driver keeps none. AccessibilityConnection::new() (atspi-connection 0.14.0, lib.rs 58-90) opens a session connection only to call GetAddress and drops it; platform-linux's other session connections are one-shot (a11y.rs advertise thread, health_report.rs) or Wayland-only (wayland/portal*.rs, kwin_helper.rs). A signal match on the existing a11y connection cannot see a launcher restart on the session bus.",
+  "implemented": "NoReply trigger (31318e374): when an AT-SPI call goes unanswered within its budget (call() timeout), a background task on the existing AT-SPI runtime pings the bus daemon (org.freedesktop.DBus.Peer.Ping, 1 s) over the existing connection, at most one check at a time; only when the daemon does not answer is the connection lost (the next operation reconnects lazily through AccessibilityConnection::new()). No new service, thread or connection.",
+  "rows": {
+   "r3n": "launcher_keep, blocks k1-k5, GA vs GQ 20 each: SIGKILL the session's at-spi-bus-launcher (the old daemon stays alive and serving; pilots: dbus-broker-launch and dbus-broker in state S), a new launcher and registry start (same socket path), fixture B starts and registers on the new bus. Positive control: GA's same process never gets a truthful tree of B in 5 tries in >= 18/20. Gate as specified: GQ reconnects in-process and a click on B is verified 20/20. Pre-registered expectation: the gate fails, because the trigger that would catch this (the name-owner watch) is not implemented (source_finding_name_owner); A2 is then REVISE naming r3n.",
+   "r3s": "slow, blocks s1-s5, GA vs GQ 20 each: A is SIGSTOPped, the Driver clicks A's token, A is SIGCONTed when the click returns (<= 12 s), 4 s oracle window, then a fresh observation and click of A. Gate (GQ 20/20): 0 reconnects (the bus monitor attributes exactly one Driver connection, through the bus daemon's GetConnectionUnixProcessID over one persistent helper connection), no false success (a receipt claiming the effect while A's state file did not change; effect 'unverifiable' is an honest receipt), no duplicate mutation, the bus answered a Peer.Ping while A was stopped, and the trial ends refused or verified (the stalled click refused with no effect, or the fresh click after the resume verified by A's state file). Pilot reading recorded here: both binaries report the stalled click as effect=unverifiable via the x11_xsendevent fallback, which is neither refused nor verified, so the strict per-click reading cannot be met by any binary; the reading above is the pre-registered one.",
+   "r3w": "launcher_wedge, blocks w1-w5, GA vs GQ 10 each (supplementary positive control of the NoReply trigger, not a gate): as r3n, but the old daemon's processes are SIGSTOPped first (alive, socket open, never answering). Expected: GA never live on B; GQ live on B (the unanswered stale click pings the hung daemon, the connection is lost, the next observation reconnects).",
+   "r3_carry": "the OWN-20P stream-end restart, blob-identical r3_harness.py variant bus, blocks r1-r2, GQ only, 20: pass (safety + a new token verified in the same process) 20/20; the restart-happened view as OWN-20P."
+  },
+  "unit": "an_unanswered_call_keeps_the_bus_while_its_daemon_answers_and_loses_a_hung_one fails on red 74acf32c0 (the hung-daemon assertion) and passes on GQ 4ac191a7c; it starts a private dbus-daemon owned by the test (skipped when none)"
+ },
+ "normal_path": "blocks n1-n2 (checkbox) and nt1-nt2 (text), GQ only, kind nosteal, arm P (product defaults, no CUA_DRIVER_EXP_* variable), 20 per task: 40/40 verified, 0 false restores (no focus_outcome, no focus movement after T0 per the sampler, no non-WM focus request after the click per X RECORD), 0 spurious reconnects (exactly one Driver connection on the bus). Settle and T are descriptive only (SHARED lock): no timing claim.",
+ "controls_summary": "U0 (R1m) and GA (DLG, r3n) positive controls; decoy-free runs (mfonly, nosteal) give 0 restores; dialog control; r3w supplementary positive control of the NoReply trigger.",
+ "e4_counters_per_arm": ["unverified success (click receipt without error, task not verified)", "false restore", "silent miss reported as success (steal landed, final focus on the decoy, receipt without error and without focus_outcome)", "duplicate mutation (state seq advanced by more than one per task)", "R3 rows: false success, stale mutation"],
+ "oracles": "target-owned: the GTK3 fixture's own state file (2 ms sampler), X RECORD on the private display (SetInputFocus, ChangeProperty of _NET_ACTIVE_WINDOW / _NET_CLIENT_LIST_STACKING, SendEvent ClientMessages, ConfigureWindow stacking, delivered FocusIn/FocusOut), xprobe.FocusSampler (2 ms XGetInputFocus + _NET_ACTIVE_WINDOW), and the dbus-monitor of the private a11y bus. Driver receipts are compared against these, never trusted alone. Events are wake hints only.",
+ "dispositions": {
+  "R1m": "KEEP iff the r1m gate holds; else REVISE naming the failing gate",
+  "DLG": "KEEP iff the dlg gate (positive control, GQ 20/20, dialog control 10/10) and the DLG unit red/green hold; KILL if the normal path regresses on GQ; else REVISE naming the failing gate",
+  "A2": "KEEP iff r3n, r3s and r3_carry gates hold and the A2 unit red/green holds; REVISE naming each failing gate (expected: r3n, because the name-owner trigger is REVISE from SOURCE); KILL if the normal path regresses on GQ (spurious reconnects or failures)",
+  "Hyprland/Wayland": "BLOCKED (seat)"
+ },
+ "isolation_and_locks": "everything GUI in hostless + hostless-strict + cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV='CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=false DO_NOT_TRACK=1'; bus restarts act only on this session's private a11y launcher/daemon/registry (children of the session shell or of harness-started processes, XDG_RUNTIME_DIR checked before every signal); one shared quiet-lane acquisition per block (<= 10 trials, held < 300 s) with a receipt, >= 30 s between acquisitions; builds and units under the cargo-build lock only, never one lock while waiting on the other.",
+ "pilots_before_prereg": "plan-pilot.json, labels own20q-pilot-*, excluded from every count. pc1: U0m silent miss, G0m restored, R - mark 0.01 / -1.49 ms, mark-free hold = mark-keyed hold. pq1/pqt1: U0 silent miss, G0 restored (first pqt1 keyed on set_value's DoAction, which led to the click-armed reference; pqt1-r1 keyed on the click's, hold 81.7 ms after R). pd1: GA same_app_dialog with the focus left on the decoy, GQ restored. pdd1: both left the dialog focused (same_app_dialog). pn1: GA/GQ verified, no focus outcome. pk1: both degraded on B (first pk1 showed the pid-attribution feedback loop of a gdbus-per-name lookup and an org.a11y.Bus activation race; fixed by bus_pid_helper.py and by waiting for the name owner before GetAddress). pw1: GA never live on B, GQ pinged the hung daemon, reconnected and verified B. ps1: both receipts effect=unverifiable (x11_xsendevent), no effect landed, GQ pinged twice with 0 reconnects. pr1: GQ 2/2 pass. The first pilots ran GQ 2368a3425 (sha256 9c3cfd7f...), whose only difference from 4ac191a7c is the A2 unit test's private-bus config and connect timeout (the first config hung the test).",
+ "reporting": "every block attempt and every trial is kept; failures stay in the denominators; no timing claim beyond descriptive settle and T; work deleted is reported separately from wall-clock saved (both none claimed: correctness fixes).",
+ "claim_boundary": "Fork fix candidates on clean main 0f1955d2f lineage (cb685fad7; libs/cua-driver Linux tree df2b49c32e73), Linux X11 only (private Xvfb + openbox, private dbus-broker a11y bus), the canonical GTK3 fixture, the exact SHAs and binaries above. Nothing goes upstream. Wayland/Hyprland: BLOCKED (seat)."
+}
