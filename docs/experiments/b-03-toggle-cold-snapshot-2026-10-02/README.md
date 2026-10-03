@@ -20,7 +20,7 @@ So modal (K5EV) is now decomposed and is under 5%. Toggle is the only browser cl
 
 **Toggle's untested share therefore stays at or above 5%:** 22.3% (K5V) and 32.1% (K5EV), restated on B-02's E2 rows (27.7% / 37.7% in this block's own cold D0 cells).
 
-**Mechanism.** The probe still settles what the excess is. In both knob sets an 80 ms wait after navigate removes almost all of it: the cold excess falls from 19.3 to 1.3 ms (K5V) and from 27.4 to 1.3 ms (K5EV). That holds in the cold process as well as the warm one. As a result:
+**Mechanism.** The probe still settles what the excess is. In both knob sets an 80 ms wait after navigate (first observation about 81–82 ms after navigate returns) removes almost all of it, including the per-process part that exists at D0 (post hoc: 17.5 [13.7, 21.8] ms for K5EV, 64% of E): the cold excess falls from 19.3 to 1.3 ms (K5V) and from 27.4 to 1.3 ms (K5EV). That holds in the cold process as well as the warm one. As a result:
 
 - The spec's per-process contrast, measured at D=80, is close to zero: 0.4 ms [−0.2, 2.6] (K5V) and 1.3 ms [0.2, 3.3] (K5EV).
 - Waiting never pays. T_oracle including the wait is 64.7 ms [58.1, 70.9] (K5V) and 53.8 ms [41.6, 58.8] (K5EV) *slower* than snapshotting at once.
@@ -60,7 +60,7 @@ TypeSafe: 0 attempts, 0 reached.
 | Packet commits | PREREG + runner + Part 1 `2edc0bee2`; amendment + analyzer + shakedown raw `2549fc1e8`; results commit (this README) | SOURCE |
 | Harness | `run_b03.py`. It is B-01's `run_critpath.run_trial` step loop reproduced with three insertions, each marked `B-03`: the P warm-up, the D delay and the nc pre-snapshot. It uses B-02's `run_b02` knob plumbing and `rc.one` bookkeeping. B-02's files are imported in place from `../b-02-browser-driver-sites-2026-10-02/` and are byte-identical to `b282ff389` (`verify_artifacts.py`) | SOURCE |
 | Live trycua/cua PR 4316 head (gh) | `a0bca744067d04f05904319d3d919be30c336556`, open, read at 17:46Z. It equals the head merged into the tested source | SOURCE |
-| Upstream main (gh, 17:46Z) | `da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9`: 45 commits and 300 files ahead of `229b65b28`, **18 of them under `libs/cua-driver`**. None touches the browser engine, the snapshot/CDP code or Linux `browser_platform.rs`. They touch contract/compatibility, `cua-driver-core/src/tool_schema.rs` (element_token schema constraints, trycua/cua PR 4318), the doctor, skills, Linux Wayland/Hyprland, macOS and Windows. `tool_schema.rs` feeds the admission validation, so the admission residual is the one number here that a later source could shift. Recertify before R2-10 cites it | SOURCE |
+| Upstream main (gh, 17:46Z) | `da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9`: 45 commits and 437 files ahead of `229b65b28` (local `git diff --name-only`; the 300 first reported is the GitHub compare-API cap), **18 of them under `libs/cua-driver`** (that count stands). None touches the browser engine, the snapshot/CDP code or Linux `browser_platform.rs`. They touch contract/compatibility, `cua-driver-core/src/tool_schema.rs` (element_token schema constraints, trycua/cua PR 4318), the doctor, skills, Linux Wayland/Hyprland, macOS and Windows. `tool_schema.rs` feeds the admission validation, so the admission residual is the one number here that a later source could shift. Recertify before R2-10 cites it | SOURCE |
 | Publication SHA | set by the Publish agent; this lane did not push | — |
 | Provider | scripted mock chooser (`choose_mock_for_task`); TypeSafe attempts 0, reached 0; every runner manifest records 0 non-loopback connects | REAL |
 
@@ -82,7 +82,7 @@ TypeSafe: 0 attempts, 0 reached.
 | measured chunk B, rounds 10–19 (110 trials) | EXCLUSIVE `b03-measured-b` | 17:40:33.996Z–17:43:27.744Z; runner 17:40:40.827Z–17:43:26.816Z |
 | shakedown (7 trials, excluded) | SHARED, runner-acquired | 17:27:22.949Z–17:27:35.341Z |
 
-  Each chunk lasted under 3 minutes, well under the 15-minute limit. R2-10 was building (cargo lock) and not waiting on the quiet lane at either start (read-only `ps` check).
+  Each chunk lasted under 3 minutes, well under the 15-minute limit. R2-10 was building (cargo lock) and not waiting on the quiet lane at either start (read-only `ps` check). It did queue behind chunk A at its end: R2-10's `r2-10-shake1` (SHARED) acquired the quiet lock at 17:35:21.377Z, 17 ms after `b03-measured-a` released it at 17:35:21.360Z (loop ledger). No R2-10 trial ran inside a B-03 window.
 
 ## Method
 
@@ -113,7 +113,7 @@ TypeSafe: 0 attempts, 0 reached.
   - warm: after bind, one throwaway `browser_navigate` plus `semantic_v2` snapshot of a different document on the same owned fixture origin, before task start. The warm-up document is `<i24 origin>/modal` for toggle and `<fill origin>/state` for fill. Both return 200 and mutate nothing. The task navigate follows.
 - D (snapshot delay):
   - 0: as B-02.
-  - 80: the harness sleeps 80 ms after the step-1 pre-observation oracle read, so 80.1–80.6 ms after navigate returns (median 81.2–81.9 ms from navigate return to the first observation send).
+  - 80: the harness sleeps 80 ms (measured 80.1–80.6 ms) after the step-1 pre-observation oracle read. The first observation is therefore sent about 81–82 ms after navigate returns (median 81.2–81.9 ms from navigate return to the first observation send).
 - Negative control (nc): toggle, K5V, cold, D0. One extra `semantic_v2` snapshot of the task document follows the task navigate. The task's snapshot1 is therefore a re-snapshot of the same document with no navigation in between.
 - Forced path, from each trial's own records (every trial):
   - B-01 forced path: tools, routes, `input_route=dom_event` for every click, feedback off, 10 ms poll, settle 0 on fill.
@@ -151,7 +151,7 @@ TypeSafe: 0 attempts, 0 reached.
 | Class (mean T_runner) | Component | Parts and verdicts (source) |
 |---|---|---|
 | fill (126.8) | observation 55.8 (44.0%) | base snapshots 24.6 IRREDUCIBLE (B-01R); cold excess 31.2 NOT DELETED (moved only) (B-02 H_W; see the fill caveat below) |
-| | revalidate 20.3 (16.0%) | bound endpoint check 10.7 OWNER_DECISION (B-02 H_E); remaining re-proof 9.6 IRREDUCIBLE (#73, B-01R) |
+| | revalidate 20.3 (16.0%) | bound endpoint check 10.7 OWNER_DECISION (B-02 H_E); remaining re-proof 9.6 IRREDUCIBLE (kvnloo/cua#73, B-01R) |
 | | sleeps_polls 7.9 (6.2%) | IRREDUCIBLE (B-01R H_P: no material component; 10 ms poll) |
 | | resolution 8.1 (6.4%) | IRREDUCIBLE (B-01R: ref resolution before dispatch) |
 | toggle (86.1) | observation 36.7 (42.7%) | base 11.3 IRREDUCIBLE (B-01R); cold excess 25.5 **UNDECIDED** (B-02 H_W; this lane: still UNDECIDED) |
@@ -236,7 +236,7 @@ Before the gate is applied, the rules evaluate as follows:
 | K5V | 26.9 | 25.8 UNDECIDED | 1.3 UNDECIDED | −0.2 (median 0.9, CI excludes 0; counted as 0 ms) | 2.0 | 105.0 | **27.7%** | **22.3%** |
 | K5EV | 29.0 | 26.3 UNDECIDED | 2.4 UNDECIDED | 0.3 (CI includes 0) | 2.0 | 81.1 | **37.7%** | **32.1%** |
 
-"Restated on B-02 E2" means: B-02's toggle E2 row with the UNDECIDED cold excess scaled by this block's untested fraction of the excess (1.007 / 0.988), plus the admission residual.
+"Restated on B-02 E2" means: B-02's toggle E2 row with the UNDECIDED cold excess scaled by this block's untested fraction of the excess (1.007 / 0.988), plus the admission residual. The K5V fraction is above 1 because the UNDECIDED parts (doc_cold 25.8 + per_process 1.3 = 27.1 ms) exceed the mean excess 26.9 ms: the floor's mean is negative (−0.2 ms) and, as the partition rule says, a negative part is reported and not counted.
 
 **Fill positive replication** (K5V, n = 10 per cell, all valid):
 
@@ -261,7 +261,7 @@ The warm-up on fill's origin (`/state`, a JSON document) leaves the D0 excess al
   - per_process: UNDECIDED (K5V 1.3 ms, K5EV 2.4 ms);
   - toggle untested share: 3.1% (K5V) and 5.4% (K5EV) in this block; 3.1% and 5.3% restated on B-02.
 
-## Component timings and the five #73 requirements
+## Component timings and the five kvnloo/cua#73 requirements
 
 | Requirement | This packet |
 |---|---|
@@ -288,10 +288,11 @@ The warm-up on fill's origin (`/state`, a JSON document) leaves the D0 excess al
 6. The shakedown waited 34 s for its SHARED lock (another lane's exclusive window). Chunk B queued behind own75r's exclusive windows and acquired the lock at 17:40:33.996Z. No trial ran outside its lock.
 7. No unit suite was run, because no Driver or harness-shared code was touched. B-02's harness files are unchanged (verified).
 8. Plain-host-shell use was limited to git, gh reads, file reads and edits (including `sed -i`, `cp`, `mv`), `ps` (read-only), and `mkdir` plus `tar -x` of B-02 raw and this lane's raw into the lane temp for inspection and the privacy scan. Every Python, jq and sha256sum command ran under `hostless`. There were no near misses.
+9. **Gate rule wording.** `PREREG.json` `gates.failing_gate` names only a failed validity or invariant gate as making verdicts UNDECIDED. The analyzer committed with amendment 1 at `2549fc1e8`, before the measured block, also applies the negative-control gate (`gates_ok = validity and invariants and negative control`), and that is the rule the verdicts above use. The PREREG `negative_control` gate itself is unchanged.
 
 ## Limits
 
-- The negative control as designed takes its re-snapshot about 30 ms after navigate, which is still inside the readiness window. Its 1.9 ms excess matches the 1.3 ms left at cold D80. The ~2 ms is therefore most likely residual readiness work, not an estimator bias. Either way, the pre-registered gate failed, and this packet does not reinterpret it.
+- The negative control as designed takes its re-snapshot about 30 ms after navigate, which is still inside the readiness window. Its 1.9 ms excess is close to the 1.3 ms left at cold D80. Why the control failed is undetermined: residual readiness work and an estimator floor (snapshot1 − snapshot2 of a same-document pair is not exactly 0 ms) are equally plausible, and this block cannot tell them apart. Either way, the pre-registered gate failed, and this packet does not reinterpret it.
 - The spec's per-process contrast is taken at D80, where the delay has already absorbed the per-process work. The design could not show a per-process part that survives a delay, because there is none to show. The D0 contrast (post hoc) shows a real one.
 - The warm-up documents differ by class: `/modal` (HTML + script, similar to the toggle page) and `/state` (JSON). That difference may be why the warm-up reduced the D0 excess for toggle but not for fill. Process warmth and content similarity are confounded.
 - n = 20 per toggle cell and n = 10 per fill cell, one binary, one session type, loadavg 13–25. T_oracle spreads are tens of ms.
@@ -314,14 +315,15 @@ A component verdict transfers to R2-10's source by mechanism only; no number her
 - **Toggle H_W: still UNDECIDED.** The pre-registered negative control failed (1.9 ms [0.5, 2.6]). The fill positive replication also failed.
 - **Why toggle's untested share stays at or above 5%** (22.3% K5V, 32.1% K5EV on B-02's rows):
   1. the gate failure voids the toggle verdicts under the pre-registered analysis;
-  2. the pre-registered per-process contrast sits at D80, where the per-process work is already absorbed;
-  3. the remaining untested 2.0 ms admission residual is below 5% on its own.
+  2. the pre-registered per-process contrast sits at D80, where the per-process work is already absorbed.
+
+  The remaining untested 2.0 ms admission residual is below 5% on its own; it is not a reason the share stays at or above 5%.
 - **Mechanism (decided by this probe, descriptive):**
-  - the excess is document-readiness work that waiting absorbs;
+  - the excess is document-readiness work that waiting absorbs, and the per-process part seen at D0 (post hoc K5EV 17.5 [13.7, 21.8] ms, 64% of E) is absorbed by the same wait;
   - waiting never pays: +54–65 ms T_oracle;
   - pre-warming moves work, and costs more than it saves.
   - No deletion inside T was found, and no product knob is justified.
-- **For kvnloo/cua#73 / #10:** the fill W verdict "moved only" (B-02) was not reproduced. Fill's untested share would be 23.7% / 26.5% if it were reclassified UNDECIDED.
+- **For kvnloo/cua#73 / kvnloo/cua#10:** the fill W verdict "moved only" (B-02) was not reproduced. Fill's untested share would be 23.7% / 26.5% if it were reclassified UNDECIDED.
 - TypeSafe: 0 attempts, 0 reached.
 
 ## Next
@@ -333,6 +335,14 @@ A follow-up lane (B-04, no provider, same binary) can make both verdicts termina
 3. **Fill and toggle together**, with the same per-document T_oracle rule. This lane's data say that rule gives IRREDUCIBLE in both classes.
 
 If the follow-up's gates hold and its effects match this block's, toggle's untested share would fall to about 3% (K5V) and about 5% (K5EV). The K5EV figure rests on the 2.0 ms admission residual plus any per-process part left UNDECIDED.
+
+## Publication errata (r1b repair, 2026-10-03)
+
+Evidence class: SOURCE (packet hygiene and wording; no new run, no new evidence). Branch `exp/b-03-toggle-cold-snapshot-r1b-20261003`, parent `b34eef71e` (the published head).
+
+- **Logs.** The repository rule `*.log` kept the six session and runner logs cited for the DISPLAY values (`raw/*/…session.log`) out of the published commit. They are now committed from the wave-3 lane worktree, with a packet-local `.gitignore` (`!*.log`, `!build/`). They had already been through the lane's packager (`lane-scripts/package_raw.py` rules); re-applying those rules changed 0 files. `raw/force-added-logs.sha256` lists their sha256.
+- **Wording.** Freshness row (437 files locally; 300 was the compare-API cap; the 18 `libs/cua-driver` count stands); R2-10 shake1 lock timing disclosed under Environment; the per-process part at D0 is also absorbed by waiting; the failed negative control's cause is undetermined; disposition reason 3 is no longer listed as a reason; D80 is about 81–82 ms after navigate returns; the K5V untested fraction above 1 is explained; PREREG `failing_gate` vs analyzer wording (Deviation 9); issue references written as kvnloo/cua#N.
+- **Unchanged.** Every measured number, raw trial record, summary JSON, analysis script, `verify_artifacts.py`, `PREREG.json` and `PREREG-AMENDMENT-1.json` is the same as at `b34eef71e`. No cited file was missing.
 
 ## Files
 
@@ -346,6 +356,8 @@ If the follow-up's gates hold and its effects match this block's, toggle's untes
 | `provenance.json` | SHAs, binary, environment, locks, provider |
 | `verify_artifacts.py` | standard-library verifier: recomputation, pre-registered analyzer equivalence, headline numbers, PREREG order, locks, trial counts, binary, B-02 harness blobs, provider, privacy |
 | `lane-scripts/` | sanitized copies of the lane's session wrapper and raw packager |
-| `raw/` | sanitized raw: `measured-trials.tar.gz` (220 trials + Driver traces), `shake-trials.tar.gz` (7, excluded), manifests, session logs, `lock-ledger.jsonl` |
+| `raw/` | sanitized raw: `measured-trials.tar.gz` (220 trials + Driver traces), `shake-trials.tar.gz` (7, excluded), manifests, `lock-ledger.jsonl` |
+| `raw/measured/measured-a.session.log`, `raw/measured/measured-a.stdout.log`, `raw/measured/measured-b.session.log`, `raw/measured/measured-b.stdout.log`, `raw/shake/shake.session.log`, `raw/shake/shake.stdout.log` | session and runner logs (committed since the r1b repair; see Publication errata) |
+| `raw/force-added-logs.sha256`, `.gitignore` | sha256 of the six committed logs; packet-local `!*.log`, `!build/` |
 
 Raw outputs are mirrored, unsanitized, in the lane artifacts directory `artifacts/r2/B-03/`.
