@@ -175,6 +175,11 @@ def main() -> None:
     put_text(raw / "lock-receipts-global.jsonl", "\n".join(glines) + "\n")
     # R2-10R attempt 2: failed session-start blocks (display probe rc 97) keep their logs here
     fails = sorted((runs / "failed-sessions").glob("*.log")) if (runs / "failed-sessions").is_dir() else []
+    # R2-10R attempt 2: the first S2 acquisition, cut by its own outer timeout after 165 of 192 trials (not
+    # analysed; disclosed and summarised in the README; S2 re-run in full as S2r)
+    for d in sorted((runs / "interrupted").glob("*/")) if (runs / "interrupted").is_dir() else []:
+        report[f"interrupted/{d.name}"] = bundle([d / "trials"], raw / "interrupted" / f"{d.name}-trials.tar.gz")
+    fails += sorted((runs / "interrupted").glob("*.log")) if (runs / "interrupted").is_dir() else []
     for f in sorted(list(runs.glob("*.log")) + list(m.glob("*.log")) + list(p0.glob("*.log"))) + fails:
         text = "\n".join(x for x in f.read_text(errors="replace").splitlines() if "WARN" not in x)
         put_text(raw / "logs" / f"{f.parent.name}-{f.name}", text + "\n")

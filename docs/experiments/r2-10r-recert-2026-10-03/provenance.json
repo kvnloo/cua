@@ -1,0 +1,59 @@
+{
+ "lane": "R2-10R",
+ "attempt": 2,
+ "packet": "docs/experiments/r2-10r-recert-2026-10-03/",
+ "branch": "exp/r2-10r-recert-a2-20261003",
+ "base_upstream_main": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+ "tested_source_head": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a",
+ "tested_rust_tree": "3ae6bd4408628fa098760e4886e3b2e45f89d807",
+ "tested_libs_cua_driver_tree": "11ee32235d5eedd24f8e9c6ad0d8e4d9ea76c4d8 (same at 45dff8f32 and at every packet commit)",
+ "tested_commits": {
+  "258619036": "step 1: cherry-pick f3f7ff473 (R2-01 phase trace; lib.rs auto-merged with trycua/cua PR 3489's key_pacing line)",
+  "6f438492b": "step 2: merge --no-ff a0bca7440 (trycua/cua PR 4316 head)",
+  "ddf87c681": "step 3: cherry-pick c7e9c2a06 (B-01 marks/knob)",
+  "770a715ed": "step 4: cherry-pick 96195e3b7 (B-02 knobs/marks)",
+  "cbbddea55": "step 5: cherry-pick 0cc03fbed (R2-04 marks; platform-linux impl_.rs auto-merged with trycua/cua PR 4375)",
+  "8f4f8b542": "step 6: cherry-pick 8f5ec81bc (N-01R knobs)",
+  "8fbfa8e36": "step 7: cherry-pick 7d6cbe377 (FIX-01 Part A)",
+  "45dff8f32": "step 8: cherry-pick 8f3a646b4 (FIX-01 Part B)"
+ },
+ "packet_commits": {
+  "caf3d68a7": "attempt 1: verbatim harness copy from exp/r2-10-composition-20261002 030f6bdbf",
+  "3028d8078": "attempt 1: PREREG.json, harness edits, D1 harness, raw/rebase (committed before any attempt-1 Phase 0 row)",
+  "0bfd24053": "attempt 2: PREREG-AMENDMENT-1.json, harness fixes, salvaged verifier (2026-10-03T02:52:22Z, before the first counted row)",
+  "567d76e2b": "attempt 2: chunk cap inside the EXCLUSIVE acquisition, failed-session log packaging (2026-10-03T05:10:45Z, before S2r and later chunks)"
+ },
+ "control": {"branch": "exp/r2-10r-control-a2-20261003", "head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f", "rust_tree": "c609a7b606013fee2b2e0da9086a8555eea852f4",
+             "recipe": "0f1955d2f + cherry-picks of 7d6cbe377 (a4cda75bd) and 8f3a646b4 (8a2362770); range-diff vs 989cc76ce..1381014a3 all '='"},
+ "timeline_utc": {
+  "amendment_commit": "2026-10-03T02:52:22Z",
+  "first_counted_row_acquired": "2026-10-03T02:59:54Z (Phase 0 (a) and (b))",
+  "phase0_complete": "2026-10-03T03:18:04Z",
+  "first_measured_trial_acquisition": "2026-10-03T03:45:11Z (D1)",
+  "last_measured_release": "2026-10-03T05:57:40Z (nd1)"
+ },
+ "binaries": {
+  "R_prime": {"name": "cua-driver-r2-10r-a2-45dff8f32", "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8", "version_in_session": "cua-driver 0.32.0",
+              "built_at_head": "3028d80780fabf39363cc9271778d9e124d0447a", "attempt_1_sha256": "d830ee779b5681496dd35c7ba524580684dbd1430fea82a836e8f977fb658f9a (built at 45dff8f32; not used)"},
+  "Cn_prime": {"name": "cua-driver-r2-10r-a2-ctl-8a2362770", "sha256": "e66fac2cac19bc7899598f4a3d8337de1fc69fcaf99163e5553f1dc2d9f91b0b", "version_in_session": "cua-driver 0.32.0",
+               "built_at_head": "8a2362770f2120c136c69a50b711a6b9e3a69b8f", "attempt_1_sha256": "97dfc91e953132daa4ceb49056f1ac5a5ae046c9b6473acaaaca1496fd2b1c79 (not used)"},
+  "U": {"name": "cua-driver-b02-560bd8247", "sha256": "7e6c06090fa2f2b63152a9276fe3a4766f88d2d5cbe7b412236208ee537bd3a0", "version_in_session": "cua-driver 0.32.0", "use": "Phase 0 (b)/(c) positive control only"}
+ },
+ "build": "hostless + flock cargo-build.lock build-driver.sh <worktree> <label> cua-release-r2-10; rustc 1.97.1; R' 91 s, Cn' 108 s; 0 Fresh workspace units (raw/provenance/builds.log). The first Cn' build was terminated by the agent tool's 120 s background limit and re-run.",
+ "environment": {
+  "host": "one Linux host (name withheld)",
+  "isolation": "bin/hostless v2 for every code-executing command; native, D1 and native Phase 0 rows nested in bin/hostless-strict with CUA_SESSION_ATSPI=1; private Xvfb via cua-x11-session.sh; telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1)",
+  "wrapper_sha256": "raw/provenance/wrappers-sha256.txt",
+  "session_type": "x11 (private Xvfb 1920x1080x24, openbox, picom; private dbus-run-session)",
+  "loadavg": "1-minute loadavg recorded per trial; D1 ran at 18.5-25.0, scripted/native chunks at lower load (per-trial values in raw/)"
+ },
+ "live_heads": {
+  "start": "raw/provenance/heads-start.json (2026-10-03T02:41:33Z): upstream main 41c34cb0d, libs/cua-driver tree df2b49c32e73 = 0f1955d2f's; trycua/cua PR 4316 OPEN a0bca7440; PR 4375 MERGED 920a42f10; PR 3489 MERGED 310cdfd58",
+  "end": "raw/provenance/heads-end.json (2026-10-03T05:57:56Z): upstream main a8d5788fd (2 commits / 11 files after 41c34cb0d, 0 under libs/cua-driver; libs/cua-driver tree still df2b49c32e73); named PR heads unchanged",
+  "tested_source": "45dff8f32 (R'), 8a2362770 (Cn')",
+  "publication_sha": "filled by Publish"
+ },
+ "harness_sources": "harness/ = R2-10 harness (exp/r2-10-composition-20261002 030f6bdbf) copied verbatim in caf3d68a7; every later edit is listed in PREREG.json harness.edits_disclosed_as_deviations, PREREG-AMENDMENT-1.json and README Deviations",
+ "reference": "reference/r2-10-reference.json: verdicts extracted from the accepted R2-10 summary (exp/r2-10-composition-20261002 030f6bdbf, git blob recorded inside)",
+ "provider": {"provider": "TypeSafe", "attempts": 0, "reached": 0, "lane_cap": 0}
+}

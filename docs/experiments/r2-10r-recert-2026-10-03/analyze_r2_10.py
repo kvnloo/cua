@@ -952,7 +952,7 @@ def gates(S: dict[str, Any]) -> dict[str, Any]:
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--raw", default=str(HERE / "raw"))
-    p.add_argument("--out", default=str(HERE / "r2-10-summary.json"))
+    p.add_argument("--out", default=str(HERE / "r2-10r-summary.json"))  # R2-10R: output name
     args = p.parse_args()
     S = analyze(Path(args.raw))
     Path(args.out).write_text(json.dumps(S, indent=1, sort_keys=True, default=str) + "\n")
