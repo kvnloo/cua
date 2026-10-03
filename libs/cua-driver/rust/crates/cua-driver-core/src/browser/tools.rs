@@ -2821,6 +2821,10 @@ mod tests {
                 "browser_navigate",
             ),
             (
+                BrowserMotionPolicyTool::new(e.clone()).def().clone(),
+                "browser_motion_policy",
+            ),
+            (
                 BrowserClickTool::new(e.clone()).def().clone(),
                 "browser_click",
             ),
@@ -2854,6 +2858,7 @@ mod tests {
         for def in [
             BrowserPrepareTool::new(e.clone()).def().clone(),
             BrowserNavigateTool::new(e.clone()).def().clone(),
+            BrowserMotionPolicyTool::new(e.clone()).def().clone(),
             BrowserClickTool::new(e.clone()).def().clone(),
             BrowserTypeTool::new(e.clone()).def().clone(),
             BrowserDialogTool::new(e.clone()).def().clone(),
@@ -2878,6 +2883,7 @@ mod tests {
                 "get_browser_state",
                 "browser_prepare",
                 "browser_navigate",
+                "browser_motion_policy",
                 "browser_click",
                 "browser_type",
                 "browser_dialog",
