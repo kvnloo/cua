@@ -20,6 +20,8 @@ LOCK="$LOCKDIR/quiet-lane.lock"; CARGO="$LOCKDIR/cargo-build.lock"; LEDGER="$LOC
 [ -e "$LOCK" ] || { echo "refusing: quiet-lane lock missing" >&2; exit 94; }
 mkdir -p "$RUNS/chunks"
 extra="R2_10_OUTER_HOSTLESS=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1"
+# non-timing rows (smoke, tools/list) only: forwarded into the session so r210r_session.sh skips the load rule
+[ "${FRESH07_NO_LOAD_GATE:-0}" = 1 ] && extra="$extra FRESH07_NO_LOAD_GATE=1"
 envs=(env -u TYPESAFE_API_KEY -u CUA_SESSION_FORWARD_SECRETS)
 if [ "$ATSPI" = 1 ]; then envs+=(CUA_SESSION_ATSPI=1); extra="CUA_SESSION_ATSPI=1 $extra"; fi
 envs+=("CUA_SESSION_EXTRA_ENV=$extra")

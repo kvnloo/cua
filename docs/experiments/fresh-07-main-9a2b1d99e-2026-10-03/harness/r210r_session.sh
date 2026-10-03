@@ -22,6 +22,11 @@ EX="$WT/libs/cua-driver/examples/jev-use"; PY="$EX/.venv/bin/python"
 export JEV_USE_DIR="$EX" PYTHONDONTWRITEBYTECODE=1
 load_gate() {
   local i l
+  # Non-timing calls (default-off smoke, tools/list) pass FRESH07_NO_LOAD_GATE=1: the load rule is a
+  # timing rule. The load is still recorded.
+  if [ "${FRESH07_NO_LOAD_GATE:-0}" = 1 ]; then
+    echo "{\"t\":\"$(date -u +%FT%T.%3NZ)\",\"what\":\"$1\",\"load1\":$(cut -d' ' -f1 /proc/loadavg),\"gate\":\"off (non-timing)\"}" >> "$GATE_LOG"; return 0
+  fi
   for i in $(seq 0 60); do
     l=$(cut -d' ' -f1 /proc/loadavg)
     if awk -v l="$l" 'BEGIN{exit !(l <= 4.0)}'; then echo "{\"t\":\"$(date -u +%FT%T.%3NZ)\",\"what\":\"$1\",\"waited_s\":$i,\"load1\":$l,\"ok\":true}" >> "$GATE_LOG"; return 0; fi
