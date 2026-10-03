@@ -2938,6 +2938,38 @@ async fn set_input_files_detached_after_the_check_is_never_a_success() {
 }
 
 #[tokio::test]
+async fn set_input_files_detached_after_the_check_reports_an_unverifiable_effect() {
+    // FIX-04: the post-assignment refusal may have landed (Chromium assigns
+    // files to a detached node), so its receipt says effect unverifiable.
+    let f = fixture_with(|st| {
+        st.file_inputs.push(10);
+        st.detach_after_connected_check = Some(10);
+    })
+    .await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let input_ref = ref_of(&snap, "main", "main-btn");
+
+    let result = set_input_files(&f, &target, &tab, &input_ref).await;
+    let receipt = structured(&result);
+    assert_eq!(receipt["effect"], "unverifiable", "{result:?}");
+    assert_eq!(receipt["refusal"]["detail"]["delivery"], "unknown");
+
+    // The pre-assignment refusal (detached before the check) proves nothing was
+    // assigned and keeps no effect key.
+    let g = fixture_with(|st| st.file_inputs.push(10)).await;
+    let (target, tab) = bind(&g).await;
+    let snap = snapshot(&g, &target, &tab).await;
+    let input_ref = ref_of(&snap, "main", "main-btn");
+    detach(&g, 10);
+    let refused = set_input_files(&g, &target, &tab, &input_ref).await;
+    let receipt = structured(&refused);
+    assert_eq!(receipt["status"], "refused", "{refused:?}");
+    assert!(receipt.get("effect").is_none(), "{refused:?}");
+    assert!(page_dispatches(&g).is_empty());
+}
+
+#[tokio::test]
 async fn set_input_files_assigns_connected_and_reattached_file_inputs() {
     let f = fixture_with(|st| st.file_inputs.push(10)).await;
     let (target, tab) = bind(&f).await;

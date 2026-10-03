@@ -231,10 +231,17 @@ impl BrowserRefusal {
     /// stays unset and agents branch on `structuredContent.status`.
     pub fn to_tool_result(&self) -> ToolResult {
         let text = format!("refused ({}): {}", self.code.as_str(), self.message);
-        ToolResult::text(text).with_structured(serde_json::json!({
+        let mut structured = serde_json::json!({
             "status": "refused",
             "refusal": self,
-        }))
+        });
+        // A refusal issued after the input was acknowledged or assigned says
+        // the effect may have landed: its effect is unverifiable, not refused.
+        // ActionResult tools re-project this through the action record.
+        if crate::action_record::refusal_delivery_may_have_landed(&structured) {
+            structured["effect"] = serde_json::json!("unverifiable");
+        }
+        ToolResult::text(text).with_structured(structured)
     }
 }
 
@@ -344,6 +351,31 @@ mod tests {
             other => panic!("expected text content, got {other:?}"),
         };
         assert!(text.contains("browser_requires_setup"), "{text}");
+    }
+
+    #[test]
+    fn delivery_unknown_refusal_reports_an_unverifiable_effect() {
+        // FIX-04: browser_set_input_files is not an ActionResult tool, so its
+        // receipt is this envelope. A refusal that declares the input may
+        // have landed carries the effect `unverifiable`, never just
+        // `refused`; other refusals carry no effect key.
+        let unknown = BrowserRefusal::new(BrowserRefusalCode::BrowserRefStale, "may have landed")
+            .with_detail(serde_json::json!({"delivery": "unknown", "retryable": false}))
+            .to_tool_result()
+            .structured_content
+            .unwrap();
+        assert_eq!(unknown["status"], "refused");
+        assert_eq!(unknown["effect"], "unverifiable");
+        assert_eq!(unknown["refusal"]["detail"]["delivery"], "unknown");
+        assert_eq!(unknown["refusal"]["detail"]["retryable"], false);
+
+        for detail in [None, Some(serde_json::json!({"delivery": "not_delivered"}))] {
+            let mut refusal = BrowserRefusal::new(BrowserRefusalCode::BrowserRefStale, "stale");
+            refusal.detail = detail;
+            let structured = refusal.to_tool_result().structured_content.unwrap();
+            assert_eq!(structured["status"], "refused");
+            assert!(structured.get("effect").is_none(), "{structured}");
+        }
     }
 
     #[test]
