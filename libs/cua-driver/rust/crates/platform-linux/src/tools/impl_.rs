@@ -7573,6 +7573,20 @@ impl Tool for TypeTextTool {
                     )
                     .await;
                 }
+                // The addressed element is gone from the window its token
+                // observed. The blind editable searches below act on whatever
+                // editable of the whole process they find (another window,
+                // possibly another session's), so refuse as stale instead.
+                Ok(Err(error)) if error.is::<crate::atspi::native::CachedElementGone>() => {
+                    return ToolResult::error(format!(
+                        "type_text: stale_element_token: observed AT-SPI element [{idx}] is no \
+                         longer present in its window ({error}); re-snapshot with get_window_state"
+                    ))
+                    .with_structured(json!({
+                        "code": "stale_element_token",
+                        "effect": "none",
+                    }));
+                }
                 Ok(Err(_)) | Err(_)
                     if !delivery.is_foreground() && crate::wayland::wayland_input_enabled() =>
                 {

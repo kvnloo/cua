@@ -2833,8 +2833,42 @@ pub fn type_into_editable(pid: u32, text: &str) -> Result<()> {
     )
 }
 
-/// Write into the exact indexed editable exposed by the caller's snapshot.
-pub fn type_into_editable_at(pid: u32, idx: usize, text: &str) -> Result<()> {
+/// The `idx`-th indexable node of an application walk. With `frame` (the
+/// owning top-level `(bus, path)` of the caller's window snapshot) a node
+/// outside that top-level, or a missing node, is a [`CachedElementGone`]: the
+/// observation is stale and the index must not retarget another window.
+fn indexed_node<'v, 'a>(
+    visited: &'v [Visited<'a>],
+    idx: usize,
+    frame: Option<&(String, String)>,
+) -> Result<&'v Visited<'a>> {
+    let node = visited.iter().filter(|node| is_indexable(node)).nth(idx);
+    match (node, frame) {
+        (Some(node), None) => Ok(node),
+        (Some(node), Some(frame)) if identity_in_frame(node.identity.as_ref(), frame) => Ok(node),
+        (_, Some(_)) => Err(CachedElementGone(format!(
+            "element {idx} is no longer in the window its snapshot observed"
+        ))
+        .into()),
+        (None, None) => Err(anyhow!("element {idx} not found (total: {})", visited.len())),
+    }
+}
+
+/// Whether a node's proven identity belongs to the top-level `(bus, path)`.
+fn identity_in_frame(identity: Option<&AtspiIdentity>, frame: &(String, String)) -> bool {
+    identity.is_some_and(|identity| {
+        identity.frame_bus_name == frame.0 && identity.frame_path == frame.1
+    })
+}
+
+/// Write into the exact indexed editable exposed by the caller's snapshot,
+/// within `frame` when the caller's snapshot was window-scoped.
+pub fn type_into_editable_at(
+    pid: u32,
+    idx: usize,
+    text: &str,
+    frame: Option<&(String, String)>,
+) -> Result<()> {
     bounded_for(
         INDEX_RESOLVE_BUDGET,
         async {
@@ -2842,11 +2876,7 @@ pub fn type_into_editable_at(pid: u32, idx: usize, text: &str) -> Result<()> {
             let visited = collect_visited(conn, pid)
                 .await?
                 .ok_or_else(|| anyhow!("no AT-SPI application for pid {pid}"))?;
-            let target = visited
-                .iter()
-                .filter(|node| is_indexable(node))
-                .nth(idx)
-                .ok_or_else(|| anyhow!("element {idx} not found (total: {})", visited.len()))?;
+            let target = indexed_node(&visited, idx, frame)?;
             if write_into_editable_target(target, text).await? {
                 Ok(())
             } else {
@@ -2856,13 +2886,9 @@ pub fn type_into_editable_at(pid: u32, idx: usize, text: &str) -> Result<()> {
                 let refreshed = collect_visited(conn, pid)
                     .await?
                     .ok_or_else(|| anyhow!("no AT-SPI application for pid {pid}"))?;
-                let refreshed_target = refreshed
-                    .iter()
-                    .filter(|node| is_indexable(node))
-                    .nth(idx)
-                    .ok_or_else(|| {
-                        anyhow!("element {idx} disappeared after AT-SPI focus refresh")
-                    })?;
+                let refreshed_target = indexed_node(&refreshed, idx, frame).map_err(|error| {
+                    error.context(format!("element {idx} disappeared after AT-SPI focus refresh"))
+                })?;
                 if write_into_editable_target(refreshed_target, text).await? {
                     Ok(())
                 } else {
@@ -4858,7 +4884,7 @@ pub fn scroll_element(
 /// after the acknowledgement can therefore split one string between the old
 /// and new controls. Wait for the target's Focused state to become observable;
 /// an acknowledgement without read-back is not sufficient for global input.
-pub fn focus_element(pid: u32, idx: usize) -> Result<bool> {
+pub fn focus_element(pid: u32, idx: usize, frame: Option<&(String, String)>) -> Result<bool> {
     bounded_for(
         INDEX_RESOLVE_BUDGET,
         async {
@@ -4866,11 +4892,7 @@ pub fn focus_element(pid: u32, idx: usize) -> Result<bool> {
             let visited = collect_visited(conn, pid)
                 .await?
                 .ok_or_else(|| anyhow!("no AT-SPI application for pid {pid}"))?;
-            let target = visited
-                .iter()
-                .filter(|v| is_indexable(v))
-                .nth(idx)
-                .ok_or_else(|| anyhow!("element {idx} not found (total: {})", visited.len()))?;
+            let target = indexed_node(&visited, idx, frame)?;
             let proxies = target
                 .acc
                 .proxies()
@@ -7245,5 +7267,25 @@ mod at_point_rules_tests {
             .describe()
             .starts_with("selected: canvas \"file.txt\""));
         assert!(selected.describe().contains("read back as selected"));
+    }
+}
+
+#[cfg(test)]
+mod frame_scope_tests {
+    use super::*;
+
+    #[test]
+    fn a_node_is_in_frame_only_with_a_proven_identity_of_that_top_level() {
+        let frame = (":1.7".to_owned(), "/frame/w1".to_owned());
+        let identity = |frame_path: &str| AtspiIdentity {
+            bus_name: ":1.7".into(),
+            path: "/node/6".into(),
+            frame_bus_name: ":1.7".into(),
+            frame_path: frame_path.into(),
+        };
+        assert!(identity_in_frame(Some(&identity("/frame/w1")), &frame));
+        // The same index in another top-level of the process (w2) is not.
+        assert!(!identity_in_frame(Some(&identity("/frame/w2")), &frame));
+        assert!(!identity_in_frame(None, &frame));
     }
 }
