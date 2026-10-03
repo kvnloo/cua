@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# quiet-holders: read-only report of who holds or waits for the quiet-lane lock.
+# USAGE
+#   quiet-holders                       one TSV header line, then one row per FLOCK entry on the lock inode
+#                                       in /proc/locks: state(holding|waiting) mode(READ|WRITE) pid ppid
+#                                       elapsed_s exe. ppid/elapsed_s/exe come from ps; a pid that is no
+#                                       longer running (e.g. the flock(1) process that took a lock for a
+#                                       shell fd) shows "-" "-" "(not-running)".
+#   QUIET_LANE_LOCKDIR=<dir>            lock dir override, for tests only (default: the loop lock dir)
+# Never prints command lines or environment. Opens nothing for writing and signals nothing.
+set -euo pipefail
+LOCKDIR="${QUIET_LANE_LOCKDIR:-@QUIET_LANE_DEFAULT_LOCKDIR@}"; lock="$LOCKDIR/quiet-lane.lock"
+printf 'state\tmode\tpid\tppid\telapsed_s\texe\n'
+[ -e "$lock" ] || exit 0
+ino="$(stat -c %i "$lock")"
+dev="$(findmnt -no MAJ:MIN -T "$lock" 2>/dev/null | awk -F: '{printf "%02x:%02x", $1, $2}')" || dev=
+awk -v ino="$ino" -v dev="$dev" '{
+  o = ($2 == "->"); if ($(2 + o) != "FLOCK") next
+  n = split($(6 + o), d, ":"); if (n != 3 || d[3] != ino) next
+  if (dev != "" && d[1] ":" d[2] != dev) next
+  print (o ? "waiting" : "holding"), $(4 + o), $(5 + o)
+}' /proc/locks | while read -r state mode pid; do
+  if info="$(ps -o ppid=,etimes=,comm= -p "$pid" 2>/dev/null)"; then
+    read -r ppid et exe <<<"$info"
+  else ppid=-; et=-; exe='(not-running)'; fi
+  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$state" "$mode" "$pid" "$ppid" "$et" "$exe"
+done

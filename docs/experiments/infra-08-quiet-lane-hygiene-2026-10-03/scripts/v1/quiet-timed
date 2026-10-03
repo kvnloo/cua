@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# quiet-timed <label> <cmd...>: run one timing phase under the EXCLUSIVE quiet-lane lock and append a
+# receipt line to the lock ledger, so lock compliance is evidenced by the harness, not by the agent.
+set -euo pipefail
+LOCKDIR=@QUIET_LANE_DEFAULT_LOCKDIR@; LEDGER="$LOCKDIR/quiet-lane-ledger.jsonl"
+mkdir -p "$LOCKDIR"; label="$1"; shift
+exec 9>"$LOCKDIR/quiet-lane.lock"
+flock -x 9
+acq="$(date -u +%FT%T.%3NZ)"
+set +e; "$@"; rc=$?; set -e
+rel="$(date -u +%FT%T.%3NZ)"
+printf '{"label":"%s","pid":%d,"acquired":"%s","released":"%s","rc":%d,"cmd_sha256":"%s"}\n' \
+  "$label" "$$" "$acq" "$rel" "$rc" "$(printf '%s\0' "$@" | sha256sum | cut -c1-16)" >> "$LEDGER"
+exit "$rc"

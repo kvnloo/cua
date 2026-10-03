@@ -1,0 +1,32 @@
+{
+  "lane": "INFRA-08",
+  "wave": 8,
+  "kind": "fix (loop tooling, outside the product)",
+  "owners": ["kvnloo/cua#73 (loop infrastructure; STATE.infra_followups W7)"],
+  "problem": "bin/quiet-timed v1 opens fd 9 on quiet-lane.lock without close-on-exec, so processes started by the timed command inherit the lock; a quiet-timed killed while waiting leaves its flock -x child queued; there is no starvation signal; flock(2) gives no writer priority, so overlapping SHARED holders can starve EXCLUSIVE waiters.",
+  "deliverable": {
+    "quiet-timed v2": "CLI unchanged; receipt keys/format byte-compatible with v1; command runs with fd 9 closed; TERM/INT/HUP while waiting kill only its own flock waiter; starvation alarm every QUIET_STARVE_ALARM_S (default 900, 0 disables) writes locks/starvation/<label>-<utc>.txt with pid, ppid, elapsed, exe name, lock mode, waiting/holding only; QUIET_LANE_LOCKDIR overrides the lock dir for tests only.",
+    "quiet-shared": "<label> <max_s> <cmd>: yields while /proc/locks shows a queued EXCLUSIVE waiter on the lock inode, then flock -n -s (polled), runs the command with fd 9 closed under timeout -k 30 <max_s>, receipt with the quiet-timed keys plus mode=shared.",
+    "quiet-holders": "read-only TSV report: state, mode, pid, ppid, elapsed_s, exe for each FLOCK entry on the lock inode."
+  },
+  "evidence_class": "UNIT",
+  "environment": "every test under bin/hostless; temp lock dirs under the lane tmp dir (cua-lane-tmp/w8-infra08); never the live lock file",
+  "implementations_under_test": {
+    "v1": "scripts/v1/quiet-timed (the installed v1, templated; renders back to the installed sha256)",
+    "v2": "scripts/quiet-timed, scripts/quiet-shared, scripts/quiet-holders"
+  },
+  "tests": {
+    "T0": "render/override: v2 rendered with a sentinel default lock dir and run with QUIET_LANE_LOCKDIR never creates the sentinel; run without the override it uses the rendered default.",
+    "T1": "fd leak: the timed command starts a setsid'd sleep 600 daemon and exits; right after quiet-timed returns (daemon verified alive) an exclusive try-lock on the lock file must succeed. Expected v1 RED (try-lock fails), v2 GREEN. T1s: same for quiet-shared (v2 only). The test kills only its own daemon.",
+    "T2": "schema: on the same command the receipt key list (order included) is identical between v1 and v2, cmd_sha256 is equal, and the lines are byte-identical after masking pid/acquired/released. quiet-shared receipt = the same six keys in the same order plus a trailing mode=shared.",
+    "T3": "waiter reap: the test holds the lock EXCLUSIVE, starts quiet-timed, waits for its queued flock child, sends TERM (and, v2 only, INT and HUP in separate cases); after quiet-timed exits no process of its descendant set survives, no queued waiter remains on the inode, the command never ran and no receipt was written. Expected v1 RED on TERM (flock child survives), v2 GREEN.",
+    "T4": "yield: the test holds the lock SHARED, quiet-timed queues EXCLUSIVE, quiet-shared is started; quiet-shared must not acquire while the EXCLUSIVE waiter is queued; after the test releases, the EXCLUSIVE command runs first and then quiet-shared acquires (order X then S, shared acquired >= exclusive released). Control: a plain flock -s wrapper (no yield) acquires ahead of the queued writer (order S then X). T4n: with no writer queued quiet-shared acquires immediately; T4t: quiet-shared max_s=1 on sleep 30 returns 124 within the kill grace.",
+    "T5": "alarm: QUIET_STARVE_ALARM_S=2 with the lock held by the test; within 8 s at least one starvation file appears; header keys exactly {label, waiter_pid, waited_s, utc}; table header exactly state mode pid ppid elapsed_s exe; every row has 6 fields with state in {holding, waiting} and mode in {READ, WRITE}; a holding row for the test pid and a waiting WRITE row exist; a marker argument string and a marker environment value are absent from every file; no new file appears after the lock is granted. v1 has no alarm: RED (no file).",
+    "T6": "exit codes: rc 0, 1, 7 and 255 propagate unchanged through quiet-timed (v1 and v2, equal) and quiet-shared, and the receipt rc equals the exit code."
+  },
+  "pass_rule": "v2: every test and case GREEN in one full run under hostless. v1: T1 and T3 RED (the bugs), T5 RED (no alarm), T2 and T6 GREEN (compatibility baseline). Any v2 failure blocks install.",
+  "install_plan": "only after the v2 run is all green: back up the installed quiet-timed to bin/quiet-timed.v1 (sha256 recorded), render each script with the default lock dir to a temp file in bin/ and mv it into place (atomic rename; running instances keep the old inode); record sha256 before/after; smoke against the live lock with label infra08-smoke and command true, only if EXCLUSIVE is granted within 10 min, else smoke recorded as skipped. No running quiet-timed or other track's process is stopped or signalled; no other track's wrapper is edited.",
+  "provider": {"name": "TypeSafe", "lane_cap_reached": 0, "planned_attempts": 0},
+  "claim_boundary": "Loop tooling only. No Driver behaviour change, no product service. Cannot force other tracks' SHARED holders to yield; remaining starvation from cooperating-but-long SHARED holders is reported, not solved.",
+  "shakedown_before_prereg": "one smoke render+run of v2 in a temp lock dir under hostless (rc propagation, one shared receipt, quiet-holders output) to check the scripts parse and run; not a test trial, not counted."
+}

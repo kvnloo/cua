@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# quiet-shared <label> <max_s> <cmd...>: the loop's SHARED quiet-lane helper (builds, unit runs, other
+# non-timing work that must not overlap an EXCLUSIVE timing phase).
+# USAGE
+#   quiet-shared <label> <max_s> <cmd...>
+#       Waits while /proc/locks shows any queued EXCLUSIVE waiter on the lock (yields to timing lanes),
+#       then takes the lock SHARED with a non-blocking try (it never queues in the kernel ahead of or
+#       among EXCLUSIVE waiters), runs the command with the lock fd closed under
+#       `timeout -k 30 <max_s>`, and appends a receipt line to the lock ledger with the quiet-timed keys
+#       plus "mode":"shared". Exit code = the command's rc (124 when the cap cut it).
+#   QUIET_SHARED_POLL_S=<s>             poll period while yielding / retrying (default 1)
+#   QUIET_LANE_LOCKDIR=<dir>            lock dir override, for tests only (default: the loop lock dir)
+# Limit: flock(2) has no writer priority; this helper yields only to waiters that are already queued
+# and cannot make other tracks' SHARED holders yield.
+set -euo pipefail
+LOCKDIR="${QUIET_LANE_LOCKDIR:-@QUIET_LANE_DEFAULT_LOCKDIR@}"; LEDGER="$LOCKDIR/quiet-lane-ledger.jsonl"
+mkdir -p "$LOCKDIR"; label="$1"; max_s="$2"; shift 2
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -x "$HERE/quiet-holders" ] || { echo "quiet-shared: quiet-holders missing next to this script" >&2; exit 98; }
+exec 9>"$LOCKDIR/quiet-lane.lock"
+writer_queued() {
+  QUIET_LANE_LOCKDIR="$LOCKDIR" "$HERE/quiet-holders" 9>&- | awk '$1 == "waiting" && $2 == "WRITE" {f = 1} END {exit !f}'
+}
+while writer_queued || ! flock -n -s 9; do sleep "${QUIET_SHARED_POLL_S:-1}" 9>&-; done
+acq="$(date -u +%FT%T.%3NZ)"
+set +e; timeout -k 30 "$max_s" "$@" 9>&-; rc=$?; set -e
+rel="$(date -u +%FT%T.%3NZ)"
+printf '{"label":"%s","pid":%d,"acquired":"%s","released":"%s","rc":%d,"cmd_sha256":"%s","mode":"shared"}\n' \
+  "$label" "$$" "$acq" "$rel" "$rc" "$(printf '%s\0' "$@" | sha256sum | cut -c1-16)" >> "$LEDGER"
+exit "$rc"
