@@ -1,0 +1,70 @@
+{
+  "schema": "rfc3963-rewrite-provenance/v1",
+  "lane": "DOC-3963 (wave 6, deliverable)",
+  "branch": "docs/rfc3963-rewrite-draft-20261003",
+  "base": {"repo": "trycua/cua main", "sha": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f", "committer_date": "2026-10-03T12:54:29Z"},
+  "provider": {"attempts": 0, "reached": 0, "note": "deliverable lane; no Driver, GUI or provider use"},
+  "inputs": {
+    "census_branch": {"ref": "origin/research/rfc3963-dependency-census-20260925", "sha": "ed6887c111764f91bb1d95939621404d134b8edd", "scanner_pin": "a959b2a23f8099769d0d57e4b8c2c8e70bf7d036", "note": "read-only scanner; edges are mentions, not prerequisites; its export is not committed and was not regenerated"},
+    "loop_state": {"file": "STATE.json (loop state, outside the repository)", "sha256": "b53b192f646bdcbe4eb1ce1f7d7dc19bf2a5b78c2434545eb2a58cbe524b60b7", "mtime_utc": "2026-10-03T12:42:33Z", "note": "state after wave-5 publication; dispositions, owner_rows_linux, owner_rows_blocked_hardware, owner_decisions_pending, blocked_items_w3..w5, provider_budget"},
+    "end_condition": {"file": "END_CONDITION.md v1", "sha256": "c33899325df698d2c2676b2b10422197fdb4b2dae47ef67ec3ad3244ad0bb1ea"},
+    "syntheses": {
+      "SYNTHESIS.md": "27d77bbc48b037e681ce414941d3bbadb547f835b476447e732e979e3883267b",
+      "SYNTHESIS-w1.md": "9bf1fde96cb9e4ac8fe8ed62465ecd40a40935f9c8514946d323e6e3ea6421b8",
+      "SYNTHESIS-w2.md": "d63f236a23ff395ed2706ae5824ca04caec10755986d5cb32d2dfc9ba106902d",
+      "SYNTHESIS-w3.md": "b0623dbad02a6c8ce847c71a522f17b086afbe75332a531260897ac327a1c00d",
+      "SYNTHESIS-w4.md": "1611903b922fa41e7eda16d828e25e28e20fd2ca29c77894d70736d8dbff871a",
+      "SYNTHESIS-w5.md": "9bf7ba7277e0857a02ecf161b2d5c716ee56a68bc917407e8e90442901194e6d"
+    },
+    "packets": "every accepted packet README read with git show <sha>:<packet>/README.md at the SHA in dispositions.json"
+  },
+  "gh_reads": [
+    {"what": "trycua/cua issue 3963 (state CLOSED, updatedAt 2026-09-29T18:38:06Z, 22 comments; maintainer decision 2026-09-29T18:38:05Z)", "utc": "2026-10-03T13:05:00Z"},
+    {"what": "kvnloo/cua#73 (OPEN, updatedAt 2026-10-03T12:41:55Z)", "utc": "2026-10-03T13:05:00Z"},
+    {"what": "kvnloo/cua#93", "utc": "2026-10-03T13:05:01Z"},
+    {"what": "kvnloo/cua#10", "utc": "2026-10-03T13:05:01Z"},
+    {"what": "kvnloo/cua#74 (OPEN, updatedAt 2026-10-03T12:41:57Z)", "utc": "2026-10-03T13:05:02Z"},
+    {"what": "trycua/cua PR 4316 OPEN head a0bca744067d04f05904319d3d919be30c336556", "utc": "2026-10-03T13:09:35Z"},
+    {"what": "trycua/cua PR 4317 MERGED as 0ddf0f7a388630715a5b2a7361ee267e77b5c70d", "utc": "2026-10-03T13:09:35Z"},
+    {"what": "trycua/cua PR 4336 OPEN head 8391cf80275d2a5e7288f9d7c6b0a3e5f7822939", "utc": "2026-10-03T13:09:36Z"},
+    {"what": "trycua/cua PR 4394 OPEN head 039257811e0bbb2348c616c52562409923d2856f", "utc": "2026-10-03T13:09:39Z"},
+    {"what": "trycua/cua PR 4318 MERGED as db55739146476d2a5f6b34c8ccde4da6eab1dc3a", "utc": "2026-10-03T13:09:40Z"},
+    {"what": "trycua/cua PR 3961 OPEN head 97cd02c2645404968ef10b1c8103ea3a932c77bf", "utc": "2026-10-03T13:09:40Z"},
+    {"what": "kvnloo/cua#84 OPEN head 566b9c73245266005c958d40e93d46ee5d463325", "utc": "2026-10-03T13:09:40Z"},
+    {"what": "kvnloo/cua#105 OPEN head 98a45e6c528da9e2715288c20c2a0feeeef8e73f", "utc": "2026-10-03T13:09:41Z"},
+    {"what": "kvnloo/cua#106 OPEN head c45845797b714ccfd76a9569d3238a0724107a83", "utc": "2026-10-03T13:09:41Z"},
+    {"what": "upstream main c8edda06be53e13a759c69de125ce37189023954 (committer 2026-10-03T13:02:59Z)", "utc": "2026-10-03T13:09:41Z"},
+    {"what": "upstream item types (issue vs PR) for 3873 4009 3796 3904 3903 3906 3492 2794 3494 4052 3971 3946 2969 4164 4196 3961 4316 4317 4336 4394 3931 4318 2958 4236 4055 3473", "utc": "2026-10-03T13:12Z"},
+    {"what": "compare 5de1a3799...c8edda06b: ahead 2, 49 files; libs/cua-driver: docs/test-matrix.md, python/pyproject.toml, python/src/cua_driver/__init__.py, rust/CHANGELOG.md, rust/Cargo.lock, rust/Cargo.toml, rust/Skills/cua-driver/SKILL.md, rust/VERSION, cua-driver-e2e harness_winui3_test.rs / harness_wpf_test.rs / support/foreground_text_oracle.rs, platform-windows input/keyboard.rs, tests/fixtures/apps/windows (4 files), typescript/package-lock.json, typescript/package.json (release bump + Windows input; no core/sdk/contract/platform-linux path)", "utc": "2026-10-03T13:10Z"}
+  ],
+  "origin_heads_read": {"command": "git ls-remote origin (read-only)", "utc": "2026-10-03T13:06:28Z", "note": "every cited row branch head equals its cited SHA except OWN-75 (hard-stop record, never pushed)"},
+  "freshness": {
+    "tested_upstream": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+    "range": "0f1955d2f..5de1a3799",
+    "commits": 31,
+    "libs_cua_driver_files": [
+      "libs/cua-driver/rust/Skills/cua-driver/MACOS.md",
+      "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/ax/exact_target.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/browser/setup_ui.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/tools/click.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/tools/invoke_menu.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/tools/set_value.rs",
+      "libs/cua-driver/rust/crates/platform-macos/src/windows.rs",
+      "libs/cua-driver/rust/crates/platform-windows/src/browser_platform.rs",
+      "libs/cua-driver/rust/crates/platform-windows/src/tools/impl_.rs",
+      "libs/cua-driver/rust/crates/platform-windows/src/win32/mod.rs",
+      "libs/cua-driver/rust/crates/platform-windows/src/win32/windows.rs",
+      "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift",
+      "libs/cua-driver/tests/fixtures/shared/scenarios.json"
+    ],
+    "verdict": "no Linux core, sdk, contract or platform-linux path; scenarios.json is the shared cross-platform scenario list (already noted at wave-5 synthesis). No surviving Linux claim depends on these files."
+  },
+  "pins_from_state": {
+    "R": "989cc76cec262ff8bcf6968b637820340fb9caaa + R2-10 steps (tested source 8f3a646b4818b757648835cf89db8886626b1cf0), binary sha256 12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+    "R_prime": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a = 0f1955d2f + R2-10 steps, binary sha256 922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+    "R_prime_n": "11a03bf513a9b9ab107852ade67e13dbda5d30e7 = R' + N-02 marks, binary sha256 78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc",
+    "B7": "R' + B-07 picks, binary sha256 6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+  }
+}
