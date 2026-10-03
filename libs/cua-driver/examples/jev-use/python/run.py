@@ -8,6 +8,7 @@ import time
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.error import URLError
 from urllib.parse import urlsplit
 
 from mcp import ClientSession, StdioServerParameters
@@ -668,7 +669,25 @@ async def run(args: argparse.Namespace) -> str:
                     return "unknown"
                 if candidate.id in task.completion_candidate_ids:
                     for _ in range(20):
-                        outcome = task.classify(task.read_oracle(), steps=step)
+                        try:
+                            oracle = task.read_oracle()
+                        except URLError as error:
+                            # The completion may have taken effect. An unavailable
+                            # oracle cannot verify it or authorize another submit.
+                            write_event(
+                                log_path,
+                                {
+                                    "event": "outcome",
+                                    "outcome": "unknown",
+                                    "step": step,
+                                    "phase": "verification",
+                                    "error": type(error).__name__,
+                                    "decision_route": decision_route,
+                                    **guarded_record,
+                                },
+                            )
+                            return "unknown"
+                        outcome = task.classify(oracle, steps=step)
                         if outcome in {"verified", "refuted"}:
                             write_event(
                                 log_path, {"event": "outcome", "outcome": outcome}
