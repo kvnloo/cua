@@ -1,0 +1,20 @@
+{
+ "schema": "ar.calibration_prereg_amendment.v1",
+ "amends": "CALIB2-PREREG.json (sha256 2caf57918b70608622b7bf53d8637d68b592ffbd802eddd04e1e576a13dbf3ec, hashed 2026-10-02T17:36:06Z)",
+ "written_before": "any trial of the amendment row R10b (hash time in CALIB2-AMEND-R10B.sha256; committed on exp/ar-harness-20261002 before the first R10b G0)",
+ "written_after": "every pre-registered calibration-2 row R1-R10 had run and been analysed. R10 FAILED on its pre-registered manipulation check: the median per-trial cpu 'some' PSI stall share of the two loaded repeats' confirm task trials (0.00166, 0.00108) was not above that of the ten unloaded R3 repeats (0.00352), although loadavg1 was 10.3-11.0 vs 1.7. Cause found after the fact: the prereg chose 10 burners as 'one per core' from nproc = 10, which this shell reports because OMP_NUM_THREADS=10; the host has 10 cores / 20 logical CPUs (affinity 0-19, no cgroup cpu.max), so 10 busy loops never made runnable tasks wait for a CPU. G7 itself passed on both loaded repeats (shares 0.982, 0.986; trace-unset Delta inside the widened traced CI95).",
+ "does_not_change": "R1-R10, their pass conditions, the evaluator (f56422868, manifest 836a646e), tau (0.02), the decision metric (T_act), or the calibration-2 overall verdict. Calibration 2 stays FAIL on R10 under its pre-registration. R10b is an additional pre-registered row, reported next to R10, never in place of it.",
+ "row": {
+  "row": "R10b",
+  "candidate": "delete50 under CPU contention",
+  "branch": "ar/calib2/delete50 (edddf26fa; same build and G1 rows as R3/R10)",
+  "change": "identical to R10 (tools/calib_eval.sh full pipeline: G0, G1 rows, fresh screen, fresh confirm task + spot_gtk3_text, interim, browser spot + 300 soak, final ar-eval evaluate) except the planted load: AR_CAL_LOAD=30 CPU burners (1.5 per logical CPU) started inside each screen and confirm task/spot_gtk3_text quiet-timed block by tools/with-load.sh via tools/run_blocks_loaded.py, so runnable tasks exceed the 20 logical CPUs as on calibration 1's loaded host (loadavg 14-20). Browser spot and soak sessions run without planted load, as in R10.",
+  "repeats": "2 independent repeats, tag delete50-load30, r01 and r02; seeds by the calibration-2 formula with i = 21 (screen 20261102 + 21000 + 10r + 1, confirm ... + 2)",
+  "ledger": "cal2-amend-results.jsonl = a byte copy of the final calibration-2 ledger cal2-results.jsonl (12 lines, one per confirm-stage evaluation, 12 LORD++ tests), extended by the two R10b evaluations, so LORD++ continues from the same earlier p-values; cal2-results.jsonl itself is not modified",
+  "expect": "trace-off agreement passes on a real deletion under CPU contention",
+  "pass_if": "for each of the two repeats: (1) the screen ranks; (2) gates.g7 (unmodified, the repeat's own prereg) on its confirm rows passes (mechanism share >= 0.7 and the trace-unset Delta inside the traced CI95 widened by ln(1+tau)), whether or not an earlier gate stopped the pipeline; (3) manipulation check: the median per-trial cpu 'some' PSI stall share (psi.cpu_some_stall_us / (t_exit_ns - t_spawn_ns)) of its confirm task trials exceeds the median of the ten unloaded R3 repeats' per-repeat medians (same statistic as R10), and the median loadavg_end[0] of its confirm task trials is >= 14. The pipeline verdict is reported (expected KEEP) but is not part of pass_if.",
+  "reported_not_gated": "screen and confirm T_act sigma_ln, champion-arm median T and T_act vs the unloaded R3 repeats, failures, and the verdict"
+ },
+ "execution": "every code-executing step under hostless; every GUI step inside a private cua-x11-session.sh (session-pidns.sh for GTK sessions); every timed session one quiet-timed block (<= 10 min); burners only inside the quiet-lane lock, killed by with-load.sh when the session ends.",
+ "if_the_row_fails": "report R10b FAIL; do not change the evaluator, tau, the load, rules or pass conditions after seeing data."
+}
