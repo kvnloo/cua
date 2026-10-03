@@ -67,6 +67,30 @@ for layer in ("scripted", "live"):
             add(f"share_split_{layer}_{cls}", ["r2_10_rows", k, "updated_untested_share_descriptive_split"], "pct")
 
 
+# P4 order defect (block m) and the Williams extension block x (added after the data, disclosed)
+for cls in ("fill", "toggle"):
+    add(f"P4m_{cls}_W0_before_W80", ["P4_block_m_order", f"{cls}/order", "W0_before_W80"], "int")
+    for arm in ("W80", "PREWARM"):
+        for o in (f"{arm}_first", "W0_first"):
+            p = ["P4_block_m_order", f"{cls}/{arm}-W0", "by_order", o]
+            add(f"P4m_{cls}_{arm}_{o}_n", p + ["n"], "int")
+            if (cls, arm, o) not in (("fill", "W80", "W80_first"), ("toggle", "W80", "W0_first")):  # n = 0 cells
+                add(f"P4m_{cls}_{arm}_{o}_median", p + ["median"], "num")
+    add(f"P4X_{cls}_W0_before_W80", ["P4X", f"{cls}/order", "W0_before_W80"], "int")
+    add(f"P4X_{cls}_W0_before_PREWARM", ["P4X", f"{cls}/order", "W0_before_PREWARM"], "int")
+    for arm in ("W0", "W80", "PREWARM"):
+        add(f"P4X_{cls}_{arm}_median", ["P4X", f"{cls}/{arm}", "median"], "num")
+        add(f"P4X_{cls}_{arm}_valid", ["P4X", f"{cls}/{arm}", "valid"], "int")
+    for arm in ("W80", "PREWARM"):
+        add(f"P4X_{cls}_{arm}_d", ["P4X", f"{cls}/{arm}-W0", "median"], "num")
+        add(f"P4X_{cls}_{arm}_ci", ["P4X", f"{cls}/{arm}-W0", "median_ci"], "ci")
+        for o in (f"{arm}_first", "W0_first"):
+            add(f"P4X_{cls}_{arm}_{o}_median", ["P4X", f"{cls}/{arm}-W0", "by_order", o, "median"], "num")
+            add(f"P4X_{cls}_{arm}_{o}_ci", ["P4X", f"{cls}/{arm}-W0", "by_order", o, "median_ci"], "ci")
+add("P4X_trials_total", ["P4X", "trials_total"], "int")
+add("P4X_trials_valid", ["P4X", "trials_valid"], "int")
+
+
 def get(d, path):
     for p in path:
         d = d[p]

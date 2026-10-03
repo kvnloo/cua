@@ -538,8 +538,35 @@ def round_trials(r: int, inject_mode: str) -> list[dict[str, Any]]:
     return seq
 
 
+P4X_CLASS_INDEX = {"fill": 0, "toggle": 1}
+
+
+def p4x_round_trials(r: int) -> list[dict[str, Any]]:
+    """Extension block (added after the measured run, disclosed): P4 only, in true Williams order.
+
+    round_trials() above picks row w[(r + 3k) % 6] with k = position of the class in an order that
+    flips with round parity, so fill only ever got rows {0,2,4} and toggle rows {1,3,5}: neither is a
+    Latin square and W80 vs W0 had a fixed order within each class. Here k is a fixed class index, so
+    each class cycles through all 6 rows of williams_any(3) every 6 rounds (30 rounds = 5 x each row:
+    each arm 10 x in each position, each ordered arm pair 15/30). Class order still alternates.
+    """
+    w = R2.williams_any(3)
+    arms4 = [dict(cell="W0"), dict(cell="W80", D=80), dict(cell="PREWARM", P="warm")]
+    seq: list[dict[str, Any]] = []
+    for cls in (("fill", "toggle") if r % 2 == 0 else ("toggle", "fill")):
+        row = w[(r + 3 * P4X_CLASS_INDEX[cls]) % 6]
+        for j in row:
+            seq.append(T(cls, "P4", resnap=False, **arms4[j]))
+    for s in seq:
+        s["inject_mode"] = None
+    return seq
+
+
 def build_plan(kind: str, r_from: int, r_to: int, inject_mode: str, pilot_set: int = 1,
                block: str = "m") -> list[dict[str, Any]]:
+    if kind == "p4x":
+        return [{**s, "block": block, "round": r, "lock_mode": "exclusive_external", "williams_row_pos": i}
+                for r in range(r_from, r_to) for i, s in enumerate(p4x_round_trials(r))]
     if kind == "pilot":
         specs = [T("toggle", "PILOT", cell="cold-D0"), T("toggle", "PILOT", inject_ms=20, cell="inj-hdr"),
                  T("toggle", "PILOT", inject_ms=20, cell="inj-tail"), T("fill", "PILOT", cell="cold-D0"),
@@ -585,7 +612,7 @@ async def main_async(args: argparse.Namespace) -> None:
     if len({s["name"] for s in plan}) != len(plan):
         raise SystemExit("refusing: duplicate trial names in plan")
     lock = os.environ.get("B04_LOCK")
-    if args.plan_kind == "measured" and lock != "exclusive":
+    if args.plan_kind in ("measured", "p4x") and lock != "exclusive":
         raise SystemExit("refusing: measured plan needs B04_LOCK=exclusive (run under quiet-timed)")
     if args.plan_kind == "pilot" and lock not in ("shared", "exclusive"):
         raise SystemExit("refusing: pilot plan needs B04_LOCK (run under shared-locked.sh)")
@@ -596,7 +623,7 @@ async def main_async(args: argparse.Namespace) -> None:
                                 "inject_mode": args.inject_mode, "arms": ARMS, "trials": [s["name"] for s in plan],
                                 "started_mono_ns": rc.now(), "started_utc": utc(), "loadavg_start": rc.loadavg(),
                                 "lock_mode": lock, "lock_label": os.environ.get("B04_LOCK_LABEL"),
-                                "provider": "mock", "display": os.environ.get("DISPLAY"),
+                                "provider": "mock", "display": os.environ.get("DISPLAY"), "hostless": os.environ.get("B04_HOSTLESS"),
                                 "driver_name": Path(args.driver).name,
                                 "driver_sha256": hashlib.sha256(drv_bytes).hexdigest()}
     del drv_bytes
@@ -622,7 +649,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--driver", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--plan", choices=("measured", "pilot"), required=True)
+    p.add_argument("--plan", choices=("measured", "pilot", "p4x"), required=True)
     p.add_argument("--rounds-from", type=int, default=0)
     p.add_argument("--rounds-to", type=int, default=30)
     p.add_argument("--inject-mode", choices=("hdr", "tail"), default="hdr")

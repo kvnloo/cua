@@ -23,6 +23,11 @@ Checks:
     ignores *.log; the packet-local .gitignore re-includes it).
 11. Privacy: no absolute local paths, host name or secret-like strings in any packet file, raw tarball
     member, or any blob/commit message on the branch since 8f3a646b4.
+12. P4 Williams extension block x (raw/p4x-trials.tar.gz, added after the measured run to fix the P4
+    order defect): 180 records (30 per class x arm), each with a Driver trace and loadavg; every planned
+    name has a record; the manifest's planned order gives each class all 6 Williams rows 5 times; the
+    run sits inside its EXCLUSIVE quiet-timed window (also in check 5); binary R and mock provider (also
+    in checks 7 and 9); the manifest and the session log record hostless=1.
 """
 
 from __future__ import annotations
@@ -138,18 +143,19 @@ def main() -> None:
     # 4 PREREG order
     pre = git("log", "--format=%H %cI", "--", f":(top){REL}/PREREG.json").split()
     man = {p.name: json.loads(p.read_text()) for p in (HERE / "raw/measured").glob("run-manifest-*.json")}
+    manx = {p.name: json.loads(p.read_text()) for p in (HERE / "raw/p4x").glob("run-manifest-*.json")}
     first_measured = min(m["started_utc"] for m in man.values())
     check(len(pre) == 2 and ts(pre[1]) < ts(first_measured),
           f"4 PREREG.json committed once ({pre[1] if len(pre) > 1 else None}) before the first measured trial ({first_measured})")
     # 5 locks
     ledger = [json.loads(x) for x in (HERE / "raw/lock-ledger.jsonl").read_text().splitlines() if x.strip()]
-    ok5 = bool(man)
-    for name, m in man.items():
+    ok5 = bool(man) and bool(manx)
+    for name, m in {**man, **manx}.items():
         r = next((x for x in ledger if x.get("label") == m.get("lock_label") and "mode" not in x), None)
         ok5 &= bool(r and r["rc"] == 0 and m.get("lock_mode") == "exclusive"
                     and ts(r["acquired"]) <= ts(m["started_utc"]) and ts(m["ended_utc"]) <= ts(r["released"]))
     pil = [x for x in ledger if x.get("mode") == "shared" and x.get("lane") == "B-04"]
-    check(ok5 and len(pil) >= 1, f"5 {len(man)} measured manifests inside EXCLUSIVE quiet-timed windows; pilot SHARED receipts {len(pil)}")
+    check(ok5 and len(pil) >= 1, f"5 {len(man)} measured + {len(manx)} P4X manifests inside EXCLUSIVE quiet-timed windows; pilot SHARED receipts {len(pil)}")
     # 6 counts
     mem = members(HERE / "raw/measured-trials.tar.gz")
     sums = [json.loads(v.decode().splitlines()[-1]) for k, v in mem.items() if not k.endswith("driver-trace.jsonl")]
@@ -179,10 +185,34 @@ def main() -> None:
     check(all(Path(s["driver_trace"]).name in traces for s in sums), "6b every measured trial has its Driver trace")
     check(all(s.get("loadavg_before") and s.get("loadavg_after") for s in sums), "6c loadavg before and after every trial")
     check(planned == names, f"6d every planned trial has a record (planned {len(planned)}, records {len(names)})")
+    # 12 P4 Williams extension block x
+    memx = members(HERE / "raw/p4x-trials.tar.gz")
+    sumsx = [json.loads(v.decode().splitlines()[-1]) for k, v in memx.items() if not k.endswith("driver-trace.jsonl")]
+    tracesx = {Path(k).name for k in memx if k.endswith("driver-trace.jsonl")}
+    cntx: dict[str, int] = {}
+    for s in sumsx:
+        key = f"{s['probe']}/{s['cls']}/{s['trial'].split('-', 3)[3]}"
+        cntx[key] = cntx.get(key, 0) + 1
+    wantx = {f"P4/{c}/{a}": 30 for c in ("fill", "toggle") for a in ("W0", "W80", "PREWARM")}
+    plannedx = [t for m in manx.values() for t in m["trials"]]
+    rows_seen: dict[str, dict[str, int]] = {"fill": {}, "toggle": {}}
+    for rnd in sorted({t.split("-", 1)[0] for t in plannedx}):
+        for c in ("fill", "toggle"):
+            o = "-".join(t.split("-", 3)[3] for t in plannedx if t.startswith(rnd + "-P4-" + c + "-"))
+            rows_seen[c][o] = rows_seen[c].get(o, 0) + 1
+    williams_ok = all(len(v) == 6 and set(v.values()) == {5} for v in rows_seen.values())
+    logx = "\n".join(p.read_text() for p in (HERE / "raw/logs").glob("p4x-*.log"))
+    check(cntx == wantx and len(sumsx) == 180 and set(plannedx) == {s["trial"] for s in sumsx}
+          and all(Path(s["driver_trace"]).name in tracesx for s in sumsx)
+          and all(s.get("loadavg_before") and s.get("loadavg_after") for s in sumsx)
+          and williams_ok and all(m.get("hostless") == "1" for m in manx.values()) and "hostless=1" in logx,
+          f"12 P4X: {len(sumsx)} records, traces, loadavg, all planned; Williams rows per class {rows_seen}; hostless=1")
+    sums_all = sums + sumsx
     # 7 binary
     prov = json.loads((HERE / "provenance.json").read_text())
     prereg = json.loads((HERE / "PREREG.json").read_text())
-    check(all(s.get("driver_sha256") == SHA for s in sums) and all(m["driver_sha256"] == SHA for m in man.values())
+    check(all(s.get("driver_sha256") == SHA for s in sums_all)
+          and all(m["driver_sha256"] == SHA for m in {**man, **manx}.values())
           and prov["driver_binary"]["sha256"] == SHA == prereg["source_and_binary"]["binary_R"]["sha256"]
           and SHA in readme and "cua-driver 0.32.0" in readme
           and prov["driver_binary"]["sha256_start"] == prov["driver_binary"]["sha256_end"] == SHA,
@@ -195,8 +225,9 @@ def main() -> None:
         src = git("show", f"{commit}:{path}", binary=True)
         check(src == (HERE / rel).read_bytes(), f"8 {rel} blob-identical to {commit[:9]}:{path}")
     # 9 provider
-    check(all(m["provider"] == "mock" and m["network"].get("non_loopback_connect_attempts", 0) == 0 for m in man.values())
-          and all((s.get("network") or {}).get("non_loopback_connect_attempts", 0) == 0 for s in sums)
+    check(all(m["provider"] == "mock" and m["network"].get("non_loopback_connect_attempts", 0) == 0
+              for m in {**man, **manx}.values())
+          and all((s.get("network") or {}).get("non_loopback_connect_attempts", 0) == 0 for s in sums_all)
           and "TypeSafe: 0 attempts, 0 reached" in readme, "9 scripted chooser, 0 non-loopback connects, TypeSafe 0/0")
     # 10 cited files tracked and not ignored
     m = re.search(r"## Files\n(.*?)(\n## |\Z)", readme, re.S)

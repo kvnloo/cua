@@ -60,15 +60,97 @@ def describe(xs: list[float], rng: random.Random) -> dict[str, Any]:
             "min": min(xs) if xs else None, "max": max(xs) if xs else None}
 
 
+def rows_of(trials: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out = []
+    for t in trials:
+        r = R.row(t)
+        # run order inside a round (runner monotonic clock at trial_start; one runner process per chunk)
+        r["t_start_ns"] = t["events"][0]["t_mono_ns"] if t["events"] else None
+        out.append(r)
+    return out
+
+
 def load(args: argparse.Namespace) -> list[dict[str, Any]]:
     if args.trials_dir:
         trials = R.load_dir(Path(args.trials_dir))
     else:
         trials = R.load_tar(Path(args.trials))
-    return [R.row(t) for t in trials]
+    return rows_of(trials)
 
 
-def analyze(rows: list[dict[str, Any]]) -> dict[str, Any]:
+# ── P4 order (added after the data; see README "P4 order defect and Williams extension") ────────────
+P4_ARMS = ("W0", "W80", "PREWARM")
+WILLIAMS3 = [[0, 1, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0], [0, 2, 1], [1, 0, 2]]  # run_b02.williams_any(3)
+
+
+def p4_rule(d: dict[str, Any]) -> bool:
+    """PREREG verdict rule for one deletion: median T_oracle increase with a CI excluding 0 (and cell validity)."""
+    return d["median_ci"] is not None and d["median_ci"][0] > 0 and d["cells_ok"]
+
+
+def p4_block(rows: list[dict[str, Any]], rng: random.Random) -> dict[str, Any]:
+    """P4 statistics of one block with the analyze() definitions (T_oracle_P4_ms, paired by round, W0
+    as reference), plus the run order of the arms in every round and the contrasts split by order."""
+    cells: dict[tuple, list[dict[str, Any]]] = defaultdict(list)
+    for r in rows:
+        if r["probe"] == "P4":
+            cells[(r["cls"], r["cell"])].append(r)
+    order: dict[tuple, tuple] = {}
+    for (cls, _cell), rs in cells.items():
+        for r in rs:
+            order.setdefault((cls, r["round"]), ())
+    for key in order:
+        rs = [r for a in P4_ARMS for r in cells.get((key[0], a), []) if r["round"] == key[1]]
+        order[key] = tuple(r["cell"] for r in sorted(rs, key=lambda r: r["t_start_ns"]))
+    rows_named = ["-".join(P4_ARMS[j] for j in w) for w in WILLIAMS3]
+    out: dict[str, Any] = {}
+    for cls in CLASSES:
+        val = {a: (sum(r["valid"] for r in cells.get((cls, a), [])), len(cells.get((cls, a), []))) for a in P4_ARMS}
+        ok = {a: val[a][1] > 0 and val[a][0] / val[a][1] >= 0.95 for a in P4_ARMS}
+        by = {a: {r["round"]: r for r in cells.get((cls, a), [])} for a in P4_ARMS}
+        rounds = sorted(k[1] for k in order if k[0] == cls)
+        used = {n: sum(1 for k in rounds if "-".join(order[(cls, k)]) == n) for n in rows_named}
+        out[f"{cls}/order"] = {
+            "rounds": len(rounds), "williams_rows_used": used,
+            "all_6_rows_equally": len(set(used.values())) == 1 and sum(used.values()) == len(rounds),
+            "W0_before_W80": sum(1 for k in rounds if order[(cls, k)].index("W0") < order[(cls, k)].index("W80")),
+            "W0_before_PREWARM": sum(1 for k in rounds if order[(cls, k)].index("W0") < order[(cls, k)].index("PREWARM")),
+            "W80_before_PREWARM": sum(1 for k in rounds if order[(cls, k)].index("W80") < order[(cls, k)].index("PREWARM")),
+            "position_counts": {a: [sum(1 for k in rounds if order[(cls, k)].index(a) == i) for i in range(3)]
+                                for a in P4_ARMS}}
+        for a in P4_ARMS:
+            xs = [r["T_oracle_P4_ms"] for r in cells.get((cls, a), []) if r["valid"] and r["T_oracle_P4_ms"] is not None]
+            out[f"{cls}/{a}"] = describe(xs, rng)
+            out[f"{cls}/{a}"]["valid"], out[f"{cls}/{a}"]["total"] = val[a]
+        for a in ("W80", "PREWARM"):
+            pairs = [(k, by[a][k]["T_oracle_P4_ms"] - by["W0"][k]["T_oracle_P4_ms"]) for k in sorted(by[a])
+                     if k in by["W0"] and by[a][k]["valid"] and by["W0"][k]["valid"]
+                     and by[a][k]["T_oracle_P4_ms"] is not None and by["W0"][k]["T_oracle_P4_ms"] is not None]
+            d = describe([x for _k, x in pairs], rng)
+            d["cells_ok"] = ok[a] and ok["W0"]
+            d["rule_pass"] = p4_rule(d)
+            first = {k: order[(cls, k)].index(a) < order[(cls, k)].index("W0") for k, _x in pairs}
+            d["by_order"] = {f"{a}_first": describe([x for k, x in pairs if first[k]], rng),
+                             "W0_first": describe([x for k, x in pairs if not first[k]], rng)}
+            out[f"{cls}/{a}-W0"] = d
+    e4 = {"stale_dispatch": sum(r["stale_dispatch"] for r in rows),
+          "duplicate_mutation": sum(r["duplicate_mutation"] for r in rows),
+          "unverified_success": sum(r["unverified_success"] for r in rows),
+          "refusals": sum(r["refusals"] for r in rows),
+          "non_loopback": sum(r["non_loopback"] for r in rows),
+          "fallbacks": sum(1 for r in rows if r["fallback"]),
+          "oracle_reverted_after_ok": sum(1 for r in rows if r.get("oracle_reverted_after_ok"))}
+    la = [r["loadavg_before_1m"] for r in rows if r["loadavg_before_1m"] is not None]
+    out["trials_total"] = len(rows)
+    out["trials_valid"] = sum(r["valid"] for r in rows)
+    out["E4"] = e4
+    out["driver_sha256_set"] = sorted({r["driver_sha256"] for r in rows if r["driver_sha256"]})
+    out["browser_exe_set"] = sorted({r["browser_exe"] for r in rows if r["browser_exe"]})
+    out["loadavg_1m_before_all"] = {"min": min(la), "median": statistics.median(la), "max": max(la)} if la else None
+    return out
+
+
+def analyze(rows: list[dict[str, Any]], rows_x: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     rng = random.Random(SEED)
     out: dict[str, Any] = {"schema": "b-04.summary.v1", "seed": SEED, "n_boot": NBOOT}
     cells: dict[tuple, list[dict[str, Any]]] = defaultdict(list)
@@ -206,6 +288,14 @@ def analyze(rows: list[dict[str, Any]]) -> dict[str, Any]:
                                         for k, _a, _b in R.SUB}
     out["component_split_snapshot1_minus_resnap1_mean_ms"] = comp
 
+    # P4 order: block m (fixed arm order per class, the defect) and the Williams extension block x.
+    # Separate seeded RNGs so every pre-existing number above and below is unchanged.
+    p4m = p4_block(rows, random.Random(SEED + 41))
+    p4x = p4_block(rows_x, random.Random(SEED + 42)) if rows_x else None
+    out["P4_block_m_order"] = {k: v for k, v in p4m.items() if "/" in k}
+    if p4x is not None:
+        out["P4X"] = r4(p4x)
+
     # estimator selection and verdicts
     verdicts: dict[str, Any] = {}
     for cls in CLASSES:
@@ -214,6 +304,17 @@ def analyze(rows: list[dict[str, Any]]) -> dict[str, Any]:
         # per-document part (T_oracle only)
         w80, pw = p4[f"{cls}/W80-W0"], p4[f"{cls}/PREWARM-W0"]
         inc = all(d["median_ci"] is not None and d["median_ci"][0] > 0 and d["cells_ok"] for d in (w80, pw))
+        v["per_document_block_m"] = "IRREDUCIBLE" if inc else "UNDECIDED"
+        if p4x is not None:
+            # The PREREG rule needs Williams order; block m had a fixed order per class (disclosed), so the
+            # verdict is IRREDUCIBLE only if the rule holds in block m AND in the Williams block x.
+            inc_x = all(p4x[f"{cls}/{a}-W0"]["rule_pass"] for a in ("W80", "PREWARM"))
+            v["per_document_block_x_williams"] = "IRREDUCIBLE" if inc_x else "UNDECIDED"
+            inc = inc and inc_x
+            v["per_document_rule"] = "IRREDUCIBLE iff the PREREG rule holds in block m and in Williams block x"
+            v["per_document_numbers_x"] = {
+                "W80_minus_W0_median": p4x[f"{cls}/W80-W0"]["median"], "W80_ci": p4x[f"{cls}/W80-W0"]["median_ci"],
+                "PREWARM_minus_W0_median": p4x[f"{cls}/PREWARM-W0"]["median"], "PREWARM_ci": p4x[f"{cls}/PREWARM-W0"]["median_ci"]}
         v["per_document"] = "IRREDUCIBLE" if inc else "UNDECIDED"
         v["per_document_numbers"] = {"W80_minus_W0_median": w80["median"], "W80_ci": w80["median_ci"],
                                      "PREWARM_minus_W0_median": pw["median"], "PREWARM_ci": pw["median_ci"]}
@@ -335,9 +436,18 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--trials", default=str(HERE / "raw" / "measured-trials.tar.gz"))
     p.add_argument("--trials-dir")
+    p.add_argument("--p4x", default=str(HERE / "raw" / "p4x-trials.tar.gz"),
+                   help="P4 Williams extension block x (tarball); skipped if missing")
+    p.add_argument("--p4x-dir", help="P4 extension trials directory instead of the tarball")
     p.add_argument("--out", default=str(HERE / "b04-summary.json"))
     a = p.parse_args()
-    s = analyze(load(a))
+    if a.p4x_dir:
+        rows_x = rows_of(R.load_dir(Path(a.p4x_dir)))
+    elif Path(a.p4x).exists():
+        rows_x = rows_of(R.load_tar(Path(a.p4x)))
+    else:
+        rows_x = None
+    s = analyze(load(a), rows_x)
     Path(a.out).write_text(json.dumps(s, indent=1, sort_keys=True) + "\n")
     for cls, v in s["verdicts"].items():
         print(cls, json.dumps(v))

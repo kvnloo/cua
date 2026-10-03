@@ -73,11 +73,33 @@
  },
  "raw_sha256": {
   "raw/measured-trials.tar.gz": "435013ee10c97dac4be973e5f62d12c8fed9510c58f1a405e477940ded460dba",
-  "raw/pilot-trials.tar.gz": "2f9398a57758fd1e208bb399ff334d9c24a99e09e520c854acbafbbe152ef7f9"
+  "raw/pilot-trials.tar.gz": "2f9398a57758fd1e208bb399ff334d9c24a99e09e520c854acbafbbe152ef7f9",
+  "raw/p4x-trials.tar.gz": "bfba6f0021ac175158edbc286bfec86f4b59ce939e288887aecf469fa9945bac"
  },
  "provider": {
   "typesafe_attempts": 0,
   "typesafe_reached": 0,
   "chooser": "scripted (choose_mock_for_task)"
+ },
+ "p4x_extension_block": {
+  "why": "fix round: block m P4 ran a fixed arm order per class (PREREG row formula not a Williams design); README Deviation 7",
+  "manifest": "raw/p4x/run-manifest-p4x-x-r00-30.json",
+  "started_utc": "2026-10-03T03:49:32.839Z",
+  "ended_utc": "2026-10-03T03:54:51.934Z",
+  "lock_label": "b04a2-p4x-williams-r00-30 (EXCLUSIVE, bin/quiet-timed, 03:49:24-03:54:52Z)",
+  "trials": 180,
+  "valid": 180,
+  "order": "williams_any(3), fixed class index: each class runs all 6 rows 5 times",
+  "driver_sha256_before": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "driver_sha256_after": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "driver_version": "cua-driver 0.32.0 (in session 03:44:29Z and 03:55:12Z; raw/logs/versions-p4x-*.log)",
+  "browser": "Google Chrome 151.0.7922.71 (chrome executable in 180/180 records)",
+  "hostless": "CUA_HOSTLESS=1 required by run-p4x.sh, recorded as hostless=1 in the session log and manifest",
+  "loadavg_1m_at_trial_start": "min 8.39, median 11.0, max 17.93 (b04-summary.json P4X.loadavg_1m_before_all)",
+  "live_heads_start_03:44Z_and_end_03:55Z": {
+   "upstream_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178",
+   "trycua_cua_PR_4316": "a0bca744067d04f05904319d3d919be30c336556",
+   "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83"
+  }
  }
 }

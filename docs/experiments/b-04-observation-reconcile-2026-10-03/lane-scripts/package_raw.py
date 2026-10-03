@@ -7,6 +7,7 @@
   member order, mtime 0, uid/gid 0 (deterministic);
 - raw/measured/run-manifest-*.json: measured run manifests;
 - raw/pilot-trials.tar.gz + raw/pilot/run-manifest-*.json: the attempt-2 pilot (excluded);
+- raw/p4x-trials.tar.gz + raw/p4x/run-manifest-*.json: the P4 Williams extension block x;
 - raw/lock-ledger.jsonl: verbatim quiet-lane ledger lines whose label starts with 'b04a2-';
 - raw/logs/*.log: session logs with local path prefixes replaced by placeholders.
 """
@@ -58,7 +59,7 @@ def main() -> None:
         SCRUB.insert(0, (re.compile(re.escape(prefix)), placeholder))
     lt, pk = Path(a.lane_tmp), Path(a.packet)
     raw = pk / "raw"
-    for sub in ("measured", "pilot", "logs"):
+    for sub in ("measured", "pilot", "logs", "p4x"):
         (raw / sub).mkdir(parents=True, exist_ok=True)
     det_tar(list((lt / "measured" / "trials").glob("*.jsonl")), "trials", raw / "measured-trials.tar.gz")
     for m in sorted((lt / "measured").glob("run-manifest-*.json")):
@@ -66,6 +67,11 @@ def main() -> None:
     det_tar(list((lt / "pilot" / "trials").glob("*.jsonl")), "trials", raw / "pilot-trials.tar.gz")
     for m in sorted((lt / "pilot").glob("run-manifest-*.json")):
         shutil.copyfile(m, raw / "pilot" / m.name)
+    # P4 Williams extension block x (added after the measured run; README "P4 order defect")
+    if (lt / "p4x" / "trials").is_dir():
+        det_tar(list((lt / "p4x" / "trials").glob("*.jsonl")), "trials", raw / "p4x-trials.tar.gz")
+        for m in sorted((lt / "p4x").glob("run-manifest-*.json")):
+            shutil.copyfile(m, raw / "p4x" / m.name)
     lines = [x for x in Path(a.ledger).read_text().splitlines()
              if x.strip() and json.loads(x).get("label", "").startswith("b04a2-")]
     (raw / "lock-ledger.jsonl").write_text("\n".join(lines) + "\n")
