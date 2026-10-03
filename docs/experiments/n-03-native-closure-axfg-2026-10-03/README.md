@@ -201,4 +201,4 @@ GTK3 AT-SPI on X11 (private Xvfb), binary N3 only (`b1843871...`), scripted, no 
 - `hc_control.py` writes `hc-control.json`. `make_headlines.py` writes `headline-numbers.json`. `package_raw.py` builds `raw/`.
 - `verify_artifacts.py` checks everything. Run `python3 verify_artifacts.py` from a clean clone.
 - `provenance.json`.
-- `raw/`: `raw/runs/<label>/trials.jsonl.gz` per block, plus tools-list, output schemas, HC corpus and `session-log.txt` (the redacted session.log; the repository ignores `*.log`). Also `raw/pilots/` (excluded), `raw/locks/quiet-lane-receipts.jsonl`, `raw/locks/aborted-blocks.json`, `raw/provenance/range-diff.txt` and `raw/MANIFEST.json`.
+- `raw/`: `raw/runs/<label>/trials.jsonl.gz` per block, plus tools-list, output schemas, HC corpus and a session log (for example `raw/runs/n03a2-a1/session-log.txt`, the redacted session.log; the repository ignores `*.log`). Also `raw/pilots/` (excluded), `raw/locks/quiet-lane-receipts.jsonl`, `raw/locks/aborted-blocks.json`, `raw/provenance/range-diff.txt` and `raw/MANIFEST.json`.
