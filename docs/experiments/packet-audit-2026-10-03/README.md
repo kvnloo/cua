@@ -16,18 +16,25 @@ controls), NOT_RUN (no measurement). TypeSafe: 0 attempts, 0 reached.
   kept 48 cited logs out of the published commit. No verifier started a GUI, Driver or browser.
 - **Repairs: 4 heads, 4 of 4 pass from a clean clone.** OWN-75R r1b (`112/112 checks passed`) commits
   the 48 logs. R2-10, B-03 and R2-09 r1b apply the open wave-3 publish fixes. R2-10's verifier now also
-  recomputes every new number from `raw/` (`132/132 checks passed`; the same verifier run against the
-  published head fails, `raw/controls/r2-10-verifier-red-before.txt`). No measured number or raw trial
-  record changed in any repair.
+  recomputes every new number from `raw/` (`132/132 checks passed`). Run against the published head it
+  stops with `FileNotFoundError` (`raw/controls/r2-10-verifier-red-before.txt`): that shows the addendum
+  files are absent there, not that the new checks discriminate. The discriminating control is a
+  mutation: with the README's 27.60 changed to 27.61 and 0.98 to 0.97, exactly the 2 checks that cite
+  them fail (127/129 with `--skip-git`; wave-4 fresh verifier, reproduced by PUB-02 in
+  `docs/experiments/pub-02-privacy-gate-2026-10-03/raw/controls/r2-10-mutation-control.txt`). No
+  measured number or raw trial record changed in any repair.
 - **Ignored-but-cited files.** The template helper (whole README and headline JSON) finds a cited,
   git-ignored file at 4 pushed heads. Only OWN-75R's is missing evidence, and it is repaired. The other
   three are deviation text about the ignore rule or a file the README already says is not committed
   (`cited-triage.json`). R2-10 and B-03 also left their chunk and session logs out of the published
   commits. Their READMEs describe those logs in prose, so the helper cannot see them; the repairs commit
   them and cite them by path.
-- **Privacy: 0 findings on the 5 new commits.** Over the 195 commits of the 27 pushed heads there are 0
-  absolute local paths, 0 host names and 0 secret patterns. There are 7 local directory names, all
-  already on origin and none of them a path, host or secret. Details are under Privacy.
+- **Privacy: 0 findings on the 7 new commits** (5 repair commits and the 2 commits of this branch) with
+  this audit's scanner. Over the 195 commits of the 27 pushed heads there are 0 absolute local paths,
+  0 host names and 0 secret patterns. There are 7 local directory names, all already on origin and none
+  of them a path, host or secret. Details are under Privacy. This scanner does not decode hex or base64:
+  PUB-02's decoding scan finds R2-10's hex-encoded private-name list in the repair commit `36ccdd766`
+  (inherited from `030f6bdbf`, already on origin; `docs/experiments/pub-02-privacy-gate-2026-10-03/`).
 - **Earlier-wave publish fixes (N-01R, B-02, FIX-01, OWN-09, OWN-36, OWN-20):** 36 fixes. 27 are open,
   4 partly applied, 2 applied, 1 accepted by ruling and 2 are not packet edits (`publish-fixes-status.json`).
   None of them makes a verifier fail, so none was applied here.
@@ -147,9 +154,11 @@ The verifier run is the check for those.
 
 - Severe findings (absolute home or mount path, local root, host name, secret pattern): 0 at the 27
   pushed heads (195 commits) and 0 at the 4 repair heads.
-- New commits (`823ff9784`, `efe36d1a1`, `36ccdd766`, `911e20796`, `ffb4919a7`): 0 findings of any
+- New commits, 7: the repair commits `823ff9784`, `efe36d1a1`, `36ccdd766`, `911e20796`, `ffb4919a7`
+  (this audit) and this branch's `058774ffb`, `cca59642d` (wave-4 fresh verifier): 0 findings of any
   counted kind, including `/tmp` paths and local directory names. Identities: Kevin Rajan with
-  7121943+kvnloo@users.noreply.github.com.
+  7121943+kvnloo@users.noreply.github.com. The scan does not decode hex or base64; `36ccdd766` carries
+  R2-10's hex-encoded private-name list (found by PUB-02).
 - Already on origin, not paths, host or secrets, not changed here. Local directory names occur 7 times,
   each a commit and file pair:
   - the privacy regexes of the R2-02 verifier (3 commits), the N-01R verifier (`8ff42418d`,
@@ -173,7 +182,7 @@ The verifier run is the check for those.
 | OWN-20 | 8 | 6 | 2 (headline, hostless v1/v2) | 0 | 0 | no |
 
 None of these makes a verifier fail, so under this lane's rule none was applied. They stay open for
-the documents that cite these packets (the kvnloo/cua#10 table and the #3963 rewrite).
+the documents that cite these packets (the kvnloo/cua#10 table and the trycua/cua issue 3963 rewrite).
 
 ## Template (`docs/experiments/_template/`)
 
@@ -186,14 +195,16 @@ the documents that cite these packets (the kvnloo/cua#10 table and the #3963 rew
 
 Applied to real heads, the helper reports OWN-75R's session logs as ignored at `e02621fdc` and finds
 nothing at the r1b head.
+PUB-02 (2026-10-03) later added `check_privacy` to `verify_helper.py` and 6 UNIT tests to
+`test_verify_helper.py` (11/11 pass); see `docs/experiments/pub-02-privacy-gate-2026-10-03/`.
 
-## Gates (all hold; recomputed by `verify_artifacts.py`)
+## Gates (recomputed by `verify_artifacts.py`; the privacy gate is qualified by PUB-02)
 
 | Gate | Result | Evidence class |
 |---|---|---|
 | every repaired head's verifier passes from a clean clone | 4/4 | SOURCE |
 | the audit covers 100% of pushed packets | 27/27, heads equal to origin | SOURCE |
-| 0 privacy findings on any new commit | 0 on 5 new commits | SOURCE |
+| 0 privacy findings on any new commit | 0 on 7 new commits with this audit's scanner; not met under PUB-02's hex/base64-decoding scan (`36ccdd766`: encoded name list) | SOURCE |
 | the template helper catches a planted ignored-but-cited file and passes a clean packet | positive and negative controls pass | UNIT |
 
 ## Work deleted vs wall-clock saved
@@ -225,8 +236,10 @@ verifier with `verify_artifacts.py --rerun`.
 
 ## Disposition
 
-KEEP (deliverable). All four gates hold. OWN-75R and the R2-10, B-03 and R2-09 publish fixes are ready
-for Publish on their r1b branches. Every other pushed packet reproduces as published.
+KEEP (deliverable). All four gates hold with this audit's scanner. OWN-75R and the B-03 and R2-09
+publish fixes are ready for Publish on their r1b branches. R2-10 r1b is held: its verifier carries
+R2-10's hex-encoded private-name list, which this scanner did not decode (PUB-02 prepares a clean
+history candidate). Every other pushed packet reproduces as published.
 
 ## Files
 
