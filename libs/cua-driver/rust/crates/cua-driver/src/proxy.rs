@@ -89,6 +89,19 @@ pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
     if single_write {
         cua_driver_core::phase_trace::mark("exp_knob", "mcp_single_write=1");
     }
+    // B-07 measurement knob (default off): read once per process; when set,
+    // the action-result output validator is built before the first request.
+    if cua_driver_core::mcp_result::exp_output_validator_prewarm_from(
+        std::env::var(cua_driver_core::mcp_result::EXP_OUTPUT_VALIDATOR_PREWARM_ENV)
+            .ok()
+            .as_deref(),
+    ) {
+        let entered = cua_driver_core::mcp_result::exp_prewarm_action_output_validators();
+        cua_driver_core::phase_trace::mark(
+            "exp_knob",
+            &format!("output_validator_prewarm={entered}"),
+        );
+    }
     loop {
         line.clear();
         if reader.read_line(&mut line).await? == 0 {

@@ -60,6 +60,49 @@ fn validate_wire_output(tool: &str, structured: &Value) -> Result<(), String> {
     }
 }
 
+/// B-07 EXPERIMENT ONLY (measurement knob, default off, not for promotion).
+/// `CUA_DRIVER_EXP_OUTPUT_VALIDATOR_PREWARM=1` makes the direct stdio
+/// transport call [`exp_prewarm_action_output_validators`] once, before it
+/// reads the first request. Any other value, or unset, leaves the validator
+/// cache to fill lazily on each tool's first call, as shipped.
+pub const EXP_OUTPUT_VALIDATOR_PREWARM_ENV: &str = "CUA_DRIVER_EXP_OUTPUT_VALIDATOR_PREWARM";
+
+pub fn exp_output_validator_prewarm_from(value: Option<&str>) -> bool {
+    value == Some("1")
+}
+
+/// B-07 EXPERIMENT ONLY. Compile the action-result output validator once and
+/// enter it in the validator cache under every action-result tool name whose
+/// advertised schema is that same schema. Returns the number of names entered.
+///
+/// Verdicts are unchanged: each cached entry is the validator the lazy path
+/// would compile from the identical advertised schema. Only the time it is
+/// built moves (transport start instead of each tool's first call), and the
+/// action-result tools share one compile instead of one per tool name.
+pub fn exp_prewarm_action_output_validators() -> usize {
+    let tools = cua_driver_contract::ACTION_RESULT_TOOLS;
+    let Some(schema) = tools.first().and_then(|tool| advertised_tool_output_schema(tool)) else {
+        return 0;
+    };
+    let Ok(validator) = jsonschema::validator_for(&schema) else {
+        return 0;
+    };
+    let validator = Arc::new(validator);
+    let Ok(mut cache) = OUTPUT_VALIDATORS.lock() else {
+        return 0;
+    };
+    let mut entered = 0;
+    for tool in tools {
+        if advertised_tool_output_schema(tool).as_ref() == Some(&schema) {
+            cache
+                .entry((*tool).to_owned())
+                .or_insert_with(|| Ok(validator.clone()));
+            entered += 1;
+        }
+    }
+    entered
+}
+
 /// Hold one `tools/call` result to the tool's advertised `outputSchema`.
 ///
 /// - An error result keeps its diagnostic, normalized into the refusal arm so
@@ -289,6 +332,67 @@ mod tests {
             result["structuredContent"]["code"],
             TOOL_OUTPUT_INVALID_CODE
         );
+    }
+
+    #[test]
+    fn b07_prewarm_knob_parses_only_one() {
+        assert!(exp_output_validator_prewarm_from(Some("1")));
+        for value in [None, Some(""), Some("0"), Some("true"), Some("yes"), Some(" 1")] {
+            assert!(!exp_output_validator_prewarm_from(value), "{value:?}");
+        }
+    }
+
+    /// The prewarm shares one compiled validator across the action-result
+    /// tools and leaves every verdict and every result byte unchanged.
+    #[test]
+    fn b07_prewarm_shares_one_validator_and_keeps_results_identical() {
+        let valid = json!({
+            "content": [{"type": "text", "text": "clicked"}],
+            "isError": false,
+            "structuredContent": {
+                "effect": "confirmed",
+                "route": "accessibility",
+                "delivery": {"mode": "background"},
+                "evidence": [{"kind": "value_readback"}],
+            },
+        });
+        let rejected = json!({
+            "content": [],
+            "isError": false,
+            "structuredContent": {"clicked": true},
+        });
+        let tools = ["browser_click", "browser_type", "click"];
+        let before: Vec<String> = tools
+            .iter()
+            .flat_map(|tool| {
+                [valid.clone(), rejected.clone()]
+                    .map(|r| serde_json::to_string(&conforming_tool_result(tool, r)).unwrap())
+            })
+            .collect();
+
+        let entered = exp_prewarm_action_output_validators();
+        assert_eq!(entered, cua_driver_contract::ACTION_RESULT_TOOLS.len());
+
+        let after: Vec<String> = tools
+            .iter()
+            .flat_map(|tool| {
+                [valid.clone(), rejected.clone()]
+                    .map(|r| serde_json::to_string(&conforming_tool_result(tool, r)).unwrap())
+            })
+            .collect();
+        assert_eq!(before, after, "result bytes changed");
+        // Each action-result tool advertises the same schema, so prewarmed
+        // names share one compiled validator.
+        let cache = OUTPUT_VALIDATORS.lock().unwrap();
+        let shared = |tool: &str| cache.get(tool).unwrap().as_ref().unwrap().clone();
+        assert!(Arc::ptr_eq(&shared("mouse_button_up"), &shared("parallel_mouse_drag")));
+        for tool in cua_driver_contract::ACTION_RESULT_TOOLS {
+            assert_eq!(
+                advertised_tool_output_schema(tool),
+                advertised_tool_output_schema("browser_click"),
+                "{tool}"
+            );
+        }
     }
 
     #[test]
