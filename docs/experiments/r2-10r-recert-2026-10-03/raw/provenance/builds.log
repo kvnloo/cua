@@ -12,6 +12,7 @@ rc=0
 Terminated                 flock <tmp-root>/locks/cargo-build.lock $L/build-driver.sh $L/$1 $2 cua-release-r2-10
 rc=143
 [2026-10-03T02:45:17Z] rerun ctl build after the first attempt was terminated by the tool's 120 s background timeout (rc=143)
+[annotation PUB-02 2026-10-03] cause of the rc=143 above: the RECERT-FIX lane's pkill -f at ~02:44:58Z matched this build chain (hostless -> flock -> build-driver.sh, label r2-10r-a2-ctl-8a2362770) and terminated it; it was not a 120 s tool timeout. The line above is kept as logged.
 [2026-10-03T02:46:06Z] build start label=r2-10r-a2-ctl-8a2362770 head=8a2362770f2120c136c69a50b711a6b9e3a69b8f rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
   crate cua_driver: rustc invocations this run = 1
   crate cua_driver_core: rustc invocations this run = 1
