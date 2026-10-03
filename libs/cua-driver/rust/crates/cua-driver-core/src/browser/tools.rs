@@ -2526,7 +2526,7 @@ impl Tool for BrowserSetInputFilesTool {
         // on, a node a re-render detached after the snapshot. The assignment is
         // a DOM-domain command, not a callFunctionOn this check could share,
         // so it runs on the node immediately before it.
-        let connected = match validated
+        let object_id = validated
             .conn
             .call(
                 Some(&cdp_session),
@@ -2535,28 +2535,15 @@ impl Tool for BrowserSetInputFilesTool {
             )
             .await
             .ok()
-            .and_then(|resolved| resolved.pointer("/object/objectId").cloned())
-        {
-            Some(object_id) => validated
-                .conn
-                .call(
-                    Some(&cdp_session),
-                    "Runtime.callFunctionOn",
-                    json!({
-                        "objectId": object_id,
-                        "functionDeclaration": NODE_IS_CONNECTED,
-                        "returnByValue": true,
-                    }),
-                )
-                .await
-                .is_ok_and(|value| value.pointer("/result/value") == Some(&Value::Bool(true))),
-            None => false,
+            .and_then(|resolved| resolved.pointer("/object/objectId").cloned());
+        let Some(object_id) = object_id else {
+            return detached_node_refusal();
         };
-        if !connected {
+        if !node_is_connected(&validated.conn, &cdp_session, &object_id).await {
             return detached_node_refusal();
         }
         exp_set_files_gap().await;
-        match validated
+        if let Err(error) = validated
             .conn
             .call(
                 Some(&cdp_session),
@@ -2565,18 +2552,49 @@ impl Tool for BrowserSetInputFilesTool {
             )
             .await
         {
-            Ok(_) => ToolResult::text(format!("assigned {} file(s) in {tab_id}", files.len()))
-                .with_structured(json!({
-                    "status": "ok", "target_id": target_id, "tab_id": tab_id,
-                    "ref": ext_ref, "frame": entry.frame.kind.as_str(), "file_count": files.len()
-                })),
-            Err(error) => BrowserRefusal::new(
+            return BrowserRefusal::new(
                 BrowserRefusalCode::BrowserActionUnavailable,
                 format!("the browser refused the exact file input assignment: {error}"),
             )
-            .to_tool_result(),
+            .to_tool_result();
         }
+        // The check and the assignment are separate renderer tasks, so the page
+        // can still detach the input between them; Chromium then assigns the
+        // files to the detached node. Re-check the same object before building
+        // the receipt: a node that is not connected now is never a success, and
+        // the assignment may have landed, so it is never retried.
+        if !node_is_connected(&validated.conn, &cdp_session, &object_id).await {
+            return BrowserRefusal::new(
+                BrowserRefusalCode::BrowserRefStale,
+                "the ref's node was not connected to the document after the file assignment; \
+                 the files may have been assigned to the detached node, so delivery is unknown \
+                 and must not be retried automatically",
+            )
+            .with_detail(json!({ "delivery": "unknown", "retryable": false }))
+            .to_tool_result();
+        }
+        ToolResult::text(format!("assigned {} file(s) in {tab_id}", files.len())).with_structured(
+            json!({
+                "status": "ok", "target_id": target_id, "tab_id": tab_id,
+                "ref": ext_ref, "frame": entry.frame.kind.as_str(), "file_count": files.len()
+            }),
+        )
     }
+}
+
+/// `Node.isConnected` of a resolved remote object; any CDP failure is `false`.
+async fn node_is_connected(conn: &CdpConnection, cdp_session: &str, object_id: &Value) -> bool {
+    conn.call(
+        Some(cdp_session),
+        "Runtime.callFunctionOn",
+        json!({
+            "objectId": object_id,
+            "functionDeclaration": NODE_IS_CONNECTED,
+            "returnByValue": true,
+        }),
+    )
+    .await
+    .is_ok_and(|value| value.pointer("/result/value") == Some(&Value::Bool(true)))
 }
 
 #[cfg(test)]

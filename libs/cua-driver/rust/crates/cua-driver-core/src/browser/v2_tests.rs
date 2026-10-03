@@ -74,6 +74,10 @@ struct FixtureState {
     /// Backend nodes the page has detached since the snapshot
     /// (`Node.isConnected === false`); the node object still resolves.
     detached_backends: Vec<i64>,
+    /// A page re-render that lands right after the Driver's connectedness
+    /// check: the first `isConnected` probe of this backend answers `true`,
+    /// then the node is detached (separate renderer tasks, as in Chromium).
+    detach_after_connected_check: Option<i64>,
     /// Backend nodes that describe as `<input type=file>`.
     file_inputs: Vec<i64>,
     /// Backend nodes on which a page-side click/event dispatch actually ran.
@@ -108,6 +112,7 @@ impl Default for FixtureState {
             viewport_css_height: 600.0,
             tab_visible: true,
             detached_backends: Vec::new(),
+            detach_after_connected_check: None,
             file_inputs: Vec::new(),
             page_dispatches: Vec::new(),
             calls: Vec::new(),
@@ -738,6 +743,10 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                     .flatten()
                     .any(|b| st.detached_backends.contains(&b));
                 if function.contains("return this.isConnected;") {
+                    if !detached && backend.is_some() && st.detach_after_connected_check == backend {
+                        st.detach_after_connected_check = None;
+                        st.detached_backends.extend(backend);
+                    }
                     MockReply::ok(json!({ "result": { "value": !detached } }))
                 } else if detached && function.contains("if (!this.isConnected") {
                     let answer = if function.contains("return 'detached'") {
@@ -2899,6 +2908,33 @@ async fn set_input_files_refuses_a_detached_file_input() {
     assert_eq!(structured(&result)["refusal"]["code"], "browser_ref_stale");
     assert!(recorded_calls(&f, "DOM.setFileInputFiles").is_empty());
     assert!(page_dispatches(&f).is_empty(), "no file may be assigned");
+}
+
+/// FIX-03: the page detaches the input after the connectedness check but
+/// before the assignment. Chromium still assigns the files (and fires
+/// input/change) on the detached node, so the receipt must not be a success
+/// and must not invite a retry: delivery is unknown, and the files were
+/// assigned exactly once.
+#[tokio::test]
+async fn set_input_files_detached_after_the_check_is_never_a_success() {
+    let f = fixture_with(|st| {
+        st.file_inputs.push(10);
+        st.detach_after_connected_check = Some(10);
+    })
+    .await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let input_ref = ref_of(&snap, "main", "main-btn");
+
+    let result = set_input_files(&f, &target, &tab, &input_ref).await;
+    let receipt = structured(&result);
+    assert_ne!(receipt["status"], "ok", "{result:?}");
+    assert_eq!(receipt["status"], "refused", "{result:?}");
+    assert_eq!(receipt["refusal"]["code"], "browser_ref_stale");
+    assert_eq!(receipt["refusal"]["detail"]["delivery"], "unknown");
+    assert_eq!(receipt["refusal"]["detail"]["retryable"], false);
+    assert_eq!(recorded_calls(&f, "DOM.setFileInputFiles").len(), 1);
+    assert_eq!(page_dispatches(&f), vec![10], "assigned once, never retried");
 }
 
 #[tokio::test]
