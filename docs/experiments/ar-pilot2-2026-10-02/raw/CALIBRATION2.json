@@ -1,0 +1,1413 @@
+{
+  "schema": "ar.calibration_artifact.v2",
+  "worker": "Phase 1 calibration 2 (evaluator agent; Claude Code workflow subagent). No provider of any kind; scripted caller only; evaluator f56422868 unchanged.",
+  "overall": "FAIL",
+  "overall_reason": "pre-registered rows failing: R10",
+  "rows_passed": "11/12",
+  "rows": [
+    {
+      "row": "R1",
+      "candidate": "sleep20",
+      "expect": "REVERT",
+      "result": "PASS",
+      "detail": {
+        "screen": [
+          null
+        ],
+        "verdicts": [
+          "REJECT"
+        ]
+      }
+    },
+    {
+      "row": "R2",
+      "candidate": "sleep50",
+      "expect": "REVERT",
+      "result": "PASS",
+      "detail": {
+        "screen": [
+          0.15398149103200207
+        ],
+        "verdicts": [
+          "REVERT"
+        ]
+      }
+    },
+    {
+      "row": "R3",
+      "candidate": "delete50",
+      "expect": "KEEP in >= 8 of 10",
+      "result": "PASS",
+      "detail": {
+        "failed_gates": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "keeps": 10,
+        "repeats": 10,
+        "verdicts": [
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP",
+          "KEEP"
+        ]
+      }
+    },
+    {
+      "row": "R4",
+      "candidate": "success-early",
+      "expect": "G2 fail",
+      "result": "PASS",
+      "detail": {
+        "failed_gate": "G2",
+        "reasons": [
+          "unverified_success:1",
+          "unverified_success:10",
+          "unverified_success:12",
+          "unverified_success:14"
+        ],
+        "verdict": "REJECT"
+      }
+    },
+    {
+      "row": "R5a",
+      "candidate": "g0-frozen-item",
+      "expect": "G0 fail",
+      "result": "PASS",
+      "detail": {
+        "reasons": [
+          "itemcheck:item_changed_not_allowed:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn focus_element",
+          "itemcheck:line_outside_allowed_item:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn focus_element",
+          "itemcheck:line_outside_allowed_item:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn focus_element"
+        ]
+      }
+    },
+    {
+      "row": "R5b",
+      "candidate": "g0-test-item",
+      "expect": "G0 fail",
+      "result": "PASS",
+      "detail": {
+        "reasons": [
+          "itemcheck:test_item_changed:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:mod tests::fn quiet_report_is_silent",
+          "itemcheck:test_item_changed:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs:mod tests::fn quiet_report_is_silent",
+          "test_item_hash_mismatch:libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs"
+        ]
+      }
+    },
+    {
+      "row": "R5c",
+      "candidate": "g0-trace-line",
+      "expect": "G0 fail",
+      "result": "PASS",
+      "detail": {
+        "reasons": [
+          "itemcheck:phase_trace_moved:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs:fn perform_action_ref"
+        ]
+      }
+    },
+    {
+      "row": "R6",
+      "candidate": "g0-scanner",
+      "expect": "G0 fail (scanner)",
+      "result": "PASS",
+      "detail": {
+        "reasons": [
+          "scanner:evaluation_awareness:libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs"
+        ]
+      }
+    },
+    {
+      "row": "R7",
+      "candidate": "noop01..10",
+      "expect": "<= 1 false KEEP",
+      "result": "PASS",
+      "detail": {
+        "keeps": 0,
+        "n": 10,
+        "screen_delta": {
+          "noop01": 0.002066290558035363,
+          "noop02": -0.005221141795012978,
+          "noop03": -0.0005175482706003713,
+          "noop04": -0.0024596344802015665,
+          "noop05": null,
+          "noop06": -0.006086307240315551,
+          "noop07": -0.0032681280856888596,
+          "noop08": 0.001068158324566575,
+          "noop09": -0.003135784993893963,
+          "noop10": -0.00012639850533675948
+        },
+        "verdicts": {
+          "noop01": "REVERT",
+          "noop02": "REVERT",
+          "noop03": "REVERT",
+          "noop04": "REVERT",
+          "noop05": "REJECT",
+          "noop06": "REVERT",
+          "noop07": "REVERT",
+          "noop08": "REVERT",
+          "noop09": "REVERT",
+          "noop10": "REVERT"
+        }
+      }
+    },
+    {
+      "row": "R8",
+      "candidate": "feedback ON vs OFF",
+      "expect": "large effect, ON slower",
+      "result": "PASS",
+      "detail": {
+        "browser": {
+          "T_act": {
+            "ci95": [
+              -2.8566359009509408,
+              -2.837313570031542
+            ],
+            "delta_off_vs_on": -2.8470269781166353,
+            "median_on_minus_off_ms": 2999.0474999999997
+          },
+          "ci95": [
+            -1.6935007762433518,
+            -1.6694900286459533
+          ],
+          "complete_pairs": 10,
+          "delta_off_vs_on": -1.6812075088240104,
+          "failures": [],
+          "gate_marks_match_arm": true,
+          "median_T_ms": {
+            "off": 680.9431345,
+            "on": 3677.150305
+          },
+          "median_on_minus_off_ms": 2989.9227229999997,
+          "on_slower_pairs": 10,
+          "trials": 20,
+          "verified": 20
+        },
+        "gtk_diagnostic": {
+          "T_act": {
+            "ci95": [
+              -0.002032689945766196,
+              0.004350970484800641
+            ],
+            "delta_off_vs_on": 0.0013058582147314963,
+            "median_on_minus_off_ms": -0.4839485
+          },
+          "ci95": [
+            -0.005168830145822574,
+            0.01579133605122958
+          ],
+          "complete_pairs": 12,
+          "delta_off_vs_on": 0.004327331761963737,
+          "failures": [],
+          "gate_marks_match_arm": true,
+          "median_T_ms": {
+            "off": 514.2417425,
+            "on": 512.9787585
+          },
+          "median_on_minus_off_ms": 0.065055,
+          "on_slower_pairs": 7,
+          "trials": 28,
+          "verified": 24
+        }
+      }
+    },
+    {
+      "row": "R9",
+      "candidate": "new-socket",
+      "expect": "G2 fail",
+      "result": "PASS",
+      "detail": {
+        "failed_gate": "G2",
+        "g2_reasons": [
+          "new_file:gtk:/tmp/dbus-ArSettleWatch",
+          "new_socket:gtk:8>7"
+        ],
+        "new_socket_reason": true,
+        "stage": "screen",
+        "verdict": "REJECT"
+      }
+    },
+    {
+      "row": "R10",
+      "candidate": "delete50 under load",
+      "expect": "trace-off agreement passes under load",
+      "result": "FAIL",
+      "detail": {
+        "repeats": [
+          {
+            "cpu_some_share_median": 0.0016573604486188873,
+            "eval_id": "ar-20261002-cal2-delete50-load-r01",
+            "failed_gate": null,
+            "g7_metrics": {
+              "delta_off": -0.1818283770766536,
+              "delta_on": -0.18559050354608955,
+              "pairs_off": 8,
+              "pairs_on": 30,
+              "share": 0.9821817673242584,
+              "trace_off_band": [
+                -0.20970462765535297,
+                -0.16174258037291336
+              ]
+            },
+            "g7_pass": true,
+            "g7_reasons": [],
+            "loadavg1_median": 10.26,
+            "manipulation_ok": false,
+            "screen": "RANKS",
+            "verdict": "KEEP"
+          },
+          {
+            "cpu_some_share_median": 0.001081868405929377,
+            "eval_id": "ar-20261002-cal2-delete50-load-r02",
+            "failed_gate": null,
+            "g7_metrics": {
+              "delta_off": -0.18371286377081483,
+              "delta_on": -0.18542030630542705,
+              "pairs_off": 8,
+              "pairs_on": 30,
+              "share": 0.9855134821001121,
+              "trace_off_band": [
+                -0.20850772387382677,
+                -0.1624146361119072
+              ]
+            },
+            "g7_pass": true,
+            "g7_reasons": [],
+            "loadavg1_median": 11.0,
+            "manipulation_ok": false,
+            "screen": "RANKS",
+            "verdict": "KEEP"
+          }
+        ],
+        "unloaded_R3_cpu_some_share_median": 0.003515295317694063,
+        "unloaded_R3_loadavg1_median": 1.74
+      }
+    }
+  ],
+  "amendment_rows": [
+    {
+      "row": "R10b",
+      "candidate": "delete50 under CPU contention (30 burners)",
+      "expect": "trace-off agreement passes under CPU contention",
+      "result": "PASS",
+      "detail": {
+        "R10_confirm_sigma_ln": [
+          0.01189966654038516,
+          0.009793830104682119
+        ],
+        "repeats": [
+          {
+            "champion_median_ms": {
+              "T": 1086.0242325,
+              "T_act": 340.1675395
+            },
+            "confirm_failures": [],
+            "confirm_sigma_ln": 0.06612675551329743,
+            "cpu_some_share_median": 0.8101819440679525,
+            "eval_id": "ar-20261002-cal2-delete50-load30-r01",
+            "failed_gate": null,
+            "g7_metrics": {
+              "delta_off": -0.1702657804084468,
+              "delta_on": -0.16613091877365369,
+              "pairs_off": 8,
+              "pairs_on": 30,
+              "share": 0.9845293263889078,
+              "trace_off_band": [
+                -0.2118603244326886,
+                -0.12219359044204203
+              ]
+            },
+            "g7_pass": true,
+            "g7_reasons": [],
+            "loadavg1_median": 23.88,
+            "manipulation_ok": true,
+            "screen": "RANKS",
+            "screen_sigma_ln": 0.04676300816757083,
+            "stage": "confirm",
+            "verdict": "KEEP"
+          },
+          {
+            "champion_median_ms": {
+              "T": 1064.398838,
+              "T_act": 340.6270135
+            },
+            "confirm_failures": [],
+            "confirm_sigma_ln": 0.05642057028306839,
+            "cpu_some_share_median": 0.7052955580611906,
+            "eval_id": "ar-20261002-cal2-delete50-load30-r02",
+            "failed_gate": null,
+            "g7_metrics": {
+              "delta_off": -0.1622649289408661,
+              "delta_on": -0.16511458584740854,
+              "pairs_off": 8,
+              "pairs_on": 30,
+              "share": 1.007955925046637,
+              "trace_off_band": [
+                -0.20570231423328408,
+                -0.12512219390086154
+              ]
+            },
+            "g7_pass": true,
+            "g7_reasons": [],
+            "loadavg1_median": 21.04,
+            "manipulation_ok": true,
+            "screen": "RANKS",
+            "screen_sigma_ln": 0.08297947740223664,
+            "stage": "confirm",
+            "verdict": "INFRA"
+          }
+        ],
+        "unloaded_R3_champion_median_ms": [
+          {
+            "T": 583.8272305,
+            "T_act": 308.151662
+          },
+          {
+            "T": 508.015576,
+            "T_act": 302.917759
+          },
+          {
+            "T": 508.6661015,
+            "T_act": 303.442442
+          },
+          {
+            "T": 506.747661,
+            "T_act": 303.156485
+          },
+          {
+            "T": 507.5629965,
+            "T_act": 303.429853
+          },
+          {
+            "T": 506.9052265,
+            "T_act": 303.529439
+          },
+          {
+            "T": 505.234556,
+            "T_act": 303.198501
+          },
+          {
+            "T": 507.839275,
+            "T_act": 303.317699
+          },
+          {
+            "T": 507.986291,
+            "T_act": 303.429369
+          },
+          {
+            "T": 506.052404,
+            "T_act": 303.323948
+          }
+        ],
+        "unloaded_R3_confirm_sigma_ln": [
+          0.02581546849868985,
+          0.004558636651021181,
+          0.00422421580535383,
+          0.005347373382481596,
+          0.00533290108689664,
+          0.00794954537955237,
+          0.00342582824742721,
+          0.004209282779211771,
+          0.005985310845337739,
+          0.004034876000229062
+        ],
+        "unloaded_R3_cpu_some_share_median": 0.003515295317694063
+      }
+    }
+  ],
+  "diagnostics_not_gate": {
+    "g1_flake": {
+      "core_reruns_after_run": [
+        {
+          "rc": 0,
+          "result": "test result: ok. 817 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.01s",
+          "run": 1,
+          "utc": "2026-10-03T02:33:38Z"
+        },
+        {
+          "rc": 0,
+          "result": "test result: ok. 817 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.95s",
+          "run": 2,
+          "utc": "2026-10-03T02:33:50Z"
+        },
+        {
+          "rc": 0,
+          "result": "test result: ok. 817 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.90s",
+          "run": 3,
+          "utc": "2026-10-03T02:34:02Z"
+        },
+        {
+          "rc": 0,
+          "result": "test result: ok. 817 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.82s",
+          "run": 4,
+          "utc": "2026-10-03T02:34:14Z"
+        },
+        {
+          "rc": 0,
+          "result": "test result: ok. 817 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.92s",
+          "run": 5,
+          "utc": "2026-10-03T02:34:26Z"
+        }
+      ],
+      "diagnostic_screens": {
+        "noop05": {
+          "ci95": [
+            -0.009933042205155049,
+            0.018075275521626633
+          ],
+          "delta": 0.0026734782305250578,
+          "failed_gate": null,
+          "mechanism_span_ms": {
+            "candidate_median": 241.199249,
+            "champion_median": 241.438995,
+            "pairs": 19
+          },
+          "median_diff_ms": -0.573795,
+          "n_pairs": 24,
+          "seed": 20274113,
+          "verdict": "REVERT"
+        },
+        "sleep20": {
+          "ci95": [
+            0.049824026984721013,
+            0.07170943748690502
+          ],
+          "delta": 0.061924459832786216,
+          "failed_gate": null,
+          "mechanism_span_ms": {
+            "candidate_median": 72.195143,
+            "champion_median": 50.866533,
+            "pairs": 19
+          },
+          "median_diff_ms": 21.102306499999997,
+          "n_pairs": 24,
+          "seed": 20262113,
+          "verdict": "REVERT"
+        }
+      },
+      "earlier_reruns": [
+        "full core lib suite, 12 runs, failures=0",
+        "history:: module, 15 runs, failures=0"
+      ],
+      "g1_runs_total": 15,
+      "g1_test_failures": 2,
+      "rejects": {
+        "noop05": [
+          {
+            "failed": 1,
+            "ignored": 0,
+            "kind": "test",
+            "ok": false,
+            "passed": 816,
+            "rc": 101,
+            "schema": "ar.build.v1",
+            "suite": "cua-driver-core --lib"
+          }
+        ],
+        "sleep20": [
+          {
+            "failed": 1,
+            "ignored": 0,
+            "kind": "test",
+            "ok": false,
+            "passed": 816,
+            "rc": 101,
+            "schema": "ar.build.v1",
+            "suite": "cua-driver-core --lib"
+          }
+        ]
+      }
+    }
+  },
+  "tau": 0.02,
+  "decision_metric": "T_act",
+  "lord": {
+    "all_p_at_or_below_alpha_floor_resolvable": true,
+    "ledger_tests": [
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.0012511306609107014,
+        "eval_id": "ar-20261002-cal2-delete50-r01",
+        "index": 1,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.0487488693390893,
+        "wealth_before": 0.025
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.001523212026148644,
+        "eval_id": "ar-20261002-cal2-delete50-r02",
+        "index": 2,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.09722565731294067,
+        "wealth_before": 0.0487488693390893
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.003006079971587289,
+        "eval_id": "ar-20261002-cal2-delete50-r03",
+        "index": 3,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.14421957734135338,
+        "wealth_before": 0.09722565731294067
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.00347088276080066,
+        "eval_id": "ar-20261002-cal2-delete50-r04",
+        "index": 4,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.1907486945805527,
+        "wealth_before": 0.14421957734135338
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.003866007877392599,
+        "eval_id": "ar-20261002-cal2-delete50-r05",
+        "index": 5,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.2368826867031601,
+        "wealth_before": 0.1907486945805527
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.0042000721208483105,
+        "eval_id": "ar-20261002-cal2-delete50-r06",
+        "index": 6,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.2826826145823118,
+        "wealth_before": 0.2368826867031601
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.0044878194695159674,
+        "eval_id": "ar-20261002-cal2-delete50-r07",
+        "index": 7,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.3281947951127958,
+        "wealth_before": 0.2826826145823118
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.0047400975515096136,
+        "eval_id": "ar-20261002-cal2-delete50-r08",
+        "index": 8,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.3734546975612862,
+        "wealth_before": 0.3281947951127958
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.004964538331939626,
+        "eval_id": "ar-20261002-cal2-delete50-r09",
+        "index": 9,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.41849015922934657,
+        "wealth_before": 0.3734546975612862
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.0051666080631337374,
+        "eval_id": "ar-20261002-cal2-delete50-r10",
+        "index": 10,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.4633235511662128,
+        "wealth_before": 0.41849015922934657
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.005350327337575273,
+        "eval_id": "ar-20261002-cal2-delete50-load-r01",
+        "index": 11,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.5079732238286375,
+        "wealth_before": 0.4633235511662128
+      },
+      {
+        "alpha": 0.05,
+        "alpha_i": 0.005518730250403358,
+        "eval_id": "ar-20261002-cal2-delete50-load-r02",
+        "index": 12,
+        "p_value": 0.00004999750012499375,
+        "rejected": true,
+        "w0": 0.025,
+        "wealth_after": 0.5524544935782342,
+        "wealth_before": 0.5079732238286375
+      }
+    ],
+    "p_resolution_rule": "sign-flip p floor 1/(b+1) with b = max(20000, ceil(20/alpha_i)) <= alpha_i/20"
+  },
+  "amendment_lord": [
+    {
+      "alpha": 0.05,
+      "alpha_i": 0.005674159275425554,
+      "eval_id": "ar-20261002-cal2-delete50-load30-r01",
+      "index": 13,
+      "p_value": 0.00004999750012499375,
+      "rejected": true,
+      "w0": 0.025,
+      "wealth_after": 0.5967803343028086,
+      "wealth_before": 0.5524544935782342
+    }
+  ],
+  "cost": {
+    "delete50": {
+      "blocks": 110,
+      "eval_wall_s_excl_g1_wait": 13921.3,
+      "evaluations": 10,
+      "g0_s": 0.32,
+      "g1_s": 394.5,
+      "lock_wait_s": 7951.9,
+      "per_candidate_minutes_incl_g1": 29.78,
+      "per_evaluation_minutes_excl_g1": 23.2,
+      "per_evaluation_minutes_uncontended_incl_g1": 16.52,
+      "timed_held_s": 5946.9
+    },
+    "delete50-load": {
+      "blocks": 22,
+      "eval_wall_s_excl_g1_wait": 1378.0,
+      "evaluations": 2,
+      "g0_s": 0.38,
+      "g1_s": 394.5,
+      "lock_wait_s": 184.1,
+      "per_candidate_minutes_incl_g1": 18.06,
+      "per_evaluation_minutes_excl_g1": 11.48,
+      "per_evaluation_minutes_uncontended_incl_g1": 16.52,
+      "timed_held_s": 1189.7
+    },
+    "delete50-load30": {
+      "blocks": 18,
+      "eval_wall_s_excl_g1_wait": 10891.7,
+      "evaluations": 2,
+      "g0_s": 0.35,
+      "g1_s": 394.5,
+      "lock_wait_s": 9639.7,
+      "per_candidate_minutes_incl_g1": 97.34,
+      "per_evaluation_minutes_excl_g1": 90.76,
+      "per_evaluation_minutes_uncontended_incl_g1": 17.01,
+      "timed_held_s": 1247.9
+    },
+    "g0-frozen-item": {
+      "blocks": 0,
+      "eval_wall_s_excl_g1_wait": 0.4,
+      "evaluations": 1,
+      "g0_s": 0.39,
+      "g1_s": 0.0,
+      "lock_wait_s": 0,
+      "per_candidate_minutes_incl_g1": 0.01,
+      "per_evaluation_minutes_excl_g1": 0.01,
+      "per_evaluation_minutes_uncontended_incl_g1": 0.01,
+      "timed_held_s": 0
+    },
+    "g0-scanner": {
+      "blocks": 0,
+      "eval_wall_s_excl_g1_wait": 0.3,
+      "evaluations": 1,
+      "g0_s": 0.33,
+      "g1_s": 0.0,
+      "lock_wait_s": 0,
+      "per_candidate_minutes_incl_g1": 0.01,
+      "per_evaluation_minutes_excl_g1": 0.01,
+      "per_evaluation_minutes_uncontended_incl_g1": 0.01,
+      "timed_held_s": 0
+    },
+    "g0-test-item": {
+      "blocks": 0,
+      "eval_wall_s_excl_g1_wait": 0.3,
+      "evaluations": 1,
+      "g0_s": 0.29,
+      "g1_s": 0.0,
+      "lock_wait_s": 0,
+      "per_candidate_minutes_incl_g1": 0.01,
+      "per_evaluation_minutes_excl_g1": 0.01,
+      "per_evaluation_minutes_uncontended_incl_g1": 0.01,
+      "timed_held_s": 0
+    },
+    "g0-trace-line": {
+      "blocks": 0,
+      "eval_wall_s_excl_g1_wait": 0.3,
+      "evaluations": 1,
+      "g0_s": 0.32,
+      "g1_s": 0.0,
+      "lock_wait_s": 0,
+      "per_candidate_minutes_incl_g1": 0.01,
+      "per_evaluation_minutes_excl_g1": 0.01,
+      "per_evaluation_minutes_uncontended_incl_g1": 0.01,
+      "timed_held_s": 0
+    },
+    "new-socket": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 135.4,
+      "evaluations": 1,
+      "g0_s": 0.52,
+      "g1_s": 178.0,
+      "lock_wait_s": 78.7,
+      "per_candidate_minutes_incl_g1": 5.22,
+      "per_evaluation_minutes_excl_g1": 2.26,
+      "per_evaluation_minutes_uncontended_incl_g1": 3.91,
+      "timed_held_s": 55.2
+    },
+    "noop01": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 61.0,
+      "evaluations": 1,
+      "g0_s": 0.42,
+      "g1_s": 658.0,
+      "lock_wait_s": 0.1,
+      "per_candidate_minutes_incl_g1": 11.98,
+      "per_evaluation_minutes_excl_g1": 1.02,
+      "per_evaluation_minutes_uncontended_incl_g1": 11.98,
+      "timed_held_s": 58.9
+    },
+    "noop02": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 58.5,
+      "evaluations": 1,
+      "g0_s": 0.46,
+      "g1_s": 318.7,
+      "lock_wait_s": 0.1,
+      "per_candidate_minutes_incl_g1": 6.29,
+      "per_evaluation_minutes_excl_g1": 0.97,
+      "per_evaluation_minutes_uncontended_incl_g1": 6.28,
+      "timed_held_s": 56.8
+    },
+    "noop03": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 57.1,
+      "evaluations": 1,
+      "g0_s": 0.37,
+      "g1_s": 510.3,
+      "lock_wait_s": 0.1,
+      "per_candidate_minutes_incl_g1": 9.46,
+      "per_evaluation_minutes_excl_g1": 0.95,
+      "per_evaluation_minutes_uncontended_incl_g1": 9.46,
+      "timed_held_s": 55.6
+    },
+    "noop04": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 74.5,
+      "evaluations": 1,
+      "g0_s": 0.41,
+      "g1_s": 216.5,
+      "lock_wait_s": 16.0,
+      "per_candidate_minutes_incl_g1": 4.85,
+      "per_evaluation_minutes_excl_g1": 1.24,
+      "per_evaluation_minutes_uncontended_incl_g1": 4.58,
+      "timed_held_s": 56.7
+    },
+    "noop05": {
+      "blocks": 0,
+      "eval_wall_s_excl_g1_wait": 0.7,
+      "evaluations": 1,
+      "g0_s": 0.65,
+      "g1_s": 626.3,
+      "lock_wait_s": 0,
+      "per_candidate_minutes_incl_g1": 10.45,
+      "per_evaluation_minutes_excl_g1": 0.01,
+      "per_evaluation_minutes_uncontended_incl_g1": 10.45,
+      "timed_held_s": 0
+    },
+    "noop06": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 67.7,
+      "evaluations": 1,
+      "g0_s": 0.47,
+      "g1_s": 471.3,
+      "lock_wait_s": 8.3,
+      "per_candidate_minutes_incl_g1": 8.98,
+      "per_evaluation_minutes_excl_g1": 1.13,
+      "per_evaluation_minutes_uncontended_incl_g1": 8.85,
+      "timed_held_s": 57.6
+    },
+    "noop07": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 55.2,
+      "evaluations": 1,
+      "g0_s": 0.29,
+      "g1_s": 239.1,
+      "lock_wait_s": 0.0,
+      "per_candidate_minutes_incl_g1": 4.91,
+      "per_evaluation_minutes_excl_g1": 0.92,
+      "per_evaluation_minutes_uncontended_incl_g1": 4.91,
+      "timed_held_s": 54.0
+    },
+    "noop08": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 131.2,
+      "evaluations": 1,
+      "g0_s": 0.18,
+      "g1_s": 170.6,
+      "lock_wait_s": 73.5,
+      "per_candidate_minutes_incl_g1": 5.03,
+      "per_evaluation_minutes_excl_g1": 2.19,
+      "per_evaluation_minutes_uncontended_incl_g1": 3.8,
+      "timed_held_s": 56.5
+    },
+    "noop09": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 75.9,
+      "evaluations": 1,
+      "g0_s": 0.5,
+      "g1_s": 174.5,
+      "lock_wait_s": 18.3,
+      "per_candidate_minutes_incl_g1": 4.17,
+      "per_evaluation_minutes_excl_g1": 1.27,
+      "per_evaluation_minutes_uncontended_incl_g1": 3.87,
+      "timed_held_s": 55.6
+    },
+    "noop10": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 239.7,
+      "evaluations": 1,
+      "g0_s": 0.39,
+      "g1_s": 616.9,
+      "lock_wait_s": 185.5,
+      "per_candidate_minutes_incl_g1": 14.28,
+      "per_evaluation_minutes_excl_g1": 3.99,
+      "per_evaluation_minutes_uncontended_incl_g1": 11.18,
+      "timed_held_s": 52.7
+    },
+    "sleep20": {
+      "blocks": 0,
+      "eval_wall_s_excl_g1_wait": 1.2,
+      "evaluations": 1,
+      "g0_s": 1.1,
+      "g1_s": 755.1,
+      "lock_wait_s": 0,
+      "per_candidate_minutes_incl_g1": 12.6,
+      "per_evaluation_minutes_excl_g1": 0.02,
+      "per_evaluation_minutes_uncontended_incl_g1": 12.6,
+      "timed_held_s": 0
+    },
+    "sleep50": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 623.5,
+      "evaluations": 1,
+      "g0_s": 0.63,
+      "g1_s": 735.0,
+      "lock_wait_s": 566.6,
+      "per_candidate_minutes_incl_g1": 22.64,
+      "per_evaluation_minutes_excl_g1": 10.39,
+      "per_evaluation_minutes_uncontended_incl_g1": 13.2,
+      "timed_held_s": 55.2
+    },
+    "success-early": {
+      "blocks": 1,
+      "eval_wall_s_excl_g1_wait": 191.5,
+      "evaluations": 1,
+      "g0_s": 0.81,
+      "g1_s": 232.4,
+      "lock_wait_s": 0.0,
+      "per_candidate_minutes_incl_g1": 7.06,
+      "per_evaluation_minutes_excl_g1": 3.19,
+      "per_evaluation_minutes_uncontended_incl_g1": 7.06,
+      "timed_held_s": 189.4
+    }
+  },
+  "throughput": {
+    "calibration_wall_h": 12.25,
+    "full_pipeline": {
+      "evaluations": 14,
+      "mean_minutes_excl_g1_observed": 31.18,
+      "mean_minutes_incl_g1_observed": 37.75,
+      "mean_minutes_incl_g1_uncontended": 16.59,
+      "per_hour_observed": 1.6,
+      "per_hour_uncontended": 3.6
+    },
+    "g0_reject": {
+      "evaluations": 4,
+      "mean_minutes_excl_g1_observed": 0.01,
+      "mean_minutes_incl_g1_observed": 0.01,
+      "mean_minutes_incl_g1_uncontended": 0.01,
+      "per_hour_observed": 11076.9,
+      "per_hour_uncontended": 11076.9
+    },
+    "quiet_lane_held_min": 155.4,
+    "quiet_lane_receipts": 166,
+    "screen_only": {
+      "evaluations": 14,
+      "mean_minutes_excl_g1_observed": 2.11,
+      "mean_minutes_incl_g1_observed": 9.14,
+      "mean_minutes_incl_g1_uncontended": 8.01,
+      "per_hour_observed": 6.6,
+      "per_hour_uncontended": 7.5
+    }
+  },
+  "calibration_ledger": [
+    {
+      "eval_id": "ar-20261002-cal2-delete50-load-r01",
+      "tag": "delete50-load",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 782.1,
+      "g0_s": 0.39,
+      "blocks": 11,
+      "held_s": 596.2,
+      "lock_wait_s": 183.7
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-load-r02",
+      "tag": "delete50-load",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 595.9,
+      "g0_s": 0.36,
+      "blocks": 11,
+      "held_s": 593.5,
+      "lock_wait_s": 0.4
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-load30-r01",
+      "tag": "delete50-load30",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 6310.4,
+      "g0_s": 0.32,
+      "blocks": 11,
+      "held_s": 749.8,
+      "lock_wait_s": 5558.4
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-load30-r02",
+      "tag": "delete50-load30",
+      "stage": "confirm",
+      "verdict": "INFRA",
+      "failed_gate": null,
+      "wall_s": 4581.3,
+      "g0_s": 0.38,
+      "blocks": 7,
+      "held_s": 498.1,
+      "lock_wait_s": 4081.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r01",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 6811.1,
+      "g0_s": 0.47,
+      "blocks": 11,
+      "held_s": 629.4,
+      "lock_wait_s": 6178.6
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r02",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 2304.8,
+      "g0_s": 0.39,
+      "blocks": 11,
+      "held_s": 604.9,
+      "lock_wait_s": 1697.5
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r03",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 605.4,
+      "g0_s": 0.34,
+      "blocks": 11,
+      "held_s": 588.9,
+      "lock_wait_s": 14.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r04",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 632.8,
+      "g0_s": 0.36,
+      "blocks": 11,
+      "held_s": 588.9,
+      "lock_wait_s": 41.6
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r05",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 590.1,
+      "g0_s": 0.34,
+      "blocks": 11,
+      "held_s": 587.7,
+      "lock_wait_s": 0.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r06",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 608.4,
+      "g0_s": 0.27,
+      "blocks": 11,
+      "held_s": 587.8,
+      "lock_wait_s": 18.6
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r07",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 589.9,
+      "g0_s": 0.26,
+      "blocks": 11,
+      "held_s": 587.6,
+      "lock_wait_s": 0.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r08",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 592.1,
+      "g0_s": 0.36,
+      "blocks": 11,
+      "held_s": 589.7,
+      "lock_wait_s": 0.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r09",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 591.6,
+      "g0_s": 0.2,
+      "blocks": 11,
+      "held_s": 589.4,
+      "lock_wait_s": 0.2
+    },
+    {
+      "eval_id": "ar-20261002-cal2-delete50-r10",
+      "tag": "delete50",
+      "stage": "confirm",
+      "verdict": "KEEP",
+      "failed_gate": null,
+      "wall_s": 595.1,
+      "g0_s": 0.23,
+      "blocks": 11,
+      "held_s": 592.6,
+      "lock_wait_s": 0.2
+    },
+    {
+      "eval_id": "ar-20261002-cal2-g0-frozen-item-r01",
+      "tag": "g0-frozen-item",
+      "stage": "g0",
+      "verdict": "REJECT",
+      "failed_gate": "G0",
+      "wall_s": 0.4,
+      "g0_s": 0.39,
+      "blocks": 0,
+      "held_s": 0,
+      "lock_wait_s": 0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-g0-scanner-r01",
+      "tag": "g0-scanner",
+      "stage": "g0",
+      "verdict": "REJECT",
+      "failed_gate": "G0",
+      "wall_s": 0.3,
+      "g0_s": 0.33,
+      "blocks": 0,
+      "held_s": 0,
+      "lock_wait_s": 0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-g0-test-item-r01",
+      "tag": "g0-test-item",
+      "stage": "g0",
+      "verdict": "REJECT",
+      "failed_gate": "G0",
+      "wall_s": 0.3,
+      "g0_s": 0.29,
+      "blocks": 0,
+      "held_s": 0,
+      "lock_wait_s": 0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-g0-trace-line-r01",
+      "tag": "g0-trace-line",
+      "stage": "g0",
+      "verdict": "REJECT",
+      "failed_gate": "G0",
+      "wall_s": 0.3,
+      "g0_s": 0.32,
+      "blocks": 0,
+      "held_s": 0,
+      "lock_wait_s": 0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-new-socket-r01",
+      "tag": "new-socket",
+      "stage": "screen",
+      "verdict": "REJECT",
+      "failed_gate": "G2",
+      "wall_s": 135.4,
+      "g0_s": 0.52,
+      "blocks": 1,
+      "held_s": 55.2,
+      "lock_wait_s": 78.7
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop01-r01",
+      "tag": "noop01",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 61.0,
+      "g0_s": 0.42,
+      "blocks": 1,
+      "held_s": 58.9,
+      "lock_wait_s": 0.1
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop02-r01",
+      "tag": "noop02",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 58.5,
+      "g0_s": 0.46,
+      "blocks": 1,
+      "held_s": 56.8,
+      "lock_wait_s": 0.1
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop03-r01",
+      "tag": "noop03",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 57.1,
+      "g0_s": 0.37,
+      "blocks": 1,
+      "held_s": 55.6,
+      "lock_wait_s": 0.1
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop04-r01",
+      "tag": "noop04",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 74.5,
+      "g0_s": 0.41,
+      "blocks": 1,
+      "held_s": 56.7,
+      "lock_wait_s": 16.0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop05-r01",
+      "tag": "noop05",
+      "stage": "g1",
+      "verdict": "REJECT",
+      "failed_gate": "G1",
+      "wall_s": 0.7,
+      "g0_s": 0.65,
+      "blocks": 0,
+      "held_s": 0,
+      "lock_wait_s": 0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop06-r01",
+      "tag": "noop06",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 67.7,
+      "g0_s": 0.47,
+      "blocks": 1,
+      "held_s": 57.6,
+      "lock_wait_s": 8.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop07-r01",
+      "tag": "noop07",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 55.2,
+      "g0_s": 0.29,
+      "blocks": 1,
+      "held_s": 54.0,
+      "lock_wait_s": 0.0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop08-r01",
+      "tag": "noop08",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 131.2,
+      "g0_s": 0.18,
+      "blocks": 1,
+      "held_s": 56.5,
+      "lock_wait_s": 73.5
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop09-r01",
+      "tag": "noop09",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 75.9,
+      "g0_s": 0.5,
+      "blocks": 1,
+      "held_s": 55.6,
+      "lock_wait_s": 18.3
+    },
+    {
+      "eval_id": "ar-20261002-cal2-noop10-r01",
+      "tag": "noop10",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 239.7,
+      "g0_s": 0.39,
+      "blocks": 1,
+      "held_s": 52.7,
+      "lock_wait_s": 185.5
+    },
+    {
+      "eval_id": "ar-20261002-cal2-sleep20-r01",
+      "tag": "sleep20",
+      "stage": "g1",
+      "verdict": "REJECT",
+      "failed_gate": "G1",
+      "wall_s": 761.4,
+      "g0_s": 1.1,
+      "blocks": 0,
+      "held_s": 0,
+      "lock_wait_s": 0
+    },
+    {
+      "eval_id": "ar-20261002-cal2-sleep50-r01",
+      "tag": "sleep50",
+      "stage": "screen",
+      "verdict": "REVERT",
+      "failed_gate": null,
+      "wall_s": 1363.6,
+      "g0_s": 0.63,
+      "blocks": 1,
+      "held_s": 55.2,
+      "lock_wait_s": 566.6
+    },
+    {
+      "eval_id": "ar-20261002-cal2-success-early-r01",
+      "tag": "success-early",
+      "stage": "screen",
+      "verdict": "REJECT",
+      "failed_gate": "G2",
+      "wall_s": 191.5,
+      "g0_s": 0.81,
+      "blocks": 1,
+      "held_s": 189.4,
+      "lock_wait_s": 0.0
+    }
+  ],
+  "packet": {
+    "branch": "exp/ar-harness-20261002",
+    "commit": "651405c1b982eacf221270c99acd340d71f77cf1",
+    "pushed": false,
+    "dir": "docs/experiments/ar-calibration2-2026-10-02/",
+    "verify": "verify_artifacts.py (hostless): 141/141 ok in the worktree and from a fresh git archive of HEAD"
+  },
+  "created_utc": "2026-10-03T05:56Z",
+  "prereg": {
+    "file": "raw/CALIB2-PREREG.json",
+    "sha256": "2caf57918b70608622b7bf53d8637d68b592ffbd802eddd04e1e576a13dbf3ec",
+    "hashed_utc": "2026-10-02T17:36:06Z",
+    "commit": "ca7b2882d"
+  },
+  "amendment_prereg": {
+    "file": "raw/CALIB2-AMEND-R10B.json",
+    "sha256": "03bb4f16d30ec2dcb5718d96f03c5883e050d71d9b508fd9f39a9cbab85ddb7f",
+    "hashed_utc": "2026-10-03T02:49:56Z",
+    "commit": "afeb75ffa",
+    "note": "written after R1-R10 ran; reported next to R10, never in place of it; does not change the overall verdict"
+  },
+  "evaluator": {
+    "harness_commit": "f56422868",
+    "manifest_sha256": "836a646e5b0e8acd439b9ed27c7aaa0f868b05eca8c1e8a4a810fa06230faa41",
+    "modified_by_calibration": false
+  },
+  "per_candidate_minutes": {
+    "g0_reject": 0.01,
+    "screen_only_uncontended_incl_g1": 8.0,
+    "screen_only_observed": 9.1,
+    "full_pipeline_uncontended_incl_g1": 16.6,
+    "full_pipeline_observed_with_lock_waits": 37.8
+  },
+  "findings": [
+    "Fixes F1-F3 verified on fresh data: delete50 KEEP 10/10 (Delta T_act -17.8..-18.6%, p 5e-5 vs alpha_i 1.25e-3..5.2e-3, G7 share 0.99-1.03, soak 300/300, spots non-inferior); planted session-bus look-alike socket (R9) still REJECTed at G2 (new_file + new_socket).",
+    "R10 FAIL on its pre-registered manipulation check only: 10 burners chosen from nproc=10 (OMP_NUM_THREADS=10) on a 20-logical-CPU host made no CPU wait (PSI cpu some share 0.0017/0.0011 vs 0.0035 unloaded); G7 passed on both loaded repeats and both were KEEP.",
+    "Amendment R10b (30 burners) PASS: stall share 0.71-0.81, loadavg 21-24, T_act sigma_ln 0.056-0.066 (~12x quiet); both screens rank; G7 share 0.985/1.008 with trace-off Delta inside the widened traced CI95; r01 KEEP on every gate; r02 INFRA (soak session start-up failure, not a gate result).",
+    "F7 (new evaluator defect): G1 false REJECT from flaky cua-driver-core history tests in 2/15 G1 runs (sleep20, noop05), unrelated to the platform-linux-only diffs; 32 later reruns all pass; diagnostic screens give the expected REVERTs (sleep20 +6.2%, +21 ms; noop05 +0.27%). Fix: scope or retry the unreachable core suite.",
+    "F8 (runner robustness): one session in 166 blocks failed at fixture start-up under host load; calib_eval stops the evaluation (INFRA). A bounded retry of a session that failed before its first trial is needed for proposer runs.",
+    "Throughput is lock-bound: full-pipeline 16.6 min uncontended vs 37.8 min observed; exclusive blocks waited behind a stream of shared-mode holders from other lanes (R10b: 161 min waited for 21 min held)."
+  ],
+  "n01": "N-01R (RFC loop, exp/n-01r-native-wait-ab-20261002 at 3bb4a7fc7) cited, not duplicated: it rules the same 50 ms post-DoAction sleep DELETED on GTK3 AT-SPI background delivery.",
+  "git": {
+    "harness_worktree": "<lanes>/ar-harness",
+    "branch": "exp/ar-harness-20261002",
+    "commits": [
+      "ca7b2882d prereg",
+      "afeb75ffa R10b amendment prereg",
+      "651405c1b packet"
+    ],
+    "pushed": false,
+    "candidate_branches": "ar/calib2/* (19, local only) in <lanes>/ar-calib (detached at champion)"
+  },
+  "run_dir": "<tmp>/ar-calib2",
+  "resumed_from": "an earlier attempt of this task ran every R1-R10 evaluation (17:36Z-22:46Z) under the committed prereg and stopped before R8/analysis/packet; this attempt ran R8, diagnostics, the R10b amendment, the analysis and the packet, changing no earlier data"
+}

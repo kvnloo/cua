@@ -1,0 +1,116 @@
+{
+ "schema": "ar.pilot_status.v2",
+ "created_utc": "2026-10-03",
+ "pilot_ran": false,
+ "pilot_evaluations": [],
+ "keeps": [],
+ "pilot_ledger": {
+  "file": "results.jsonl",
+  "rows": 0,
+  "fresh": true
+ },
+ "why_not_run": "The pilot is gated on the Phase 1 known-answer calibration passing. Calibration 2 (evaluator f56422868, prereg ca7b2882d) is overall FAIL: 11 of 12 pre-registered rows pass and R10 fails its pre-registered manipulation check (the planted load produced no CPU contention). The pre-registration's rule keeps the row FAIL; the separately pre-registered amendment R10b PASSES but does not change the overall verdict. No proposer candidate was submitted.",
+ "calibration2": {
+  "overall": "FAIL",
+  "overall_reason": "pre-registered rows failing: R10",
+  "rows_passed": "11/12",
+  "rows": {
+   "R1": "PASS",
+   "R2": "PASS",
+   "R3": "PASS",
+   "R4": "PASS",
+   "R5a": "PASS",
+   "R5b": "PASS",
+   "R5c": "PASS",
+   "R6": "PASS",
+   "R7": "PASS",
+   "R8": "PASS",
+   "R9": "PASS",
+   "R10": "FAIL"
+  },
+  "amendment_rows": {
+   "R10b": "PASS"
+  },
+  "evaluator": {
+   "harness_commit": "f56422868",
+   "manifest_sha256": "836a646e5b0e8acd439b9ed27c7aaa0f868b05eca8c1e8a4a810fa06230faa41",
+   "modified_by_calibration": false
+  },
+  "prereg": {
+   "file": "raw/CALIB2-PREREG.json",
+   "sha256": "2caf57918b70608622b7bf53d8637d68b592ffbd802eddd04e1e576a13dbf3ec",
+   "hashed_utc": "2026-10-02T17:36:06Z",
+   "commit": "ca7b2882d"
+  },
+  "amendment_prereg": {
+   "file": "raw/CALIB2-AMEND-R10B.json",
+   "sha256": "03bb4f16d30ec2dcb5718d96f03c5883e050d71d9b508fd9f39a9cbab85ddb7f",
+   "hashed_utc": "2026-10-03T02:49:56Z",
+   "commit": "afeb75ffa",
+   "note": "written after R1-R10 ran; reported next to R10, never in place of it; does not change the overall verdict"
+  },
+  "decision_metric": "T_act",
+  "tau": 0.02,
+  "packet_commit": "651405c1b982eacf221270c99acd340d71f77cf1",
+  "packet_dir": "docs/experiments/ar-calibration2-2026-10-02/",
+  "per_candidate_minutes": {
+   "g0_reject": 0.01,
+   "screen_only_uncontended_incl_g1": 8.0,
+   "screen_only_observed": 9.1,
+   "full_pipeline_uncontended_incl_g1": 16.6,
+   "full_pipeline_observed_with_lock_waits": 37.8
+  }
+ },
+ "fix_round": {
+  "overall": "PASS",
+  "harness_commit": "f56422868403857a032e069f33686efbbc0b48b6",
+  "aa_primary_T_act": {
+   "T_act_delta_aa_ln": 0.00231,
+   "ci95_ln": [
+    -0.00258,
+    0.00706
+   ],
+   "ci_includes_zero": true,
+   "result": "PASS"
+  },
+  "packet_dir": "docs/experiments/ar-fix-2026-10-02/"
+ },
+ "aa_chosen_design": {
+  "metric": "T_act",
+  "sigma_ln": 0.01734050935679649,
+  "q975_abs_delta_aa_ln": 0.007107536582251258,
+  "tau": 0.02,
+  "n_pairs_by_power": 8,
+  "guardrail": {
+   "metric": "T",
+   "sigma_ln": 0.09634966284260105,
+   "tau": 0.04184092003108808
+  },
+  "source": "docs/experiments/ar-fix-2026-10-02/raw/aa/tau.json"
+ },
+ "new_findings": {
+  "F7": "G1 false REJECT from flaky cua-driver-core history tests in 2 of 15 G1 runs (sleep20, noop05); both diffs touch platform-linux only.",
+  "F8": "A session that fails at fixture start-up before its first trial ends the whole evaluation (INFRA) with no retry."
+ },
+ "preconditions_before_pilot": [
+  "Owner ruling on calibration 2: accept R10b as the valid G7-under-load test (R10 is a dose error in the prereg), or re-run R10 with a corrected dose under a fresh prereg.",
+  "F7: scope G1 to suites a segment-1 diff can reach, or a bounded retry of the unreachable core suite (evaluator agents only, D9).",
+  "F8: bounded retry of a session that fails before its first trial (evaluator agents only, D9).",
+  "Idle-host A/A, then freeze tau and n_pairs for T_act and the whole-task guardrail.",
+  "Fresh pilot ledger; candidates N-01R has not settled."
+ ],
+ "n01r_citation": {
+  "track": "RFC loop N-01R (native causal wait A/B), not run by this track",
+  "branch": "exp/n-01r-native-wait-ab-20261002",
+  "commit": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+  "published": true,
+  "packet": "docs/experiments/n-01r-native-wait-ab-2026-10-02/",
+  "readme_sha256": "a749726a73c17639e892dc4e34edc3076f79ac5c05df593a9d2928af0c30074c",
+  "summary_sha256": "d57991a9b52e5a85442118fe373b5c158a2d469231456ee7cab4bae59f5018fa",
+  "relation": "Calibration R3 (delete50) is the same edit as N-01R's H_S; the AR track measured it only as a known-answer calibration row."
+ },
+ "source_sha256_unsanitised": {
+  "FIX.json": "a23f0027b3a56a0c2c56489ee3c6a797e526fa027051835fb8823ae462ffa7e1",
+  "CALIBRATION2.json": "52a4bf395c7e4526283c257642f12485e95657257b940fdb8d2a5fbda09b7b95"
+ }
+}
