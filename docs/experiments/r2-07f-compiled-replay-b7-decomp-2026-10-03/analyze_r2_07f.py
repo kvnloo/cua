@@ -490,6 +490,8 @@ def analyze(raw: Path) -> dict[str, Any]:
     S: dict[str, Any] = {"schema": "r2-07f.summary.v1", "prereg": "PREREG.json"}
     blocks = {b: load_block(raw, b) for b in ("t", "m", "f", "c")}
     mans = {b: manifests(raw, b) for b in blocks}
+    if not blocks["m"]:
+        return rnd(blocked_summary(raw, S))
     S["blocks"] = {b: len(v) for b, v in blocks.items()}
     m_used, m_cut = select(blocks["m"], mans["m"], round_unit)
     S["main_cut_or_unlisted_trials"] = m_cut
@@ -629,6 +631,102 @@ def analyze(raw: Path) -> dict[str, Any]:
                         "H_D": {c: S["decomposition"]["classes"][c]["H_D"]["pass"] for c in CLASSES},
                         "S_E3_ci_lower_gt_1": {c: g[c]["S_E3_ci_lower_gt_1"] for c in CLASSES}}
     return rnd(S)
+
+
+def fmt(x: float | None, nd: int = 1, sign: bool = False) -> str:
+    if x is None:
+        return "n/a"
+    return f"{x:+.{nd}f}" if sign else f"{x:.{nd}f}"
+
+
+def ci_txt(c: dict[str, Any], nd: int = 1) -> str:
+    return f"{fmt(c['median'], nd, True)} ms [{fmt(c['ci95'][0], nd, True)}, {fmt(c['ci95'][1], nd, True)}]" \
+        if c.get("ci95") else "n/a"
+
+
+def headlines(S: dict[str, Any]) -> dict[str, Any]:
+    """Headline numbers with the exact README text (recomputed by verify_artifacts.py)."""
+    if S["disposition"]["value"] == "BLOCKED":
+        return rnd(headlines_blocked(S))
+    H: dict[str, Any] = {}
+    for cls in CLASSES:
+        d = S["classes"][cls]
+        g = d["gates"]
+        c = d["contrasts"]
+        arms = d["arms"]
+        H[f"{cls}.validity"] = {"value": [arms[a]["valid"] for a in ARMS],
+                                "text": f"{cls} valid " + ", ".join(f"{a} {arms[a]['valid']}/{arms[a]['n']}" for a in ARMS)}
+        H[f"{cls}.medians"] = {"value": [arms[a]["T_runner_median"] for a in ARMS],
+                               "text": f"{cls} median T_runner " + ", ".join(f"{a} {fmt(arms[a]['T_runner_median'])}" for a in ARMS)
+                               + " ms"}
+        H[f"{cls}.H_CR"] = {"value": [c["HCR_CRa_minus_COMP"]["median"], c["HCR_CRa_minus_COMP"]["ci95"], g["H_CR_non_regression"]],
+                            "text": f"{cls} CRa - COMP {ci_txt(c['HCR_CRa_minus_COMP'])} ({c['HCR_CRa_minus_COMP']['n_pairs']} pairs), "
+                                    f"H_CR {'PASS' if g['H_CR_non_regression'] else 'FAIL'}"}
+        H[f"{cls}.G1"] = {"value": [c["NC_CRa_minus_CRb"]["median"], c["NC_CRa_minus_CRb"]["ci95"], g["G1_NC"]],
+                          "text": f"{cls} NC CRa - CRb {ci_txt(c['NC_CRa_minus_CRb'])}, G1 {'PASS' if g['G1_NC'] else 'FAIL'}"}
+        H[f"{cls}.G2"] = {"value": [c["PC_PC_minus_CRa"]["median"], c["PC_PC_minus_CRa"]["ci95"], g["G2_PC"]],
+                          "text": f"{cls} PC - CRa {ci_txt(c['PC_PC_minus_CRa'])}, G2 {'PASS' if g['G2_PC'] else 'FAIL'}"}
+        s3 = d["S_E3_BASE_over_CRa"]
+        H[f"{cls}.S_E3"] = {"value": [s3["S"], s3["ci95"], g["S_E3_ci_lower_gt_1"]],
+                            "text": f"{cls} S_E3 = {fmt(s3['S'], 2)} [{fmt(s3['ci95'][0], 2)}, {fmt(s3['ci95'][1], 2)}]"
+                            if s3.get("ci95") else f"{cls} S_E3 n/a"}
+        am = S["amortized"][cls]
+        H[f"{cls}.amortized"] = {"value": [am["amortized_mean_ms"], am["warm_median_ms"], am["invocations"]],
+                                 "text": f"{cls} amortized mean {fmt(am['amortized_mean_ms'])} ms over {am['invocations']} invocations "
+                                         f"(warm median {fmt(am['warm_median_ms'])} ms)"}
+        hd = S["decomposition"]["classes"][cls]["H_D"]
+        H[f"{cls}.H_D"] = {"value": [hd["untested_share_bg_irreducible"], hd["untested_share_bg_untested"], hd["pass"]],
+                           "text": f"{cls} untested share {fmt(100 * hd['untested_share_bg_irreducible'])}% / "
+                                   f"{fmt(100 * hd['untested_share_bg_untested'])}%, H_D {'PASS' if hd['pass'] else 'FAIL'}"}
+    H["disposition"] = {"value": S["disposition"]["value"], "text": f"Disposition: {S['disposition']['value']}"}
+    H["controls"] = {"value": [S["controls"]["passed"], S["controls"]["n"]],
+                     "text": f"controls {S['controls']['passed']}/{S['controls']['n']} pass"}
+    H["e4"] = {"value": S["e4_total_all"], "text": f"E4 total {S['e4_total_all']}"}
+    return rnd(H)
+
+
+def blocked_summary(raw: Path, S: dict[str, Any]) -> dict[str, Any]:
+    """No measured trial ran (no EXCLUSIVE quiet-lane acquisition was possible): the summary is the pilot
+    pipeline check (SHARED, excluded from every result), the lock-wedge evidence and the BLOCKED disposition."""
+    pilot = [row(t) for t in load_block(raw, "pilot")]
+    wedge = [json.loads(x) for x in (raw / "lock-wedge.jsonl").read_text().splitlines() if x.strip()] \
+        if (raw / "lock-wedge.jsonl").exists() else []
+    gl = [json.loads(x) for x in (raw / "lock-receipts-global.jsonl").read_text().splitlines() if x.strip()] \
+        if (raw / "lock-receipts-global.jsonl").exists() else []
+    S["blocks"] = {b: 0 for b in ("t", "m", "f", "c")}
+    S["first_measured_trial_utc"] = None
+    S["pilot"] = {"n": len(pilot), "valid": sum(1 for r in pilot if r["valid"]),
+                  "rows": [{"trial": r["trial"], "f_arm": r["f_arm"], "kind": r.get("kind"), "valid": r["valid"],
+                            "reasons": r["reasons"], "decisions": r.get("provider_decisions"),
+                            "decision_routes": r.get("decision_routes"), "driver_ok": r["driver_ok"],
+                            "caller_stamps": r["caller_variant_stamps"], "pc_sleep_ms": r.get("pc_sleep_ms"),
+                            "e4": sum(r["e4"].values())} for r in pilot],
+                  "note": "SHARED lock, store 'pilot', excluded from every result; timing not reported"}
+    S["driver_identity"] = dict(Counter(f"{r['driver']['driver_name']}|{r['driver']['driver_sha256']}|"
+                                        f"{r['driver']['driver_version']}" for r in pilot))
+    S["lock_wedge"] = wedge
+    S["lane_receipts"] = {"shared": sum(1 for x in gl if x.get("mode") == "shared"),
+                          "exclusive": sum(1 for x in gl if "mode" not in x)}
+    S["gates"] = {g: "NOT_RUN" for g in ("G0", "G1_NC", "G2_PC", "G3", "G4", "H_CR", "S_E3", "H_D", "amortized",
+                                         "controls")}
+    S["e4_total_all"] = sum(sum(r["e4"].values()) for r in pilot)
+    S["disposition"] = {"value": "BLOCKED",
+                        "blocker": "no EXCLUSIVE quiet-lane acquisition was possible: the quiet-lane lock was held SHARED "
+                                   "continuously by long-lived processes of another track (lock_wedge), so the lane's "
+                                   "quiet-timed waiter (and every other exclusive waiter) starved; measuring outside the "
+                                   "exclusive lock is not allowed"}
+    return S
+
+
+def headlines_blocked(S: dict[str, Any]) -> dict[str, Any]:
+    w = S["lock_wedge"][-1] if S["lock_wedge"] else {}
+    return {"disposition": {"value": "BLOCKED", "text": "Disposition: BLOCKED"},
+            "pilot": {"value": [S["pilot"]["valid"], S["pilot"]["n"]],
+                      "text": f"pilot {S['pilot']['valid']}/{S['pilot']['n']} trial records valid"},
+            "wedge": {"value": [w.get("exclusive_waiters"), w.get("quiet_lane_lock_read_locks"), w.get("last_exclusive_receipt")],
+                      "text": f"{w.get('exclusive_waiters')} exclusive waiters, {w.get('quiet_lane_lock_read_locks')} shared "
+                              f"locks held, last exclusive receipt {w.get('last_exclusive_receipt')}"},
+            "e4": {"value": S["e4_total_all"], "text": f"E4 total {S['e4_total_all']}"}}
 
 
 def default(o: Any) -> Any:

@@ -199,8 +199,17 @@ def prereg_check(summary: dict) -> None:
     sha, when = out[-2], out[-1]
     from datetime import datetime
     first = summary.get("first_measured_trial_utc")
-    ok = first is not None and datetime.fromisoformat(when) < datetime.fromisoformat(first.replace("Z", "+00:00"))
-    check("PREREG committed before the first measured trial", ok, f"PREREG {sha[:9]} {when}; first measured trial {first}")
+    if summary["disposition"]["value"] == "BLOCKED":
+        # no measured trial exists; the pilot must predate the PREREG commit
+        import analyze_r2_07f as AN  # noqa: E402
+        pilot = [t["summary"].get("utc_start") for t in AN.load_block(HERE / "raw", "pilot")]
+        ok = first is None and bool(pilot) and all(
+            datetime.fromisoformat(p.replace("Z", "+00:00")) < datetime.fromisoformat(when) for p in pilot if p)
+        check("PREREG committed after the pilot; no measured trial exists (BLOCKED)", ok,
+              f"PREREG {sha[:9]} {when}; last pilot trial start {max(p for p in pilot if p) if pilot else None}")
+    else:
+        ok = first is not None and datetime.fromisoformat(when) < datetime.fromisoformat(first.replace("Z", "+00:00"))
+        check("PREREG committed before the first measured trial", ok, f"PREREG {sha[:9]} {when}; first measured trial {first}")
     changed = git("log", "--format=%H", f"{sha}..HEAD", "--", f":(top){PKT}/PREREG.json").decode().split()
     check("PREREG.json unchanged since its commit", not changed, f"later commits touching it: {changed[:3]}")
 
@@ -241,6 +250,29 @@ def lock_check(raw: Path) -> None:
           n > 0 and not bad, f"{n} manifests; bad: {bad[:6]}")
 
 
+def blocked_check(raw: Path) -> None:
+    """BLOCKED packet: no measured bundle exists, the lane holds no EXCLUSIVE receipt, every pilot manifest ran
+    SHARED with a shared receipt (manual pilot chunks p<n> carry the label r207f-pilot-<n>), and the lock-wedge
+    evidence shows exclusive waiters with shared locks held and no exclusive receipt after the last one listed."""
+    led = [json.loads(x) for x in (raw / "lock-receipts-global.jsonl").read_text().splitlines() if x.strip()]
+    shared = {x["label"] for x in led if x.get("mode") == "shared"}
+    excl = [x for x in led if "mode" not in x]
+    measured = [b for b in ("t", "m", "f", "c") if (raw / f"{b}-trials.tar.gz").exists()]
+    bad = []
+    for p in sorted((raw / "pilot-manifests").glob("*.json")):
+        m = json.loads(p.read_text())
+        ch = str(m.get("chunk"))
+        label = f"r207f-pilot-{ch[1:]}" if re.fullmatch(r"p\d+", ch) else f"r207f-{ch}"
+        if m.get("lock_mode") != "shared" or label not in shared:
+            bad.append(ch)
+    wedge = [json.loads(x) for x in (raw / "lock-wedge.jsonl").read_text().splitlines() if x.strip()]
+    wedged = (bool(wedge) and all(w["exclusive_waiters"] >= 1 for w in wedge)
+              and all(w["quiet_lane_lock_read_locks"] >= 1 for w in wedge[1:]))  # line 1: faulty READ-count pattern (README)
+    check("BLOCKED: no measured bundle, no EXCLUSIVE receipt, pilot SHARED with receipts, lock-wedge evidence",
+          not measured and not excl and not bad and wedged,
+          f"measured={measured} exclusive={len(excl)} bad_pilot={bad} wedge_lines={len(wedge)}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--skip-git", action="store_true")
@@ -271,8 +303,9 @@ def main() -> int:
         probs = {p.name: crt.check_artifact_authority_tm(json.loads(p.read_text())) for p in arts}
         check("every compiled artifact passes the authority scan", bool(arts) and not any(probs.values()),
               f"{len(arts)} artifacts; problems: {[k for k, v in probs.items() if v]}")
-        recs = [t for b in ("t", "m", "f", "c") for t in AN.load_block(raw, b)]
-        mans = [json.loads(p.read_text()) for b in ("t", "m", "f", "c") for p in sorted((raw / f"{b}-manifests").glob("*.json"))]
+        blocks = ("pilot",) if summary["disposition"]["value"] == "BLOCKED" else ("t", "m", "f", "c")
+        recs = [t for b in blocks for t in AN.load_block(raw, b)]
+        mans = [json.loads(p.read_text()) for b in blocks for p in sorted((raw / f"{b}-manifests").glob("*.json"))]
         prov = sum(int((t["summary"].get("provider_requests") or {}).get("attempts", 0) or 0) for t in recs)
         check("provider: TypeSafe cap 0 -> no ledger, provider_mode mock everywhere, 0 attempts in every record",
               not (raw / "provider-ledger.jsonl").exists() and all(m.get("provider_mode") == "mock" for m in mans)
@@ -282,7 +315,10 @@ def main() -> int:
         idm = {(m.get("driver_name"), m.get("driver_sha256"), m.get("driver_version")) for m in mans}
         check("Driver identity (B7 name/sha256/version) in every trial record and manifest", ids == {B7} and idm == {B7},
               f"{len(recs)} records: {sorted(map(str, ids))[:3]}")
-        lock_check(raw)
+        if summary["disposition"]["value"] == "BLOCKED":
+            blocked_check(raw)
+        else:
+            lock_check(raw)
         if not a.skip_git:
             identity_check()
             prereg_check(summary)

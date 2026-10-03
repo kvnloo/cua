@@ -1,0 +1,68 @@
+{
+ "admission_trial": "P-modal-train-admission",
+ "admitted": true,
+ "artifact": {
+  "compiled_from": {
+   "learning_outcome": "verified",
+   "learning_provider_decisions": 2,
+   "trace_mutations": 2
+  },
+  "expected_outcome": {
+   "completion_field": "modal",
+   "journal_updates": 1,
+   "oracle": "/state.opened == true and /state.modal == true"
+  },
+  "fallback_points": [
+   "before each mutation: guarded continuation from the current state"
+  ],
+  "routine_id": "r2-07c-modal-pilot",
+  "schema": "r2-07c.compiled-routine.v1",
+  "steps": [
+   {
+    "action": "browser_click",
+    "input_route": "dom_event",
+    "logical_target": {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    "postcondition": {
+     "requires_present": [
+      {
+       "name": "Confirm choice",
+       "role": "button"
+      }
+     ]
+    },
+    "precondition": {
+     "page_origin": "http://127.0.0.1:*",
+     "page_path": "/modal",
+     "requires_absent": [
+      {
+       "name": "Confirm choice",
+       "role": "button"
+      }
+     ],
+     "unique": true
+    }
+   },
+   {
+    "action": "browser_click",
+    "depends_on": 0,
+    "input_route": "dom_event",
+    "logical_target": {
+     "name": "Confirm choice",
+     "role": "button"
+    },
+    "precondition": {
+     "unique": true
+    }
+   }
+  ],
+  "task_class": "modal_act"
+ },
+ "compile_error": null,
+ "compile_ms": 0.144346,
+ "learning_verified": true,
+ "trained_by": "P-modal-train",
+ "trainings": 1
+}
