@@ -1,0 +1,293 @@
+{
+  "schema": "r2-07f.prereg.v1",
+  "lane": "R2-07f (wave 7, experiment)",
+  "title": "Compiled replay toggle/modal on B7: scripted BASE vs COMP vs COMP+CR, one-binary decomposition and E3",
+  "owners": [
+    "kvnloo/cua#93 (R2-07, R2-10)",
+    "kvnloo/cua#10",
+    "kvnloo/cua#73"
+  ],
+  "advances": {
+    "E2": "one-binary decomposition, on B7 with full phase and transport marks, of the composed configuration that includes compiled replay (warm admitted COMP+CR = the warm path of the live toggle/modal COMP+CR configuration: 0 chooser calls)",
+    "E3": "scripted BASE vs COMP+CR S on one binary for toggle and modal, with training/compile/admission/fallback cost amortized over all invocations",
+    "E1": "re-confirms toggle CR non-regression on B7 (and measures modal)"
+  },
+  "hypothesis": {
+    "H_CR": "on B7, warm COMP+CR (compiled fresh-bound replay of an admitted artifact, a fresh semantic_v2 observation per click, 0 decisions) is not slower than COMP (R2-10 scripted step loop) for toggle and modal",
+    "H_D": "every component of the COMP+CR whole-task T with a share >= 5% or >= 50 ms already has a terminal verdict (B-02/B-04/B-05/B-07/B-08/R2-07e), so the untested share is < 5%"
+  },
+  "source": {
+    "branch": "exp/r2-07f-compiled-replay-b7-decomp-20261003",
+    "base_sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "base_note": "R2-07e packet head: R2-07c harness (r2_07c.one_comp / r2_07c.one_c, rb10) and R2-07d/R2-07e packets in place, unchanged",
+    "copied_blob_identical_from": "49ae94590 (B-08 packet head): b08/harness/{b07/b07_stdio.py, b05/b05_spans.py, b04/b04_rows.py, r2-10r/analyze_r2_10.py, r2-10r/src/b-02-browser-driver-sites-2026-10-02/{b01_analysis.py, analyze_browser.py}} in commit ffa4cebfe; blob ids in provenance.json",
+    "driver_source_tested": "ac319cbe90d6cdf0cc8cd8984f99f5b04b68fdac (B7 source; no build in this lane)",
+    "harness_changes": "caller side only, in driver/r2_07f.py (reviewed diff): B-07 stamped stdio client installed, Driver identity + lane arm label added to every trial result, PC sleep driver subclass, Williams plan, load gate, resume bookkeeping"
+  },
+  "binary": {
+    "name": "cua-driver-b07-231f6e8bb",
+    "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+    "version": "cua-driver 0.32.0",
+    "checks": "re-hashed at lane start and end on the host (under hostless) and inside the session; the runner refuses on any mismatch and writes name/sha256/version into every trial record (control and COMP-arm records included) and every manifest"
+  },
+  "arms": {
+    "BASE": "R2-10 BASE (rb10.one, arm BASE): feedback on (cursor enabled, default motion), no guard, 100 ms completion poll, library MCP output validation, no CUA_DRIVER_EXP_* variable; scripted chooser decides each click; phase trace on",
+    "COMP": "R2-10 scripted COMP step loop (r2_07c.one_comp -> rb10.one, arm COMP): feedback off, 10 ms completion poll, compiled validators, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, phase trace on, scripted chooser, telemetry off, no provider key",
+    "CRa": "COMP + compiled fresh-bound replay of the admitted artifact (r2_07c.one_c, kind warm): fresh semantic_v2 observation before every click, 0 decisions; a failed precondition hands the current state to the guarded continuation, whose scripted decisions are counted",
+    "CRb": "identical to CRa (A/A negative control)",
+    "PC": "CRa + a 15.0 ms CLOCK_MONOTONIC sleep inside T right after snapshot1 returns (positive control)"
+  },
+  "per_trial": "fresh cua-driver mcp, fresh Driver-launched Chrome (isolated_new, sandbox on), fresh loopback fixture servers, token and session label (cold C arm in every arm); B-07 stamped stdio client, default variant, in every arm",
+  "training": "before round 0, under the EXCLUSIVE lock: per class one scripted training invocation (R2-10 COMP step loop) + compile (compile_trace_tm, timed) + clean-reset admission replay (no fallback) into the lane-local store 'timed-f'; authority scan (check_artifact_authority_tm) on every artifact. Logical routine identity persists across processes; refs, tokens, captures, capabilities and session epochs never persist. A class whose training does not admit gets NOT_RUN warm arms (no retraining in the measured block)",
+  "design": {
+    "williams": "5 arms, 10 sequences = run_critpath.williams(5) rows plus each row reversed (every arm in every position twice; every ordered pair adjacent twice); arm index order BASE, COMP, CRa, CRb, PC",
+    "rounds": "40 rounds per class; round r runs, per class, sequence (r + class index) mod 10 (toggle index 0, modal 1); class order toggle->modal on even r, modal->toggle on odd r; every contrast has 40 within-round pairs per class",
+    "unit": "a round (10 trials) is the gating and resume unit; a round started but not completed is kept in raw/ and re-run under an attempt suffix; the analysis uses, per round, the first attempt listed as completed in a run manifest",
+    "chunks": "EXCLUSIVE bin/quiet-timed r207f-<chunk>; the cargo-build lock is checked free before acquiring (busy -> nothing runs, exit 74) and taken inside with flock -w 60; timeout 900; no new round after the chunk budget (exit 76)"
+  },
+  "load_rule": "a round (or training / fallback unit) starts only when the 1-min loadavg is <= 4.0 (1 s polls, <= 60 s wait, else the chunk ends with exit 75 and the same units resume later); loadavg recorded before and after every trial; every trial kept",
+  "oracle": "kvnloo/cua#24 pages via the jev-use fixture server (toggle checked, modal action applied) and its CLOCK_MONOTONIC journal: exactly one completion mutation. PRIMARY T_runner = R2-10 T (snapshot1 send -> verified oracle read, B.decompose on the R2-10 mark view). SECONDARY T_oracle (2 ms independent sampler, first expected-state sample at/after the caller return of the last accepted mutation, minus snapshot1 send) and T_j = max(journal completion ts, caller return of the last accepted mutation) - snapshot1 send",
+  "validity": "BASE/COMP: R2-10 browser_row valid (verified, exact oracle, 1 completion mutation, T_oracle defined, forced path dom_event clicks with click.cdp_send, arm configuration receipts); CRa/CRb/PC: R2-07c row_of valid (warm: verified, 2 browser_click, routes == [compiled], 0 decisions, 0 provider requests); plus, every arm: Driver identity == B7, B-07 caller stamps present, all E4 counters 0 (incl. non-loopback connects), and PC: the sleep measured and placed after snapshot1 returns and before the next Driver call. Rows are computed on the R2-10 mark view of the B7 trace (b05_spans.r210_view). Invalid cells stay in every denominator",
+  "statistics": "paired within-round differences (arm a - arm b) of T_runner; median; percentile bootstrap, 10000 resamples, fresh random.Random(20261003) per contrast, 95% CI = sorted resample medians [249], [9749]. S = median(BASE)/median(CRa) over the valid pairs with the same paired bootstrap (resample rounds, ratio of medians)",
+  "gates": {
+    "G0": "validity >= 95% per arm per class AND every valid trial in a class has the same final oracle state (identical outcomes). Invalid cells stay in the denominator",
+    "G1_NC": "CRa - CRb: 95% CI contains 0 AND |median| <= 1.5 ms",
+    "G2_PC": "PC - CRa: 95% CI inside [12, 18] ms",
+    "G3": "CR warm invocations (CRa, CRb, PC): decisions = 0, fallbacks = 0, provider attempts = 0 and every measured chunk ran with provider_mode mock (no provider ledger)",
+    "G4": "E4 = 0 in every arm, the training/admission, fallback and control trials (stale dispatch, duplicate mutation, unverified success, refusal returned as success, blind replay, dispatch after unknown, ambiguous dispatch, non-loopback connect)",
+    "H_CR": "PASS iff CRa - COMP has a paired 95% CI upper bound <= +2.0 ms (R2-07d's pre-registered margin) AND all 40 pairs ran (both cells present in all 40 rounds); per class",
+    "S_E3": "S_E3 = median T(BASE) / median T(CRa) with CI over the valid pairs; must have CI lower > 1. Reported with S_BASE_over_COMP for reference",
+    "amortized": "per class: (training T_runner + compile_ms + admission T_runner + the 40 CRa warm T_runner + the 3 forced-fallback T_runner) / 45 invocations, reported separately from the warm median; descriptive mean(BASE)/amortized mean"
+  },
+  "decomposition": {
+    "class": "BENCHMARK analysis of this lane's own valid CRa trials per class (primary) and COMP trials (reference), binary B7",
+    "T": "R2-10 T_runner per trial; rows with B-05 coverage < 0.98 excluded and counted",
+    "method": "B-08 Part E unchanged in substance: R2-10 e2_components (b08/harness/r2-10r/analyze_r2_10.py on the R2-10 mark view) plus the B-05/B-07 transport sub-spans (b08/harness/b05/b05_spans.decompose_b05) with B-07's units; per-trial consistency = max |sum of sub-spans per component - R2-10 component|",
+    "views": "PRIMARY corrected at c_m = median of this lane's in-situ null-pair intervals over the decomposed CRa and COMP trials (every interval that starts at a Driver mark minus c_m; T_runner_corr = T_runner - marks x c_m); SECONDARY raw",
+    "cold_split": {
+      "rule": "E = span(snapshot1) - span(snapshot2) per trial (b04_rows snap_measures), mean per arm, inside observation. Every arm here is a fresh process (B-08's C), so the per-document part is carried from B-08's warm arm on the same binary: per_document = min(B-08 mean E(Wa), this lane's mean E), IRREDUCIBLE (B-04); per_process = max(0, mean E - per_document), OWNER_DECISION (B-08); the rest of observation IRREDUCIBLE (B-04). The split moves ms only between IRREDUCIBLE and OWNER_DECISION, so it cannot change the untested share",
+      "carried_per_document_ms": {
+        "toggle": 3.5814,
+        "modal": 2.9922
+      },
+      "carried_from": "b08-summary.json @ 49ae94590 part_E.classes.<class>.E_mean_ms.Wa"
+    },
+    "untested_share": "untested ms / mean T_runner (view) with BELOW_GATE counted as IRREDUCIBLE and as UNTESTED",
+    "list": "every R2-10 component, cold split part and lane-scope unit with mean >= 5% of mean T or >= 50 ms, with its verdict and source lane; any component without a verdict is listed as UNTESTED, never relabelled",
+    "H_D": "PASS per class iff, on CRa in the primary (corrected) view, the untested share is < 5% in BOTH BELOW_GATE views AND no listed component or unit has an UNTESTED verdict",
+    "verdict_map": {
+      "observation (rest)": [
+        "IRREDUCIBLE",
+        "B-04"
+      ],
+      "cold per-document": [
+        "IRREDUCIBLE",
+        "B-04 (SOURCE carry of B-08 mean E(Wa) on B7)"
+      ],
+      "cold per-process": [
+        "OWNER_DECISION",
+        "B-08 (B7: toggle D 3.05 [2.62, 5.38] ms, modal D 4.56 [2.98, 5.92] ms; OWNER_DECISION)"
+      ],
+      "reval_endpoint": [
+        "OWNER_DECISION",
+        "B-02 H_E"
+      ],
+      "reval_other": [
+        "IRREDUCIBLE",
+        "R2-10"
+      ],
+      "provider_decision": [
+        {
+          "toggle": "DELETED",
+          "modal": "DELETED"
+        },
+        "R2-07e Part L (warm admitted COMP+CR: 0 decisions, 0 provider lines, 29/29 per class; LIVE_PROVIDER, binary R) + this lane G3 (warm decisions 0 on B7)"
+      ],
+      "visualization": [
+        "OWNER_DECISION",
+        "R2-10"
+      ],
+      "input_prep": [
+        "UNTESTED",
+        "R2-10"
+      ],
+      "settles": [
+        "OWNER_DECISION",
+        "R2-10"
+      ],
+      "dispatch": [
+        "IRREDUCIBLE",
+        "R2-10"
+      ],
+      "target_effect_lag": [
+        "IRREDUCIBLE",
+        "R2-10"
+      ],
+      "verification_reads": [
+        "IRREDUCIBLE",
+        "R2-10"
+      ],
+      "sleeps_polls": [
+        "IRREDUCIBLE",
+        "R2-10"
+      ],
+      "runner": [
+        "UNTESTED",
+        "R2-10"
+      ],
+      "lane_scope_components": [
+        "mcp_transport",
+        "mcp_admission",
+        "resolution",
+        "client_validation",
+        "unattributed"
+      ],
+      "units": {
+        "c_in.prep": [
+          {
+            "fill": "UNTESTED",
+            "toggle": "IRREDUCIBLE",
+            "modal": "IRREDUCIBLE"
+          },
+          "B-07 (PREP_FAST KILL on toggle/modal; fill's fragile DELETED is not carried)"
+        ],
+        "c_in.serialize": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "write_pipe_in": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "pipe_out_frame": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "c_out.parse": [
+          "IRREDUCIBLE",
+          "B-05 (PARSE_FAST KILL)"
+        ],
+        "c_out.route": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "c_out.result_model": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "c_out.validate": [
+          "IRREDUCIBLE",
+          "B-05 (VALIDATE_FAST KILL)"
+        ],
+        "c_out.return": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "d_in.parse": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "adm.outer": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "adm.inner": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "d_in.invoke": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "d_out.post": [
+          "IRREDUCIBLE",
+          "B-07 (POST_FAST KILL)"
+        ],
+        "d_out.serialize": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "d_out.write_flush": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "res.dispatch": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "res.ref_parse": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "res.store_lookup": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "res.post_check": [
+          "BELOW_GATE",
+          "B-07"
+        ],
+        "res.frame_proof": [
+          "IRREDUCIBLE",
+          "B-07 (invariant: Page.getFrameTree re-proves the ref's frame identity)"
+        ],
+        "res.type_focus": [
+          "IRREDUCIBLE",
+          "B-07 (invariant: DOM.focus for trusted_input typing)"
+        ],
+        "res.cdp_node_resolve": [
+          "IRREDUCIBLE",
+          "B-07 (invariant: DOM.resolveNode, FIX-01 detached-node refusal)"
+        ],
+        "res.editable_check": [
+          "IRREDUCIBLE",
+          "B-07 (invariant: non-editable targets refused before typing)"
+        ],
+        "any other lane-scope label": [
+          "UNTESTED",
+          "-"
+        ]
+      },
+      "unit_members": {
+        "write_pipe_in": [
+          "c_in.write",
+          "pipe_in"
+        ],
+        "pipe_out_frame": [
+          "pipe_out",
+          "c_out.frame"
+        ],
+        "d_out.write_flush": [
+          "d_out.write",
+          "d_out.flush"
+        ]
+      },
+      "carry_check": "the B-07 labels above are the ones in b07-summary.json @ eab1e87a3 (verdicts.units / verdicts.resolution), except c_in.prep on fill (UNTESTED here by rule); a carried BELOW_GATE unit whose corrected mean in this lane is >= 0.5 ms is flagged descriptively, never relabelled"
+    }
+  },
+  "controls": {
+    "lock": "SHARED quiet-lane lock, after the measured block (the forced fallbacks run EXCLUSIVE so their T can enter the amortized mean)",
+    "rows": {
+      "N4a": "stale ref refused (browser_ref_stale, effect=refused), then one rebind, verified, 1 completion; 2 per class",
+      "N4b": "superseding snapshot: non-fresh dispatch refused (effect=refused), rebind, verified; 2 per class",
+      "N5": "session replaced: old capability refused in the new session, fresh bind, verified; 2 per class",
+      "N8": "wrong page (toggle on fill, toggle on modal, modal on toggle): 0 accepted mutations; 2 per row",
+      "N-W2": "FIX-01 detached-node refusal (run_b02.control_one): stale action effect=refused browser_ref_stale, 0 mutations from it, re-derived action verified; 2 per class",
+      "n7_presat": "forced fallback (precondition already satisfied): routine dispatches nothing, guarded continuation verifies with its scripted decisions counted, 1 accepted mutation; 3 per class, EXCLUSIVE",
+      "N1": "renamed target: routine stops at the failed precondition, 0 completion, not verified; 2 per class",
+      "default_smoke": "R2-10 BASE, no CUA_DRIVER_EXP_*, no phase trace: verified, 1 completion; 5 per class"
+    },
+    "pass_rules": "R2-07c analyze_r2_07c.g4_pass / nw2_row and the R2-07d smoke rule, unchanged; plus Driver identity == B7 and E4 = 0"
+  },
+  "disposition": {
+    "KEEP": "H_CR passes for toggle and modal AND G0-G4 pass in both classes AND every control passes",
+    "REVISE": "otherwise (with the measured numbers), in particular when non-regression fails",
+    "KILL": "only on an E4 violation"
+  },
+  "pilot": "<= 10 trial records under the SHARED lock before this file (store 'pilot'): harness compatibility of the R2-07c runner with B7 and the B-07 stamped client; excluded from every result; reported",
+  "provider": "TypeSafe cap 0: no provider key is forwarded; 0 attempts / 0 reached",
+  "claim_boundary": "Scripted chooser and binary B7. The live-path reading covers only warm admitted invocations (0 decisions). Training and fallback provider costs come from R2-07e (binary R, LIVE_PROVIDER) and are cited as verdicts, never added to B7 numbers. No paired live S is claimed (BLOCKED on budget). The routine stays caller-side: no new service, registry, router or engine. No number is added to or ratioed across lanes or binaries, except the pre-registered SOURCE carry of B-08's per-document E(Wa) (same binary) inside the cold split, which cannot move the untested share",
+  "never": "no amendment after the first measured trial; every trial kept",
+  "written_utc": "2026-10-03T16:14:04Z",
+  "pilot_result": "ran 16:05-16:13Z under the SHARED lock (store pilot, raw/pilot-* in the packet, excluded): 9/9 trial records valid on B7 (2 trainings + 2 admissions, admitted, authority scan clean; BASE, COMP, CRa, PC toggle; CRa modal); CRa 0 decisions, routes [compiled]; PC sleep 15.0002 ms after snapshot1; B-07 caller stamps present (13 per trial); B-05 decomposition consistency 0.0 ms and coverage 1.0 in 9/9; three chunks ended on the load gate (exit 75) before the pilot completed. Pilot timing was taken at loadavg up to 14 and is not a result"
+}
