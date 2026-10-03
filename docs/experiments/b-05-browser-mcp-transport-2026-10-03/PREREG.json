@@ -1,0 +1,146 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "B-05",
+ "attempt": 2,
+ "wave": 4,
+ "experiment": "Browser MCP transport in/out, resolution and admission residual on R2-10's source (scripted COMP): attribution (Phase A), stdio floor (FIXTURE) and causal A/B (Phase B)",
+ "owners": ["kvnloo/cua#93 (experiment specs, invariants)", "kvnloo/cua#10 (whole-task accounting)", "kvnloo/cua#73 (E2)"],
+ "written_before_first_measured_trial": true,
+ "hypothesis": "COMP's MCP transport in/out decomposes into (i) an IRREDUCIBLE stdio floor (pipe syscalls plus framing for the exact payload bytes), (ii) Driver-side serialize/write cost that grows with payload size and (iii) caller-side Python MCP client read/parse/validate cost. At least one part beyond the floor can be deleted without changing outputs. Resolution and the admission residual split the same way into a floor and deletable work.",
+ "source": {
+  "branch": "exp/b-05-browser-mcp-transport-a2-20261003 (new; worktree w4-a2-b05)",
+  "base": "b376f1ff3867d92f9ec1b7fb1428d642eff05c67 = attempt-1 head (exp/b-05-browser-mcp-transport-20261003, not modified)",
+  "inherited_commits": [
+   "8f3a646b4 R2-10 tested source R (989cc76ce + R2-10 PREREG source.steps 1-8)",
+   "4c786178b cherry-pick of 194a6342e (N-02: CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP knob default off + 6 direct-stdio MCP span marks under the trace gate)",
+   "3116b6981 B-05 resolution and stdout sub-span marks (res.ref_parsed, res.store_looked_up, type.focused, type.node_resolved, mcp.serialize_start, mcp.write_done)",
+   "b376f1ff3 B-05 single-write stdout knob CUA_DRIVER_EXP_MCP_SINGLE_WRITE=1 (default off)"
+  ],
+  "range_diff_4c786178b_vs_194a6342e": "focus_guard.rs hunks identical; proxy.rs differs only in context lines (the B-01/B-02 marks and the prevalidated handler already on R) and the commit message (conflict-resolution note); raw/source/range-diff-4c786178b-vs-194a6342e.txt",
+  "privacy_scan_inherited": "all 12 commits 989cc76ce..b376f1ff3 (messages and added lines): 0 hits for absolute local paths, the host name or secret patterns",
+  "mark_coverage_check": {
+   "stdin frame read complete": "mcp.line_read (B-01) + N-02 (mcp, request_read)",
+   "JSON-RPC parse done": "N-02 (mcp:<tool>, parse_done), then mcp.parsed",
+   "admission enter/exit": "mcp.parsed .. mcp.admitted (outer: session_validated, tools_list_built, admission_validated) and mcp.admitted .. mcp.inner_validated (inner: identity_applied, session_begun, timer_started, handler_start, inner_classified, inner_validation_skipped)",
+   "tool dispatch enter/exit": "dispatch.enter / dispatch.exit (+ R2-04 <tool> dispatch_enter/dispatch_exit)",
+   "resolution: ref lookup": "click|type.revalidated -> res.ref_parsed",
+   "resolution: snapshot-store lookup": "res.ref_parsed -> res.store_looked_up",
+   "resolution: frame proof": "res.store_looked_up -> click|type.ref_resolved (frame_session_for_mutation: Page.getFrameTree)",
+   "resolution: CDP node resolve": "click.ref_resolved -> click.dom_resolved (DOM.resolveNode); type.focused -> type.node_resolved (DOM.resolveNode)",
+   "result serialize done": "mcp.serialize_start -> mcp.serialized",
+   "stdout write+flush done": "mcp.serialized -> mcp.write_done (write_all) -> mcp.written (flush)",
+   "result": "every spec mark exists on b376f1ff3; no mark commit is added, so B5 = b376f1ff3 exactly"
+  },
+  "tested_head": "b376f1ff3867d92f9ec1b7fb1428d642eff05c67 (Driver source; the packet commits on the branch touch only docs/experiments/b-05-browser-mcp-transport-2026-10-03/)"
+ },
+ "binaries": {
+  "B5": {"label": "b05-a2-b376f1ff3", "sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1", "build": "hostless flock cargo-build.lock build-driver.sh <wt> b05-a2-b376f1ff3 cua-release-r2-10 (0 Fresh workspace units, 125 s, rustc 1.97.1)", "version": "cua-driver 0.32.0 (read inside a private session)", "attempt1_binary": "b05-b376f1ff3, sha256 e4c5f43d8cd24c2f594ab03ba443f0e8abf091a7b69ce06c4ef60bcc9b49eee3: same source, same build command, same crate metadata hashes, 0 embedded worktree paths in either binary, bytes differ (compiler-generated symbol names); not bit-reproducible in this shared-target build setup. Compared by sha256, strings and a tools/list functional compare in the smoke step; never used for timing", "use": "every arm of every phase"},
+  "R": {"label": "r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "use": "default-off smoke reference only, never timing"}
+ },
+ "environment": "one Linux host; bin/hostless for every code-executing command; Driver and Chromium inside cua-x11-session.sh (private Xvfb, private dbus, openbox); telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); TMPDIR under the lane tmp root; provider key never forwarded (lane provider cap 0); 1-minute loadavg per trial",
+ "configuration": "R2-10 COMP exactly, scripted chooser (jev-use choose_mock_for_task), classes fill->submit, toggle->confirm, modal->act; harness = R2-10 packet harness/ at 030f6bdbf copied byte-identical under harness/r2-10/ (r2_10_browser.py, src/, analyze_r2_10.py) plus harness/b05_*.py (caller-side stamps, plans, floor)",
+ "arms": {
+  "COMP": "R2-10 COMP (feedback off, focus settle 0 on fill, 10 ms poll, compiled validators, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, guarded completion + compiled replay on fill; first fill per (layer, arm) = training + compile + admission replay) with the Driver phase trace ON (= marks on)",
+  "COMP_OFF": "COMP with the Driver phase trace OFF (no CUA_DRIVER_PHASE_TRACE_FILE = marks off); caller-side stamps unchanged",
+  "phase_B_arms": "COMP_OFF + exactly one candidate (caller variant or Driver knob), named in PREREG-AMENDMENT-1.json",
+  "caller_stamps": "every arm uses harness/b05_stdio.stdio_client = mcp 1.30.0 stdio_client with CLOCK_MONOTONIC stamps (c.writer_got, c.req_serialized, c.req_written, c.first_byte, c.frame_complete, c.parsed, c.result_model_start/done) and raw-frame capture; library behaviour unchanged at the default variant"
+ },
+ "plans": {
+  "shakedown": "SHARED lock, not measured, not reported as results: b05a2-shake1 (Phase A plan, 1 round, 3 trials), b05a2-shake2 (overhead plan, 2 rounds: private Xvfb died at session start, 12/12 browser_prepare refused, kept as a failed session block), b05a2-shake3 (overhead plan re-run, 2 rounds, 12 trials); floor and equivalence tools were exercised on the shakedown frames",
+  "smoke": "default-off smoke (SHARED lock): B5 and R, no CUA_DRIVER_EXP_*, no trace: tools/list raw reply x3 each byte-identical across binaries; R2-10 smoke plan fill/toggle/modal x5 per binary verified with identical receipt shapes (tool, route, effect, status, delivery, input_route, verification, sorted result keys, ok); no trace-like file appears",
+  "phase_A": "layer A, arm COMP, 32 rounds; round r runs fill/toggle/modal in rotated order (r mod 3); EXCLUSIVE quiet-timed chunk(s) holding the cargo lock",
+  "overhead_control": "layer O, arms COMP_OFF vs COMP, 20 rounds; round r: classes rotated, pair order AB (COMP_OFF first) on even r, BA on odd r (10 AB + 10 BA per class)",
+  "floor": "FIXTURE: harness/floor/floor_echo.rs (std-only Rust, built with rustc under hostless + cargo lock) replays each Phase A COMP trial's recorded frames byte for byte in request order, one write(2) per response, no JSON work, CLOCK_MONOTONIC stamps; F1 = the same caller stack (b05_stdio.stdio_client + ClientSession + R2-10 compiled validators + jev-use run.Driver + RecDriver), same asyncio subprocess pipes, same request sequence; F0 = minimal synchronous client on the same pipes (os.write, os.read to newline, json.loads; json.dumps of the request timed separately). One replay of every Phase A trial per client, EXCLUSIVE quiet-timed.",
+  "order_of_work": "build B5 -> unit -> PREREG commit -> shakedown -> smoke -> Phase A -> overhead control -> floor -> Phase A analysis -> PREREG-AMENDMENT-1 commit -> Phase B (+ N4a, negative, equivalence) -> analysis"
+ },
+ "subspans": {
+  "rule": "harness/b05_spans.py: per in-T call window, the telescoping intervals of B-01 decompose (same T window, regions, effect tail) split at every Driver mark and caller stamp; each interval is labelled by its left point and keeps the R2-10 component of the latest point R2-10's analysis knows (B5-new marks inherit), so B-05 sub-spans sum to the R2-10 component values (consistency checked per trial, tolerance 1e-6 ms)",
+  "R2-10 mapping": "R2-10 components are recomputed by R2-10's own code (analyze_r2_10.e2_components over b01_analysis.decompose with the B-02 classifier) on the trace with the B5-new marks removed, which is R's mark set",
+  "transport_in_out": {
+   "c_in.prep": "call_send -> c.writer_got (RecDriver, run.Driver.call, ClientSession.send_request, memory-stream hop to the stdin writer)",
+   "c_in.serialize": "c.writer_got -> c.req_serialized (model_dump_json + encode)",
+   "c_in.write": "c.req_serialized -> c.req_written (process.stdin.send)",
+   "pipe_in": "c.req_written -> mcp.line_read (pipe + Driver stdin read wake)",
+   "d_in.parse": "mcp.line_read / (mcp, request_read) / (mcp:*, parse_done) -> mcp.parsed (JSON-RPC parse)",
+   "d_in.invoke": "mcp.inner_validated, mcp.invoke_start, sdk.call_start, (<tool>, dispatch_enter) -> dispatch.enter",
+   "d_out.post": "dispatch.exit, (<tool>, dispatch_exit|invoke_end), rt.*, sdk.*, mcp.invoke_end, mcp.conformed, mcp.handled, (mcp:*, handler_end) -> mcp.serialize_start",
+   "d_out.serialize": "mcp.serialize_start -> mcp.serialized (serde_json::to_string)",
+   "d_out.write": "mcp.serialized, (mcp:*, serialize_done) -> mcp.write_done (write_all into the stdout BufWriter)",
+   "d_out.flush": "mcp.write_done -> mcp.written (flush)",
+   "pipe_out": "mcp.written, (mcp:*, response_written) -> c.first_byte (pipe + caller reader wake)",
+   "c_out.frame": "c.first_byte -> c.frame_complete",
+   "c_out.parse": "c.frame_complete -> c.parsed (decode, line split, JSONRPCMessage.model_validate_json)",
+   "c_out.route": "c.parsed -> c.result_model_start (memory streams: reader -> session receive loop -> request stream; send_request wake)",
+   "c_out.result_model": "c.result_model_start -> c.result_model_done (CallToolResult.model_validate)",
+   "c_out.validate": "client_validate_start -> client_validate_end (R2-10 component client_validation: compiled output validator)",
+   "c_out.return": "c.result_model_done / client_validate_end -> call_return (run.Driver.call result checks, RecDriver bookkeeping)"
+  },
+  "admission_residual": {
+   "adm.outer": "mcp.parsed, mcp.session_validated, mcp.tools_list_built, mcp.admission_validated -> mcp.admitted",
+   "adm.inner": "mcp.admitted, identity_applied, session_begun, timer_started, (mcp:*, handler_start), inner_classified, inner_tools_list_built, inner_validation_skipped -> mcp.inner_validated"
+  },
+  "resolution": {
+   "res.dispatch": "dispatch.enter, (<tool>, invoke_start), click|type.enter -> lock_acquired (action calls only)",
+   "res.ref_parse": "click|type.revalidated -> res.ref_parsed",
+   "res.store_lookup": "res.ref_parsed -> res.store_looked_up",
+   "res.frame_proof": "res.store_looked_up -> click|type.ref_resolved (one CDP Page.getFrameTree re-proving the ref's frame identity)",
+   "res.cdp_node_resolve": "click.ref_resolved -> click.dom_resolved; type.focused -> type.node_resolved (one CDP DOM.resolveNode each)",
+   "res.type_focus": "type.ref_resolved -> type.focused (one CDP DOM.focus)",
+   "res.editable_check": "type.node_resolved -> type.editable_checked (one CDP Runtime.callFunctionOn editability check)",
+   "res.post_check": "type.editable_checked -> next mark"
+  },
+  "note": "with R2-10's own classifier, line_read -> parsed counts as admission (pre_admission_validate) and the inner_validated/invoke/sdk intervals as transport (pre_other); the B-05 sub-span labels keep those R2-10 components, so per-component totals stay R2-10-comparable"
+ },
+ "instrumentation_correction": {
+  "per_mark_cost": "c_m = median over Phase A in-T calls of the NULL_PAIRS intervals in b05_spans.py (consecutive marks with only the trace call between them: line_read->request_read, handled->handler_end, serialized->serialize_done, written->response_written)",
+  "subspan_correction": "corrected sub-span = raw - (number of Driver marks that start an interval of that sub-span) x c_m (each mark's write cost falls in the interval it starts); caller stamps (harness only, present in every arm) are not corrected",
+  "overhead_control": "paired AB/BA mean difference COMP - COMP_OFF of T_runner and T_oracle per class with bootstrap CI; if the mean overhead is above 0.5 ms it is reported and subtracted: shares use T_runner_corrected = T_runner - n_marks_in_T x c_m, and the predicted overhead (mean n_marks_in_T x c_m) is compared with the measured paired difference"
+ },
+ "floors": {
+  "irreducible_floor": "F0 (part i): pipe syscalls + newline framing + one stdlib json.loads of the exact recorded bytes (+ stdlib json.dumps of the request), same pipes, same payload sizes per call",
+  "client_stack_floor": "F1: the same Python MCP client stack and pipe setup against a zero-work server; F1 - F0 = part (iii) as replayed",
+  "interpretation": "the spec's floor harness runs the same client stack (F1). Using F1 as the IRREDUCIBLE floor would class every caller-side cost as IRREDUCIBLE without a causal test, so this lane uses the stricter rule: caller-side sub-spans are compared with their F0 counterpart (prep/route/result_model/validate/return have F0 value 0; serialize = F0 json.dumps; write+pipe_in = F0 write->server read; pipe_out+frame = F0 server write->frame complete; parse = F0 json.loads). Driver-side sub-spans have floor 0 (the floor server does no parse, admission, dispatch or serialization), except d_out.write + d_out.flush, whose floor is the floor server's own read->write time (one write(2) of the same bytes). Values under the spec's literal F1 floor are reported alongside.",
+  "per_task": "floor per task = sum over the trial's in-T calls (same labels) of the per-call floor from the replay of that trial's frames"
+ },
+ "statistics": {
+  "unit": "per-task sums over in-T calls; means over valid trials per class; seeded bootstrap over trials (seed 20261003, 10000 resamples, percentile 95% CI); paired arms: bootstrap over rounds",
+  "share": "sub-span mean / mean T_runner (raw, R2-10-comparable) and / mean T_runner_corrected",
+  "coverage": "per trial 1 - (time labelled other.* / c_other / R2-10 unattributed with no B-05 label) / T_runner; required >= 0.97 on every valid Phase A trial (R2-10 coverage also reported)"
+ },
+ "phase_B_selection": {
+  "rule": "PREREG-AMENDMENT-1.json, committed before any Phase B trial, names one candidate deletion for every sub-span (or the sub-span group one menu item acts on) whose corrected per-task mean is at least 1.0 ms above its floor in any class, with its arm, knob/variant and equivalence rule, justified from Phase A numbers; it may add candidates for sub-spans 0.5-1.0 ms above floor",
+  "menu": [
+   "caller-side JSON parse/validation replacement (caller only; outputs compared)",
+   "MCP client stdio read buffering or chunk size (caller only)",
+   "Driver compact serialization, or the inherited pre-serialized single write_all + flush knob (CUA_DRIVER_EXP_MCP_SINGLE_WRITE=1, default off)",
+   "removing duplicated text content when structuredContent is present (changes the output contract: at most OWNER_DECISION)",
+   "caching the snapshot-store lookup within one call"
+  ],
+  "no_candidate": "a sub-span at least 0.5 ms above floor that no menu item addresses stays UNTESTED and is named"
+ },
+ "phase_B_design": {
+  "pairs": "30 AB/BA pairs per class per candidate (AB = control COMP_OFF first on even rounds), layer B<k>; fresh Driver, Chrome, fixture and token per trial; loadavg per trial; every trial kept; EXCLUSIVE quiet-timed chunks <= 25 min",
+  "primary_metric_caller_arms": "per-task caller-side transport time = sum over in-T calls of (call_send -> c.req_written) + (c.first_byte -> call_return), i.e. the caller part of R2-10 mcp_transport plus client_validation; saving = paired mean (control - candidate)",
+  "primary_metric_driver_arms": "Driver knob arms run with marks ON in both arms (COMP vs COMP + knob) so d_out.* is visible; saving = paired mean of per-task (d_out.serialize + d_out.write + d_out.flush + pipe_out + c_out.frame)",
+  "secondary": "paired T_runner and T_oracle differences with CI (reported; a candidate whose T_runner CI lies entirely above 0 is a regression and fails)",
+  "N4a": "5 per class in each candidate arm (R2-10 N4a: node replaced between bind and dispatch): refused browser_ref_stale with effect refused semantics, one fresh observation, verified",
+  "negative": "10 malformed response frames (harness/b05_floor.MALFORMED) through every caller-side parser variant and the default: each must be rejected (the call raises; no CallToolResult returned); validator variants additionally get 10 schema-invalid structured results that must be rejected with the same error text as the default",
+  "equivalence": "caller arms: for 100% of in-trial tools/call responses (raw frames captured per trial), the candidate's decoded output equals the default path's on the same bytes under canonical JSON (json.dumps sort_keys, compact separators, ensure_ascii False) of CallToolResult.model_dump(mode='json', by_alias=True, exclude_none=True), and the validation decision and error text are identical; Driver knob arms: frames byte-identical to the default on the same response (unit test) and identical receipt shapes"
+ },
+ "gates": {
+  "DELETED (KEEP)": "saving >= 0.5 ms per-task mean with a 95% CI excluding 0, validity 100%, equivalence 100%, controls pass (N4a, negative, default-off smoke)",
+  "IRREDUCIBLE": "the sub-span's corrected per-task CI overlaps its floor value, or every tested candidate fails",
+  "OWNER_DECISION": "the deletion works but changes the public output contract",
+  "IRREDUCIBLE (invariant)": "lane rule: a resolution sub-span that is exactly one CDP request whose result the ref-freshness invariant requires at dispatch time (frame proof, node resolve, editability check; #73/#93, FIX-01) is IRREDUCIBLE by invariant (SOURCE + BENCHMARK), with its corrected cost reported",
+  "BELOW_GATE": "lane rule: a sub-span whose corrected excess over its floor has a 95% CI upper bound below 0.5 ms per task cannot meet the DELETED gate even if fully deleted; it is labelled BELOW_GATE and the E2 share is reported both with BELOW_GATE counted as IRREDUCIBLE and as UNTESTED",
+  "validity": "100% verified (oracle exact match, exactly one completion mutation, runner verified) and forced path per arm for DELETED; every failure stays in the denominators"
+ },
+ "e2_recompute": "per class on B5: R2-10 COMP component table (R2-10 code) with the verdicts updated from this packet (transport, admission, resolution and, if tested, client_validation via their sub-spans; the R2-10 'unattributed' intervals left by R2-04 tool marks are labelled by B-05 sub-spans); untested share = UNTESTED ms / mean T_runner, raw and corrected; target < 5% per class",
+ "forced_path": "clicks: dom_event route through the Driver CDP engine (candidate input_route dom_event, receipt route dom, click.cdp_send mark inside the call when marks are on); typing: browser_type, receipt route trusted_input. Marks-off arms check the caller-visible part (receipt route, input_route, driver_env_exp knobs: admission cache, settle 0 on fill) and cannot show click.cdp_send",
+ "oracle": "independent, target-owned: the jev-use fixture server state with its CLOCK_MONOTONIC journal, re-read every 2 ms by a harness thread (fill submitted == token; toggle checked; modal opened and modal)",
+ "E4": "0 stale-ref dispatches, 0 duplicate mutations, 0 unverified successes, refusals returned as refused, 0 blind replays, in every arm and control",
+ "provider": {"cap": 0, "note": "TypeSafe is not used; the key is never forwarded; attempts 0, reached 0"},
+ "attempt_1_disclosure": "attempt 1 (branch exp/b-05-browser-mcp-transport-20261003, worktree w4-b05-mcp-transport) built the attempt-1 binary and ran one SHARED shakedown (b05-shake1, 6 trials) and no counted trial; it is an aborted attempt. Its shakedown files were inspected while planning this attempt (frame sizes in T ~0.2-1.8 KB, consecutive Driver marks ~32 us apart); nothing from it is counted or reported as a result.",
+ "denominators": "every trial is kept; failed session-start blocks are kept and re-run under new ids",
+ "claim_boundary": "one host, private Xvfb, scripted chooser, binary B5 (R + marks + default-off knobs) in every arm; nothing is ratioed against R2-10's binary; verdicts carry to the wave-5 composition only by cherry-picking the knob commits onto R'"
+}

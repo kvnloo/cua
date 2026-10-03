@@ -1,0 +1,107 @@
+1:  194a6342e ! 1:  4c786178b exp(cua-driver): measurement-only N-02 settle clamp knob and MCP span marks (default off)
+    @@ Metadata
+      ## Commit message ##
+         exp(cua-driver): measurement-only N-02 settle clamp knob and MCP span marks (default off)
+     
+    -    Two measurement-only additions for the N-02 native transport / settle
+    -    overshoot A/B on the canonical GTK3 fixture:
+    +    Cherry-pick of 194a6342e (N-02) onto the R2-10 tested source 8f3a646b4 for
+    +    lane B-05. Two measurement-only additions:
+     
+         - CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP=1 clamps each focus-guard settle-watch
+    -      poll sleep to min(SETTLE_POLL, watch_until - now), so the last poll ends
+    -      at watch_until instead of up to one 30 ms poll past it. The 220 ms window
+    -      is unchanged. Any other value, or unset, keeps the whole-poll sleep. Read
+    -      once per process; writes an exp_knob phase mark when on. A settle_poll
+    -      phase mark after each poll diff (trace gate only) shows the poll times.
+    +      poll sleep to min(SETTLE_POLL, watch_until - now). Any other value, or
+    +      unset, keeps the whole-poll sleep. A settle_poll phase mark after each
+    +      poll diff (trace gate only).
+         - Direct-stdio MCP span marks behind the existing CUA_DRIVER_PHASE_TRACE_FILE
+           gate in proxy::run_direct: request_read, parse_done, handler_start,
+           handler_end, serialize_done, response_written (scope mcp:<tool|method>).
+     
+    +    Conflict resolution (B-05): proxy.rs resolved as the union of the B-01/B-02
+    +    marks already on R (mcp.line_read, mcp.handled, mcp.serialized, mcp.written,
+    +    prevalidated handler call) and the N-02 marks; the B-02 identity-stamping
+    +    test and the N-02 trace-scope test are both kept. phase_trace.rs is not
+    +    touched by 194a6342e: R already carries the R2-01 + R2-04 union API whose
+    +    (phase, session) slots take the N-02 (scope, mark) pairs unchanged.
+    +
+         With the trace file and the knob unset, default behaviour is unchanged.
+    -    Unit tests cover the knob parse, the clamped and unclamped poll sleep and
+    -    the trace scope. Research branch only; not for upstream.
+    +    Research branch only; not for upstream.
+     
+         Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+     
+    @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(dri
+          loop {
+              line.clear();
+              if reader.read_line(&mut line).await? == 0 {
+    -             break;
+    +@@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
+              }
+    +         // B-01 measurement only (env-gated, default off): MCP stdio boundary.
+    +         cua_driver_core::phase_trace::mark("mcp.line_read", "");
+     +        if trace {
+     +            cua_driver_core::phase_trace::mark("mcp", "request_read");
+     +        }
+    @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(dri
+                      error!("JSON parse error: {error}");
+                      Response::parse_error()
+     @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
+    -                     StdioExecutionPath::DirectDaemon,
+                      );
+    +                 cua_driver_core::phase_trace::mark("mcp.timer_started", "");
+                      let id = request.id.clone().unwrap_or(serde_json::Value::Null);
+     +                if trace {
+     +                    cua_driver_core::phase_trace::mark(&trace_scope, "handler_start");
+     +                }
+    -                 let response = cua_driver_core::server::handle_request_with_transport_session(
+    -                     request,
+    -                     id,
+    +                 let response =
+    +                     cua_driver_core::server::handle_request_with_transport_session_prevalidated(
+    +                         request,
+     @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
+    -                     &transport_session,
+    -                 )
+    -                 .await;
+    +                     )
+    +                     .await;
+    +                 cua_driver_core::phase_trace::mark("mcp.handled", "");
+     +                if trace {
+     +                    cua_driver_core::phase_trace::mark(&trace_scope, "handler_end");
+     +                }
+    @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(dri
+                          observe_proxy_session_started(metadata);
+                          session_observed = true;
+     @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(driver: Arc<cua_driver_sdk::CuaDriver>) -> anyhow::Resul
+    -                 r#"{{"jsonrpc":"2.0","id":null,"error":{{"code":-32603,"message":"serialize error: {error}"}}}}"#
+                  )
+              });
+    +         cua_driver_core::phase_trace::mark("mcp.serialized", "");
+     +        if trace {
+     +            cua_driver_core::phase_trace::mark(&trace_scope, "serialize_done");
+     +        }
+              writer.write_all(serialized.as_bytes()).await?;
+              writer.write_all(b"\n").await?;
+              writer.flush().await?;
+    +         cua_driver_core::phase_trace::mark("mcp.written", "");
+     +        if trace {
+     +            cua_driver_core::phase_trace::mark(&trace_scope, "response_written");
+     +        }
+    @@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: pub async fn run_direct(dri
+      pub(crate) fn apply_direct_session_identity(request: &mut Request, transport_session: &str) {
+          let Some(arguments) = request
+              .params
+    -@@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: fn daemon_response_to_tool_result(
+    - mod tests {
+    -     use super::*;
+    +@@ libs/cua-driver/rust/crates/cua-driver/src/proxy.rs: mod tests {
+    +         }
+    +     }
+      
+     +    #[test]
+     +    fn mcp_trace_scope_names_the_tool_or_method() {
