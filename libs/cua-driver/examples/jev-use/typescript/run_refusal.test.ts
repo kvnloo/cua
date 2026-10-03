@@ -12,15 +12,55 @@ import { FixtureFormTask } from './tasks.js';
 const TOKEN = 'fix01-private-token';
 const STALE_TEXT = "refused (browser_ref_stale): the ref's node is no longer connected to the document";
 
-type Refusal = 'stale' | 'trust_unknown' | 'not_retryable';
-type Scenario = { refuseClicks?: number; clickLands?: boolean; typeKept?: boolean; refusal?: Refusal };
+type Refusal =
+  | 'stale'
+  | 'trust_unknown'
+  | 'not_retryable'
+  | 'post_assignment'
+  | 'post_assignment_f6'
+  | 'delivery_unknown_only'
+  | 'not_delivered';
+type Scenario = {
+  refuseClicks?: number;
+  clickLands?: boolean;
+  typeKept?: boolean;
+  refusal?: Refusal;
+  // The refused click's effect lands anyway (FIX-04 Part B).
+  refusedLands?: boolean;
+};
 
 const TRUST_UNKNOWN_TEXT =
   'refused (browser_input_trust_unavailable): trusted click was acknowledged but CDP focus ' +
   'emulation could not be restored (x); delivery is unknown and must not be retried automatically';
 
+const POST_ASSIGNMENT_TEXT =
+  "refused (browser_ref_stale): the ref's node was not connected to the document after the " +
+  'file assignment; the files may have been assigned to the detached node, so delivery is ' +
+  'unknown and must not be retried automatically';
+
+// A status-refused browser envelope with a refusal detail (FIX-03 F5 / FIX-04 shapes).
+const detailRefusal = (detail: Record<string, unknown>, effect?: string, text = POST_ASSIGNMENT_TEXT) => ({
+  content: [{ type: 'text', text }],
+  structuredContent: {
+    status: 'refused',
+    refusal: { code: 'browser_ref_stale', detail },
+    ...(effect ? { effect } : {}),
+  },
+});
+
 // An action result as the Driver's MCP boundary emits it: not an MCP error.
 const refusedResult = (kind: Refusal = 'stale') =>
+  kind === 'post_assignment'
+    ? detailRefusal({ delivery: 'unknown', retryable: false })
+    : kind === 'post_assignment_f6'
+      ? detailRefusal({ delivery: 'unknown', retryable: false }, 'unverifiable')
+      : kind === 'delivery_unknown_only'
+        ? detailRefusal({ delivery: 'unknown' })
+        : kind === 'not_delivered'
+          ? detailRefusal({ delivery: 'not_delivered' }, undefined, STALE_TEXT)
+          : legacyRefusedResult(kind);
+
+const legacyRefusedResult = (kind: Refusal) =>
   kind === 'not_retryable'
     ? {
         content: [{ type: 'text', text: 'refused (browser_reconnect_exhausted): x' }],
@@ -84,6 +124,7 @@ async function runFixture(scenario: Scenario, log: string) {
       } else if (name === 'browser_click') {
         if (refuseClicks > 0) {
           refuseClicks -= 1;
+          if (scenario.refusedLands) submitted = value;
           return refusedResult(scenario.refusal);
         }
         if (scenario.clickLands !== false) submitted = value;
@@ -240,6 +281,43 @@ if (process.argv[2] === '--fixture-run') {
     assert.equal(status, 1);
     assert.deepEqual(mutations, ['browser_type']);
     assert.equal(events.at(-1)?.phase, 'redispatch_blocked');
+  });
+
+  // FIX-04 Part B (kvnloo/cua#105): a post-assignment refusal may have landed.
+  for (const refusal of ['post_assignment', 'post_assignment_f6'] as const) {
+    test(`a ${refusal} refusal is reconciled from state, not re-dispatched`, () => {
+      const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal, refusedLands: true });
+      assert.equal(status, 0);
+      assert.deepEqual(mutations, ['browser_type', 'browser_click']);
+      assert.equal(events.at(-1)?.outcome, 'verified');
+      assert.equal(events.at(-1)?.phase, 'reconcile');
+      assert.equal(events.at(-1)?.action_refused, 'browser_ref_stale');
+    });
+  }
+
+  test('a post-assignment refusal that did not land ends unknown after reconcile', () => {
+    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'post_assignment' });
+    assert.equal(status, 1);
+    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
+    assert.equal(events.at(-1)?.outcome, 'unknown');
+    assert.equal(events.at(-1)?.phase, 'reconcile');
+  });
+
+  test('a declared unknown delivery without retryable is never re-dispatched', () => {
+    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'delivery_unknown_only' });
+    assert.equal(status, 1);
+    assert.deepEqual(mutations, ['browser_type', 'browser_click']);
+    assert.equal(events.at(-1)?.outcome, 'unknown');
+  });
+
+  test('a pre-dispatch refusal declared not delivered may be rebound once', () => {
+    const { events, mutations, status } = runScenario({ refuseClicks: 1, refusal: 'not_delivered' });
+    assert.equal(status, 0);
+    assert.deepEqual(mutations, ['browser_type', 'browser_click', 'browser_click']);
+    assert.deepEqual(
+      events.filter((event) => event.action_refused).map((event) => event.event),
+      ['step']
+    );
   });
 
   test('ordinary path is unchanged', () => {

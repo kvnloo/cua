@@ -29,8 +29,35 @@ TRUST_UNKNOWN_TEXT = (
 )
 
 
+POST_ASSIGNMENT_TEXT = (
+    "refused (browser_ref_stale): the ref's node was not connected to the document after the "
+    "file assignment; the files may have been assigned to the detached node, so delivery is "
+    "unknown and must not be retried automatically"
+)
+
+
+def detail_refusal(detail, effect=None, text=POST_ASSIGNMENT_TEXT):
+    """A status-refused browser envelope with a refusal detail (FIX-03 F5 / FIX-04 shapes)."""
+    structured = {"status": "refused", "refusal": {"code": "browser_ref_stale", "detail": detail}}
+    if effect:
+        structured["effect"] = effect
+    return SimpleNamespace(
+        isError=False, content=[SimpleNamespace(type="text", text=text)], structuredContent=structured
+    )
+
+
 def refused_result(kind="stale"):
     """An action result as the Driver's MCP boundary emits it: not an MCP error."""
+    if kind == "post_assignment":
+        # F5's post-assignment refusal (the input may have landed).
+        return detail_refusal({"delivery": "unknown", "retryable": False})
+    if kind == "post_assignment_f6":
+        # The same refusal with FIX-04's envelope effect.
+        return detail_refusal({"delivery": "unknown", "retryable": False}, effect="unverifiable")
+    if kind == "delivery_unknown_only":
+        return detail_refusal({"delivery": "unknown"})
+    if kind == "not_delivered":
+        return detail_refusal({"delivery": "not_delivered"}, text=STALE_TEXT)
     if kind == "not_retryable":
         return SimpleNamespace(
             isError=False,
@@ -73,11 +100,16 @@ class OneResult(Session):
 class FixtureSession(Session):
     """In-memory Driver; the HTTP fixture is the outcome oracle."""
 
-    def __init__(self, url, *, refuse_clicks=0, click_lands=True, type_kept=True, refusal="stale"):
+    def __init__(
+        self, url, *, refuse_clicks=0, click_lands=True, type_kept=True, refusal="stale", refused_lands=False
+    ):
         self.url = url
         self.value = ""
         self.refuse_clicks = refuse_clicks
         self.refusal = refusal
+        # The refused click's effect lands anyway (Chromium assigned the files / the trusted
+        # click was delivered before the refusal): the fixture records the submit.
+        self.refused_lands = refused_lands
         self.click_lands = click_lands
         self.type_kept = type_kept
         self.calls = []
@@ -112,18 +144,23 @@ class FixtureSession(Session):
         elif name == "browser_click":
             if self.refuse_clicks > 0:
                 self.refuse_clicks -= 1
+                if self.refused_lands:
+                    self.submit()
                 return refused_result(self.refusal)
             if self.click_lands:
-                with urlopen(
-                    Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
-                    timeout=2,
-                ):
-                    pass
+                self.submit()
             data = {"effect": "unverifiable", "route": "dom"}
         else:
             assert name == "browser_navigate", name
             data = {}
         return SimpleNamespace(isError=False, content=[], structuredContent=data)
+
+    def submit(self):
+        with urlopen(
+            Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
+            timeout=2,
+        ):
+            pass
 
     def mutations(self):
         return [name for name in self.calls if name in {"browser_type", "browser_click"}]
@@ -244,6 +281,35 @@ class RunnerRefusalTest(unittest.TestCase):
         self.assertEqual(session.mutations(), ["browser_type"])
         self.assertEqual(events[-1]["phase"], "redispatch_blocked")
         self.assertEqual(events[-1]["tool"], "browser_type")
+
+    # FIX-04 Part B (kvnloo/cua#105): a post-assignment refusal may have landed.
+    def test_post_assignment_refusal_is_reconciled_from_state_not_redispatched(self):
+        for kind in ("post_assignment", "post_assignment_f6"):
+            with self.subTest(kind=kind):
+                events, session = self.execute(
+                    "verified", refuse_clicks=1, refusal=kind, refused_lands=True
+                )
+                self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
+                self.assertEqual(events[-1]["outcome"], "verified")
+                self.assertEqual(events[-1]["phase"], "reconcile")
+                self.assertEqual(events[-1]["action_refused"], "browser_ref_stale")
+
+    def test_post_assignment_refusal_that_did_not_land_ends_unknown_after_reconcile(self):
+        events, session = self.execute("unknown", refuse_clicks=1, refusal="post_assignment")
+        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
+        self.assertEqual(events[-1]["outcome"], "unknown")
+        self.assertEqual(events[-1]["phase"], "reconcile")
+
+    def test_declared_unknown_delivery_without_retryable_is_never_redispatched(self):
+        events, session = self.execute("unknown", refuse_clicks=1, refusal="delivery_unknown_only")
+        self.assertEqual(session.mutations(), ["browser_type", "browser_click"])
+        self.assertEqual(events[-1]["outcome"], "unknown")
+
+    def test_pre_dispatch_refusal_declared_not_delivered_may_be_rebound_once(self):
+        events, session = self.execute("verified", refuse_clicks=1, refusal="not_delivered")
+        self.assertEqual(session.mutations(), ["browser_type", "browser_click", "browser_click"])
+        refused = [event for event in events if event.get("action_refused")]
+        self.assertEqual([event["event"] for event in refused], ["step"])
 
     def test_ordinary_path_is_unchanged(self):
         events, session = self.execute("verified")

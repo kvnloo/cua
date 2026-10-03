@@ -70,6 +70,7 @@ class DriverToolError(RuntimeError):
         recommended_delivery: str | None = None,
         refused: bool = False,
         retryable: bool | None = None,
+        delivery: str | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
@@ -79,6 +80,8 @@ class DriverToolError(RuntimeError):
         self.refused = refused
         # The refusal's own ``retryable`` flag when it carries one.
         self.retryable = retryable
+        # The refusal's own ``delivery`` declaration when it carries one.
+        self.delivery = delivery
 
 
 # Refusal codes the Driver returns for browser_click / browser_type only before
@@ -107,8 +110,24 @@ PRE_DISPATCH_REFUSALS = frozenset(
 
 
 def may_redispatch_after(error: "DriverToolError") -> bool:
-    """A refusal earns a fresh dispatch only when it proves nothing was dispatched."""
-    return error.code in PRE_DISPATCH_REFUSALS and error.retryable is not False
+    """A refusal earns a fresh dispatch only when it proves nothing was dispatched.
+
+    The refusal's own declarations come first: ``retryable: false`` or a declared delivery other
+    than ``not_delivered`` (for example ``unknown`` after an assignment) means it may have landed,
+    whatever its code."""
+    if error.retryable is False or error.delivery not in (None, "not_delivered"):
+        return False
+    return error.code in PRE_DISPATCH_REFUSALS
+
+
+async def reconcile_from_oracle(task: Task, step: int) -> str:
+    """Bounded re-read of the target-owned oracle: ``verified``/``refuted`` or ``unknown``."""
+    for _ in range(20):
+        outcome = task.classify(task.read_oracle(), steps=step)
+        if outcome in {"verified", "refuted"}:
+            return outcome
+        await asyncio.sleep(0.1)
+    return "unknown"
 
 
 def refusal_code_from_content(content: Any) -> str | None:
@@ -155,12 +174,14 @@ class Driver:
                 code = refusal_code_from_content(getattr(result, "content", None))
             detail = refusal.get("detail") if isinstance(refusal, dict) else None
             retryable = detail.get("retryable") if isinstance(detail, dict) else data.get("retryable")
+            delivery = detail.get("delivery") if isinstance(detail, dict) else None
             # DriverToolError is a RuntimeError, so existing handlers still match.
             raise DriverToolError(
                 f"{name} refused: {data.get('refusal', data)}",
                 code if isinstance(code, str) and code else None,
                 refused=True,
                 retryable=retryable if isinstance(retryable, bool) else None,
+                delivery=delivery if isinstance(delivery, str) else None,
             )
         return data
 
@@ -618,8 +639,16 @@ async def run(args: argparse.Namespace) -> str:
                             }
                             # Only a refusal that proves nothing was dispatched earns
                             # one fresh observation and decision; any other may have
-                            # landed and stays unknown.
-                            if refusal_retried or not may_redispatch_after(error):
+                            # landed: it is never dispatched again, and a completion is
+                            # reconciled from the target-owned oracle (else unknown).
+                            if not may_redispatch_after(error):
+                                outcome = "unknown"
+                                if candidate.id in task.completion_candidate_ids:
+                                    refused["phase"] = "reconcile"
+                                    outcome = await reconcile_from_oracle(task, step)
+                                write_event(log_path, {"event": "outcome", "outcome": outcome, **refused})
+                                return outcome
+                            if refusal_retried:
                                 write_event(log_path, {"event": "outcome", "outcome": "unknown", **refused})
                                 return "unknown"
                             refusal_retried = True
@@ -667,14 +696,10 @@ async def run(args: argparse.Namespace) -> str:
                 if args.dry_run:
                     return "unknown"
                 if candidate.id in task.completion_candidate_ids:
-                    for _ in range(20):
-                        outcome = task.classify(task.read_oracle(), steps=step)
-                        if outcome in {"verified", "refuted"}:
-                            write_event(
-                                log_path, {"event": "outcome", "outcome": outcome, "token": token}
-                            )
-                            return outcome
-                        await asyncio.sleep(0.1)
+                    outcome = await reconcile_from_oracle(task, step)
+                    if outcome in {"verified", "refuted"}:
+                        write_event(log_path, {"event": "outcome", "outcome": outcome, "token": token})
+                        return outcome
                     # Accepted but unconfirmed after the bounded re-read: the click
                     # may still land, so stop instead of re-planning it.
                     write_event(
