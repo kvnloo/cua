@@ -1,0 +1,31 @@
+{
+ "schema": "cua.r2.provenance.v1",
+ "lane": "OWN-78A",
+ "branch": "exp/own-78a-abstain-isolation-4394-20261003",
+ "branch_base": "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8 (OWN-78 packet, REVISE)",
+ "tested_sources": {
+  "PR": {"sha": "039257811e0bbb2348c616c52562409923d2856f", "role": "trycua/cua PR 4394 head; arms A0, A1; unit row U-PR", "examples_tree_id": "27cb5f35bfcf0b3421d17eb000d7e884eb23293d"},
+  "F": {"sha": "61eec09092fd161f62651a890c882f276a642855", "role": "fork fix candidate (F1 736410ea1512ab8db8af00bb4d283b891fce4615, F2 9d8aad90ccee4b155868f0e98559f66ce10e0dbe, F3 61eec09092fd161f62651a890c882f276a642855) on top of the PR; arm A2; unit row U-F", "examples_tree_id": "fce87489ea3b6f64bda8ac6c1727dd20f433f3a2"},
+  "pre_PR": {"sha": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4", "role": "PR base; arm A3 control", "examples_tree_id": "635a4f588c6817ccb6cb6f5b7baacddbfc42f786"},
+  "RED": {"recipe": "PR tree + F2's TS provider/test changes without F1 + F1's Python test (raw/unit/red-tree.diff)", "role": "unit row U-RED-F1"}
+ },
+ "tree_checks": "each block's validity.json checks every tracked file of <sha>:libs/cua-driver/examples/jev-use against its git blob id in the export, and that the export has no other file (dependency dirs excepted)",
+ "pr_4394_live_head": {
+  "start": {"utc": "2026-10-03T07:17:54Z", "head": "039257811e0bbb2348c616c52562409923d2856f", "state": "OPEN", "updatedAt": "2026-10-01T15:16:55Z"},
+  "end": {"utc": "2026-10-03T07:39:54Z", "head": "039257811e0bbb2348c616c52562409923d2856f", "state": "OPEN", "updatedAt": "2026-10-01T15:16:55Z"},
+  "read_via": "gh pr view 4394 -R trycua/cua (read-only)"
+ },
+ "prereg_commit": {"sha": "99632b75fe0c05d909576739e7bbefbeb249c546", "committed_utc": "2026-10-03T07:30:29Z", "before": "recorded unit runs (07:30:58Z), stub smoke (07:35:14Z), first provider request (L1 07:36:25Z)"},
+ "publication_sha": "PLACEHOLDER: the branch commit that adds this README (set by Publish; not pushed by this lane)",
+ "driver": {"binary_name": "cua-driver-own78-4394-0392578", "sha256": "19bad35248702fd42f6aa372f1f4bebe4ca3728d9be0f67287f1c186a0b47df9", "version_in_session": "cua-driver 0.31.0", "built_from": "039257811 (OWN-78 build); no build in this lane: neither the PR nor F touches libs/cua-driver/rust"},
+ "harness": {"own78a_harness.py_sha256": "6059f62f51f4b02a74d8ff24fb925215ee79fcf164ad506f4e2c300597dfb46e", "own78a_launcher.py_sha256": "83c421b1da0b35e05670252c1c3d1aa554a6dee0c099e2fc9f989985ebb38146", "note": "both as committed in the PREREG commit; recorded per block in validity.json"},
+ "environment": {
+  "session": "cua-x11-session.sh: private rootless Xvfb 1920x1080, private dbus, openbox + picom, scrubbed env, no AT-SPI; launched under bin/hostless; 0-3 s jitter and an xdpyinfo probe before each block",
+  "browser": "Chrome launched by the Driver (isolated_new profile, Chromium sandbox on, default Driver safety)",
+  "python": "3.12.13 (uv-locked jev-use venv per tree)",
+  "node": "v22.23.2 (unit rows only)",
+  "provider": "TypeSafe api.typesafe.ai, model jev-1.13.0 (as recorded per response)",
+  "key": "TYPESAFE_API_KEY forwarded into the session by name (CUA_SESSION_FORWARD_SECRETS); never on a command line, never recorded",
+  "locks": "flock -s quiet-lane.lock per block (raw/locks.jsonl): own78a-smoke, own78a-L1, own78a-L2, own78a-L3"
+ }
+}

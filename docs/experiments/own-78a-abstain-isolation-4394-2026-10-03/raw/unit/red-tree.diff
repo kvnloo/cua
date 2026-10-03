@@ -1,0 +1,221 @@
+diff --git 1/pr/libs/cua-driver/examples/jev-use/typescript/browser_provider.ts 2/red/libs/cua-driver/examples/jev-use/typescript/browser_provider.ts
+index 47604b8..0058f62 100644
+--- 1/pr/libs/cua-driver/examples/jev-use/typescript/browser_provider.ts
++++ 2/red/libs/cua-driver/examples/jev-use/typescript/browser_provider.ts
+@@ -71,12 +71,22 @@ export function browserDecisionRequest(
+   return validateRequest(request);
+ }
+ 
++/**
++ * Optional injected dependencies. Defaults: a TypeSafeClient configured from
++ * the environment, and the S1 URL from CUA_S1_DECISION_URL.
++ */
++export type BrowserProviderDeps = Readonly<{
++  typesafeClient?: Pick<TypeSafeClient, 'systemOne'>;
++  s1Url?: string;
++}>;
++
+ export async function chooseBrowserProvider(
+   provider: BrowserProvider,
+   task: Task,
+   sources: TaskSources,
+   candidates: Candidate[],
+-  history: HistoryEntry[]
++  history: HistoryEntry[],
++  deps: BrowserProviderDeps = {}
+ ): Promise<BrowserDecision> {
+   const backend = backendName(provider);
+   if (provider === 'mock') {
+@@ -86,13 +96,13 @@ export async function chooseBrowserProvider(
+ 
+   const request = browserDecisionRequest(task, sources, candidates, history);
+   if (provider === 's1') {
+-    return { ...(await chooseS1Service(request)), backend };
++    return { ...(await chooseS1Service(request, deps.s1Url)), backend };
+   }
+   const criteria = Object.fromEntries(
+     request.candidates.map(({ id, description }) => [id, description])
+   );
+   const result = await chooseBoundedWithTypeSafe(
+-    new TypeSafeClient(),
++    deps.typesafeClient ?? new TypeSafeClient(),
+     request.goal,
+     providerObservation(request),
+     criteria
+diff --git 1/pr/libs/cua-driver/examples/jev-use/typescript/browser_provider.test.ts 2/red/libs/cua-driver/examples/jev-use/typescript/browser_provider.test.ts
+index 1f405dc..94981da 100644
+--- 1/pr/libs/cua-driver/examples/jev-use/typescript/browser_provider.test.ts
++++ 2/red/libs/cua-driver/examples/jev-use/typescript/browser_provider.test.ts
+@@ -62,45 +62,88 @@ test('S1 uses the bounded browser request and reports s1 as the actual backend',
+     assert.equal(JSON.stringify(body).includes('arguments'), false);
+     return new Response(
+       JSON.stringify({
++        schema: 'cua.decision_choice_v1',
++        kind: 'selected',
++        capture_id: body.capture_id,
+         selected_id: 'type-verification-value',
++        model: 'test-s1',
+         confidence: 0.7,
+         probabilities: {
+           'type-verification-value': 0.7,
+           reobserve: 0.2,
+           abstain: 0.1,
+         },
++        reason: null,
+       }),
+       { status: 200 }
+     );
+   });
+-  const result = await chooseBrowserProvider('s1', task, sources, candidates, []);
+-  assert.equal(result.choice, 'type-verification-value');
+-  assert.equal(result.backend, 's1');
+-  assert.equal(result.probabilities['type-verification-value'], 0.7);
+-  mock.restoreAll();
++  try {
++    // The URL is injected so the test needs no CUA_S1_DECISION_URL; fetch is mocked.
++    const result = await chooseBrowserProvider('s1', task, sources, candidates, [], {
++      s1Url: 'http://127.0.0.1:9/decide',
++    });
++    assert.equal(result.choice, 'type-verification-value');
++    assert.equal(result.backend, 's1');
++    assert.equal(result.probabilities['type-verification-value'], 0.7);
++  } finally {
++    mock.restoreAll();
++  }
+ });
+ 
+ test('live and typesafe aliases report typesafe after a bounded decision', async () => {
+-  const { task, sources, candidates } = fixture('proof-token');
+-  mock.method(TypeSafeClient.prototype, 'systemOne', async () => ({
+-    answers: {
+-      candidate: {
+-        type: 'choice',
+-        choice: 'type-verification-value',
+-        confidence: 0.8,
+-        probabilities: {
+-          'type-verification-value': 0.8,
+-          reobserve: 0.1,
+-          abstain: 0.1,
++  const token = 'secret-proof-token';
++  const snapshot: BrowserSnapshot = {
++    target_id: 'target',
++    tab_id: 'tab',
++    capture_id: 'browser-capture-1',
++    page: { title: 'Fixture', url: 'http://127.0.0.1:8765/' },
++    outline: `textbox "verification value" value="${token}"\nbutton "Submit"`,
++    refs: [
++      { role: 'textbox', name: 'verification value', ref: 'p1:0', value: '' },
++      { role: 'button', name: 'Submit', ref: 'p1:1' },
++    ],
++  };
++  const task = new FixtureFormTask(token);
++  const sources = fixtureSources(snapshot);
++  const candidates = task.candidates(sources);
++  const sent: Array<{ state: { observation: string } }> = [];
++  // An injected client: no API key and no network are needed.
++  const typesafeClient = {
++    systemOne: async (request: { state: { observation: string } }) => {
++      sent.push(request);
++      return {
++        answers: {
++          candidate: {
++            type: 'choice',
++            choice: 'type-verification-value',
++            confidence: 0.8,
++            probabilities: {
++              'type-verification-value': 0.8,
++              reobserve: 0.1,
++              abstain: 0.1,
++            },
++          },
+         },
+-      },
++      };
+     },
+-  }));
++  } as unknown as Pick<TypeSafeClient, 'systemOne'>;
+   for (const provider of ['live', 'typesafe'] as const) {
+-    const result = await chooseBrowserProvider(provider, task, sources, candidates, []);
++    const result = await chooseBrowserProvider(provider, task, sources, candidates, [], {
++      typesafeClient,
++    });
+     assert.equal(result.choice, 'type-verification-value');
+     assert.equal(result.backend, 'typesafe');
+     assert.equal(result.probabilities['type-verification-value'], 0.8);
+   }
+-  mock.restoreAll();
+-});
+\ No newline at end of file
++  assert.equal(sent.length, 2);
++  const observation = JSON.parse(sent[0].state.observation);
++  // Every bounded-request field is kept, and the runner-verified state is restored.
++  assert.equal(observation.capture_id, 'browser-capture-1');
++  assert.deepEqual(observation.regions, []);
++  assert.deepEqual(observation.history, []);
++  assert.deepEqual(observation.form, { verification_field: 'empty', submit_button: 'available' });
++  assert.deepEqual(observation.page, snapshot.page);
++  assert.equal(observation.outline.includes('verification value'), true);
++  assert.equal(sent[0].state.observation.includes(token), false);
++});
+diff --git 1/pr/libs/cua-driver/examples/jev-use/python/tests/test_browser_provider.py 2/red/libs/cua-driver/examples/jev-use/python/tests/test_browser_provider.py
+index ed1d6b0..4ef5f51 100644
+--- 1/pr/libs/cua-driver/examples/jev-use/python/tests/test_browser_provider.py
++++ 2/red/libs/cua-driver/examples/jev-use/python/tests/test_browser_provider.py
+@@ -117,6 +117,56 @@ class BrowserProviderTest(unittest.TestCase):
+                 self.assertEqual(backend, "typesafe")
+         self.assertEqual(choose_model.call_count, 2)
+ 
++    def test_typesafe_request_restores_runner_verified_page_state(self):
++        token = "secret-proof-token"
++        task = FixtureFormTask(token)
++        snapshot = {
++            "target_id": "target",
++            "tab_id": "tab",
++            "capture_id": "browser-capture-1",
++            "page": {"title": "Fixture", "url": "http://127.0.0.1:8765/"},
++            "outline": f'textbox "verification value" value="{token}"\nbutton "Submit"',
++            "refs": [
++                {"role": "textbox", "name": "verification value", "ref": "p1:0", "value": ""},
++                {"role": "button", "name": "Submit", "ref": "p1:1"},
++            ],
++        }
++        sources = fixture_sources(snapshot)
++        candidates = task.candidates(sources)
++        sent: list[dict] = []
++
++        class FakeClient:
++            def __enter__(self):
++                return self
++
++            def __exit__(self, *_):
++                return False
++
++            def system_one(self, **request):
++                sent.append(request)
++                answer = SimpleNamespace(
++                    choice="type-verification-value",
++                    confidence=0.8,
++                    probabilities={"type-verification-value": 0.8, "reobserve": 0.1, "abstain": 0.1},
++                )
++                return SimpleNamespace(choices={"candidate": answer}, model="test-model")
++
++        with patch("typesafe_sdk.TypeSafeClient", return_value=FakeClient()):
++            choice, _, _, backend = choose_browser_provider("typesafe", task, sources, candidates, [])
++        self.assertEqual((choice, backend), ("type-verification-value", "typesafe"))
++        observation = sent[0]["state"]["observation"]
++        # Every bounded-request field is kept ...
++        self.assertEqual(observation["capture_id"], "browser-capture-1")
++        self.assertIn("regions", observation)
++        self.assertIn("history", observation)
++        # ... and the runner-verified state is restored, as the pre-parity runner sent it.
++        self.assertEqual(
++            observation["form"], {"verification_field": "empty", "submit_button": "available"}
++        )
++        self.assertEqual(observation["page"], snapshot["page"])
++        self.assertIn("verification value", observation["outline"])
++        self.assertNotIn(token, json.dumps(sent[0]["state"]))
++
+ 
+ if __name__ == "__main__":
+     unittest.main()
+\ No newline at end of file
