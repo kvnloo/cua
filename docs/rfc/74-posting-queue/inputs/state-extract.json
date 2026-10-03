@@ -1,0 +1,342 @@
+{
+ "schema": "cua-rfc-74-state-extract/v1",
+ "state_sha256": "b53b192f646bdcbe4eb1ce1f7d7dc19bf2a5b78c2434545eb2a58cbe524b60b7",
+ "note": "extract of the loop STATE.json (not committed); lane ids, commits, owner decisions and budget only",
+ "accepted_by_wave": {
+  "0": [
+   "R2-01",
+   "R2-02",
+   "R2-03",
+   "R2-04",
+   "R2-05",
+   "R2-06"
+  ],
+  "1": [
+   "R2-07",
+   "OWN-105",
+   "OWN-78",
+   "R2-08",
+   "BUG-01",
+   "OWN-16"
+  ],
+  "2": [
+   "N-01R",
+   "B-02",
+   "B-01R",
+   "FIX-01",
+   "OWN-09",
+   "OWN-36",
+   "OWN-20"
+  ],
+  "3": [
+   "R2-10",
+   "B-03",
+   "N-02",
+   "R2-09",
+   "FIX-02",
+   "OWN-09R",
+   "OWN-75R",
+   "OWN-16W"
+  ],
+  "4": [
+   "R2-10R",
+   "B-04",
+   "R2-07c",
+   "OWN-20G",
+   "PKT-01"
+  ],
+  "5": [
+   "B-06",
+   "B-07",
+   "B-05",
+   "N-04",
+   "N-03",
+   "R2-07d",
+   "OWN-78A",
+   "RECERT-FIX",
+   "OWN-20P",
+   "PUB-02"
+  ]
+ },
+ "accepted_note": "wave 0 accepted the six P0 packets R2-01..R2-06 (STATE records the count only)",
+ "dispositions": {
+  "B-01": {
+   "branch": "exp/b-01-browser-critpath-20261002",
+   "accepted_branch": "exp/b-01r-browser-critpath-textfix-20261002",
+   "accepted_commit": "0cd63f786290f967f41a5a6b615d54f98045ebec",
+   "accepted_wave": 2,
+   "disposition_head": "KEEP (decomposition accepted wave 2 via B-01R): H_V fast glide KEEP (recovers 98.6-98.7% of feedback-OFF saving); H_T 100 ms insert_text focus settle OWNER_DECI"
+  },
+  "B-01R": {
+   "branch": "exp/b-01r-browser-critpath-textfix-20261002",
+   "commit": "0cd63f786290f967f41a5a6b615d54f98045ebec",
+   "disposition_head": "ACCEPTED (fix lane): both B-01 round-2 blocking items fixed; B-01 now accepted"
+  },
+  "B-02": {
+   "branch": "exp/b-02-browser-driver-sites-20261002",
+   "commit": "b282ff3894fa85a7b82257cb1edd5088c2f0ac37",
+   "disposition_head": "H_E endpoint re-proof bound check OWNER_DECISION (fill/toggle/modal); H_V admission tools-list cache DELETED (KEEP) fill+toggle, NOT_MATERIAL modal (T_oracle CI"
+  },
+  "B-03": {
+   "branch": "exp/b-03-toggle-cold-snapshot-20261002",
+   "commit": "b34eef71ee40bc733670e68d9cf57f6acc92ec5c",
+   "disposition_head": "Part 1 KEEP (BENCHMARK re-analysis: K5EV is the spec-literal best arm in every class and is now decomposed for fill/toggle/modal); Part 2 toggle H_W UNDECIDED ("
+  },
+  "B-06": {
+   "branch": "exp/b-06-per-process-cold-snapshot-20261003",
+   "commit": "31bc98a95b746080d1b74b895fe575071d4a94e9",
+   "accepted_wave": 5,
+   "disposition_head": "REVISE. Primary (PREREG) per-process verdict UNDECIDED (failed control: PC) in fill and toggle; secondary post-hoc PREREG-AMENDMENT-1 reading OWNER_DECISION (pr"
+  },
+  "BUG-01": {
+   "branch": "exp/bug-01-delivery-cdp-sessions-20261002",
+   "commit": "097b4f0974d5c161360fc3683c17f298ff681c70",
+   "disposition_head": "A: CONFIRMED_BUG (fix candidate); B: ACCUMULATION_ONLY"
+  },
+  "FIX-01": {
+   "branch": "exp/fix-01-detached-node-refusal-20261002",
+   "commit": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
+   "disposition_head": "Fix REVISE (every measured row passes; pre-registered cherry-pick onto f5c991e59 conflicts in browser/tools.rs, one-hunk resolution recorded and passes 187/187 "
+  },
+  "FIX-02": {
+   "branch": "exp/fix-02-token-ownership-retry-scope-20261002",
+   "commit": "cea02cb74cc1ad64497804d5da1270a8775f6c75",
+   "disposition_head": "F1 KEEP (native tokens bound to the publishing session; claim = isolation between distinct sessions, not adversarial isolation); F2 KEEP (random per-process sna"
+  },
+  "N-01": {
+   "branch": "exp/n-01-native-wait-ab-20261002",
+   "commit": "28b915ae9ec2b1330ad3104f281e0bf4bfde2c49 (base, 0 lane commits)",
+   "disposition_head": "SUPERSEDED by N-01R (wave 2, KEEP, terminal for N-01)"
+  },
+  "N-01R": {
+   "branch": "exp/n-01r-native-wait-ab-20261002",
+   "commit": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+   "disposition_head": "KEEP (terminal for N-01): H_C cursor reveal OWNER_DECISION (text, warm-cursor checkbox) / NOT_MATERIAL (fresh-process checkbox); H_S 50 ms post-DoAction sleep D"
+  },
+  "N-02": {
+   "branch": "exp/n-02-native-transport-20261002",
+   "commit": "9846ac8033a8b5e952b0d44f39858625375d54e1",
+   "disposition_head": "KEEP (HC caller-compiled output-schema validators DELETED, caller-side, checkbox + text) / KILL (CL settle-overshoot clamp, pre-registered focus-steal rule; non"
+  },
+  "N-03": {
+   "branch": "exp/n-03-native-closure-axfg-a3-20261003",
+   "commit": "6b70ec9024cc3921f7637bba2ffabcc93e29fc77",
+   "accepted_wave": 5,
+   "rejected_wave": 4,
+   "disposition_head": "HCL OWNER_DECISION; V admission tools-list cache DELETED; ax_fg S0 DELETED terminal (GTK3 on X11 ax_fg at default config, guarded by the 800 ms window-change ob"
+  },
+  "N-04": {
+   "branch": "exp/n-04-native-composition-rprime-20261003",
+   "commit": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+   "accepted_wave": 5,
+   "disposition_head": "KEEP (V DELETED; HCL OWNER_DECISION; E3 native met on one source; E2 native met on one source)"
+  },
+  "OWN-09R": {
+   "branch": "exp/own-09r-84-revision-20261002",
+   "commit": "0c2896a53e185ed6b92e61fdb405e42137cc0720",
+   "disposition_head": "KEEP (pre-registered rule, recomputed by verify_artifacts.py): revised kvnloo/cua#84 (P') passes every gating #9 Linux row with 0 failures; R3 BLOCKED (macOS he"
+  },
+  "OWN-105": {
+   "branch": "exp/own-105-runner-reconcile-20261002",
+   "commit": "b97daa4ba08605c08f6a5da8baf1bf32c5ff4093",
+   "disposition_head": "KEEP"
+  },
+  "OWN-16": {
+   "branch": "exp/own-16-modality-truth-20261002",
+   "commit": "7a4f3252af9c845f2a6cc489a54616c2e3cb92c8",
+   "disposition_head": "KEEP (Linux X11, boolean selectors)"
+  },
+  "OWN-16W": {
+   "branch": "exp/own-16w-sway-modality-20261002",
+   "commit": "1b981915777f7fe6628eb3917906f9d0e345b107",
+   "disposition_head": "S-W (headless sway native Wayland) KEEP; S-X (Xwayland) KEEP; X11 string row on 989cc76ce KEEP; Hyprland BLOCKED (real seat); macOS/Windows BLOCKED (hardware); "
+  },
+  "OWN-20G": {
+   "branch": "exp/own-20g-guard-final-diff-a2-20261003",
+   "commit": "ce7544cc064cecfd9ba4702466a1d0f24b1799b6",
+   "accepted_wave": 4,
+   "disposition_head": "#20 guard final diff G: KEEP as fork candidate (UNIT red/green; R1 reply-delay row G 40/40 restored vs U 0/40 with 40 silent misses; normal path unchanged at se"
+  },
+  "OWN-20P": {
+   "branch": "exp/own-20p-guard-port-a11y-20261003",
+   "commit": "64081dded4e0a3ddf144e68ab1ea43579f85f572",
+   "accepted_wave": 5,
+   "disposition_head": "KEEP (both fork candidates): G port a761f1f1f (guard final read on clean main) and A 064d2e4ad (AT-SPI bus-restart reconnect). #20 R3 row: 'safe, not live; rest"
+  },
+  "OWN-36": {
+   "branch": "exp/own-36-session-isolation-native-20261002",
+   "commit": "ff77554f46db2799334a20cb55111decc02582de",
+   "disposition_head": "REVISE (lane): capture ownership KEEP; native element-token/SnapshotStore ownership KILL; replacement KEEP (separate windows) / falsified for shared window; ses"
+  },
+  "OWN-75R": {
+   "branch": "exp/own-75r-timing-parity-4336-20261002",
+   "commit": "e02621fdc1fe5098efd48af295964f25902553ea",
+   "disposition_head": "KEEP: trycua/cua PR 4336 (head 8391cf802) introduces no cross-language field mismatch and no behaviour change vs M0 (2ca90d338); every S1-S4 gate passes"
+  },
+  "OWN-78": {
+   "branch": "exp/own-78-provider-receipts-4394-20261002",
+   "commit": "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8",
+   "disposition_head": "REVISE"
+  },
+  "OWN-78A": {
+   "branch": "exp/own-78a-abstain-isolation-4394-20261003",
+   "commit": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+   "accepted_wave": 5,
+   "disposition_head": "REVISE for kvnloo/cua#78. Attribution PAGE_OUTLINE_ALSO_NEEDED: form alone is not sufficient; fork fix candidate F (restore form+page+outline) types correctly 5"
+  },
+  "PKT-01": {
+   "branch": "docs/packet-template-audit-a2-20261003",
+   "commit": "cca59642dce3cd1a9c8e17b9f578eb94fc4b1f6e",
+   "accepted_wave": 4,
+   "disposition_head": "KEEP (deliverable): 4/4 repaired heads pass from clean clones; audit covers 27/27 pushed packets; helper UNIT controls 5/5; 0 private findings in the lane's new"
+  },
+  "PUB-02": {
+   "branch": "docs/packet-template-privacy-20261003",
+   "commit": "c4342323bf51d9dcaea824c10aad59a5dd7a3c1c",
+   "accepted_wave": 5,
+   "disposition_head": "KEEP (fix). A (R2-10R a3) ready for Publish; B (R2-10 r1c) clean candidate held for the owner ruling on the published branch; C hardens the template privacy sca"
+  },
+  "R2-01": {
+   "branch": "exp/r2-01-feedback-ab-20261001",
+   "commit": "2ca82efaedf0083c3732b7855c78a5d1442f9dce",
+   "disposition_head": "KEEP_H1"
+  },
+  "R2-03": {
+   "branch": "exp/r2-03-guarded-live-20261001",
+   "commit": "6bab214abb707a3db9e8a7d641d160c3f58e08d5",
+   "disposition_head": "KEEP"
+  },
+  "R2-04": {
+   "branch": "exp/r2-04-atspi-profile-20261001",
+   "commit": "9bfd437390571985870a66d941f43dbe417f31c0",
+   "disposition_head": "REVISE"
+  },
+  "R2-05": {
+   "branch": "exp/r2-05-ack-loss-real-20261001",
+   "commit": "236e37e01792d4e60ee5334f702b47e6f122921e",
+   "disposition_head": "KEEP"
+  },
+  "R2-06": {
+   "branch": "exp/r2-06-trusted-input-20261001",
+   "commit": "f00b9396365a44e69c44498a1cb52f18aa8a3871",
+   "disposition_head": "KEEP"
+  },
+  "R2-07": {
+   "branch": "exp/r2-07-compiled-routine-20261002",
+   "commit": "2d71548b46114cd1a1bc58ccdef323ce185c9965",
+   "disposition_head": "KILL"
+  },
+  "R2-07c": {
+   "branch": "exp/r2-07c-toggle-modal-compiled-a2-20261003",
+   "commit": "7f46edd1681fbf58586f8b4972636c3da56e3be6",
+   "accepted_wave": 4,
+   "disposition_head": "REVISE (proposed; no pre-registered rule fired): correctness qualification of the compiled fresh-bound routine for toggle->confirm and modal->act on binary R co"
+  },
+  "R2-07d": {
+   "branch": "exp/r2-07d-quiet-timing-phase-l-20261003",
+   "commit": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+   "accepted_wave": 5,
+   "disposition_head": "REVISE. Failing gate: modal timing non-regression (CI upper +2.4 ms vs +2.0 ms limit). Toggle PASS. Phase L NOT_RUN (pre-registered precondition). Compiled rout"
+  },
+  "R2-08": {
+   "branch": "exp/r2-08-cross-surface-20261002",
+   "commit": "afba150d55426bf775cb10adaa698cf99493b229",
+   "disposition_head": "KEEP"
+  },
+  "R2-09": {
+   "branch": "exp/r2-09-native-event-wake-20261002",
+   "commit": "3539e34ae16d8c49d8de65452663a916dd6647fa",
+   "disposition_head": "KILL (event wake): T1 Chromium AT-SPI background KILL (S0 showed the effect at return 40/40; S0 at least as fast as EW; EW's event is the acted object's focus c"
+  },
+  "R2-10": {
+   "branch": "exp/r2-10-composition-20261002",
+   "commit": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+   "disposition_head": "KEEP (pre-registered rule: every class/task has a gating S with CI lower bound > 1, validity 100% (>=95% required), 0 E4 violations, Phase 0 passed)"
+  },
+  "R2-10R": {
+   "branch": "exp/r2-10r-recert-a2-20261003",
+   "commit": "c183b95e35f5af7f2548dec3720b58a65214d9da",
+   "accepted_wave": 4,
+   "disposition_head": "RECERTIFIED (E6). Pre-registered gates phase0, validity_100, e4_zero, S_direction (18/18 gated rows after post-hoc PREREG-AMENDMENT-2 coverage fix), verdict_map"
+  },
+  "RECERT-FIX": {
+   "branch": "exp/fix-recert-a3-20261003",
+   "commit": "939580fc64073d0159865b547566d3522ce1565f",
+   "accepted_wave": 5,
+   "disposition_head": "RECERTIFIED on 0f1955d2f (= cb685fad7 Linux tree): FIX-02 F1-F3 RECERT_PASS (KEEP); F4 RECERT_PASS (stays REVISE, TOCTOU window not covered); OWN-09R (kvnloo/cu"
+  }
+ },
+ "wave5_pushed_branches": {
+  "exp/b-06-per-process-cold-snapshot-20261003": "31bc98a95b746080d1b74b895fe575071d4a94e9",
+  "exp/b-07-transport-residual-rprime-20261003": "eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1",
+  "exp/b-05-browser-mcp-transport-a3-20261003": "7052382820687e5bf55e2925e09a3fbe70cce500",
+  "exp/n-04-native-composition-rprime-20261003": "9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+  "exp/n-03-native-closure-axfg-a3-20261003": "6b70ec9024cc3921f7637bba2ffabcc93e29fc77",
+  "exp/r2-07d-quiet-timing-phase-l-20261003": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+  "exp/own-78a-abstain-isolation-4394-20261003": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+  "exp/fix-recert-a3-20261003": "939580fc64073d0159865b547566d3522ce1565f",
+  "exp/fix-02r-a3-20261003": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c",
+  "exp/own-09r2-a3-20261003": "ba611b51a48f6798eb3b3114f0c98af03c2d7d52",
+  "exp/own-16w2-a3-20261003": "7e31eae59d2316c3e41d31a3eb872837bb945283",
+  "exp/own-20p-guard-port-a11y-20261003": "64081dded4e0a3ddf144e68ab1ea43579f85f572",
+  "docs/packet-template-privacy-20261003": "c4342323bf51d9dcaea824c10aad59a5dd7a3c1c",
+  "exp/r2-10r-recert-a3-20261003": "d22eeb2ecf8a679d1425c21120a599775aa0817d"
+ },
+ "wave5_not_pushed": {
+  "exp/r2-10-composition-r1c-20261003": "eaca68df9 HOLD (PUB-02 B) pending owner ruling on published exp/r2-10-composition-20261002 (030f6bdbf); not on origin",
+  "exp/r2-10r-recert-a2-20261003 / exp/r2-10-composition-r1b-20261003": "c183b95e3 / 36ccdd766 superseded (encoded list); never pushed",
+  "exp/own-20g-guard-final-diff-a2-20261003": "already on origin ce7544cc0; no fix pushed, owner ruling needed (user name in raw x10)"
+ },
+ "owner_decisions_pending": [
+  "OWN-36 I3s shared-window replacement retirement (FIX-02 leaves it unchanged).",
+  "B-02 H_E endpoint re-proof bound check (security policy; ~22-25 ms per task, 26-42% of COMP T in R2-10).",
+  "B-01 H_T 100 ms insert_text focus settle.",
+  "Browser feedback glide / OFF: the single largest component (2.4-3.0 s, 94-97% of BASE T); R2-10 S drops from ~45 to 1.01 (median; fill amortized 0.98) without it.",
+  "Native cursor reveal (N-01R H_C): text S 5.85 vs KEEP-only 1.03.",
+  "R2-08 API route per task.",
+  "OWN-09R timeout semantics: guards held by a leaked closure after foreground_timeout (unbounded next-action wait) vs a bounded coordinator wait with a structured refusal.",
+  "OWN-09R / #9 R8: implement MCP notifications/cancelled or keep it ignored.",
+  "OWN-75R: trycua/cua PR 4336 timing fields emitted unconditionally (log-only) vs the env-gated/default-off wording.",
+  "OWN-16W fix dd205d17b refuses JSON null (formerly 'default'); macOS/Windows parity.",
+  "R2-09 T3: install WebKitGTK (or use the flatpak runtime) for the NOT_RUN row, or accept BLOCKED.",
+  "Provider budget: 58 reached remain; raise the cap for live toggle/modal compiled replay, OWN-78 live R1/R4 or native live arms, or accept BLOCKED.",
+  "W4 RECERT-FIX lane hard stop: ruling on the cross-lane pkill (not a hard_rule_breach class under the loop's definitions) before RECERT-FIX attempt 3.",
+  "W4 privacy: hex-encoded host name in verify_artifacts.py on fork branch exp/r2-10-composition-20261002 (pushed wave 3): rewrite/force-push or delete-and-repush the fork branch, or accept. Unpublished copies (R2-10R, R2-10 r1b) are rewritten/fixed before Publish regardless.",
+  "W4 OWN-20G: accept the pre-registered reply-delay R1 row in place of the specified XGrabServer row (planner); and whether the ~21 ms settle overshoot is IRREDUCIBLE coverage (CL KILL judgement) for E2.",
+  "W4 B-04: per-process cold-snapshot part UNDECIDED - fund a redesigned negative control or rule (warm-pool / process reuse is a product policy outside T).",
+  "W4 N-03 (once accepted): HCL lazy per-schema validators are OWNER_DECISION (net 0 at one task per session, ~71-101 ms per 5-task session) - depends on expected session shape.",
+  "W4 R2-07c: whether the 58 remaining reached go to R2-07c Phase L (<= 20) after a quiet-window timing pass, or are held for a larger budget decision.",
+  "W5 B-06: accept the post-hoc PREREG-AMENDMENT-1 reading (per-process cold excess = process/session-reuse policy, ~10.0 ms fill / 4.0 ms toggle, OWNER_DECISION; browser fill/toggle untested then ~15-17% on R2-10R's mapping, ~1.6/0.6% with B-07's transport verdicts) or fund a fresh pre-registered per-process run (no provider). This decides browser E2 for fill/toggle.",
+  "W5 OWN-09R strict PREREG reading: accept the Deviation 6 re-run rule (committed after the 818/2 first run, before the 847/0 re-run) or record the head-core unit row as REVISE.",
+  "W5 OWN-20P: accept the R1 row on marked twins with CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0 as evidence for product G (product G0 exercised on the normal path only); whether A's trigger set (stream end only; no NoReply / name-owner change) is enough.",
+  "W5 OWN-16W: accept the PREREG F'' gate reading where the wave-3 analyzer prints REVISE (U'' positive control 41/42 by GetState attribution).",
+  "W5 budget: 38 reached remain. Candidates: OWN-78A R1-lite on F (<= 6); a new pre-registered R2-07d-style modal block (0 reached) before any Phase L (<= 18); everything else (R2-10 live recert >= 180, live toggle/modal BASE vs COMP+CR >= 120, native live >= 120, #78 R1/R4 ~60) needs a cap raise.",
+  "W5 privacy: ruling on origin exp/r2-10-composition-20261002 (030f6bdbf) with PUB-02 r1c eaca68df9 as candidate, and on origin exp/own-20g-guard-final-diff-a2-20261003 (ce7544cc0, user name in raw x10).",
+  "W5 Driver telemetry default-on in lane sessions (OWN-78A verifier; most lanes since wave 1): set CUA_DRIVER_RS_TELEMETRY_ENABLED=false in the shared session wrapper."
+ ],
+ "blocked_items_w5": [
+  "R2-10 live-layer recertification on R' (0f1955d2f/45dff8f32): BLOCKED (paid budget). Live BASE keeps 2 TypeSafe decisions per trial; 30 pairs x 3 classes need >= 180 reached; 38 remain after wave 5. Live layer stays certified at 989cc76ce.",
+  "Live paired BASE vs COMP+CR toggle/modal (E3 with compiled replay): BLOCKED (paid budget, >= 120 reached) and, for modal, by R2-07d's failed quiet-window non-regression gate (+0.6 [-1.4, +2.4] ms vs +2.0 limit). Live toggle/modal provider decisions (R2-10 434.8 / 462.4 ms, 88-89% of live COMP T) stay UNTESTED.",
+  "R2-07d Phase L (live COMP+CR within 18 reached): NOT_RUN (pre-registered precondition failed on modal); cap returned.",
+  "Native live-provider arms / native T including provider decisions: BLOCKED (owner decision on whether native T may exclude provider decisions, or paid budget >= 120 reached). N-04 uses the scripted chooser (labelled).",
+  "kvnloo/cua#78 S1 backend row: BLOCKED (owner decision; adapter not local; only TypeSafe permitted).",
+  "kvnloo/cua#78 R1-lite on F (3 trials, <= 6 reached): NOT_RUN (OWN-78A lane cap 24 reached, 20 used by isolation); fits the remaining 38 if allocated.",
+  "kvnloo/cua#78 full-n live R1 (20) / R4 partial progress (20): BLOCKED (paid budget, ~60 reached > 38 remaining).",
+  "kvnloo/cua#78 A2-vs-A3 residual gap isolation (question key, instructions, goal/history placement, visual): BLOCKED (paid budget).",
+  "R2-09 T3 WebKitGTK MiniBrowser: BLOCKED (owner decision: install WebKitGTK, flatpak GNOME runtime, or accept BLOCKED).",
+  "Real Hyprland/Omarchy seat rows: BLOCKED (hardware/seat): #16 Hyprland, #94 with #92/#100/#101, R2-09 Hyprland foreground semantic-click route, OWN-20G/OWN-20P Wayland focus rows.",
+  "macOS/Windows rows: BLOCKED (hardware): #6, #19 (Windows); #8 (macOS + owner decision on upstream trycua/cua 3904); #13, #72 (macOS; trycua/cua 3492 list_apps A/B); #31; #16 and #36 macOS/Windows rows; #9 R3 and held-input cleanup; OWN-16W dd205d17b macOS/Windows parity.",
+  "Browser per-process cold first-snapshot part: UNDECIDED under PREREG (B-06 positive control failed); OWNER_DECISION only if the owner accepts B-06's post-hoc Amendment 1 reading, else a fresh pre-registered run (>= 30 pairs/class, PC placed after snapshot1).",
+  "OWNER_DECISION finalization: BLOCKED (owner decision); see owner_decisions_pending (W5 items appended).",
+  "Published fork content privacy: BLOCKED (owner decision: rewrite and force-push, delete and re-push, or accept): (a) origin exp/r2-10-composition-20261002 030f6bdbf encoded private-name list incl. host name (clean candidate r1c eaca68df9 ready, not pushed); (b) origin exp/own-20g-guard-final-diff-a2-20261003 ce7544cc0 local user name in raw x10 (no candidate yet).",
+  "RECERT-FIX wave-4 cross-lane pkill: owner ruling pending (not a breach class); attempt 3 ran without pkill/pgrep and completed.",
+  "Fail-closed PreToolUse guard rejecting code-executing commands outside bin/hostless: BLOCKED (owner/orchestrator action). Wave 5: plain-shell python3/no-op near misses in 6 lanes and 4 verifiers."
+ ],
+ "provider_budget": {
+  "provider": "TypeSafe",
+  "cap_requests": 600,
+  "used_requests_reached_provider": 562,
+  "used_attempts": 658,
+  "remaining_reached": 38
+ }
+}
