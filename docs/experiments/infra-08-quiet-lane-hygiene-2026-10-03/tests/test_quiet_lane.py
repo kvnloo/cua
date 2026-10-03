@@ -31,9 +31,12 @@ MARK_ENV = "INFRA08-MARKER-ENV-not-a-secret-91c2"
 # PREREG expectations: GREEN = property holds; RED = known bug / missing feature in that implementation.
 EXPECT = {
     "v1": {"T0": "N/A", "T1": "RED", "T1s": "N/A", "T2": "GREEN", "T3": "RED", "T4": "RED",
-           "T4c": "GREEN", "T4n": "N/A", "T4t": "N/A", "T5": "RED", "T6": "GREEN"},
+           "T4c": "GREEN", "T4n": "N/A", "T4t": "N/A", "T5": "RED", "T6": "GREEN", "T7": "GREEN", "T7s": "N/A"},
     "v2": {"T0": "GREEN", "T1": "GREEN", "T1s": "GREEN", "T2": "GREEN", "T3": "GREEN", "T4": "GREEN",
-           "T4c": "GREEN", "T4n": "GREEN", "T4t": "GREEN", "T5": "GREEN", "T6": "GREEN"},
+           "T4c": "GREEN", "T4n": "GREEN", "T4t": "GREEN", "T5": "GREEN", "T6": "GREEN", "T7": "GREEN", "T7s": "GREEN"},
+    # v2pre = the first installed v2 quiet-timed (commit 313c54a95 template), kept as red evidence for T7
+    "v2pre": {"T0": "GREEN", "T1": "GREEN", "T1s": "GREEN", "T2": "GREEN", "T3": "GREEN", "T4": "GREEN",
+              "T4c": "GREEN", "T4n": "GREEN", "T4t": "GREEN", "T5": "GREEN", "T6": "GREEN", "T7": "RED", "T7s": "GREEN"},
 }
 
 
@@ -125,10 +128,18 @@ def ledger_lines(lockdir):
 
 
 class Run:
-    def __init__(self, impl, tmp, out):
+    def __init__(self, impl, tmp, out, qt_template=None):
         self.impl, self.tmp, self.rows = impl, os.path.join(tmp, impl), []
+        self.qt_template = qt_template
+        self.t7_runs = 20
         self.out = out
         self.base_env = {k: v for k, v in os.environ.items() if not k.startswith("QUIET_")}
+
+    def render(self, default, bindir):
+        subprocess.run([RENDER, default, bindir], check=True)
+        if self.qt_template:  # v2pre: swap in the given quiet-timed template, rendered the same way
+            with open(self.qt_template) as src, open(os.path.join(bindir, "quiet-timed"), "w") as dst:
+                dst.write(src.read().replace("@QUIET_LANE_DEFAULT_LOCKDIR@", default))
 
     def setup(self, test, default=None):
         d = os.path.join(self.tmp, test)
@@ -136,9 +147,9 @@ class Run:
         lockdir = os.path.join(d, "locks")
         os.makedirs(lockdir)
         bindir = os.path.join(d, "bin")
-        subprocess.run([RENDER, default or lockdir, bindir], check=True)
+        self.render(default or lockdir, bindir)
         env = dict(self.base_env)
-        if self.impl == "v2" and default is None:
+        if self.impl != "v1" and default is None:
             env["QUIET_LANE_LOCKDIR"] = lockdir
         qt = os.path.join(bindir, "v1/quiet-timed" if self.impl == "v1" else "quiet-timed")
         return d, lockdir, bindir, qt, env
@@ -171,7 +182,7 @@ class Run:
             return self.na("T0", "env-override", "v1 has no lock dir override")
         d, lockdir, bindir, qt, env = self.setup("T0", default=None)
         sentinel = os.path.join(d, "sentinel-default")
-        subprocess.run([RENDER, sentinel, bindir], check=True)
+        self.render(sentinel, bindir)
         r1 = subprocess.run([qt, "t0-override", "true"], env=env, timeout=30)
         with_override = (r1.returncode == 0 and not os.path.exists(sentinel)
                          and len(ledger_lines(lockdir)) == 1)
@@ -288,7 +299,7 @@ class Run:
 
     def t3(self):
         self._reap_case(signal.SIGTERM, "waiter reap on TERM")
-        if self.impl == "v2":
+        if self.impl != "v1":
             self._reap_case(signal.SIGINT, "waiter reap on INT")
             self._reap_case(signal.SIGHUP, "waiter reap on HUP")
 
@@ -397,7 +408,7 @@ class Run:
     def t6(self):
         d, lockdir, bindir, qt, env = self.setup("T6")
         tools = [("quiet-timed", [qt, "t6"])]
-        if self.impl == "v2":
+        if self.impl != "v1":
             tools.append(("quiet-shared", [os.path.join(bindir, "quiet-shared"), "t6", "30"]))
         for name, argv in tools:
             got = {}
@@ -407,19 +418,57 @@ class Run:
             ok = all(rc == want and lrc == want for want, (rc, lrc) in got.items())
             self.record("T6", f"{name} rc propagation", ok, rc_and_receipt={str(k): v for k, v in got.items()})
 
+    # ---------------------------------------------------------------- T7 (added after PREREG, see README)
+    def t7(self):
+        """Uncontended runs with the caller's stdout/stderr on pipes: each call must return (pipes closed)
+        within 5 s and leave no process behind (no process with the scratch dir as cwd)."""
+        d, lockdir, bindir, qt, env = self.setup("T7")
+        tools = [("quiet-timed", [qt, "t7"])]
+        if self.impl != "v1":
+            tools.append(("quiet-shared", [os.path.join(bindir, "quiet-shared"), "t7", "30"]))
+        for name, argv in tools:
+            hung, leftovers = 0, []
+            for _ in range(self.t7_runs):
+                try:
+                    subprocess.run(argv + ["true"], env=env, cwd=d, capture_output=True, timeout=5)
+                except subprocess.TimeoutExpired:
+                    hung += 1
+            time.sleep(0.5)
+            for n in os.listdir("/proc"):
+                if n.isdigit():
+                    try:
+                        if os.readlink(f"/proc/{n}/cwd") == d:
+                            leftovers.append((int(n), (proc_stat(int(n)) or {}).get("comm")))
+                    except OSError:
+                        pass
+            for pid, _ in leftovers:  # our own leftovers only (cwd is this test's scratch dir)
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except OSError:
+                    pass
+            self.record("T7" if name == "quiet-timed" else "T7s", f"{name} no leftover on uncontended run", hung == 0 and not leftovers,
+                        runs=self.t7_runs, hung_pipes=hung, leftover_processes=leftovers)
+
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--impl", choices=["v1", "v2"], required=True)
+    ap.add_argument("--impl", choices=["v1", "v2", "v2pre"], required=True)
+    ap.add_argument("--qt-template", help="v2pre only: quiet-timed template to test in place of scripts/quiet-timed")
+    ap.add_argument("--t7-runs", type=int, default=20, help="T7 iterations per tool (stress: e.g. 300)")
+    ap.add_argument("--only", help="comma list of test methods to run, e.g. t7 (default: all)")
     ap.add_argument("--tmp", required=True)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     if os.environ.get("CUA_HOSTLESS") != "1":
         sys.exit("refusing to run outside bin/hostless (CUA_HOSTLESS=1 not set)")
     open(a.out, "w").close()
-    r = Run(a.impl, os.path.abspath(a.tmp), a.out)
-    for t in (r.t0, r.t1, r.t2, r.t3, r.t4, r.t5, r.t6):
-        t()
+    if (a.impl == "v2pre") != bool(a.qt_template):
+        sys.exit("--qt-template is required with, and only with, --impl v2pre")
+    r = Run(a.impl, os.path.abspath(a.tmp), a.out, a.qt_template)
+    r.t7_runs = a.t7_runs
+    for t in (r.t0, r.t1, r.t2, r.t3, r.t4, r.t5, r.t6, r.t7):
+        if not a.only or t.__name__ in a.only.split(","):
+            t()
     bad = [x for x in r.rows if not x["matches_expectation"]]
     print(f"{a.impl}: {len(r.rows) - len(bad)} of {len(r.rows)} rows match the PREREG expectation")
     sys.exit(1 if bad else 0)

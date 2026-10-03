@@ -17,31 +17,41 @@ mkdir -p "$LOCKDIR"; label="$1"; shift
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; STARVE_S="${QUIET_STARVE_ALARM_S:-900}"
 exec 9>"$LOCKDIR/quiet-lane.lock"
 
-waiter=; alarm=
+# Waiting: this shell owns two children, the flock waiter and (if the alarm is on) one sleep timer, and
+# waits for whichever ends first. Signals only set a flag, so every exit path knows both pids.
+waiter=; timer=; sig=
 cleanup() {
-  if [ -n "$alarm" ]; then kill "$alarm" 2>/dev/null || true; wait "$alarm" 2>/dev/null || true; alarm=; fi
-  if [ -n "$waiter" ]; then kill "$waiter" 2>/dev/null || true; wait "$waiter" 2>/dev/null || true; waiter=; fi
+  # SIGKILL: a child killed before it has exec'd still runs this shell's signal handlers, so a catchable
+  # signal can be swallowed and the child would then exec and survive (seen with TERM in tests, T7).
+  local p
+  for p in $timer $waiter; do kill -KILL "$p" 2>/dev/null || true; wait "$p" 2>/dev/null || true; done
+  timer=; waiter=
 }
 trap cleanup EXIT
-trap 'exit 143' TERM; trap 'exit 130' INT; trap 'exit 129' HUP
-
-alarm_loop() {
-  sp=; f=; trap 'if [ -n "$sp" ]; then kill "$sp" 2>/dev/null; fi; if [ -n "$f" ]; then rm -f "$f.tmp"; fi; exit 0' TERM
+trap 'sig=143' TERM; trap 'sig=130' INT; trap 'sig=129' HUP
+snapshot() {
+  local f
   mkdir -p "$LOCKDIR/starvation"
-  while :; do
-    sleep "$STARVE_S" & sp=$!; wait "$sp"; sp=
-    kill -0 "$parent" 2>/dev/null || exit 0   # parent gone (e.g. SIGKILL): stop at the next period
-    f="$LOCKDIR/starvation/${label//[^A-Za-z0-9._-]/_}-$(date -u +%Y%m%dT%H%M%SZ).txt"
-    if { printf '# quiet-lane starvation snapshot: label=%s waiter_pid=%d waited_s=%d utc=%s\n' \
-           "$label" "$parent" "$((SECONDS - t0))" "$(date -u +%FT%TZ)"
-         QUIET_LANE_LOCKDIR="$LOCKDIR" "$HERE/quiet-holders"; } > "$f.tmp" 2>/dev/null
-    then mv -f "$f.tmp" "$f" 2>/dev/null || true; else rm -f "$f.tmp"; fi
-  done
+  f="$LOCKDIR/starvation/${label//[^A-Za-z0-9._-]/_}-$(date -u +%Y%m%dT%H%M%SZ).txt"
+  if { printf '# quiet-lane starvation snapshot: label=%s waiter_pid=%d waited_s=%d utc=%s\n' \
+         "$label" "$$" "$((SECONDS - t0))" "$(date -u +%FT%TZ)"
+       QUIET_LANE_LOCKDIR="$LOCKDIR" "$HERE/quiet-holders" 9>&-; } > "$f.tmp" 2>/dev/null
+  then mv -f "$f.tmp" "$f" 2>/dev/null || true; else rm -f "$f.tmp"; fi
 }
-parent=$$; t0=$SECONDS
-if [ "$STARVE_S" -gt 0 ]; then alarm_loop 9>&- & alarm=$!; fi
+t0=$SECONDS; st=0
 flock -x 9 & waiter=$!
-wait "$waiter"; waiter=
+while [ -z "$sig" ]; do
+  if [ "$STARVE_S" -gt 0 ] && [ -z "$timer" ]; then
+    sleep "$STARVE_S" 9>&- </dev/null >/dev/null 2>&1 & timer=$!
+  fi
+  done_pid=; st=0; wait -n -p done_pid "$waiter" ${timer:+"$timer"} || st=$?
+  [ -z "$sig" ] || break
+  if [ "$done_pid" = "$waiter" ]; then waiter=; break; fi
+  if [ -n "$timer" ] && [ "$done_pid" = "$timer" ]; then timer=; snapshot; continue; fi
+  exit 1   # nothing we started ended: should not happen
+done
+if [ -n "$sig" ]; then exit "$sig"; fi   # EXIT trap reaps the waiter and the timer
+[ "$st" -eq 0 ] || exit "$st"           # flock itself failed
 trap - TERM INT HUP
 cleanup
 acq="$(date -u +%FT%T.%3NZ)"

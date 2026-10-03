@@ -1,0 +1,18 @@
+v2pre T0   env-override                 observed=GREEN expected=GREEN ok
+v2pre T1   quiet-timed daemon fd leak   observed=GREEN expected=GREEN ok
+v2pre T1s  quiet-shared daemon fd leak  observed=GREEN expected=GREEN ok
+v2pre T2   v1 vs v2 receipt schema      observed=GREEN expected=GREEN ok
+v2pre T2   quiet-shared receipt schema  observed=GREEN expected=GREEN ok
+v2pre T3   waiter reap on TERM          observed=GREEN expected=GREEN ok
+v2pre T3   waiter reap on INT           observed=GREEN expected=GREEN ok
+v2pre T3   waiter reap on HUP           observed=GREEN expected=GREEN ok
+v2pre T4   quiet-shared yields to EXCLUSIVE observed=GREEN expected=GREEN ok
+v2pre T4c  control: plain flock -s overtakes observed=GREEN expected=GREEN ok
+v2pre T4n  no writer: immediate acquire observed=GREEN expected=GREEN ok
+v2pre T4t  max_s cap                    observed=GREEN expected=GREEN ok
+v2pre T5   starvation alarm             observed=GREEN expected=GREEN ok
+v2pre T6   quiet-timed rc propagation   observed=GREEN expected=GREEN ok
+v2pre T6   quiet-shared rc propagation  observed=GREEN expected=GREEN ok
+v2pre T7   quiet-timed no leftover on uncontended run observed=RED   expected=RED   ok
+v2pre T7s  quiet-shared no leftover on uncontended run observed=GREEN expected=GREEN ok
+v2pre: 17 of 17 rows match the PREREG expectation
