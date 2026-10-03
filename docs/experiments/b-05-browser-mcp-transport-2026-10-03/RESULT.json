@@ -1,0 +1,48 @@
+{
+ "schema": "cua-rfc-loop.lane-result.v1",
+ "lane": "B-05",
+ "attempt": 3,
+ "wave": 5,
+ "kind": "text-only fix pass of the wave-4 attempt-2 packet (no re-measurement; summary, raw and harness unchanged)",
+ "branch": "exp/b-05-browser-mcp-transport-a3-20261003",
+ "base": "a91a86a4a1cbcfd11207191b91d1072b3758fada",
+ "lane_commits": {
+  "prereg": "03f52d7eb",
+  "amendment": "59034f533",
+  "results": "dd8c11746",
+  "post_verification_fixes": "a91a86a4a",
+  "text_fix": "the commit that adds this file (README deviation 11)"
+ },
+ "pre_rewrite_shas_never_reachable": [
+  "d1b42db63",
+  "3cced771f",
+  "92cab8900"
+ ],
+ "packet": "docs/experiments/b-05-browser-mcp-transport-2026-10-03/",
+ "disposition": "REVISE",
+ "headline": "B-05 (B5 = R2-10 source + marks, scripted COMP, one host): no transport/admission/resolution candidate was DELETED. PARSE_FAST and VALIDATE_FAST are KILL ('reducible, below gate': 0.12-0.26 ms of work deleted per task, T_runner CIs include 0), so c_out.parse and c_out.validate are IRREDUCIBLE (candidate failed). The instrumentation is a material part of the measured transport but not most of it: transport in/out is 44 / 48 / 35% instrumentation at c_m and about 30 / 33 / 24% at the measured-overhead scale; only the admission residual is mostly instrumentation (81-88% at c_m, about 55-60% measured); modal is ruled out by the overhead control (4.40 ms penalty = 43% of 10.33 ms raw transport). Any comparison with R2-10 is cross-binary. E2 is borderline / not established for every class (lane view 4.3 / 4.1 / 7.5%; every stricter view >= 5%). c_in.prep, c_out.route, d_out.post and toggle adm.inner stay UNTESTED and pass to B-07.",
+ "verified_numbers": "A1 96/96; T_runner 107.41/79.26/80.09 ms (corrected 98.89/71.05/71.88); per-mark c_m 34.46 us; overhead 6.11/6.57/4.40 ms; corrected transport in/out 4.51/3.95/6.75 ms; admission residual 0.21-0.36 ms corrected; PARSE_FAST work deleted 0.26/0.16/0.18, VALIDATE_FAST 0.15/0.12/0.13 ms, T_runner CIs include 0; 0 provider; every trial inside its EXCLUSIVE window.",
+ "e2": "borderline / not established for fill, toggle and modal (lane view 4.3 / 4.1 / 7.5%; BELOW_GATE as UNTESTED 6.0 / 6.1 / 9.7%; every stricter view >= 5%)",
+ "terminal_subspan_verdicts": {
+  "PARSE_FAST": "KILL (reducible, below gate)",
+  "VALIDATE_FAST": "KILL (reducible, below gate)",
+  "c_out.parse": "IRREDUCIBLE (candidate failed)",
+  "c_out.validate": "IRREDUCIBLE (candidate failed)",
+  "BELOW_GATE": "as listed in README tables (b05-summary.json verdicts)",
+  "res.frame_proof / res.type_focus / res.cdp_node_resolve / res.editable_check": "IRREDUCIBLE (invariant)",
+  "c_in.prep / c_out.route / d_out.post / adm.inner (toggle)": "UNTESTED -> taken over by B-07 (wave 5, R')"
+ },
+ "binary_B5_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+ "provider": {
+  "attempts": 0,
+  "reached": 0
+ },
+ "near_misses": [
+  "attempt 2: host-shell empty python3 heredoc (no effect)",
+  "attempt 2: host-shell rustc --version (no effect)",
+  "attempt 2: host-shell python3 -c 1 (no effect)",
+  "attempt 2 fix session: host-shell python3 -c 1 appended to a README sed edit (no effect)",
+  "attempt 3 (wave-5 B-07 lane session): host-shell python3 --version with output discarded, during read-only inspection (no effect)"
+ ],
+ "hard_rule_breach": ""
+}

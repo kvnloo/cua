@@ -1,6 +1,6 @@
 {
  "schema": "cua-rfc-loop.provenance.v1",
- "lane": "B-05 (attempt 2, wave 4)",
+ "lane": "B-05 (attempt 2 measurements, wave 4; attempt 3 text-only fix pass, wave 5)",
  "branch": "exp/b-05-browser-mcp-transport-a2-20261003",
  "shas": {
   "tested_driver_source": "b376f1ff3867d92f9ec1b7fb1428d642eff05c67",
@@ -13,7 +13,10 @@
   "amendment_commit": "59034f53305e056a28d59d274c53b9b7d08f7046",
   "results_commit": "dd8c11746718a50dae420d5f51c8d1a46d441d74",
   "pre_rewrite_shas": "PREREG 3cced771f, amendment 92cab8900, results d1b42db63 (rewritten after verification to drop a committed private-name list; dates kept; README deviation 10)",
-  "publication_sha": "set by the Publish agent"
+  "publication_sha": "set by the Publish agent",
+  "post_verification_fixes_commit": "a91a86a4a1cbcfd11207191b91d1072b3758fada",
+  "amends_sha_map": {"3cced771f": "03f52d7eb00af946ea46f95e281fde9a78d23097 (PREREG.json; PREREG-AMENDMENT-1.json 'amends' cites the pre-rewrite SHA; that file is left byte-identical; README deviations 10-11)"},
+  "text_fix_branch": "exp/b-05-browser-mcp-transport-a3-20261003 (wave-5 text-only fix pass from a91a86a4a; README deviation 11)"
  },
  "binaries": {
   "B5": {"label": "b05-a2-b376f1ff3", "sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1", "version": "cua-driver 0.32.0 (read inside a private session)", "rustc": "1.97.1 (8bab26f4f 2026-07-14)", "use": "every arm of every phase (per-step sha256 in raw/run-plans/run-plans.json)"},

@@ -157,12 +157,6 @@
    "text": "0.536"
   },
   {
-   "id": "sens_pred_fill",
-   "path": "overhead_control.by_class.fill.predicted_overhead_ms",
-   "format": "{:.2f} / ",
-   "text": "8.51 / "
-  },
-  {
    "id": "sens_cm_pooled",
    "path": "e2_sensitivity.by_scale.x_pooled.c_m_us",
    "format": "c_m {:.1f} us",
@@ -175,34 +169,11 @@
    "text": "c_m 18.5 us"
   },
   {
-   "id": "sens_A_pooled_modal",
-   "path": "e2_sensitivity.by_scale.x_pooled.untested_share.phase_A:lane_rules.modal",
-   "format": " / {:.1%} |",
-   "text": " / 8.6% |"
-  },
-  {
-   "id": "sens_A_min_modal",
-   "path": "e2_sensitivity.by_scale.x_min.untested_share.phase_A:lane_rules.modal",
-   "format": " / {:.1%} |",
-   "text": " / 9.1% |"
-  },
-  {
-   "id": "sens_A_neither_modal",
-   "path": "e2_sensitivity.by_scale.x1.untested_share.phase_A:both_lane_rules_off.modal",
-   "format": " / {:.1%} |",
-   "text": " / 11.1% |"
-  },
-  {
    "id": "sens_O1_lane_modal",
    "path": "e2_sensitivity.by_scale.x1.untested_share.O1_COMP:lane_rules.modal",
    "format": "low load (O1 rows, {:.1%})",
    "text": "low load (O1 rows, 3.9%)"
-  },
-  {
-   "id": "sens_O1_T_fill",
-   "path": "e2_sensitivity.by_scale.x1.T_runner_corr_mean_ms.O1_COMP.fill",
-   "format": "T_runner {:.1f} / ",
-   "text": "T_runner 70.9 / "
   }
- ]
+ ],
+ "note_wave5": "The wave-4 loose sensitivity fragments (sens_pred_fill, sens_A_*_modal, sens_O1_T_fill) were removed; verify_artifacts.py derived_checks now recomputes every full E2-sensitivity sentence and grid row."
 }

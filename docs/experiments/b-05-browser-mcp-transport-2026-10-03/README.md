@@ -6,9 +6,16 @@ Lane B-05, wave 4 of the CUA RFC loop. Owners: kvnloo/cua#93 (experiment specs),
 **Disposition: REVISE.** The scripted COMP transport, admission and resolution components of R2-10
 are split into 27 sub-spans and judged as 24 verdict rows (some floor keys group two sub-spans). Every row now has a verdict except four that no pre-registered menu
 item addresses (request-side session prep, Driver post-dispatch work, response routing, and the toggle
-inner admission). Both Phase B candidates delete real work but fail the 0.5 ms gate, so they are KILLed:
-caller parse and caller validation are IRREDUCIBLE by the "every tested candidate failed" rule. Most of
-R2-10's "MCP transport" and "admission residual" time was the phase-trace instrumentation itself.
+inner admission). Both Phase B candidates delete real work but fail the 0.5 ms gate, so they are KILLed
+("reducible, below gate"): caller parse and caller validation are IRREDUCIBLE by the "every tested
+candidate failed" rule. **The phase-trace instrumentation is a material part of the measured MCP
+transport, but not most of it.** On B5, transport in/out is 44 / 48 / 35% instrumentation (fill /
+toggle / modal) at the per-mark cost c_m, and about 30 / 33 / 24% when the correction is scaled to the
+measured overhead (x_pooled). Only the admission residual is mostly instrumentation: 86 / 81 / 88% at
+c_m, about 59 / 56 / 60% at the measured scale. For modal the overhead control alone rules out "most":
+the whole measured marks-on penalty (4.40 ms) is 43% of raw modal transport (10.33 ms). These shares
+are on B5 (R2-10 source + marks); R2-10 measured binary R, so any comparison with R2-10's numbers is
+cross-binary and is not made here.
 **E2 (< 5% untested) is borderline and not established for any class.** The lane's primary view
 (per-mark correction at c_m, both lane verdict rules on) gives 4.3% / 4.1% / 7.5%, but that view is
 the most favourable one: scaling the correction to the measured instrumentation penalty, dropping
@@ -32,13 +39,23 @@ that also held the cargo lock (receipts: raw/locks/quiet-lane-ledger-b05a2.jsonl
   - modal: 4.40 ms [2.42, 6.53].
 
   That is above the 0.5 ms threshold, so the overhead is reported and subtracted (corrected view).
-- **Corrected transport in/out per task** (R2-10 measured 4.7-5.2 ms with marks on):
+- **Corrected transport in/out per task** (on B5 only; R2-10's 4.7-5.2 ms marks-on figure was measured
+  on binary R, so it is not compared or ratioed with these):
   - fill: 4.51 ms (raw 8.09);
   - toggle: 3.95 ms (raw 7.53);
   - modal: 6.75 ms (raw 10.33; one trial with an 86 ms caller stall).
 
   The admission residual drops from 1.73-1.87 ms raw to 0.21-0.36 ms corrected. Resolution drops from
   1.73-3.35 to 1.24-2.76 ms.
+
+  Instrumentation share of each raw group, (raw − corrected) / raw, at c_m and at x_pooled (0.685 c_m),
+  fill / toggle / modal (recomputed by verify_artifacts.py from b05-summary.json):
+
+  | group | at c_m | at x_pooled (measured scale) | class |
+  |---|---|---|---|
+  | transport_in_out | 44 / 48 / 35% | 30 / 33 / 24% | BENCHMARK+REAL |
+  | admission_residual | 86 / 81 / 88% | 59 / 56 / 60% | BENCHMARK+REAL |
+  | resolution | 17 / 28 / 28% | 12 / 19 / 19% | BENCHMARK+REAL |
 - **Phase B (causal A/B, 30 AB/BA pairs per class per candidate):** per-task caller-side saving
   (COMP_OFF − candidate), 95% CI:
 
@@ -119,35 +136,35 @@ that also held the cargo lock (receipts: raw/locks/quiet-lane-ledger-b05a2.jsonl
 The sub-span names are defined in PREREG.json under `subspans`. "UNTESTED" here means that no menu
 candidate exists.
 
-| sub-span (floor key) | fill corr / F0 / F1 / excess [CI] | toggle | modal | verdict (fill / toggle / modal) |
-|---|---|---|---|---|
-| adm.inner | 0.21 / 0.00 / 0.00 / 0.21 [0.14, 0.34] | 0.30 / 0.00 / 0.00 / 0.30 [0.17, 0.50] | 0.19 / 0.00 / 0.00 / 0.19 [0.16, 0.23] | BELOW_GATE / UNTESTED / BELOW_GATE |
-| adm.outer | 0.03 / 0.00 / 0.00 / 0.03 [0.01, 0.05] | 0.05 / 0.00 / 0.00 / 0.05 [0.03, 0.08] | 0.02 / 0.00 / 0.00 / 0.02 [0.00, 0.05] | BELOW_GATE |
-| c_in.prep | 0.83 / 0.00 / 0.33 / 0.83 [0.79, 0.87] | 0.91 / 0.00 / 0.33 / 0.91 [0.84, 0.99] | 3.58 / 0.00 / 0.33 / 3.58 [0.87, 8.94] | UNTESTED |
-| c_in.serialize | 0.09 / 0.02 / 0.04 / 0.07 [0.07, 0.08] | 0.09 / 0.02 / 0.04 / 0.07 [0.07, 0.08] | 0.09 / 0.02 / 0.04 / 0.07 [0.07, 0.08] | BELOW_GATE |
-| c_out.parse | 0.78 / 0.07 / 0.40 / 0.71 [0.67, 0.76] | 0.56 / 0.05 / 0.26 / 0.51 [0.48, 0.55] | 0.57 / 0.05 / 0.25 / 0.52 [0.48, 0.56] | IRREDUCIBLE (candidate failed) |
-| c_out.result_model | 0.18 / 0.00 / 0.06 / 0.18 [0.17, 0.19] | 0.16 / 0.00 / 0.06 / 0.16 [0.15, 0.18] | 0.17 / 0.00 / 0.06 / 0.17 [0.17, 0.18] | BELOW_GATE |
-| c_out.return | 0.11 / 0.00 / 0.04 / 0.11 [0.11, 0.12] | 0.10 / 0.00 / 0.04 / 0.10 [0.10, 0.11] | 0.11 / 0.00 / 0.04 / 0.11 [0.10, 0.11] | BELOW_GATE |
-| c_out.route | 0.56 / 0.00 / 0.18 / 0.56 [0.53, 0.59] | 0.50 / 0.00 / 0.17 / 0.50 [0.47, 0.53] | 0.54 / 0.00 / 0.17 / 0.54 [0.51, 0.57] | UNTESTED |
-| c_out.validate | 0.51 / 0.00 / 0.26 / 0.51 [0.47, 0.55] | 0.46 / 0.00 / 0.28 / 0.46 [0.43, 0.49] | 0.48 / 0.00 / 0.28 / 0.48 [0.45, 0.51] | IRREDUCIBLE (candidate failed) |
-| d_in.invoke | 0.12 / 0.00 / 0.00 / 0.12 [0.10, 0.15] | 0.17 / 0.00 / 0.00 / 0.17 [0.14, 0.21] | 0.16 / 0.00 / 0.00 / 0.16 [0.13, 0.19] | BELOW_GATE |
-| d_in.parse | 0.04 / 0.00 / 0.00 / 0.04 [0.02, 0.06] | 0.05 / 0.00 / 0.00 / 0.05 [0.03, 0.08] | 0.03 / 0.00 / 0.00 / 0.03 [0.01, 0.05] | BELOW_GATE |
-| d_out.post | 1.18 / 0.00 / 0.00 / 1.18 [1.07, 1.30] | 0.85 / 0.00 / 0.00 / 0.85 [0.73, 1.00] | 0.92 / 0.00 / 0.00 / 0.92 [0.82, 1.01] | UNTESTED |
-| d_out.serialize | 0.03 / 0.00 / 0.00 / 0.03 [0.02, 0.03] | 0.02 / 0.00 / 0.00 / 0.02 [0.02, 0.03] | 0.03 / 0.00 / 0.00 / 0.03 [0.02, 0.03] | BELOW_GATE |
-| d_out.write_flush | 0.21 / 0.00 / 0.01 / 0.21 [0.16, 0.26] | 0.18 / 0.00 / 0.01 / 0.18 [0.15, 0.21] | 0.18 / 0.00 / 0.01 / 0.18 [0.16, 0.20] | BELOW_GATE |
-| pipe_out_frame | 0.16 / 0.01 / 0.09 / 0.15 [0.10, 0.19] | 0.07 / 0.02 / 0.09 / 0.05 [0.03, 0.08] | 0.12 / 0.03 / 0.09 / 0.08 [0.02, 0.15] | BELOW_GATE |
-| write_pipe_in | 0.23 / 0.01 / 0.18 / 0.21 [0.19, 0.23] | 0.28 / 0.01 / 0.18 / 0.27 [0.21, 0.35] | 0.25 / 0.01 / 0.18 / 0.24 [0.22, 0.26] | BELOW_GATE |
+| sub-span (floor key) | fill corr / F0 / F1 / excess [CI] | toggle | modal | verdict (fill / toggle / modal) | class |
+|---|---|---|---|---|---|
+| adm.inner | 0.21 / 0.00 / 0.00 / 0.21 [0.14, 0.34] | 0.30 / 0.00 / 0.00 / 0.30 [0.17, 0.50] | 0.19 / 0.00 / 0.00 / 0.19 [0.16, 0.23] | BELOW_GATE / UNTESTED / BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE; toggle deletion NOT_RUN |
+| adm.outer | 0.03 / 0.00 / 0.00 / 0.03 [0.01, 0.05] | 0.05 / 0.00 / 0.00 / 0.05 [0.03, 0.08] | 0.02 / 0.00 / 0.00 / 0.02 [0.00, 0.05] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| c_in.prep | 0.83 / 0.00 / 0.33 / 0.83 [0.79, 0.87] | 0.91 / 0.00 / 0.33 / 0.91 [0.84, 0.99] | 3.58 / 0.00 / 0.33 / 3.58 [0.87, 8.94] | UNTESTED | BENCHMARK+REAL (A1); floors FIXTURE; deletion NOT_RUN |
+| c_in.serialize | 0.09 / 0.02 / 0.04 / 0.07 [0.07, 0.08] | 0.09 / 0.02 / 0.04 / 0.07 [0.07, 0.08] | 0.09 / 0.02 / 0.04 / 0.07 [0.07, 0.08] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| c_out.parse | 0.78 / 0.07 / 0.40 / 0.71 [0.67, 0.76] | 0.56 / 0.05 / 0.26 / 0.51 [0.48, 0.55] | 0.57 / 0.05 / 0.25 / 0.52 [0.48, 0.56] | IRREDUCIBLE (candidate failed) | BENCHMARK+REAL (A1; Phase B B1/B2); floors FIXTURE |
+| c_out.result_model | 0.18 / 0.00 / 0.06 / 0.18 [0.17, 0.19] | 0.16 / 0.00 / 0.06 / 0.16 [0.15, 0.18] | 0.17 / 0.00 / 0.06 / 0.17 [0.17, 0.18] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| c_out.return | 0.11 / 0.00 / 0.04 / 0.11 [0.11, 0.12] | 0.10 / 0.00 / 0.04 / 0.10 [0.10, 0.11] | 0.11 / 0.00 / 0.04 / 0.11 [0.10, 0.11] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| c_out.route | 0.56 / 0.00 / 0.18 / 0.56 [0.53, 0.59] | 0.50 / 0.00 / 0.17 / 0.50 [0.47, 0.53] | 0.54 / 0.00 / 0.17 / 0.54 [0.51, 0.57] | UNTESTED | BENCHMARK+REAL (A1); floors FIXTURE; deletion NOT_RUN |
+| c_out.validate | 0.51 / 0.00 / 0.26 / 0.51 [0.47, 0.55] | 0.46 / 0.00 / 0.28 / 0.46 [0.43, 0.49] | 0.48 / 0.00 / 0.28 / 0.48 [0.45, 0.51] | IRREDUCIBLE (candidate failed) | BENCHMARK+REAL (A1; Phase B B1/B2); floors FIXTURE |
+| d_in.invoke | 0.12 / 0.00 / 0.00 / 0.12 [0.10, 0.15] | 0.17 / 0.00 / 0.00 / 0.17 [0.14, 0.21] | 0.16 / 0.00 / 0.00 / 0.16 [0.13, 0.19] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| d_in.parse | 0.04 / 0.00 / 0.00 / 0.04 [0.02, 0.06] | 0.05 / 0.00 / 0.00 / 0.05 [0.03, 0.08] | 0.03 / 0.00 / 0.00 / 0.03 [0.01, 0.05] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| d_out.post | 1.18 / 0.00 / 0.00 / 1.18 [1.07, 1.30] | 0.85 / 0.00 / 0.00 / 0.85 [0.73, 1.00] | 0.92 / 0.00 / 0.00 / 0.92 [0.82, 1.01] | UNTESTED | BENCHMARK+REAL (A1); floors FIXTURE; deletion NOT_RUN |
+| d_out.serialize | 0.03 / 0.00 / 0.00 / 0.03 [0.02, 0.03] | 0.02 / 0.00 / 0.00 / 0.02 [0.02, 0.03] | 0.03 / 0.00 / 0.00 / 0.03 [0.02, 0.03] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| d_out.write_flush | 0.21 / 0.00 / 0.01 / 0.21 [0.16, 0.26] | 0.18 / 0.00 / 0.01 / 0.18 [0.15, 0.21] | 0.18 / 0.00 / 0.01 / 0.18 [0.16, 0.20] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| pipe_out_frame | 0.16 / 0.01 / 0.09 / 0.15 [0.10, 0.19] | 0.07 / 0.02 / 0.09 / 0.05 [0.03, 0.08] | 0.12 / 0.03 / 0.09 / 0.08 [0.02, 0.15] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
+| write_pipe_in | 0.23 / 0.01 / 0.18 / 0.21 [0.19, 0.23] | 0.28 / 0.01 / 0.18 / 0.27 [0.21, 0.35] | 0.25 / 0.01 / 0.18 / 0.24 [0.22, 0.26] | BELOW_GATE | BENCHMARK+REAL (A1); floors FIXTURE |
 
-| resolution sub-span | fill corr [CI] | toggle | modal | verdict |
-|---|---|---|---|---|
-| res.dispatch | 0.23 [0.21, 0.25] | 0.18 [0.17, 0.20] | 0.20 [0.17, 0.22] | BELOW_GATE |
-| res.ref_parse | 0.00 [0.00, 0.01] | 0.00 [0.00, 0.01] | 0.01 [0.00, 0.01] | BELOW_GATE |
-| res.store_lookup | 0.04 [0.03, 0.04] | 0.02 [0.02, 0.03] | 0.03 [0.02, 0.03] | BELOW_GATE |
-| res.frame_proof | 0.45 [0.43, 0.48] | 0.48 [0.44, 0.55] | 0.58 [0.48, 0.72] | IRREDUCIBLE (invariant: one Page.getFrameTree re-proving frame identity) |
-| res.type_focus | 0.55 [0.50, 0.62] | absent | absent | IRREDUCIBLE (invariant: one DOM.focus) |
-| res.cdp_node_resolve | 1.03 [0.92, 1.17] | 0.56 [0.49, 0.67] | 0.43 [0.40, 0.48] | IRREDUCIBLE (invariant: one DOM.resolveNode per action, FIX-01 liveness) |
-| res.editable_check | 0.45 [0.39, 0.52] | absent | absent | IRREDUCIBLE (invariant: one Runtime.callFunctionOn) |
-| res.post_check | 0.01 [0.00, 0.01] | absent | absent | BELOW_GATE |
+| resolution sub-span | fill corr [CI] | toggle | modal | verdict | class |
+|---|---|---|---|---|---|
+| res.dispatch | 0.23 [0.21, 0.25] | 0.18 [0.17, 0.20] | 0.20 [0.17, 0.22] | BELOW_GATE | BENCHMARK+REAL (A1) |
+| res.ref_parse | 0.00 [0.00, 0.01] | 0.00 [0.00, 0.01] | 0.01 [0.00, 0.01] | BELOW_GATE | BENCHMARK+REAL (A1) |
+| res.store_lookup | 0.04 [0.03, 0.04] | 0.02 [0.02, 0.03] | 0.03 [0.02, 0.03] | BELOW_GATE | BENCHMARK+REAL (A1) |
+| res.frame_proof | 0.45 [0.43, 0.48] | 0.48 [0.44, 0.55] | 0.58 [0.48, 0.72] | IRREDUCIBLE (invariant: one Page.getFrameTree re-proving frame identity) | BENCHMARK+REAL (A1); invariant SOURCE |
+| res.type_focus | 0.55 [0.50, 0.62] | absent | absent | IRREDUCIBLE (invariant: one DOM.focus) | BENCHMARK+REAL (A1); invariant SOURCE |
+| res.cdp_node_resolve | 1.03 [0.92, 1.17] | 0.56 [0.49, 0.67] | 0.43 [0.40, 0.48] | IRREDUCIBLE (invariant: one DOM.resolveNode per action, FIX-01 liveness) | BENCHMARK+REAL (A1); invariant SOURCE |
+| res.editable_check | 0.45 [0.39, 0.52] | absent | absent | IRREDUCIBLE (invariant: one Runtime.callFunctionOn) | BENCHMARK+REAL (A1); invariant SOURCE |
+| res.post_check | 0.01 [0.00, 0.01] | absent | absent | BELOW_GATE | BENCHMARK+REAL (A1) |
 
 Per-call means by tool are in `phase_A.by_class.<cls>.per_call` in b05-summary.json. The hypothesis
 had three parts:
@@ -162,6 +179,17 @@ had three parts:
 
 The single-write knob, compact serialization, duplicated-text removal and the snapshot-store cache
 were not run. Their target sub-spans are below the gate (PREREG-AMENDMENT-1.json `not_selected`).
+
+### Terminal sub-span verdicts (as pre-registered and computed)
+
+| item | terminal verdict | basis | class |
+|---|---|---|---|
+| PARSE_FAST (c_out.parse candidate) | KILL ("reducible, below gate") | work deleted 0.16-0.26 ms per task, every mean below the 0.5 ms gate | BENCHMARK+REAL |
+| VALIDATE_FAST (c_out.validate candidate) | KILL ("reducible, below gate") | work deleted 0.12-0.15 ms per task, every mean below the 0.5 ms gate | BENCHMARK+REAL |
+| c_out.parse, c_out.validate | IRREDUCIBLE (candidate failed) | PREREG "every tested candidate failed" rule | BENCHMARK+REAL |
+| adm.inner (fill, modal), adm.outer, c_in.serialize, c_out.result_model, c_out.return, d_in.invoke, d_in.parse, d_out.serialize, d_out.write_flush, pipe_out_frame, write_pipe_in, res.dispatch, res.ref_parse, res.store_lookup, res.post_check (fill) | BELOW_GATE (as listed in the tables above) | CI upper bound of the excess < 0.5 ms per task (lane rule; at x_pooled adm.inner fill/modal flips to UNTESTED, see E2 sensitivity) | BENCHMARK+REAL |
+| res.frame_proof, res.type_focus, res.cdp_node_resolve, res.editable_check | IRREDUCIBLE (invariant) | one required CDP request each (frame identity, focus, FIX-01 liveness, editable check) | BENCHMARK+REAL; invariant SOURCE |
+| c_in.prep, c_out.route, d_out.post, adm.inner (toggle) | UNTESTED (no menu candidate) | taken over by lane B-07 (wave 5) on R' code | NOT_RUN |
 
 ## Work deleted vs wall-clock saved
 
@@ -180,7 +208,7 @@ were not run. Their target sub-spans are below the gate (PREREG-AMENDMENT-1.json
 | N4a, node replaced between bind and dispatch | 5 per class per candidate arm | 15 of 15 PARSE_FAST and 15 of 15 VALIDATE_FAST: refused `browser_ref_stale`, one rebind, verified | REAL |
 | Equivalence, parser | 1980 tools/call responses per chunk (B1 and B2, both arms) | 0 mismatches against the library parser (raw/equivalence/equivalence-B1.json, raw/equivalence/equivalence-B2.json) | FIXTURE |
 | Equivalence, validator | 990 structured results per chunk | 0 mismatches in accept/reject or error text | FIXTURE |
-| Negative, malformed frames through the client stack | 10 frames × {default, fast} parser | 20 of 20 rejected (raw/negative/parser-neg-control.json) | FIXTURE |
+| Negative, malformed frames through the client stack | 10 frames × {default, fast} parser; parser arms only | 20 of 20 rejected (raw/negative/parser-neg-control.json). Scope: this control exercises the frame parser only (PARSE_FAST vs the library). VALIDATE_FAST was not run against malformed frames: it only sees results that the (library) parser has already accepted, so it is covered by construction, and its own negative is the schema-invalid row below | FIXTURE |
 | Negative, schema-invalid results | 80 mutations per chunk; 56 rejected by the library | the fast validator gives the library's verdict and text on 80 of 80 | FIXTURE |
 | Unit, touched crates on the lane tree | core browser:: 193, phase_trace 6, cua-driver proxy:: 22 (incl. B-05 knob tests), platform-linux focus_guard 14 | all pass (raw/unit/steps.txt) | UNIT |
 | E4 | every measured trial in every phase | 0 stale-ref dispatches, 0 duplicate mutations, 0 unverified successes, 0 refusals returned as success, 0 blind replays | REAL |
@@ -199,6 +227,11 @@ toggle are:
 
 Fill adds R2-10's input_prep, 1.36 ms. In modal, one trial (A1-058) carries an 86 ms caller stall in
 c_in.prep. It is kept: modal's untested share is 7.5%, and the c_in.prep median is 0.86 ms.
+
+c_in.prep is UNTESTED against its F0 floor (0.00 ms). Its F1 floor (the same mcp client stack replaying
+recorded frames) is 0.33 ms per task, so the part a caller-side candidate could plausibly delete is
+about 0.50 / 0.58 ms for fill / toggle (0.83 − 0.33, 0.91 − 0.33) and about 0.53 ms at the modal
+median: at the gate, not clearly above it. That is why it stays UNTESTED rather than BELOW_GATE.
 
 No pre-registered menu item addresses any of these four:
 
@@ -308,6 +341,8 @@ correction over-subtracts by 20-46%, so the lane view is the most favourable rea
    hostless. They were an empty `python3` heredoc, `rustc --version`, and `python3 -c 1`. None
    touched a display, a session bus or the network. During the post-verification fixes a fourth
    one ran: a stray `python3 -c 1` no-op appended to a README text edit in the host shell.
+   The wave-5 fix-pass session (lane B-07) adds a fifth one: `python3 --version` (output discarded)
+   ran in the host shell during read-only inspection, before any edit. It is version output only.
 7. **PREREG order_of_work not followed exactly:** shakedowns 1-4 (02:59-03:27Z) ran before the PREREG
    commit (03:29Z), and the PREREG text already reports their outcomes. The overhead control O1 was
    queued at 03:58Z but acquired the quiet lock only at 04:22:59Z, after the PREREG-AMENDMENT-1
@@ -336,11 +371,37 @@ correction over-subtracts by 20-46%, so the lane view is the most favourable rea
       sha256 per step: B5 f4149bdd... in every A1, O1 and B step.
     - The E2 sensitivity section and `e2_sensitivity` in the summary were added; disposition and
       wording now call E2 borderline / not established.
+11. **Wave-5 text-only fix pass (attempt 3 branch, no new trial, no data change; b05-summary.json,
+    raw/ and harness/ are byte-identical to a91a86a4a):**
+    - The disposition and headline no longer say the instrumentation was most of the transport and
+      admission time. They give the recomputed shares (transport 44 / 48 / 35% at c_m, about
+      30 / 33 / 24% at the measured scale; only the admission residual is mostly instrumentation;
+      modal is ruled out by the overhead control) and mark the R2-10 comparison as cross-binary.
+    - **The amendment's `amends` field cites a pre-rewrite SHA.** PREREG-AMENDMENT-1.json says
+      `"amends": "PREREG.json (commit 3cced771f)"`. 3cced771f is the pre-rewrite PREREG commit, which no
+      ref reaches; it maps to 03f52d7eb (deviation 10). The pre-registered file is left byte-identical,
+      and this note and provenance.json `amends_sha_map` carry the mapping.
+    - A per-row evidence class was added to the sub-span and resolution tables, and the terminal
+      sub-span verdicts are stated in one table.
+    - The malformed-frame control's scope (parser arms only) is stated in the Controls table.
+    - c_in.prep's F1 floor (0.33 ms) is cited in its UNTESTED reasoning.
+    - Phase A's load (mean 1-minute loadavg 13.8) is stated as a limit.
+    - verify_artifacts.py: the loose sensitivity fragments (for example `" / 8.6% |"`) are replaced by
+      checks of every full row of the E2 sensitivity grid. Checks were added for the instrumentation
+      shares, the BELOW_GATE list, the amends-SHA note, RESULT.json, and the unreachability of the
+      pre-rewrite commits. The privacy scan now also decodes hex and base64 literals.
+    - The lane record (RESULT.json, new in the packet) replaces the stale wave-4 lane result. That
+      result cited the pre-rewrite SHAs, said "E2 met for fill and toggle" and listed 3 near misses
+      instead of 4.
 
 ## Limits and claim boundary
 
 - One host under heavy shared load, private Xvfb, scripted chooser only, and binary B5 (R + marks +
   default-off knobs) in every arm.
+- **Phase A load is a limit.** Phase A (the attribution chunk A1) ran at a mean 1-minute loadavg of
+  13.8 under both locks. Its corrected T_runner is 40-55% above the O1 COMP rows (loadavg 4.3), so
+  every Phase A share is load-dependent, and the attribution should be re-run on a quiet host. Wave 5's
+  B-07 does that on R' code with a loadavg <= 4.0 start gate.
 - Nothing is ratioed against R2-10's binary or numbers. The shares use a different denominator
   (Phase A T_runner was inflated 40-55% by host load; see E2 sensitivity).
 - The caller-side candidates are harness-only variants of the jev-use Python client. They change no
@@ -353,11 +414,12 @@ correction over-subtracts by 20-46%, so the lane view is the most favourable rea
 
 - **Pre-registration:** PREREG.json, PREREG-AMENDMENT-1.json.
 - **Results:** b05-summary.json (recomputed from raw/ by analyze_b05.py), headline-numbers.json,
-  provenance.json.
+  provenance.json, RESULT.json (the lane record, attempt 3 fix pass).
 - **Verifier:** verify_artifacts.py (`python3 verify_artifacts.py`, standard library, about 3 minutes;
   run it under the lane's hostless wrapper). It recomputes the summary, checks every headline against
-  this README, fails on any cited file that is missing, untracked or git-ignored, and privacy-scans
-  every commit of the branch. Private names are never stored in the repository: set
+  this README, recomputes every reworded share and every full E2-sensitivity row (wave-5 derived
+  checks), fails on any cited file that is missing, untracked or git-ignored, and privacy-scans every
+  commit of the branch (hex and base64 literals decoded). Private names are never stored in the repository: set
   CUA_PRIVACY_NAMES_FILE to an untracked file with one name per line; without it the name sub-check
   covers the verifying host's name and the generic home/mount path patterns only, and says so.
 - **Harness:**
