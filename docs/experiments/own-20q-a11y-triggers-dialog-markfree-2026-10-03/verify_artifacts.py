@@ -185,7 +185,7 @@ def main() -> None:
               "the DLG commit is one commit touching only input/focus_guard.rs")
         check(git("rev-parse", f"{OWN20P}:libs/cua-driver").strip() == git("rev-parse", f"{s['GA']}:libs/cua-driver").strip(),
               "the branch base's libs/cua-driver is GA's")
-        check(sorted(git("diff", "--name-only", s["GA"], s["GQ"], "--", "libs/cua-driver").split()) == sorted([NATIVE, GUARD]),
+        check(sorted(git("diff", "--name-only", s["GA"], s["GQ"], "--", ":/libs/cua-driver").split()) == sorted([NATIVE, GUARD]),
               "GA and GQ libs/cua-driver differ in exactly the two fixed files")
         ga_gq = tree_after(s["GA"], HERE / "raw" / "source" / "gq-vs-ga.patch")
         check(git("rev-parse", f"{ga_gq}:libs/cua-driver").strip() == s["GQ_libs_tree"],
