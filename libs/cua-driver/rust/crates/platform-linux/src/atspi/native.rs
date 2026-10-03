@@ -71,7 +71,11 @@ async fn call<T>(fut: impl std::future::Future<Output = T>) -> Option<T> {
     if budget.is_zero() {
         return None;
     }
-    tokio::time::timeout(budget, fut).await.ok()
+    let reply = tokio::time::timeout(budget, fut).await.ok();
+    if reply.is_none() {
+        note_unanswered_call();
+    }
+    reply
 }
 
 /// Run a *synchronous, blocking* closure (typically a raw X11 round-trip via
@@ -394,6 +398,48 @@ fn spawn_focus_tracker(conn: &'static AccessibilityConnection, generation: u64) 
     });
 }
 
+/// How long the bus daemon gets to answer its own `Peer.Ping`.
+const BUS_PING_TIMEOUT: Duration = Duration::from_secs(1);
+/// At most one bus check runs at a time.
+static BUS_CHECK_RUNNING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// An AT-SPI call went unanswered within its budget. A slow application does
+/// that while its bus is fine, so the connection is given up only when the
+/// bus daemon itself does not answer a `Peer.Ping`: a hung daemon keeps its
+/// socket open, so the event stream never ends and nothing else notices.
+/// The check runs in the background and never delays the caller.
+fn note_unanswered_call() {
+    let Some((conn, generation)) = link().current() else {
+        return;
+    };
+    if BUS_CHECK_RUNNING.swap(true, std::sync::atomic::Ordering::AcqRel) {
+        return;
+    }
+    runtime().spawn(async move {
+        if bus_lost_after_unanswered_call(conn.connection()).await && connection_lost(generation) {
+            dlog!("AT-SPI connection {generation} lost: the bus daemon did not answer Peer.Ping");
+            let _ = tokio::time::timeout(BUS_PING_TIMEOUT, conn.connection().clone().close()).await;
+        }
+        BUS_CHECK_RUNNING.store(false, std::sync::atomic::Ordering::Release);
+    });
+}
+
+/// After an unanswered call: the bus is lost when its daemon does not answer
+/// `org.freedesktop.DBus.Peer.Ping` in time.
+async fn bus_lost_after_unanswered_call(bus: &atspi::zbus::Connection) -> bool {
+    let ping = bus.call_method(
+        Some("org.freedesktop.DBus"),
+        "/org/freedesktop/DBus",
+        Some("org.freedesktop.DBus.Peer"),
+        "Ping",
+        &(),
+    );
+    !matches!(
+        tokio::time::timeout(BUS_PING_TIMEOUT, ping).await,
+        Ok(Ok(_))
+    )
+}
+
 /// The accessible that currently holds keyboard focus inside `pid`'s
 /// application, resolved from the focus-event log (no tree walk). `None` when
 /// no focus event was seen for the app or the recorded object no longer
@@ -600,6 +646,94 @@ mod link_tests {
             seen.push(generation);
             assert!(link.lose(generation));
         }
+    }
+}
+
+#[cfg(test)]
+mod unanswered_call_tests {
+    use super::{bus_lost_after_unanswered_call, runtime};
+    use std::io::BufRead as _;
+
+    /// A private `dbus-daemon` owned by the test; `None` when there is none.
+    struct Daemon {
+        child: std::process::Child,
+        dir: std::path::PathBuf,
+        address: String,
+    }
+
+    impl Daemon {
+        fn start() -> Option<Self> {
+            let dir = std::env::temp_dir().join(format!("cua-unanswered-{}", std::process::id()));
+            std::fs::create_dir_all(&dir).ok()?;
+            let config = dir.join("bus.conf");
+            std::fs::write(
+                &config,
+                format!(
+                    "<busconfig><type>custom</type><listen>unix:dir={}</listen>\
+                     <auth>EXTERNAL</auth><policy context=\"default\">\
+                     <allow send_destination=\"*\" eavesdrop=\"true\"/>\
+                     <allow eavesdrop=\"true\"/><allow own=\"*\"/></policy></busconfig>",
+                    dir.display()
+                ),
+            )
+            .ok()?;
+            let mut child = std::process::Command::new("dbus-daemon")
+                .arg(format!("--config-file={}", config.display()))
+                .args(["--nofork", "--print-address=1"])
+                .stdout(std::process::Stdio::piped())
+                .spawn()
+                .ok()?;
+            let mut address = String::new();
+            std::io::BufReader::new(child.stdout.take()?)
+                .read_line(&mut address)
+                .ok()?;
+            Some(Self {
+                child,
+                dir,
+                address: address.trim().to_owned(),
+            })
+        }
+
+        fn signal(&self, name: &str) {
+            let _ = std::process::Command::new("kill")
+                .args([name, &self.child.id().to_string()])
+                .status();
+        }
+    }
+
+    impl Drop for Daemon {
+        fn drop(&mut self) {
+            self.signal("-CONT");
+            let _ = self.child.kill();
+            let _ = self.child.wait();
+            let _ = std::fs::remove_dir_all(&self.dir);
+        }
+    }
+
+    #[test]
+    fn an_unanswered_call_keeps_the_bus_while_its_daemon_answers_and_loses_a_hung_one() {
+        let Some(daemon) = Daemon::start() else {
+            eprintln!("skipped: no dbus-daemon to start");
+            return;
+        };
+        runtime().block_on(async {
+            let connect = atspi::zbus::connection::Builder::address(daemon.address.as_str())
+                .expect("bus address")
+                .build();
+            let bus = tokio::time::timeout(std::time::Duration::from_secs(5), connect)
+                .await
+                .expect("the private bus accepts a connection within 5 s")
+                .expect("connect to the private bus");
+            assert!(
+                !bus_lost_after_unanswered_call(&bus).await,
+                "a slow application leaves the daemon answering: no reconnect"
+            );
+            daemon.signal("-STOP");
+            assert!(
+                bus_lost_after_unanswered_call(&bus).await,
+                "a hung daemon keeps its socket open but never answers: the bus is lost"
+            );
+        });
     }
 }
 
