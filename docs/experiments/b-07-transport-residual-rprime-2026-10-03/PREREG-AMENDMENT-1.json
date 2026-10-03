@@ -1,0 +1,67 @@
+{
+ "schema": "cua-rfc-loop.prereg-amendment.v1",
+ "lane": "B-07",
+ "amends": "PREREG.json (commit 231f6e8bb)",
+ "written_before_first_phase_B_trial": true,
+ "phase_A_basis": "Phase A chunk A1 only (96/96 COMP trials verified and valid, 32 per class, EXCLUSIVE quiet-timed + cargo lock, every round started at 1-minute loadavg <= 4.0, trial loadavg mean 3.22). Per-mark cost c_m = 32.33 us. Values are corrected (c_m) per-task means in ms with the 95% CI, recomputed by analyze_b07.py from raw/. The overhead control (chunk O*) was running when this file was written and does not enter the selection rule.",
+ "selection_rule": "PREREG selection_rule: selected iff the target sub-span's Phase A corrected per-task mean >= 0.5 ms in at least one class",
+ "targets": {
+  "c_in.prep": {
+   "fill": "0.626 [0.583, 0.698]",
+   "toggle": "0.601 [0.581, 0.623]",
+   "modal": "0.610 [0.591, 0.63]"
+  },
+  "c_out.route": {
+   "fill": "0.394 [0.361, 0.443]",
+   "toggle": "0.340 [0.328, 0.353]",
+   "modal": "0.346 [0.335, 0.358]"
+  },
+  "d_out.post": {
+   "fill": "0.913 [0.858, 0.994]",
+   "toggle": "0.571 [0.549, 0.597]",
+   "modal": "0.593 [0.567, 0.621]"
+  },
+  "adm.inner (removed from menu)": {
+   "fill": "0.093 [0.075, 0.119]",
+   "toggle": "0.105 [0.09, 0.124]",
+   "modal": "0.104 [0.095, 0.115]"
+  }
+ },
+ "selected": [
+  "PREP_FAST",
+  "POST_FAST"
+ ],
+ "not_selected": {
+  "ROUTE_FAST": "c_out.route corrected mean < 0.5 ms in every class (CI upper < 0.5 ms in every class): BELOW_GATE by PREREG unselected_rule; not run"
+ },
+ "candidates": [
+  {
+   "arm": "PREP_FAST",
+   "chunk_prefix": "P",
+   "control_arm": "COMP_OFF",
+   "arm_overrides": {
+    "prep": "fast"
+   },
+   "caller_variant": {
+    "prep": "fast"
+   },
+   "driver_knobs": {},
+   "target": "c_in.prep",
+   "work_metric": "prep_ms (sum of call_send -> c.req_written over in-T calls)"
+  },
+  {
+   "arm": "POST_FAST",
+   "chunk_prefix": "Q",
+   "control_arm": "COMP_OFF",
+   "arm_overrides": {},
+   "caller_variant": {},
+   "driver_knobs": {
+    "CUA_DRIVER_EXP_OUTPUT_VALIDATOR_PREWARM": "1"
+   },
+   "target": "d_out.post",
+   "work_metric": "driver_window_ms (sum of c.req_written -> c.first_byte over in-T calls)"
+  }
+ ],
+ "n4a": "chunk prefix N: 5 rounds x 3 classes in each of COMP_OFF, PREP_FAST, POST_FAST (15 per arm)",
+ "phase_B_design": "PREREG phase_B unchanged: 30 AB/BA rounds per class per candidate, COMP_OFF first in AB rounds"
+}
