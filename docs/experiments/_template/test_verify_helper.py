@@ -12,11 +12,22 @@ evidence from published packets (*.log, build/), then a packet that cites its fi
                     read whole), so a citation elsewhere is reported only with --readme all;
   template:         this directory (the template itself) passes.
 
+UNIT controls for verify_helper.check_privacy (PUB-02), each in a throwaway repository with a names
+file that holds only a non-private dummy name (built at run time, so this file does not contain it):
+  planted name:     the dummy hex-encoded, base64-encoded and inside a raw/ gzip member: caught 3/3;
+  encoded list:     two quoted base64 literals of name-like tokens fail with no names file entry;
+  absolute path:    a planted home path is caught;
+  user name:        the local user name in a raw/ gzip member is user-name-in-raw, elsewhere plain-name;
+  clean:            the same packet without plants, and the template itself, pass.
+
 usage: python3 test_verify_helper.py -v
 """
 
 from __future__ import annotations
 
+import base64
+import getpass
+import gzip
 import json
 import os
 import subprocess
@@ -27,7 +38,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from verify_helper import check_cited  # noqa: E402
+from verify_helper import check_cited, check_privacy  # noqa: E402
 
 README = """# Example packet
 
@@ -106,6 +117,86 @@ class CheckCited(unittest.TestCase):
         if subprocess.run(["git", "-C", str(HERE), "rev-parse"], capture_output=True).returncode:
             self.skipTest("not inside a git checkout")
         self.assertEqual(check_cited(HERE, "all"), [])
+
+
+DUMMY = "zz-" + "planted-name"  # non-private control name; never a literal in this file
+
+
+class CheckPrivacy(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory(prefix="verify-privacy-")
+        self.repo = Path(self.tmp.name) / "repo"
+        self.pkt = self.repo / "docs" / "experiments" / "example"
+        (self.pkt / "raw").mkdir(parents=True)
+        for k, v in {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
+                     "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid"}.items():
+            os.environ[k] = v
+        sh(self.repo, "git", "init", "-q")
+        names = Path(self.tmp.name) / "names.txt"
+        names.write_text(DUMMY + "\n")
+        self.saved = os.environ.get("CUA_PRIVACY_NAMES_FILE")
+        os.environ["CUA_PRIVACY_NAMES_FILE"] = str(names)
+        (self.pkt / "README.md").write_text("# Example\n\nClean text, `raw/trials.jsonl`.\n")
+        (self.pkt / "raw" / "trials.jsonl").write_text('{"trial": 1, "sha": "8f3a646b4c0d2e1f"}\n')
+
+    def tearDown(self) -> None:
+        if self.saved is None:
+            os.environ.pop("CUA_PRIVACY_NAMES_FILE", None)
+        else:
+            os.environ["CUA_PRIVACY_NAMES_FILE"] = self.saved
+        self.tmp.cleanup()
+
+    def commit(self) -> None:
+        sh(self.repo, "git", "add", "-A")
+        sh(self.repo, "git", "commit", "-q", "-m", "packet")
+
+    def kinds(self) -> set[tuple[str, str]]:
+        return {(f["where"], f["kind"]) for f in check_privacy(self.pkt)}
+
+    def test_clean_packet_passes(self) -> None:
+        self.commit()
+        self.assertEqual(check_privacy(self.pkt), [])
+
+    def test_planted_name_hex_base64_gzip_caught(self) -> None:
+        (self.pkt / "notes.txt").write_text(f"id {DUMMY.encode().hex()} end\n")
+        (self.pkt / "cfg.json").write_text(json.dumps({"k": base64.b64encode(DUMMY.encode()).decode()}) + "\n")
+        (self.pkt / "raw" / "log.txt.gz").write_bytes(gzip.compress(f"session {DUMMY} ok\n".encode()))
+        self.commit()
+        got = self.kinds()
+        self.assertIn(("notes.txt", "encoded-name"), got)
+        self.assertIn(("cfg.json", "encoded-name"), got)
+        self.assertIn(("raw/log.txt.gz!gunzip", "plain-name"), got)
+        self.assertEqual({w for w, _ in got}, {"notes.txt", "cfg.json", "raw/log.txt.gz!gunzip"})
+        self.assertFalse(any(DUMMY in f["where"] + f["detail"] for f in check_privacy(self.pkt)))
+
+    def test_encoded_name_list_fails_without_its_names(self) -> None:
+        enc = [base64.b64encode(n.encode()).decode() for n in ("alpha-node-01", "beta-node-02")]
+        (self.pkt / "check.py").write_text(f"_N = [{enc[0]!r}, {enc[1]!r}]\n")
+        self.commit()
+        self.assertEqual(self.kinds(), {("check.py", "encoded-list")})
+
+    def test_absolute_path_plant_caught(self) -> None:
+        plant = "/" + "home/example-user/work/run"  # built at run time so this file stays clean
+        (self.pkt / "raw" / "run.txt").write_text(f"cwd={plant}\n")
+        self.commit()
+        self.assertEqual(self.kinds(), {("raw/run.txt", "abs-path")})
+
+    def test_user_name_in_raw_member_and_outside_raw(self) -> None:
+        try:
+            user = getpass.getuser()
+        except (KeyError, OSError):
+            self.skipTest("no local user name")
+        (self.pkt / "raw" / "xhost.txt.gz").write_bytes(gzip.compress(f"SI:localuser:{user}\n".encode()))
+        (self.pkt / "about.txt").write_text(f"by {user}\n")
+        self.commit()
+        got = self.kinds()
+        self.assertIn(("raw/xhost.txt.gz!gunzip", "user-name-in-raw"), got)
+        self.assertIn(("about.txt", "plain-name"), got)
+
+    def test_template_itself_passes_privacy(self) -> None:
+        if subprocess.run(["git", "-C", str(HERE), "rev-parse"], capture_output=True).returncode:
+            self.skipTest("not inside a git checkout")
+        self.assertEqual(check_privacy(HERE), [])
 
 
 if __name__ == "__main__":

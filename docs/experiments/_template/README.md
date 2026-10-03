@@ -59,14 +59,19 @@ exact commands. Every failure stays in the denominator.>
 
 Cite every file by its path. `verify_helper.py` (from `docs/experiments/_template/`) fails the
 verifier when a file cited here or in the headline JSON is not committed (git-ignored or untracked).
+Its `check_privacy` fails on a private name (from the untracked `CUA_PRIVACY_NAMES_FILE`, plus the host
+and user name) in plain, hex- or base64-encoded form, on a committed list of encoded name-like strings,
+on an absolute local path and on secret-like values, in every tracked packet file (gzip members
+included) and, with a base SHA, in every commit of the branch. Never commit private names, not even
+encoded.
 
 | File | Contents |
 |---|---|
 | `PREREG.json` | pre-registration, committed before the first measured trial |
 | `README.md` | this file |
 | `.gitignore` | packet-local `!*.log`, `!build/` so cited logs and build outputs are committed |
-| `verify_artifacts.py` | recomputes every headline number from `raw/`; calls `verify_helper.check_cited` |
-| `verify_helper.py` | cited-file check (copy of the template helper) |
+| `verify_artifacts.py` | recomputes every headline number from `raw/`; calls `verify_helper.check_cited` and `verify_helper.check_privacy` |
+| `verify_helper.py` | cited-file check and privacy scan (copy of the template helper) |
 | `<name>-summary.json` | headline numbers |
 | `provenance.json` | the provenance fields above |
 | `raw/<file>` | <one row per raw file or glob> |
