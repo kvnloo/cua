@@ -1,0 +1,39 @@
+{
+ "lane": "PUB-02",
+ "wave": 5,
+ "kind": "publish gate fix (SOURCE + UNIT); no measurement, no PREREG (no measured trial)",
+ "date": "2026-10-03",
+ "branches": {
+  "A_r2_10r_rewrite": {
+   "branch": "exp/r2-10r-recert-a3-20261003",
+   "base": "45dff8f3227a21ff8bef1af4bf4c2bcbd9449b2a",
+   "head": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
+   "rebuilt_from": "c183b95e35f5af7f2548dec3720b58a65214d9da (exp/r2-10r-recert-a2-20261003, unpublished, left untouched)",
+   "sha_map": "raw/rewrite/r2-10r-a3/sha-map.txt"
+  },
+  "B_r2_10_clean_candidate": {
+   "branch": "exp/r2-10-composition-r1c-20261003",
+   "base": "8f3a646b4818b757648835cf89db8886626b1cf0",
+   "head": "eaca68df9d7f4757028ba787f2e2fa82c92bafe7",
+   "rebuilt_from": "36ccdd766fca9ac2971218245f3539a6c30cf842 (exp/r2-10-composition-r1b-20261003, unpublished) over 030f6bdbf811e124e11daa2de0569bffb993b66d (published exp/r2-10-composition-20261002)",
+   "sha_map": "raw/rewrite/r2-10-r1c/sha-map.txt",
+   "publish": "NOT to be pushed until the owner rules on the published exp/r2-10-composition-20261002"
+  },
+  "C_template": {
+   "branch": "docs/packet-template-privacy-20261003",
+   "base": "cca59642dce3cd1a9c8e17b9f578eb94fc4b1f6e (origin docs/packet-template-audit-a2-20261003)",
+   "template_commit": "49301c1a2ee17a470036c8d960de10bfe6735aa4",
+   "pkt01_text_fix_commit": "58d17492af2184687487052f6d6d967f6d055a02",
+   "packet_commit": "the commit that adds this packet (its parent is 58d17492a)"
+  }
+ },
+ "tested_source": "git objects only (verifiers, scanner, git history); no Driver code changed or built",
+ "driver_binary": "none (no Driver run)",
+ "environment": "one Linux host; every code-executing command under bin/hostless v2; clean clones with git clone --shared under the lane temp root, removed after; Python 3.14.7; CUA_PRIVACY_NAMES_FILE = an untracked file of the host name and the local user name (never committed or printed)",
+ "upstream_main_local_ref": "cb685fad7aef1df6a35ffec653295a0cea4daee6 (refs/remotes/upstream/main as found; not fetched by this lane)",
+ "origin_fetch": "git fetch origin at lane start (2026-10-03T07:17Z); 133 origin exp/* and docs/* heads unchanged at audit time (raw/audit/origin-heads-at-start.txt)",
+ "local_snapshot_at_start": "2026-10-03T07:17:49Z (raw/audit/unpublished-at-start.txt lists the loop's unpublished *-20261003 branches)",
+ "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0},
+ "publication_sha": "set by Publish",
+ "live_heads_at_publication": "set by Publish"
+}

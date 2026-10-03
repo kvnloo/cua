@@ -1,0 +1,27 @@
+template and helper from 49301c1a2ee17a470036c8d960de10bfe6735aa4
+hex: plant notes.txt; rc=1 expected 1 -> as expected
+  PASS cited files tracked: 0 finding(s)
+  FAIL privacy encoded-name: checkout notes.txt (name#0(file) decoded)
+  FAIL privacy encoded-name: checkout notes.txt (name#0(file) encoded)
+  FAIL privacy (tracked files): 2 finding(s)
+base64: plant cfg.json; rc=1 expected 1 -> as expected
+  PASS cited files tracked: 0 finding(s)
+  FAIL privacy encoded-name: checkout cfg.json (name#0(file) decoded)
+  FAIL privacy encoded-name: checkout cfg.json (name#0(file) encoded)
+  FAIL privacy (tracked files): 2 finding(s)
+gzip: plant raw/log.txt.gz; rc=1 expected 1 -> as expected
+  PASS cited files tracked: 0 finding(s)
+  FAIL privacy plain-name: checkout raw/log.txt.gz!gunzip (name#0(file))
+  FAIL privacy (tracked files): 1 finding(s)
+abspath: plant raw/run.txt; rc=1 expected 1 -> as expected
+  PASS cited files tracked: 0 finding(s)
+  FAIL privacy abs-path: checkout raw/run.txt (generic)
+  FAIL privacy (tracked files): 1 finding(s)
+enclist: plant check.py; rc=1 expected 1 -> as expected
+  PASS cited files tracked: 0 finding(s)
+  FAIL privacy encoded-list: checkout check.py (>=2 encoded name-like literals)
+  FAIL privacy (tracked files): 1 finding(s)
+clean: plant -; rc=0 expected 0 -> as expected
+  PASS cited files tracked: 0 finding(s)
+  PASS privacy (tracked files): 0 finding(s)
+dummy name caught: 3/3; abs-path plant caught: 1/1; encoded-list plant caught: 1/1; clean template passes: yes
