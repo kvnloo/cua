@@ -588,34 +588,16 @@ impl FocusSnapshot {
         // The target app owns the focus: whatever it maps next is its own.
         let target_owns_focus = target_pid.is_some() && self.previous_owner == target_pid;
 
-        // Settle watch: stop at the first observed change. A new top-level
-        // (dialog being mapped) extends the watch when the focus belongs to
-        // another application, since the WM focuses it only once mapped and
-        // that steal must be undone; when the target app already owns the
-        // focus the new window is its own and the watch ends at once.
-        let mut watch_until = if settle_watch {
-            started + SETTLE_WATCH
-        } else {
-            started
-        };
-        let mut extended = false;
-        let mut changes = self.diff(&x);
-        let mut new_clients = self.new_clients(&x);
-        let mut own_window = self.own_new_window(&x, target_pid, &new_clients);
-        if !settle_watch && !new_clients.is_empty() && own_window.is_none() {
-            extended = true;
-            watch_until = started + SETTLE_WATCH_NEW_WINDOW;
-        }
-        while changes.is_empty() && own_window.is_none() && Instant::now() < watch_until {
-            std::thread::sleep(SETTLE_POLL);
-            changes = self.diff(&x);
-            new_clients = self.new_clients(&x);
-            own_window = self.own_new_window(&x, target_pid, &new_clients);
-            if !extended && !new_clients.is_empty() && own_window.is_none() {
-                extended = true;
-                watch_until = started + SETTLE_WATCH_NEW_WINDOW;
-            }
-        }
+        let (changes, new_clients, own_window, restore_from) = settle(
+            started,
+            settle_watch.then_some(SETTLE_WATCH),
+            || self.diff(&x),
+            || {
+                let new_clients = self.new_clients(&x);
+                let own_window = self.own_new_window(&x, target_pid, &new_clients);
+                (new_clients, own_window)
+            },
+        );
 
         // Popups opened by the action: an open GTK/VCL menu grabs the keyboard.
         let new_popups: Vec<Window> = x
@@ -692,7 +674,7 @@ impl FocusSnapshot {
         // treat _NET_ACTIVE_WINDOW as raise-only and the no-WM case.
         let mut stable = 0;
         let mut resent = 0;
-        let deadline = started + RESTORE_BUDGET;
+        let deadline = restore_from + RESTORE_BUDGET;
         self.reassert(&x);
         while Instant::now() < deadline {
             std::thread::sleep(RESTORE_POLL);
@@ -774,6 +756,57 @@ impl FocusSnapshot {
             x.set_focus(self.core_focus, self.revert_to);
         }
     }
+}
+
+/// Settle watch: stop at the first observed change. A new top-level (dialog
+/// being mapped) extends the watch when the focus belongs to another
+/// application, since the WM focuses it only once mapped and that steal must
+/// be undone; when the target app already owns the focus the new window is
+/// its own and the watch ends at once.
+///
+/// `watch` is the settle window (`None`: one check, unless a new top-level is
+/// still being mapped); `diff` reads what moved since the snapshot and
+/// `windows` the top-levels mapped since plus the target's own new window.
+/// Returns the last of each and the instant the restore budget runs from.
+fn settle(
+    started: Instant,
+    watch: Option<Duration>,
+    mut diff: impl FnMut() -> Vec<String>,
+    mut windows: impl FnMut() -> (Vec<Window>, Option<SameAppWindow>),
+) -> (Vec<String>, Vec<Window>, Option<SameAppWindow>, Instant) {
+    let mut watch_until = started + watch.unwrap_or_default();
+    let mut extended = false;
+    let mut changes = diff();
+    let (mut new_clients, mut own_window) = windows();
+    if watch.is_none() && !new_clients.is_empty() && own_window.is_none() {
+        extended = true;
+        watch_until = started + SETTLE_WATCH_NEW_WINDOW;
+    }
+    let mut read_at = started;
+    while changes.is_empty() && own_window.is_none() && Instant::now() < watch_until {
+        std::thread::sleep(SETTLE_POLL);
+        read_at = Instant::now();
+        changes = diff();
+        (new_clients, own_window) = windows();
+        if !extended && !new_clients.is_empty() && own_window.is_none() {
+            extended = true;
+            watch_until = started + SETTLE_WATCH_NEW_WINDOW;
+        }
+    }
+    // The watch ended on its deadline with nothing seen, but its last read
+    // began before the deadline (an X call stalled across it): read once
+    // more, so a change that landed during the stall is not missed. A change
+    // found by this read gets the whole restore budget from the read, since
+    // the budget counted from `started` has already run out.
+    let mut restore_from = started;
+    if changes.is_empty() && own_window.is_none() && read_at < watch_until {
+        let final_read = Instant::now();
+        changes = diff();
+        if !changes.is_empty() {
+            restore_from = final_read;
+        }
+    }
+    (changes, new_clients, own_window, restore_from)
 }
 
 /// Run `body` (a background delivery) between a snapshot and a restore.
@@ -939,6 +972,83 @@ mod tests {
             classify_focus_move(None, Some(7), Some(7)),
             FocusMove::OtherApp
         );
+    }
+
+    /// Trial c08-017 (N-02): the settle watch's read at ~90 ms is answered
+    /// with the focus as it was, but returns only after the 220 ms watch (an
+    /// X call stalled), and the focus is stolen while it is stalled. The
+    /// watch must not end on its deadline without a read that began after it.
+    #[test]
+    fn a_steal_during_a_read_stalled_past_the_watch_is_seen() {
+        let started = Instant::now();
+        let stall_until = started + SETTLE_WATCH + Duration::from_millis(80);
+        let stolen = std::cell::Cell::new(false);
+        let reads = std::cell::Cell::new(0u32);
+        let diff = || {
+            reads.set(reads.get() + 1);
+            // What the server held when it answered this read.
+            let seen = if stolen.get() {
+                vec!["focus 0x1->0x2".to_owned()]
+            } else {
+                Vec::new()
+            };
+            if reads.get() == 4 {
+                assert!(
+                    Instant::now() < started + SETTLE_WATCH,
+                    "stalled read began late"
+                );
+                std::thread::sleep(stall_until.saturating_duration_since(Instant::now()));
+                stolen.set(true);
+            }
+            seen
+        };
+        let (changes, _, own_window, restore_from) =
+            settle(started, Some(SETTLE_WATCH), diff, || (Vec::new(), None));
+        assert_eq!(changes, ["focus 0x1->0x2"], "the steal went unseen");
+        assert!(own_window.is_none());
+        // The restore budget runs from the read that saw the steal: it had
+        // already run out by the guard's start.
+        assert!(restore_from >= stall_until);
+    }
+
+    /// Without a stall the watch ends on a read that began at or after its
+    /// deadline (a whole poll past it), and takes no extra read; without a
+    /// settle watch it reads once.
+    #[test]
+    fn a_quiet_watch_ends_on_a_read_after_its_deadline_without_an_extra_read() {
+        let started = Instant::now();
+        let reads = std::cell::RefCell::new(Vec::new());
+        let (changes, _, _, restore_from) = settle(
+            started,
+            Some(SETTLE_WATCH),
+            || {
+                reads.borrow_mut().push(Instant::now());
+                Vec::new()
+            },
+            || (Vec::new(), None),
+        );
+        let reads = reads.into_inner();
+        assert!(changes.is_empty());
+        assert_eq!(restore_from, started);
+        let watch_until = started + SETTLE_WATCH;
+        assert!(reads[reads.len() - 1] >= watch_until);
+        assert!(
+            reads[reads.len() - 2] < watch_until,
+            "an extra read after the deadline"
+        );
+
+        let count = std::cell::Cell::new(0);
+        let (changes, _, _, _) = settle(
+            Instant::now(),
+            None,
+            || {
+                count.set(count.get() + 1);
+                Vec::new()
+            },
+            || (Vec::new(), None),
+        );
+        assert!(changes.is_empty());
+        assert_eq!(count.get(), 1);
     }
 
     #[test]
