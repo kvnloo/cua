@@ -16,8 +16,10 @@ Checks:
   B. every cited SHA exists; packet branches and queue refs are on origin at the cited SHA (read-only ls-remote);
   C. the generated README sections equal a fresh render of the JSON;
   D. each queue item has the eight fields; free text carries no bare numbers (numbers come from pointers);
-  E. the READY NOW booleans recomputed from their sources (state extract, ls-remote, git diff, PR refs);
-  F. every pending owner decision in the state extract is covered by a queue item;
+  E. the READY NOW booleans (eight gates) recomputed from their sources (state extract, ls-remote, git diff, PR
+     refs, the fresh-review record and raw/gh-reads.json); the headline counts recomputed from the gates;
+  F. every pending owner decision in the state extract is covered by a queue item; with CUA_LOOP_STATE set, the
+     extract's gate inputs are re-derived from STATE and must be unchanged;
   G. no upstream autolink pattern in rendered text; fork items written kvnloo/cua#N;
   H. privacy: names (plus hex/base64 forms), absolute local paths and secret-like strings in the working tree and
      in every commit of the branch since the pinned main.
@@ -100,6 +102,9 @@ def check_acc_pointers(acc):
         check("A.acc.derived " + where, C.close(val, d["value"], spec["round"]), "%r vs %r" % (val, d["value"]))
         nd_count += 1
     check("A.acc.derived.count", True, "%d derived ratios" % nd_count)
+    for cr in acc.get("correctness_rows", []):
+        for t, nums in ((cr["result_t"], cr["result"]), (cr["controls_t"], cr["controls"])):
+            check("A.acc.correctness_slots %s" % cr["row_id"], set(re.findall(r"\{(\w+)\}", t)) == set(nums))
 
 
 def resolve_q_pointer(ptr):
@@ -119,6 +124,16 @@ def check_queue_pointers(q):
                         a = C.git("rev-parse", "%s:%s" % tuple(c["a"])).stdout.strip()
                         b = C.git("rev-parse", "%s:%s" % tuple(c["b"])).stdout.strip()
                         check("A.queue.same_blob %s" % it["id"], (a == b) == p["value"], "%s vs %s" % (a[:12], b[:12]))
+                    n += 1
+                    continue
+                if "state_extract" in p.get("from", {}):
+                    ext = json.load(open(os.path.join(Q_DIR, q["state_extract"])))
+                    try:
+                        raw = C.resolve(ext, p["from"]["state_extract"])
+                    except Exception as ex:  # noqa: BLE001
+                        check("A.queue.state_resolve %s/%s" % (it["id"], k), False, repr(ex))
+                        continue
+                    check("A.queue.state %s/%s" % (it["id"], k), raw == p["value"])
                     n += 1
                     continue
                 if p["from"].get("key"):
@@ -230,7 +245,8 @@ def bare_numbers(text):
 
 
 ACC_SKIP_KEYS = {"from", "derived", "path", "sha", "branch", "dir", "files", "tested_source", "binary_sha256", "row_id",
-                 "schema", "lane", "references_only", "sources", "packets", "statement", "pending_w6", "owners"}
+                 "schema", "lane", "references_only", "sources", "packets", "statement", "pending_w6", "pending_w7",
+                 "owners", "owner", "verdict_lane"}
 
 
 def check_acc_text(acc):
@@ -270,10 +286,14 @@ def check_fields(q):
         check("D.unique_id %s" % it["id"], it["id"] not in ids)
         ids.add(it["id"])
         f = it["fields"]
-        check("D.eight_fields %s" % it["id"], list(f.keys()) == FIELDS and all(f[k] not in (None, "", []) or
-                                                                               k in ("completed_evidence",) for k in FIELDS))
+        check("D.eight_fields %s" % it["id"], list(f.keys()) == FIELDS and all(f[k] not in (None, "", []) for k in FIELDS))
+        check("D.stop_condition_real %s" % it["id"], f["stop_condition"].strip() not in ("-", "\u2014", "") and
+              len(f["stop_condition"].split()) >= 4)
+        check("D.completed_evidence_real %s" % it["id"], len(f["completed_evidence"]) > 0 and
+              all(e["n"] for e in f["completed_evidence"]))
         texts = [f["delta"], f["action_type"], f["stop_condition"], it["title"]] + list(f["missing_evidence"]) + \
-            list(f["dependency"]) + list(f["canonical_owner"]) + [e["t"] for e in f["completed_evidence"]]
+            list(f["dependency"]) + list(f["canonical_owner"]) + [e["t"] for e in f["completed_evidence"]] + \
+            [it.get("review", {}).get("note", "")] + list(it["gate_inputs"].get("prereq", []))
         s = f["exact_sha"]
         if s.get("candidate"):
             texts.append(s["candidate"].get("note", ""))
@@ -287,8 +307,11 @@ def check_fields(q):
 
 def check_ready_now(q, offline):
     import make_queue as MQ  # noqa: E402
+    import make_state_extract as MSE  # noqa: E402
     ext = json.load(open(os.path.join(Q_DIR, q["state_extract"])))
+    gh = json.load(open(os.path.join(Q_DIR, q["gh_reads"])))
     acc_all = set(x for v in ext["accepted_by_wave"].values() for x in v)
+    check("E.gate_order", q["ready_now_rule"] == "READY NOW = " + " AND ".join(MQ.GATE_ORDER))
     heads = {}
     prheads = {}
     if not offline:
@@ -300,62 +323,111 @@ def check_ready_now(q, offline):
         for p in q["pr_pins"]:
             src = up if p["repo"] == "trycua/cua" else ok
             prheads[(p["repo"], p["number"])] = src.get("refs/pull/%d/head" % p["number"])
+    # gh reads: pinned PRs open at their pins; recorded PRs present; upstream main = the drift pin
+    ghprs = {(x["repo"], x["number"]): x for x in gh["prs"]}
+    for p in q["pr_pins"]:
+        x = ghprs.get((p["repo"], p["number"]), {})
+        check("E.gh_pr %s %d" % (p["repo"], p["number"]), x.get("head_sha") == p["pinned"] and x.get("state") == "open",
+              "gh %s %s" % (x.get("head_sha"), x.get("state")))
+    for p in q["pr_recorded"]:
+        check("E.gh_pr_recorded %s %d" % (p["repo"], p["number"]), (p["repo"], p["number"]) in ghprs)
+    check("E.gh_upstream_main_is_pin", gh["upstream_main"].get("sha") == q["pinned_main"])
+    check("E.pin_exists", C.sha_exists(q["pinned_main"]))
     covered = set()
     for it in q["items"]:
         g = it["ready_now"]
         gi = it["gate_inputs"]
+        rv = it["review"]
         covered |= set(gi["owner"])
+        check("E.gates_present %s" % it["id"], all(k in g for k in MQ.GATE_ORDER))
         lanes_ok = bool(gi["lanes"]) and all(l in acc_all for l in gi["lanes"])
         check("E.accepted_packet %s" % it["id"], g["accepted_packet"]["value"] == lanes_ok)
         for l in gi["lanes"]:
             if l in MQ.QP and l in ext["dispositions"]:
                 d = ext["dispositions"][l]
                 want = MQ.QP[l][1]
-                have = {d.get("commit"), d.get("accepted_commit")} | set(ext["wave5_pushed_branches"].values())
+                have = {d.get("commit"), d.get("accepted_commit")}
+                for grp in ext["published_heads"].values():
+                    have |= set(grp.values())
                 ok_c = any(isinstance(x, str) and x.startswith(want[:9]) for x in have)
                 check("E.packet_commit_matches_state %s/%s" % (it["id"], l), ok_c)
+        # origin: recompute the expected refs from the gate inputs, then their live state
+        want_refs = [(b, C.full_sha(s), e) for b, s, e in MQ.published_refs(gi)]
+        refs = g["published_on_origin"].get("refs", [])
+        check("E.published_refs %s" % it["id"], [(r["branch"], r["sha"], r["expect"]) for r in refs] == want_refs)
+        held = any(r["expect"] == "absent" for r in refs)
+        check("E.published.value %s" % it["id"],
+              g["published_on_origin"]["value"] == (bool(refs) and all(r["ok"] for r in refs) and not held))
         if not offline:
-            refs = g["published_on_origin"].get("refs", [])
             for r in refs:
                 got = heads.get("refs/heads/" + r["branch"])
-                want_ok = (got is None) if r.get("expect") == "absent" else (got == r["sha"])
-                check("E.published %s %s" % (it["id"], r["branch"]), want_ok == r["ok"] and r["ok"], "origin %s" % got)
-            check("E.published.value %s" % it["id"], g["published_on_origin"]["value"] == (bool(refs) and all(r["ok"] for r in refs)))
+                want_ok = (got is None) if r["expect"] == "absent" else (got == r["sha"])
+                check("E.published %s %s" % (it["id"], r["branch"]), want_ok and r["ok"], "origin %s" % got)
             for p in g["pr_head_unchanged"].get("prs", []):
                 live = prheads.get((p["repo"], p["number"]))
                 check("E.pr_head %s %s %d" % (it["id"], p["repo"], p["number"]), live == p["pinned"] and p["ok"], "live %s" % live)
+        check("E.pr_head.value %s" % it["id"], g["pr_head_unchanged"]["value"] ==
+              all(p["ok"] for p in g["pr_head_unchanged"].get("prs", [])))
         if gi["drift"]:
             d = MQ.drift_check(gi["drift"])
             rec = g["recertified_or_drift_free"]
             check("E.drift %s" % it["id"], d["value"] == rec["value"] and d["intersection"] == rec["intersection"] and
-                  d["drift_non_allowlisted"] == rec["drift_non_allowlisted"])
+                  d["drift_non_allowlisted"] == rec["drift_non_allowlisted"] and rec["pin"] == q["pinned_main"])
         else:
             check("E.drift_na %s" % it["id"], g["recertified_or_drift_free"]["value"] is True)
         odp = ext["owner_decisions_pending"]
-        blk = ext["blocked_items_w5"]
+        blk = ext["blocked_items_w6"]
         for x in g["no_pending_owner_decision"]["owner_decisions_pending"]:
             check("E.owner_ref %s #%d" % (it["id"], x["index"]), odp[x["index"]].startswith(x["head"]))
-        owner_blk = [i for i in gi["blocked"] if "owner" in blk[i].lower()]
+        owner_blk = [i for i in gi["blocked"] if C.owner_type(blk[i])]
         check("E.no_owner %s" % it["id"], g["no_pending_owner_decision"]["value"] == (not gi["owner"] and not owner_blk))
-        check("E.no_w6 %s" % it["id"], g["no_pending_w6_lane"]["value"] == (not gi["pending"]) and
-              all(l in q["pending_w6"] for l in gi["pending"]))
-        check("E.review %s" % it["id"], g["fresh_review_done"]["value"] is False)
+        check("E.no_lane %s" % it["id"], g["no_pending_lane"]["value"] == (not gi["pending"]) and
+              all(l in q["pending_w7"] for l in gi["pending"]))
+        check("E.prereq %s" % it["id"], g["prerequisites_met"]["value"] == (not gi.get("prereq")))
+        # fresh review: recorded by this lane with a date and every checked SHA consistent with the reads
+        rv_ok = bool(rv.get("reviewer")) and bool(rv.get("date_utc")) and bool(rv.get("note"))
+        for c in rv["shas_checked"]:
+            if c["what"].startswith("fork branch "):
+                br = c["what"][len("fork branch "):]
+                ghv = gh["fork_branches"].get(br, "not read")
+                good = (ghv is None) if c["expect"] == "absent" else (ghv == c["cited"])
+                if not offline:
+                    lv = heads.get("refs/heads/" + br)
+                    good = good and ((lv is None) if c["expect"] == "absent" else (lv == c["cited"]))
+                check("E.review_sha %s %s" % (it["id"], br), good == c["ok"], "gh %s" % ghv)
+                rv_ok = rv_ok and good
+            elif c["what"].startswith("packet "):
+                rv_ok = rv_ok and C.sha_exists(c["cited"])
+            elif " PR " in c["what"]:
+                repo, _, num = c["what"].split(" ")[:3]
+                x = ghprs.get((repo, int(num)), {})
+                rv_ok = rv_ok and x.get("head_sha") == c["cited"] and x.get("state") == "open"
+            elif c["what"].startswith("upstream main"):
+                rv_ok = rv_ok and gh["upstream_main"].get("sha") == c["cited"]
+            elif c["what"].startswith("owner_decisions_pending["):
+                i = int(c["what"].split("[")[1].rstrip("]"))
+                rv_ok = rv_ok and odp[i].startswith(c["head"])
+            elif c["what"].startswith("blocked_items_w6["):
+                i = int(c["what"].split("[")[1].rstrip("]"))
+                rv_ok = rv_ok and blk[i].startswith(c["head"])
+        check("E.review_outcome %s" % it["id"], (rv["outcome"] == "consistent") == rv_ok)
+        check("E.review %s" % it["id"], g["fresh_review_done"]["value"] == (rv["outcome"] == "consistent"))
         allv = all(g[k]["value"] for k in MQ.GATE_ORDER)
         check("E.READY_NOW %s" % it["id"], g["READY_NOW"] == allv)
     check("E.ready_now_count", q["ready_now_count"] == sum(1 for i in q["items"] if i["ready_now"]["READY_NOW"]))
+    check("E.headline", q["headline"] == MQ.headline(q), "headline does not match the gates")
     # F. every pending owner decision is covered
     missing = [i for i in range(len(ext["owner_decisions_pending"])) if i not in covered]
     check("F.owner_decisions_covered", not missing, "uncovered indices %s" % missing)
     # state extract against STATE.json (optional)
     sp = os.environ.get("CUA_LOOP_STATE")
     if sp:
-        os.environ["CUA_LOOP_STATE"] = sp
-        fresh = MQ.state_extract()
+        fresh = MSE.state_extract(sp)
+        changed = [k for k in MSE.GATE_KEYS if fresh.get(k) != ext.get(k)]
+        check("F.state_extract_gate_inputs_unchanged", not changed, "changed: %s" % changed)
         if fresh["state_sha256"] != ext["state_sha256"]:
-            skip("F.state_extract_current", "STATE.json changed since the extract (sha256 %s.. vs %s..); "
-                 "the committed extract stays the input of record" % (fresh["state_sha256"][:12], ext["state_sha256"][:12]))
-            stale_keys = [k for k in ("owner_decisions_pending", "blocked_items_w5", "accepted_by_wave") if fresh[k] != ext[k]]
-            check("F.state_extract_gate_inputs_unchanged", not stale_keys, "changed: %s" % stale_keys)
+            skip("F.state_extract_current", "STATE.json bytes changed since the extract (sha256 %s.. vs %s..); gate "
+                 "inputs compared above" % (fresh["state_sha256"][:12], ext["state_sha256"][:12]))
         else:
             check("F.state_extract_current", fresh == ext)
     else:

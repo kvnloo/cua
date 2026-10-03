@@ -70,15 +70,54 @@ PACKETS = {
                  dir="docs/experiments/n-03-native-closure-axfg-2026-10-03",
                  files={"summary": "n03-summary.json", "provenance": "provenance.json"},
                  source="N3", accepted_wave=5, binary_path=["binaries", "N3", "sha256"],
-                 tested_source="R2-10 source + N-03 marks/knobs (85a73c2c7)"),
+                 tested_source="R2-10 source + N-03 marks/knobs (85a73c2c7)",
+                 note="Published head carries tmp session-bus paths (PUB-03 census); clean candidate a2f7a93ef is held "
+                      "for the owner ruling. Numbers are unchanged by design."),
+    # ---- wave 6 (accepted in wave 6; numbers re-read here for the first time)
+    "B-08": dict(branch="exp/b-08-per-process-cold-b7-20261003", sha="49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+                 dir="docs/experiments/b-08-per-process-cold-b7-2026-10-03",
+                 files={"summary": "b08-summary.json", "headline": "headline-numbers.json", "provenance": "provenance.json"},
+                 source="B7", accepted_wave=6, binary_file="summary", binary_path=["driver_identity"],
+                 tested_source="B7 = R' 45dff8f32 + B-07 picks + POST_FAST knob ac319cbe9 (same binary as B-07)",
+                 note="The binary identity is the summary's driver_identity map (name|sha256|version -> trial records)."),
+    "R2-07e": dict(branch="exp/r2-07e-modal-gate-phase-l-20261003", sha="67b99ddc6a66a217c76dc491977de78180434751",
+                   dir="docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03",
+                   files={"summary": "r2-07e-summary.json", "headline": "headline-numbers.json",
+                          "provenance": "provenance.json"},
+                   source="R", accepted_wave=6, binary_path=["driver_binary", "sha256"],
+                   tested_source="R (12b9045a, Driver 8f3a646b4); R2-07c harness 7f46edd16; R2-07d runner 79f6dd299; "
+                                 "R2-07e runner at PREREG 097c71313"),
+    "OWN-78L": dict(branch="exp/own-78l-r1-lite-f-20261003", sha="d9edde70e8b1254e1352c660d859d8dfd6932d02",
+                    dir="docs/experiments/own-78l-r1-lite-f-2026-10-03",
+                    files={"summary": "own78l-summary.json", "provenance": "provenance.json"},
+                    source="PR 4394 + F", accepted_wave=6, binary_path=None,
+                    tested_source="trycua/cua PR 4394 head 039257811 + fork fix candidate F 61eec0909 (no Driver build)"),
+    "FIX-03": dict(branch="exp/fix-03-file-input-toctou-session-routing-20261003",
+                   sha="e300edbd318f33b907741ca7aaec2ee666a2dac0",
+                   dir="docs/experiments/fix-03-toctou-session-routing-2026-10-03",
+                   files={"summary": "summary.json", "dispositions": "dispositions.json", "provenance": "provenance.json"},
+                   source="F5", accepted_wave=6, binary_path=None,
+                   tested_source="F5 = the RECERT-FIX F' line on 0f1955d2f + b235fabef + 37d17e0b3 + 2237cf9c6"),
+    "OWN-20Q": dict(branch="exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+                    sha="44116546d54047f01d7318eecbc2f36303ec1013",
+                    dir="docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03",
+                    files={"summary": "own20q-summary.json", "provenance": "provenance.json"},
+                    source="GQ", accepted_wave=6, binary_path=None,
+                    tested_source="GQ = OWN-20P G port + A + 31318e374 + 4ac191a7c (product binaries, no marks)"),
 }
 
-# Rows that can still move in wave 6 (refresh in wave 7).
-PENDING_W6 = {
-    "B-08": "per-process cold first snapshot on B7 (exp/b-08-per-process-cold-b7-20261003); decides the "
-            "browser cold-excess verdict on the B7 source",
-    "R2-07e": "new pre-registered modal gate + Phase L (exp/r2-07e-modal-gate-phase-l-20261003)",
-    "PUB-03": "privacy rewrites of published N-03 / N-04 / OWN-20G heads (r1c branches); numbers unchanged by design",
+# Lanes running in wave 7 whose result can still move a row (refreshed by the next accounting refresh).
+PENDING_W7 = {
+    "B-09": "stamps the compiled routine's verify poll on B7 and gives the fill runner component a verdict "
+            "(exp/b-09-fill-verify-poll-b7-20261003)",
+    "R2-07f": "compiled-replay decomposition on B7 (exp/r2-07f-compiled-replay-b7-decomp-20261003)",
+    "R2-07g": "live forced-fallback re-run and the LN toggle row (exp/r2-07g-live-fallback-ln-20261003)",
+    "FIX-04": "effect=unknown mapping for delivery=unknown refusals and the runner re-dispatch rule "
+              "(exp/fix-04-unknown-delivery-effect-20261003)",
+    "FRESH-07": "freshness against upstream main 9a2b1d99e: overlay.rs SOURCE check against the X11 native and focus rows "
+                "(exp/fresh-07-main-9a2b1d99e-20261003)",
+    "PUB-04": "privacy rewrite candidate of the published R2-10R a3 head (exp/r2-10r-recert-a3-r1c-20261003); numbers "
+              "unchanged by design",
 }
 
 
@@ -461,6 +500,311 @@ def row_r207d(cls):
     }
 
 
+def row_b08(cls):
+    """B-08 on B7: per-process cold first snapshot, pre-registered (no BASE arm); Part E one-binary decomposition."""
+    pkt = "B-08"
+    c = ["classes", cls]
+    pe = ["part_E", "classes", cls, "C"]
+    irr = pe + ["corr:below_gate_as_irreducible"]
+    meta = PACKETS[pkt]
+    data = C.show_json(meta["sha"], meta["dir"] + "/" + meta["files"]["summary"])
+    comps = C.resolve(data, irr + ["components"])
+    comp_rows = []
+    for i, cp in enumerate(comps):
+        comp_rows.append({"component": cp["component"],
+                          "mean_ms": P(pkt, "summary", irr + ["components", i, "mean_ms"], 2),
+                          "share": P(pkt, "summary", irr + ["components", i, "share"], 4),
+                          "verdict": P(pkt, "summary", irr + ["components", i, "verdict"]),
+                          "verdict_lane": P(pkt, "summary", irr + ["components", i, "source"])})
+    row = {
+        "row_id": "%s/B7/B-08" % cls, "lane": "B-08", "source": "B7", "status": "ACCEPTED",
+        "layer": "L-scripted, COMP only (per-process cold first snapshot; arms C cold process, Wa/Wb warm, P2 control; "
+                 "Part E one-binary decomposition of the C arm, mark-corrected)",
+        "evidence_class": ["REAL", "BENCHMARK (FIXTURE)", "SOURCE (Part E mapping)"],
+        "best_arm": "C (cold COMP; the composed configuration starts a fresh process per task)",
+        "T_base_ms": NA("B-08 has no BASE arm; its arms are COMP variants"),
+        "T_arms_ms": {a: P(pkt, "summary", c + ["arms", a, "T_j_median"], 1) for a in ("C", "Wa", "Wb", "P2")},
+        "S": NA("no BASE arm in this lane"),
+        "S_keep_only": NA("no KEEP-only arm in this lane"),
+        "n_per_arm": P(pkt, "summary", c + ["arms", "C", "n"]),
+        "validity": dict({a: P(pkt, "summary", c + ["arms", a, "valid_share"], 3) for a in ("C", "Wa", "Wb", "P2")},
+                         e4=P(pkt, "summary", ["e4_total"])),
+        "floor": {"T_composed_mean_ms": P(pkt, "summary", irr + ["mean_T_ms"], 2),
+                  "T_irreducible_ms": P(pkt, "summary", irr + ["by_bucket_ms", "IRREDUCIBLE"], 2),
+                  "floor_ratio": D(P(pkt, "summary", irr + ["mean_T_ms"]),
+                                   P(pkt, "summary", irr + ["by_bucket_ms", "IRREDUCIBLE"]), 2)},
+        "per_process": {
+            "D_C_minus_Wa_median_ms": P(pkt, "summary", c + ["D_C_minus_Wa", "median"], 2),
+            "D_ci": P(pkt, "summary", c + ["D_C_minus_Wa", "ci"], 2),
+            "NC_Wa_minus_Wb_median_ms": P(pkt, "summary", c + ["NC_Wa_minus_Wb", "median"], 2),
+            "NC_ci": P(pkt, "summary", c + ["NC_Wa_minus_Wb", "ci"], 2),
+            "PC2_P2_minus_Wa_median_ms": P(pkt, "summary", c + ["PC2_P2_minus_Wa", "median"], 2),
+            "PC2_ci": P(pkt, "summary", c + ["PC2_P2_minus_Wa", "ci"], 2),
+            "verdict": P(pkt, "summary", c + ["verdict"]),
+            "per_process_mean_ms_C": P(pkt, "summary", ["part_E", "classes", cls, "cold_per_process_ms_C"], 2),
+            "warmup_outside_T_ms": P(pkt, "summary", c + ["arms", "Wa", "warmup_median"], 1),
+        },
+        "components": comp_rows,
+        "work_deleted": NA("nothing deleted: the per-process part is OWNER_DECISION (process/session reuse kept outside "
+                           "T); no product change", status="NONE"),
+        "wall_clock_saved": NA("not a deletion experiment", status="NONE"),
+        "untested": {
+            "A": P(pkt, "summary", irr + ["untested_share"], 4),
+            "A_label": "Part E one-binary mapping on B7 (cold excess terminal: per-document IRREDUCIBLE from B-04, "
+                       "per-process OWNER_DECISION from B-08), BELOW_GATE as IRREDUCIBLE",
+            "A2": P(pkt, "summary", pe + ["corr:below_gate_as_untested", "untested_share"], 4),
+            "A2_label": "same, BELOW_GATE as UNTESTED",
+            "B": NA("the B-04 mapping counted the cold excess UNTESTED; B-08 makes it terminal, so B equals A",
+                    status="SUPERSEDED"),
+        },
+    }
+    if cls == "fill":
+        ph = pe + ["post_hoc_unmarked_verify_poll"]
+        row["post_hoc_fill_poll"] = {
+            "poll_mean_ms": P(pkt, "summary", ph + ["mean_ms"], 2),
+            "share_if_counted_irr": P(pkt, "summary", ph + ["untested_share_if_counted_as_sleeps_polls",
+                                                            "corr:below_gate_as_irreducible"], 4),
+            "share_if_counted_unt": P(pkt, "summary", ph + ["untested_share_if_counted_as_sleeps_polls",
+                                                            "corr:below_gate_as_untested"], 4),
+            "note": "post hoc and descriptive only: the compiled routine's verify poll is not stamped, so the runner "
+                    "component stays UNTESTED until B-09 (wave 7) gives it a verdict",
+        }
+    return row
+
+
+R207E_TITLE = {"toggle": "toggle", "modal": "modal"}
+
+
+def row_r207e_q(cls):
+    """R2-07e Part Q on R: COMP vs COMP+CR in an EXCLUSIVE quiet window (modal: second, alpha-adjusted look)."""
+    pkt = "R2-07e"
+    q = ["part_Q", cls]
+    tm = q + ["timing"]
+    row = {
+        "row_id": "%s/R/R2-07e-Q" % cls, "lane": "R2-07e", "source": "R", "status": "ACCEPTED",
+        "layer": ("L-scripted quiet window, Part Q (COMP vs COMP+CR; second alpha-adjusted modal look)" if cls == "modal"
+                  else "L-scripted quiet window, Part Q (COMP vs COMP+CR; descriptive sanity block, no gate)"),
+        "evidence_class": ["REAL", "BENCHMARK (FIXTURE)"],
+        "best_arm": "COMP+CR (compiled routine)" if cls == "toggle" else "COMP (compiled routine excluded: Phase L REVISE)",
+        "T_base_ms": NA("Part Q compares COMP with COMP+CR, not BASE"),
+        "T_COMP_ms": P(pkt, "summary", tm + ["median_T_COMP_ms"], 1),
+        "T_COMP_CR_ms": P(pkt, "summary", tm + ["median_T_COMP_CR_ms"], 1),
+        "CR_minus_COMP_median_ms": P(pkt, "summary", tm + ["gate_975", "median"], 1),
+        "CR_minus_COMP_ci95": P(pkt, "summary", tm + ["gate_975", "ci"], 1),
+        "ci_level": P(pkt, "summary", tm + ["gate_975", "level"], 3),
+        "gate_ci_upper_le_2ms": (P(pkt, "summary", tm + ["gate_ci975_upper_le_2ms"]) if cls == "modal"
+                                 else NA("descriptive block (n below the gate design); no gate", status="NO_GATE")),
+        "n_pairs": P(pkt, "summary", tm + ["valid_pairs"]),
+        "S": NA("non-regression gate, not a speedup row"),
+        "S_keep_only": NA("not applicable"),
+        "validity": {"G3_pass": P(pkt, "summary", q + ["G3", "pass"]), "E4_clean": P(pkt, "summary", q + ["E4_clean"])},
+        "floor": {"T_composed_mean_ms": P(pkt, "summary", q + ["decomposition", "COMP", "mean_T_oracle_ms"], 2),
+                  "T_irreducible_ms": P(pkt, "summary", q + ["decomposition", "COMP", "irreducible_ms"], 2),
+                  "floor_ratio": D(P(pkt, "summary", q + ["decomposition", "COMP", "mean_T_oracle_ms"]),
+                                   P(pkt, "summary", q + ["decomposition", "COMP", "irreducible_ms"]), 2)},
+        "components": [],
+        "work_deleted": NA("Part Q is a non-regression block; nothing is deleted in it", status="NONE"),
+        "wall_clock_saved": NA("nothing carried from Part Q", status="NONE"),
+        "untested": {"A": P(pkt, "summary", q + ["decomposition", "COMP", "untested_share"], 4),
+                     "A_label": "R2-07e's own COMP decomposition (R2-10 mapping, transport UNTESTED)"},
+        "disposition": P(pkt, "summary", ["disposition", "per_class", cls, "lineage"]),
+    }
+    if cls == "modal":
+        sb = ["part_Q", "r2_07d_modal_side_by_side", "diff_ci975_seed20261003"]
+        row["look1_side_by_side"] = {"median_ms": P(pkt, "summary", sb + ["median"], 1),
+                                     "ci": P(pkt, "summary", sb + ["ci"], 1),
+                                     "note": "R2-07d's first look, re-bootstrapped at the same level; reported beside the second look, never pooled"}
+    return row
+
+
+def row_r207e_l(cls):
+    """R2-07e Phase L on R: live TypeSafe COMP+CR (1 training + 29 warm invocations); no BASE arm (budget)."""
+    pkt = "R2-07e"
+    L = ["part_L", cls]
+    meta = PACKETS[pkt]
+    data = C.show_json(meta["sha"], meta["dir"] + "/" + meta["files"]["summary"])
+    comps = C.resolve(data, L + ["decomposition_all", "components_ms"])
+    r210 = PACKETS["R2-10"]
+    r210d = C.show_json(r210["sha"], r210["dir"] + "/" + r210["files"]["summary"])
+    r210c = C.resolve(r210d, ["browser", "live", "decomposition", cls + "/COMP", "components"])
+    comp_rows = []
+    for name in sorted(comps, key=lambda n: -comps[n]):
+        ent = {"component": name,
+               "mean_ms": P(pkt, "summary", L + ["decomposition_all", "components_ms", name], 2),
+               "share": P(pkt, "summary", L + ["decomposition_all", "share", name], 4)}
+        if name == "provider_decision":
+            ent["verdict"] = P(pkt, "summary", ["disposition", "per_class", cls, "phase_L_verdict"])
+            ent["verdict_lane"] = "R2-07e Phase L (warm invocations)"
+        elif name in r210c:
+            ent["verdict"] = P("R2-10", "summary", ["browser", "live", "decomposition", cls + "/COMP", "components",
+                                                    name, "verdict"])
+            ent["verdict_lane"] = "R2-10 mapping (cross-lane verdict; number from R2-07e)"
+        else:
+            ent["verdict"] = T("no R2-10 label")
+            ent["verdict_lane"] = "R2-07e"
+        comp_rows.append(ent)
+    carried = cls == "toggle"
+    row = {
+        "row_id": "%s/R/R2-07e-L" % cls, "lane": "R2-07e", "source": "R", "status": "ACCEPTED",
+        "layer": "L-live Phase L (TypeSafe; COMP+CR, one training plus warm invocations; no BASE arm)",
+        "evidence_class": ["LIVE_PROVIDER", "REAL", "BENCHMARK (FIXTURE)"],
+        "best_arm": "COMP+CR warm" if carried else "COMP+CR warm (not admitted: forced fallback not verified)",
+        "T_base_ms": NA("paired live BASE vs COMP+CR is BLOCKED (budget)", status="BLOCKED"),
+        "T_best_ms": P(pkt, "summary", L + ["warm", "median_T_oracle_ms"], 1),
+        "S": NA("no live BASE arm (budget)", status="BLOCKED"),
+        "S_keep_only": NA("not applicable"),
+        "n": P(pkt, "summary", L + ["invocations_run"]),
+        "validity": {"warm_valid": P(pkt, "summary", L + ["warm", "valid"]),
+                     "warm_n": P(pkt, "summary", L + ["warm", "n_run"]),
+                     "G3_pass": P(pkt, "summary", L + ["G3", "pass"]),
+                     "e4": P(pkt, "summary", L + ["E4"])},
+        "floor": {"T_composed_mean_ms": P(pkt, "summary", L + ["decomposition_all", "mean_T_oracle_ms"], 2),
+                  "T_irreducible_ms": P(pkt, "summary", L + ["decomposition_all", "irreducible_ms"], 2),
+                  "floor_ratio": D(P(pkt, "summary", L + ["decomposition_all", "mean_T_oracle_ms"]),
+                                   P(pkt, "summary", L + ["decomposition_all", "irreducible_ms"]), 2)},
+        "amortized": {
+            "mean_all_ms": P(pkt, "summary", L + ["mean_all_ms"], 1),
+            "ratio_of_means_vs_warm": P(pkt, "summary", L + ["ratio_of_means"], 2),
+            "warm_mean_ms": P(pkt, "summary", L + ["warm", "mean_T_oracle_ms"], 1),
+            "training_T_ms": P(pkt, "summary", L + ["decomposition_training", "mean_T_oracle_ms"], 1),
+            "training_provider_ms": P(pkt, "summary", L + ["decomposition_training", "components_ms",
+                                                           "provider_decision"], 1),
+            "training_provider_share": P(pkt, "summary", L + ["provider_decision_share_training"], 4),
+        },
+        "components": comp_rows,
+        "work_deleted": {
+            "provider_decisions_per_warm": P(pkt, "summary", L + ["work_deleted_per_warm", "decisions"], 1),
+            "provider_requests_per_warm": P(pkt, "summary", L + ["work_deleted_per_warm", "provider_requests_reached"], 1),
+            "warm_provider_decision_ms": P(pkt, "summary", L + ["decomposition_warm", "components_ms",
+                                                                "provider_decision"], 1),
+            "carried": carried,
+            "rule": "training invocation (ordinary step loop) minus warm invocation, per warm invocation; the training "
+                    "invocation's own decisions stay counted inside the amortized mean",
+        },
+        "wall_clock_saved": NA("paired live BASE vs COMP+CR S is BLOCKED by budget; never inferred from work deleted",
+                               status="BLOCKED"),
+        "untested": {"A": P(pkt, "summary", L + ["decomposition_all", "untested_share"], 4),
+                     "A_label": "all invocations (training included), R2-10 labels plus the Phase L provider verdict",
+                     "W": P(pkt, "summary", L + ["decomposition_warm", "untested_share"], 4),
+                     "W_label": "warm invocations only"},
+        "fallback_LF": {"outcome": P(pkt, "summary", L + ["LF", "outcome"]),
+                        "verified": P(pkt, "summary", L + ["LF", "verified"]),
+                        "decisions": P(pkt, "summary", L + ["LF", "decisions"])},
+        "disposition": P(pkt, "summary", ["disposition", "per_class", cls, "lineage"]),
+    }
+    if carried:
+        row["amortized"]["mean_all_with_fallback_ms"] = P(pkt, "summary", L + ["mean_all_with_fallback_ms"], 1)
+        row["amortized"]["ratio_of_means_with_fallback"] = P(pkt, "summary", L + ["ratio_of_means_with_fallback"], 2)
+    return row
+
+
+def correctness_rows():
+    """Wave-6 correctness rows (no timing claim): numbers re-read from the packets' summaries."""
+    return [
+        {"row_id": "OWN-78L/F", "lane": "OWN-78L", "owner": "kvnloo/cua#78",
+         "claim": "fork fix candidate F on trycua/cua PR 4394: live R1-lite fill->submit",
+         "evidence_class": ["LIVE_PROVIDER", "FIXTURE", "UNIT"],
+         "result_t": "R1-lite verified {v} of {n}; backend == responder {b}; replays or restarts {r}",
+         "result": {"v": P("OWN-78L", "summary", ["r1_lite", "verified"]), "n": P("OWN-78L", "summary", ["r1_lite", "n"]),
+                    "b": P("OWN-78L", "summary", ["r1_lite", "backend_equals_responder"]),
+                    "r": P("OWN-78L", "summary", ["r1_lite", "replays_or_restarts"])},
+         "controls_t": "MOCK {m} of {mn}; CAP-0 control pass {c}; credential-free unit gate {u}",
+         "controls": {"m": P("OWN-78L", "summary", ["mock", "pass"]), "mn": P("OWN-78L", "summary", ["mock", "n"]),
+                      "c": P("OWN-78L", "summary", ["cap0", "pass"]),
+                      "u": P("OWN-78L", "summary", ["gate_conditions", "unit_109_credential_free"])},
+         "e4": P("OWN-78L", "summary", ["e4_all_arms"]),
+         "disposition": P("OWN-78L", "summary", ["disposition"]),
+         "boundary": "small n (KEEP is a gate result, not a rate); full-n R1/R4 and the A2-vs-A3 gap BLOCKED (budget); "
+                     "S1 BLOCKED (owner)"},
+        {"row_id": "FIX-03/F4", "lane": "FIX-03", "owner": "kvnloo/cua#36",
+         "claim": "set_input_files on a node detached after the check (seam-forced race)",
+         "evidence_class": ["REAL", "FIXTURE", "UNIT"],
+         "result_t": "F5 success receipts {s} of {n}; refused with delivery unknown {u}; cells where the change event still "
+                     "reached the server {g}",
+         "result": {"s": P("FIX-03", "summary", ["part_a", "A1", "F5", "success_receipts"]),
+                    "n": P("FIX-03", "summary", ["part_a", "A1", "F5", "n"]),
+                    "u": P("FIX-03", "summary", ["part_a", "A1", "F5", "refused_post_check_unknown"]),
+                    "g": P("FIX-03", "summary", ["part_a", "A1", "F5", "gen0_events_cells"])},
+         "controls_t": "positive control (F'S success receipts for a detached node) {p}; rebind gate {r}; default path gate {d}",
+         "controls": {"p": P("FIX-03", "summary", ["part_a", "A1", "FS", "success_receipt_for_detached_node"]),
+                      "r": P("FIX-03", "summary", ["part_a", "A2", "gate_pass"]),
+                      "d": P("FIX-03", "summary", ["part_a", "A3", "gate_pass"])},
+         "e4": P("FIX-03", "summary", ["e4_F5_excluding_seam_forced_residue"]),
+         "disposition": P("FIX-03", "dispositions", ["F4", "verdict"]),
+         "boundary": "the receipt is honest but the effect can land (CDP cannot make check and assign atomic); the "
+                     "refusal is still mapped to effect=refused, which FIX-04 (wave 7) addresses; the E4 cell excludes the "
+                     "seam-forced stale dispatches the row creates on purpose (the packet's strict count includes them)"},
+        {"row_id": "FIX-03/side-index", "lane": "FIX-03", "owner": "kvnloo/cua#36",
+         "claim": "a session's own valid token writes only into its own window through the (pid, xid) side index",
+         "evidence_class": ["REAL (X11)", "UNIT", "SOURCE"],
+         "result_t": "cross-session mutations: F' {f}, F5 {f5}, unfixed U' {u}",
+         "result": {"f": P("FIX-03", "summary", ["e4", "F", "cross_session_mutation"]),
+                    "f5": P("FIX-03", "summary", ["e4", "F5", "cross_session_mutation"]),
+                    "u": P("FIX-03", "summary", ["e4", "U", "cross_session_mutation"])},
+         "controls_t": "F5 own-window rows: WS gate {ws}, WK gate {wk}; W2dX discriminating {w2}",
+         "controls": {"ws": P("FIX-03", "summary", ["part_c_d", "WS-F5", "gate_pass"]),
+                      "wk": P("FIX-03", "summary", ["part_c_d", "WK-F5", "gate_pass"]),
+                      "w2": P("FIX-03", "summary", ["part_c_d", "W2dX-discriminating"])},
+         "e4": P("FIX-03", "summary", ["e4", "F5", "cross_session_mutation"]),
+         "disposition": P("FIX-03", "dispositions", ["C", "verdict"]),
+         "boundary": "Linux X11 only; native AT-SPI pid-wide fallbacks remain (E4 residue)"},
+        {"row_id": "OWN-20Q/R1m", "lane": "OWN-20Q", "owner": "kvnloo/cua#20",
+         "claim": "focus-guard final read restores a mark-free stalled focus steal on product binaries",
+         "evidence_class": ["REAL (FIXTURE, X11)", "UNIT"],
+         "result_t": "unguarded U0 silent misses {u} of {un}; guarded G0 verified restores {g} of {gn}; false restores {f}",
+         "result": {"u": P("OWN-20Q", "summary", ["r1m", "U0_silent_miss"]), "un": P("OWN-20Q", "summary", ["r1m", "n", "U0"]),
+                    "g": P("OWN-20Q", "summary", ["r1m", "G0_verified_restore"]),
+                    "gn": P("OWN-20Q", "summary", ["r1m", "n", "G0"]),
+                    "f": P("OWN-20Q", "summary", ["r1m", "false_restores"])},
+         "controls_t": "calibration met {c}; normal path verified {nv} with false restores {nf}",
+         "controls": {"c": P("OWN-20Q", "summary", ["calibration", "met"]),
+                      "nv": P("OWN-20Q", "summary", ["normal", "GQ_verified"]),
+                      "nf": P("OWN-20Q", "summary", ["normal", "GQ_false_restores"])},
+         "e4": P("OWN-20Q", "summary", ["e4", "r1m/G0"]),
+         "disposition": P("OWN-20Q", "summary", ["r1m", "gate"]), "disposition_label": "KEEP",
+         "boundary": "X11 private session under a SHARED lock (no timing claim); Hyprland/Wayland BLOCKED (seat)"},
+        {"row_id": "OWN-20Q/DLG", "lane": "OWN-20Q", "owner": "kvnloo/cua#20",
+         "claim": "same_app_dialog fix 4ac191a7c: a steal by the app's own dialog is not misclassified",
+         "evidence_class": ["REAL (FIXTURE, X11)", "UNIT"],
+         "result_t": "GA misclassified {ga} of {gan}; GQ verified restores {gq} of {gqn}; the app's own dialog stays focused "
+                     "{d} of {dn}",
+         "result": {"ga": P("OWN-20Q", "summary", ["dlg", "GA_misclassified"]), "gan": P("OWN-20Q", "summary", ["dlg", "n", "GA"]),
+                    "gq": P("OWN-20Q", "summary", ["dlg", "GQ_verified_restore"]),
+                    "gqn": P("OWN-20Q", "summary", ["dlg", "n", "GQ"]),
+                    "d": P("OWN-20Q", "summary", ["dlg", "dialog_control", "GQ", "dialog_left_focused"]),
+                    "dn": P("OWN-20Q", "summary", ["dlg", "dialog_control", "GQ", "n"])},
+         "controls_t": "positive control {p}; dialog-control false restores {f}",
+         "controls": {"p": P("OWN-20Q", "summary", ["dlg", "positive_control"]),
+                      "f": P("OWN-20Q", "summary", ["dlg", "dialog_control", "GQ", "false_restore"])},
+         "e4": P("OWN-20Q", "summary", ["e4", "dlg_control/GQ"]),
+         "disposition": P("OWN-20Q", "summary", ["dlg", "gate"]), "disposition_label": "KEEP",
+         "boundary": "X11 private session; Hyprland/Wayland BLOCKED (seat)"},
+        {"row_id": "OWN-20Q/A2", "lane": "OWN-20Q", "owner": "kvnloo/cua#20",
+         "claim": "in-process reconnect triggers: NoReply plus Peer.Ping (31318e374) measured; name-owner trigger not built",
+         "evidence_class": ["REAL (FIXTURE, X11)", "UNIT", "SOURCE"],
+         "result_t": "name-owner row r3n gate {n} (GQ passes {np} of {nn}); real restarts live where killed {l} of {k}; "
+                     "r3s gate {s}",
+         "result": {"n": P("OWN-20Q", "summary", ["a2", "r3n_gate"]),
+                    "np": P("OWN-20Q", "summary", ["a2", "r3n", "GQ", "pass"]),
+                    "nn": P("OWN-20Q", "summary", ["a2", "r3n", "GQ", "n"]),
+                    "l": P("OWN-20Q", "summary", ["a2", "r3_carry", "restart_happened_view", "live_where_killed"]),
+                    "k": P("OWN-20Q", "summary", ["a2", "r3_carry", "restart_happened_view", "killed_total"]),
+                    "s": P("OWN-20Q", "summary", ["a2", "r3s_gate"])},
+         "controls_t": "r3n positive control {p}; stale mutations after a restart {m}",
+         "controls": {"p": P("OWN-20Q", "summary", ["a2", "r3n_positive_control"]),
+                      "m": P("OWN-20Q", "summary", ["a2", "r3_carry", "GQ", "stale_mutated"])},
+         "e4": P("OWN-20Q", "summary", ["a2", "r3n", "GQ", "duplicate_mutation"]),
+         "disposition": T("REVISE (r3n): the name-owner trigger needs a second persistent session-bus connection "
+                          "(owner decision)"),
+         "boundary": "r3s passes trivially on GA (no pings); cite the real-restart view for r3_carry"},
+    ]
+
+
+def pending7(row_id, lane, source):
+    return {"row_id": row_id, "lane": lane, "source": source, "status": "PENDING",
+            "pending_reason": "pending wave 7 %s: %s" % (lane, PENDING_W7[lane]), "refresh": "next accounting refresh"}
+
+
 # --------------------------------------------------------------------------------- native rows
 
 def native_comp_r210(pkt, task, arm="X"):
@@ -666,10 +1010,16 @@ def build():
         rows.append(row_r210r_browser(cls))
         rows.append(row_b06(cls))
         rows.append(row_b07(cls))
-        rows.append(pending("%s/B7/B-08" % cls, "B-08", "B7", PENDING_W6["B-08"]))
+        rows.append(row_b08(cls))
         rows.append(row_b05(cls))
         if cls != "fill":
-            rows.append(pending("%s/R/R2-07e" % cls, "R2-07e", "R", PENDING_W6["R2-07e"]))
+            rows.append(row_r207e_q(cls))
+            rows.append(row_r207e_l(cls))
+        if cls == "fill":
+            rows.append(pending7("fill/B7/B-09", "B-09", "B7"))
+        rows.append(pending7("%s/B7/R2-07f" % cls, "R2-07f", "B7"))
+        if cls != "fill":
+            rows.append(pending7("%s/R/R2-07g" % cls, "R2-07g", "R"))
         blocks.append({"task": "browser_" + cls, "title": title, "rows": rows})
     for task, title in (("checkbox", "Native GTK3 checkbox toggle (canonical fixture)"),
                         ("text", "Native GTK3 text entry (canonical fixture)")):
@@ -678,11 +1028,14 @@ def build():
 
     packets = {}
     for k, m in PACKETS.items():
-        packets[k] = {kk: vv for kk, vv in m.items() if kk not in ("binary_path",)}
-        packets[k]["binary_sha256"] = P(k, "provenance", m["binary_path"])
+        packets[k] = {kk: vv for kk, vv in m.items() if kk not in ("binary_path", "binary_file")}
+        if m.get("binary_path"):
+            packets[k]["binary_sha256"] = P(k, m.get("binary_file", "provenance"), m["binary_path"])
+        else:
+            packets[k]["binary_sha256"] = NA("correctness packet; binary identities are in its own provenance")
     doc = {
         "schema": "cua-rfc-10-final-accounting/v1",
-        "lane": "DOC-10-74 (wave 6)",
+        "lane": "DOC-10-74b (wave 7)",
         "owners": ["kvnloo/cua#10", "kvnloo/cua#73", "kvnloo/cua#74"],
         "rules": [
             "One row per SOURCE (binary). Never add or ratio numbers across rows or sources.",
@@ -690,12 +1043,13 @@ def build():
             "T is the median T_oracle unless a field says mean; components are mean ms.",
             "Work deleted (ms of removed work; provider requests removed) is reported separately from wall-clock saved.",
             "Every number is a pointer {value, from} into an accepted packet at an exact commit.",
-            "PENDING rows can still move in wave 6 and are refreshed in wave 7.",
+            "PENDING rows name the wave-7 lane that can still move them; the next refresh regenerates them.",
         ],
         "sources": {
-            "R": "989cc76ce + R2-10 steps 1-8, binary 12b9045a (R2-10 L-live, R2-10 L-scripted, R2-07d, B-04)",
+            "R": "989cc76ce + R2-10 steps 1-8, binary 12b9045a (R2-10 L-live, R2-10 L-scripted, R2-07d, B-04, R2-07e; "
+                 "R2-07g PENDING)",
             "R'": "0f1955d2f + R2-10 steps 1-8 (45dff8f32), binary 922111c5 (R2-10R, B-06)",
-            "B7": "R' + B-07 marks + POST_FAST knob, binary 6f95aef5 (B-07; B-08 PENDING)",
+            "B7": "R' + B-07 marks + POST_FAST knob, binary 6f95aef5 (B-07, B-08; B-09 and R2-07f PENDING)",
             "R'n": "R' + N-02 marks + focus-guard clamp knob (11a03bf51), binary 78a1137d (N-04)",
             "B5": "R2-10 source + B-05 marks (b376f1ff3), binary f4149bdd (B-05)",
             "N3": "R2-10 source + N-03 marks/knobs (85a73c2c7), binary b1843871 (N-03)",
@@ -704,8 +1058,9 @@ def build():
             "browser": {
                 "A": "R2-10 mapping: cold first-snapshot excess counted inside IRREDUCIBLE observation; on B7, "
                      "BELOW_GATE sub-spans counted IRREDUCIBLE (A2 counts them UNTESTED)",
-                "B": "B-04 mapping: cold excess counted UNTESTED (per-process part UNDECIDED under B-06's PREREG; "
-                     "B-06's post-hoc amended reading would make it OWNER_DECISION - owner's call)",
+                "B": "B-04 mapping: cold excess counted UNTESTED. Superseded by B-08: per-document IRREDUCIBLE (B-04) and "
+                     "per-process OWNER_DECISION (B-08, pre-registered), so on B7 the B-08 row's A is the terminal reading; "
+                     "older B values stay as the packets wrote them",
             },
             "native": {"A": "primary R2-10 reading (observation transport IRREDUCIBLE)",
                        "B": "conservative N-02 reading (observation-transport client validation and buckets counted)"},
@@ -741,7 +1096,7 @@ def build():
                 "B-02 H_E endpoint re-proof bound check (security policy)",
                 "native cursor reveal (N-01R H_C; the native text speedup over KEEP-only S comes from it)",
                 "HCL lazy validators (session shape)",
-                "B-06 amended reading of the per-process cold excess",
+                "browser per-process cold first snapshot (B-08: process or session reuse kept outside T)",
                 "R2-08 API route per task",
             ],
         },
@@ -770,22 +1125,37 @@ def build():
              "blocker": "paid budget: the loop's remaining TypeSafe budget does not cover a live recertification "
                         "(kvnloo/cua#74 OR-11; figures in the queue's state extract)",
              "consequence": "live rows exist only on R (989cc76ce); R' rows are scripted"},
-            {"gap": "live toggle/modal provider decisions (the largest live COMP component in R2-10)", "status": "UNTESTED",
-             "blocker": "BLOCKED by budget; modal also needs a passing non-regression gate (R2-07d modal FAIL)",
-             "refs": {"toggle_provider_ms": P("R2-10", "summary", ["browser", "live", "decomposition", "toggle/COMP",
-                                                                   "components", "provider_decision", "mean_ms"], 1),
-                      "toggle_provider_share": P("R2-10", "summary", ["browser", "live", "decomposition", "toggle/COMP",
-                                                                      "components", "provider_decision", "share"], 4),
-                      "modal_provider_ms": P("R2-10", "summary", ["browser", "live", "decomposition", "modal/COMP",
-                                                                  "components", "provider_decision", "mean_ms"], 1),
-                      "modal_provider_share": P("R2-10", "summary", ["browser", "live", "decomposition", "modal/COMP",
-                                                                     "components", "provider_decision", "share"], 4)}},
-            {"gap": "R2-07e (new pre-registered modal gate + Phase L)", "status": "PENDING",
-             "blocker": "wave-6 lane running; refresh in wave 7"},
+            {"gap": "live toggle provider decision (R2-10 live COMP's largest component)", "status": "DELETED on warm",
+             "blocker": "R2-07e Phase L: no provider decision on admitted warm COMP+CR invocations; the training "
+                        "invocation's decisions stay counted in the amortized mean. Paired live BASE vs COMP+CR S is "
+                        "BLOCKED (budget), and toggle non-regression was not re-confirmed in R2-07e's window (descriptive "
+                        "block only)",
+             "refs": {"R2-10_toggle_provider_ms": P("R2-10", "summary", ["browser", "live", "decomposition", "toggle/COMP",
+                                                                         "components", "provider_decision", "mean_ms"], 1),
+                      "R2-10_toggle_provider_share": P("R2-10", "summary", ["browser", "live", "decomposition",
+                                                                            "toggle/COMP", "components",
+                                                                            "provider_decision", "share"], 4),
+                      "R2-07e_toggle_verdict": P("R2-07e", "summary", ["disposition", "per_class", "toggle",
+                                                                       "phase_L_verdict"])}},
+            {"gap": "live modal provider decision", "status": "UNTESTED (REVISE)",
+             "blocker": "R2-07e Part Q modal gate PASS, but the verdict-bearing forced fallback did not verify, so the "
+                        "compiled routine is not admitted for modal; R2-07g (wave 7) re-runs the fallback, and the "
+                        "substitution needs an owner ruling (kvnloo/cua#74 OR-22)",
+             "refs": {"R2-10_modal_provider_ms": P("R2-10", "summary", ["browser", "live", "decomposition", "modal/COMP",
+                                                                        "components", "provider_decision", "mean_ms"], 1),
+                      "R2-10_modal_provider_share": P("R2-10", "summary", ["browser", "live", "decomposition",
+                                                                           "modal/COMP", "components",
+                                                                           "provider_decision", "share"], 4),
+                      "R2-07e_modal_verdict": P("R2-07e", "summary", ["disposition", "per_class", "modal",
+                                                                      "phase_L_verdict"])}},
             {"gap": "native live arms (native T including provider decisions)", "status": "BLOCKED",
-             "blocker": "owner decision (may native T exclude provider decisions?) or paid budget"},
+             "blocker": "owner decision (may native T exclude provider decisions? kvnloo/cua#74 OR-21) or paid budget"},
+            {"gap": "native and focus rows against upstream main 9a2b1d99e (overlay.rs changed after the tested sources)",
+             "status": "PENDING",
+             "blocker": "pending wave 7 FRESH-07: " + PENDING_W7["FRESH-07"]},
         ],
-        "pending_w6": PENDING_W6,
+        "pending_w7": PENDING_W7,
+        "correctness_rows": correctness_rows(),
     }
     doc["owner_decision_dependency"]["statement"] = statement(doc["owner_decision_dependency"])
     return doc
@@ -836,7 +1206,7 @@ def s_cell(row, key="S"):
 def untested_cell(row):
     u = row.get("untested") or {}
     parts = []
-    for k in ("A", "A2", "B"):
+    for k in ("A", "A2", "B", "W"):
         if k in u:
             parts.append("%s %s" % (k, v(u[k], pct=True) if isinstance(u[k], dict) and "value" in u[k] else v(u[k])))
     return "; ".join(parts) if parts else "n/a"
@@ -900,6 +1270,10 @@ def work_cell(row):
         bits.append("V admission work %s" % v(w["V_admission_work_ms"]))
     if "PREP_FAST_caller_work_ms" in w:
         bits.append("PREP_FAST %s (not carried)" % v(w["PREP_FAST_caller_work_ms"]))
+    if "provider_decisions_per_warm" in w:
+        bits.append("provider decisions per warm invocation %s removed (requests reached %s; warm provider ms %s)%s" % (
+            v(w["provider_decisions_per_warm"]), v(w["provider_requests_per_warm"]), v(w["warm_provider_decision_ms"]),
+            "" if w.get("carried") else " (not carried: modal REVISE)"))
     pr = w.get("provider_requests_per_trial")
     if isinstance(pr, dict) and "BASE" in pr:
         bits.append("provider requests/trial %s -> %s" % (v(pr["BASE"]), v(pr["COMP"])))
@@ -932,7 +1306,7 @@ def comp_lines(row):
             out.append("%s %s ms%s: %s (%s)" % (
                 cpt["component"], v(cpt["mean_ms"]),
                 (" (" + v(share, pct=True) + ")") if share else "",
-                v(cpt["verdict"]), cpt["verdict_lane"]))
+                v(cpt["verdict"]), v(cpt["verdict_lane"]) if isinstance(cpt["verdict_lane"], dict) else cpt["verdict_lane"]))
         else:
             extra = [k for k in cpt if k.endswith("_ci95")]
             out.append("%s: %s (%s)%s" % (cpt["component"], v(cpt["verdict"]), cpt["verdict_lane"],
@@ -940,9 +1314,31 @@ def comp_lines(row):
     return out
 
 
+def fill(template, nums):
+    return template.format(**{k: v(x) for k, x in nums.items()})
+
+
+def e4_text(x):
+    val = x.get("value") if isinstance(x, dict) else x
+    if isinstance(val, dict):
+        bad = sum(int(vv) for kk, vv in val.items()
+                  if isinstance(vv, (int, float)) and not isinstance(vv, bool) and kk not in ("rows", "n", "cells", "tasks"))
+        return "%d violations" % bad
+    return "%s" % v(x)
+
+
 def render(doc):
     L = [BEGIN, ""]
     L.append("Sources: " + "; ".join("**%s** = %s" % (k, s) for k, s in doc["sources"].items()) + ".")
+    L.append("")
+    L.append("Packets cited (every number below is read from these summaries at these commits):")
+    L.append("")
+    L.append("| Packet | Source | Accepted wave | Branch @ commit | Directory | Summary files |")
+    L.append("|---|---|---|---|---|---|")
+    for k, m in doc["packets"].items():
+        L.append("| %s | %s | %s | `%s` @ `%s` | `%s` | %s |" % (
+            k, m["source"], m["accepted_wave"], m["branch"], m["sha"][:9], m["dir"],
+            ", ".join("`%s`" % f for f in m["files"].values())))
     L.append("")
     for b in doc["blocks"]:
         L.append("### %s" % b["title"])
@@ -979,12 +1375,43 @@ def render(doc):
                     extra.append("post-hoc amendment: D %s %s -> %s (owner's call)" % (
                         v(ce["amended_D_median_ms"]), ci(ce["amended_D_ci"]), v(ce["verdict_amended_post_hoc"])))
             if "cold_excess_mean_ms" in r:
-                extra.append("cold excess mean %s ms (per-process part UNDECIDED, B-06); transport in/out corrected %s ms"
+                extra.append("cold excess mean %s ms (per-process part OWNER_DECISION, B-08 cross-lane verdict); transport in/out "
+                             "corrected %s ms"
                              % (v(r["cold_excess_mean_ms"]), v(r["transport_corr_mean_ms"])))
             if "CR_minus_COMP_median_ms" in r:
-                extra.append("CR - COMP %s %s ms; gate (CI upper <= +2.0) %s; disposition %s" % (
-                    v(r["CR_minus_COMP_median_ms"]), ci(r["CR_minus_COMP_ci95"]), v(r["gate_ci_upper_le_2ms"]),
+                extra.append("CR - COMP %s %s ms%s; gate (CI upper <= +2.0) %s; disposition %s" % (
+                    v(r["CR_minus_COMP_median_ms"]), ci(r["CR_minus_COMP_ci95"]),
+                    (" (CI level %s)" % v(r["ci_level"])) if r.get("ci_level") else "", v(r["gate_ci_upper_le_2ms"]),
                     v(r["disposition"])))
+            if "look1_side_by_side" in r:
+                lk = r["look1_side_by_side"]
+                extra.append("first look beside it: %s %s ms (%s)" % (v(lk["median_ms"]), ci(lk["ci"]), lk["note"]))
+            if "per_process" in r:
+                pp = r["per_process"]
+                extra.append("per-process cold excess D (C-Wa) %s %s ms -> %s; NC (Wa-Wb) %s %s; PC2 (P2-Wa) %s %s; "
+                             "Part E per-process component %s ms; warm-up outside T %s ms" % (
+                                 v(pp["D_C_minus_Wa_median_ms"]), ci(pp["D_ci"]), v(pp["verdict"]),
+                                 v(pp["NC_Wa_minus_Wb_median_ms"]), ci(pp["NC_ci"]), v(pp["PC2_P2_minus_Wa_median_ms"]),
+                                 ci(pp["PC2_ci"]), v(pp["per_process_mean_ms_C"]), v(pp["warmup_outside_T_ms"])))
+            if "post_hoc_fill_poll" in r:
+                ph = r["post_hoc_fill_poll"]
+                extra.append("unstamped verify poll %s ms; untested share if it were counted %s / %s (%s)" % (
+                    v(ph["poll_mean_ms"]), v(ph["share_if_counted_irr"], pct=True), v(ph["share_if_counted_unt"], pct=True),
+                    ph["note"]))
+            if "amortized" in r and "mean_all_ms" in r["amortized"]:
+                am = r["amortized"]
+                extra.append("amortized mean over every invocation %s ms = %s x the warm mean %s ms%s; training invocation "
+                             "%s ms, of which provider decision %s ms (%s)" % (
+                                 v(am["mean_all_ms"]), v(am["ratio_of_means_vs_warm"]), v(am["warm_mean_ms"]),
+                                 ("; with the forced fallback %s ms = %s x" % (v(am["mean_all_with_fallback_ms"]),
+                                                                              v(am["ratio_of_means_with_fallback"])))
+                                 if "mean_all_with_fallback_ms" in am else "",
+                                 v(am["training_T_ms"]), v(am["training_provider_ms"]),
+                                 v(am["training_provider_share"], pct=True)))
+            if "fallback_LF" in r:
+                lf = r["fallback_LF"]
+                extra.append("forced fallback LF: outcome %s, verified %s, decisions %s; disposition %s" % (
+                    v(lf["outcome"]), v(lf["verified"]), v(lf["decisions"]), v(r["disposition"])))
             if "T_land" in r:
                 tl = r["T_land"]
                 if "BASE_median_ms" in tl:
@@ -1012,7 +1439,7 @@ def render(doc):
                     ("; HCL at k=1 %s ms" % v(ws["HCL_k1_median_ms"])) if "HCL_k1_median_ms" in ws else ""))
             if "V_T_saved_k1_median_ms" in ws:
                 extra.append("V T saved (k=1) %s %s ms" % (v(ws["V_T_saved_k1_median_ms"]), ci(ws["V_T_saved_k1_ci95"])))
-            if "amortized_ms" in r:
+            if "amortized_ms" in r and isinstance(r["amortized_ms"], dict):
                 am = r["amortized_ms"]
                 extra.append("warm-up outside T %s ms; k=1 %s ms; k=5 %s ms per task" % (
                     v(am["warmup_outside_T"]), v(am["k1_T_Wa_plus_warmup"]), v(am["k5_per_task"])))
@@ -1032,6 +1459,20 @@ def render(doc):
                     L.append("  - %s" % e)
         L.append("")
     odd = doc["owner_decision_dependency"]
+    L.append("### Correctness rows (wave 6; no timing claim)")
+    L.append("")
+    L.append("These rows carry no whole-task T. They are listed because the composed configuration and the queue depend "
+             "on them, and every number is re-read from the packet like the timing rows.")
+    L.append("")
+    L.append("| Row | Owner | Claim | Evidence | Result | Controls | E4 | Disposition | Boundary |")
+    L.append("|---|---|---|---|---|---|---|---|---|")
+    for cr in doc["correctness_rows"]:
+        L.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+            cr["row_id"], cr["owner"], cr["claim"], ", ".join(cr["evidence_class"]), fill(cr["result_t"], cr["result"]),
+            fill(cr["controls_t"], cr["controls"]), e4_text(cr["e4"]),
+            ("%s (gate %s)" % (cr["disposition_label"], v(cr["disposition"]))) if "disposition_label" in cr
+            else v(cr["disposition"]), cr["boundary"]))
+    L.append("")
     L.append("### Owner-decision dependency")
     L.append("")
     L.append(odd["statement"])

@@ -129,6 +129,20 @@ AUTOLINK_PATTERNS = [
 ABS_PATH = re.compile(r"(?<![\w.~])/(?:home|mnt|tmp|run/user|var/tmp|Users|root)/")
 
 
+def owner_type(text):
+    """A STATE blocked item counts as owner-blocking when it names the owner and is not marked RESOLVED."""
+    t = str(text).strip().lower()
+    return "owner" in t and not t.startswith("resolved")
+
+
+BARE_REF = re.compile(r"(?<![\w/#])#(\d+)\b")
+
+
+def fork_refs(text):
+    """STATE free text writes fork issues as bare #N; render them as kvnloo/cua#N (upstream items are plain text)."""
+    return BARE_REF.sub(r"kvnloo/cua#\1", str(text))
+
+
 def autolink_findings(text):
     out = []
     for name, rx in AUTOLINK_PATTERNS:

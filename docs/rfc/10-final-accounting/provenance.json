@@ -1,16 +1,21 @@
 {
  "schema": "cua-rfc-10-74-provenance/v1",
- "lane": "DOC-10-74 (wave 6)",
- "branch": "docs/accounting-10-queue-74-20261003",
+ "lane": "DOC-10-74b (wave 7)",
+ "branch": "docs/accounting-10-queue-74-r2-20261003",
  "base": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
+ "refreshes": {
+  "branch": "docs/accounting-10-queue-74-20261003",
+  "sha": "a3e3cb86e37885db84e3f43fe81c3b882d1a4b49"
+ },
  "evidence_class": "SOURCE (document; every number re-read from accepted packets)",
  "provider": {
   "name": "TypeSafe",
   "attempts": 0,
   "reached": 0
  },
+ "tested_sources": "none: this lane runs no Driver; every number comes from the cited packets' tested sources",
  "inputs": {
-  "state_sha256": "b53b192f646bdcbe4eb1ce1f7d7dc19bf2a5b78c2434545eb2a58cbe524b60b7",
+  "state_sha256": "ba636f47d3c00624bd0fe5351fade70598e8520c550da08390e6431024dcb673",
   "state_extract": "../74-posting-queue/inputs/state-extract.json",
   "end_condition": "loop END_CONDITION.md (v1, 2026-10-01): E5 deliverables",
   "syntheses": [
@@ -18,7 +23,8 @@
    "SYNTHESIS-w2.md",
    "SYNTHESIS-w3.md",
    "SYNTHESIS-w4.md",
-   "SYNTHESIS-w5.md"
+   "SYNTHESIS-w5.md",
+   "SYNTHESIS-w6.md"
   ],
   "shas": {
    "accounting:R2-10": {
@@ -66,6 +72,31 @@
     "sha": "6b70ec9024cc3921f7637bba2ffabcc93e29fc77",
     "packet": "docs/experiments/n-03-native-closure-axfg-2026-10-03"
    },
+   "accounting:B-08": {
+    "branch": "exp/b-08-per-process-cold-b7-20261003",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "packet": "docs/experiments/b-08-per-process-cold-b7-2026-10-03"
+   },
+   "accounting:R2-07e": {
+    "branch": "exp/r2-07e-modal-gate-phase-l-20261003",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "packet": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03"
+   },
+   "accounting:OWN-78L": {
+    "branch": "exp/own-78l-r1-lite-f-20261003",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "packet": "docs/experiments/own-78l-r1-lite-f-2026-10-03"
+   },
+   "accounting:FIX-03": {
+    "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "packet": "docs/experiments/fix-03-toctou-session-routing-2026-10-03"
+   },
+   "accounting:OWN-20Q": {
+    "branch": "exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "packet": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03"
+   },
    "queue:FIX-01": {
     "branch": "exp/fix-01-detached-node-refusal-20261002",
     "sha": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
@@ -75,6 +106,11 @@
     "branch": "exp/r2-10r-recert-a3-20261003",
     "sha": "d22eeb2ecf8a679d1425c21120a599775aa0817d",
     "packet": "docs/experiments/r2-10r-recert-2026-10-03"
+   },
+   "queue:FIX-03": {
+    "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "packet": "docs/experiments/fix-03-toctou-session-routing-2026-10-03"
    },
    "candidate:Q01": {
     "branch": "exp/r2-10r-control-a2-20261003",
@@ -95,19 +131,21 @@
     "packet": "docs/experiments/fix-02-token-ownership-retry-scope-2026-10-02"
    },
    "candidate:Q02": {
-    "branch": "exp/fix-02r-a3-20261003",
-    "sha": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c",
+    "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
     "commits": [
      "8e0e8aea0abbcdddd66b9ed2011e888dcdb103ed",
      "205a4ecb2e33e846e67b55b8d72cbb61513c2fc6",
-     "cdffb32130c98ddb7b9196d587c5ef19053bac2d"
+     "cdffb32130c98ddb7b9196d587c5ef19053bac2d",
+     "2237cf9c6328899583843a48f3a507af5ba0fb1f"
     ]
    },
    "candidate:Q03": {
-    "branch": "exp/fix-02r-a3-20261003",
-    "sha": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c",
+    "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
     "commits": [
-     "a357d061d62d0e6e90615a538a099c9d81bccf0f"
+     "a357d061d62d0e6e90615a538a099c9d81bccf0f",
+     "b235fabefd55f7e6b77e908db7fe00bb540f9846"
     ]
    },
    "queue:OWN-09R": {
@@ -135,18 +173,24 @@
     "sha": "64081dded4e0a3ddf144e68ab1ea43579f85f572",
     "packet": "docs/experiments/own-20p-guard-port-a11y-2026-10-03"
    },
+   "queue:OWN-20Q": {
+    "branch": "exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "packet": "docs/experiments/own-20q-a11y-triggers-dialog-markfree-2026-10-03"
+   },
    "candidate:Q06": {
-    "branch": "exp/own-20p-guard-port-a11y-20261003",
-    "sha": "64081dded4e0a3ddf144e68ab1ea43579f85f572",
+    "branch": "exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
     "commits": [
      "a761f1f1f8850951a446b423c36d2dcce1e18611"
     ]
    },
    "candidate:Q07": {
-    "branch": "exp/own-20p-guard-port-a11y-20261003",
-    "sha": "64081dded4e0a3ddf144e68ab1ea43579f85f572",
+    "branch": "exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
     "commits": [
-     "064d2e4ad931e7a3b884c4621e3d5cbb4600f7b9"
+     "064d2e4ad931e7a3b884c4621e3d5cbb4600f7b9",
+     "31318e3741a5bd1ff131fda83f1fcccf5d058664"
     ]
    },
    "queue:OWN-20G": {
@@ -154,9 +198,14 @@
     "sha": "ce7544cc064cecfd9ba4702466a1d0f24b1799b6",
     "packet": "docs/experiments/own-20g-guard-final-diff-2026-10-03"
    },
+   "queue:PUB-03": {
+    "branch": "exp/own-20g-guard-final-diff-r1c-20261003",
+    "sha": "cb18ebfbdfa41b733b8c68c1971760ab39f392f4",
+    "packet": "docs/experiments/own-20g-guard-final-diff-2026-10-03"
+   },
    "candidate:Q08": {
-    "branch": "exp/own-20g-guard-final-diff-a2-20261003",
-    "sha": "ce7544cc064cecfd9ba4702466a1d0f24b1799b6",
+    "branch": "exp/own-20g-guard-final-diff-r1c-20261003",
+    "sha": "cb18ebfbdfa41b733b8c68c1971760ab39f392f4",
     "commits": [
      "a30cbbc3b230e8bad7d86ae1e89866d4f9cdd1af"
     ]
@@ -199,9 +248,14 @@
     "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
     "packet": "docs/experiments/own-78a-abstain-isolation-4394-2026-10-03"
    },
+   "queue:OWN-78L": {
+    "branch": "exp/own-78l-r1-lite-f-20261003",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
+    "packet": "docs/experiments/own-78l-r1-lite-f-2026-10-03"
+   },
    "candidate:Q13": {
-    "branch": "exp/own-78a-abstain-isolation-4394-20261003",
-    "sha": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6",
+    "branch": "exp/own-78l-r1-lite-f-20261003",
+    "sha": "d9edde70e8b1254e1352c660d859d8dfd6932d02",
     "commits": [
      "61eec09092fd161f62651a890c882f276a642855"
     ]
@@ -265,6 +319,11 @@
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
     "packet": "docs/experiments/r2-10-composition-2026-10-02"
    },
+   "queue:B-08": {
+    "branch": "exp/b-08-per-process-cold-b7-20261003",
+    "sha": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+    "packet": "docs/experiments/b-08-per-process-cold-b7-2026-10-03"
+   },
    "candidate:Q18": {
     "branch": "exp/r2-10-composition-20261002",
     "sha": "030f6bdbf811e124e11daa2de0569bffb993b66d",
@@ -280,9 +339,14 @@
     "sha": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
     "packet": "docs/experiments/r2-07d-quiet-timing-phase-l-2026-10-03"
    },
+   "queue:R2-07e": {
+    "branch": "exp/r2-07e-modal-gate-phase-l-20261003",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
+    "packet": "docs/experiments/r2-07e-modal-gate-phase-l-2026-10-03"
+   },
    "candidate:Q19": {
-    "branch": "exp/r2-07d-quiet-timing-phase-l-20261003",
-    "sha": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+    "branch": "exp/r2-07e-modal-gate-phase-l-20261003",
+    "sha": "67b99ddc6a66a217c76dc491977de78180434751",
     "commits": []
    },
    "queue:R2-08": {
@@ -300,10 +364,20 @@
     "sha": "9846ac8033a8b5e952b0d44f39858625375d54e1",
     "packet": "docs/experiments/n-02-native-transport-2026-10-02"
    },
-   "queue:OWN-36": {
-    "branch": "exp/own-36-session-isolation-native-20261002",
-    "sha": "ff77554f46db2799334a20cb55111decc02582de",
-    "packet": "docs/experiments/own-36-session-isolation-native-2026-10-02"
+   "candidate:Q24": {
+    "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+    "sha": "e300edbd318f33b907741ca7aaec2ee666a2dac0",
+    "commits": [
+     "2237cf9c6328899583843a48f3a507af5ba0fb1f",
+     "37d17e0b30e6391229ddd5728d6f8a25bfd4b98f"
+    ]
+   },
+   "candidate:Q26": {
+    "branch": "exp/own-20q-a11y-triggers-dialog-markfree-20261003",
+    "sha": "44116546d54047f01d7318eecbc2f36303ec1013",
+    "commits": [
+     "4ac191a7c1d5a77cf4ed98474b4d3ebf76cc27c2"
+    ]
    },
    "queue:B-06": {
     "branch": "exp/b-06-per-process-cold-snapshot-20261003",
@@ -319,62 +393,134 @@
     "branch": "exp/r2-10-composition-r1c-20261003",
     "sha": "eaca68df9d7f4757028ba787f2e2fa82c92bafe7",
     "commits": []
+   },
+   "candidate:PRIV-B": {
+    "branch": "exp/own-20g-guard-final-diff-r1c-20261003",
+    "sha": "cb18ebfbdfa41b733b8c68c1971760ab39f392f4",
+    "commits": []
+   },
+   "candidate:PRIV-C": {
+    "branch": "exp/n-03-native-closure-axfg-r1c-20261003",
+    "sha": "a2f7a93efa6689f201b7d4e4e8f53a37749bca2c",
+    "commits": []
+   },
+   "candidate:PRIV-D": {
+    "branch": "exp/n-04-native-composition-rprime-r1c-20261003",
+    "sha": "32299f857c80683e1ebbe9e5602316f1a77a9635",
+    "commits": []
    }
   }
  },
- "gh_reads": [
-  {
-   "what": "trycua/cua PR 4316, 4336, 4394 and kvnloo/cua PR 84, 105, 106 heads (gh pr view)",
-   "utc": [
-    "2026-10-03T13:09:07Z",
-    "2026-10-03T13:09:10Z"
-   ]
-  },
-  {
-   "what": "kvnloo/cua issues 74, 10, 73 bodies and comments (gh issue view)",
-   "utc": [
-    "2026-10-03T13:10:16Z",
-    "2026-10-03T13:10:18Z"
-   ]
-  },
-  {
-   "what": "kvnloo/cua issue 93 body (gh issue view)",
-   "utc": [
-    "2026-10-03T13:12:57Z"
-   ]
-  }
- ],
+ "gh_reads": {
+  "read_utc": [
+   "2026-10-03T16:15:07Z",
+   "2026-10-03T16:15:27Z"
+  ],
+  "tool": "gh api (read-only; collect_gh_reads.sh)",
+  "prs": [
+   {
+    "repo": "trycua/cua",
+    "number": 4316,
+    "state": "open",
+    "head_sha": "a0bca744067d04f05904319d3d919be30c336556"
+   },
+   {
+    "repo": "trycua/cua",
+    "number": 4336,
+    "state": "open",
+    "head_sha": "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939"
+   },
+   {
+    "repo": "trycua/cua",
+    "number": 4394,
+    "state": "open",
+    "head_sha": "039257811e0bbb2348c616c52562409923d2856f"
+   },
+   {
+    "repo": "trycua/cua",
+    "number": 4529,
+    "state": "closed",
+    "head_sha": "b0661343e88a999f784bd6b449ef0db0168f7d38"
+   },
+   {
+    "repo": "trycua/cua",
+    "number": 4531,
+    "state": "closed",
+    "head_sha": "87a05590d67c7a8b4e6c51c07f1939bb1bc35658"
+   },
+   {
+    "repo": "kvnloo/cua",
+    "number": 84,
+    "state": "open",
+    "head_sha": "566b9c73245266005c958d40e93d46ee5d463325"
+   },
+   {
+    "repo": "kvnloo/cua",
+    "number": 105,
+    "state": "open",
+    "head_sha": "98a45e6c528da9e2715288c20c2a0feeeef8e73f"
+   },
+   {
+    "repo": "kvnloo/cua",
+    "number": 106,
+    "state": "open",
+    "head_sha": "c45845797b714ccfd76a9569d3238a0724107a83"
+   }
+  ],
+  "upstream_main": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+  "fork_branches_read": 41
+ },
  "ls_remote": {
   "read_utc": [
-   "2026-10-03T13:37:47Z",
-   "2026-10-03T13:37:48Z"
+   "2026-10-03T16:25:01Z",
+   "2026-10-03T16:25:02Z"
   ],
-  "upstream_main_live": "c8edda06be53e13a759c69de125ce37189023954"
+  "upstream_main_live": "4635c066808ba662c1d82a394592f707b4ad09ae"
  },
- "pinned_main": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
+ "pinned_main": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
  "drift_since_0f1955d2f": {
   "files": [
+   "libs/cua-driver/docs/test-matrix.md",
+   "libs/cua-driver/python/pyproject.toml",
+   "libs/cua-driver/python/src/cua_driver/__init__.py",
+   "libs/cua-driver/rust/CHANGELOG.md",
+   "libs/cua-driver/rust/Cargo.lock",
+   "libs/cua-driver/rust/Cargo.toml",
    "libs/cua-driver/rust/Skills/cua-driver/MACOS.md",
+   "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+   "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md",
+   "libs/cua-driver/rust/VERSION",
+   "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
    "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs",
+   "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_winui3_test.rs",
+   "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_wpf_test.rs",
+   "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs",
+   "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/ax/exact_target.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/browser/setup_ui.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/tools/click.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/tools/invoke_menu.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/tools/set_value.rs",
    "libs/cua-driver/rust/crates/platform-macos/src/windows.rs",
    "libs/cua-driver/rust/crates/platform-windows/src/browser_platform.rs",
+   "libs/cua-driver/rust/crates/platform-windows/src/input/keyboard.rs",
    "libs/cua-driver/rust/crates/platform-windows/src/tools/impl_.rs",
    "libs/cua-driver/rust/crates/platform-windows/src/win32/mod.rs",
    "libs/cua-driver/rust/crates/platform-windows/src/win32/windows.rs",
+   "libs/cua-driver/scripts/_install-rust.sh",
+   "libs/cua-driver/scripts/install.ps1",
    "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift",
-   "libs/cua-driver/tests/fixtures/shared/scenarios.json"
+   "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml",
+   "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml.cs",
+   "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml",
+   "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml.cs",
+   "libs/cua-driver/tests/fixtures/shared/scenarios.json",
+   "libs/cua-driver/typescript/package-lock.json",
+   "libs/cua-driver/typescript/package.json"
   ],
-  "non_allowlisted": []
- },
- "post_pin": {
-  "upstream_main_live": "c8edda06be53e13a759c69de125ce37189023954",
-  "libs_cua_driver_files": [
+  "non_allowlisted": [
    "libs/cua-driver/docs/test-matrix.md",
    "libs/cua-driver/python/pyproject.toml",
    "libs/cua-driver/python/src/cua_driver/__init__.py",
@@ -382,11 +528,38 @@
    "libs/cua-driver/rust/Cargo.lock",
    "libs/cua-driver/rust/Cargo.toml",
    "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+   "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md",
    "libs/cua-driver/rust/VERSION",
+   "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
+   "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs",
+   "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+   "libs/cua-driver/scripts/_install-rust.sh",
+   "libs/cua-driver/scripts/install.ps1",
+   "libs/cua-driver/typescript/package-lock.json",
+   "libs/cua-driver/typescript/package.json"
+  ]
+ },
+ "drift_since_previous_pin": {
+  "previous_pin": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
+  "files": [
+   "libs/cua-driver/docs/test-matrix.md",
+   "libs/cua-driver/python/pyproject.toml",
+   "libs/cua-driver/python/src/cua_driver/__init__.py",
+   "libs/cua-driver/rust/CHANGELOG.md",
+   "libs/cua-driver/rust/Cargo.lock",
+   "libs/cua-driver/rust/Cargo.toml",
+   "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+   "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md",
+   "libs/cua-driver/rust/VERSION",
+   "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
    "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_winui3_test.rs",
    "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_wpf_test.rs",
    "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs",
+   "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs",
    "libs/cua-driver/rust/crates/platform-windows/src/input/keyboard.rs",
+   "libs/cua-driver/scripts/_install-rust.sh",
+   "libs/cua-driver/scripts/install.ps1",
    "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml",
    "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml.cs",
    "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml",
@@ -394,7 +567,36 @@
    "libs/cua-driver/typescript/package-lock.json",
    "libs/cua-driver/typescript/package.json"
   ],
-  "note": "upstream main moved past the pinned main during the lane (release 0.33.0 version bump and a Windows input fix); READY NOW gates use the pinned main as the task specifies; wave 7 refreshes"
+  "non_allowlisted": [
+   "libs/cua-driver/docs/test-matrix.md",
+   "libs/cua-driver/python/pyproject.toml",
+   "libs/cua-driver/python/src/cua_driver/__init__.py",
+   "libs/cua-driver/rust/CHANGELOG.md",
+   "libs/cua-driver/rust/Cargo.lock",
+   "libs/cua-driver/rust/Cargo.toml",
+   "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+   "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md",
+   "libs/cua-driver/rust/VERSION",
+   "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
+   "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs",
+   "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+   "libs/cua-driver/scripts/_install-rust.sh",
+   "libs/cua-driver/scripts/install.ps1",
+   "libs/cua-driver/typescript/package-lock.json",
+   "libs/cua-driver/typescript/package.json"
+  ]
+ },
+ "post_pin": {
+  "upstream_main_live": "4635c066808ba662c1d82a394592f707b4ad09ae",
+  "libs_cua_driver_files": [
+   "libs/cua-driver/rust/Skills/cua-driver/MACOS.md",
+   "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/drag.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/list_windows.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/tools/mod.rs",
+   "libs/cua-driver/rust/crates/platform-macos/src/windows.rs"
+  ],
+  "note": "the drift pin is the live upstream main read with gh at the fresh review; post_pin lists any libs/cua-driver change after it at build time"
  },
  "pr_pins": [
   {
