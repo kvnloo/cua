@@ -1,12 +1,16 @@
-"""Package B-08 raw outputs into the packet (standard library only; run under hostless).
+"""Package B-09 raw outputs into the packet (standard library only; run under hostless). Derived from B-08's
+package_raw.py.
 
     python3 package_raw.py --lane-tmp <lane-tmp> --ledger <locks>/quiet-lane-ledger.jsonl --packet <packet> \
         --scrub <path>=<placeholder> [--scrub ...] [--names-file <untracked names file>]
 
+Redaction patterns (session-bus socket paths and the like) come from the untracked file named by the
+CUA_PRIVACY_PATTERNS_FILE environment variable (one regex per line), never from a literal in this file.
+
 - raw/{main,pilot}-trials.tar.gz: every trial file (event log +
   summary + Driver trace), cut attempts included; sorted members, mtime 0, uid/gid 0 (deterministic);
 - raw/{main,pilot}/run-manifest-*.json: chunk manifests (scrubbed);
-- raw/lock-ledger.jsonl: this lane's quiet-lane ledger lines (labels starting b08-), verbatim;
+- raw/lock-ledger.jsonl: this lane's quiet-lane ledger lines (labels starting b09-), verbatim;
 - raw/logs/*.log: session and chunk logs with local paths and private names replaced by placeholders.
 Trial files are scrubbed too (paths only) before archiving.
 """
@@ -16,21 +20,21 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import re
 import tarfile
 from pathlib import Path
 
 SCRUB: list[tuple[str, str]] = []
 NAMES: list[re.Pattern] = []
-
-
-DBUS = re.compile("/tmp/" + "dbus" + r"-[A-Za-z0-9]+")  # B-08: the private session bus socket path (session logs)
+REDACT: list[re.Pattern] = []  # from CUA_PRIVACY_PATTERNS_FILE (B-09)
 
 
 def scrub(text: str) -> str:
     for a, b in SCRUB:
         text = text.replace(a, b)
-    text = DBUS.sub("<private-dbus>", text)
+    for p in REDACT:
+        text = p.sub("<redacted>", text)
     for p in NAMES:
         text = p.sub("<name>", text)
     return text
@@ -66,6 +70,10 @@ def main() -> None:
         for n in Path(a.names_file).read_text().splitlines():
             if n.strip():
                 NAMES.append(re.compile(r"(?<![A-Za-z0-9])" + re.escape(n.strip()) + r"(?![A-Za-z0-9])", re.I))
+    pf = os.environ.get("CUA_PRIVACY_PATTERNS_FILE")
+    if not pf or not Path(pf).is_file():
+        raise SystemExit("refusing: CUA_PRIVACY_PATTERNS_FILE (untracked redaction patterns) not set")
+    REDACT.extend(re.compile(x.strip()) for x in Path(pf).read_text().splitlines() if x.strip() and not x.startswith("#"))
     lt, pk = Path(a.lane_tmp), Path(a.packet)
     raw = pk / "raw"
     counts = {}
@@ -78,7 +86,7 @@ def main() -> None:
         for m in sorted(d.glob("run-manifest-*.json")):
             (raw / plan / m.name).write_text(scrub(m.read_text()))
     lines = [x for x in Path(a.ledger).read_text().splitlines()
-             if x.strip() and json.loads(x).get("label", "").startswith("b08-")]
+             if x.strip() and json.loads(x).get("label", "").startswith("b09-")]
     (raw / "lock-ledger.jsonl").write_text("\n".join(lines) + "\n")
     (raw / "logs").mkdir(parents=True, exist_ok=True)
     for log in sorted((lt / "logs").glob("*.log")):

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -59,6 +60,27 @@ FORBIDDEN_VALUE_PATTERNS = (
     ("element_token", re.compile(r"^(et|el|ax)[-_:][0-9a-zA-Z]{6,}")),
 )
 ALLOWED_ACTIONS = frozenset({"browser_type", "browser_click"})
+
+# B-09 (measurement only, env-gated, default-off): the verify-poll interval of ``bounded_read`` and caller
+# stamps around every poll sleep and every routine oracle read. Unset env and STAMP None = unchanged behaviour.
+POLL_ENV = "CUA_LANE_EXP_ROUTINE_POLL_MS"
+STAMP: Callable[..., None] | None = None  # set by the runner to its recorder's ``add`` (time.monotonic_ns)
+
+
+def verify_poll_interval_s(default_s: float) -> float:
+    """Verify-poll interval: CUA_LANE_EXP_ROUTINE_POLL_MS in ms when set (0 = yield only), else ``default_s``."""
+    raw = os.environ.get(POLL_ENV)
+    if raw is None or not raw.strip():
+        return default_s
+    ms = float(raw)
+    if not 0.0 <= ms <= 1000.0:
+        raise ValueError(f"{POLL_ENV}={raw!r} outside [0, 1000]")
+    return ms / 1000.0
+
+
+def _stamp(name: str, **fields: Any) -> None:
+    if STAMP is not None:
+        STAMP(name, **fields)
 
 
 class ArtifactAuthorityError(ValueError):
@@ -373,7 +395,10 @@ class Routine:
     async def bounded_read(self, ctx: ReplayContext, rec: ReplayRecord, deadline_s: float, interval_s: float,
                            purpose: str) -> str:
         started = time.monotonic()
+        if purpose == "verify":
+            interval_s = verify_poll_interval_s(interval_s)
         while True:
+            _stamp("routine_read_send", purpose=purpose)
             try:
                 state = await asyncio.to_thread(ctx.read_oracle)
                 submitted = state.get("submitted")
@@ -381,6 +406,7 @@ class Routine:
                 submitted, state = None, {"error": type(error).__name__}
             seen = submitted == ctx.token
             other = submitted is not None and not seen
+            _stamp("routine_read_return", purpose=purpose, effect_visible=seen)
             rec.reconcile_reads.append({"purpose": purpose, "t_ms": round((time.monotonic_ns() - rec.t0_ns) / 1e6, 3),
                                         "effect_visible": seen, "other_value": other})
             if seen:
@@ -389,7 +415,9 @@ class Routine:
                 return "refuted"
             if time.monotonic() - started >= deadline_s:
                 return "unknown"
-            await asyncio.sleep(interval_s)
+            _stamp("poll_sleep_start", purpose=purpose, interval_ms=interval_s * 1000.0)
+            await asyncio.sleep(interval_s if interval_s > 0 else 0)  # 0: a bare event-loop yield
+            _stamp("poll_sleep_end", purpose=purpose)
 
     async def replay(self, ctx: ReplayContext, rec: ReplayRecord) -> ReplayRecord:
         steps = self.artifact["steps"]

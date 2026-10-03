@@ -1,0 +1,118 @@
+test_configs (test_b09_poll.PlanTests.test_configs) ... skipped 'run_b09 not importable (jev-use virtualenv needed)'
+test_ctl_round (test_b09_poll.PlanTests.test_ctl_round) ... skipped 'run_b09 not importable (jev-use virtualenv needed)'
+test_lane_env_never_reaches_driver (test_b09_poll.PlanTests.test_lane_env_never_reaches_driver) ... skipped 'run_b09 not importable (jev-use virtualenv needed)'
+test_lane_env_set_and_cleared (test_b09_poll.PlanTests.test_lane_env_set_and_cleared) ... skipped 'run_b09 not importable (jev-use virtualenv needed)'
+test_routine_constants (test_b09_poll.PlanTests.test_routine_constants) ... skipped 'run_b09 not importable (jev-use virtualenv needed)'
+test_williams_square_balance (test_b09_poll.PlanTests.test_williams_square_balance) ... skipped 'run_b09 not importable (jev-use virtualenv needed)'
+test_first_read_verified_never_sleeps (test_b09_poll.PollIntervalTests.test_first_read_verified_never_sleeps) ... ERROR
+test_interval_helper (test_b09_poll.PollIntervalTests.test_interval_helper) ... ERROR
+test_one_ms (test_b09_poll.PollIntervalTests.test_one_ms) ... ERROR
+test_other_value_refutes (test_b09_poll.PollIntervalTests.test_other_value_refutes) ... ERROR
+test_reconcile_interval_unaffected (test_b09_poll.PollIntervalTests.test_reconcile_interval_unaffected) ... ERROR
+test_unset_is_current_behaviour (test_b09_poll.PollIntervalTests.test_unset_is_current_behaviour) ... ERROR
+test_zero_is_a_yield (test_b09_poll.PollIntervalTests.test_zero_is_a_yield) ... ERROR
+test_default_off_no_stamps (test_b09_poll.StampTests.test_default_off_no_stamps) ... ERROR
+test_stamps_bracket_every_read_and_sleep (test_b09_poll.StampTests.test_stamps_bracket_every_read_and_sleep) ... ERROR
+test_clean_artifact_passes (test_compiled_routine_r207.AuthorityTests.test_clean_artifact_passes) ... ok
+test_rejects_authority_smuggled_as_values (test_compiled_routine_r207.AuthorityTests.test_rejects_authority_smuggled_as_values) ... ok
+test_rejects_every_authority_field (test_compiled_routine_r207.AuthorityTests.test_rejects_every_authority_field) ... ok
+test_rejects_float_coordinates_and_extra_target_keys (test_compiled_routine_r207.AuthorityTests.test_rejects_float_coordinates_and_extra_target_keys) ... ok
+test_requires_unique_and_earlier_dependency (test_compiled_routine_r207.AuthorityTests.test_requires_unique_and_earlier_dependency) ... ok
+test_compiles_logical_artifact_without_authority (test_compiled_routine_r207.CompileTests.test_compiles_logical_artifact_without_authority) ... ok
+test_refuses_unverified_trace_duplicates_and_literals (test_compiled_routine_r207.CompileTests.test_refuses_unverified_trace_duplicates_and_literals) ... ok
+test_fallback_continues_from_current_state (test_compiled_routine_r207.FallbackTests.test_fallback_continues_from_current_state) ... ok
+test_fallback_filters_ambiguous_candidates (test_compiled_routine_r207.FallbackTests.test_fallback_filters_ambiguous_candidates) ... ok
+test_ack_loss_reconciles_and_never_redispatches (test_compiled_routine_r207.ReplayTests.test_ack_loss_reconciles_and_never_redispatches) ... ok
+test_ambiguous_submit_never_dispatches (test_compiled_routine_r207.ReplayTests.test_ambiguous_submit_never_dispatches) ... ok
+test_dependency_postcondition_checked_before_submit (test_compiled_routine_r207.ReplayTests.test_dependency_postcondition_checked_before_submit) ... ok
+test_happy_path_binds_fresh_before_every_mutation (test_compiled_routine_r207.ReplayTests.test_happy_path_binds_fresh_before_every_mutation) ... ok
+test_missing_submit_and_out_of_domain_page (test_compiled_routine_r207.ReplayTests.test_missing_submit_and_out_of_domain_page) ... ok
+test_prefilled_value_fails_precondition (test_compiled_routine_r207.ReplayTests.test_prefilled_value_fails_precondition) ... ok
+test_stale_refusal_gets_exactly_one_rebind (test_compiled_routine_r207.ReplayTests.test_stale_refusal_gets_exactly_one_rebind) ... ok
+test_wrong_origin_fails_precondition (test_compiled_routine_r207.ReplayTests.test_wrong_origin_fails_precondition) ... ok
+
+======================================================================
+ERROR: test_first_read_verified_never_sleeps (test_b09_poll.PollIntervalTests.test_first_read_verified_never_sleeps)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_interval_helper (test_b09_poll.PollIntervalTests.test_interval_helper)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_one_ms (test_b09_poll.PollIntervalTests.test_one_ms)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_other_value_refutes (test_b09_poll.PollIntervalTests.test_other_value_refutes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_reconcile_interval_unaffected (test_b09_poll.PollIntervalTests.test_reconcile_interval_unaffected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_unset_is_current_behaviour (test_b09_poll.PollIntervalTests.test_unset_is_current_behaviour)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_zero_is_a_yield (test_b09_poll.PollIntervalTests.test_zero_is_a_yield)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 78, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_default_off_no_stamps (test_b09_poll.StampTests.test_default_off_no_stamps)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 129, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+======================================================================
+ERROR: test_stamps_bracket_every_read_and_sleep (test_b09_poll.StampTests.test_stamps_bracket_every_read_and_sleep)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<red-checkout>/docs/experiments/b-09-fill-verify-poll-b7-2026-10-03/tests/test_b09_poll.py", line 129, in setUp
+    os.environ.pop(cr.POLL_ENV, None)
+                   ^^^^^^^^^^^
+AttributeError: module 'compiled_routine' has no attribute 'POLL_ENV'
+
+----------------------------------------------------------------------
+Ran 32 tests in 0.220s
+
+FAILED (errors=9, skipped=6)
