@@ -56,6 +56,12 @@ IDENTITY = {("Kevin Rajan", "7121943+kvnloo@users.noreply.github.com")}
 HEXLIT = re.compile(r"(?<![0-9A-Za-z])(?:[0-9a-fA-F]{2}){4,}(?![0-9A-Za-z])")
 B64LIT = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{8,}={0,2}(?![A-Za-z0-9+/=])")
 CITE = re.compile(r"(?<![A-Za-z0-9_./-])((?:raw|harness|lane-scripts)/[A-Za-z0-9_./*-]+[A-Za-z0-9_*-])")
+# Paths of OTHER packets that PREREG/README/provenance quote by their packet-relative name (never this packet's files).
+EXTERNAL_CITES = {
+    "harness/r2_10_browser.py": "R2-10R packet (c183b95e3); copied here as harness/r2-10r/r2_10_browser.py",
+    "raw/browser/scripted-routines": "R2-10R packet (c183b95e3); routine copied here as harness/r2-10r/scripted-COMP.json",
+    "raw/browser/scripted-trials.tar.gz": "R2-10R packet (c183b95e3); re-analysed, not copied (sha256 in raw/r10r-observation-rows.json)",
+}
 CHECKS: list[tuple[str, bool, str]] = []
 
 
@@ -223,13 +229,16 @@ def cited() -> None:
             continue
         for m in CITE.findall(p.read_text()):
             m = m.rstrip(".")
+            if m.rstrip("/") in EXTERNAL_CITES:
+                continue
             if "*" in m:
                 import fnmatch
                 if not any(fnmatch.fnmatchcase(t, m) for t in tracked):
                     bad.append(m)
             elif m not in tracked and not any(t.startswith(m.rstrip("/") + "/") for t in tracked):
                 bad.append(m)
-    check("cited raw/harness/lane-scripts paths are tracked", not bad, f"{sorted(set(bad))[:10]}")
+    check("cited raw/harness/lane-scripts paths are tracked", not bad,
+          f"{sorted(set(bad))[:10]}; other-packet paths skipped: {sorted(EXTERNAL_CITES)}")
 
 
 def amendment_first() -> None:

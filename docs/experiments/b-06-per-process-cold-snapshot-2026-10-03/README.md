@@ -292,7 +292,9 @@ Hard-rule breaches: none.
   - `b06-wn-a1-r00-15` 10:51:46-10:54:10Z;
   - `b06-x-a1-r00-15` 11:29:01-11:31:58Z.
 - SHARED: `b06-pilot-r00`, `b06-versions-start`, `b06-r10r-observation`, `b06-analyze-main`,
-  `b06-versions-end` (and `b06-analyze-final`, after packaging).
+  `b06-versions-end`, `b06-analyze-final`, `b06-verify`. One verifier run (`--skip-git`, analysis only, no
+  Driver or browser) ran under hostless without the SHARED lock while the verifier was being fixed; it timed
+  nothing and no reported number comes from it.
 - Every manifest lies inside its window (verifier check).
 - Session logs show `hostless=1`, `wayland=unset`, `telemetry_env=0`, `dnt=1`, a private display, and
   `xdpyinfo=ok`.
