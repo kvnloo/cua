@@ -321,9 +321,11 @@ pub fn element_showing_observed(element: &cache::CachedElement) -> Result<bool> 
     native::element_showing_ref(object_ref)
 }
 
-/// Give an indexed AT-SPI element keyboard focus without activating its window.
-pub fn focus_element(pid: u32, idx: usize) -> Result<bool> {
-    if let Some(object_ref) = cache::cached_element(pid, None, idx).and_then(|e| e.object_ref) {
+/// Give an indexed AT-SPI element of window `xid` keyboard focus without
+/// activating its window. As in [`type_into_editable_at`], the cached element
+/// comes from that window's snapshot, never from another window of the pid.
+pub fn focus_element(pid: u32, xid: Option<u64>, idx: usize) -> Result<bool> {
+    if let Some(object_ref) = cache::cached_element(pid, xid, idx).and_then(|e| e.object_ref) {
         match native::focus_element_ref(&object_ref) {
             Ok(done) => return Ok(done),
             Err(error) => tracing::debug!(
@@ -463,9 +465,13 @@ pub fn type_into_editable(pid: u32, text: &str) -> Result<()> {
     native::type_into_editable(pid, text)
 }
 
-/// Type into the exact indexed editable from the caller's accessibility snapshot.
-pub fn type_into_editable_at(pid: u32, idx: usize, text: &str) -> Result<()> {
-    if let Some(object_ref) = cache::cached_element(pid, None, idx).and_then(|e| e.object_ref) {
+/// Type into the exact indexed editable from the caller's accessibility
+/// snapshot of `xid`. With the window known, the cached element comes from that
+/// window's snapshot: an index is only an address within one window's walk, and
+/// another window of the same process (possibly observed by another session)
+/// has its own element at the same index.
+pub fn type_into_editable_at(pid: u32, xid: Option<u64>, idx: usize, text: &str) -> Result<()> {
+    if let Some(object_ref) = cache::cached_element(pid, xid, idx).and_then(|e| e.object_ref) {
         match native::type_into_editable_ref(&object_ref, text) {
             Ok(()) => return Ok(()),
             Err(error) => tracing::debug!(
