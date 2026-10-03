@@ -1,0 +1,270 @@
+{
+ "schema": "b-07.controls.v1",
+ "malformed": {
+  "rows": [
+   {
+    "frame": "truncated_json",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "not_json",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "wrong_version",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "missing_jsonrpc",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "result_is_list",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "id_null",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "id_fraction",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "error_code_string",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "batch_array",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "content_not_list",
+    "default": {
+     "outcome": "rejected",
+     "error": "ValidationError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "ValidationError"
+    },
+    "same": true
+   },
+   {
+    "frame": "unknown_id",
+    "default": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "fast": {
+     "outcome": "rejected",
+     "error": "McpError"
+    },
+    "same": true
+   },
+   {
+    "frame": "string_id",
+    "default": {
+     "outcome": "accepted",
+     "isError": false,
+     "text": []
+    },
+    "fast": {
+     "outcome": "accepted",
+     "isError": false,
+     "text": []
+    },
+    "same": true
+   }
+  ],
+  "counts": {
+   "default": {
+    "prep_fast": 0,
+    "prep_fallback": 0,
+    "route_fast": 0,
+    "route_fallback": 0
+   },
+   "fast": {
+    "prep_fast": 0,
+    "prep_fallback": 0,
+    "route_fast": 3,
+    "route_fallback": 2
+   }
+  },
+  "same_outcome_all": true,
+  "malformed_rejected_all": true,
+  "n_frames": 12
+ },
+ "prep_bytes": {
+  "cases": [
+   {
+    "case": "ascii",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "non_ascii",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "line_separators",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "control_chars",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "quotes_slashes",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "ints_bools",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "nested",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "empty",
+    "plain": true,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": true
+   },
+   {
+    "case": "float",
+    "plain": false,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": false
+   },
+   {
+    "case": "none",
+    "plain": false,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": false
+   },
+   {
+    "case": "big_int",
+    "plain": false,
+    "default_eq_fast": true,
+    "fast_eq_library": true,
+    "plain_json": false
+   }
+  ],
+  "counts": {
+   "default": {
+    "prep_fast": 0,
+    "prep_fallback": 0,
+    "route_fast": 0,
+    "route_fallback": 0
+   },
+   "fast": {
+    "prep_fast": 8,
+    "prep_fallback": 3,
+    "route_fast": 0,
+    "route_fallback": 0
+   }
+  },
+  "all_identical": true,
+  "fast_path_taken": 8,
+  "fallbacks": 3,
+  "expected_fast": 8,
+  "expected_fallback": 3
+ }
+}

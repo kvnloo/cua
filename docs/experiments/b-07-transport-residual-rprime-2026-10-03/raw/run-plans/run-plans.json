@@ -1,0 +1,171 @@
+{
+ "chunks": [
+  {
+   "chunk": "D-B7",
+   "plan": "smoke",
+   "arms": [
+    "COMP"
+   ],
+   "start_round": 0,
+   "rounds": 1,
+   "trials_planned": 15,
+   "trials_completed": 15,
+   "started_utc": "2026-10-03T08:50:45.432Z",
+   "ended_utc": "2026-10-03T08:51:55.601Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 2838,
+   "mode": "shared (not a timing chunk)",
+   "routines": null,
+   "command": "run_chunk.sh D-B7 shared <wt> harness/b07_browser.py --driver <bin> --plan smoke --prefix D-B7- --arms COMP --start-round 0 --rounds 1"
+  },
+  {
+   "chunk": "D-Rp",
+   "plan": "smoke",
+   "arms": [
+    "COMP"
+   ],
+   "start_round": 0,
+   "rounds": 1,
+   "trials_planned": 15,
+   "trials_completed": 15,
+   "started_utc": "2026-10-03T08:52:03.713Z",
+   "ended_utc": "2026-10-03T08:53:04.777Z",
+   "driver_sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 561,
+   "mode": "shared (not a timing chunk)",
+   "routines": null,
+   "command": "run_chunk.sh D-Rp shared <wt> harness/b07_browser.py --driver <bin> --plan smoke --prefix D-Rp- --arms COMP --start-round 0 --rounds 1"
+  },
+  {
+   "chunk": "A1",
+   "plan": "A",
+   "arms": [
+    "COMP"
+   ],
+   "start_round": 0,
+   "rounds": 32,
+   "trials_planned": 96,
+   "trials_completed": 96,
+   "started_utc": "2026-10-03T09:16:28.256Z",
+   "ended_utc": "2026-10-03T09:18:15.710Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 1959,
+   "mode": "exclusive+cargo",
+   "routines": null,
+   "command": "run_chunk.sh A1 exclusive <wt> harness/b07_browser.py --driver <bin> --plan A --prefix A1- --arms COMP --start-round 0 --rounds 32"
+  },
+  {
+   "chunk": "O1",
+   "plan": "ovh",
+   "arms": [
+    "COMP_OFF",
+    "COMP"
+   ],
+   "start_round": 0,
+   "rounds": 20,
+   "trials_planned": 120,
+   "trials_completed": 120,
+   "started_utc": "2026-10-03T10:07:54.799Z",
+   "ended_utc": "2026-10-03T10:09:55.260Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 1441,
+   "mode": "exclusive+cargo",
+   "routines": null,
+   "command": "run_chunk.sh O1 exclusive <wt> harness/b07_browser.py --driver <bin> --plan ovh --prefix O1- --arms COMP_OFF,COMP --start-round 0 --rounds 20"
+  },
+  {
+   "chunk": "P1",
+   "plan": "B",
+   "arms": [
+    "COMP_OFF",
+    "PREP_FAST"
+   ],
+   "start_round": 0,
+   "rounds": 30,
+   "trials_planned": 180,
+   "trials_completed": 180,
+   "started_utc": "2026-10-03T11:02:21.074Z",
+   "ended_utc": "2026-10-03T11:05:31.774Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 511,
+   "mode": "exclusive+cargo",
+   "routines": null,
+   "command": "run_chunk.sh P1 exclusive <wt> harness/b07_browser.py --driver <bin> --plan B --prefix P1- --arms COMP_OFF,PREP_FAST --start-round 0 --rounds 30 --amendment PREREG-AMENDMENT-1.json"
+  },
+  {
+   "chunk": "Q1",
+   "plan": "B",
+   "arms": [
+    "COMP_OFF",
+    "POST_FAST"
+   ],
+   "start_round": 0,
+   "rounds": 30,
+   "trials_planned": 180,
+   "trials_completed": 180,
+   "started_utc": "2026-10-03T11:41:07.827Z",
+   "ended_utc": "2026-10-03T11:44:05.087Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 2114,
+   "mode": "exclusive+cargo",
+   "routines": null,
+   "command": "run_chunk.sh Q1 exclusive <wt> harness/b07_browser.py --driver <bin> --plan B --prefix Q1- --arms COMP_OFF,POST_FAST --start-round 0 --rounds 30 --amendment PREREG-AMENDMENT-1.json"
+  },
+  {
+   "chunk": "N1",
+   "plan": "n4a",
+   "arms": [
+    "COMP_OFF",
+    "PREP_FAST",
+    "POST_FAST"
+   ],
+   "start_round": 0,
+   "rounds": 5,
+   "trials_planned": 45,
+   "trials_completed": 45,
+   "started_utc": "2026-10-03T11:47:54.137Z",
+   "ended_utc": "2026-10-03T11:49:15.766Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 2465,
+   "mode": "exclusive+cargo",
+   "routines": null,
+   "command": "run_chunk.sh N1 exclusive <wt> harness/b07_browser.py --driver <bin> --plan n4a --prefix N1- --arms COMP_OFF,PREP_FAST,POST_FAST --start-round 0 --rounds 5 --amendment PREREG-AMENDMENT-1.json"
+  },
+  {
+   "chunk": "N2",
+   "plan": "n4a",
+   "arms": [
+    "COMP_OFF",
+    "PREP_FAST",
+    "POST_FAST"
+   ],
+   "start_round": 0,
+   "rounds": 5,
+   "trials_planned": 45,
+   "trials_completed": 45,
+   "started_utc": "2026-10-03T11:53:39.691Z",
+   "ended_utc": "2026-10-03T11:55:02.910Z",
+   "driver_sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "driver_version": "cua-driver 0.32.0",
+   "xdpyinfo": "ok",
+   "jitter_ms": 155,
+   "mode": "exclusive+cargo",
+   "routines": "N2-store = P1 A-COMP_OFF + P1 A-PREP_FAST + Q1 A-POST_FAST (copies)",
+   "command": "run_chunk.sh N2 exclusive <wt> harness/b07_browser.py --driver <bin> --plan n4a --prefix N2- --arms COMP_OFF,PREP_FAST,POST_FAST --start-round 0 --rounds 5 --amendment PREREG-AMENDMENT-1.json --routines <N2-store>"
+  }
+ ]
+}
