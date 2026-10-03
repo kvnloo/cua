@@ -1,0 +1,18 @@
+{
+ "lane": "R2-07c", "attempt": 2, "wave": 4,
+ "branch": "exp/r2-07c-toggle-modal-compiled-a2-20261003",
+ "tested_source": {"base": "8f3a646b4818b757648835cf89db8886626b1cf0", "libs_cua_driver_tree": "bf8e7bdc90fdce295e44743f2754a6502d5d6e0e", "driver_changes": "none"},
+ "prereg_commit": {"sha": "8f94c0529235898443811fbfe13da98e4bc70b0e", "committed_utc": "2026-10-03T02:52:29Z"},
+ "first_measured_trial_utc": "2026-10-03T03:00:04Z (gate block G1, failed session start; first valid: G2 03:00Z)",
+ "first_live_request_utc": null,
+ "binary_R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version": "cua-driver 0.32.0", "read": "inside every private session by the harness (re-hash + --version); in every trial record"},
+ "harness_basis": {"branch": "exp/r2-10-composition-20261002", "commit": "030f6bdbf811e124e11daa2de0569bffb993b66d", "copied": "docs/experiments/r2-10-composition-2026-10-02/harness (unchanged) and analyze_r2_10.py (unchanged)"},
+ "live_heads": {
+  "start": {"utc": "2026-10-03T02:41:10Z", "upstream_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178", "upstream_main_libs_cua_driver_tree": "df2b49c32e73756f0ef1ee2338f51626d5921d92", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"},
+  "end": {"utc": "2026-10-03T04:00:41Z", "upstream_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"}
+ },
+ "publication_sha": "recorded by Publish",
+ "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "lane_caps": {"reached": 18, "attempts": 22}, "attempt_1": {"attempts": 0, "reached": 0}, "key": "never forwarded (Phase L not run)"},
+ "environment": "one Linux host; hostless (Landlock + env scrub) for every code-executing command; private Xvfb session (cua-x11-session.sh); telemetry off; Chromium sandbox on; default Driver safety settings",
+ "locks": {"shared": "quiet-lane.lock flock -s, <= 10 cells per acquisition, receipts in raw/lock-receipts-*.jsonl", "exclusive": "bin/quiet-timed for T1, T2, C6"}
+}

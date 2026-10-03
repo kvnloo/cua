@@ -31,6 +31,9 @@ elif [ "$MODE" = shared ]; then
   exec 8>"$LOCKDIR/quiet-lane.lock"
   flock -s 8
   acq="$(date -u +%FT%T.%3NZ)"; la_acq="$(la)"
+  # Shared holders all start their private Xvfb when an exclusive holder releases; a short random
+  # jitter (0-2.9 s) makes a simultaneous xvfb-run -a display collision less likely.
+  sleep "$((RANDOM % 3)).$((RANDOM % 10))"
   ( cd "$WT" && "${session[@]}" ); rc=$?
   line=$(printf '{"lane":"R2-07c","label":"%s","mode":"shared","pid":%d,"acquired":"%s","released":"%s","rc":%d,"loadavg_at_acquire":"%s"}' \
     "$LABEL" "$$" "$acq" "$(date -u +%FT%T.%3NZ)" "$rc" "$la_acq")
