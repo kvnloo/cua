@@ -1,0 +1,117 @@
+PASS 1 b01-summary.json equals a fresh recomputation from raw/
+PASS 2 README quotes fill_K0n_T_median = 3180.7
+PASS 2 README quotes fill_K0_T_median = 3184.7
+PASS 2 README quotes fill_K1_T_median = 220.6
+PASS 2 README quotes fill_K2_T_median = 181.7
+PASS 2 README quotes fill_K3_T_median = 78.7
+PASS 2 README quotes fill_K4_T_median = 80.1
+PASS 2 README quotes fill_K4v_T_median = 79.0
+PASS 2 README quotes fill_K5_T_median = 79.4
+PASS 2 README quotes HV_fill_R = 0.987
+PASS 2 README quotes HV_fill_R_lo = 0.986
+PASS 2 README quotes HV_fill_resid = 38.8
+PASS 2 README quotes HP_fill_verdict = no material component
+PASS 2 README quotes HC_fill_diff = 0.0
+PASS 2 README quotes E2_fill_untested = 51.2%
+PASS 2 README quotes E2_fill_best = K3
+PASS 2 README quotes toggle_K0_T_median = 2487.3
+PASS 2 README quotes toggle_K1_T_median = 98.7
+PASS 2 README quotes toggle_K2_T_median = 66.1
+PASS 2 README quotes toggle_K4_T_median = 65.7
+PASS 2 README quotes toggle_K4v_T_median = 65.8
+PASS 2 README quotes toggle_K5_T_median = 52.2
+PASS 2 README quotes HV_toggle_R = 0.986
+PASS 2 README quotes HV_toggle_R_lo = 0.986
+PASS 2 README quotes HV_toggle_resid = 32.8
+PASS 2 README quotes HP_toggle_verdict = no material component
+PASS 2 README quotes HC_toggle_diff = 13.5
+PASS 2 README quotes E2_toggle_untested = 70.2%
+PASS 2 README quotes E2_toggle_best = K5
+PASS 2 README quotes modal_K0_T_median = 2471.7
+PASS 2 README quotes modal_K1_T_median = 98.0
+PASS 2 README quotes modal_K2_T_median = 65.6
+PASS 2 README quotes modal_K4_T_median = 67.2
+PASS 2 README quotes modal_K4v_T_median = 65.7
+PASS 2 README quotes modal_K5_T_median = 53.2
+PASS 2 README quotes HV_modal_R = 0.986
+PASS 2 README quotes HV_modal_R_lo = 0.984
+PASS 2 README quotes HV_modal_resid = 33.8
+PASS 2 README quotes HP_modal_verdict = no material component
+PASS 2 README quotes HC_modal_diff = 11.7
+PASS 2 README quotes E2_modal_untested = 69.3%
+PASS 2 README quotes E2_modal_best = K5
+PASS 2 README quotes HT_diff = 101.2
+PASS 2 README quotes HT_stress_diff = 101.2
+PASS 2 README quotes HT_verdict = OWNER_DECISION
+PASS 2 README quotes glide_slope = 2.097
+PASS 2 README quotes glide_r2 = 0.998
+PASS 2 README quotes glide_dist_slope = 1.71
+PASS 2 README quotes glide_dist_intercept = 1077.3
+PASS 2 README quotes glide_wait_median = 1393.8
+PASS 2 README quotes glide_path_median = 684.2
+PASS 2 README quotes stale_pass = 28
+PASS 2 README quotes trials_total = 485
+PASS 2 README quotes oracle_fill_HC_median = 9.0
+PASS 2 README quotes oracle_fill_HC_ci_lo = [6.7
+PASS 2 README quotes oracle_fill_HC_ci_hi = 12.2]
+PASS 2 README quotes oracle_fill_best_median = 70.4 ms
+PASS 2 README quotes oracle_fill_K3_median = (K3: 77.8)
+PASS 2 README quotes oracle_fill_HT_median = 102.7 [
+PASS 2 README quotes oracle_modal_HV_ci_lo = [0.983
+PASS 2 README quotes oracle_toggle_best_median = K5, 52.0 ms
+PASS 2 README quotes oracle_modal_best_median = K5, 53.4 ms
+PASS 3 non-loopback connects across 485 trials = 0
+PASS 3 run-manifest-controls.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-measured.json: provider=mock, 0 non-loopback connects
+PASS 3 run-manifest-smoke.json: provider=mock, 0 non-loopback connects
+PASS 3 dry live-request validation: all schema-valid, 0 socket connects
+PASS 4 run-manifest-controls.json: control block of 10 inside a SHARED window
+PASS 4 run-manifest-controls.json: control block of 10 inside a SHARED window
+PASS 4 run-manifest-controls.json: control block of 10 inside a SHARED window
+PASS 4 run-manifest-controls.json: control block of 10 inside a SHARED window
+PASS 4 run-manifest-controls.json: one acquire/release per block
+PASS 4 run-manifest-measured.json: 440 measured trials inside an EXCLUSIVE window
+PASS 4 run-manifest-measured.json: one acquire/release per block
+PASS 4 run-manifest-smoke.json: control block of 5 inside a SHARED window
+PASS 4b run-manifest-controls.json: in lock-ledger.json with lock mode shared (40 trials)
+PASS 4b run-manifest-measured.json: in lock-ledger.json with lock mode exclusive (440 trials)
+PASS 4b run-manifest-smoke.json: in lock-ledger.json with lock mode shared (5 trials)
+PASS 4b shakedown/run-manifest-shakedown.json: in lock-ledger.json with lock mode none (21 trials)
+PASS 4b shakedown/run-manifest-shakedown1.json: in lock-ledger.json with lock mode none (19 trials)
+PASS 4b shakedown/run-manifest-shakedown2.json: in lock-ledger.json with lock mode none (19 trials)
+PASS 4b README deviations name every run without a compliant lock receipt: ['unit-1', 'build b01-56817bd72', 'shakedown-1', 'build b01-9e0267548', 'unit-2', 'shakedown-2', 'build b01-f5c991e59', 'unit-3', 'shakedown-3']
+PASS 4b no shakedown trial in the analysed set
+PASS 5 PREREG commit precedes the measured run (receipt)
+PASS 5 PREREG commit precedes the EXCLUSIVE lock acquisition 2026-10-02T02:45:02.94Z
+PASS 5 PREREG commit 2bc7d0f1d exists in git (2026-10-01T21:43:42-05:00)
+PASS 5 PREREG.json unchanged since its commit
+PASS 6 verbatim fixture copy: "toggle-confirm": """
+PASS 6 verbatim fixture copy: "modal": """
+PASS 6 verbatim fixture copy: class State:
+PASS 6 verbatim fixture copy: def oracle_ok(
+PASS 7 cargo-test-b01-core.log: 7 passed, 0 failed
+PASS 7 cargo-test-b01-linux.log: 3 passed, 0 failed
+PASS 7 cargo-test-core-lib.log: 818 passed, 0 failed
+PASS 7 cargo-test-platform-linux-lib.log: 602 passed, 0 failed
+PASS 7 cargo-test-sdk-lib.log: 95 passed, 0 failed
+PASS 7 cargo-test-cua-driver-bins.log: 290 passed, 0 failed
+PASS 8 default-off smoke: 5/5 verified, trace and knob unset
+PASS 8 no trace file in the smoke session or output
+PASS 10 stale-ref: 28 refused before dispatch with code browser_ref_stale
+PASS 11 E2 material rows all carry an allowed verdict (offenders: [])
+PASS 12 README has Deviation 13 'Text fix pass (B-01R)'
+PASS 12 no '4.4 ... per call' outside the Deviation 13 before-quotes
+PASS 12 no 'under the cargo lock' outside the Deviation 13 before-quotes
+PASS 12 provenance Driver binary row: 'documented command; lock not receipted (Deviation 9)'
+PASS 12 provenance.json driver_binary.lock says the build lock was not receipted
+PASS 12 fill K3: admission per task 8.723 ms equals the summary; 4 tools/call, 2 action steps, 2 snapshots per task (n = 20)
+PASS 12 toggle K5: admission per task 8.674 ms equals the summary; 4 tools/call, 2 action steps, 2 snapshots per task (n = 20)
+PASS 12 modal K5: admission per task 8.917 ms equals the summary; 4 tools/call, 2 action steps, 2 snapshots per task (n = 20)
+PASS 12 README quotes the raw recomputation: 'about 2.2 ms per tools/call, about 4.4 ms per action step (2 calls) and 8.7 ms per task (4 calls)'
+PASS 12 README quotes the raw recomputation: '8.7 ms per task sits in'
+PASS 12 README quotes the raw recomputation: 'about 2.2 ms per tools/call and 4.4 ms per action step'
+PASS 12 README quotes the raw recomputation: 'admission span 8.7 / 8.9 ms per task, about 2.2 / 2.2 ms per tools/call'
+PASS 12 README quotes the raw recomputation: 'Per-snapshot cost (mean of the 2): 9.7 ms CDP vs 0.8 ms processing (19.4 and 1.5 ms per task)'
+PASS 9 privacy scan over every packet file (offenders: [])
+
+0 failure(s)

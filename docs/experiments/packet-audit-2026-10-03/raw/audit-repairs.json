@@ -1,0 +1,345 @@
+{
+ "schema": "packet-audit-run-v1",
+ "set": "repairs",
+ "utc": "2026-10-03T03:16:54Z",
+ "environment": {
+  "wrapper": "bin/hostless",
+  "python": "3.14.7",
+  "git": "git version 2.55.0",
+  "os": "Linux 7.2.2-1-cachyos"
+ },
+ "upstream_main_at_planning": "41c34cb0d704d816e612dd3f9d0c816cdfacf178",
+ "results": [
+  {
+   "id": "OWN-75R",
+   "branch": "exp/own-75r-timing-parity-4336-r1b-20261003",
+   "head": "efe36d1a1efda084fa37e061dc58c3a98d607c68",
+   "packet_dir": "docs/experiments/own-75-timing-parity-4336-2026-10-02",
+   "base_pushed_head": "e02621fdc1fe5098efd48af295964f25902553ea",
+   "checked_out": "efe36d1a1efda084fa37e061dc58c3a98d607c68",
+   "verifier": {
+    "present": true,
+    "args": [],
+    "rc": 0,
+    "passed": true,
+    "seconds": 1.7,
+    "sha256": "41fc8e5b1038d8bdcc729ab21c1b34a086972aa1089974a2e404d0d112a65a16",
+    "blob": "67eafcb0506132ffaba864b4f3d3d78f38cba93f",
+    "pass_lines": 112,
+    "fail_lines": 0,
+    "last_line": "112/112 checks passed",
+    "output": "raw/verifier-output/repairs/OWN-75R.txt",
+    "output_sha256": "dc0d86f2d8cae1f5c3e2c0e773a9ea18ece1bb2485f3fbf457f0e6afce5d9727",
+    "output_privacy_hits": {}
+   },
+   "cited_not_tracked": [],
+   "cited_ignored": 0,
+   "privacy": {
+    "base": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
+    "commits_scanned": 7,
+    "commits": [
+     "8391cf80275d",
+     "cd1878872509",
+     "c1fe992b0846",
+     "c7614a2dd70e",
+     "e02621fdc1fe",
+     "823ff97846a1",
+     "efe36d1a1efd"
+    ],
+    "identities": [
+     "Kevin Rajan <7121943+kvnloo@users.noreply.github.com>"
+    ],
+    "findings": [
+     {
+      "commit": "8391cf80275d",
+      "path": "libs/cua-driver/examples/jev-use/README.md",
+      "category": "tmp_path",
+      "count": 6
+     }
+    ],
+    "severe_findings": 0
+   },
+   "packet_files_tracked": 624
+  },
+  {
+   "id": "R2-10",
+   "branch": "exp/r2-10-composition-r1b-20261003",
+   "head": "36ccdd766fca9ac2971218245f3539a6c30cf842",
+   "packet_dir": "docs/experiments/r2-10-composition-2026-10-02",
+   "base_pushed_head": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+   "checked_out": "36ccdd766fca9ac2971218245f3539a6c30cf842",
+   "verifier": {
+    "present": true,
+    "args": [],
+    "rc": 0,
+    "passed": true,
+    "seconds": 8.0,
+    "sha256": "75d84ee676954b2de61d807a2afb4438607eb80e84666876c67ae61276b4e699",
+    "blob": "cbb4b6f4bb18eef03d83ed0b1caa98e042fad459",
+    "pass_lines": 132,
+    "fail_lines": 0,
+    "last_line": "132/132 checks passed",
+    "output": "raw/verifier-output/repairs/R2-10.txt",
+    "output_sha256": "e857b83d40da890fec24000e7a22ebff9167af9261f0f8507d2a025b249a2c08",
+    "output_privacy_hits": {}
+   },
+   "cited_not_tracked": [],
+   "cited_ignored": 0,
+   "privacy": {
+    "base": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+    "commits_scanned": 12,
+    "commits": [
+     "a0bca744067d",
+     "f3f7ff473732",
+     "b10cd09f23a3",
+     "c7e9c2a06c60",
+     "96195e3b7510",
+     "0cc03fbed867",
+     "8f5ec81bc4bb",
+     "7d6cbe37758f",
+     "8f3a646b4818",
+     "2cedaa9a4ed5",
+     "030f6bdbf811",
+     "36ccdd766fca"
+    ],
+    "identities": [
+     "Kevin Rajan <7121943+kvnloo@users.noreply.github.com>",
+     "kvnloo <7121943+kvnloo@users.noreply.github.com>"
+    ],
+    "findings": [
+     {
+      "commit": "a0bca744067d",
+      "path": ".github/workflows/ci-jev-use.yml",
+      "category": "public_ci_path",
+      "count": 1
+     },
+     {
+      "commit": "a0bca744067d",
+      "path": "libs/cua-driver/examples/jev-use/README.md",
+      "category": "tmp_path",
+      "count": 6
+     },
+     {
+      "commit": "f3f7ff473732",
+      "path": "libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs",
+      "category": "tmp_path",
+      "count": 1
+     },
+     {
+      "commit": "0cc03fbed867",
+      "path": "libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs",
+      "category": "tmp_path",
+      "count": 1
+     },
+     {
+      "commit": "7d6cbe37758f",
+      "path": "libs/cua-driver/rust/crates/cua-driver-core/src/browser/download.rs",
+      "category": "tmp_path",
+      "count": 1
+     },
+     {
+      "commit": "2cedaa9a4ed5",
+      "path": "docs/experiments/r2-10-composition-2026-10-02/harness/src/n-01r-native-wait-ab-2026-10-02/run_all.sh",
+      "category": "generic_tmp_dir",
+      "count": 1
+     },
+     {
+      "commit": "030f6bdbf811",
+      "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+      "category": "generic_tmp_dir",
+      "count": 1
+     },
+     {
+      "commit": "36ccdd766fca",
+      "path": "docs/experiments/r2-10-composition-2026-10-02/README.md",
+      "category": "generic_tmp_dir",
+      "count": 1
+     }
+    ],
+    "severe_findings": 0
+   },
+   "packet_files_tracked": 143
+  },
+  {
+   "id": "B-03",
+   "branch": "exp/b-03-toggle-cold-snapshot-r1b-20261003",
+   "head": "911e2079694e2bc632389c02a980e4069c9fc0eb",
+   "packet_dir": "docs/experiments/b-03-toggle-cold-snapshot-2026-10-02",
+   "base_pushed_head": "b34eef71ee40bc733670e68d9cf57f6acc92ec5c",
+   "checked_out": "911e2079694e2bc632389c02a980e4069c9fc0eb",
+   "verifier": {
+    "present": true,
+    "args": [],
+    "rc": 0,
+    "passed": true,
+    "seconds": 13.8,
+    "sha256": "4d6ff58a6efcb9f354af1c535196507e4eb5c34ec4a8f5289be966c92969ef34",
+    "blob": "73090c33b87e2b3f6d6e485886a6043188f34a1f",
+    "pass_lines": 17,
+    "fail_lines": 0,
+    "last_line": "}",
+    "output": "raw/verifier-output/repairs/B-03.txt",
+    "output_sha256": "a84ed64a19a27cc94bf19435e7270746e20cbfcfaddaff0cf1241df992786310",
+    "output_privacy_hits": {}
+   },
+   "cited_not_tracked": [],
+   "cited_ignored": 0,
+   "privacy": {
+    "base": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+    "commits_scanned": 16,
+    "commits": [
+     "a0bca744067d",
+     "ea317065b43a",
+     "7d3a28b663a0",
+     "0c6a53237c1d",
+     "f5c991e59275",
+     "560bd8247c36",
+     "1a902e45320a",
+     "26284c06c7bd",
+     "0330e34fd893",
+     "0fedd5391bbe",
+     "630eb22e7c1b",
+     "b282ff3894fa",
+     "2edc0bee20ab",
+     "2549fc1e8e58",
+     "b34eef71ee40",
+     "911e2079694e"
+    ],
+    "identities": [
+     "Kevin Rajan <7121943+kvnloo@users.noreply.github.com>",
+     "kvnloo <7121943+kvnloo@users.noreply.github.com>"
+    ],
+    "findings": [
+     {
+      "commit": "a0bca744067d",
+      "path": ".github/workflows/ci-jev-use.yml",
+      "category": "public_ci_path",
+      "count": 1
+     },
+     {
+      "commit": "a0bca744067d",
+      "path": "libs/cua-driver/examples/jev-use/README.md",
+      "category": "tmp_path",
+      "count": 6
+     },
+     {
+      "commit": "7d3a28b663a0",
+      "path": "libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs",
+      "category": "tmp_path",
+      "count": 1
+     },
+     {
+      "commit": "2549fc1e8e58",
+      "path": "docs/experiments/b-03-toggle-cold-snapshot-2026-10-02/lane-scripts/package_raw.py",
+      "category": "tmp_path",
+      "count": 1
+     },
+     {
+      "commit": "b34eef71ee40",
+      "path": "docs/experiments/b-03-toggle-cold-snapshot-2026-10-02/verify_artifacts.py",
+      "category": "local_dir_name",
+      "count": 1
+     }
+    ],
+    "severe_findings": 0
+   },
+   "packet_files_tracked": 28
+  },
+  {
+   "id": "R2-09",
+   "branch": "exp/r2-09-native-event-wake-r1b-20261003",
+   "head": "ffb4919a7b5bff9cc92e2a798663439a76d8f0b3",
+   "packet_dir": "docs/experiments/r2-09-native-event-wake-2026-10-02",
+   "base_pushed_head": "3539e34ae16d8c49d8de65452663a916dd6647fa",
+   "checked_out": "ffb4919a7b5bff9cc92e2a798663439a76d8f0b3",
+   "verifier": {
+    "present": true,
+    "args": [],
+    "rc": 0,
+    "passed": true,
+    "seconds": 2.5,
+    "sha256": "9c567d0709cd0eb3aa6500a638985e7ed06f3a8ed438ec2826b5ffbc5986318b",
+    "blob": "09143a2aae8a702497aa6ef62c5c3e974b5a34db",
+    "pass_lines": 190,
+    "fail_lines": 0,
+    "last_line": "PASS: 0 failed checks",
+    "output": "raw/verifier-output/repairs/R2-09.txt",
+    "output_sha256": "705f5f3c7611d2733403d011d9ae7f68e2db7bd2d162c94dab2e17f328f3b33c",
+    "output_privacy_hits": {}
+   },
+   "cited_not_tracked": [
+    {
+     "path": "r209-trial-metrics.jsonl",
+     "kind": "untracked",
+     "source": "README.md"
+    }
+   ],
+   "cited_ignored": 0,
+   "privacy": {
+    "base": "229b65b2849c3a595ddbc85200d7181b18bd2e47",
+    "commits_scanned": 10,
+    "commits": [
+     "1280a9e5eba7",
+     "28b915ae9ec2",
+     "b9b357bc72fe",
+     "8ff42418df23",
+     "9421e1ccd868",
+     "3bb4a7fc70d1",
+     "bff61ddccfa2",
+     "ede032019873",
+     "3539e34ae16d",
+     "ffb4919a7b5b"
+    ],
+    "identities": [
+     "Kevin Rajan <7121943+kvnloo@users.noreply.github.com>"
+    ],
+    "findings": [
+     {
+      "commit": "28b915ae9ec2",
+      "path": "libs/cua-driver/rust/crates/cua-driver-core/src/tool.rs",
+      "category": "tmp_path",
+      "count": 1
+     },
+     {
+      "commit": "8ff42418df23",
+      "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/PREREG.json",
+      "category": "generic_tmp_dir",
+      "count": 1
+     },
+     {
+      "commit": "8ff42418df23",
+      "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/run_all.sh",
+      "category": "generic_tmp_dir",
+      "count": 1
+     },
+     {
+      "commit": "8ff42418df23",
+      "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/verify_artifacts.py",
+      "category": "local_dir_name",
+      "count": 2
+     },
+     {
+      "commit": "9421e1ccd868",
+      "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/README.md",
+      "category": "generic_tmp_dir",
+      "count": 1
+     },
+     {
+      "commit": "9421e1ccd868",
+      "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/verify_artifacts.py",
+      "category": "local_dir_name",
+      "count": 2
+     },
+     {
+      "commit": "3bb4a7fc70d1",
+      "path": "docs/experiments/n-01r-native-wait-ab-2026-10-02/README.md",
+      "category": "generic_tmp_dir",
+      "count": 1
+     }
+    ],
+    "severe_findings": 0
+   },
+   "packet_files_tracked": 121
+  }
+ ]
+}

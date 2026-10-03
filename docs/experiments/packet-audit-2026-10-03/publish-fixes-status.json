@@ -1,0 +1,275 @@
+{
+ "schema": "packet-audit-publish-fixes-v1",
+ "method": "SOURCE: each fix text from STATE.json dispositions.<id>.publish_fixes compared with README.md (and verify_artifacts.py where named) at the pushed head; evidence is the phrase checked. Rule: an earlier-wave fix is applied only if a verifier fails because of it. Every audited verifier passes at its pushed head except OWN-75R (no publish_fixes entry), so no earlier-wave fix was applied here.",
+ "wave3_applied_on_repair_branches": {
+  "R2-10": {
+   "branch": "exp/r2-10-composition-r1b-20261003",
+   "fixes": 7,
+   "status": "APPLIED_ON_R1B"
+  },
+  "B-03": {
+   "branch": "exp/b-03-toggle-cold-snapshot-r1b-20261003",
+   "fixes": 6,
+   "status": "APPLIED_ON_R1B"
+  },
+  "R2-09": {
+   "branch": "exp/r2-09-native-event-wake-r1b-20261003",
+   "fixes": 5,
+   "status": "APPLIED_ON_R1B"
+  }
+ },
+ "earlier_waves": {
+  "N-01R": {
+   "head": "3bb4a7fc70d1d58984b19a7a357892a7c9af31fa",
+   "verifier_fails_because_of_it": false,
+   "fixes": [
+    {
+     "fix": 1,
+     "topic": "history privacy: commits 8ff42418d / 9421e1ccd verifier regex literals",
+     "status": "ACCEPTED_BY_RULING",
+     "evidence": "STATE waves[2].n01r_history_blobs: accepted (scanner regex listing local directory names, not paths/host/secrets)"
+    },
+    {
+     "fix": 2,
+     "topic": "'exactly one component remains untested' wording",
+     "status": "OPEN",
+     "evidence": "README still says 'exactly one component remains untested'"
+    },
+    {
+     "fix": 3,
+     "topic": "R2-09 framing: pre-registered output 'name the exact wait'; 'no native wait worth an event wake' is a SOURCE inference",
+     "status": "OPEN",
+     "evidence": "README still states 'no native wait on this path is worth an event wake' without the SOURCE-inference label"
+    },
+    {
+     "fix": 4,
+     "topic": "SETTLE_MS=0 also removes the 900 ms SETTLE_WATCH_NEW_WINDOW extension",
+     "status": "OPEN",
+     "evidence": "no 'SETTLE_WATCH_NEW_WINDOW' / '900 ms' in README"
+    },
+    {
+     "fix": 5,
+     "topic": "rounding: checkbox S_C 1.01; native.rs cite 3531-3534",
+     "status": "OPEN",
+     "evidence": "README has 'S_C 1.02 [0.98, 1.06]' and cites native.rs:3530-3534"
+    }
+   ]
+  },
+  "B-02": {
+   "head": "b282ff3894fa85a7b82257cb1edd5088c2f0ac37",
+   "verifier_fails_because_of_it": false,
+   "fixes": [
+    {
+     "fix": 1,
+     "topic": "label B-01-derived E2 verdicts with source B-01 0cd63f786",
+     "status": "OPEN",
+     "evidence": "no '0cd63f786' in README"
+    },
+    {
+     "fix": 2,
+     "topic": "best-arm rule: K5EV modal decomposition or deviation",
+     "status": "OPEN",
+     "evidence": "README best-arm rule keeps the 'all knobs DELETED' filter with no deviation line; the K5EV decomposition is in B-03 Part 1, not in this packet"
+    },
+    {
+     "fix": 3,
+     "topic": "H_E 'controls hold' qualifier (N-E1 refuses at reval.fingerprint; REAL fallback 2/5; takeover guards UNIT)",
+     "status": "OPEN",
+     "evidence": "no '2/5' qualifier in README"
+    },
+    {
+     "fix": 4,
+     "topic": "scope '0 non-loopback connects' to the runner process",
+     "status": "OPEN",
+     "evidence": "README says 'Every runner manifest records 0 non-loopback connects' without the runner-process/telemetry scope"
+    },
+    {
+     "fix": 5,
+     "topic": "STEP 0 '1.6-2.2x B-01's 9.9 ms' cross-binary label",
+     "status": "OPEN",
+     "evidence": "README line 'The whole interval is 1.6-2.2x B-01's 9.9 ms' unlabelled"
+    },
+    {
+     "fix": 6,
+     "topic": "deviation: STEP 0 span definition fixed after shake-r2-step0",
+     "status": "OPEN",
+     "evidence": "no such deviation line"
+    },
+    {
+     "fix": 7,
+     "topic": "absolute E savings are host-state specific (verifier re-run at loadavg 12-15)",
+     "status": "OPEN",
+     "evidence": "no such statement"
+    }
+   ]
+  },
+  "FIX-01": {
+   "head": "4a301d32a96d0a5d54a77d7147af1191c7df4c4e",
+   "verifier_fails_because_of_it": false,
+   "fixes": [
+    {
+     "fix": 1,
+     "topic": "deviation: five shakedown acquisitions; s1/s2 labels",
+     "status": "OPEN",
+     "evidence": "no five-shakedown deviation in README"
+    },
+    {
+     "fix": 2,
+     "topic": "qualify 'a refusal landed nothing'",
+     "status": "OPEN",
+     "evidence": "README still says 'A refusal landed nothing' unqualified"
+    },
+    {
+     "fix": 3,
+     "topic": "G3 wording: 42/42 = G2 + G6 F cells only",
+     "status": "OPEN",
+     "evidence": "README G3 row says 'G2 + every G6 cell, U and F'"
+    },
+    {
+     "fix": 4,
+     "topic": "label C4w 24.9 ms and G2 T 314.19 ms as shared-lock characterization",
+     "status": "OPEN",
+     "evidence": "G2 row still reports 'T 314.19 ms' unlabelled"
+    },
+    {
+     "fix": 5,
+     "topic": "OWN-105 mapping: G1 not implemented here",
+     "status": "OPEN",
+     "evidence": "README maps G1 to rule 3 without 'not implemented here'"
+    },
+    {
+     "fix": 6,
+     "topic": "ledger wording: G6 receipts carry extra fields",
+     "status": "OPEN",
+     "evidence": "no 'extra field' statement"
+    }
+   ]
+  },
+  "OWN-09": {
+   "head": "bf07c8fe374bc3079c2edb8adaea3bc2bcf9b79d",
+   "verifier_fails_because_of_it": false,
+   "fixes": [
+    {
+     "fix": 1,
+     "topic": "relabel R4 late cancel SOURCE + FIXTURE; C-ABI late cancel NOT_RUN",
+     "status": "PARTLY_APPLIED",
+     "evidence": "R4 row labelled 'SOURCE + FIXTURE' at the pushed head; no explicit 'C-ABI late cancel on a retained/stale token NOT_RUN' statement"
+    },
+    {
+     "fix": 2,
+     "topic": "cite bf07c8fe3 and the README R1 wording in downstream summaries",
+     "status": "NOT_A_PACKET_EDIT",
+     "evidence": "guidance for documents that cite the packet"
+    },
+    {
+     "fix": 3,
+     "topic": "M gaps carry the 'R1 PASS by rule only (3/200 exploratory)' caveat",
+     "status": "APPLIED_AT_PUSHED_HEAD",
+     "evidence": "README: 'M's R1 stays PASS by rule (no counted FAIL)' (the caveat is also guidance for downstream summaries)"
+    },
+    {
+     "fix": 4,
+     "topic": "lane near_miss field misses the fix-round host-shell python3 heredoc",
+     "status": "NOT_A_PACKET_EDIT",
+     "evidence": "lane report field; README Deviation 6 records the heredoc"
+    }
+   ]
+  },
+  "OWN-36": {
+   "head": "ff77554f46db2799334a20cb55111decc02582de",
+   "verifier_fails_because_of_it": false,
+   "fixes": [
+    {
+     "fix": 1,
+     "topic": "deviation: PREREG written_utc 04:58:00Z pre-filled; commit 04:57:15Z authoritative",
+     "status": "PARTLY_APPLIED",
+     "evidence": "README cites the 04:57:15Z commit as the PREREG time; no deviation line about written_utc"
+    },
+    {
+     "fix": 2,
+     "topic": "relabel rows REAL+FIXTURE; I6 telemetry SOURCE",
+     "status": "OPEN",
+     "evidence": "rows labelled REAL"
+    },
+    {
+     "fix": 3,
+     "topic": "refresh live head (ab628e0d1)",
+     "status": "OPEN",
+     "evidence": "README live heads read 04:59:50Z (091c6ee07)"
+    },
+    {
+     "fix": 4,
+     "topic": "#36 row table: I3 KEEP for separate windows; falsified for a shared window",
+     "status": "APPLIED_AT_PUSHED_HEAD",
+     "evidence": "README has the shared-window qualifier"
+    },
+    {
+     "fix": 5,
+     "topic": "verify_artifacts.py: test I6 image items directly; require I5 B-own-token steps",
+     "status": "OPEN",
+     "evidence": "verifier checks I6 hit counts against the summary, not image items directly"
+    },
+    {
+     "fix": 6,
+     "topic": "headline: T2 (two MCP clients) is the stronger cross-session evidence",
+     "status": "OPEN",
+     "evidence": "no such headline sentence"
+    }
+   ]
+  },
+  "OWN-20": {
+   "head": "6da15bf3516ddbf657e5d947875be6adae5299ef",
+   "verifier_fails_because_of_it": false,
+   "fixes": [
+    {
+     "fix": 1,
+     "topic": "timeline: first counted mutation 05:02:44Z, not 05:00:17Z",
+     "status": "OPEN",
+     "evidence": "README still cites 05:00:17Z"
+    },
+    {
+     "fix": 2,
+     "topic": "refresh live heads (ab628e0d1)",
+     "status": "OPEN",
+     "evidence": "no ab628e0d1 in README"
+    },
+    {
+     "fix": 3,
+     "topic": "claim boundary: child_add covers GtkBox.pack_start only",
+     "status": "OPEN",
+     "evidence": "no pack_start scope statement"
+    },
+    {
+     "fix": 4,
+     "topic": "headline: FN_L2 40/40 next to NOISY_HINT; registry restart event counts",
+     "status": "PARTLY_APPLIED",
+     "evidence": "headline: 'no children-changed:add event in 40 of 40 reps' under the NOISY_HINT bullet (FN_L2 40/40 in substance); registry restart line says 'lifecycle signals plus 20 registry events, 0 target events' without the 80 NameOwnerChanged + 20 Socket:Available breakdown"
+    },
+    {
+     "fix": 5,
+     "topic": "Chromium gate wording: session-level a11y enablement not tried",
+     "status": "OPEN",
+     "evidence": "no org.a11y.Status / toolkit-accessibility statement"
+    },
+    {
+     "fix": 6,
+     "topic": "capture component versions under hostless into raw/",
+     "status": "OPEN",
+     "evidence": "versions are stated in the README environment row; no raw/ capture"
+    },
+    {
+     "fix": 7,
+     "topic": "per-row environment label (hostless v1 vs v2); tested_sha in rows file",
+     "status": "PARTLY_APPLIED",
+     "evidence": "README environment row and Deviation 2 name v1 for b01-b03 and v2 from b04; no per-row label"
+    },
+    {
+     "fix": 8,
+     "topic": "a11y bus (dbus-daemon) restart NOT_RUN; selection_v2 80 non-target events",
+     "status": "OPEN",
+     "evidence": "no dbus-daemon NOT_RUN statement"
+    }
+   ]
+  }
+ }
+}

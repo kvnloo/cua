@@ -1,0 +1,54 @@
+PASS own-16-matrix.json recomputes identically from raw/
+PASS own-16-summary.json recomputes identically from raw/
+PASS modality_truth.py matches PREREG hash
+PASS run_in_session.sh matches PREREG hash
+PASS xrecord_capture.py matches PREREG hash
+PASS run_batch.sh matches PREREG hash
+PASS S1 driver sha256 == provenance lane sha256
+PASS S1 driver version recorded in session
+PASS S2 driver sha256 == provenance lane sha256
+PASS S2 driver version recorded in session
+PASS N1 driver sha256 == provenance lane sha256
+PASS N1 driver version recorded in session
+PASS D1 driver sha256 == provenance lane sha256
+PASS D1 driver version recorded in session
+PASS first measured call is later than the PREREG commit
+PASS PREREG commit time matches git
+PASS README states the recomputed disposition
+PASS README names row both with class positive_control_pass
+PASS README names row screenshot_only with class latency_real_selector
+PASS README names row accessibility_only with class latency_real_selector
+PASS README names row neither with class rejected_explicit
+PASS README names row legacy_omitted with class default_honored
+PASS README names row unknown_field with class rejected_explicit
+PASS README names row wrong_type_supplementary with class silently_ignored (supplementary)
+PASS privacy: PREREG.json
+PASS privacy: README.md
+PASS privacy: analyze.py
+PASS privacy: instrumentation.diff
+PASS privacy: modality_truth.py
+PASS privacy: own-16-matrix.json
+PASS privacy: own-16-summary.json
+PASS privacy: provenance.json
+PASS privacy: raw/D1/calls.jsonl
+PASS privacy: raw/D1/phase-on.jsonl
+PASS privacy: raw/D1/session-env.txt
+PASS privacy: raw/N1/calls.jsonl
+PASS privacy: raw/N1/phase-n.jsonl
+PASS privacy: raw/N1/session-env.txt
+PASS privacy: raw/S1/calls.jsonl
+PASS privacy: raw/S1/oracle/dbus-monitor.log.gz
+PASS privacy: raw/S1/oracle/xrecord.jsonl
+PASS privacy: raw/S1/phase-m.jsonl
+PASS privacy: raw/S1/session-env.txt
+PASS privacy: raw/S2/calls.jsonl
+PASS privacy: raw/S2/oracle/dbus-monitor.log.gz
+PASS privacy: raw/S2/oracle/xrecord.jsonl
+PASS privacy: raw/S2/phase-m.jsonl
+PASS privacy: raw/S2/session-env.txt
+PASS privacy: run_batch.sh
+PASS privacy: run_in_session.sh
+PASS privacy: verify_artifacts.py
+PASS privacy: xrecord_capture.py
+
+0 failure(s)

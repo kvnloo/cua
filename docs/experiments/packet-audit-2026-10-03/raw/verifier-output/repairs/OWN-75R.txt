@@ -1,0 +1,114 @@
+PASS unit[head] all 7 commands rc 0: {"python_unittest": 0, "ts_test": 0, "tsc": 0, "verify_choice_cli": 0, "verify_choice_cli_v2": 0, "verify_decision_cli": 0, "verify_decision_cli_native": 0}
+PASS unit[head] python OK: ran 231, skipped [('test_local_s1_selects_modality_and_binds_the_screenshot', 'cua-s1 is not installed')]
+PASS unit[head] ts 0 fail: {"tests": 107, "pass": 107, "fail": 0, "skipped": 0}
+PASS unit[m0] all 7 commands rc 0: {"python_unittest": 0, "ts_test": 0, "tsc": 0, "verify_choice_cli": 0, "verify_choice_cli_v2": 0, "verify_decision_cli": 0, "verify_decision_cli_native": 0}
+PASS unit[m0] python OK: ran 229, skipped [('test_local_s1_selects_modality_and_binds_the_screenshot', 'cua-s1 is not installed')]
+PASS unit[m0] ts 0 fail: {"tests": 105, "pass": 105, "fail": 0, "skipped": 0}
+PASS unit head-only python tests == PR parity tests: ['test_form_task_reports_common_fields_without_a_visual_parse', 'test_visual_fallback_reports_parse_only_visual_time_and_both_observations']
+PASS unit head-only ts tests == PR parity tests: ['form task reports common fields without a visual parse', 'visual fallback reports parse-only visual time and both observations']
+PASS unit tested jev-use trees (clean): {"head": ["f3ba27c40253d00cd235ca001bdae72357300f6c", "0"], "m0": ["635a4f588c6817ccb6cb6f5b7baacddbfc42f786", "0"]}
+PASS mutation none-py applied once, log consistent: rc 0
+PASS mutation none-ts applied once, log consistent: rc 0
+PASS mutation M1-decision-boundary-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M1-decision-boundary-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M2-drop-act_ms-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M2-drop-act_ms-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M3-visual-includes-semantic-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M3-visual-includes-semantic-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M4-drop-scope-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M4-drop-scope-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M5-total-excludes-action-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M5-total-excludes-action-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M6-semantic-first-only-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M6-semantic-first-only-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M7-parse_ms-widened-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M7-parse_ms-widened-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M8-extra-driver-call-py applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation M8-extra-driver-call-ts applied once, log consistent, failure is a test assertion (not a load error): rc 1
+PASS mutation 18 rows (2 none + 16 mutants)
+PASS mutation none-py passes (positive control)
+PASS mutation PREREG GATE M1-decision-boundary-py detected
+PASS mutation PREREG GATE M2-drop-act_ms-py detected
+PASS mutation none-ts passes (positive control)
+PASS mutation PREREG GATE M1-decision-boundary-ts detected
+PASS mutation PREREG GATE M2-drop-act_ms-ts detected
+PASS mutation AMENDMENT GATE all 16 mutants detected: 16/16
+PASS real analysis recomputes to the stored summary
+PASS real field contract recomputes to the stored summary
+PASS real trials == plan (ids, order), 160 trials, 16 blocks: 160 trials
+PASS real 0 harness errors, runner rc 0 everywhere
+PASS real ('python', 'gtk3-choose-size') 10 AB + 10 BA pairs: {"AB": 20, "BA": 20}
+PASS real ('python', 'gtk3-save-note') 10 AB + 10 BA pairs: {"AB": 20, "BA": 20}
+PASS real ('typescript', 'gtk3-choose-size') 10 AB + 10 BA pairs: {"AB": 20, "BA": 20}
+PASS real ('typescript', 'gtk3-save-note') 10 AB + 10 BA pairs: {"AB": 20, "BA": 20}
+PASS real 4 cells
+PASS real GATE python:gtk3-choose-size n 20+20, oracle 40/40
+PASS real GATE python:gtk3-choose-size one primary digest (20/20 head, 20/20 m0): distinct 1
+PASS real python:gtk3-choose-size head carries all PR fields on every trial
+PASS real python:gtk3-choose-size head carries decide_ms, act_ms, observation.observe_ms
+PASS real python:gtk3-choose-size m0 carries the same legacy fields and no PR field (discriminating)
+PASS real python:gtk3-choose-size visual_observe_scope == parse_only
+PASS real GATE python:gtk3-save-note n 20+20, oracle 40/40
+PASS real GATE python:gtk3-save-note one primary digest (20/20 head, 20/20 m0): distinct 1
+PASS real python:gtk3-save-note head carries all PR fields on every trial
+PASS real python:gtk3-save-note head carries decide_ms, act_ms, observation.observe_ms
+PASS real python:gtk3-save-note m0 carries the same legacy fields and no PR field (discriminating)
+PASS real python:gtk3-save-note visual_observe_scope == parse_only
+PASS real GATE typescript:gtk3-choose-size n 20+20, oracle 40/40
+PASS real GATE typescript:gtk3-choose-size one primary digest (20/20 head, 20/20 m0): distinct 1
+PASS real typescript:gtk3-choose-size head carries all PR fields on every trial
+PASS real typescript:gtk3-choose-size head carries decide_ms, act_ms, observation.observe_ms
+PASS real typescript:gtk3-choose-size m0 carries the same legacy fields and no PR field (discriminating)
+PASS real typescript:gtk3-choose-size visual_observe_scope == parse_only
+PASS real GATE typescript:gtk3-save-note n 20+20, oracle 40/40
+PASS real GATE typescript:gtk3-save-note one primary digest (20/20 head, 20/20 m0): distinct 1
+PASS real typescript:gtk3-save-note head carries all PR fields on every trial
+PASS real typescript:gtk3-save-note head carries decide_ms, act_ms, observation.observe_ms
+PASS real typescript:gtk3-save-note m0 carries the same legacy fields and no PR field (discriminating)
+PASS real typescript:gtk3-save-note visual_observe_scope == parse_only
+PASS real S2 every head step: 7 common fields + scope parse_only + aliases + legacy fields: {"steps": 160, "all_common": 160, "scope_parse_only": 160, "alias_provider": 160, "alias_action": 160, "legacy_all": 160, "parse_ms_present": 0, "parse_ms_equal_visual": 0}
+PASS real S2 parse_ms == visual_observe_ms whenever parse_ms is present: 0 steps with parse_ms
+PASS real S2 every m0 step: legacy fields, no common field or scope: {"steps": 160, "any_common_or_scope": 0, "legacy_all": 160, "visual_status": {"skipped": 160}}
+PASS real S2 step counts equal between arms: 160 vs 160
+PASS guard armed in every trial
+PASS guard 0 refusals in trials (no non-loopback connect attempted by a runner)
+PASS guard 16 block metas
+PASS guard self-test block-m01 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m02 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m03 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m04 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m05 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m06 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m07 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m08 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m09 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m10 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m11 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m12 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m13 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m14 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m15 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS guard self-test block-m16 refused 2/2, no Wayland, no provider key, no inherited AT-SPI address: cua-driver 0.32.0
+PASS comparator: a changed candidate changes the digest
+PASS comparator: a changed action argument changes the digest
+PASS comparator: a changed oracle state changes the digest
+PASS comparator: changed/removed timing fields leave the digest unchanged
+PASS ledger: one exclusive acquired/released pair per block, <= 10 trials, rc 0, every trial inside: 16 blocks
+PASS ledger: every pair nested inside its quiet-timed receipt (shared quiet-lane ledger): 16 receipts
+PASS ledger: every lock chunk <= 15 minutes: longest 76 s
+PASS session: 16/16 blocks with telemetry off, private DISPLAY, AT-SPI requested, no inherited AT-SPI address, no Wayland/Hyprland/provider key: 16/16
+PASS session: 16/16 blocks ran at-spi-bus-launcher on their one private session dbus-daemon: 16/16
+PASS session: every action receipt route=accessibility, delivery=background (the forced AT-SPI path): 320/320
+PASS provenance: Driver sha256 start == end == pinned: 8b03796185055cc4
+PASS provenance: one Driver version in every block: ['cua-driver 0.32.0']
+PASS provenance: trycua/cua PR 4336 head start == end == tested
+PASS provenance.json names the tested SHAs and binary
+PASS prereg: PREREG.json committed once (cd1878872) and unchanged since
+PASS prereg: PREREG-AMENDMENT-1.json committed once and unchanged since: c1fe992b0846
+PASS prereg: amendment committed before the unit run, the mutation run and the first REAL trial: amendment 2026-10-02T17:21:31Z, unit 2026-10-02T17:21:45.176000Z, mutation 2026-10-02T17:22:59.543000Z, first trial 2026-10-02T17:25:23.089893Z
+PASS prereg: amendment written_utc not later than its commit: 2026-10-02T17:21Z vs 2026-10-02T17:21:31Z
+PASS prereg: branch = PR head + packet-only commits: 624 packet files
+PASS privacy: packet files: {}
+PASS privacy: every commit since the PR head (diffs, messages, gz blobs): {}
+
+112/112 checks passed

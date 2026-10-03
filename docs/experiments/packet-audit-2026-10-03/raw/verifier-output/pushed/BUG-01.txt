@@ -1,0 +1,70 @@
+PASS bug01-summary.json equals a fresh recomputation from raw/
+PASS part A: 70 + 70 + 70 trials, every trial kept
+PASS part A: 0 harness errors
+PASS part A baseline: T receipts delivery=background 20/20
+PASS part A baseline: T page trusted-foreground 20/20, verified 20/20
+PASS part A fix: T receipts delivery=foreground 20/20
+PASS part A fix: T page trusted-foreground 20/20, verified 20/20
+PASS part A (superseded fix): the only receipt field change is T click delivery_mode
+PASS part A final fix: T receipts delivery=foreground 20/20
+PASS part A final fix: T page trusted-foreground 20/20, verified 20/20
+PASS part A final fix: the only receipt field change is T click delivery_mode
+PASS part A: superseded and final fix give identical receipt distributions on Linux standalone
+PASS decoy control baseline: 6 T + 6 D, 0 harness errors
+PASS decoy control baseline: decoy active before every click
+PASS decoy control baseline: T activates the browser 6/6, D leaves the decoy active 6/6
+PASS decoy control baseline: receipts T background 6/6, D background 6/6
+PASS decoy control baseline: 12/12 verified; page click trusted T 6/6, D 0/6
+PASS decoy control fix2: 6 T + 6 D, 0 harness errors
+PASS decoy control fix2: decoy active before every click
+PASS decoy control fix2: T activates the browser 6/6, D leaves the decoy active 6/6
+PASS decoy control fix2: receipts T foreground 6/6, D background 6/6
+PASS decoy control fix2: 12/12 verified; page click trusted T 6/6, D 0/6
+PASS part A gate: CONFIRMED_BUG
+PASS UNIT red run head == failing-test commit
+PASS UNIT green run head == fix commit
+PASS UNIT final-fix run head == executed-branch fix commit
+PASS UNIT guard red run head == guard-test commit
+PASS UNIT: red at main+test, green at both fix commits
+PASS UNIT: both executed-branch guard tests FAILED at the guard commit and pass at the final fix
+PASS UNIT final fix: background guard ok; contract 61 and goldens 8 pass
+PASS UNIT: contract and golden outcomes identical at both fix commits
+PASS UNIT: main+test to final fix, besides new tests and history flakes only the red test changed outcome
+PASS UNIT: history tests pass 5/5 in isolation at the final fix
+PASS UNIT: besides new counter tests and history flakes, only the red test changed outcome
+PASS UNIT: history tests pass 5/5 in isolation at the fix
+PASS UNIT: 6 cdp_counters tests pass
+PASS UNIT: part B repro fails when run with --ignored
+PASS part B: 1800/1800 calls accepted, all joined to a counter line
+PASS part B: exactly 1 attach and 0 detach per measured call in every series
+PASS part B: 304 live sessions at the end of each L, max 11 in C
+PASS part B gate: ACCUMULATION_ONLY
+PASS part B exploratory: post-navigation bursts 1/101/201 events in each L
+PASS part A baseline: Driver sha256 matches provenance
+PASS part A baseline: version recorded in session
+PASS part A fix: Driver sha256 matches provenance
+PASS part A fix: version recorded in session
+PASS part A fix2: Driver sha256 matches provenance
+PASS part A fix2: version recorded in session
+PASS part B: Driver sha256 matches provenance
+PASS decoy control baseline: Driver sha256 and in-session version match provenance; counter variable unset
+PASS decoy control baseline: run inside its SHARED quiet-lane window
+PASS decoy control fix2: Driver sha256 and in-session version match provenance; counter variable unset
+PASS decoy control fix2: run inside its SHARED quiet-lane window
+PASS part-a-baseline.lockinfo: all 70 trials inside the SHARED quiet-lane window
+PASS part-a-fix.lockinfo: all 70 trials inside the SHARED quiet-lane window
+PASS part-a-fix2.lockinfo: all 70 trials inside the SHARED quiet-lane window
+PASS part-b-measured.lockinfo: every part B call inside the EXCLUSIVE quiet-lane window
+PASS default-off smoke: rc 0 and no counter file
+PASS PREREG.json is unchanged since its own commit
+PASS commit prereg d0d63f296 exists
+PASS commit failing_test_main_plus_test 147f2adec exists
+PASS commit instrumented a99ee937a exists
+PASS commit fix 2533db6d5 exists
+PASS commit repro_ignored_test ec88394cd exists
+PASS commit style_rustfmt_only 8f52c55a7 exists
+PASS commit guard_tests_executed_branch 7431f03d1 exists
+PASS commit fix_executed_branch 49a3adf0f exists
+PASS privacy scan: no absolute local paths, host name or secret-like tokens
+
+0 failing check(s)

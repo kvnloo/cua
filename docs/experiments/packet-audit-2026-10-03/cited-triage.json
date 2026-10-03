@@ -1,0 +1,26 @@
+{
+ "_schema": "packet-audit-cited-triage-v1",
+ "_rule": "Each cited-but-not-tracked path that verify_helper reports (whole README + headline JSON) at an audited head, with why it is not missing evidence. Verified by reading the README line that cites it.",
+ "R2-04": {
+  "*.log": "Deviation text: 'The unit logs were renamed from .log to .txt. The repository .gitignore ignores *.log' - a mention of the rule, not a cited file; the renamed raw/unit/*.txt are tracked"
+ },
+ "R2-06": {
+  "raw/main/probe-stdout.log": "Deviation 6 says it 'was dropped from the Files list, because *.log is git-ignored and the file is not committed (it is kept as main.log in the raw mirror)' - disclosed as not committed, not cited as evidence; the verifier does not read it",
+  "*.log": "same Deviation 6 sentence (mention of the ignore rule)",
+  "main.log": "same Deviation 6 sentence (the raw-mirror name)"
+ },
+ "R2-09": {
+  "r209-trial-metrics.jsonl": "the analyzer output name in the Method command line; the packet commits it gzipped as r209-trial-metrics.jsonl.gz (Files section), and verify_artifacts.py re-runs analyze.py into a temporary path"
+ },
+ "FIX-01": {
+  "raw/learn/artifact.json": "R2-07's file ('R2-07 raw/learn/artifact.json, git blob 4ffbe21d7d...'), cited by blob from the R2-07 packet, not a FIX-01 file"
+ },
+ "OWN-09": {
+  "raw/logs/*.log": "Deviation text: the logs 'were written as raw/logs/*.log, which the repository .gitignore (*.log) silently left out ... They are now written as raw/logs/*.txt' - the committed raw/logs/*.txt are tracked",
+  "*.log": "same Deviation sentence (mention of the ignore rule)"
+ },
+ "OWN-75R": {
+  "session-block-m11.log": "REPAIRED on exp/own-75r-timing-parity-4336-r1b-20261003 (force-added with the other 47 cited logs)",
+  "raw/real/session-block-*.log": "REPAIRED on exp/own-75r-timing-parity-4336-r1b-20261003"
+ }
+}

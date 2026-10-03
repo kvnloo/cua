@@ -1,0 +1,121 @@
+[ok] native F/I2 attempts == 40: 40
+[ok] native F/I2d attempts == 40: 40
+[ok] native F/I5p attempts == 20: 20
+[ok] native F/I5pt attempts == 10: 10
+[ok] native F/I1 attempts == 20: 20
+[ok] native F/I3 attempts == 20: 20
+[ok] native F/I4 attempts == 20: 20
+[ok] native F/I5 attempts == 20: 20
+[ok] native U/I2 attempts == 40: 40
+[ok] native U/I2d attempts == 40: 40
+[ok] native U/I5p attempts == 20: 20
+[ok] native U/I5pt attempts == 10: 10
+[ok] native F/I2 gate 100% and 0 target mutations: 40/40 pass, 0 mutations
+[ok] native F/I2d gate 100% and 0 target mutations: 40/40 pass, 0 mutations
+[ok] native F/I5p gate 100% and 0 target mutations: 20/20 pass, 0 mutations
+[ok] native F/I5pt gate 100% and 0 target mutations: 10/10 pass, 0 mutations
+[ok] native F/I1 gate 100% and 0 target mutations: 20/20 pass, 0 mutations
+[ok] native F/I3 gate 100% and 0 target mutations: 20/20 pass, 0 mutations
+[ok] native F/I4 gate 100% and 0 target mutations: 20/20 pass, 0 mutations
+[ok] native F/I5 gate 100% and 0 target mutations: 20/20 pass, 0 mutations
+[ok] native U discriminating: I2 B+A token landed on A in every U attempt: 40
+[ok] native U discriminating: I2d minted token landed on A in every U attempt: 40
+[ok] native U discriminating: I5p gen1 token accepted with a mutation in every U attempt: 20
+[ok] native U discriminating: I5pt gen1 token accepted with a mutation in every U attempt: 10
+[ok] native F I2d discloses A's handle 0 times
+[ok] I6 F: 0 other-session markers in scanned envelopes: 0 in 880 (520 uncompacted, 360 compacted get_window_state)
+[ok] I6 F: 520 uncompacted envelopes (280 refusals + 180 successful clicks + 60 session calls): 520
+[ok] I6 F positive control: own marker found in every block-session: 32/32
+[ok] summary I6 agrees (0 hits, 0 foreign-handle refusals)
+[ok] browser f3/stale/F cells == 10: 10
+[ok] browser f3/trust_unknown/F cells == 10: 10
+[ok] browser f3/not_retryable/F cells == 10: 10
+[ok] browser f3ctl/-/F cells == 20: 20
+[ok] browser f4/F cells == 20: 20
+[ok] browser f3/stale/U cells == 10: 10
+[ok] browser f3/trust_unknown/U cells == 10: 10
+[ok] browser f3/not_retryable/U cells == 10: 10
+[ok] browser f4/U cells == 20: 20
+[ok] browser f3/stale/F gate 100%: 10/10
+[ok] browser f3/trust_unknown/F gate 100%: 10/10
+[ok] browser f3/not_retryable/F gate 100%: 10/10
+[ok] browser f3ctl/-/F gate 100%: 20/20
+[ok] browser f4/F gate 100%: 20/20
+[ok] browser U discriminating: trust_unknown re-dispatched in every U cell
+[ok] browser U discriminating: not_retryable re-dispatched in every U cell
+[ok] browser U discriminating: F4 old ref accepted in every U cell
+[ok] browser F duplicates 0 in every F3 row
+[ok] summary agrees for f3/not_retryable/F: summary 10/10 vs 10/10
+[ok] summary agrees for f3/not_retryable/U: summary 10/0 vs 10/0
+[ok] summary agrees for f3/stale/F: summary 10/10 vs 10/10
+[ok] summary agrees for f3/stale/U: summary 10/10 vs 10/10
+[ok] summary agrees for f3/trust_unknown/F: summary 10/10 vs 10/10
+[ok] summary agrees for f3/trust_unknown/U: summary 10/0 vs 10/0
+[ok] summary agrees for f3/trust_unknown_visible/F: summary 5/5 vs 5/5
+[ok] summary agrees for f3/trust_unknown_visible/U: summary 5/0 vs 5/0
+[ok] summary agrees for f3ctl/-/F: summary 20/20 vs 20/20
+[ok] summary agrees for f4/-/F: summary 20/20 vs 20/20
+[ok] summary agrees for f4/-/U: summary 20/0 vs 20/0
+[ok] native U blocks used the U binary: {('60745b994290032cd6432ad5fc0368fbc975e4a6fcc25c2677173601e8348917', 'cua-driver 0.32.0')}
+[ok] native F blocks used the F binary: {('e373c33c47206a44bddc45687e974d4671344ccd82bb98a9ce5337eb4b47faac', 'cua-driver 0.32.0')}
+[ok] browser block b01-f3-U-stale valid and on the U binary
+[ok] browser block b01-f3-U-stale run_py_sha256 is the F worktree runner
+[ok] browser block b02-f3-F-stale valid and on the F binary
+[ok] browser block b02-f3-F-stale run_py_sha256 is the F worktree runner
+[ok] browser block b03-f3-F-trust_unknown valid and on the F binary
+[ok] browser block b03-f3-F-trust_unknown run_py_sha256 is the F worktree runner
+[ok] browser block b04-f3-U-trust_unknown valid and on the U binary
+[ok] browser block b04-f3-U-trust_unknown run_py_sha256 is the F worktree runner
+[ok] browser block b05-f3-U-not_retryable valid and on the U binary
+[ok] browser block b05-f3-U-not_retryable run_py_sha256 is the F worktree runner
+[ok] browser block b06-f3-F-not_retryable valid and on the F binary
+[ok] browser block b06-f3-F-not_retryable run_py_sha256 is the F worktree runner
+[ok] browser block b07-f3ctl-F valid and on the F binary
+[ok] browser block b07-f3ctl-F run_py_sha256 is the F worktree runner
+[ok] browser block b08-f3ctl-F valid and on the F binary
+[ok] browser block b08-f3ctl-F run_py_sha256 is the F worktree runner
+[ok] browser block b09-f4-U valid and on the U binary
+[ok] browser block b09-f4-U run_py_sha256 is the F worktree runner
+[ok] browser block b10-f4-F valid and on the F binary
+[ok] browser block b10-f4-F run_py_sha256 is the F worktree runner
+[ok] browser block b11-f4-F valid and on the F binary
+[ok] browser block b11-f4-F run_py_sha256 is the F worktree runner
+[ok] browser block b12-f4-U valid and on the U binary
+[ok] browser block b12-f4-U run_py_sha256 is the F worktree runner
+[ok] browser block d01-f3-U-trust_unknown_visible valid and on the U binary
+[ok] browser block d01-f3-U-trust_unknown_visible run_py_sha256 is the F worktree runner
+[ok] browser block d02-f3-F-trust_unknown_visible valid and on the F binary
+[ok] browser block d02-f3-F-trust_unknown_visible run_py_sha256 is the F worktree runner
+[ok] every native block has a shared-lock receipt with rc 0 and its attempts recorded: 30 blocks, 30 receipts
+[ok] every browser block has a FIX-02 shared-lock receipt
+[ok] timing chunk has an exclusive quiet-timed receipt
+[ok] provider: 0 attempts, 0 reached
+[ok] socket guard counted 0 non-loopback connects
+[ok] PREREG committed before the first counted native attempt: 2026-10-02T17:47:51Z < 2026-10-02T18:00:03.796858Z
+[ok] red tree: the full core suite fails exactly the 6 new Rust tests: []
+[ok] red tree: 847 other core tests pass: 847
+[ok] red tree: the F2 test fails on its assert_ne (not a parse failure) in every red run: 7 logs
+[ok] red tree: head is the U source and every new test file equals the committed F file
+[ok] history flake test passes 20/20 in isolation on F: 20 runs
+[ok] commit base_upstream_main 989cc76ce exists
+[ok] commit fix01_part_a_cherry_pick 35041124c exists
+[ok] commit fix01_part_b_cherry_pick_U_head bd0cc9de7 exists
+[ok] commit F1 80e625acc exists
+[ok] commit F2 3930dd7d0 exists
+[ok] commit F3 6e9f9dfff exists
+[ok] commit F4_F_head e8b1064f6 exists
+[ok] commit prereg d0afd9b8e exists
+[ok] commit shakedown_harness_fixes f2635fade exists
+[ok] PREREG commit time matches provenance: 2026-10-02T17:47:51Z vs 2026-10-02T17:47:51Z
+[ok] F1 touches libs/cua-driver only
+[ok] F2 touches libs/cua-driver only
+[ok] F3 touches libs/cua-driver only
+[ok] F4_F_head touches libs/cua-driver only
+[ok] F Rust tree matches provenance
+[ok] red-tree.patch adds the committed F snapshot_runtime_generation.rs
+[ok] red-tree.patch adds the committed F snapshot_session_ownership.rs
+[ok] browser U runner sha256 matches provenance
+[ok] browser F runner sha256 matches provenance
+[ok] privacy: no absolute local paths or host name in packet files
+
+0 failed check(s)
