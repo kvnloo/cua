@@ -42,8 +42,11 @@ Phase 2 re-ran the guard rows on 9a2b1d99e replays of the original commits:
 | OWN-20Q DLG (GQ'') | 0/20 restored (grab_held 20/20) | **FAILS** |
 
 The positive controls, the no-steal normal paths and the dialog control still hold. The timing rows
-(R2-10R scripted and native, N-04) are AFFECTED by SOURCE. Their recertification is
-**BLOCKED_PENDING_LOCK** (see Blockers) unless the Phase 2 timing section below reports numbers.
+(R2-10R scripted and native, N-04) are AFFECTED by SOURCE. Their recertification is **BLOCKED**
+because the EXCLUSIVE quiet lane was starved (see "Timing rows status").
+
+28 of 32 scripted R2-10R rounds did run before the lane stopped waiting. They are descriptive only:
+validity 1.0, E4 0, and every S CI excludes 1 in R2-10R's direction.
 
 B-07, B-08, FIX-03, RECERT-FIX, OWN-16W X11, OWN-20P R3, OWN-20Q A2 and R2-10R D1 are UNAFFECTED by
 SOURCE, with the probe facts cited.
@@ -81,7 +84,7 @@ SOURCE, with the probe facts cited.
   | U0m'' | `914b585d` | 8d6d4189a |
   | G0m'' | `686f72a6` | 270ca36b2 |
 
-- Live heads read-only at start: trycua/cua PR 4316 `a0bca7440`, PR 4336 `8391cf802` and PR 4394 `039257811`, all open and unchanged; PR 4529 merged as `5e13eb777`; PR 4531 merged as `15c6c24e2`. kvnloo/cua#84 `566b9c732`, #105 `98a45e6c5` and #106 `c45845797`, all open. End-of-lane reads are in raw/heads-end.txt.
+- Live heads read-only at start: trycua/cua PR 4316 `a0bca7440`, PR 4336 `8391cf802` and PR 4394 `039257811`, all open and unchanged; PR 4529 merged as `5e13eb777`; PR 4531 merged as `15c6c24e2`. kvnloo/cua#84 `566b9c732`, #105 `98a45e6c5` and #106 `c45845797`, all open. End of lane (20:13Z, git ls-remote because the gh API was rate-limited): trycua/cua main has moved to `5845488f2`, 32 commits ahead. Its 15 `libs/cua-driver` files are platform-macos, a macOS Skills doc and the uninstall scripts with their tests; none is in a Linux crate, `examples/` or `Cargo.lock`, so it adds nothing to this disposition. The PR heads are unchanged (raw/heads-end.txt).
 - Publication SHA: set by Publish; never assumed equal to a tested SHA.
 
 ## Method
@@ -263,7 +266,22 @@ E6 freshness for 0f1955d2f → 9a2b1d99e:
 
   All three change through the overlay's new map transition seen by `focus_guard::mapped_popups`.
 - **UNAFFECTED:** every other non-timing claim (table above).
-- **Timing rows:** see "Timing rows status".
+- **Timing rows:** R2-10R scripted + native and N-04 are AFFECTED and **not recertified**; the cause is BLOCKED quiet-lane starvation (see "Timing rows status").
+
+## Near misses and hard rules
+
+No hard-rule breach: nothing reached the host desktop, no secret was read, nothing was written upstream, and no reported number was measured outside the quiet lane.
+
+Near misses (none could have had an effect):
+- A few plain-shell stdlib `python3` invocations:
+  - JSON reads of the loop STATE/SETUP files;
+  - an `import Xlib` that failed with ModuleNotFoundError, once with the system interpreter and once with the jev-use venv interpreter;
+  - an empty `python3 -` heredoc;
+  - `python3 -c 1`.
+- `bash -n` syntax checks.
+- A `cp` of two lane log files to `/tmp`, removed at once (temp files belong under the lane tmp).
+
+The lane killed only processes it started.
 - **Follow-ups:**
   - a fork fix candidate for `mapped_popups` (#20);
   - N-03 Part B ax_fg recert on 9a2b1d99e;
@@ -271,13 +289,45 @@ E6 freshness for 0f1955d2f → 9a2b1d99e:
 
 ## Timing rows status
 
-p2/timing-status.json gives the machine-readable state.
+The machine-readable state is in p2/timing-status.json.
 
-- **Status:** BLOCKED_PENDING_LOCK.
-- **Queued:** the R2-10R scripted chunk `fresh07-S-c01` has waited for the EXCLUSIVE quiet-lane lock since 17:59:21Z.
-- **Cause:** long-lived processes of another track hold an inherited fd on `quiet-lane.lock` in SHARED mode, so no `bin/quiet-timed` window can open. These are the z0-wt wiring stub and tdb servers; the oldest has run for more than 2 h 47 min. Another lane's EXCLUSIVE waiter, `r207g-T1`, has waited since about 16:13Z. The processes are listed in raw/locks/lock-holders-*.txt, from read-only /proc scans.
-- **What this lane did not do:**
-  - It did not kill those processes, because it did not start them.
-  - It did not run the timing rows in SHARED mode, because the rule requires EXCLUSIVE windows.
-- **Consequence:** R2-10R scripted + native and N-04 stay **AFFECTED (by SOURCE), not recertified** on 9a2b1d99e.
-- **Ready to run:** the binaries R'' / R''n, the original harnesses and the chunk runners are in place.
+**Status: BLOCKED (quiet-lane starvation).** R2-10R scripted + native and all N-04 rows remain
+**AFFECTED by SOURCE and NOT recertified** on 9a2b1d99e.
+
+### Exclusive windows obtained
+
+Over 2 h 12 min of waiting, the lane got 3 EXCLUSIVE windows (receipts in p2/locks/exclusive-receipts.jsonl):
+
+| Window | Time (UTC) | Rounds | Exit |
+|---|---|---|---|
+| `fresh07-S-c01` | 18:50:07–19:01:16 | rounds 0–22 | rc 76, soft cap |
+| `fresh07-nm1-c01` | 19:22:26–19:23:33 | none | rc 75, the load rule held loadavg > 4.0 for 60 s; no trial ran |
+| `fresh07-S-c02` | 19:23:33–19:27:34 | rounds 23–27 | rc 75, load rule |
+
+### Why the lane stopped waiting
+
+1. **17:59Z to about 18:48Z.** Long-lived processes of another track held an inherited SHARED fd on `quiet-lane.lock`. They were the z0-wt wiring stub and tdb servers; the oldest had run for more than 3 h. Every `bin/quiet-timed` waiter starved during this period (raw/locks/lock-holders-1822.txt).
+2. **19:29Z to 20:12Z.** Back-to-back SHARED users of other tracks and a 1-min loadavg of 7–18 left no usable window (raw/locks/lock-holders-2011.txt).
+3. FRESH-07 did not kill any process it had not started. It did not run timing rows in SHARED mode. It stopped its own queued waiters at 20:12Z.
+
+### Collected, descriptive only (not gating)
+
+R2-10R scripted on R'': rounds 0–27, which is 28 of the 32 pre-registered pairs per contrast per class (336 trials). Validity is 1.0 in all 12 arm × class cells and E4 is 0. S is computed only within the new source and compared with nothing from the old source (CI95):
+
+| Arm | fill | toggle | modal |
+|---|---|---|---|
+| COMP | 49.93 [48.43, 51.50] | 50.02 [47.17, 52.41] | 50.25 [48.40, 51.15] |
+| COMP_E | 66.54 [63.88, 66.61] | 73.90 [70.41, 74.53] | 70.24 [69.86, 73.84] |
+| COMP_K | 1.006 [1.002, 1.007] | 1.003 [1.002, 1.005] | 1.007 [1.004, 1.010] |
+
+Every CI excludes 1 in the direction R2-10R recorded. Because n = 28 < 32, this is **not** a recertification (p2/r2-10r/partial-r2-10r-summary.json, computed with the original `analyze_r2_10.py`). The gate status it prints (validity false) only reflects the missing native rows.
+
+### Not run
+
+R2-10R native `nm1`, `nm2`, `nd1`; N-04 `k1`, `k5`, `s0`, `vctl` and `dec*`. The N-04 default-off smoke blocks `smk-rn` / `smk-rp` did run; their raw data is in p2/n-04/raw/runs.
+
+### To finish
+
+Run `harness/fresh07_chunks.sh exclusive …` with the same binaries R'' / R''n:
+- the scripted rounds resume from their DONE markers, so only 28–31 remain;
+- then the R2-10R native blocks and the N-04 blocks.

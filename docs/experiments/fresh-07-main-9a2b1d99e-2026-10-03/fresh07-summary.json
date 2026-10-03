@@ -275,16 +275,16 @@
    "toolslist_sha256": "33772fab460a59e43b7a3bdb2c7a600477768fbc55715a419ad4ab1cfee9c9b1"
   },
   "timing_rows": {
-   "blocker": "the EXCLUSIVE quiet-lane lock could not be acquired: long-lived processes of another track (z0-wt wiring stub/tdb servers) hold an inherited fd on quiet-lane.lock in SHARED mode, so every bin/quiet-timed waiter starves (this lane's fresh07-S-c01 waited from 17:59:21Z; another lane's r207g-T1 waited from about 16:13Z). Evidence: raw/locks/lock-holders-*.txt (read-only /proc scans). FRESH-07 kills no process it did not start.",
-   "evidence": "raw/locks/",
-   "rows": [
-    "R2-10R scripted browser (32 rounds x 3 classes x 4 arms on R'')",
-    "R2-10R native nm1/nm2/nd1 on R''",
-    "N-04 k1/k5/s0 on R''n",
-    "N-04 vctl/dec1/dec2 (SHARED, queued after the timing blocks)"
-   ],
-   "status": "BLOCKED_PENDING_LOCK",
-   "verdict_until_run": "AFFECTED by SOURCE; not recertified"
+   "blocker": "From the first queued chunk (17:59:21Z) to 18:48Z, long-lived processes of another track (z0-wt wiring stub/tdb servers) held an inherited SHARED fd on quiet-lane.lock, starving every bin/quiet-timed waiter (raw/locks/lock-holders-1822.txt). Afterwards back-to-back SHARED users of other tracks and a sustained 1-min loadavg of 7-18 (above the 4.0 round-start rule) left no usable EXCLUSIVE window (raw/locks/lock-holders-2011.txt). FRESH-07 killed no process it did not start; it stopped its own queued waiters at 20:12Z.",
+   "collected_not_gating": {
+    "N-04 k1/k5/s0, vctl, dec1/dec2": "not run (smk-rn and smk-rp default-off smoke ran: raw in p2/n-04/raw/runs)",
+    "R2-10R native nm1/nm2/nd1": "not run",
+    "R2-10R scripted on R''": "rounds 0-27 of 0-31 (28 of 32 pre-registered pairs per contrast per class; 336 trials): validity 1.0 in all 12 arm x class cells, E4 0 (every counter). Descriptive S (within the new source only, CI95): COMP fill 49.93 [48.43, 51.50], toggle 50.02 [47.17, 52.41], modal 50.25 [48.40, 51.15]; COMP_E fill 66.54 [63.88, 66.61], toggle 73.90 [70.41, 74.53], modal 70.24 [69.86, 73.84]; COMP_K fill 1.006 [1.002, 1.007], toggle 1.003 [1.002, 1.005], modal 1.007 [1.004, 1.010]. Every CI excludes 1 in the direction R2-10R recorded, but n = 28 < 32 pre-registered, so this is NOT a recertification (p2/r2-10r/partial-r2-10r-summary.json)."
+   },
+   "exclusive_windows_obtained": "3 in 2 h 12 min of waiting (p2/locks/exclusive-receipts.jsonl): fresh07-S-c01 18:50:07-19:01:16Z (rounds 0-22, rc 76 soft cap), fresh07-nm1-c01 19:22:26-19:23:33Z (rc 75: loadavg > 4.0 for 60 s, no trial), fresh07-S-c02 19:23:33-19:27:34Z (rounds 23-27, rc 75 load rule). No further window from 19:29Z to 20:12Z with 1-min loadavg 7-18 from other tracks.",
+   "status": "BLOCKED (quiet-lane starvation); partial scripted data descriptive only",
+   "to_finish": "re-run harness/fresh07_chunks.sh exclusive for S rounds 28-31 (DONE markers resume), R2-10R native nm1/nm2/nd1 and N-04 k1/k5/s0 + vctl/dec* on the same binaries R''/R''n when the quiet lane has EXCLUSIVE windows at loadavg <= 4.0",
+   "verdict": "R2-10R scripted + native and N-04 rows: AFFECTED by SOURCE, NOT recertified on 9a2b1d99e"
   }
  },
  "probe": {
