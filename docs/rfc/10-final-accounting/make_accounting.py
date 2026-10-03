@@ -143,7 +143,7 @@ def floor_r210(pkt, base):
 # Components the composed browser configuration deliberately removes (BASE - COMP mean, per trial).
 BROWSER_REMOVED = [
     ("visualization", "feedback glide off (B-01 glide: OWNER_DECISION)"),
-    ("settles", "100 ms insert_text focus settle (B-01 H_T: OWNER_DECISION)"),
+    ("settles", "insert_text focus settle (B-01 H_T: OWNER_DECISION)"),
     ("client_validation", "caller-compiled output validators (B-01 H_C: DELETED)"),
     ("mcp_admission", "admission tools-list cache (B-02 H_V: DELETED)"),
 ]
@@ -182,7 +182,7 @@ def row_r210_browser(cls, layer):
     row = {
         "row_id": "%s/R/R2-10-%s" % (cls, lay),
         "lane": "R2-10", "source": "R", "status": "ACCEPTED",
-        "layer": "L-live (TypeSafe provider)" if lay == "live" else "L-scripted (scripted chooser, 0 provider)",
+        "layer": "L-live (TypeSafe provider)" if lay == "live" else "L-scripted (scripted chooser, no provider)",
         "evidence_class": (["LIVE_PROVIDER", "REAL", "BENCHMARK (FIXTURE)"] if lay == "live"
                            else ["REAL", "BENCHMARK (FIXTURE)"]),
         "best_arm": "COMP",
@@ -370,8 +370,8 @@ def row_b07(cls):
         "work_deleted": {
             "PREP_FAST_caller_work_ms": P(pkt, "summary", ["phase_B", "PREP_FAST", "by_class", cls, "prep_ms", "mean_diff"], 2),
             "carried": False,
-            "note": ("fill DELETED is fragile (round 0 is a training invocation; every alternative reading is KILL); "
-                     "the knob is not carried, so 0 ms of carried work deleted" if cls == "fill"
+            "note": ("fill DELETED is fragile (the first round is a training invocation; every alternative reading is "
+                     "KILL); the knob is not carried, so no carried work is deleted" if cls == "fill"
                      else "PREP_FAST KILL; nothing carried"),
         },
         "wall_clock_saved": {"PREP_FAST_T_oracle_mean_diff_ms": P(pkt, "summary", ["phase_B", "PREP_FAST", "by_class", cls,
@@ -417,7 +417,7 @@ def row_b05(cls):
              "verdict_lane": "B-05", "VALIDATE_FAST_caller_ms_ci95": P(pkt, "summary", ["phase_B", "VALIDATE_FAST", "by_class",
                                                                                         cls, "caller_ms", "ci95"], 2)},
         ],
-        "work_deleted": NA("PARSE_FAST and VALIDATE_FAST are KILL (below the 0.5 ms gate); nothing carried", status="NONE"),
+        "work_deleted": NA("PARSE_FAST and VALIDATE_FAST are KILL (below B-05's pre-registered gate); nothing carried", status="NONE"),
         "wall_clock_saved": NA("nothing carried", status="NONE"),
         "untested": {
             "A": P(pkt, "summary", e2 + ["corr:below_gate_as_irreducible", "untested_share"], 4),
@@ -469,11 +469,11 @@ def native_comp_r210(pkt, task, arm="X"):
 
 def native_work(pkt, task, arm="X"):
     base = ["native", "work_deleted_vs_wall_clock", "%s/%s" % (task, arm)]
-    items = [{"component": "post_action_sleep", "why": "50 ms post-DoAction sleep (N-01R H_S: DELETED, scoped)",
+    items = [{"component": "post_action_sleep", "why": "fixed post-DoAction sleep (N-01R H_S: DELETED, scoped)",
               "ms": P(pkt, "summary", base + ["component_mean_ms_deleted", "post_action_sleep"], 1)},
              {"component": "reveal", "why": "cursor reveal glide (N-01R H_C: OWNER_DECISION)",
               "ms": P(pkt, "summary", base + ["component_mean_ms_deleted", "reveal"], 1)}]
-    return {"components_ms": items, "provider_requests_per_trial": NA("scripted chooser (0 provider)", status="NONE"),
+    return {"components_ms": items, "provider_requests_per_trial": NA("scripted chooser (no provider)", status="NONE"),
             "rule": "BASE minus X component mean for the components X removes"}
 
 
@@ -516,7 +516,7 @@ def row_r210_native(task, pkt="R2-10"):
                            for a in ("BASE", "S0", "X")}
         row["validity"]["e4"] = P(pkt, "summary", ["native", "e4"])
         row["T_land"]["S_land"] = NA("paired S at T_land is not in R2-10's summary; the R2-10 verifier note "
-                                     "(S_land about 1.00 checkbox) is not recomputed here")
+                                     "on S_land is not recomputed here")
     else:
         row["validity"] = {a: P(pkt, "recert", ["validity_100", "shares", "native/%s/%s" % (task, a)], 3)
                            for a in ("BASE", "S0", "X")}
@@ -578,7 +578,7 @@ def row_n04(task):
         "components": comp_rows,
         "work_deleted": {"components_ms": wd,
                          "V_admission_work_ms": P(pkt, "summary", k1 + ["%s/X-vs-X+V" % task, "work_admission_v_ms", "median"], 2),
-                         "provider_requests_per_trial": NA("scripted chooser (0 provider)", status="NONE"),
+                         "provider_requests_per_trial": NA("scripted chooser (no provider)", status="NONE"),
                          "rule": "BASE minus best-arm component mean, from the packet's own work_deleted table"},
         "wall_clock_saved": {"median_paired_ms": P(pkt, "summary", ["e2", task, "wall_clock_saved_BASE_minus_best_ms", "median"], 2),
                              "ci95": P(pkt, "summary", ["e2", task, "wall_clock_saved_BASE_minus_best_ms", "ci95"], 2),
@@ -620,7 +620,7 @@ def row_n03(task):
                   "floor_ratio": P(pkt, "summary", e2p + ["floor_ratio"], 3)},
         "components": [],
         "work_deleted": {"V_admission_work_ms": P(pkt, "summary", g + ["V/%s" % task, "work_admission_v_ms", "median"], 2),
-                         "provider_requests_per_trial": NA("scripted chooser (0 provider)", status="NONE")},
+                         "provider_requests_per_trial": NA("scripted chooser (no provider)", status="NONE")},
         "wall_clock_saved": {"V_T_saved_median_ms": P(pkt, "summary", g + ["V/%s" % task, "wall_clock_T_ms", "median"], 2),
                              "V_T_saved_ci95": P(pkt, "summary", g + ["V/%s" % task, "wall_clock_T_ms", "ci95"], 2),
                              "HCL_k5_per_session_median_ms": P(pkt, "summary", g + ["HCL/%s" % task, "k5_session_saving_ms",
@@ -639,7 +639,7 @@ def row_n03(task):
             "ci95": P(pkt, "summary", ["part_b", "D/checkbox", "click_wrapper_saved_ms", "ci95"], 2),
             "n": P(pkt, "summary", ["part_b", "D/checkbox", "click_wrapper_saved_ms", "n"]),
             "post_action_wait_median_ms": P(pkt, "summary", ["part_b", "D/checkbox", "post_action_wait_median_ms"], 2),
-            "note": "X11 ax_fg route at the default config; Part B is not order-counterbalanced (bound about 0.6 ms)",
+            "note": "X11 ax_fg route at the default config; Part B is not order-counterbalanced (bound disclosed in the N-03 packet)",
         }
     return row
 
@@ -713,10 +713,11 @@ def build():
         "packets": packets,
         "blocks": blocks,
         "owner_decision_dependency": {
-            "statement": "The large browser speedups depend on owner decisions. With KEEP-only deletions (feedback glide, "
-                         "H_T settle and endpoint re-proof left at their defaults), browser S is about 1.01 "
-                         "(fill amortized ratio of means 0.98); native KEEP-only S is about 1.18 checkbox and "
-                         "1.03 text (cursor reveal left at its default).",
+            "statement_template": "The large browser speedups depend on owner decisions. With KEEP-only deletions "
+                                  "(feedback glide, H_T settle and endpoint re-proof left at their defaults), browser S "
+                                  "is about {R2-10_fill} (fill amortized ratio of means {R2-10_fill_amortized}); native "
+                                  "KEEP-only S is about {N-04_checkbox} checkbox and {N-04_text} text (cursor reveal "
+                                  "left at its default).",
             "browser_keep_only": {
                 "R2-10_fill": P("R2-10", "summary", ["browser", "scripted", "S", "COMP_K", "fill", "all", "S"], 2),
                 "R2-10_fill_amortized": P("R2-10", "summary", ["browser", "scripted", "S", "COMP_K", "fill",
@@ -734,10 +735,11 @@ def build():
                 "R2-10_text": P("R2-10", "summary", ["native", "S", "S0", "text", "all", "S"], 2),
             },
             "owner_items": [
-                "browser feedback glide off/fast (B-01; the single largest component, 94-97% of BASE T)",
-                "B-01 H_T 100 ms insert_text focus settle",
+                "browser feedback glide off/fast (B-01; the single largest component of default BASE T, see the "
+                "visualization entry under work deleted)",
+                "B-01 H_T insert_text focus settle",
                 "B-02 H_E endpoint re-proof bound check (security policy)",
-                "native cursor reveal (N-01R H_C; text S 5.9 vs KEEP-only 1.03)",
+                "native cursor reveal (N-01R H_C; the native text speedup over KEEP-only S comes from it)",
                 "HCL lazy validators (session shape)",
                 "B-06 amended reading of the per-process cold excess",
                 "R2-08 API route per task",
@@ -765,9 +767,10 @@ def build():
         ],
         "live_layer_gaps": [
             {"gap": "R' live layer (R2-10 recertification with TypeSafe on 0f1955d2f)", "status": "BLOCKED",
-             "blocker": "paid budget: >= 180 reached needed; 38 of the loop's 600 remained after wave 5",
+             "blocker": "paid budget: the loop's remaining TypeSafe budget does not cover a live recertification "
+                        "(kvnloo/cua#74 OR-11; figures in the queue's state extract)",
              "consequence": "live rows exist only on R (989cc76ce); R' rows are scripted"},
-            {"gap": "live toggle/modal provider decisions (about 88-89% of live COMP T in R2-10)", "status": "UNTESTED",
+            {"gap": "live toggle/modal provider decisions (the largest live COMP component in R2-10)", "status": "UNTESTED",
              "blocker": "BLOCKED by budget; modal also needs a passing non-regression gate (R2-07d modal FAIL)",
              "refs": {"toggle_provider_ms": P("R2-10", "summary", ["browser", "live", "decomposition", "toggle/COMP",
                                                                    "components", "provider_decision", "mean_ms"], 1),
@@ -780,11 +783,20 @@ def build():
             {"gap": "R2-07e (new pre-registered modal gate + Phase L)", "status": "PENDING",
              "blocker": "wave-6 lane running; refresh in wave 7"},
             {"gap": "native live arms (native T including provider decisions)", "status": "BLOCKED",
-             "blocker": "owner decision (may native T exclude provider decisions?) or paid budget >= 120 reached"},
+             "blocker": "owner decision (may native T exclude provider decisions?) or paid budget"},
         ],
         "pending_w6": PENDING_W6,
     }
+    doc["owner_decision_dependency"]["statement"] = statement(doc["owner_decision_dependency"])
     return doc
+
+
+def statement(odd):
+    vals = {}
+    for grp in ("browser_keep_only", "native_keep_only"):
+        for k, x in odd[grp].items():
+            vals[k] = C.fmt(x["value"], x["from"]["round"])
+    return odd["statement_template"].format(**vals)
 
 
 # ----------------------------------------------------------------------------------- rendering

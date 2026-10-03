@@ -199,6 +199,8 @@ def check_renders(target):
         txt = open(os.path.join(HERE, "README.md")).read()
         gen = MA.render(acc)
         check("C.readme10.generated_section", gen in txt)
+        odd = acc["owner_decision_dependency"]
+        check("C.statement_from_pointers", odd["statement"] == MA.statement(odd))
     if target in ("74", "all"):
         q = json.load(open(os.path.join(Q_DIR, "queue.json")))
         txt = open(os.path.join(Q_DIR, "README.md")).read()
@@ -225,6 +227,37 @@ def bare_numbers(text):
     for rx in ALLOWED_NUM:
         t = re.sub(rx, " ", t)
     return re.findall(r"\d+(?:\.\d+)?", t)
+
+
+ACC_SKIP_KEYS = {"from", "derived", "path", "sha", "branch", "dir", "files", "tested_source", "binary_sha256", "row_id",
+                 "schema", "lane", "references_only", "sources", "packets", "statement", "pending_w6", "owners"}
+
+
+def check_acc_text(acc):
+    """Free text in accounting.json carries no bare numbers (numbers are pointers); paper references are exempt."""
+    bad = []
+
+    def walk(node, where):
+        if isinstance(node, dict):
+            if "from" in node or "derived" in node:
+                return
+            for k, x in node.items():
+                if k in ACC_SKIP_KEYS:
+                    continue
+                walk(x, where + "/" + k)
+        elif isinstance(node, list):
+            for i, x in enumerate(node):
+                walk(x, "%s/%d" % (where, i))
+        elif isinstance(node, str):
+            t = re.sub(r"\{[^}]+\}", " ", node)
+            nums = bare_numbers(t)
+            if nums:
+                bad.append((where, nums, node[:100]))
+
+    walk(acc, "")
+    for b in bad:
+        check("D.acc.no_bare_numbers %s" % b[0], False, "%r in %r" % (b[1], b[2]))
+    check("D.acc.text_scanned", True, "%d bare-number findings" % len(bad))
 
 
 FIELDS = ["delta", "canonical_owner", "exact_sha", "completed_evidence", "missing_evidence", "action_type",
@@ -434,6 +467,7 @@ def main():
     q = json.load(open(os.path.join(Q_DIR, "queue.json")))
     if a.target in ("10", "all"):
         check_acc_pointers(acc)
+        check_acc_text(acc)
     if a.target in ("74", "all"):
         check_queue_pointers(q)
         check_fields(q)
