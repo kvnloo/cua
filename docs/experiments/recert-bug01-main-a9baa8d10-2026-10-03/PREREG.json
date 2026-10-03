@@ -1,0 +1,98 @@
+{
+  "schema": "cua.recert-bug01.prereg.v1",
+  "lane": "RECERT-BUG01 (wave 8)",
+  "written_utc": "2026-10-03T21:23Z",
+  "committed_before_first_measured_trial": true,
+  "owners": {
+    "A": "kvnloo/cua#38 (outcome vocabulary); upstream trycua/cua issue 4009 (plain text)",
+    "B": "upstream trycua/cua issue 4052 (plain text, browser-timing owner)",
+    "queue": "kvnloo/cua#73, kvnloo/cua#74"
+  },
+  "prior_packet": {
+    "branch": "exp/bug-01-delivery-cdp-sessions-20261002",
+    "commit": "097b4f0974d5c161360fc3683c17f298ff681c70",
+    "dir": "docs/experiments/bug-01-delivery-cdp-2026-10-02/",
+    "dispositions": {"A": "CONFIRMED_BUG with fix candidate 2533db6d5+49a3adf0f", "B": "ACCUMULATION_ONLY"},
+    "tested_source": "c4d0c6625b5c93849aa8bec610782410e9d45f69 (Driver 0.32.0; libs/cua-driver/rust tree == 229b65b28)"
+  },
+  "sources": {
+    "base": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0 (upstream main, cua-driver 0.33.1)",
+    "M9": {"commit": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0", "note": "plain"},
+    "M9i": {"commit": "46f9b05fff4c150eae803e34d55fe9eb0e7744ec", "steps": ["a99ee937a (env-gated default-off CDP session counters) -> 46f9b05ff"], "use": "part B only"},
+    "M9_test": {"commit": "1473e00d8dfef241c228eb82463998e99c06e79b", "steps": ["147f2adec (failing test, test-only) -> 1473e00d8"], "use": "UNIT red"},
+    "MF9": {"commit": "0b43df3abff01836222d8fcb2250a667a8ce98c2", "steps": ["147f2adec -> 1473e00d8", "2533db6d5 -> a4695856e", "49a3adf0f -> 0b43df3ab"]},
+    "MF9_guard": {"commit": "ee98acf91231dab9c46e219a17700459551ea33f", "steps": ["MF9 + 7431f03d1 (executed-branch guard tests, test-only) -> ee98acf91"], "use": "UNIT extension only; no binary",
+                  "conflict_resolution": "positional only: 7431f03d1 sits before the BUG-01 part B repro (ec88394cd) in v2_tests.rs, which MF9 does not carry; resolved by appending the 107 added lines verbatim at the end of v2_tests.rs (added-line set byte-identical to 7431f03d1)"},
+    "patch_id_equality": {"147f2adec": "5f471840002d943bea73223386276240d83a4ffd == 1473e00d8", "a99ee937a": "390a80e60bb20cd538f1a36b583f3bcee450f804 == 46f9b05ff", "2533db6d5": "1b3abda5bc9e3db079879b6841982c56ae20a337 == a4695856e", "49a3adf0f": "bc982e26ff611d72f8c8bcd9b09967144e525de3 == 0b43df3ab", "7431f03d1": "differs (positional resolution above)"},
+    "source_drift_bug01_base_to_a9baa8d10": "git diff c4d0c6625 a9baa8d10 is empty for cua-driver-core src/action_record.rs, src/browser/ (all files), src/tool.rs; libs/cua-driver/examples/jev-use unchanged"
+  },
+  "binaries": {
+    "M9": {"file": "<lanes>/bin/cua-driver-recert-bug01-m9-a9baa8d10", "sha256": "4ac1ea5be1803bfa6f00551606f6c50d84d5198b84910b508fbae483209adcb0", "version_in_session": "cua-driver 0.33.1"},
+    "M9i": {"file": "<lanes>/bin/cua-driver-recert-bug01-m9i-46f9b05ff", "sha256": "9261f8617229a89eb0e57ba4c25ea9351e90f87d75cae980fd95086da6e1c324", "version_in_session": "cua-driver 0.33.1"},
+    "MF9": {"file": "<lanes>/bin/cua-driver-recert-bug01-mf9-0b43df3ab", "sha256": "ea73294b9f4838fe2342631e279eea6385fb7820097e757a16c9015854c3fb32", "version_in_session": "cua-driver 0.33.1"},
+    "build": "flock cargo-build.lock build-driver.sh <wt> <label> cua-release-bug01 under bin/hostless and a SHARED quiet hold; 0 Fresh workspace units each",
+    "chrome": "Google Chrome 151.0.7922.71 (in session)"
+  },
+  "harness": "harness/ = blob-identical copies from 097b4f097 (harness/MANIFEST.json). New: run_recert.sh (path-only wrapper), cdp_observer.py + cdp_hist.py + probe_sessions_observed.py (independent observer), analysis/verify scripts.",
+  "environment": "bin/hostless -> quiet SHARED hold -> cua-x11-session.sh (private Xvfb 1920x1080x24, openbox, picom, private dbus, no AT-SPI) -> run_recert.sh -> jev-use venv. Driver-launched isolated_new Chrome, sandbox on, default Driver safety settings. No provider (TypeSafe cap 0).",
+  "pilots": "Plumbing pilots for the part B observer only (M9i x2, M9 x1; 20-call long sessions; <tmp>/pilot/, mirrored under raw/pilot/). Excluded from every number. No part A pilot.",
+  "hypotheses": {
+    "A": "On a9baa8d10 a foreground trusted browser_click still returns delivery.mode=background while the page observes trusted foreground input; MF9 states foreground only when the executed branch activates the window.",
+    "B": "Each browser call still attaches one CDP session and never detaches it; the post-navigation event burst scales with the session count."
+  },
+  "unit": {
+    "U-red": "1473e00d8 (M9 + test-only diff): foreground_trusted_browser_input_receipt_does_not_claim_background_delivery FAILS; background_browser_receipts_keep_background_delivery passes",
+    "U-green": "0b43df3ab (MF9): both pass",
+    "U-suites": "cargo test -p cua-driver-core --lib -- browser:: action_record:: ; cargo test -p cua-driver-contract ; cua-driver compatibility_contract_test, protocol_tools_call_test, schema_consistency_test; at 1473e00d8 and 0b43df3ab. Pass sets may differ only by the red test.",
+    "U-guard (extension)": "ee98acf91: the two 7431f03d1 guard tests pass"
+  },
+  "real": {
+    "A1": {
+      "binaries": ["M9", "MF9"],
+      "script": "harness/probe_delivery.py, unchanged plan: 7 blocks per binary (blocks 1-6: 20 T, 20 D, 20 Y in rotating patterns; block 7: 5 N_bg, 5 N_domfg). One fresh Driver + browser per block.",
+      "interleaving": "block b runs as one SHARED hold of one AB pair: odd b = M9 then MF9, even b = MF9 then M9",
+      "forced_path": "T: browser_type token, then browser_click {ref: Submit, delivery_mode: foreground} on the default trusted route (CDP Input.dispatchMouseEvent): the branch that activates the browser window on Linux",
+      "producer_attribution": "public receipt route=trusted_input (only BrowserClickTool's trusted branch emits it); the executed-branch stamp (producer delivery_mode from trusted_delivery_mode) is read directly in UNIT, since the dispatch seam replaces the legacy payload",
+      "oracle": "fixture page's own capture-phase event log via sendBeacon: pointerdown and click on Submit with isTrusted, document.hasFocus() and visibilityState at event time; fixture /state == token and POST journal. X11 active window pre/post reported, not gated.",
+      "definitions": {
+        "page_trusted_foreground": "first pointerdown on Submit isTrusted && hasFocus && visibility==visible, and first click on Submit isTrusted",
+        "T_correct": "click accepted && receipt delivery.mode == foreground && page_trusted_foreground",
+        "T_mislabel": "click accepted && receipt delivery.mode == background && page_trusted_foreground"
+      }
+    },
+    "A-decoy": {
+      "binaries": ["M9", "MF9"],
+      "script": "harness/probe_activation.py --blocks 2 (6 trials per block, alternating T/D), 2 invocations per binary = 12 D + 12 T per binary (the harness granularity gives 12 >= the requested 10)",
+      "interleaving": "pair 1 = M9 then MF9, pair 2 = MF9 then M9; each pair one SHARED hold",
+      "background_case": "D = browser_click {ref: Submit, input_route: dom_event} with a Tk decoy window made active before the click",
+      "D_correct": "click accepted && receipt delivery.mode == background && page click on Submit isTrusted == false && X11 active window after the click (focus_post) == decoy && /state == token",
+      "T_in_decoy": "reported descriptively (expected: browser activated; M9 background, MF9 foreground)"
+    },
+    "A-shape": "for every arm (T, D, Y, N_bg, N_domfg, decoy T, decoy D) and for browser_type receipts: the distribution of effect, route, delivery_mode, delivered_count, evidence, escalation, error, summary_template (harness/analyze_a.py receipt()) and the receipt key sets must be identical between M9 and MF9, except T/decoy-T click delivery_mode",
+    "B1": {
+      "binary": "M9i (counters on via CUA_DRIVER_EXP_CDP_COUNTER_FILE, set by the probe per Driver process)",
+      "script": "probe_sessions_observed.py --series L --long-calls 300: one Driver + browser, 300 calls on the jev-use page plus a No-op button (even k: get_browser_state semantic_v2; odd k: browser_click No-op dom_event), navigation probes before k=0,100,200 and after k=299, then one trailing semantic snapshot (added for B2 at 301; not a measured call)",
+      "sessions": "3 independent long sessions on M9i (3 SHARED holds), plus 1 long session on plain M9 (observer only; descriptive, not gated). Order: M9i, M9i, M9, M9i.",
+      "checkpoints": "calls 1, 101, 201, 301 = observer sample immediately before the navigation probe at k = 0, 100, 200, 300",
+      "independent_observer": "second CDP client on its own browser-level WebSocket (cdp_observer.py), never attached to the page: Chrome's own DevTools.CDPCommandFrom{RemoteDebugger,DevTools} histograms (Browser.getHistograms); live_indep = Target.attachToTarget commands Chrome received - Target.detachFromTarget commands Chrome received (both histograms); plus Target.getTargets attached flag. Calibration gate per sample: Browser.getHistograms bucket count == observer samples so far (the Driver never sends it).",
+      "crosscheck": "counters live_sessions of the last counter line before the sample; required |live_indep - counters| <= 1 at every checkpoint, else B = RECERT_FAIL (gate oracle_crosscheck)",
+      "B2": "post-navigation burst = counters events_delta of the first call after the navigation probe at k = 0, 100, 200 (the next measured call) and 300 (the trailing snapshot), reported with live sessions before that call"
+    }
+  },
+  "gates": {
+    "A": {
+      "RECERT_PASS": "M9 T_mislabel >= 18/20 AND MF9 T_correct == 20/20 AND decoy D_correct 12/12 on M9 and 12/12 on MF9 AND A-shape shows no other change",
+      "FIXED_UPSTREAM": "M9 T_correct >= 19/20 (fix candidate then SUPERSEDED)",
+      "RECERT_FAIL": "anything else; the failing gate is named",
+      "denominators": "all 20 T trials per binary, harness errors included as failures"
+    },
+    "B": {
+      "RECERT_PASS": "live_indep >= 290 at call 301 in each of the 3 M9i sessions (still accumulating), with the crosscheck holding",
+      "FIXED_UPSTREAM": "live_indep <= 5 at call 301 in each of the 3 M9i sessions",
+      "RECERT_FAIL": "anything else, gate named"
+    },
+    "E4": "0 unverified successes (success is counted only from the fixture /state oracle; accepted T/D/N_domfg clicks without /state == token are reported) and 0 duplicate dispatches (fixture submit POSTs per trial <= 1; trusted pointerdowns on Submit per T trial <= 1); part B: every measured call accepted, 0 transport errors"
+  },
+  "locks": "Non-timing. Every REAL block, build and cargo test under a SHARED quiet-lane hold (inline wrapper quiet-shared.sh: yields while /proc/locks shows a queued EXCLUSIVE waiter, fd closed for children, mode=shared receipt in the ledger), <= 300 s per hold where the block allows, >= 30 s spacing; lock order quiet SHARED then cargo lock. Wall times descriptive only.",
+  "claim_boundary": "Linux X11 private Xvfb, Driver-launched Chrome 151 isolated_new, jev-use fixture. Receipt honesty and session hygiene only; no timing claim. macOS/Windows/Wayland, existing-profile CDP policy and browser_pointer REAL are out of scope."
+}
