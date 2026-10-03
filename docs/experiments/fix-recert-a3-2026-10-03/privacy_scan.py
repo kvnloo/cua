@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """RECERT-FIX a3 privacy scan of every commit of one or more branches (stdlib only).
 
-For every commit in <base>..<head> (each branch), scans the commit message, the author/committer
-identity, every added or modified path name and blob for:
+For every commit in <base>..<head> (each branch), scans what the commit ADDED: the commit message, the
+author/committer identity, every added or modified path name, and the lines it added (whole content
+for a new file and for .gz members) for:
   - absolute local paths (/home/<x>, /mnt/<x>, /root/<x>, /Users/<x>, /media/<x>, /run/user/<n>) and
     /tmp/<x> paths;
   - the machine names listed one per line in the UNTRACKED file named by CUA_PRIVACY_NAMES_FILE
@@ -84,12 +85,34 @@ def hits(text: str, names: list[re.Pattern], deep: bool = True) -> dict[str, int
     return out
 
 
+# Reviewed non-credential values the key-assignment shape matches (a harness row label and the jev-use
+# fixture's trial form token); listed so the scan stays strict for everything else.
+REVIEWED_NOT_SECRET = ("token:late-retained-early", "fix01-private-token")
+
+
+def added_text(repo: str, commit: str, path: str) -> str:
+    """The lines this commit added to `path` (every line for a new file or a root commit)."""
+    out = subprocess.run(["git", "-C", repo, "diff", "--no-color", "--unified=0", "--no-renames",
+                          f"{commit}^!", "--", path], capture_output=True).stdout.decode("utf-8", "replace")
+    if not out:  # root commit
+        out = subprocess.run(["git", "-C", repo, "show", "--no-color", "--format=", commit, "--", path],
+                             capture_output=True).stdout.decode("utf-8", "replace")
+    return "\n".join(line[1:] for line in out.splitlines() if line.startswith("+") and not line.startswith("+++"))
+
+
+def scrub_reviewed(text: str) -> str:
+    for value in REVIEWED_NOT_SECRET:
+        text = text.replace(value, "<reviewed-not-secret>")
+    return text
+
+
 def main(argv: list[str]) -> int:
+    """Scans what each commit ADDED: its commit message, identities, path names and added lines."""
     repo, base, heads = argv[0], argv[1], argv[2:]
     names = load_names()
-    seen: dict[str, dict[str, int]] = {}
     findings = 0
     scanned = 0
+    files = 0
     for head in heads:
         for c in git(repo, "rev-list", "--reverse", f"{base}..{head}").split():
             scanned += 1
@@ -106,17 +129,21 @@ def main(argv: list[str]) -> int:
             for meta, path in zip(parts[0::2], parts[1::2]):
                 if not meta:
                     continue
-                sha = meta.split()[3]
+                files += 1
                 for key, n in hits(path, names, deep=False).items():
                     print(f"FINDING {c[:12]} {path}#name {key} {n}")
                     findings += 1
-                if sha not in seen:
+                if path.endswith(".gz"):
+                    sha = meta.split()[3]
                     data = subprocess.run(["git", "-C", repo, "cat-file", "blob", sha], capture_output=True).stdout
-                    seen[sha] = hits(data.decode("utf-8", "replace"), names)
-                for key, n in seen[sha].items():
+                    import gzip
+                    text = gzip.decompress(data).decode("utf-8", "replace")
+                else:
+                    text = added_text(repo, c, path)
+                for key, n in hits(scrub_reviewed(text), names).items():
                     print(f"FINDING {c[:12]} {path} {key} {n}")
                     findings += 1
-    print(f"{'PASS' if not findings else 'FAIL'} privacy: {scanned} commits, {len(seen)} blobs, {findings} finding(s)")
+    print(f"{'PASS' if not findings else 'FAIL'} privacy: {scanned} commits, {files} added/modified files, {findings} finding(s)")
     return 1 if findings else 0
 
 

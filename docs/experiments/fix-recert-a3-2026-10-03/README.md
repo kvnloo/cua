@@ -325,6 +325,16 @@ Unit runs used `hostless` -> cargo lock -> `cua-x11-session.sh` (`raw/unit/`).
 13. **`cua-sway-session.sh`** sha256 differs from the wave-3 record (stack track update, unedited here).
 14. **I5p**: 20 attempts per order per arm (row `I5p` = 'same', row `I5ps` = 'swapped'), as pre-registered.
 
+15. **Privacy scanner refined after its first run.** The first version scanned whole blobs
+    (`raw/privacy-scan-blob-mode.txt`). Its 18 findings were of two kinds: 12 path strings already present
+    in upstream files that our commits modified, with 0 in any added line; and 6 key-shape matches on two
+    reviewed non-credential strings (the OWN-09R harness label `token:late-retained-early` and the jev-use
+    fixture's trial form token). The scanner now checks what each commit added: message, identities, path
+    names and added lines, with the hex/base64 decoding unchanged and those two strings listed explicitly.
+    Result on all 4 branches: 0 findings (`raw/privacy-scan.txt`, every commit present when it ran; the
+    final run over every commit including this one is reported by the lane). A self-test confirmed that it
+    flags a hex- or base64-encoded machine name or local path.
+
 Shakedowns before PREREG (`raw/shakedown/`, not counted): S1, S2, and 1-attempt W2a (U', F'), W2b, W2c,
 W2d (2), I5ps (U', F'), f3ts stale (F'), f3ts trust_unknown (U'), f3 stale (F').
 
@@ -373,4 +383,5 @@ W2d (2), I5ps (U', F'), f3ts stale (F'), f3ts trust_unknown (U'), f3 stale (F').
 | `raw/rebase/` | range-diffs of the 14 rebased commits, the merge remerge-diff |
 | `raw/builds/` | build logs |
 | `raw/shakedown/` | fixture smokes and shakedowns before PREREG (not counted) |
+| `raw/privacy-scan.txt`, `raw/privacy-scan-blob-mode.txt` | the every-commit privacy scan (added content) and the superseded whole-blob run |
 | `raw/heads/` | live heads at start and end, tree checks |
