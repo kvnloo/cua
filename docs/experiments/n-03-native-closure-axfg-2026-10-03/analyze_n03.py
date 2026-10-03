@@ -407,6 +407,11 @@ def axfg_row(label: str, rec: dict[str, Any]) -> dict[str, Any]:
     out["global_input"] = st.get("route") == "global_input"
     out["route_ok"] = not reasons
     t0m = t["T0_m"]
+    rw = mcp_marks(marks, "click", a["m0"], a["m1"]).get("response_written")
+    sp = stamps_of(a)
+    crecv = max(sp["client_recv"]) if sp.get("client_recv") else None
+    cvs = min(sp["validate_start"]) if sp.get("validate_start") else None
+    cve = max(sp["validate_end"]) if sp.get("validate_end") else None
     states, idx, s0, s1 = samples["states"], samples["idx"], samples["t0_us"], samples["t1_us"]
     ret = a["m1"]
     ret_us = (ret - t0m) / 1000
@@ -427,6 +432,12 @@ def axfg_row(label: str, rec: dict[str, Any]) -> dict[str, Any]:
         "dar_to_return_ms": r((ret - dar) / 1e6) if dar else None,
         "post_action_wait_ms": r((psd - dar) / 1e6) if dar and psd else None,
         "effect_after_dar_ms": r((t_eff - dar) / 1e6) if dar and t_eff else None,
+        # verifier-requested descriptive extension (post hoc, never gate-deciding): the margin at the
+        # Driver's response_written mark and at the client's receive stamp, and the client's own
+        # output-validation span inside the call
+        "margin_at_response_written_ms": r((rw - t_eff) / 1e6) if rw and t_eff is not None else None,
+        "margin_at_client_recv_ms": r((crecv - t_eff) / 1e6) if crecv and t_eff is not None else None,
+        "client_validation_ms": r((cve - cvs) / 1e6) if cvs and cve else None,
         "final_state_ok": final_ok, "verified": bool(final_ok and t_eff is not None and not rec.get("failure")),
         "mutations": (final_state.get("seq", 0) - before_seq) if isinstance(final_state, dict) else None,
         "reasons": reasons,
@@ -435,6 +446,24 @@ def axfg_row(label: str, rec: dict[str, Any]) -> dict[str, Any]:
 
 
 # ----------------------------------------------------------------------------- aggregation helpers
+def s0_ext(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Descriptive only (added after the verifier review; never gate-deciding): when the app's effect
+    stamp lands relative to the DoAction reply, and the S0 margin at each return point."""
+    ead = [x["effect_after_dar_ms"] for x in rows if x.get("effect_after_dar_ms") is not None]
+
+    def mn(k: str) -> float | None:
+        v = [x[k] for x in rows if x.get(k) is not None]
+        return r(min(v)) if v else None
+    return {"n": len(rows), "effect_after_dar_n": len(ead),
+            "effect_after_dar_positive": sum(1 for v in ead if v > 0),
+            "effect_after_dar_min_ms": r(min(ead)) if ead else None, "effect_after_dar_median_ms": r(med(ead)),
+            "effect_after_dar_max_ms": r(max(ead)) if ead else None,
+            "min_margin_at_response_written_ms": mn("margin_at_response_written_ms"),
+            "min_margin_at_client_recv_ms": mn("margin_at_client_recv_ms"),
+            "min_margin_at_caller_return_ms": mn("margin_ms"),
+            "client_validation_median_ms": r(med([x["client_validation_ms"] for x in rows if x.get("client_validation_ms") is not None]))}
+
+
 def arm_summary(rows: list[dict[str, Any]], key: str = "T_oracle_ms") -> dict[str, Any]:
     v = [x for x in rows if x.get("valid")]
     return {"n": len(rows), "verified": sum(1 for x in rows if x.get("verified")), "valid": len(v),
@@ -796,7 +825,8 @@ def analyze(raw: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 "wall_clock_saved_T_ms": paired_diff(prs), "click_wrapper_saved_ms": paired_diff(wprs),
                 "loadavg_1m": {"min": min((x["loadavg_1m"] for x in rows_el), default=None), "median": med([x["loadavg_1m"] for x in rows_el]),
                                "max": max((x["loadavg_1m"] for x in rows_el), default=None)},
-                "gate_pass": bool(ok)}
+                "gate_pass": bool(ok),
+                "s0_descriptive_ext": s0_ext(s0r)}
     pc = [x for x in b_rows if x["kind"] == "axfg_delay" and x.get("route_ok")]
     B["positive_control"] = {arm: {"n": len(rs), "not_visible": sum(1 for x in rs if not x["visible_at_return"]),
                                    "margins_ms": [x["margin_ms"] for x in rs]}

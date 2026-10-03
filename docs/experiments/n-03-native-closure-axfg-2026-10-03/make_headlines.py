@@ -63,6 +63,13 @@ for fam in ("D", "U"):
                   (f"axfg_{fam}_{el}_saved", b + "|wall_clock_saved_T_ms|median", ms),
                   (f"axfg_{fam}_{el}_saved_lo", b + "|wall_clock_saved_T_ms|ci95|0", ms),
                   (f"axfg_{fam}_{el}_saved_hi", b + "|wall_clock_saved_T_ms|ci95|1", ms)]
+        e = b + "|s0_descriptive_ext|"
+        ITEMS += [(f"axfg_{fam}_{el}_ead_positive", e + "effect_after_dar_positive", plain),
+                  (f"axfg_{fam}_{el}_ead_max", e + "effect_after_dar_max_ms", ms),
+                  (f"axfg_{fam}_{el}_ead_min", e + "effect_after_dar_min_ms", ms),
+                  (f"axfg_{fam}_{el}_margin_rw", e + "min_margin_at_response_written_ms", ms),
+                  (f"axfg_{fam}_{el}_margin_recv", e + "min_margin_at_client_recv_ms", ms),
+                  (f"axfg_{fam}_{el}_client_validation", e + "client_validation_median_ms", ms)]
 ITEMS += [("pc_s0u_not_visible", "part_b|positive_control|S0U|not_visible", plain),
           ("hcl_online_calls", "hcl_equivalence_online|calls", plain),
           ("hcl_online_agree", "hcl_equivalence_online|agree", plain),
