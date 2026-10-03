@@ -1,0 +1,16 @@
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:364:    pub fn contains_semantic_window(&self, pid: i32, window_id: u64) -> bool {
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:577:        assert!(!cache.contains_semantic_window(9, 99));
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:583:        assert!(!cache.contains_semantic_window(9, 99));
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:586:        assert!(cache.contains_semantic_window(9, 99));
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:587:        assert!(!cache.contains_semantic_window(9, 100));
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:588:        assert!(!cache.contains_semantic_window(10, 99));
+libs/cua-driver/rust/crates/cua-driver-core/src/snapshot_store.rs:592:        assert!(!cache.contains_semantic_window(9, 99));
+libs/cua-driver/rust/crates/cua-driver-core/src/tool_schema.rs:159:pub fn resolve_timeout_ms_with_first_snapshot_grace(
+libs/cua-driver/rust/crates/cua-driver-core/src/tool_schema.rs:334:            resolve_timeout_ms_with_first_snapshot_grace(None, false, 2_000),
+libs/cua-driver/rust/crates/cua-driver-core/src/tool_schema.rs:338:            resolve_timeout_ms_with_first_snapshot_grace(None, true, 2_000),
+libs/cua-driver/rust/crates/cua-driver-core/src/tool_schema.rs:342:            resolve_timeout_ms_with_first_snapshot_grace(Some(&json!(750)), false, 2_000),
+libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:1000:fn linux_snapshot_timeout_ms(timeout: Option<&Value>, has_prior_snapshot: bool) -> u64 {
+libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:1001:    cua_driver_core::tool_schema::resolve_timeout_ms_with_first_snapshot_grace(
+libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:1213:        let timeout_ms = linux_snapshot_timeout_ms(
+libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:1217:                .contains_semantic_window(pid as i32, xid),
+# enclosing impl of impl_.rs:1213 = 'impl Tool for GetWindowStateTool' (impl_.rs:1011); no browser/ module references any of these symbols (git grep over libs/cua-driver/rust at 45dff8f32 tree 3ae6bd440862)
