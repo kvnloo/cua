@@ -1,0 +1,64 @@
+{
+ "admission_trial": "Q000-toggle-COMP_CR-train-r-1-admission",
+ "admitted": true,
+ "artifact": {
+  "compiled_from": {
+   "learning_outcome": "verified",
+   "learning_provider_decisions": 2,
+   "trace_mutations": 2
+  },
+  "expected_outcome": {
+   "completion_field": "checked",
+   "journal_updates": 1,
+   "oracle": "/state.checked == true"
+  },
+  "fallback_points": [
+   "before each mutation: guarded continuation from the current state"
+  ],
+  "routine_id": "r2-07c-toggle-timed-e",
+  "schema": "r2-07c.compiled-routine.v1",
+  "steps": [
+   {
+    "action": "browser_click",
+    "input_route": "dom_event",
+    "logical_target": {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    "postcondition": {
+     "checked_state": "true"
+    },
+    "precondition": {
+     "checked_state": "false",
+     "page_origin": "http://127.0.0.1:*",
+     "page_path": "/toggle-confirm",
+     "requires_present": [
+      {
+       "name": "Confirm",
+       "role": "button"
+      }
+     ],
+     "unique": true
+    }
+   },
+   {
+    "action": "browser_click",
+    "depends_on": 0,
+    "input_route": "dom_event",
+    "logical_target": {
+     "name": "Confirm",
+     "role": "button"
+    },
+    "precondition": {
+     "unique": true
+    }
+   }
+  ],
+  "task_class": "toggle_confirm"
+ },
+ "compile_error": null,
+ "compile_ms": 0.236377,
+ "learning_verified": true,
+ "trained_by": "Q000-toggle-COMP_CR-train-r-1",
+ "trainings": 1
+}

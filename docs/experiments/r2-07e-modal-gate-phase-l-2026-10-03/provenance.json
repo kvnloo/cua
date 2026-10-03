@@ -1,0 +1,36 @@
+{
+ "schema": "cua-rfc-loop.provenance.v1",
+ "lane": "R2-07e",
+ "branch": "exp/r2-07e-modal-gate-phase-l-20261003",
+ "base": "79f6dd29958b2a73b477544ca9e777efade8a6c3",
+ "prereg_commit": "097c7131338155b8ba678799a64fa99715b8ea83",
+ "prereg_commit_utc": "2026-10-03T13:13:12Z",
+ "tested_source": {
+  "driver_source": "8f3a646b4818b757648835cf89db8886626b1cf0",
+  "libs_cua_driver_tree": "bf8e7bdc90fdce295e44743f2754a6502d5d6e0e",
+  "r2_07c_harness": "7f46edd1681fbf58586f8b4972636c3da56e3be6 (packet tree 77b5128e435a24282f76238ac0558fc590659276, harness tree 66bad345b1736b97b66884bbf40a1505c16083bf)",
+  "r2_07d_runner": "79f6dd29958b2a73b477544ca9e777efade8a6c3 (packet tree 90e0c0d875e12f592c7099ed5bc3570c11b8339e, driver/r2_07d.py blob 0989b68bc57d8fc16de3c0ab2cf80c61cd6bd334)",
+  "r2_07e_runner": "097c7131338155b8ba678799a64fa99715b8ea83 (driver/ unchanged after the PREREG commit)"
+ },
+ "driver_binary": {
+  "name": "cua-driver-r2-10-8f3a646b4",
+  "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "version": "cua-driver 0.32.0",
+  "host_rehash": {"start": "2026-10-03T13:06:46Z identical", "end": "2026-10-03T14:11:56Z identical"},
+  "in_session": "every run manifest and trial record carries driver_name, driver_sha256 and driver_version; the runner refuses on a sha256 mismatch"
+ },
+ "environment": {
+  "host": "one shared Linux host (name withheld)",
+  "isolation": "every code-executing command under hostless; Driver and Chrome inside cua-x11-session.sh (private Xvfb + D-Bus), xdpyinfo probe before any trial",
+  "browser": "Google Chrome 151.0.7922.71 (the Driver's root-owned candidate), isolated profile per trial, sandbox on",
+  "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=false via CUA_SESSION_EXTRA_ENV; the harness sets CUA_DRIVER_RS_TELEMETRY_ENABLED=0 and DO_NOT_TRACK=1 in the Driver env",
+  "provider": "TypeSafe api.typesafe.ai /v1/systemone, model id jev-1.13.0 (from SystemOneResponse.model, 13/13 live decisions + 2/2 shakedown)"
+ },
+ "live_heads": {
+  "start": {"utc": "2026-10-03T13:06:54Z", "upstream_main": "c8edda06be53e13a759c69de125ce37189023954", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"},
+  "end": {"utc": "2026-10-03T14:11:56Z", "upstream_main": "32b34fbc75abeb96af77df49ae0da72328e67707 (1 commit after start; libs/cua-driver changes only scripts/_install-rust.sh and scripts/install.ps1)", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"},
+  "note": "upstream main moved past the tested Driver source long before this lane; binary R is pinned and tested as such. Between 0f1955d2f and c8edda06b the libs/cua-driver changes are under platform-macos, platform-windows, cua-driver-e2e, Skills, tests/fixtures, the Python and TypeScript client packages, versions and installers; none on a Linux, browser or jev-use path"
+ },
+ "publication_sha": null,
+ "live_heads_at_publication": null
+}

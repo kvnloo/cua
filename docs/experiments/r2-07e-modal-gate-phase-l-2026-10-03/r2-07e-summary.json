@@ -1,0 +1,1645 @@
+{
+ "artifacts": {
+  "ctl-artifact-scripted-e-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "ctl-artifact-scripted-e-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "live-artifact-live-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "live-artifact-live-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "lshake-artifact-live_shake-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "q-artifact-timed-e-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "q-artifact-timed-e-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "shake-c-artifact-scripted-e-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "shake-c-artifact-scripted-e-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  }
+ },
+ "authority_clean": true,
+ "disposition": {
+  "controls": "PASS",
+  "e4_kill_candidate": false,
+  "failing_gates": [],
+  "lineage": "KEEP (toggle) / REVISE (modal)",
+  "part_Q_modal": "PASS",
+  "per_class": {
+   "modal": {
+    "e4_kill_candidate": false,
+    "failing_gates": [
+     "LF_fallback_not_verified"
+    ],
+    "lineage": "REVISE",
+    "phase_L_verdict": "REVISE"
+   },
+   "toggle": {
+    "e4_kill_candidate": false,
+    "failing_gates": [],
+    "lineage": "KEEP",
+    "phase_L_verdict": "DELETED"
+   }
+  }
+ },
+ "first_measured_trial_utc": "2026-10-03T13:13:46.036Z",
+ "part_C": {
+  "E4": {
+   "ambiguous_dispatch": 0,
+   "blind_replay": 0,
+   "caller_stale_dispatch": 0,
+   "dispatches_after_unknown": 0,
+   "duplicate_mutation": 0,
+   "refusal_returned_as_success": 0,
+   "unverified_success": 0
+  },
+  "E4_clean": true,
+  "G1_G2": {
+   "modal": {
+    "G1": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    },
+    "G2": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    }
+   },
+   "toggle": {
+    "G1": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    },
+    "G2": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    }
+   }
+  },
+  "G3": {
+   "accepted_fresh": 36,
+   "accepted_mutations": 36,
+   "cells": 27,
+   "nonfresh_attempts": 2,
+   "nonfresh_attempts_refused_effect_refused": 2,
+   "pass": true
+  },
+  "G3_nonfresh_refused": {
+   "cells_with_refused_nonfresh": 2,
+   "n4b_cells": 2,
+   "nonfresh_attempts": 2,
+   "nonfresh_refused_effect_refused": 2,
+   "pass": true
+  },
+  "all_pass": true,
+  "cells": 39,
+  "expected_cells": 35,
+  "first_trial_utc": "2026-10-03T13:13:46.036Z",
+  "pass": true,
+  "pass_cells": 35,
+  "rows": {
+   "default_smoke": {
+    "modal": {
+     "n": 5,
+     "pass": 5
+    },
+    "toggle": {
+     "n": 5,
+     "pass": 5
+    }
+   },
+   "g5:applied_ack_lost": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C024-modal-COMP_CR-g5-applied_ack_lost-r00: PASS applied_ack_lost: verified_by_reconcile fired=True cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C023-toggle-COMP_CR-g5-applied_ack_lost-r00: PASS applied_ack_lost: verified_by_reconcile fired=True cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "g5:withheld_unresolved": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C026-modal-COMP_CR-g5-withheld_unresolved-r00: PASS withheld_unresolved: unknown fired=True cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C025-toggle-COMP_CR-g5-withheld_unresolved-r00: PASS withheld_unresolved: unknown fired=True cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n1": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C003-modal-COMP_CR-n1-r00: PASS fallback=target_not_found cm=0 outcome=unknown"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C002-toggle-COMP_CR-n1-r00: PASS fallback=requires_present cm=0 outcome=budget_exhausted"
+     ],
+     "pass": 1
+    }
+   },
+   "n2": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C005-modal-COMP_CR-n2-r00: PASS fallback=target_not_found cm=0 outcome=unknown"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C004-toggle-COMP_CR-n2-r00: PASS fallback=requires_present cm=0 outcome=budget_exhausted"
+     ],
+     "pass": 1
+    }
+   },
+   "n3": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C007-modal-COMP_CR-n3-r00: PASS fallback=target_ambiguous cm=0 dropped=[['confirm-choice'], ['confirm-choice'], ['confirm-choice'], ['confirm-choice']]"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C006-toggle-COMP_CR-n3-r00: PASS fallback=requires_present_ambiguous cm=0 dropped=[['click-confirm'], ['click-confirm'], ['click-confirm']]"
+     ],
+     "pass": 1
+    }
+   },
+   "n4a": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C009-modal-COMP_CR-n4a-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': True}] obs=3 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C008-toggle-COMP_CR-n4a-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': True}] obs=3 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n4b": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C011-modal-COMP_CR-n4b-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': False}] obs=3 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C010-toggle-COMP_CR-n4b-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': False}] obs=3 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n5": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C013-modal-COMP_CR-n5-r00: PASS probe=refused:authorization_host_failed cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C012-toggle-COMP_CR-n5-r00: PASS probe=refused:authorization_host_failed cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n6": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C015-modal-COMP_CR-n6-r00: PASS dialog=1 fallback={'index': 1, 'reason': 'target_not_found'} cm=0"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C014-toggle-COMP_CR-n6-r00: PASS dialog=1 fallback={'index': 1, 'reason': 'target_not_found'} cm=0"
+     ],
+     "pass": 1
+    }
+   },
+   "n7": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C017-modal-COMP_CR-n7-r00: PASS fallback=requires_absent accepted=1 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C016-toggle-COMP_CR-n7-r00: PASS fallback=checked_state accepted=1 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:modal-on-toggle": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C020-modal-on-toggle-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:toggle-on-fill": {
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C018-toggle-on-fill-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:toggle-on-modal": {
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C019-toggle-on-modal-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "nw2": {
+    "modal": {
+     "n": 1,
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "pass": 1
+    }
+   }
+  }
+ },
+ "part_L": {
+  "classes_run": [
+   "modal",
+   "toggle"
+  ],
+  "first_trial_utc": "2026-10-03T14:09:39.205Z",
+  "kind_changes": [],
+  "manifests": 1,
+  "modal": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G3": {
+    "accepted_fresh": 64,
+    "accepted_mutations": 64,
+    "cells": 33,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": true
+   },
+   "LF": {
+    "E4": {
+     "ambiguous_dispatch": 0,
+     "blind_replay": 0,
+     "caller_stale_dispatch": 0,
+     "dispatches_after_unknown": 0,
+     "duplicate_mutation": 0,
+     "refusal_returned_as_success": 0,
+     "unverified_success": 0
+    },
+    "T_oracle_ms": null,
+    "accepted_mutations": 0,
+    "completion_mutations": 0,
+    "decided": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "decisions": 4,
+    "fallback": {
+     "index": 0,
+     "reason": "requires_absent"
+    },
+    "kind": "n7",
+    "loadavg_1m": 2.68,
+    "note": "fallback=requires_absent accepted=0 cm=0",
+    "outcome": "budget_exhausted",
+    "requests": {
+     "attempts": 4,
+     "reached": 4
+    },
+    "routine_outcome": "budget_exhausted",
+    "row_pass": false,
+    "t_to_end_ms": 794.630986,
+    "trial": "L061-modal-COMP_CR-n7-r30",
+    "verified": false
+   },
+   "LN_descriptive": {
+    "E4": {
+     "ambiguous_dispatch": 0,
+     "blind_replay": 0,
+     "caller_stale_dispatch": 0,
+     "dispatches_after_unknown": 0,
+     "duplicate_mutation": 0,
+     "refusal_returned_as_success": 0,
+     "unverified_success": 0
+    },
+    "T_oracle_ms": null,
+    "accepted_mutations": 2,
+    "completion_mutations": 0,
+    "decided": [
+     "open-dialog",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "decisions": 4,
+    "fallback": {
+     "index": 1,
+     "reason": "target_not_found"
+    },
+    "kind": "n1",
+    "loadavg_1m": 2.54,
+    "note": "fallback=target_not_found cm=0 outcome=budget_exhausted",
+    "outcome": "budget_exhausted",
+    "requests": {
+     "attempts": 4,
+     "reached": 4
+    },
+    "routine_outcome": "budget_exhausted",
+    "row_pass": true,
+    "t_to_end_ms": 856.284594,
+    "trial": "L062-modal-COMP_CR-n1-r31",
+    "verified": false
+   },
+   "T_admission_ms": [
+    45.890756
+   ],
+   "T_training_ms": [
+    445.563879
+   ],
+   "admission": [
+    {
+     "T_oracle_ms": 45.890756,
+     "decisions": 0,
+     "requests": {
+      "attempts": 0,
+      "reached": 0
+     },
+     "trial": "L001-modal-COMP_CR-train-r00-admission",
+     "valid": true,
+     "verified": true
+    }
+   ],
+   "compile_ms": 0.110098,
+   "decisions_per_invocation_30": 0.06666666666666667,
+   "decisions_per_invocation_31_incl_LF": 0.1935483870967742,
+   "decisions_total_30": 2,
+   "decomposition_all": {
+    "components_ms": {
+     "client_validation": 0.37465566666666666,
+     "dispatch": 1.4196628333333334,
+     "input_prep": 0.0,
+     "mcp_admission": 1.5447564,
+     "mcp_transport": 4.396242533333333,
+     "observation": 13.4179107,
+     "provider_decision": 13.072220133333333,
+     "resolution": 1.0937986666666666,
+     "reval_endpoint": 19.99181516666667,
+     "reval_other": 1.9446782999999999,
+     "runner": 0.3100467333333333,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.010531800000000001,
+     "unattributed": 0.6827543666666667,
+     "verification_reads": 0.517318,
+     "visualization": 1.8797678333333334
+    },
+    "coverage_mean": 0.986004794647769,
+    "irreducible_ms": 17.310101633333332,
+    "mean_T_oracle_ms": 60.7909494,
+    "mean_T_runner_ms": 60.65615913333333,
+    "n": 30,
+    "share": {
+     "client_validation": 0.006176712670564995,
+     "dispatch": 0.023405089501507256,
+     "input_prep": 0.0,
+     "mcp_admission": 0.025467428569031926,
+     "mcp_transport": 0.07247808954849232,
+     "observation": 0.22121266647472648,
+     "provider_decision": 0.21551348321607708,
+     "resolution": 0.01803277164751393,
+     "reval_endpoint": 0.32959250061846157,
+     "reval_other": 0.03206068975988475,
+     "runner": 0.005111545764904004,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.0001736311720108947,
+     "unattributed": 0.011256142433381706,
+     "verification_reads": 0.00852869695990543,
+     "visualization": 0.030990551663537744
+    },
+    "untested_share": 0.13852269063388886
+   },
+   "decomposition_training": {
+    "components_ms": {
+     "client_validation": 0.337988,
+     "dispatch": 7.529907,
+     "input_prep": 0.0,
+     "mcp_admission": 1.642048,
+     "mcp_transport": 4.434132999999999,
+     "observation": 12.962014000000002,
+     "provider_decision": 392.166604,
+     "resolution": 1.1897450000000003,
+     "reval_endpoint": 19.520317000000006,
+     "reval_other": 2.066036000000004,
+     "runner": 0.270505,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.0,
+     "unattributed": 0.685267,
+     "verification_reads": 1.005878,
+     "visualization": 2.157825
+    },
+    "coverage_mean": 0.9984634175776457,
+    "irreducible_ms": 23.563835000000005,
+    "mean_T_oracle_ms": 445.563879,
+    "mean_T_runner_ms": 445.968267,
+    "n": 1,
+    "share": {
+     "client_validation": 0.0007578745507469032,
+     "dispatch": 0.016884400880477893,
+     "input_prep": 0.0,
+     "mcp_admission": 0.0036819839470775616,
+     "mcp_transport": 0.009942709668174662,
+     "observation": 0.029064879631895427,
+     "provider_decision": 0.8793598850386366,
+     "resolution": 0.0026677794992081808,
+     "reval_endpoint": 0.043770641196764805,
+     "reval_other": 0.004632697330458276,
+     "runner": 0.0006065566095535671,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.0,
+     "unattributed": 0.001536582422354279,
+     "verification_reads": 0.0022554923173491175,
+     "visualization": 0.004838516907302734
+    },
+    "untested_share": 0.019193486697115153
+   },
+   "decomposition_warm": {
+    "components_ms": {
+     "client_validation": 0.3759200689655173,
+     "dispatch": 1.2089647586206898,
+     "input_prep": 0.0,
+     "mcp_admission": 1.5414015172413793,
+     "mcp_transport": 4.3949359655172415,
+     "observation": 13.43363127586207,
+     "provider_decision": 0.0,
+     "resolution": 1.0904901724137932,
+     "reval_endpoint": 20.008073724137933,
+     "reval_other": 1.9404935517241375,
+     "runner": 0.31141024137931034,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.01089496551724138,
+     "unattributed": 0.682667724137931,
+     "verification_reads": 0.5004711034482758,
+     "visualization": 1.870179655172414
+    },
+    "coverage_mean": 0.9855751869605319,
+    "irreducible_ms": 17.094455655172414,
+    "mean_T_oracle_ms": 47.52291734482759,
+    "mean_T_runner_ms": 47.36953472413793,
+    "n": 29,
+    "share": {
+     "client_validation": 0.007935903765040804,
+     "dispatch": 0.025521989305177656,
+     "input_prep": 0.0,
+     "mcp_admission": 0.03253993365604946,
+     "mcp_transport": 0.09277980016294586,
+     "observation": 0.28359221499840365,
+     "provider_decision": 0.0,
+     "resolution": 0.023020917954216593,
+     "reval_endpoint": 0.42238273693540185,
+     "reval_other": 0.04096501185888421,
+     "runner": 0.00657406164516592,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.00022999942010597097,
+     "unattributed": 0.014411535348901503,
+     "verification_reads": 0.010565252674800973,
+     "visualization": 0.03948064227490571
+    },
+    "untested_share": 0.1772621525323201
+   },
+   "e4_kill_candidate": false,
+   "failing_gates": [
+    "LF_fallback_not_verified"
+   ],
+   "invocations_run": 30,
+   "loadavg_1m": {
+    "max": 2.56,
+    "median": 1.72,
+    "min": 1.52
+   },
+   "mean_all_ms": 62.324311200000004,
+   "mean_all_with_fallback_ms": null,
+   "not_run": [],
+   "planned": 30,
+   "precondition": {
+    "controls": true,
+    "met": true,
+    "phase_S": true,
+    "phase_S_source": "R2-07e Part Q"
+   },
+   "provider_decision_share_all": 0.21551348321607708,
+   "provider_decision_share_training": 0.8793598850386366,
+   "provider_decision_share_warm": 0.0,
+   "ratio_of_means": 1.3114580224057604,
+   "ratio_of_means_with_fallback": null,
+   "status": "RUN",
+   "training": [
+    {
+     "T_oracle_ms": 445.563879,
+     "admitted": true,
+     "compile_ms": 0.110098,
+     "decisions": 2,
+     "models": {
+      "jev-1.13.0": 2
+     },
+     "requests": {
+      "attempts": 2,
+      "reached": 2
+     },
+     "trial": "L001-modal-COMP_CR-train-r00",
+     "verified": true
+    }
+   ],
+   "verdict": "REVISE",
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "invalid": [],
+    "mean_T_oracle_ms": 47.52291734482759,
+    "median_T_oracle_ms": 47.877252,
+    "n_run": 29,
+    "planned": 29,
+    "provider_requests": 0,
+    "valid": 29,
+    "validity": 1.0
+   },
+   "work_deleted_per_warm": {
+    "decisions": 2.0,
+    "note": "training (ordinary step loop) minus warm (0 expected); wall-clock reported separately",
+    "provider_requests_reached": 2.0
+   }
+  },
+  "not_run": [
+   {
+    "reason": "budget",
+    "trial": "L063-toggle-COMP_CR-n1-r31"
+   }
+  ],
+  "provider_models": {
+   "jev-1.13.0": 13
+  },
+  "run": true,
+  "shakedown": [
+   {
+    "decisions": 0,
+    "kind": "admission",
+    "models": {},
+    "requests": {
+     "attempts": 0,
+     "reached": 0
+    },
+    "trial": "LK000-toggle-COMP_CR-train-r00-admission",
+    "verified": true
+   },
+   {
+    "decisions": 2,
+    "kind": "train",
+    "models": {
+     "jev-1.13.0": 2
+    },
+    "requests": {
+     "attempts": 2,
+     "reached": 2
+    },
+    "trial": "LK000-toggle-COMP_CR-train-r00",
+    "verified": true
+   }
+  ],
+  "stopped_for_budget": [
+   {
+    "at": "L063-toggle-COMP_CR-n1-r31",
+    "ledger": {
+     "attempts": 15,
+     "reached": 15
+    }
+   }
+  ],
+  "toggle": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G3": {
+    "accepted_fresh": 63,
+    "accepted_mutations": 63,
+    "cells": 32,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": true
+   },
+   "LF": {
+    "E4": {
+     "ambiguous_dispatch": 0,
+     "blind_replay": 0,
+     "caller_stale_dispatch": 0,
+     "dispatches_after_unknown": 0,
+     "duplicate_mutation": 0,
+     "refusal_returned_as_success": 0,
+     "unverified_success": 0
+    },
+    "T_oracle_ms": 257.893074,
+    "accepted_mutations": 1,
+    "completion_mutations": 1,
+    "decided": [
+     "click-confirm"
+    ],
+    "decisions": 1,
+    "fallback": {
+     "index": 0,
+     "reason": "checked_state"
+    },
+    "kind": "n7",
+    "loadavg_1m": 2.56,
+    "note": "fallback=checked_state accepted=1 cm=1",
+    "outcome": "verified",
+    "requests": {
+     "attempts": 1,
+     "reached": 1
+    },
+    "routine_outcome": "fallback_verified",
+    "row_pass": true,
+    "t_to_end_ms": 258.172182,
+    "trial": "L060-toggle-COMP_CR-n7-r30",
+    "verified": true
+   },
+   "LN_descriptive": null,
+   "T_admission_ms": [
+    47.865677
+   ],
+   "T_training_ms": [
+    581.316125
+   ],
+   "admission": [
+    {
+     "T_oracle_ms": 47.865677,
+     "decisions": 0,
+     "requests": {
+      "attempts": 0,
+      "reached": 0
+     },
+     "trial": "L000-toggle-COMP_CR-train-r00-admission",
+     "valid": true,
+     "verified": true
+    }
+   ],
+   "compile_ms": 0.183424,
+   "decisions_per_invocation_30": 0.06666666666666667,
+   "decisions_per_invocation_31_incl_LF": 0.0967741935483871,
+   "decisions_total_30": 2,
+   "decomposition_all": {
+    "components_ms": {
+     "client_validation": 0.3521741,
+     "dispatch": 1.2614298333333334,
+     "input_prep": 0.0,
+     "mcp_admission": 1.5396021666666666,
+     "mcp_transport": 4.2527916999999995,
+     "observation": 14.584432933333334,
+     "provider_decision": 16.3028277,
+     "resolution": 1.1927235,
+     "reval_endpoint": 20.068988400000002,
+     "reval_other": 2.2728595666666664,
+     "runner": 0.30836396666666666,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.009119566666666667,
+     "unattributed": 0.6787965666666667,
+     "verification_reads": 0.5339967,
+     "visualization": 1.7483315333333334
+    },
+    "coverage_mean": 0.9860957239604948,
+    "irreducible_ms": 18.6618386,
+    "mean_T_oracle_ms": 65.1923908,
+    "mean_T_runner_ms": 65.10643823333334,
+    "n": 30,
+    "share": {
+     "client_validation": 0.005409205441984893,
+     "dispatch": 0.019374886225729727,
+     "input_prep": 0.0,
+     "mcp_admission": 0.02364746419008401,
+     "mcp_transport": 0.06532060139365213,
+     "observation": 0.2240090738962643,
+     "provider_decision": 0.2504026966054064,
+     "resolution": 0.01831959376621753,
+     "reval_endpoint": 0.3082489066300211,
+     "reval_other": 0.03490990489329215,
+     "runner": 0.004736305272322359,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.00014007165672284637,
+     "unattributed": 0.010425951489374133,
+     "verification_reads": 0.008201903137232337,
+     "visualization": 0.02685343540169609
+    },
+    "untested_share": 0.12785912155363505
+   },
+   "decomposition_training": {
+    "components_ms": {
+     "client_validation": 0.301694,
+     "dispatch": 7.937664000000001,
+     "input_prep": 0.0,
+     "mcp_admission": 1.603269,
+     "mcp_transport": 4.344894999999999,
+     "observation": 49.877734000000004,
+     "provider_decision": 489.084831,
+     "resolution": 1.5641859999999999,
+     "reval_endpoint": 18.849851,
+     "reval_other": 2.3398210000000006,
+     "runner": 0.30725199999999997,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.0,
+     "unattributed": 0.698692,
+     "verification_reads": 1.126532,
+     "visualization": 2.5134239999999997
+    },
+    "coverage_mean": 0.9987964995494918,
+    "irreducible_ms": 61.28175100000001,
+    "mean_T_oracle_ms": 581.316125,
+    "mean_T_runner_ms": 580.549845,
+    "n": 1,
+    "share": {
+     "client_validation": 0.0005196694178774607,
+     "dispatch": 0.013672665781178532,
+     "input_prep": 0.0,
+     "mcp_admission": 0.0027616388391250024,
+     "mcp_transport": 0.007484103281433137,
+     "observation": 0.08591464527908022,
+     "provider_decision": 0.8424510577554284,
+     "resolution": 0.0026943181769344886,
+     "reval_endpoint": 0.03246896224733296,
+     "reval_other": 0.004030353328231447,
+     "runner": 0.0005292431005644312,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.0,
+     "unattributed": 0.001203500450508259,
+     "verification_reads": 0.0019404569817773358,
+     "visualization": 0.004329385360528345
+    },
+    "untested_share": 0.015192473266442777
+   },
+   "decomposition_warm": {
+    "components_ms": {
+     "client_validation": 0.35391479310344826,
+     "dispatch": 1.0312148620689654,
+     "input_prep": 0.0,
+     "mcp_admission": 1.5374067586206897,
+     "mcp_transport": 4.249615724137931,
+     "observation": 13.367422551724138,
+     "provider_decision": 0.0,
+     "resolution": 1.1799144482758621,
+     "reval_endpoint": 20.111027620689654,
+     "reval_other": 2.270550551724138,
+     "runner": 0.30840231034482757,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.009434034482758622,
+     "unattributed": 0.6781105172413794,
+     "verification_reads": 0.5135644482758621,
+     "visualization": 1.7219490344827586
+    },
+    "coverage_mean": 0.9856577661815639,
+    "irreducible_ms": 17.192186448275862,
+    "mean_T_oracle_ms": 47.39502065517242,
+    "mean_T_runner_ms": 47.33252765517241,
+    "n": 29,
+    "share": {
+     "client_validation": 0.007477200365925801,
+     "dispatch": 0.02178660031810653,
+     "input_prep": 0.0,
+     "mcp_admission": 0.032480977348622216,
+     "mcp_transport": 0.08978214210526196,
+     "observation": 0.28241514269232926,
+     "provider_decision": 0.0,
+     "resolution": 0.024928194346006433,
+     "reval_endpoint": 0.424888097403181,
+     "reval_other": 0.047970194371734894,
+     "runner": 0.006515652673180785,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.0001993139802608384,
+     "unattributed": 0.014326522390301221,
+     "verification_reads": 0.010850137816794593,
+     "visualization": 0.036379824188294475
+    },
+    "untested_share": 0.1755106892292984
+   },
+   "e4_kill_candidate": false,
+   "failing_gates": [],
+   "invocations_run": 30,
+   "loadavg_1m": {
+    "max": 2.56,
+    "median": 1.74,
+    "min": 1.52
+   },
+   "mean_all_ms": 66.79402750000001,
+   "mean_all_with_fallback_ms": 72.95851287096775,
+   "not_run": [
+    {
+     "reason": "budget",
+     "trial": "L063-toggle-COMP_CR-n1-r31"
+    }
+   ],
+   "planned": 30,
+   "precondition": {
+    "controls": true,
+    "met": true,
+    "phase_S": true,
+    "phase_S_source": "R2-07d toggle Phase S PASS (accepted)"
+   },
+   "provider_decision_share_all": 0.2504026966054064,
+   "provider_decision_share_training": 0.8424510577554284,
+   "provider_decision_share_warm": 0.0,
+   "ratio_of_means": 1.409304745027271,
+   "ratio_of_means_with_fallback": 1.5393708423883867,
+   "status": "RUN",
+   "training": [
+    {
+     "T_oracle_ms": 581.316125,
+     "admitted": true,
+     "compile_ms": 0.183424,
+     "decisions": 2,
+     "models": {
+      "jev-1.13.0": 2
+     },
+     "requests": {
+      "attempts": 2,
+      "reached": 2
+     },
+     "trial": "L000-toggle-COMP_CR-train-r00",
+     "verified": true
+    }
+   ],
+   "verdict": "DELETED",
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "invalid": [],
+    "mean_T_oracle_ms": 47.39502065517242,
+    "median_T_oracle_ms": 46.175414,
+    "n_run": 29,
+    "planned": 29,
+    "provider_requests": 0,
+    "valid": 29,
+    "validity": 1.0
+   },
+   "work_deleted_per_warm": {
+    "decisions": 2.0,
+    "note": "training (ordinary step loop) minus warm (0 expected); wall-clock reported separately",
+    "provider_requests_reached": 2.0
+   }
+  }
+ },
+ "part_Q": {
+  "cells": 144,
+  "first_trial_utc": "2026-10-03T14:05:24.932Z",
+  "interrupted_units": [],
+  "load_gate": {
+   "attempts": 72,
+   "chunks": [
+    "6"
+   ],
+   "end_chunk": 0,
+   "load_at_start_max": 2.92,
+   "load_at_start_median": 2.17,
+   "started_after_wait": 3,
+   "starts": 72
+  },
+  "modal": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G1": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G2": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G3": {
+    "accepted_fresh": 124,
+    "accepted_mutations": 124,
+    "cells": 62,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": true
+   },
+   "admission": [
+    {
+     "T_oracle_ms": 45.867966,
+     "trial": "Q001-modal-COMP_CR-train-r-1-admission",
+     "valid": true
+    }
+   ],
+   "decomposition": {
+    "COMP": {
+     "components_ms": {
+      "client_validation": 0.3662764,
+      "dispatch": 1.17947525,
+      "input_prep": 0.0,
+      "mcp_admission": 1.5233729166666667,
+      "mcp_transport": 4.297858166666667,
+      "observation": 13.134005116666668,
+      "provider_decision": 0.011131633333333333,
+      "resolution": 1.0277570166666667,
+      "reval_endpoint": 20.739925066666668,
+      "reval_other": 1.980195966666667,
+      "runner": 0.2252007,
+      "settles": 0.0,
+      "sleeps_polls": 0.32037909999999997,
+      "target_effect_lag": 0.034334783333333334,
+      "unattributed": 0.6805130333333334,
+      "verification_reads": 1.01269145,
+      "visualization": 1.71846945
+     },
+     "coverage_mean": 0.9858679759205298,
+     "irreducible_ms": 17.661081666666668,
+     "mean_T_oracle_ms": 48.15935161666667,
+     "mean_T_runner_ms": 48.25158605,
+     "n": 60,
+     "share": {
+      "client_validation": 0.007590971198759175,
+      "dispatch": 0.024444279381361393,
+      "input_prep": 0.0,
+      "mcp_admission": 0.031571457880951184,
+      "mcp_transport": 0.08907185273066619,
+      "observation": 0.27219841236009834,
+      "provider_decision": 0.00023069984314709035,
+      "resolution": 0.021299963396056422,
+      "reval_endpoint": 0.4298288774419814,
+      "reval_other": 0.041038981902371416,
+      "runner": 0.004667218602237014,
+      "settles": 0.0,
+      "sleeps_polls": 0.006639763088160704,
+      "target_effect_lag": 0.0007115783364665862,
+      "unattributed": 0.01410343346285367,
+      "verification_reads": 0.020987733935846447,
+      "visualization": 0.03561477643904309
+     },
+     "untested_share": 0.16830489727152365
+    },
+    "COMP_CR": {
+     "components_ms": {
+      "client_validation": 0.36772791666666665,
+      "dispatch": 1.1770900333333334,
+      "input_prep": 0.0,
+      "mcp_admission": 1.5308514166666667,
+      "mcp_transport": 4.238340933333333,
+      "observation": 13.340086866666667,
+      "provider_decision": 0.0,
+      "resolution": 1.0434585833333334,
+      "reval_endpoint": 20.681139833333333,
+      "reval_other": 2.0509102833333337,
+      "runner": 0.2990484,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0069526,
+      "unattributed": 0.6686623666666667,
+      "verification_reads": 0.49274595,
+      "visualization": 1.6505240333333333
+     },
+     "coverage_mean": 0.9859215047663442,
+     "irreducible_ms": 17.067785733333334,
+     "mean_T_oracle_ms": 47.62239206666667,
+     "mean_T_runner_ms": 47.547539216666664,
+     "n": 60,
+     "share": {
+      "client_validation": 0.007733900065595158,
+      "dispatch": 0.024756066301759996,
+      "input_prep": 0.0,
+      "mcp_admission": 0.03219622806746775,
+      "mcp_transport": 0.08913901756345118,
+      "observation": 0.28056313925896326,
+      "provider_decision": 0.0,
+      "resolution": 0.021945585418804887,
+      "reval_endpoint": 0.4349571013358363,
+      "reval_other": 0.043133889095451565,
+      "runner": 0.006289461135670627,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.00014622418140964338,
+      "unattributed": 0.01406302781768952,
+      "verification_reads": 0.010363227164178448,
+      "visualization": 0.03471313259372172
+     },
+     "untested_share": 0.1713672200686791
+    }
+   },
+   "phase_S_pass": true,
+   "sensitivity_load_le_3": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9917248610996374,
+     "ci95": [
+      0.9907877398769945,
+      1.0271387025676335
+     ],
+     "median_arm_ms": 47.8449975,
+     "median_base_ms": 47.4490735,
+     "n": 58
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      -1.3908595000000012,
+      0.46434
+     ],
+     "max": 6.622318999999997,
+     "median": -0.47965250000000026,
+     "min": -8.958100000000002,
+     "n": 58,
+     "positive": 29
+    },
+    "gate_975": {
+     "ci": [
+      -1.4063930000000013,
+      0.4667209999999997
+     ],
+     "level": 0.975,
+     "max": 6.622318999999997,
+     "median": -0.47965250000000026,
+     "min": -8.958100000000002,
+     "n": 58,
+     "positive": 29,
+     "resamples": 10000,
+     "seed": 20261003
+    },
+    "median_T_COMP_CR_ms": 47.8449975,
+    "median_T_COMP_ms": 47.4490735,
+    "n": 58
+   },
+   "timing": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9917248610996374,
+     "ci95": [
+      0.9907516107514234,
+      1.027359338458421
+     ],
+     "median_arm_ms": 47.8449975,
+     "median_base_ms": 47.4490735,
+     "n": 60
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      -1.3915530000000018,
+      0.46434
+     ],
+     "max": 6.622318999999997,
+     "median": -0.47965250000000026,
+     "min": -8.958100000000002,
+     "n": 60,
+     "positive": 30
+    },
+    "failed_pairs": [],
+    "gate_975": {
+     "ci": [
+      -1.4267825000000016,
+      0.4792955000000063
+     ],
+     "level": 0.975,
+     "max": 6.622318999999997,
+     "median": -0.47965250000000026,
+     "min": -8.958100000000002,
+     "n": 60,
+     "positive": 30,
+     "resamples": 10000,
+     "seed": 20261003
+    },
+    "gate_ci975_upper_le_2ms": true,
+    "loadavg_1m": {
+     "max": 3.17,
+     "median": 2.18,
+     "min": 1.57
+    },
+    "median_T_COMP_CR_ms": 47.8449975,
+    "median_T_COMP_ms": 47.4490735,
+    "n": 60,
+    "not_run_rounds": [],
+    "planned_pairs": 60,
+    "valid_pairs": 60
+   },
+   "training": [
+    {
+     "T_oracle_ms": 45.095138,
+     "admitted": true,
+     "compile_ms": 0.114696,
+     "decisions": 2,
+     "trial": "Q001-modal-COMP_CR-train-r-1"
+    }
+   ],
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "n": 60,
+    "valid": 60
+   }
+  },
+  "r2_07d_modal_side_by_side": {
+   "available": true,
+   "diff_ci95_seed20261002": {
+    "ci95": [
+     -1.3712370000000007,
+     2.396339000000001
+    ],
+    "max": 8.482899000000003,
+    "median": 0.5744725000000024,
+    "min": -7.446360000000006,
+    "n": 40,
+    "positive": 25
+   },
+   "diff_ci975_seed20261003": {
+    "ci": [
+     -1.474655000000002,
+     2.409761000000003
+    ],
+    "level": 0.975,
+    "max": 8.482899000000003,
+    "median": 0.5744725000000024,
+    "min": -7.446360000000006,
+    "n": 40,
+    "positive": 25,
+    "resamples": 10000,
+    "seed": 20261003
+   },
+   "median_T_COMP_CR_ms": 47.9339925,
+   "median_T_COMP_ms": 47.522273,
+   "n": 40,
+   "pooled_descriptive_only": {
+    "diff_ci975_seed20261003": {
+     "ci": [
+      -1.3563524999999998,
+      0.5466639999999998
+     ],
+     "level": 0.975,
+     "max": 8.482899000000003,
+     "median": 0.3378200000000007,
+     "min": -8.958100000000002,
+     "n": 100,
+     "positive": 55,
+     "resamples": 10000,
+     "seed": 20261003
+    },
+    "n": 100,
+    "note": "descriptive only; different windows and session env; never a gate"
+   },
+   "source": "r2-07d-quiet-timing-phase-l-2026-10-03 (79f6dd299), raw/q-trials.tar.gz"
+  },
+  "toggle": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "E4_clean": true,
+   "G1": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G2": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G3": {
+    "accepted_fresh": 24,
+    "accepted_mutations": 24,
+    "cells": 12,
+    "nonfresh_attempts": 0,
+    "nonfresh_attempts_refused_effect_refused": 0,
+    "pass": true
+   },
+   "admission": [
+    {
+     "T_oracle_ms": 43.978901,
+     "trial": "Q000-toggle-COMP_CR-train-r-1-admission",
+     "valid": true
+    }
+   ],
+   "decomposition": {
+    "COMP": {
+     "components_ms": {
+      "client_validation": 0.3530309,
+      "dispatch": 0.9933848,
+      "input_prep": 0.0,
+      "mcp_admission": 1.5204786000000001,
+      "mcp_transport": 4.1088420999999995,
+      "observation": 12.226667299999999,
+      "provider_decision": 0.010808,
+      "resolution": 1.1556036,
+      "reval_endpoint": 20.6957301,
+      "reval_other": 1.9329404999999984,
+      "runner": 0.24531050000000001,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0,
+      "unattributed": 0.6641755,
+      "verification_reads": 1.0504535000000002,
+      "visualization": 1.6749143
+     },
+     "coverage_mean": 0.9857514476445954,
+     "irreducible_ms": 16.203446099999997,
+     "mean_T_oracle_ms": 47.118471,
+     "mean_T_runner_ms": 46.6323397,
+     "n": 10,
+     "share": {
+      "client_validation": 0.0075705165614926235,
+      "dispatch": 0.021302486780434907,
+      "input_prep": 0.0,
+      "mcp_admission": 0.032605668293328206,
+      "mcp_transport": 0.08811142924488516,
+      "observation": 0.262192876845937,
+      "provider_decision": 0.0002317704852368795,
+      "resolution": 0.024781162760315025,
+      "reval_endpoint": 0.4438063848638501,
+      "reval_other": 0.04145064374713324,
+      "runner": 0.0052605230957347825,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0,
+      "unattributed": 0.014242808837661646,
+      "verification_reads": 0.022526287695575353,
+      "visualization": 0.03591744078841491
+     },
+     "untested_share": 0.17257210879341744
+    },
+    "COMP_CR": {
+     "components_ms": {
+      "client_validation": 0.3605428,
+      "dispatch": 1.0251443,
+      "input_prep": 0.0,
+      "mcp_admission": 1.5068861,
+      "mcp_transport": 4.1525077,
+      "observation": 13.6978302,
+      "provider_decision": 0.0,
+      "resolution": 1.1233562,
+      "reval_endpoint": 20.7868866,
+      "reval_other": 1.9075453000000007,
+      "runner": 0.29052659999999997,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0384967,
+      "unattributed": 0.6629731,
+      "verification_reads": 0.4910184,
+      "visualization": 1.8201193999999998
+     },
+     "coverage_mean": 0.9861448719224923,
+     "irreducible_ms": 17.1600349,
+     "mean_T_oracle_ms": 48.2875434,
+     "mean_T_runner_ms": 47.8638334,
+     "n": 10,
+     "share": {
+      "client_validation": 0.00753267706301184,
+      "dispatch": 0.021417931393685655,
+      "input_prep": 0.0,
+      "mcp_admission": 0.031482770872255296,
+      "mcp_transport": 0.08675668881966317,
+      "observation": 0.2861833085019889,
+      "provider_decision": 0.0,
+      "resolution": 0.023469833488096673,
+      "reval_endpoint": 0.43429213925017546,
+      "reval_other": 0.03985358389618665,
+      "runner": 0.006069856494193797,
+      "settles": 0.0,
+      "sleeps_polls": 0.0,
+      "target_effect_lag": 0.0008042962141849675,
+      "unattributed": 0.013851232818305774,
+      "verification_reads": 0.01025865178613128,
+      "visualization": 0.038027029402120556
+     },
+     "untested_share": 0.16916305955552652
+    }
+   },
+   "descriptive_only": true,
+   "sensitivity_load_le_3": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9894936101119609,
+     "ci95": [
+      0.9483906257146948,
+      0.9904918632367472
+     ],
+     "median_arm_ms": 47.888476,
+     "median_base_ms": 47.385341,
+     "n": 9
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      0.4552540000000036,
+      2.667158999999998
+     ],
+     "max": 2.8260920000000027,
+     "median": 0.834742999999996,
+     "min": -1.5051380000000023,
+     "n": 9,
+     "positive": 8
+    },
+    "gate_975": {
+     "ci": [
+      0.4552540000000036,
+      2.667158999999998
+     ],
+     "level": 0.975,
+     "max": 2.8260920000000027,
+     "median": 0.834742999999996,
+     "min": -1.5051380000000023,
+     "n": 9,
+     "positive": 8,
+     "resamples": 10000,
+     "seed": 20261003
+    },
+    "median_T_COMP_CR_ms": 47.888476,
+    "median_T_COMP_ms": 47.385341,
+    "n": 9
+   },
+   "timing": {
+    "S_COMP_over_COMP_CR": {
+     "S": 0.9897830587280647,
+     "ci95": [
+      0.9655168727009517,
+      0.9904821786837364
+     ],
+     "median_arm_ms": 47.8871305,
+     "median_base_ms": 47.397870499999996,
+     "n": 10
+    },
+    "diff_COMP_CR_minus_COMP_ms": {
+     "ci95": [
+      0.45604799999999557,
+      2.4721249999999984
+     ],
+     "max": 2.8260920000000027,
+     "median": 0.6953320000000005,
+     "min": -1.5051380000000023,
+     "n": 10,
+     "positive": 9
+    },
+    "failed_pairs": [],
+    "gate_975": {
+     "ci": [
+      0.4556509999999996,
+      2.569641999999998
+     ],
+     "level": 0.975,
+     "max": 2.8260920000000027,
+     "median": 0.6953320000000005,
+     "min": -1.5051380000000023,
+     "n": 10,
+     "positive": 9,
+     "resamples": 10000,
+     "seed": 20261003
+    },
+    "loadavg_1m": {
+     "max": 3.43,
+     "median": 2.3,
+     "min": 1.7
+    },
+    "median_T_COMP_CR_ms": 47.8871305,
+    "median_T_COMP_ms": 47.397870499999996,
+    "n": 10,
+    "not_run_rounds": [],
+    "planned_pairs": 10,
+    "valid_pairs": 10
+   },
+   "training": [
+    {
+     "T_oracle_ms": 49.256278,
+     "admitted": true,
+     "compile_ms": 0.236377,
+     "decisions": 2,
+     "trial": "Q000-toggle-COMP_CR-train-r-1"
+    }
+   ],
+   "warm": {
+    "decisions": 0,
+    "fallbacks": 0,
+    "n": 10,
+    "valid": 10
+   }
+  }
+ },
+ "provider": {
+  "attempts": 15,
+  "blocked_by_cap": 0,
+  "by_layer": {
+   "live": 13,
+   "live_shake": 2
+  },
+  "hosts": [
+   "api.typesafe.ai"
+  ],
+  "lane_cap": {
+   "attempts": 22,
+   "reached": 18
+  },
+  "latency_ms_median": 200.323,
+  "paths": [
+   "/v1/systemone"
+  ],
+  "reached": 15,
+  "reached_by_layer": {
+   "live": 13,
+   "live_shake": 2
+  },
+  "request_id_present": 15,
+  "status": {
+   "200": 15
+  },
+  "within_cap": true
+ },
+ "schema": "r2-07e.summary.v1"
+}
