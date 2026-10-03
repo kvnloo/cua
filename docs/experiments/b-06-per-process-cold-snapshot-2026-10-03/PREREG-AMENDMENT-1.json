@@ -1,0 +1,28 @@
+{
+ "schema": "b-06.prereg-amendment.v1",
+ "amendment": 1,
+ "written_after": "the main block (rounds 0-31) was complete and analysed; the Wn block was queued",
+ "primary_verdict_unchanged": "PREREG.json governs the primary verdict. In the main block the positive control failed its size window in fill and toggle (P - Wa median 10.0 / 10.9 ms, CI excluding 0, below 12 ms), so the primary verdict is UNDECIDED (failed control: PC) in both classes. Nothing in this amendment changes that.",
+ "observation_motivating": "In P the first snapshot after the in-T sleep is about 5 ms shorter than in Wa (fill snapshot1 call median 5.2 vs 10.7 ms; DOM.getDocument 0.4 vs 3.0 ms; attach 0.35 vs 2.5 ms): the 15 ms sleep placed before snapshot1 overlaps with browser-side work that the first snapshot otherwise waits for, so its effect on T_oracle is sub-additive (~15 - 5 ms). The [12, 18] window assumed additivity.",
+ "question": "With a positive control placed where it cannot overlap the first snapshot's wait, does T_oracle pass NC and PC, and what does the pre-registered rule then give for the per-process part?",
+ "status_of_result": "SECONDARY (amended) verdict, reported next to the primary UNDECIDED and labelled 'amended (AMENDMENT-1)'; the E2 mapping is reported under both, the primary one first",
+ "block_x": {
+  "arms": {
+   "C": "as PREREG",
+   "Wa": "as PREREG",
+   "Wb": "as PREREG",
+   "P2": "Wa plus a harness-side 15.0 ms CLOCK_MONOTONIC sleep INSIDE T, placed immediately AFTER the first semantic_v2 snapshot (snapshot1) returns and before the next Driver call; actual sleep recorded"
+  },
+  "design": "4x4 Williams square over C/Wa/Wb/P2 (rc.williams(4), index 0=C,1=Wa,2=Wb,3=P2); round r: classes fill,toggle (r even) or toggle,fill (r odd); row (r + class index) mod 4 (fill 0, toggle 1); rounds 0-15 (4 squares, 16 rounds per class); no modal, no smoke (smoke passed 5/5 per class in the main block)",
+  "everything_else": "binary, harness, forced path, receipts, oracle, T_oracle rule, load rule (<= 4.0, 60 s wait), locks (cargo then EXCLUSIVE quiet-timed, 600 s cap inside, 480 s budget), validity definition, statistics (paired, percentile bootstrap of the median, 10000 resamples, fresh random.Random(20261003) per contrast) are exactly PREREG.json's",
+  "runner_change": "run_b06.py gains arm P2 and plan 'x' only; arms C/Wa/Wb/P/Wn/SMOKE and plans main/wn/pilot are unchanged (the edit was made after the Wn chunk had started)"
+ },
+ "gates_block_x": {
+  "NC_AA": "median paired (Wa - Wb) within [-1.0, +1.0] ms AND 95% CI includes 0",
+  "PC2": "95% CI of median paired (P2 - Wa) excludes 0 AND median in [12, 18] ms",
+  "validity": "every block-x cell (C, Wa, Wb, P2) >= 95% valid",
+  "smoke": "taken from the main block (5/5 per class required)"
+ },
+ "amended_verdict_rule": "fill and toggle each, on block x only: if any gate fails -> UNDECIDED naming it; else D = median paired (C - Wa), D' = median paired (C - Wb) must agree in sign; D >= 1.0 ms with CI excluding 0 -> OWNER_DECISION sized D; CI(D) strictly inside (-1, +1) -> NOT_MATERIAL (per-process IRREDUCIBLE); else UNDECIDED. Block-x numbers are never pooled with main-block numbers.",
+ "provider": {"cap": 0}
+}

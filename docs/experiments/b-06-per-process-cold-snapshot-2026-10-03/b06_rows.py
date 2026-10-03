@@ -9,10 +9,11 @@ B-06 receipts:
   warm-up (warm arms) and immediately before the task navigate; ``pids_ok`` = both present and alive,
   and for warm arms identical (pid and start time) at warm-up and at task start;
 - warm-up duration (``warmup_start`` -> ``warmup_end``, outside T);
-- positive control: the measured CLOCK_MONOTONIC sleep inside T (``pc_sleep_ms``);
+- positive control: the measured CLOCK_MONOTONIC sleep inside T (``pc_sleep_ms``; arm P before snapshot1,
+  arm P2 of PREREG-AMENDMENT-1 right after snapshot1 returns);
 - refusal returned as success (an action call that returned ok with effect/status ``refused``).
 
-valid = b04 validity AND pids_ok AND (arm P: the sleep was measured) AND the arm's configuration
+valid = b04 validity AND pids_ok AND (arms P, P2: the sleep was measured) AND the arm's configuration
 receipts (COMP: admission-cache env and >= 1 mcp.inner_validation_skipped mark, fill route 'compiled',
 focus settle 0 on fill; SMOKE: no CUA_DRIVER_EXP_* and 0 skip marks: both from b04_rows).
 """
@@ -27,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "harness" / "b04"))
 import b04_rows as B  # noqa: E402
 
 load_dir, load_tar, windows, snap_measures, ev_first = B.load_dir, B.load_tar, B.windows, B.snap_measures, B.ev_first
-WARM = {"Wa", "Wb", "P", "Wn"}
+WARM = {"Wa", "Wb", "P", "Wn", "P2"}  # P2: PREREG-AMENDMENT-1 block x
 
 
 def _same(a: dict[str, Any] | None, b: dict[str, Any] | None) -> bool:
@@ -66,7 +67,7 @@ def row(t: dict[str, Any]) -> dict[str, Any]:
     r["refusal_as_success"] = any(x.get("ok") and (x.get("effect") == "refused" or x.get("status") == "refused")
                                   for k, x in w.items() if k.startswith("action"))
     r["valid_b04"] = r["valid"]
-    r["valid"] = bool(r["valid_b04"] and ok and (arm != "P" or r["pc_sleep_ms"] is not None)
+    r["valid"] = bool(r["valid_b04"] and ok and (arm not in ("P", "P2") or r["pc_sleep_ms"] is not None)
                       and not r["refusal_as_success"])
     r["arm_receipts_ok"] = r["arm_ok"]
     return r

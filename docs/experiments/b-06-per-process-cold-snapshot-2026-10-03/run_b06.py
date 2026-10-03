@@ -60,8 +60,9 @@ ROUTINE = ROUTINE_DOC["artifact"]
 assert ROUTINE == B4.ROUTINE, "R2-10R scripted COMP artifact differs from B-04's copy"
 cr.require_clean(ROUTINE)
 
-CONFIG = {"C": "COMP", "Wa": "COMP", "Wb": "COMP", "P": "COMP", "Wn": "COMP", "SMOKE": "DEFAULT"}
-WARM = {"Wa", "Wb", "P", "Wn"}
+CONFIG = {"C": "COMP", "Wa": "COMP", "Wb": "COMP", "P": "COMP", "Wn": "COMP", "SMOKE": "DEFAULT", "P2": "COMP"}
+WARM = {"Wa", "Wb", "P", "Wn", "P2"}
+SQUARE_ARMS_X = ["C", "Wa", "Wb", "P2"]   # PREREG-AMENDMENT-1 block x
 SQUARE_ARMS = ["C", "Wa", "Wb", "P"]          # williams(4) index -> arm
 CLASS_INDEX = {"fill": 0, "toggle": 1, "modal": 2}
 P_SLEEP_NS = 15_000_000
@@ -133,6 +134,26 @@ async def precise_sleep_ns(ns: int) -> int:
     while time.monotonic_ns() < target:
         pass
     return time.monotonic_ns() - t0
+
+
+class SleepAfterFirstObs(B4.ObsDriver):
+    """PREREG-AMENDMENT-1 arm P2: a 15.0 ms CLOCK_MONOTONIC sleep INSIDE T, immediately after the first
+    semantic_v2 observation (snapshot1) returns and before the next Driver call."""
+
+    def __init__(self, *a: Any, result: dict[str, Any], **kw: Any) -> None:
+        super().__init__(*a, **kw)
+        self.result = result
+
+    async def call(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+        first = (name == "get_browser_state" and arguments.get("snapshot_format") == "semantic_v2"
+                 and not self.first_done)
+        data = await super().call(name, arguments)
+        if first:
+            self.rec.add("pc_sleep_start", target_ns=P_SLEEP_NS, placement="after_snapshot1")
+            slept = await precise_sleep_ns(P_SLEEP_NS)
+            self.rec.add("pc_sleep_end", slept_ns=slept)
+            self.result["pc_sleep_ns"] = slept
+        return data
 
 
 # ── trial ───────────────────────────────────────────────────────────────────────────────────
@@ -217,7 +238,10 @@ async def b06_trial(spec: dict[str, Any], args: argparse.Namespace, fixtures: An
                 slept = await precise_sleep_ns(P_SLEEP_NS)
                 rec.add("pc_sleep_end", slept_ns=slept)
                 result["pc_sleep_ns"] = slept
-            drv = B4.ObsDriver(inner, rec, nav_return_ns=nav_return, D=0, resnap=False)
+            if b06_arm == "P2":
+                drv = SleepAfterFirstObs(inner, rec, nav_return_ns=nav_return, D=0, resnap=False, result=result)
+            else:
+                drv = B4.ObsDriver(inner, rec, nav_return_ns=nav_return, D=0, resnap=False)
             loop_kw = dict(rec=rec, drv=drv, task=task, pid=pid, window=window, available=available,
                            capture_bound=capture_bound, guard=arm["guard"] and cls == "fill", poll_ms=arm["poll_ms"],
                            result=result)
@@ -293,6 +317,18 @@ def wn_round(r: int) -> list[dict[str, Any]]:
     return seq
 
 
+def x_round(r: int) -> list[dict[str, Any]]:
+    """PREREG-AMENDMENT-1 block x: fill and toggle, one Williams row each over C/Wa/Wb/P2, row (r + class
+    index) mod 4; classes fill,toggle (r even) or toggle,fill (r odd); no modal, no smoke."""
+    w = rc.williams(4)
+    seq: list[dict[str, Any]] = []
+    for cls in (("fill", "toggle") if r % 2 == 0 else ("toggle", "fill")):
+        row_i = (r + CLASS_INDEX[cls]) % 4
+        for pos, j in enumerate(w[row_i]):
+            seq.append(S(cls, SQUARE_ARMS_X[j], "x", williams_row=row_i, pos_in_round=pos))
+    return seq
+
+
 def pilot_round(r: int) -> list[dict[str, Any]]:
     return [S(c, a, "pilot", williams_row=None, pos_in_round=i)
             for i, (c, a) in enumerate((("fill", "C"), ("fill", "Wa"), ("fill", "P"), ("toggle", "Wn"),
@@ -311,7 +347,7 @@ def parse_rounds(text: str) -> list[int]:
 
 
 def round_trials(plan: str, r: int) -> list[dict[str, Any]]:
-    return {"main": main_round, "wn": wn_round, "pilot": pilot_round}[plan](r)
+    return {"main": main_round, "wn": wn_round, "x": x_round, "pilot": pilot_round}[plan](r)
 
 
 def load1() -> float:
@@ -323,7 +359,7 @@ async def main_async(args: argparse.Namespace) -> int:
     (out / "trials").mkdir(parents=True, exist_ok=True)
     rounds = parse_rounds(args.rounds)
     lock = os.environ.get("B06_LOCK")
-    if args.plan_kind in ("main", "wn") and lock != "exclusive":
+    if args.plan_kind in ("main", "wn", "x") and lock != "exclusive":
         raise SystemExit("refusing: measured plan needs B06_LOCK=exclusive (cargo lock + quiet-timed)")
     if args.plan_kind == "pilot" and lock not in ("shared", "exclusive"):
         raise SystemExit("refusing: pilot needs B06_LOCK (run under shared-locked.sh)")
@@ -406,7 +442,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--driver", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--plan", choices=("main", "wn", "pilot"), required=True)
+    p.add_argument("--plan", choices=("main", "wn", "x", "pilot"), required=True)
     p.add_argument("--rounds", required=True, help="e.g. 0-7 or 3,5,9")
     p.add_argument("--block", default="m")
     p.add_argument("--attempt", type=int, default=1)
