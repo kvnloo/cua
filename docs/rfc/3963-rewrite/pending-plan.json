@@ -1,0 +1,26 @@
+{
+ "schema": "rfc3963-rewrite-pending-plan/v1",
+ "wave": 8,
+ "source": "Wave-8 lane list as recorded by DOC-3963c from the wave-8 lane worktrees (branch names) and the lane brief. The planner supplies its own list for the wave-9 regeneration; generate.py --pending-plan takes it.",
+ "note": "Each lane names the draft rows it touches. Those rows read 'PENDING: wave-8 lane <id>' and cite no result of the lane. Deferred items read 'DEFERRED: wave-<N> <item>'. Notes carry no numbers and no wave text.",
+ "lanes": {
+  "B-09R": {"scope": "resume of B-09's pre-registered fill verify-poll run on binary B7 in an EXCLUSIVE quiet-lane window (PREREG unchanged)",
+            "rows": {"B-09": "measured run", "B-08": "fill untested share only; the per-process verdict is terminal"}},
+  "R2-07fR": {"scope": "resume of R2-07f's committed plan: one-binary scripted toggle/modal S and decomposition on binary B7",
+              "rows": {"R2-07f": "", "R2-07g": "toggle non-regression re-confirmation on B7"}},
+  "FIX-20O": {"scope": "kvnloo/cua#20 overlay fork fix: keep the Driver's own overlay window out of the focus guard's popup list, then re-run OWN-20P R1, OWN-20Q R1m and DLG on current upstream main",
+              "rows": {"FRESH-07": "the kvnloo/cua#20 RECERT_FAIL rows", "OWN-20P": "R1 on current main", "OWN-20Q": "R1m on current main", "OWN-20Q-DLG": "DLG on current main"}},
+  "FRESH-07R": {"scope": "FRESH-07 packet repair (raw-log redaction) and timing recertification on current upstream main: R2-10R scripted and native, N-04, N-03",
+                "rows": {"FRESH-07": "packet repair and timing rows", "R2-10R": "scripted and native rows", "N-04": "", "N-03": ""}},
+  "FIX-05": {"scope": "kvnloo/cua#36 native index residue: replay F6 onto current upstream main and close the remaining pid-wide index fallbacks (perform_action, scroll_element, set_value)",
+             "rows": {"FIX-04": "native residue", "FIX-03-SIDE": "native AT-SPI index fallbacks"}},
+  "INFRA-08": {"scope": "quiet-lane lock hygiene: close-on-exec lock fd, waiter reaping and a starvation alarm, so the BLOCKED timing lanes get EXCLUSIVE windows",
+               "rows": {}, "note": "shared infrastructure for the B-09R, R2-07fR and FRESH-07R resumes; it moves no row by itself"},
+  "DOC-3963c": {"scope": "this draft: generator gates (coverage, budget, pin, plan) and the wave-7 refresh; staged only",
+                "rows": {}, "note": "this revision; the final regeneration is deferred below"}
+ },
+ "deferred": [
+  {"item": "final regeneration of this draft from the wave-8 STATE, then a fresh review", "wave": 9, "rows": {"DOC-3963b": ""}},
+  {"item": "refresh of the kvnloo/cua#10 accounting and the kvnloo/cua#74 queue from the wave-8 STATE", "wave": 9, "rows": {"DOC-10-74b": ""}}
+ ]
+}

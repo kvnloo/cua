@@ -6,11 +6,17 @@ Run from anywhere inside a clone, under the loop's hostless wrapper:
     python3 docs/rfc/3963-rewrite/verify_artifacts.py --all-commits
     python3 docs/rfc/3963-rewrite/verify_artifacts.py --state <loop STATE.json> --all-commits
 
+From a clean export (git archive of the branch into an empty directory), point --repo at a clone
+that holds the objects and --head at the branch head:
+
+    python3 <export>/docs/rfc/3963-rewrite/verify_artifacts.py --repo <clone> --head <sha> --state <STATE.json>
+
 Checks
   files       every companion file exists and parses
   sections    README.md carries the ten required sections; PENDING.md exists
-  rows        dispositions.json: required ids, allowed values, no PENDING row, BLOCKED blocker
-              class, README table agrees with the JSON
+  rows        dispositions.json: required ids, allowed values, no PENDING disposition, BLOCKED /
+              PARTIAL blocker class (hardware, owner decision, budget, or shared infrastructure =
+              not terminal), pending marks equal pending-plan.json, README table agrees
   numbers     rows.spec.json templates carry no bare number (every number is a pointer)
   shas        every row SHA, packet README, backticked SHA and provenance SHA resolves. A SHA
               missing from the clone is fetched read-only by the ref recorded for it (row
@@ -19,18 +25,26 @@ Checks
   origin      every row branch head on the fork equals its SHA (git ls-remote, read-only); a
               mismatch or a missing branch is flagged UNPUBLISHED (not a failure)
   state       every row matches STATE.json (needs --state); a mismatch with a recorded
-              diff_reason is listed as DIFF, without one it FAILS; every STATE row is covered
+              diff_reason is listed as DIFF, without one it FAILS; coverage gate: every
+              STATE.dispositions key maps to exactly one primary row or a listed exclusion
+  budget      STATE.provider_budget adds up (used + remaining = cap; ledger sums = used reached
+              and attempts) and the README/PENDING budget line equals it (needs --state)
   regen       generate.py run against --state reproduces every generated file byte for byte
   claims      generated claims: each number is on its recorded packet line / at its JSON path /
               in STATE, and in its row of the README table; curated claims: the needle is on
               its recorded line (next to its anchor), the text in its README section
-  open        rows that name a wave-7 lane say 'OPEN: scheduled wave 7'; every README line
-              that names a wave-7 lane is marked OPEN or scheduled; no claim cites one
-  graph       dependency-graph.json and the README mermaid block agree; open-lane nodes match
-              the OPEN rows
-  pending     every moving row and every wave-7 lane is named in PENDING.md
-  freshness   upstream head and commit count in provenance; README lists each Linux/core path
-              with its status
+  plan        no hand-written wave-schedule text anywhere; every row a lane of pending-plan.json
+              touches reads 'PENDING: wave-N lane <id>'; README lines that name a lane in flight
+              say so; no claim cites a lane in flight
+  graph       dependency-graph.json and the README mermaid block agree; open-lane nodes are
+              lanes of the plan
+  pending     every moving row and every lane of the plan is named in PENDING.md
+  pin         the provenance pin is the newest STATE.pins upstream_main_* key (or a recorded
+              --upstream-pin); live upstream main and the cited PR heads are re-read with git
+              ls-remote and FLAGged if they moved since generation
+  freshness   commit counts and Linux/core paths since the base recomputed with git; README
+              section 8 lists each path with its status
+  provenance  generator and plan hashes equal the files
   autolink    no upstream autolink forms and no at-mentions in any text file of the draft
   privacy     no private names (plain, hex or base64; names read from the file named by
               CUA_PRIVACY_NAMES_FILE or --names-file, never stored here), no absolute local
@@ -54,11 +68,14 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import generate as gen  # noqa: E402  (the generator committed next to this file: gates and pin rule)
 DOC_REL = "docs/rfc/3963-rewrite"
 BASE_SHA = "5de1a37997e6c423899dd0a56aaa63bcf5abee8f"
 
-FILES = ["README.md", "PENDING.md", "REVIEW-CHECKLIST.md", "rows.spec.json", "generate.py", "dispositions.json",
-         "claims.json", "dependency-graph.json", "provenance.json", "verify_artifacts.py"]
+FILES = ["README.md", "PENDING.md", "REVIEW-CHECKLIST.md", "rows.spec.json", "pending-plan.json", "generate.py",
+         "dispositions.json", "claims.json", "dependency-graph.json", "provenance.json", "REGEN-DIFF.md",
+         "verify_artifacts.py"]
 SECTIONS = ["## 1. North-star", "## 2. Invariants", "## 3. Existing owners", "## 4. Dispositions",
             "## 5. Remaining deltas", "## 6. Owner decisions", "## 7. Non-goals", "## 8. Gates",
             "## 9. Dependency graph", "## 10. Whole-task accounting summary"]
@@ -67,19 +84,14 @@ REQUIRED_IDS = (["R2-0%d" % i for i in range(1, 10)] + ["R2-10", "R2-07b", "R2-0
                 + ["FIX-01", "FIX-02", "FIX-02-F4", "FIX-03", "FIX-03-SIDE", "RECERT-FIX", "BUG-01",
                    "OWN-09", "OWN-09R", "OWN-16", "OWN-16W", "OWN-20", "OWN-20G", "OWN-20P", "OWN-20Q",
                    "OWN-20Q-DLG", "OWN-20Q-A2", "OWN-20Q-R3N", "OWN-36", "OWN-75", "OWN-75R", "OWN-78",
-                   "OWN-78A", "OWN-78L", "OWN-105", "PKT-01", "PUB-02", "PUB-03", "DOC-3963", "DOC-10-74"])
-WAVE6 = ["B-08", "R2-07e", "OWN-78L", "OWN-20Q", "FIX-03", "PUB-03"]
-ALLOWED = {"KEEP", "REVISE", "KILL", "BLOCKED", "SUPERSEDED"}
-BLOCKER_CLASS = re.compile(r"\b(hardware|owner decision|budget)\b", re.I)
-TOKEN = re.compile(r"\b(KEEP_H1|KEEP|REVISE|KILL|BLOCKED|RECERTIFIED|ACCEPTED|PENDING|SUPERSEDED|CONFIRMED_BUG)\b")
+                   "OWN-78A", "OWN-78L", "OWN-105", "PKT-01", "PUB-02", "PUB-03", "DOC-3963", "DOC-10-74"]
+                + ["B-09", "R2-07f", "R2-07g", "R2-07g-MODAL", "FIX-04", "FIX-04-CT", "FRESH-07", "PUB-04",
+                   "DOC-3963b", "DOC-10-74b"])
+ALLOWED = {"KEEP", "REVISE", "KILL", "BLOCKED", "PARTIAL", "SUPERSEDED"}
+BLOCKER_CLASS = re.compile(r"\b(hardware|owner decision|budget|shared infrastructure)\b", re.I)
+TOKEN = re.compile(r"\b(KEEP_H1|KEEP|REVISE|KILL|BLOCKED|PARTIAL|RECERTIFIED|ACCEPTED|PENDING|SUPERSEDED|CONFIRMED_BUG)\b")
 ALIAS = {"KEEP_H1": "KEEP", "RECERTIFIED": "KEEP", "ACCEPTED": "KEEP"}
-NOT_TABLED = {
-    "N-01": "hard-stop record superseded by N-01R (no evidence)",
-    "B-01R": "text-fix lane; its head is the accepted B-01 commit",
-    "owner_rows_linux": "owner-row summary map (rows cite it via state_subkey)",
-    "owner_rows_blocked_hardware": "blocked-row map (rows cite it via state_subkey)",
-}
-OPEN_PREFIX = "OPEN: scheduled wave 7"
+HAND_WAVE = re.compile(r"OPEN: scheduled|scheduled (?:in )?wave \d", re.I)
 FORK = "kvnloo/cua"
 UP = "trycua" + "/cua"
 FORK_URL = "https://github.com/" + FORK + ".git"
@@ -220,10 +232,10 @@ def register_refs(obj: Objects, rows: list[dict], prov: dict) -> None:
     cen = prov["inputs"]["census_branch"]
     obj.add_ref(cen["sha"], "fork", "refs/heads/" + cen["ref"].split("origin/", 1)[-1])
     fr = prov.get("freshness_now", {})
-    if fr.get("upstream_main"):
-        obj.add_ref(fr["upstream_main"], "upstream", "refs/heads/main")
-        for p in fr.get("linux_core_paths", []):
-            obj.add_ref(p["merge"], "upstream", "refs/heads/main")
+    if fr.get("live_main"):
+        for s in [fr["live_main"], fr.get("state_pin"), fr.get("recert_tested"), fr.get("tested_upstream")] + [
+                p["merge"] for p in fr.get("linux_core_paths", [])]:
+            obj.add_ref(s, "upstream", "refs/heads/main")
     obj.add_ref(prov.get("freshness", {}).get("tested_upstream"), "upstream", "refs/heads/main")
     obj.add_ref(prov["base"]["sha"], "self", "HEAD")
     par = prov.get("parent_revision", {})
@@ -290,8 +302,17 @@ def table_rows(readme: str) -> dict[str, tuple[list[str], str]]:
     return out
 
 
-def check_rows(rows: list[dict], readme: str, wave7: list[str]) -> None:
+def plan_lanes_by_row(plan: dict) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    for lane, info in plan["lanes"].items():
+        for rid in info.get("rows", {}):
+            out.setdefault(rid, []).append(lane)
+    return out
+
+
+def check_rows(rows: list[dict], readme: str, plan: dict) -> None:
     ids = [r["id"] for r in rows]
+    by_row = plan_lanes_by_row(plan)
     bad = 0
     dup = sorted({i for i in ids if ids.count(i) > 1})
     if dup:
@@ -308,21 +329,29 @@ def check_rows(rows: list[dict], readme: str, wave7: list[str]) -> None:
                 bad += 1
         d = r.get("disposition")
         if d == "PENDING":
-            rec("FAIL", "rows", "%s is PENDING: wave-6 PENDING rows must be cleared" % r["id"])
+            rec("FAIL", "rows", "%s has the disposition PENDING: accepted lanes must be folded in" % r["id"])
             bad += 1
         elif d not in ALLOWED:
             rec("FAIL", "rows", "%s disposition %r not allowed" % (r["id"], d))
             bad += 1
-        if d == "BLOCKED" and not (r.get("blocker") and BLOCKER_CLASS.search(r["blocker"])):
-            rec("FAIL", "rows", "%s BLOCKED without a hardware / owner decision / budget blocker" % r["id"])
+        if d in ("BLOCKED", "PARTIAL") and not (r.get("blocker") and BLOCKER_CLASS.search(r["blocker"])):
+            rec("FAIL", "rows", "%s %s without a hardware / owner decision / budget / shared infrastructure blocker" % (r["id"], d))
+            bad += 1
+        if "shared infrastructure" in (r.get("blocker") or "") and not ("not terminal" in r["blocker"] and r.get("pending")):
+            rec("FAIL", "rows", "%s: a shared-infrastructure blocker must say 'not terminal' and the row must be moving" % r["id"])
+            bad += 1
+        if d == "PARTIAL" and not r.get("pending"):
+            rec("FAIL", "rows", "%s PARTIAL but not moving (no pending)" % r["id"])
             bad += 1
         if d in ("KEEP", "REVISE", "KILL") and not (r.get("sha") and r.get("packet")):
             rec("FAIL", "rows", "%s %s without sha and packet" % (r["id"], d))
             bad += 1
         pend = r.get("pending") or ""
-        named = [l for l in wave7 if re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(l), pend)]
-        if named and not pend.startswith(OPEN_PREFIX):
-            rec("FAIL", "rows", "%s names wave-7 lane(s) %s without '%s'" % (r["id"], ", ".join(named), OPEN_PREFIX))
+        want = by_row.get(r["id"], [])
+        prefix = "PENDING: wave-%s lane" % plan["wave"]
+        if sorted(r.get("pending_lanes", [])) != sorted(want) or (bool(want) != pend.startswith(prefix)):
+            rec("FAIL", "rows", "%s pending marks %s / %r do not match pending-plan.json lanes %s" % (
+                r["id"], r.get("pending_lanes", []), pend[:40], want))
             bad += 1
     table = table_rows(readme)
     for r in rows:
@@ -349,7 +378,8 @@ def check_rows(rows: list[dict], readme: str, wave7: list[str]) -> None:
         bad += 1
     if not bad:
         n = {d: sum(1 for r in rows if r["disposition"] == d) for d in sorted(ALLOWED)}
-        rec("PASS", "rows", "%d rows, 0 PENDING, table agrees; %s" % (len(rows), ", ".join("%s %d" % kv for kv in n.items())))
+        rec("PASS", "rows", "%d rows, 0 PENDING dispositions, pending marks match the plan, table agrees; %s" % (
+            len(rows), ", ".join("%s %d" % kv for kv in n.items())))
 
 
 # ---------------------------------------------------------------- numbers
@@ -364,10 +394,12 @@ EXEMPT = [
 BARE = re.compile(r"(?<![\w.])[-+]?\d+(?:[.,/]\d+)*%?")
 
 
-def check_numbers(spec: dict) -> None:
+def check_numbers(spec: dict, plan: dict) -> None:
     bad = 0
     n = 0
-    for r in spec["rows"]:
+    notes = [{"id": "plan:%s:%s" % (lane, rid), "pending": note} for lane, info in plan["lanes"].items()
+             for rid, note in info.get("rows", {}).items()]
+    for r in spec["rows"] + notes:
         for field in ("claim_boundary", "blocker", "pending"):
             t = r.get(field) or ""
             if not t:
@@ -393,7 +425,7 @@ def check_shas(obj: Objects, rows: list[dict], md_texts: dict[str, str], prov: d
     cited = sorted({m.group(1) for t in md_texts.values() for m in HEX.finditer(t)})
     extra = [prov["base"]["sha"], prov["inputs"]["census_branch"]["sha"], prov.get("parent_revision", {}).get("sha")]
     fr = prov.get("freshness_now", {})
-    extra += [fr.get("upstream_main")] + [p["merge"] for p in fr.get("linux_core_paths", [])]
+    extra += [fr.get("live_main"), fr.get("state_pin"), fr.get("recert_tested")] + [p["merge"] for p in fr.get("linux_core_paths", [])]
     obj.prefetch(want + cited + [x for x in extra if x])
     bad = need = n = 0
     for r in rows:
@@ -519,32 +551,50 @@ def check_state(rows: list[dict], state_path: str | None) -> dict | None:
             else:
                 rec("FAIL", "state", "%s: STATE %s vs draft %s with no diff_reason" % (r["id"], norm, r["disposition"]))
                 bad += 1
-    covered = {r["state_key"] for r in rows}
-    for key, val in state.get("dispositions", {}).items():
-        if not isinstance(val, dict) or key in covered:
-            continue
-        if key in NOT_TABLED:
-            rec("PASS", "state", "STATE row %s covered: %s" % (key, NOT_TABLED[key]))
-        else:
-            rec("FAIL", "state", "STATE row %s has no draft row" % key)
-            bad += 1
+    spec = load_json("rows.spec.json")
+    cov = gen.coverage(spec, state)
+    for e in cov:
+        rec("FAIL", "coverage", e)
+    if not cov:
+        n = len(state.get("dispositions", {}))
+        rec("PASS", "coverage", "%d STATE.dispositions keys: each maps to exactly one primary row or one of %d listed exclusions" % (
+            n, len(spec["exclusions"])))
     if not bad:
         rec("PASS", "state", "every row matches STATE.json (%d listed as DIFF with a reason)" % diffs)
     return state
 
 
-def check_regen(repo: Path, state_path: str | None, need_objects: bool) -> None:
+def check_budget(state: dict | None, readme: str) -> None:
+    if state is None:
+        rec("SKIP", "budget", "no --state given")
+        return
+    b = state["provider_budget"]
+    errs = gen.budget_errors(b)
+    want = "%d of %d reached used, %d remain (%d attempts)" % (
+        b["used_requests_reached_provider"], b["cap_requests"], b["remaining_reached"], b["used_attempts"])
+    pend = (HERE / "PENDING.md").read_text(encoding="utf-8")
+    for name, text in (("README.md", readme), ("PENDING.md", pend)):
+        blk = gen_block(text, "budget")
+        if blk != want:
+            errs.append("%s budget line %r differs from STATE %r" % (name, blk, want))
+    for e in errs:
+        rec("FAIL", "budget", e)
+    if not errs:
+        rec("PASS", "budget", "STATE budget adds up (cap %d = used %d + remaining %d; ledger %d entries sum to %d reached / %d attempts) and both budget lines quote it" % (
+            b["cap_requests"], b["used_requests_reached_provider"], b["remaining_reached"], len(b.get("ledger", [])),
+            b["used_requests_reached_provider"], b["used_attempts"]))
+
+
+def check_regen(repo: Path, state_path: str | None, need_objects: bool, head: str = "HEAD") -> None:
     if not state_path:
         rec("SKIP", "regen", "no --state given")
         return
     if need_objects:
         rec("NEED", "regen", "packet objects are missing from this clone (see shas NEED); fetch them to regenerate")
         return
-    sys.path.insert(0, str(HERE))
     try:
-        import generate  # noqa: E402  (the generator committed next to this file)
-        new = generate.generate(repo, state_path)
-        diffs = generate.compare(new)
+        new = gen.generate(repo, state_path, head=head)
+        diffs = gen.compare(new)
     except Exception as e:  # GenError or a malformed input
         rec("FAIL", "regen", "generate.py failed: %s" % clean(str(e))[:400])
         return
@@ -552,7 +602,7 @@ def check_regen(repo: Path, state_path: str | None, need_objects: bool) -> None:
         for d in diffs:
             rec("FAIL", "regen", d + " (re-run generate.py --state)")
     else:
-        rec("PASS", "regen", "generate.py --state reproduces dispositions.json, claims.json, README/PENDING blocks and sha_refs")
+        rec("PASS", "regen", "generate.py --state --check reproduces dispositions.json, claims.json, README/PENDING blocks, REGEN-DIFF.md and provenance (gates: coverage, budget, pin, plan)")
 
 
 # ---------------------------------------------------------------- claims
@@ -690,33 +740,44 @@ def check_claims(obj: Objects, readme: str, state: dict | None) -> None:
             " (%d NEED)" % need if need else ""))
 
 
-# ---------------------------------------------------------------- open / graph / pending / freshness
-def check_open(rows: list[dict], readme: str, claims: list[dict], wave7: list[str]) -> None:
+# ---------------------------------------------------------------- plan / graph / pending / pin / freshness
+def lane_rx(plan: dict) -> dict:
+    return {l: re.compile(r"(?<![\w-])%s(?![\w-])" % re.escape(l)) for l in plan["lanes"]}
+
+
+def check_plan(rows: list[dict], readme: str, claims: list[dict], plan: dict) -> dict:
     bad = 0
-    rx = {l: re.compile(r"(?<![\w-])%s(?![\w-])" % re.escape(l)) for l in wave7}
+    texts = {f: (HERE / f).read_text(encoding="utf-8") for f in FILES if f.endswith(".md")}
+    texts["dispositions.json"] = (HERE / "dispositions.json").read_text(encoding="utf-8")
+    texts["rows.spec.json"] = (HERE / "rows.spec.json").read_text(encoding="utf-8")
+    for name, text in texts.items():
+        for i, line in enumerate(text.splitlines(), 1):
+            if HAND_WAVE.search(line):
+                rec("FAIL", "plan", "%s line %d carries hand-written wave-schedule text" % (name, i))
+                bad += 1
+    rx = lane_rx(plan)
     for i, line in enumerate(readme.splitlines(), 1):
         for lane, r in rx.items():
-            if r.search(line) and not re.search(r"OPEN|scheduled|in flight|disposition pending", line):
-                rec("FAIL", "open", "README line %d names wave-7 lane %s without marking it OPEN/scheduled" % (i, lane))
+            if r.search(line) and not re.search(r"PENDING|in flight", line):
+                rec("FAIL", "plan", "README line %d names lane %s of the wave in flight without marking it PENDING / in flight" % (i, lane))
                 bad += 1
     for r in rows:
         for lane, x in rx.items():
             if x.search(r.get("claim_boundary") or "") or x.search(r.get("class") or ""):
-                rec("FAIL", "open", "%s claim/class cites wave-7 lane %s" % (r["id"], lane))
+                rec("FAIL", "plan", "%s claim/class cites lane %s, which is in flight" % (r["id"], lane))
                 bad += 1
     for c in claims:
-        if any(x.search(c.get("row", "")) for x in rx.values()):
-            rec("FAIL", "open", "claim %s belongs to wave-7 lane %s" % (c["id"], c["row"]))
+        if c.get("row") in plan["lanes"]:
+            rec("FAIL", "plan", "claim %s belongs to lane %s, which is in flight" % (c["id"], c["row"]))
             bad += 1
-    marked = {l: sorted(r["id"] for r in rows if (r.get("pending") or "").startswith(OPEN_PREFIX) and rx[l].search(r["pending"]))
-              for l in wave7}
-    for l, ids in marked.items():
-        if not ids:
-            rec("FAIL", "open", "wave-7 lane %s marks no row" % l)
+    marked = {l: sorted(r["id"] for r in rows if l in r.get("pending_lanes", [])) for l in plan["lanes"]}
+    for l, info in plan["lanes"].items():
+        if info.get("rows") and not marked[l]:
+            rec("FAIL", "plan", "lane %s names rows but marks none" % l)
             bad += 1
     if not bad:
-        rec("PASS", "open", "%d OPEN rows across %d wave-7 lanes; no claim cites a wave-7 result" % (
-            len({i for ids in marked.values() for i in ids}), len(wave7)))
+        rec("PASS", "plan", "no hand-written wave text; %d rows marked PENDING by %d wave-%s lanes of pending-plan.json; no claim cites a lane in flight" % (
+            len({i for ids in marked.values() for i in ids}), len(plan["lanes"]), plan["wave"]))
     return marked
 
 
@@ -724,7 +785,7 @@ EDGE = re.compile(r"^\s*([A-Za-z0-9]+)\s*-->\s*([A-Za-z0-9]+)\s*$")
 NODE = re.compile(r"^\s*([A-Za-z0-9]+)\[")
 
 
-def check_graph(readme: str, rows: list[dict], wave7: list[str], marked: dict) -> None:
+def check_graph(readme: str, rows: list[dict], plan: dict, marked: dict) -> None:
     g = load_json("dependency-graph.json")
     ids = {n["id"] for n in g["nodes"]}
     row_ids = {r["id"] for r in rows}
@@ -753,6 +814,7 @@ def check_graph(readme: str, rows: list[dict], wave7: list[str], marked: dict) -
         if a not in ids or b not in ids:
             rec("FAIL", "graph", "edge %s->%s has an unknown endpoint" % (a, b))
             bad += 1
+    covered = set()
     for n in g["nodes"]:
         if n["kind"] == "delta":
             if not any(e["from"] == n["id"] and e["type"] == "owned_by" for e in g["edges"]):
@@ -770,40 +832,86 @@ def check_graph(readme: str, rows: list[dict], wave7: list[str], marked: dict) -
                 rec("FAIL", "graph", "%s row %s is not a dispositions row" % (n["id"], rr))
                 bad += 1
         if n["kind"] == "open_lane":
-            want = sorted({i for l in n["lanes"] for i in marked.get(l, [])})
-            if any(l not in wave7 for l in n["lanes"]):
-                rec("FAIL", "graph", "%s names a lane that is not a wave-7 lane" % n["id"])
+            if n.get("rows"):
+                rec("FAIL", "graph", "%s lists rows by hand; open-lane rows come from pending-plan.json" % n["id"])
                 bad += 1
-            if sorted(n["rows"]) != want:
-                rec("FAIL", "graph", "%s rows %s differ from the rows marked OPEN for %s: %s" % (
-                    n["id"], sorted(n["rows"]), "/".join(n["lanes"]), want))
-                bad += 1
+            for l in n["lanes"]:
+                if l not in plan["lanes"]:
+                    rec("FAIL", "graph", "%s names %s, which is not a lane of pending-plan.json" % (n["id"], l))
+                    bad += 1
+                covered.add(l)
+    for l, ids_ in marked.items():
+        if ids_ and l not in covered:
+            rec("FAIL", "graph", "lane %s marks rows %s but has no open_lane node" % (l, ", ".join(ids_)))
+            bad += 1
     if not bad:
-        rec("PASS", "graph", "%d nodes, %d edges; mermaid and JSON agree; open-lane nodes match the OPEN rows" % (len(ids), len(jedges)))
+        rec("PASS", "graph", "%d nodes, %d edges; mermaid and JSON agree; open-lane nodes are plan lanes and cover every lane that marks a row" % (len(ids), len(jedges)))
 
 
-def check_pending(rows: list[dict], wave7: list[str]) -> None:
+def check_pending(rows: list[dict], plan: dict) -> None:
     text = (HERE / "PENDING.md").read_text(encoding="utf-8")
     bad = 0
     for r in rows:
         if r.get("pending") and not re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(r["id"]), text):
             rec("FAIL", "pending", "%s can move but is not named in PENDING.md" % r["id"])
             bad += 1
-    for lane in wave7:
+    for lane in plan["lanes"]:
         if not re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(lane), text):
-            rec("FAIL", "pending", "PENDING.md does not name wave-7 lane %s" % lane)
+            rec("FAIL", "pending", "PENDING.md does not name lane %s of the wave in flight" % lane)
             bad += 1
-    for lane in WAVE6:
-        for line in text.splitlines():
-            if line.startswith("|") and re.match(r"\|\s*%s\s*\|" % re.escape(lane), line) and "PENDING" in line:
-                rec("FAIL", "pending", "PENDING.md still lists wave-6 lane %s as pending" % lane)
-                bad += 1
+    blk = gen_block(text, "wave-lanes") or ""
+    listed = {m.group(1) for m in re.finditer(r"^\|\s*([A-Za-z0-9][A-Za-z0-9-]*)\s*\|", blk, re.M)} - {"Lane"}
+    if listed != set(plan["lanes"]):
+        rec("FAIL", "pending", "PENDING.md lane table %s differs from pending-plan.json %s" % (sorted(listed), sorted(plan["lanes"])))
+        bad += 1
     if "Owner rulings" not in text:
         rec("FAIL", "pending", "PENDING.md has no owner-ruling list")
         bad += 1
     if not bad:
-        rec("PASS", "pending", "%d moving rows and %d wave-7 lanes named in PENDING.md" % (
-            sum(1 for r in rows if r.get("pending")), len(wave7)))
+        rec("PASS", "pending", "%d moving rows and %d lanes of the wave in flight named in PENDING.md; its lane table equals the plan" % (
+            sum(1 for r in rows if r.get("pending")), len(plan["lanes"])))
+
+
+def check_pin(obj: Objects, prov: dict, state: dict | None, offline: bool) -> None:
+    fr = prov.get("freshness_now", {})
+    bad = 0
+    if state is None:
+        rec("SKIP", "pin", "no --state given; pin rule not checked")
+    elif fr.get("state_pin_key") == "--upstream-pin":
+        rec("FLAG", "pin", "pin %s was set with --upstream-pin, not read from STATE" % fr.get("state_pin", "")[:9])
+    else:
+        try:
+            key, sha = gen.state_pin(state)
+        except gen.GenError as e:
+            rec("FAIL", "pin", str(e))
+            return
+        if (key, sha) != (fr.get("state_pin_key"), fr.get("state_pin")):
+            rec("FAIL", "pin", "provenance pin %s=%s, newest STATE pin %s=%s" % (
+                fr.get("state_pin_key"), (fr.get("state_pin") or "")[:9], key, sha[:9]))
+            bad += 1
+    if offline:
+        rec("SKIP", "pin", "--offline: live upstream main and PR heads not re-read")
+        return
+    lh = prov.get("live_heads", {})
+    try:
+        url = obj.url("upstream")
+        main = obj.ls_remote(url, ["refs/heads/main"]) or {}
+        if main.get("refs/heads/main") != fr.get("live_main"):
+            rec("FLAG", "pin", "upstream main moved since generation: recorded %s (%s), now %s" % (
+                (fr.get("live_main") or "")[:9], fr.get("live_read_utc"), (main.get("refs/heads/main") or "unreadable")[:9]))
+        moved = []
+        for h in lh.get("heads", []):
+            got = obj.ls_remote(obj.url(h["remote"]), [h["ref"]]) or {}
+            if got.get(h["ref"]) != h["live"]:
+                moved.append("%s %s -> %s" % (h["label"], h["live"][:9], (got.get(h["ref"]) or "absent")[:9]))
+        if moved:
+            rec("FLAG", "pin", "PR heads moved since generation: " + "; ".join(moved))
+    except Exception as e:  # network trouble is reported, never fatal
+        rec("FLAG", "pin", "git ls-remote failed: %s" % clean(str(e))[:200])
+    if not bad:
+        rec("PASS", "pin", "pin %s (%s) is the newest STATE upstream_main_* key; live main %s and %d PR heads recorded at %s" % (
+            (fr.get("state_pin") or "")[:9], fr.get("state_pin_key"), (fr.get("live_main") or "")[:9],
+            len(lh.get("heads", [])), fr.get("live_read_utc")))
 
 
 def check_freshness(obj: Objects, readme: str, prov: dict) -> None:
@@ -815,31 +923,48 @@ def check_freshness(obj: Objects, readme: str, prov: dict) -> None:
     sec = section_text(readme, "## 8.") or ""
     for p in fr["linux_core_paths"]:
         line = next((l for l in sec.splitlines() if ("%s PR %d" % (UP, p["pr"])) in l), None)
-        if not line or p["status"] not in line or p["path"] not in line:
-            rec("FAIL", "freshness", "README section 8 lacks the line for %s PR %d with %r" % (UP, p["pr"], p["status"]))
+        if not line or p["status"].replace("|", "/") not in line or p["path"] not in line:
+            rec("FAIL", "freshness", "README section 8 lacks the line for %s PR %d with its status" % (UP, p["pr"]))
             bad += 1
-    if ("`%s`" % fr["upstream_main"][:9]) not in readme:
-        rec("FAIL", "freshness", "README does not cite upstream main %s" % fr["upstream_main"][:9])
-        bad += 1
-    tested = prov["freshness"]["tested_upstream"]
-    st1, st2 = obj.ensure(fr["upstream_main"]), obj.ensure(tested)
-    if st1[0] in ("OK", "FETCHED") and st2[0] in ("OK", "FETCHED"):
-        cnt = git(obj.repo, "rev-list", "--count", "%s..%s" % (tested, fr["upstream_main"])).stdout.strip()
-        if cnt != str(fr["commits_past_tested"]):
-            rec("FAIL", "freshness", "rev-list %s..%s counts %s, provenance says %s" % (tested[:9], fr["upstream_main"][:9], cnt, fr["commits_past_tested"]))
+    for k in ("live_main", "state_pin"):
+        if ("`%s`" % fr[k][:9]) not in readme:
+            rec("FAIL", "freshness", "README does not cite %s %s" % (k, fr[k][:9]))
             bad += 1
-        files = set(git(obj.repo, "diff", "--name-only", "%s..%s" % (prov["base"]["sha"], fr["upstream_main"]), "--", "libs/cua-driver").stdout.split())
+    shas = [fr[k] for k in ("live_main", "state_pin", "base", "tested_upstream", "recert_tested")]
+    sts = [obj.ensure(s) for s in shas]
+    if all(s[0] in ("OK", "FETCHED") for s in sts):
+        for k, a in (("commits_past_base", "base"), ("commits_past_tested", "tested_upstream"),
+                     ("commits_past_recert", "recert_tested"), ("commits_past_pin", "state_pin")):
+            cnt = git(obj.repo, "rev-list", "--count", "%s..%s" % (fr[a], fr["live_main"])).stdout.strip()
+            if cnt != str(fr[k]):
+                rec("FAIL", "freshness", "rev-list %s..%s counts %s, provenance %s says %s" % (fr[a][:9], fr["live_main"][:9], cnt, k, fr[k]))
+                bad += 1
+        files = set(git(obj.repo, "diff", "--name-only", "%s..%s" % (fr["base"], fr["live_main"]), "--", "libs/cua-driver").stdout.split())
         core = {f for f in files if re.search(r"/(platform-linux|cua-driver-core|cua-driver-sdk)/", f)}
         if core != {p["path"] for p in fr["linux_core_paths"]}:
             rec("FAIL", "freshness", "Linux/core paths changed since the base: %s; provenance lists %s" % (
                 sorted(core), sorted(p["path"] for p in fr["linux_core_paths"])))
             bad += 1
     else:
-        rec("NEED", "freshness", "upstream objects missing: %s" % (st1[1] or st2[1]))
+        rec("NEED", "freshness", "upstream objects missing: %s" % "; ".join(s[1] for s in sts if s[0] not in ("OK", "FETCHED")))
         return
     if not bad:
-        rec("PASS", "freshness", "upstream main %s is %s commits past %s; the %d Linux/core paths since the base are listed with their status" % (
-            fr["upstream_main"][:9], fr["commits_past_tested"], tested[:9], len(fr["linux_core_paths"])))
+        rec("PASS", "freshness", "live upstream main %s is %d commits past the base, %d past %s, %d past %s and %d past the STATE pin %s; the %d Linux/core paths since the base are listed with their status" % (
+            fr["live_main"][:9], fr["commits_past_base"], fr["commits_past_tested"], fr["tested_upstream"][:9],
+            fr["commits_past_recert"], fr["recert_tested"][:9], fr["commits_past_pin"], fr["state_pin"][:9], len(fr["linux_core_paths"])))
+
+
+def check_provenance(prov: dict) -> None:
+    bad = 0
+    for label, rec_, f in (("generator", prov.get("generator", {}), "generate.py"),
+                           ("pending plan", prov["inputs"].get("pending_plan", {}), "pending-plan.json")):
+        h = hashlib.sha256((HERE / f).read_bytes()).hexdigest()
+        if rec_.get("sha256") != h:
+            rec("FAIL", "provenance", "%s sha256 %s recorded, file is %s" % (label, (rec_.get("sha256") or "none")[:12], h[:12]))
+            bad += 1
+    if not bad:
+        rec("PASS", "provenance", "generator %s and plan %s hashes equal the files" % (
+            prov["generator"]["sha256"][:12], prov["inputs"]["pending_plan"]["sha256"][:12]))
 
 
 # ---------------------------------------------------------------- autolink / privacy
@@ -925,7 +1050,8 @@ def privacy_hits(label: str, data: bytes, names: list[str] | None) -> list[str]:
     return hits
 
 
-def check_privacy(repo: Path, files: dict[str, bytes], names: list[str] | None, all_commits: bool, base: str) -> None:
+def check_privacy(repo: Path, files: dict[str, bytes], names: list[str] | None, all_commits: bool, base: str,
+                  head: str = "HEAD") -> None:
     if names is None:
         rec("SKIP", "privacy", "no names file (CUA_PRIVACY_NAMES_FILE); only generic path/secret patterns run")
     hits = []
@@ -941,7 +1067,7 @@ def check_privacy(repo: Path, files: dict[str, bytes], names: list[str] | None, 
         return
     chits = []
     scanned = 0
-    commits = git(repo, "rev-list", "%s..HEAD" % base).stdout.split()
+    commits = git(repo, "rev-list", "%s..%s" % (base, head)).stdout.split()
     for c in commits:
         msg = git_bytes(repo, "log", "-1", "--format=%an <%ae>%n%cn <%ce>%n%B", c) or b""
         chits += privacy_hits("commit %s message" % c[:9], msg, names)
@@ -958,8 +1084,8 @@ def check_privacy(repo: Path, files: dict[str, bytes], names: list[str] | None, 
         for h in chits[:40]:
             rec("FAIL", "privacy-commits", h)
     else:
-        rec("PASS", "privacy-commits", "0 findings in %d commits since %s (%d blobs and every message)" % (
-            len(commits), base[:9], scanned))
+        rec("PASS", "privacy-commits", "0 findings in %d commits from the base %s to %s (%d blobs and every message)" % (
+            len(commits), base[:9], head[:12], scanned))
 
 
 # ---------------------------------------------------------------- main
@@ -972,6 +1098,7 @@ def main() -> int:
     ap.add_argument("--no-fetch", action="store_true", help="never fetch a missing SHA; report NEED instead")
     ap.add_argument("--all-commits", action="store_true", help="privacy/autolink scan every commit since the base")
     ap.add_argument("--base", default=BASE_SHA)
+    ap.add_argument("--head", default="HEAD", help="branch head whose commits are scanned (for a clean export: the branch SHA)")
     a = ap.parse_args()
     repo = Path(a.repo) if a.repo else Path(git(HERE, "rev-parse", "--show-toplevel").stdout.strip())
     if not check_files():
@@ -983,26 +1110,29 @@ def main() -> int:
     spec = load_json("rows.spec.json")
     prov = load_json("provenance.json")
     claims = load_json("claims.json")["claims"]
-    wave7 = list(spec["wave7_lanes"])
+    plan = load_json("pending-plan.json")
     obj = Objects(repo, allow_fetch=not (a.offline or a.no_fetch))
     if a.offline:
         obj.url = lambda remote: None  # type: ignore[assignment]
     register_refs(obj, rows, prov)
     check_sections(readme)
-    check_rows(rows, readme, wave7)
-    check_numbers(spec)
+    check_rows(rows, readme, plan)
+    check_numbers(spec, plan)
     check_shas(obj, rows, md, prov)
     check_origin(obj, rows, a.offline)
     state = check_state(rows, a.state)
+    check_budget(state, readme)
     need_objects = any(s == "NEED" for s, c, _ in results if c == "shas")
-    check_regen(repo, a.state, need_objects)
+    check_regen(repo, a.state, need_objects, a.head)
     check_claims(obj, readme, state)
-    marked = check_open(rows, readme, claims, wave7)
-    check_graph(readme, rows, wave7, marked)
-    check_pending(rows, wave7)
+    marked = check_plan(rows, readme, claims, plan)
+    check_graph(readme, rows, plan, marked)
+    check_pending(rows, plan)
+    check_pin(obj, prov, state, a.offline)
     check_freshness(obj, readme, prov)
+    check_provenance(prov)
     check_autolink(files)
-    check_privacy(repo, files, load_names(a.names_file), a.all_commits, a.base)
+    check_privacy(repo, files, load_names(a.names_file), a.all_commits, a.base, a.head)
     return report()
 
 

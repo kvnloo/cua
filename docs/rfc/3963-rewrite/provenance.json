@@ -1,7 +1,7 @@
 {
  "schema": "rfc3963-rewrite-provenance/v1",
- "lane": "DOC-3963b (wave 7, deliverable)",
- "branch": "docs/rfc3963-rewrite-draft-r2-20261003",
+ "lane": "DOC-3963c (wave 8, deliverable)",
+ "branch": "docs/rfc3963-rewrite-draft-r3-20261003",
  "base": {
   "repo": "trycua/cua main",
   "sha": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
@@ -10,7 +10,7 @@
  "provider": {
   "attempts": 0,
   "reached": 0,
-  "note": "deliverable lane; no Driver, GUI or provider use"
+  "note": "deliverable lane; no Driver, GUI or provider use (lane cap 0)"
  },
  "inputs": {
   "census_branch": {
@@ -26,9 +26,8 @@
   },
   "loop_state": {
    "file": "STATE.json (loop state, outside the repository)",
-   "sha256": "ba636f47d3c00624bd0fe5351fade70598e8520c550da08390e6431024dcb673",
-   "mtime_utc": "2026-10-03T15:37:25Z",
-   "note": "state after wave-6 publication; generate.py reads dispositions, waves, blocked_items_w6, owner_rows_blocked_hardware and provider_budget from it; the sha256 is rewritten by generate.py"
+   "sha256": "971c4d00ca3641cecf9db3c997e5410a5e6182e1c5669b7a079f3114f00fd4dd",
+   "note": "state after wave-7 synthesis (wave 8 in flight); generate.py reads dispositions, waves, pins, blocked_items_w7, owner_rows_* and provider_budget from it; the sha256 is rewritten by generate.py"
   },
   "end_condition": {
    "file": "END_CONDITION.md v1",
@@ -41,7 +40,8 @@
    "SYNTHESIS-w3.md": "b0623dbad02a6c8ce847c71a522f17b086afbe75332a531260897ac327a1c00d",
    "SYNTHESIS-w4.md": "1611903b922fa41e7eda16d828e25e28e20fd2ca29c77894d70736d8dbff871a",
    "SYNTHESIS-w5.md": "9bf7ba7277e0857a02ecf161b2d5c716ee56a68bc917407e8e90442901194e6d",
-   "SYNTHESIS-w6.md": "764fcb256448eff6a3491b976fce97c8618fc7c4a04636322dcabb630875f2ef"
+   "SYNTHESIS-w6.md": "764fcb256448eff6a3491b976fce97c8618fc7c4a04636322dcabb630875f2ef",
+   "SYNTHESIS-w7.md": "9e8efbd5d3a47b4fbb4659cd15a889c96a39b5f93800161ee567752267045004"
   },
   "packets": "every accepted packet README read with git show <sha>:<packet>/README.md at the SHA in dispositions.json",
   "wave6_packets": [
@@ -99,7 +99,90 @@
      "PRIVACY-REWRITE.md"
     ]
    }
-  ]
+  ],
+  "wave7_packets": [
+   {
+    "row": "B-09",
+    "branch": "exp/b-09-fill-verify-poll-b7-20261003",
+    "sha": "56284782d41246f81509119dc975082e3ad073c6",
+    "files": [
+     "README.md"
+    ],
+    "via": "B-08 b08-summary.json for the carried share"
+   },
+   {
+    "row": "R2-07f",
+    "branch": "exp/r2-07f-compiled-replay-b7-decomp-20261003",
+    "sha": "2c04755227622ac1d258471210ccff76d7a53850",
+    "files": [
+     "README.md"
+    ]
+   },
+   {
+    "row": "R2-07g / R2-07g-MODAL",
+    "branch": "exp/r2-07g-live-fallback-ln-20261003",
+    "sha": "869896d57b11c35f1fb8ae4a01638e0a17378578",
+    "files": [
+     "headline-numbers.json",
+     "README.md"
+    ]
+   },
+   {
+    "row": "FIX-04 / FIX-04-CT",
+    "branch": "exp/fix-04-unknown-delivery-effect-20261003",
+    "sha": "2b59a66f75fbc31344e90b2c1ad1b1aa940ab7cb",
+    "files": [
+     "README.md"
+    ]
+   },
+   {
+    "row": "FRESH-07",
+    "branch": "exp/fresh-07-main-9a2b1d99e-20261003 (not on the fork)",
+    "sha": "88ec3d5e6be765df4eb4faa3737463165f41b6a9",
+    "files": [
+     "README.md"
+    ]
+   },
+   {
+    "row": "PUB-04",
+    "branch": "exp/r2-10r-recert-a3-r1c-20261003",
+    "sha": "abec23f30f2a83a763812c95b807a9d1f21fb65e",
+    "files": [
+     "README.md"
+    ],
+    "note": "numbers from STATE one_line"
+   },
+   {
+    "row": "DOC-3963b",
+    "branch": "docs/rfc3963-rewrite-draft-r2-20261003",
+    "sha": "e83d9ebc61de25424ee0941032d864e25ae9aaf0",
+    "files": [
+     "README.md"
+    ]
+   },
+   {
+    "row": "DOC-10-74b",
+    "branch": "docs/accounting-10-queue-74-r2-20261003",
+    "sha": "40f1fcd9ece069a247f88e4ed8e055e63124435e",
+    "files": [
+     "README.md"
+    ]
+   }
+  ],
+  "pending_plan": {
+   "file": "pending-plan.json",
+   "sha256": "a5a6beadf6b4d7978a9ace9c3b56a1bdb2c665e491c8f06d13aef9b9e69bac2b",
+   "wave": 8,
+   "lanes": [
+    "B-09R",
+    "R2-07fR",
+    "FIX-20O",
+    "FRESH-07R",
+    "FIX-05",
+    "INFRA-08",
+    "DOC-3963c"
+   ]
+  }
  },
  "gh_reads": [
   {
@@ -213,32 +296,55 @@
   "B7": "R' + B-07 picks, binary sha256 6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
  },
  "parent_revision": {
-  "lane": "DOC-3963 (wave 6)",
-  "branch": "docs/rfc3963-rewrite-draft-20261003",
-  "sha": "088fe745ae299964a6de1fb3bf1d138331b7afca"
+  "lane": "DOC-3963b (wave 7)",
+  "branch": "docs/rfc3963-rewrite-draft-r2-20261003",
+  "sha": "e83d9ebc61de25424ee0941032d864e25ae9aaf0"
  },
  "freshness_now": {
-  "upstream_main": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
-  "read": "local upstream/main ref (git rev-parse) 2026-10-03T15:54Z; gh pr view for PR 4529 / 4531",
-  "commits_past_tested": 41,
-  "commits_past_base": 10,
-  "range": "5de1a3799..9a2b1d99e",
+  "state_pin_key": "upstream_main_w7",
+  "state_pin": "5845488f2d556b12efd75f84ac7b9069cb514a1e",
+  "live_main": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+  "live_read": "git ls-remote (read-only) at generation time",
+  "live_read_utc": "2026-10-03T21:20:49Z",
+  "base": "5de1a37997e6c423899dd0a56aaa63bcf5abee8f",
+  "tested_upstream": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+  "recert_tested": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+  "commits_past_base": 46,
+  "commits_past_tested": 77,
+  "commits_past_recert": 36,
+  "commits_past_pin": 4,
   "linux_core_paths": [
    {
     "path": "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
     "pr": 4529,
+    "title": "keep idle X11 cursor overlays unmapped",
     "merge": "5e13eb7777172587fa32ce2af1d78d7572b77f1a",
-    "status": "disposition pending: FRESH-07 (wave 7)"
+    "status": "RECERT_FAIL on 9a2b1d99e for OWN-20P R1, OWN-20Q R1m and OWN-20Q DLG (the focus guard counts the Driver's own newly mapped overlay as a popup); timing rows AFFECTED, not recertified (FRESH-07)",
+    "state_path": "dispositions.FRESH-07.freshness_map.RECERT_FAIL",
+    "state_context": "OWN-20Q DLG"
    },
    {
     "path": "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
     "pr": 4531,
+    "title": "verify_state reads label-less display text on macOS",
     "merge": "15c6c24e23184f8e0388440ec52f3e4ee2fb58f3",
-    "status": "disposition pending: FRESH-07 (wave 7)"
+    "status": "UNAFFECTED for every claim (FRESH-07)",
+    "state_path": "dispositions.FRESH-07.freshness_map.UNAFFECTED",
+    "state_context": "every claim vs expectation.rs"
    }
   ],
-  "other_libs_cua_driver_files": "docs/test-matrix.md, python/pyproject.toml, python/src/cua_driver/__init__.py, rust/CHANGELOG.md, rust/Cargo.lock, rust/Cargo.toml, rust/Skills/cua-driver/SKILL.md, rust/Skills/cua-driver/WORKFLOW.md, rust/VERSION, cua-driver-e2e harness_winui3_test.rs / harness_wpf_test.rs / support/foreground_text_oracle.rs, platform-macos tools/get_window_state.rs, platform-windows input/keyboard.rs, scripts/_install-rust.sh, scripts/install.ps1, tests/fixtures/apps/windows (4 files), typescript/package-lock.json, typescript/package.json",
-  "verdict": "not judged here: the two Linux/core paths are the FRESH-07 lane's (wave 7)"
+  "linux_core_paths_since_pin": [],
+  "other_libs_cua_driver_files_since_pin": [
+   "libs/cua-driver/python/pyproject.toml",
+   "libs/cua-driver/python/src/cua_driver/__init__.py",
+   "libs/cua-driver/rust/CHANGELOG.md",
+   "libs/cua-driver/rust/Cargo.lock",
+   "libs/cua-driver/rust/Cargo.toml",
+   "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+   "libs/cua-driver/rust/VERSION",
+   "libs/cua-driver/typescript/package-lock.json",
+   "libs/cua-driver/typescript/package.json"
+  ]
  },
  "sha_refs": {
   "030f6bdbf811e124e11daa2de0569bffb993b66d": {
@@ -274,8 +380,8 @@
    "ref": "refs/heads/exp/n-04-native-composition-rprime-20261003"
   },
   "15c6c24e23184f8e0388440ec52f3e4ee2fb58f3": {
-   "remote": "upstream",
-   "ref": "refs/heads/main"
+   "remote": "fork",
+   "ref": "refs/heads/exp/fresh-07-main-9a2b1d99e-20261003"
   },
   "1b981915777f7fe6628eb3917906f9d0e345b107": {
    "remote": "fork",
@@ -292,6 +398,14 @@
   "2533db6d5ad0305c2eeec96ea5e7a5b1aaacab2e": {
    "remote": "fork",
    "ref": "refs/heads/exp/bug-01-delivery-cdp-sessions-20261002"
+  },
+  "2b59a66f75fbc31344e90b2c1ad1b1aa940ab7cb": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-04-unknown-delivery-effect-20261003"
+  },
+  "2c04755227622ac1d258471210ccff76d7a53850": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-07f-compiled-replay-b7-decomp-20261003"
   },
   "2ca82efaedf0083c3732b7855c78a5d1442f9dce": {
    "remote": "fork",
@@ -321,6 +435,10 @@
    "remote": "fork",
    "ref": "refs/heads/exp/r2-09-native-event-wake-20261002"
   },
+  "40f1fcd9ece069a247f88e4ed8e055e63124435e": {
+   "remote": "fork",
+   "ref": "refs/heads/docs/accounting-10-queue-74-r2-20261003"
+  },
   "44116546d54047f01d7318eecbc2f36303ec1013": {
    "remote": "fork",
    "ref": "refs/heads/exp/own-20q-a11y-triggers-dialog-markfree-20261003"
@@ -349,17 +467,25 @@
    "remote": "fork",
    "ref": "refs/heads/exp/own-78-provider-receipts-4394-20261002"
   },
+  "56284782d41246f81509119dc975082e3ad073c6": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/b-09-fill-verify-poll-b7-20261003"
+  },
   "566b9c73245266005c958d40e93d46ee5d463325": {
    "remote": "fork",
    "ref": "refs/heads/exp/own-09-cancel-barrier-rows-20261002"
+  },
+  "5845488f2d556b12efd75f84ac7b9069cb514a1e": {
+   "remote": "upstream",
+   "ref": "refs/heads/main"
   },
   "5de1a37997e6c423899dd0a56aaa63bcf5abee8f": {
    "remote": "self",
    "ref": "HEAD"
   },
   "5e13eb7777172587fa32ce2af1d78d7572b77f1a": {
-   "remote": "upstream",
-   "ref": "refs/heads/main"
+   "remote": "fork",
+   "ref": "refs/heads/exp/fresh-07-main-9a2b1d99e-20261003"
   },
   "61eec09092fd161f62651a890c882f276a642855": {
    "remote": "fork",
@@ -417,6 +543,10 @@
    "remote": "fork",
    "ref": "refs/heads/exp/r2-07c-toggle-modal-compiled-a2-20261003"
   },
+  "802700282e7302078c3f02c4b35970fd0518cdbb": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-04-unknown-delivery-effect-20261003"
+  },
   "80e625acc5df939008b99e3fe74e0734c5f3d3b9": {
    "remote": "fork",
    "ref": "refs/heads/exp/fix-02-token-ownership-retry-scope-20261002"
@@ -429,6 +559,14 @@
    "remote": "fork",
    "ref": "refs/heads/exp/b-04-observation-reconcile-a2-20261003"
   },
+  "869896d57b11c35f1fb8ae4a01638e0a17378578": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-07g-live-fallback-ln-20261003"
+  },
+  "88ec3d5e6be765df4eb4faa3737463165f41b6a9": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fresh-07-main-9a2b1d99e-20261003"
+  },
   "8cfa8c1dbd281da84f9acf8745dc8bea73da96e3": {
    "remote": "fork",
    "ref": "refs/heads/exp/fix-01-detached-node-refusal-20261002"
@@ -436,6 +574,10 @@
   "8e751a75dd454ab396a4172c3ba98759323c01c2": {
    "remote": "fork",
    "ref": "refs/heads/exp/r2-02-cdp-wake-20261001"
+  },
+  "937ef7cfa969d226dff9ffa97956295c9a1bd897": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-04-unknown-delivery-effect-20261003"
   },
   "939580fc64073d0159865b547566d3522ce1565f": {
    "remote": "fork",
@@ -454,8 +596,8 @@
    "ref": "refs/heads/exp/r2-05-ack-loss-real-20261001"
   },
   "9a2b1d99ec8044ff58b2a2b46802edd2609c057b": {
-   "remote": "upstream",
-   "ref": "refs/heads/main"
+   "remote": "fork",
+   "ref": "refs/heads/exp/fresh-07-main-9a2b1d99e-20261003"
   },
   "9bfd437390571985870a66d941f43dbe417f31c0": {
    "remote": "fork",
@@ -476,6 +618,14 @@
   "a761f1f1f8850951a446b423c36d2dcce1e18611": {
    "remote": "fork",
    "ref": "refs/heads/exp/own-20p-guard-port-a11y-20261003"
+  },
+  "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0": {
+   "remote": "upstream",
+   "ref": "refs/heads/main"
+  },
+  "abec23f30f2a83a763812c95b807a9d1f21fb65e": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/r2-10r-recert-a3-r1c-20261003"
   },
   "afba150d55426bf775cb10adaa698cf99493b229": {
    "remote": "fork",
@@ -500,6 +650,10 @@
   "ba611b51a48f6798eb3b3114f0c98af03c2d7d52": {
    "remote": "fork",
    "ref": "refs/heads/exp/own-09r2-a3-20261003"
+  },
+  "bb1e01f7be6ee37619b08d53453779787f5caf92": {
+   "remote": "fork",
+   "ref": "refs/heads/exp/fix-04-unknown-delivery-effect-20261003"
   },
   "bf07c8fe374bc3079c2edb8adaea3bc2bcf9b79d": {
    "remote": "fork",
@@ -553,6 +707,10 @@
    "remote": "fork",
    "ref": "refs/heads/exp/fix-03-file-input-toctou-session-routing-20261003"
   },
+  "e83d9ebc61de25424ee0941032d864e25ae9aaf0": {
+   "remote": "self",
+   "ref": "HEAD"
+  },
   "eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1": {
    "remote": "fork",
    "ref": "refs/heads/exp/b-07-transport-residual-rprime-20261003"
@@ -569,5 +727,64 @@
    "remote": "fork",
    "ref": "refs/heads/exp/own-36-session-isolation-native-20261002"
   }
+ },
+ "generator": {
+  "file": "generate.py",
+  "sha256": "bfac4a9aa71786069c77ba9ef41f60f0b9bbf36441f60d9027f1be18c6259fb6",
+  "note": "content hash of the generator that wrote these files; the commit SHA is recorded by the lane mirror"
+ },
+ "live_heads": {
+  "read": "git ls-remote (read-only) at generation time",
+  "utc": "2026-10-03T21:20:49Z",
+  "heads": [
+   {
+    "label": "kvnloo/cua#105",
+    "remote": "fork",
+    "ref": "refs/pull/105/head",
+    "cited": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+    "live": "98a45e6c528da9e2715288c20c2a0feeeef8e73f"
+   },
+   {
+    "label": "kvnloo/cua#106",
+    "remote": "fork",
+    "ref": "refs/pull/106/head",
+    "cited": "c45845797b714ccfd76a9569d3238a0724107a83",
+    "live": "c45845797b714ccfd76a9569d3238a0724107a83"
+   },
+   {
+    "label": "kvnloo/cua#84",
+    "remote": "fork",
+    "ref": "refs/pull/84/head",
+    "cited": "566b9c73245266005c958d40e93d46ee5d463325",
+    "live": "566b9c73245266005c958d40e93d46ee5d463325"
+   },
+   {
+    "label": "trycua/cua PR 4316",
+    "remote": "upstream",
+    "ref": "refs/pull/4316/head",
+    "cited": "a0bca744067d04f05904319d3d919be30c336556",
+    "live": "a0bca744067d04f05904319d3d919be30c336556"
+   },
+   {
+    "label": "trycua/cua PR 4336",
+    "remote": "upstream",
+    "ref": "refs/pull/4336/head",
+    "cited": "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939",
+    "live": "8391cf80275d2a5e7288f9d7c6b0a3e5f7822939"
+   },
+   {
+    "label": "trycua/cua PR 4394",
+    "remote": "upstream",
+    "ref": "refs/pull/4394/head",
+    "cited": "039257811e0bbb2348c616c52562409923d2856f",
+    "live": "039257811e0bbb2348c616c52562409923d2856f"
+   }
+  ]
+ },
+ "provider_budget_at_generation": {
+  "budget.used": 599,
+  "budget.cap": 600,
+  "budget.remaining": 1,
+  "budget.attempts": 695
  }
 }
