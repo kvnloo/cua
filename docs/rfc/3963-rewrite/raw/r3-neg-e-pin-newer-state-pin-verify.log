@@ -1,0 +1,30 @@
+$ python3 <tmp>/export-c56bfa497a6036c2b39093499d2f9593cbbdb046/docs/rfc/3963-rewrite/verify_artifacts.py --repo <clone> --head c56bfa497a6036c2b39093499d2f9593cbbdb046 --state <tmp>/STATE.e.json
+FAIL pin             provenance pin upstream_main_w7=5845488f2, newest STATE pin upstream_main_w8=a9baa8d10
+FAIL regen           README.md differs from regeneration at line 6 (re-run generate.py --state)
+FAIL regen           provenance.json differs from regeneration in freshness_now, sha_refs (re-run generate.py --state)
+DIFF state           N-03: STATE None vs draft KEEP; reason: STATE lists per-component verdicts without a row-level token; the deleted components (V, ax_fg S0 scoped) make the row KEEP, HCL stays OWNER_DECISION; superseded for E2/E3 by N-04.
+DIFF state           BUG-01: STATE CONFIRMED_BUG vs draft KEEP; reason: STATE uses CONFIRMED_BUG / ACCUMULATION_ONLY; the draft maps a confirmed bug with a red/green fix candidate to KEEP (fix candidate) and B to an evidence note.
+DIFF state           OWN-75: STATE PENDING vs draft SUPERSEDED; reason: STATE keeps the wave-2 hard-stop record as PENDING with superseded_by OWN-75R; it carries no evidence, so the draft lists it as SUPERSEDED and cites OWN-75R.
+FLAG origin          UNPUBLISHED FRESH-07: exp/fresh-07-main-9a2b1d99e-20261003 on the fork is absent, cited 88ec3d5e6
+FLAG pin             upstream main moved since generation: recorded a9baa8d10 (2026-10-03T21:20:49Z), now fe6d89d80
+FLAG state           STATE.json sha256 5400f56b9932 differs from generation-time 971c4d00ca36 (see regen)
+PASS autolink        no upstream autolink form or at-mention in 12 files
+PASS budget          STATE budget adds up (cap 600 = used 599 + remaining 1; ledger 61 entries sum to 599 reached / 695 attempts) and both budget lines quote it
+PASS claims          283 claims (174 generated, 109 curated) traced to their pointer
+PASS coverage        66 STATE.dispositions keys: each maps to exactly one primary row or one of 7 listed exclusions
+PASS files           12 files present and parse
+PASS freshness       live upstream main a9baa8d10 is 46 commits past the base, 77 past 0f1955d2f, 36 past 9a2b1d99e and 4 past the STATE pin 5845488f2; the 2 Linux/core paths since the base are listed with their status
+PASS graph           34 nodes, 43 edges; mermaid and JSON agree; open-lane nodes are plan lanes and cover every lane that marks a row
+PASS numbers         150 row templates: every number is a pointer (packet line / packet JSON / STATE)
+PASS origin          66 cited branch heads equal the fork
+PASS pending         37 moving rows and 7 lanes of the wave in flight named in PENDING.md; its lane table equals the plan
+PASS plan            no hand-written wave text; 13 rows marked PENDING by 7 wave-8 lanes of pending-plan.json; no claim cites a lane in flight
+PASS privacy         0 findings over 13 files in the directory (tracked or not)
+PASS provenance      generator bfac4a9aa717 and plan a5a6beadf6b4 hashes equal the files
+PASS rows            88 rows, 0 PENDING dispositions, pending marks match the plan, table agrees; BLOCKED 23, KEEP 42, KILL 4, PARTIAL 1, REVISE 17, SUPERSEDED 1
+PASS sections        README has all 10 required sections (section 11 = PENDING.md)
+PASS shas            census SHA ed6887c11 resolves in this clone
+PASS shas            170 SHA references checked: 170 resolve, 0 NEED a ref
+PASS state           every row matches STATE.json (3 listed as DIFF with a reason)
+SUMMARY FAIL=3 NEED=0 DIFF=3 FLAG=3 SKIP=0 PASS=18
+exit=1

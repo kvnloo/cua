@@ -1,0 +1,40 @@
+FAIL claims          G-R2-10-LIVE-RECERT-budget.remaining STATE provider_budget.remaining_reached = 1, cited '17'
+FAIL claims          G-R2-10-LIVE-CR-budget.remaining STATE provider_budget.remaining_reached = 1, cited '17'
+FAIL claims          G-OWN-78-R1R4-budget.remaining STATE provider_budget.remaining_reached = 1, cited '17'
+FAIL claims          G-OWN-78-A2A3-budget.remaining STATE provider_budget.remaining_reached = 1, cited '17'
+FAIL claims          S01 STATE provider_budget.used_requests_reached_provider = 599, cited '583'
+FAIL claims          S03 STATE provider_budget.remaining_reached = 1, cited '17'
+FAIL claims          S04 STATE provider_budget.used_attempts = 695, cited '679'
+FAIL regen           dispositions.json differs from regeneration at line 691 (re-run generate.py --state)
+FAIL regen           claims.json differs from regeneration at line 2110 (re-run generate.py --state)
+FAIL regen           README.md differs from regeneration at line 180 (re-run generate.py --state)
+FAIL regen           PENDING.md differs from regeneration at line 89 (re-run generate.py --state)
+FAIL regen           provenance.json sha_refs/other fields differ (re-run generate.py --state)
+FAIL state           STATE row B-09 has no draft row
+FAIL state           STATE row R2-07f has no draft row
+FAIL state           STATE row R2-07g has no draft row
+FAIL state           STATE row FIX-04 has no draft row
+FAIL state           STATE row FRESH-07 has no draft row
+FAIL state           STATE row DOC-3963b has no draft row
+FAIL state           STATE row DOC-10-74b has no draft row
+FAIL state           STATE row PUB-04 has no draft row
+DIFF state           N-03: STATE None vs draft KEEP; reason: STATE lists per-component verdicts without a row-level token; the deleted components (V, ax_fg S0 scoped) make the row KEEP, HCL stays OWNER_DECISION; superseded for E2/E3 by N-04.
+DIFF state           BUG-01: STATE CONFIRMED_BUG vs draft KEEP; reason: STATE uses CONFIRMED_BUG / ACCUMULATION_ONLY; the draft maps a confirmed bug with a red/green fix candidate to KEEP (fix candidate) and B to an evidence note.
+DIFF state           OWN-75: STATE PENDING vs draft SUPERSEDED; reason: STATE keeps the wave-2 hard-stop record as PENDING with superseded_by OWN-75R; it carries no evidence, so the draft lists it as SUPERSEDED and cites OWN-75R.
+FLAG state           STATE.json sha256 971c4d00ca36 differs from generation-time ba636f47d3c0 (see regen)
+PASS autolink        no upstream autolink form or at-mention in 10 files
+PASS files           10 files present and parse
+PASS freshness       upstream main 9a2b1d99e is 41 commits past 0f1955d2f; the 2 Linux/core paths since the base are listed with their status
+PASS graph           31 nodes, 38 edges; mermaid and JSON agree; open-lane nodes match the OPEN rows
+PASS numbers         129 row templates: every number is a pointer (packet line / packet JSON / STATE)
+PASS open            13 OPEN rows across 6 wave-7 lanes; no claim cites a wave-7 result
+PASS origin          57 cited branch heads equal the fork
+PASS pending         30 moving rows and 6 wave-7 lanes named in PENDING.md
+PASS privacy         0 findings over 19 files in the directory (tracked or not)
+PASS rows            78 rows, 0 PENDING, table agrees; BLOCKED 21, KEEP 37, KILL 4, REVISE 15, SUPERSEDED 1
+PASS sections        README has all 10 required sections (section 11 = PENDING.md)
+PASS shas            census SHA ed6887c11 resolves in this clone
+PASS shas            145 SHA references checked: 145 resolve, 0 NEED a ref
+PASS state           STATE row N-01 covered: hard-stop record superseded by N-01R (no evidence)
+PASS state           STATE row B-01R covered: text-fix lane; its head is the accepted B-01 commit
+SUMMARY FAIL=20 NEED=0 DIFF=3 FLAG=1 SKIP=0 PASS=15

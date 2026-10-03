@@ -1,0 +1,26 @@
+$ python3 <tmp>/export-c56bfa497a6036c2b39093499d2f9593cbbdb046/docs/rfc/3963-rewrite/verify_artifacts.py --repo <clone> --head c56bfa497a6036c2b39093499d2f9593cbbdb046 --all-commits
+FLAG origin          UNPUBLISHED FRESH-07: exp/fresh-07-main-9a2b1d99e-20261003 on the fork is absent, cited 88ec3d5e6
+FLAG pin             upstream main moved since generation: recorded a9baa8d10 (2026-10-03T21:20:49Z), now fe6d89d80
+SKIP budget          no --state given
+SKIP pin             no --state given; pin rule not checked
+SKIP regen           no --state given
+SKIP state           no --state given; STATE comparison, regeneration and state claims skipped
+PASS autolink        no upstream autolink form or at-mention in 12 files
+PASS claims          283 claims (174 generated, 109 curated) traced to their pointer (18 state claims skipped)
+PASS files           12 files present and parse
+PASS freshness       live upstream main a9baa8d10 is 46 commits past the base, 77 past 0f1955d2f, 36 past 9a2b1d99e and 4 past the STATE pin 5845488f2; the 2 Linux/core paths since the base are listed with their status
+PASS graph           34 nodes, 43 edges; mermaid and JSON agree; open-lane nodes are plan lanes and cover every lane that marks a row
+PASS numbers         150 row templates: every number is a pointer (packet line / packet JSON / STATE)
+PASS origin          66 cited branch heads equal the fork
+PASS pending         37 moving rows and 7 lanes of the wave in flight named in PENDING.md; its lane table equals the plan
+PASS pin             pin 5845488f2 (upstream_main_w7) is the newest STATE upstream_main_* key; live main a9baa8d10 and 6 PR heads recorded at 2026-10-03T21:20:49Z
+PASS plan            no hand-written wave text; 13 rows marked PENDING by 7 wave-8 lanes of pending-plan.json; no claim cites a lane in flight
+PASS privacy         0 findings over 13 files in the directory (tracked or not)
+PASS privacy-commits 0 findings in 4 commits from the base 5de1a3799 to c56bfa497a60 (40 blobs and every message)
+PASS provenance      generator bfac4a9aa717 and plan a5a6beadf6b4 hashes equal the files
+PASS rows            88 rows, 0 PENDING dispositions, pending marks match the plan, table agrees; BLOCKED 23, KEEP 42, KILL 4, PARTIAL 1, REVISE 17, SUPERSEDED 1
+PASS sections        README has all 10 required sections (section 11 = PENDING.md)
+PASS shas            census SHA ed6887c11 resolves in this clone
+PASS shas            170 SHA references checked: 170 resolve, 0 NEED a ref
+SUMMARY FAIL=0 NEED=0 DIFF=0 FLAG=2 SKIP=4 PASS=17
+exit=0
