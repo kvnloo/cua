@@ -1,0 +1,7 @@
+{
+ "status": "BLOCKED_PENDING_LOCK",
+ "rows": ["R2-10R scripted browser (32 rounds x 3 classes x 4 arms on R'')", "R2-10R native nm1/nm2/nd1 on R''", "N-04 k1/k5/s0 on R''n", "N-04 vctl/dec1/dec2 (SHARED, queued after the timing blocks)"],
+ "verdict_until_run": "AFFECTED by SOURCE; not recertified",
+ "blocker": "the EXCLUSIVE quiet-lane lock could not be acquired: long-lived processes of another track (z0-wt wiring stub/tdb servers) hold an inherited fd on quiet-lane.lock in SHARED mode, so every bin/quiet-timed waiter starves (this lane's fresh07-S-c01 waited from 17:59:21Z; another lane's r207g-T1 waited from about 16:13Z). Evidence: raw/locks/lock-holders-*.txt (read-only /proc scans). FRESH-07 kills no process it did not start.",
+ "evidence": "raw/locks/"
+}
