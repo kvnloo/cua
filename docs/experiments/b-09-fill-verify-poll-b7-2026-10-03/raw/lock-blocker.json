@@ -1,0 +1,24 @@
+{
+ "schema": "b-09.lock-blocker.v1",
+ "evidence_class": "BLOCKED (SOURCE: read-only lslocks / ps / /proc inspection; quiet-lane ledger)",
+ "lock": "<locks>/quiet-lane.lock (the EXCLUSIVE quiet-lane lock that bin/quiet-timed takes with flock -x)",
+ "holder": {
+  "pid": 312966,
+  "started_utc": "2026-10-03T14:59:23Z",
+  "parent": "the user service manager (orphaned, reparented)",
+  "command_basename": "fake_tdb.py (an evidence stub of another project on this host, not part of the CUA RFC loop)",
+  "fd": "fd 3 -> quiet-lane.lock, flock READ (shared), held continuously",
+  "note": "the stub was started by a process that held the SHARED quiet-lane lock; the open fd and its flock were inherited, so the shared lock never releases while the stub runs. Sibling stubs of the same project started at 15:02Z-16:35Z are also alive"
+ },
+ "effect": "flock -x on quiet-lane.lock cannot be granted while any shared holder remains; no EXCLUSIVE quiet-timed acquisition has been granted on this host since R2-07e-L1 released at 2026-10-03T14:11:00.905Z (raw ledger)",
+ "waiters_seen_17_00Z": ["r207g-T1 (R2-07g)", "b09-main-a1-r00-11-k1 (this lane)", "r207f-train-161444-2 (R2-07f)", "one more EXCLUSIVE waiter"],
+ "this_lane": {
+  "chunk": "b09-main-a1-r00-11-k1",
+  "queued_utc": "2026-10-03T16:13:05Z",
+  "checks": ["16:59:58Z holder 312966 READ, 4 EXCLUSIVE waiters blocked by 312966", "17:20:23Z unchanged"],
+  "stopped_utc": "2026-10-03T17:20:30Z",
+  "stopped_how": "the lane stopped only its own processes (run_all.py, run-chunk.sh, its quiet-timed and that quiet-timed's flock waiter, which had been reparented when quiet-timed exited). No ledger line was written for b09-main-a1-r00-11-k1 because the EXCLUSIVE lock was never acquired; nothing ran in it",
+  "not_done": "the holder was not signalled: it is not this lane's process (hard rule: never kill a process you did not start)"
+ },
+ "unblock": "the holder process exits (or its owner closes the inherited fd); then rerun: hostless python3 lane-scripts/run_all.py --chunk-rounds 12 with the B09_* environment (README, Resume)"
+}
