@@ -1,0 +1,74 @@
+{
+  "schema": "cua.r2.prereg.v1",
+  "lane": "FRESH-07",
+  "part": "Phase 2 (recertification of the AFFECTED rows only)",
+  "committed_before": "the first Phase 2 trial (default-off smoke included). Builds may precede it.",
+  "phase_1_outcome_that_triggers_phase_2": {
+    "probe": "probe-summary.json (raw/probe/probe.jsonl): old binaries R'/B7/R'n have the agent overlay VIEWABLE with 0 bounding / 0 input rectangles at idle (15/15); plain 9a2b1d99e (M) keeps it UNMAPPED at idle (5/5) and maps it during the first cursor-on action (5/5). The focus guard's popup view (mapped override-redirect root children) contains the overlay before the action on the old line only. M's background element click reports 'A popup menu is open, so pid N holds a keyboard grab until it closes.' in 5/5 (cursor on) and 4/5 (after set_agent_cursor_enabled false, cursor revived by the native reveal); old binaries 0/30. Focus, active window, stack top and pointer child were identical at every read (20/20).",
+    "rule_application": "overlay map state is not identical between the lines in any X11 arm (probe clause fails everywhere), so each claim is decided by the SOURCE clause (T1/T2/T3 of PREREG.json). T3 holds: the old overlay was VIEWABLE before the MCP initialize reply in 15/15 runs (12-83 ms after spawn vs the reply at 149-223 ms).",
+    "affected": [
+      "R2-10R scripted browser BASE/COMP/COMP_E/COMP_K S rows (T1: BASE and COMP_K await cursor arrival on X11)",
+      "R2-10R native BASE/S0/X S rows (T2: background AT-SPI click inside focus_guard::guarded, guard post-check inside T)",
+      "N-04 rows: X+V+HCL vs BASE (E3), V, HCL, S0, decomposition (E2), V control, focus-steal row (T2)",
+      "OWN-20P R1 (marked twins) and NORMAL guard rows (T2 counted: guard restore / false restore)",
+      "OWN-20Q R1m, DLG (incl. dialog control) and normal-path rows (T2 counted)",
+      "N-03 rows (T2; superseded for E2/E3 by N-04; Part B ax_fg uses the foreground window set that keeps pid-less popups)"
+    ],
+    "unaffected_by_source": "B-07, B-08 (all measured arms cursor off on the CDP route, no guard, T3 holds), R2-10R D1 (observation only), OWN-20P R3 incl. safety and noop_direct (token / reconnect decisions), OWN-20Q A2 rows (r3n, r3s, r3w, r3_carry; reconnect decisions), FIX-03 all rows, RECERT-FIX all rows, OWN-16W X11 row; every claim for expectation.rs and the version bump. Citations in README.md."
+  },
+  "builds": {
+    "rule": "9a2b1d99e plus exactly the original step commits of each lane, replayed with git cherry-pick (and, for R2-10 step 2, the same merge of trycua/cua PR 4316 head a0bca7440). Each replay is checked with git patch-id: the libs/ diff of the replay equals the libs/ diff of the original lane (raw/build/patch-ids.txt). build-driver.sh under hostless and the cargo-build lock into family dir cua-release-fresh07.",
+    "Rpp": "R'' = lane branch at cec1a5b92 (9a2b1d99e + Phase-1 packet commits + R2-10 steps 1-8 replayed: 258619036, merge a0bca7440, ddf87c681, 770a715ed, cbbddea55, 8f4f8b542, 8fbfa8e36, 45dff8f32); patch-id 04531a93 equals 0f1955d2f..45dff8f32",
+    "Cnpp": "Cn'' default-off control = 9a2b1d99e + a4cda75bd, 8a2362770 (FIX-01 Part A/B, as Cn' 8a2362770 on 0f1955d2f); detached 82e6d5227; patch-id e0efb982",
+    "Rppn": "R''n = R'' + 11a03bf51 (N-02 settle clamp knob and MCP span marks, default off) = lane branch bbe2bd6e6; patch-id 1e6b0ca8 equals 45dff8f32..11a03bf51",
+    "U0pp": "U0'' = plain 9a2b1d99e = M (the Phase 1 binary 795dca5a)",
+    "G0pp": "G0'' = 9a2b1d99e + a761f1f1f (detached c99fcb3cf); patch-id fa034bd2 equals cb685fad7..a761f1f1f",
+    "GApp": "GA'' = G0'' + 064d2e4ad (patch-id 93a1826e)",
+    "GQpp": "GQ'' = GA'' + 31318e374 + 4ac191a7c (the libs/ part of 064d2e4ad..4ac191a7c; patch-id 7cf483a7)",
+    "U0mpp": "U0m'' = 9a2b1d99e + 1185d8a05, 54ebd11cb, 0944feb31 (detached 8d6d4189a); patch-id 46e6e37b equals cb685fad7..0944feb31",
+    "G0mpp": "G0m'' = G0'' + 47f0f7c1b, ae2308d08, 16d21fd56 (detached 270ca36b2); patch-id 89003290 equals a761f1f1f..16d21fd56"
+  },
+  "harnesses": "the accepted packets' harness and analysis files, copied blob-identically into orig/<lane>/ (raw/source/orig-manifest.tsv lists every blob; orig_manifest.sh re-checks it). Only the chunk runners are new (harness/fresh07_chunks.sh, harness/r210r_rounds.sh); they call the original harness entry points unchanged.",
+  "rows": {
+    "R2-10R": {
+      "source_packet": "exp/r2-10r-recert-a2-20261003 c183b95e3 (PREREG.json gates, PREREG-AMENDMENT-2.json gated-row list)",
+      "smoke": "default-off smoke as Phase 0 (d): R'' vs Cn'' with no knob and no trace: tools/list reply byte-identical (3 reads each), fill/toggle/modal 5/5 verified on both, native checkbox/text 5/5 verified on both, no trace-like file (plans toolslist and smoke, and the native smoke block, SHARED lock)",
+      "scripted": "plan scripted, arms BASE,COMP,COMP_K,COMP_E (the original 4-arm Williams design), rounds 0-31, 3 classes: 32 AB/BA-balanced pairs per contrast per class (>= the 32 BASE-vs-COMP pairs per class the spec requires). One round per harness invocation (same --out, so the routine store and the one training invocation per arm are as in the original 16-round chunks).",
+      "native": "orig/r2-10r/harness/native-plan.json blocks nm1, nm2, nd1 (144 trials) on R'' with r2_10_native.py",
+      "gates": "RECERT_PASS iff validity_100 (verified share 1.0 in every arm x class / task), e4_zero, S_direction (each of the 18 gated rows of PREREG-AMENDMENT-2 excludes 1 in the same direction as R2-10R's accepted r2-10r-summary.json), verdict_mapping (same verdict label per component and unit; components with |work deleted| >= 5 ms keep their sign). changed_claims listed. D1 is not re-run (UNAFFECTED) and the Phase 0 rows other than (d) are not re-run (UNAFFECTED count rows on the CDP route); both are reported as not in scope, never as passed.",
+      "analysis": "orig/r2-10r/analyze_r2_10.py on the new raw layout (raw/r2-10r/...), orig/r2-10r/recert_gates.py with a reference made from R2-10R's accepted r2-10r-summary.json (c183b95e3)"
+    },
+    "N-04": {
+      "source_packet": "exp/n-04-native-composition-rprime-20261003 9d7d8d7a5 (PREREG.json gates)",
+      "plan": "orig/n-04/plan.json unchanged: k1-r00..r23 (BASE, X, X+V, X+V+HCL Williams; 24 pairs per contrast per task, >= the spec's 24 BASE-vs-X+V+HCL pairs per task), k5-r00..r11, s0-r00..r23, controls smk-rn (R''n) and smk-rp (R''), vctl, dec1, dec2",
+      "binary": "R''n for every block except smk-rp (R'')",
+      "gates": "RECERT_PASS iff validity 100% in every measured cell, E4 0, S direction unchanged (S_best CI lower bound > 1 on both tasks, as N-04), verdict mapping unchanged (V DELETED, HCL OWNER_DECISION per task, E2 verdict labels per N-04's mapping), default-off smoke R''n = R''. The focus-steal row stays ungated (as N-04) and is reported. changed_claims listed.",
+      "analysis": "orig/n-04/analyze_n04.py, orig/n-04/hc_control.py"
+    },
+    "OWN-20P": {
+      "source_packet": "exp/own-20p-guard-port-a11y-20261003 64081dded (PREREG.json rows.R1, rows.NORMAL)",
+      "blocks": "orig/own-20p/plan.json blocks q1-q8, qc1-qc2 (U0m'' vs G0m''), n1-n8 (U0'' vs G0''), m1-m4 (U0m'' vs G0m''); R3 blocks not run (UNAFFECTED)",
+      "gates": "R1: G0m'' pass 40/40 (20/20 per task) with 0 silent misses; U0m'' silent miss >= 36/40; control 0 false restores. NORMAL: G0'' task verified 40/40 and 0 false restores; G0'' failures not above U0''.",
+      "analysis": "orig/own-20p/analyze.py"
+    },
+    "OWN-20Q": {
+      "source_packet": "exp/own-20q-a11y-triggers-dialog-markfree-20261003 44116546d (PREREG.json r1m, dlg, normal_path)",
+      "blocks": "orig/own-20q/plan.json blocks c1-c2 (U0m'' vs G0m'', calibration, no gate), q1-q4, qt1-qt4, qc1, qct1 (U0'' vs G0''), d1-d4, dd1-dd2 (GA'' vs GQ''), n1, n2, nt1, nt2 (GQ''); A2 blocks k*, s*, w*, r1, r2 not run (UNAFFECTED)",
+      "gates": "R1m: U0'' silent miss >= 36/40, G0'' verified restore 40/40, 0 false restores in the controls. DLG: GA'' misclassifies >= 16/20 (positive control), GQ'' classifies 20/20 correctly with 0 same_app_dialog receipts, dialog control 10/10 per binary. Normal path: GQ'' 40/40 verified, 0 false restores, 0 spurious reconnects.",
+      "analysis": "orig/own-20q/analyze.py"
+    }
+  },
+  "predictions_written_before_running": {
+    "P2-1": "Guard rows: on the 9a2b1d99e lines the agent overlay is unmapped before a background click and is mapped by the click's cursor reveal while the guard watches, so focus_guard mapped_popups() counts it as a new popup. When the steal is seen the guard reports focus_outcome=grab_held and does not restore. Prediction: OWN-20P R1 (G0m''), OWN-20Q R1m (G0'') and DLG (GQ'') restore gates FAIL; the U0 silent-miss positive controls still hold or turn into grab_held receipts (not silent misses). This is falsifiable: if the overlay is already mapped when the guard snapshots, the gates hold.",
+    "P2-2": "Normal (no-steal) rows: no focus change, so no restore is attempted; tasks verified 40/40 is expected to hold; the false-restore counter depends on whether the analysis counts a grab_held receipt text as a focus_outcome (reported either way).",
+    "P2-3": "Timing rows (R2-10R, N-04): verdicts and S directions are expected to hold; the map transition adds one X round trip on the overlay thread."
+  },
+  "locks_and_timing": {
+    "timing_rows": "R2-10R scripted + native and N-04 measured blocks run in EXCLUSIVE windows: the runner waits until the cargo-build lock is free, then bin/quiet-timed fresh07-<chunk> flock -w 60 <cargo-build.lock> timeout -k 15 900 <private session>. A round starts only at 1-minute loadavg <= 4.0 (else re-read every second for up to 60 s, then the chunk ends and resumes later). AB/BA (Williams) order as in the original plans; every trial kept; failed sessions kept and re-run under a new label.",
+    "non_timing_rows": "smoke, controls, OWN-20P and OWN-20Q blocks: SHARED quiet-lane lock with receipts (the original run_all.sh for the guard rows).",
+    "comparison_rule": "old-vs-new numbers only side by side, descriptive; every S and every gate is computed within the new source"
+  },
+  "environment": "hostless (and hostless-strict for native/guard rows, as the originals) + cua-x11-session.sh (private Xvfb, openbox, picom, private session bus; CUA_SESSION_ATSPI=1 for native/guard rows); telemetry off; no provider",
+  "provider": {"cap": 0, "use": "none"},
+  "deviations_policy": "every deviation from this file or from the original harness/plans is listed in README.md"
+}
