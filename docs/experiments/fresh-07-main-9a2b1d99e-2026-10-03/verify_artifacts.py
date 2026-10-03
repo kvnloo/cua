@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """FRESH-07 packet verifier (standard library only; run under hostless from anywhere).
 
-usage: verify_artifacts.py [--repo <git clone with the cited commits>]
+usage: verify_artifacts.py [--repo <git clone with the cited commits>] [--rev <branch or commit of this packet>]
 Checks: files present; PREREG / PREREG-P2 committed before the first probe / Phase 2 trial (needs --repo);
 the probe summary recomputes byte-for-byte from raw; the inventory is complete and its Linux set is the
 expected one; the original analyzers reproduce the committed OWN-20P / OWN-20Q summaries and the numbers
 quoted in README; the R2-10R default-off smoke passes under the original phase0 code; every claim has a
 verdict; provenance hashes are well formed; no machine path, home path or host name in any packet file
-(text and .gz); and, with --repo, orig/ is blob-identical to the accepted packets.
+(text and .gz), including the local user name; the FRESH-07R privacy rewrite (10 xhost tokens redacted, the original
+analyzers reproduce the committed summaries byte for byte); and, with --repo, orig/ is blob-identical to the
+accepted packets and every replay patch-id recomputes equal to its original's.
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ import argparse
 import gzip
 import os
 import json
+import pwd
 import re
 import socket
 import subprocess
@@ -46,11 +49,12 @@ def utc(s: str) -> datetime:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo")
+    ap.add_argument("--rev", default="exp/fresh-07r-main-repair-timing-20261003")
     args = ap.parse_args()
 
     for f in ("README.md", "PREREG.json", "PREREG-P2.json", "claims.json", "provenance.json", "probe-summary.json",
               "fresh07-summary.json", "raw/probe/probe.jsonl", "raw/source/inventory.json", "raw/source/version-bump.txt",
-              "raw/source/expectation-source.txt", "raw/source/orig-manifest.tsv", "raw/build/patch-ids.txt",
+              "raw/source/expectation-source.txt", "raw/source/orig-manifest.tsv", "raw/build/patch-ids.txt", "raw/build/patch-ids-recomputed.tsv", "privacy-rewrite.json", "PRIVACY-REWRITE.md",
               "raw/unit/steps.txt", "p2/own-20p/own20p-recert-summary.json", "p2/own-20q/own20q-summary.json"):
         check(f"present {f}", (HERE / f).exists())
 
@@ -87,6 +91,10 @@ def main() -> int:
                         "--out", str(td / "p.json"), "--metrics", str(td / "p.jsonl.gz")], check=True, capture_output=True)
         p_new, p_old = json.loads((td / "p.json").read_text()), json.loads((HERE / "p2/own-20p/own20p-recert-summary.json").read_text())
         check("OWN-20P analyzer reproduces committed summary", p_new == p_old)
+        check("OWN-20P summary byte-identical after the privacy rewrite",
+              (td / "p.json").read_bytes() == (HERE / "p2/own-20p/own20p-recert-summary.json").read_bytes())
+        check("OWN-20P metrics byte-identical after the privacy rewrite",
+              (td / "p.jsonl.gz").read_bytes() == (HERE / "p2/own-20p/own20p-recert-trial-metrics.jsonl.gz").read_bytes())
         r1 = p_old["r1"]
         check("OWN-20P R1: G0m'' 20/40, checkbox grab_held 20, U0m'' silent 40/40, gate False",
               r1["G0m_restored"] == 20 and r1["checkbox/G0m"]["receipt_outcomes"] == {"grab_held": 20}
@@ -101,6 +109,9 @@ def main() -> int:
         q_new = json.loads((qdir / "own20q-summary.json").read_text())
         q_old = json.loads((HERE / "p2/own-20q/own20q-summary.json").read_text())
         check("OWN-20Q analyzer reproduces committed summary", q_new == q_old)
+        check("OWN-20Q summary and metrics byte-identical after the privacy rewrite",
+              (qdir / "own20q-summary.json").read_bytes() == (HERE / "p2/own-20q/own20q-summary.json").read_bytes()
+              and (qdir / "own20q-trial-metrics.jsonl.gz").read_bytes() == (HERE / "p2/own-20q/own20q-trial-metrics.jsonl.gz").read_bytes())
         check("OWN-20Q R1m: G0'' 20/40 restore, U0'' 40/40 silent, gate False",
               q_old["r1m"]["G0_verified_restore"] == 20 and q_old["r1m"]["U0_silent_miss"] == 40 and q_old["r1m"]["gate"] is False)
         check("OWN-20Q DLG: GA'' misclassified 20, GQ'' 0 restored, receipts grab_held 20, gate False",
@@ -125,7 +136,9 @@ def main() -> int:
 
     # privacy over every file (text and gz members)
     host = socket.gethostname()
-    pat = re.compile(r"/mnt/|/home/" + (rf"|\b{re.escape(host)}\b" if len(host) >= 3 else ""))
+    user = pwd.getpwuid(os.getuid()).pw_name
+    pat = re.compile(r"/mnt/|/home/" + (rf"|\b{re.escape(host)}\b" if len(host) >= 3 else "")
+                     + (rf"|(?<![A-Za-z0-9_]){re.escape(user)}(?![A-Za-z0-9_])" if len(user) >= 3 else ""))
     leaks = []
     for f in HERE.rglob("*"):
         if not f.is_file() or "__pycache__" in f.parts:
@@ -144,14 +157,34 @@ def main() -> int:
             continue
         if pat.search(text):
             leaks.append(str(f.relative_to(HERE)))
-    check("privacy: no /mnt/, /home/ or host name in packet files", not leaks, ", ".join(leaks[:5]))
+    check("privacy: no /mnt/, /home/, host name or local user name in packet files", not leaks, ", ".join(leaks[:5]))
+
+    # FRESH-07R privacy rewrite: exactly one redacted xhost token in each of the 10 OWN-20P q*/qc* raw files
+    rw = json.loads((HERE / "privacy-rewrite.json").read_text())
+    tok = b"localuser:<redacted-user>"
+    counts = {r["file"]: gzip.decompress((HERE / r["file"]).read_bytes()).count(tok) for r in rw["files"]}
+    check("privacy rewrite: 10 files, 1 redacted xhost token each", len(counts) == 10 and set(counts.values()) == {1})
+    import hashlib
+    check("privacy rewrite: committed raw equals the rewrite map (gz and member sha256)",
+          all(hashlib.sha256((HERE / r["file"]).read_bytes()).hexdigest() == r["new_gz_sha256"]
+              and hashlib.sha256(gzip.decompress((HERE / r["file"]).read_bytes())).hexdigest() == r["new_member_sha256"]
+              for r in rw["files"]))
 
     if args.repo:
         r = subprocess.run(["bash", str(HERE / "orig_manifest.sh"), args.repo, str(HERE)], capture_output=True, text=True)
         check("orig/ blob-identical to accepted packets", r.returncode == 0 and r.stdout.count("\tyes") == 90)
+        r = subprocess.run(["bash", str(HERE / "patch_ids.sh"), args.repo], capture_output=True, text=True)
+        rows = [x.split("\t") for x in r.stdout.splitlines()[1:]]
+        check("replay patch-ids: 8 replays recompute equal to their originals", r.returncode == 0 and len(rows) == 8
+              and all(x[5] == "yes" for x in rows))
+        check("replay patch-ids: recomputation equals the committed raw/build/patch-ids-recomputed.tsv",
+              r.stdout == (HERE / "raw/build/patch-ids-recomputed.tsv").read_text())
+        orig_txt = (HERE / "raw/build/patch-ids.txt").read_text()
+        check("replay patch-ids: the 6 rows of the original raw/build/patch-ids.txt match the recomputation",
+              all(f"= {x[2]} ; replay {x[3]} = {x[4]}" in orig_txt for x in rows if x[0] not in ("GApp", "GQpp")))
 
         def ctime(path: str) -> datetime:
-            out = subprocess.run(["git", "-C", args.repo, "log", "--diff-filter=A", "--format=%cI", "exp/fresh-07-main-9a2b1d99e-20261003",
+            out = subprocess.run(["git", "-C", args.repo, "log", "--diff-filter=A", "--format=%cI", args.rev,
                                   "--", f"docs/experiments/{HERE.name}/{path}"], capture_output=True, text=True).stdout.split()
             return utc(out[-1]) if out else datetime.max.replace(tzinfo=None)
         probe_start = utc(jl(HERE / "raw/probe/probe.jsonl")[0]["start_wall"])

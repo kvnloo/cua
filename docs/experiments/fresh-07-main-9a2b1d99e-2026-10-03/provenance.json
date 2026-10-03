@@ -1,52 +1,149 @@
 {
-  "schema": "cua.r2.provenance.v1",
-  "lane": "FRESH-07",
-  "branch": "exp/fresh-07-main-9a2b1d99e-20261003",
-  "publication_sha": null,
-  "publication_sha_note": "set by Publish; never assumed equal to a tested SHA",
-  "sources": {
-    "old_line": {"sha": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218", "libs_cua_driver_tree": "df2b49c32e73756f0ef1ee2338f51626d5921d92"},
-    "new_main": {"sha": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b", "libs_cua_driver_tree": "42ce4dfcc493e4ab3d87aa6e5c2d25a44eaff798", "rust_tree": "43407bfbe1fdc76d87e17d91baf4178067f84296"},
-    "linux_relevant_commits": {
-      "trycua/cua PR 4529": "5e13eb7777172587fa32ce2af1d78d7572b77f1a (merged; head b0661343e)",
-      "trycua/cua PR 4531": "15c6c24e23184f8e0388440ec52f3e4ee2fb58f3 (merged; head 87a05590d)",
-      "release 0.33.0": "1553a3f36, 32b34fbc7"
-    }
+ "schema": "cua.r2.provenance.v1",
+ "lane": "FRESH-07",
+ "branch": "exp/fresh-07r-main-repair-timing-20261003",
+ "publication_sha": null,
+ "publication_sha_note": "set by Publish; never assumed equal to a tested SHA",
+ "sources": {
+  "old_line": {
+   "sha": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+   "libs_cua_driver_tree": "df2b49c32e73756f0ef1ee2338f51626d5921d92"
   },
-  "prereg": {
-    "PREREG.json": {"commit": "975f31d1e6ea680325cf9c35569097f30976ee7e", "committed_utc": "2026-10-03T16:06:26Z", "first_probe_trial_utc": "2026-10-03T16:09:52Z (pilot, excluded); counted probe 16:15:00Z"},
-    "PREREG-P2.json": {"commit": "f8859411b33b54cacb5f5143e979550b665f0266", "committed_utc": "2026-10-03T16:26:26Z", "first_phase2_trial_utc": "2026-10-03T16:37Z (tools/list R'')"}
+  "new_main": {
+   "sha": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+   "libs_cua_driver_tree": "42ce4dfcc493e4ab3d87aa6e5c2d25a44eaff798",
+   "rust_tree": "43407bfbe1fdc76d87e17d91baf4178067f84296"
   },
-  "binaries": {
-    "Rp":   {"name": "cua-driver-r2-10r-a2-45dff8f32", "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8", "version": "cua-driver 0.32.0", "source": "R' = 0f1955d2f + R2-10 steps 1-8 (45dff8f32); R2-10R accepted", "used_in": "probe"},
-    "B7":   {"name": "cua-driver-b07-231f6e8bb", "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa", "version": "cua-driver 0.32.0", "source": "B-07/B-08 binary", "used_in": "probe"},
-    "Rn":   {"name": "cua-driver-n04-11a03bf51", "sha256": "78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc", "version": "cua-driver 0.32.0", "source": "R'n = R' + N-02 marks/clamp knob (11a03bf51)", "used_in": "probe"},
-    "M":    {"name": "cua-driver-fresh07-main-9a2b1d99e", "sha256": "795dca5abd96e9a28cc8b59fc9cb3059c28f1b9e4d0ac1d2ebe8a7360c402f6f", "version": "cua-driver 0.33.0", "source": "plain 9a2b1d99e (lane worktree at 9a2b1d99e, build label fresh07-main, family cua-release-fresh07, 0 Fresh units)", "used_in": "probe; Phase 2 U0''"},
-    "Rpp":  {"name": "cua-driver-fresh07-rpp-cec1a5b92", "sha256": "4d95eb4fad32aa9ae699a0c9cdc6353d79ac618aea2d1ca126d71ad0be1b6349", "version": "cua-driver 0.33.0", "source": "lane branch cec1a5b92aa3876b74b4b412b22d69afe3413fab (libs tree b70b43526c16)", "used_in": "R2-10R smoke + rows; N-04 smk-rp"},
-    "Cnpp": {"name": "cua-driver-fresh07-cnpp-82e6d5227", "sha256": "015e2f54e9127248eddcbf15b671644455ad6d9570369acb140d5239e005e66e", "version": "cua-driver 0.33.0", "source": "detached 82e6d522747d22a2724bb1e4de5705914906d2e8 = 9a2b1d99e + a4cda75bd + 8a2362770 (libs tree fd896cfe0d41)", "used_in": "default-off smoke control"},
-    "Rppn": {"name": "cua-driver-fresh07-rppn-bbe2bd6e6", "sha256": "e48487aefbaa96c39a3620291b923ab83dc3aff19caf2d3800227e2073f1afc3", "version": "cua-driver 0.33.0", "source": "lane branch bbe2bd6e6b41433a1e941325611636d6a74d9bd3 = R'' + 11a03bf51 (libs tree 2827a32e63a4)", "used_in": "N-04 rows"},
-    "G0pp": {"name": "cua-driver-fresh07-g0pp-c99fcb3cf", "sha256": "f3c7eb0c9ef6430d49ce3cf1aa61feb8fe71048d749b6959b86536ca7477f3f1", "version": "cua-driver 0.33.0", "source": "detached c99fcb3cf6901a5368e5497410000f323e7dd2f3 = 9a2b1d99e + a761f1f1f (libs tree 1af61155d427)", "used_in": "OWN-20P NORMAL; OWN-20Q R1m"},
-    "GApp": {"name": "cua-driver-fresh07-gapp-6f850b558", "sha256": "18f9aeaf0781c87d4ef73ddd7b7677f454d7b94ac52f360daabd402468649f14", "version": "cua-driver 0.33.0", "source": "detached 6f850b5582d65e5f7dcc173007f384947fa3c20d = G0'' + 064d2e4ad (libs tree af6dc48194d6)", "used_in": "OWN-20Q DLG positive control"},
-    "GQpp": {"name": "cua-driver-fresh07-gqpp-8abd5789f", "sha256": "62406b3ce34cafe56bcc93376727c436a60a0b3fa762f290ae0f62747f9edc21", "version": "cua-driver 0.33.0", "source": "detached 8abd5789f9e8073b788030ec6bac9c2fbd50abe6 = GA'' + 31318e374 + 4ac191a7c (libs tree 115d1573ae17)", "used_in": "OWN-20Q DLG, normal path"},
-    "U0mpp": {"name": "cua-driver-fresh07-u0mpp-8d6d4189a", "sha256": "914b585d4adea9e196f9981d1dfc9f0d2405e0a17cccec01374c71b46a2aaacd", "version": "cua-driver 0.33.0", "source": "detached 8d6d4189a6bf4f4a794bd9a4ec6a6283a68006b3 = 9a2b1d99e + 1185d8a05, 54ebd11cb, 0944feb31 (libs tree a7b14c4c83d5)", "used_in": "OWN-20P R1, m; OWN-20Q calibration"},
-    "G0mpp": {"name": "cua-driver-fresh07-g0mpp-270ca36b2", "sha256": "686f72a6674440c08fdd0cf0b7b13692f6e6e9d700085c8dbf22ebd279b40071", "version": "cua-driver 0.33.0", "source": "detached 270ca36b28e6a2c5c6b37db5b097a8ad809a24fd = G0'' + 47f0f7c1b, ae2308d08, 16d21fd56 (libs tree 8fa889d2c36f)", "used_in": "OWN-20P R1, m; OWN-20Q calibration"}
+  "linux_relevant_commits": {
+   "trycua/cua PR 4529": "5e13eb7777172587fa32ce2af1d78d7572b77f1a (merged; head b0661343e)",
+   "trycua/cua PR 4531": "15c6c24e23184f8e0388440ec52f3e4ee2fb58f3 (merged; head 87a05590d)",
+   "release 0.33.0": "1553a3f36, 32b34fbc7"
+  }
+ },
+ "prereg": {
+  "PREREG.json": {
+   "commit": "975f31d1e6ea680325cf9c35569097f30976ee7e",
+   "committed_utc": "2026-10-03T16:06:26Z",
+   "first_probe_trial_utc": "2026-10-03T16:09:52Z (pilot, excluded); counted probe 16:15:00Z"
   },
-  "replay_patch_ids": "raw/build/patch-ids.txt (+ GA'' 93a1826e and GQ'' 7cf483a7, equal to 064d2e4ad's and to the libs/ part of 064d2e4ad..4ac191a7c)",
-  "build": "build-driver.sh <wt> <label> cua-release-fresh07 under hostless and flock cargo-build.lock: cargo build -v --locked --release -p cua-driver --features portal-input, rustc 1.97.1 (8bab26f4f 2026-07-14), every workspace crate recompiled (0 Fresh units). Builds are not byte-reproducible (they embed the worktree HEAD).",
-  "accepted_packets_cited": {
-    "R2-10R": "exp/r2-10r-recert-a2-20261003 c183b95e35f5af7f2548dec3720b58a65214d9da",
-    "B-07": "exp/b-07-transport-residual-rprime-20261003 eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1",
-    "B-08": "exp/b-08-per-process-cold-b7-20261003 49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
-    "N-04": "exp/n-04-native-composition-rprime-20261003 9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
-    "N-03": "exp/n-03-native-closure-axfg-a3-20261003 6b70ec9024cc3921f7637bba2ffabcc93e29fc77",
-    "OWN-20P": "exp/own-20p-guard-port-a11y-20261003 64081dded4e0a3ddf144e68ab1ea43579f85f572",
-    "OWN-20Q": "exp/own-20q-a11y-triggers-dialog-markfree-20261003 44116546d54047f01d7318eecbc2f36303ec1013",
-    "FIX-03": "exp/fix-03-file-input-toctou-session-routing-20261003 e300edbd318f33b907741ca7aaec2ee666a2dac0",
-    "RECERT-FIX": "exp/fix-recert-a3-20261003 939580fc64073d0159865b547566d3522ce1565f",
-    "OWN-16W": "exp/own-16w-sway-modality-20261002 1b981915777f7fe6628eb3917906f9d0e345b107"
+  "PREREG-P2.json": {
+   "commit": "f8859411b33b54cacb5f5143e979550b665f0266",
+   "committed_utc": "2026-10-03T16:26:26Z",
+   "first_phase2_trial_utc": "2026-10-03T16:37Z (tools/list R'')"
+  }
+ },
+ "binaries": {
+  "Rp": {
+   "name": "cua-driver-r2-10r-a2-45dff8f32",
+   "sha256": "922111c518d73b9675a9800d39a389c17070d40d16f25ada1426a90eccd06ec8",
+   "version": "cua-driver 0.32.0",
+   "source": "R' = 0f1955d2f + R2-10 steps 1-8 (45dff8f32); R2-10R accepted",
+   "used_in": "probe"
   },
-  "live_heads": {"start": "raw/heads-start.txt (2026-10-03T16:10:57Z)", "end": "raw/heads-end.txt"},
-  "environment": "Linux 7.2.2. Every code-executing command under bin/hostless (env strip, private runtime dir, Landlock scope); native and guard rows also under hostless-strict. GUI/Driver work only inside cua-x11-session.sh: private Xvfb (-nolisten tcp), openbox, picom (xrender), private session bus, private AT-SPI bus + registry when CUA_SESSION_ATSPI=1. Telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1). No provider; non-loopback connects refused by the harnesses (0 refused in every run).",
-  "locks": "probe and guard rows: SHARED quiet-lane lock (receipts in the shared ledger, labels fresh07-*); timing rows: EXCLUSIVE bin/quiet-timed fresh07-<chunk> (see README 'Timing rows status'); builds and unit runs: cargo-build lock",
-  "provider": {"attempts": 0, "reached": 0}
+  "B7": {
+   "name": "cua-driver-b07-231f6e8bb",
+   "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "version": "cua-driver 0.32.0",
+   "source": "B-07/B-08 binary",
+   "used_in": "probe"
+  },
+  "Rn": {
+   "name": "cua-driver-n04-11a03bf51",
+   "sha256": "78a1137d9fedef51e9dea651d8f4c09953ae2e4b38f102a4a890d548e9642dfc",
+   "version": "cua-driver 0.32.0",
+   "source": "R'n = R' + N-02 marks/clamp knob (11a03bf51)",
+   "used_in": "probe"
+  },
+  "M": {
+   "name": "cua-driver-fresh07-main-9a2b1d99e",
+   "sha256": "795dca5abd96e9a28cc8b59fc9cb3059c28f1b9e4d0ac1d2ebe8a7360c402f6f",
+   "version": "cua-driver 0.33.0",
+   "source": "plain 9a2b1d99e (lane worktree at 9a2b1d99e, build label fresh07-main, family cua-release-fresh07, 0 Fresh units)",
+   "used_in": "probe; Phase 2 U0''"
+  },
+  "Rpp": {
+   "name": "cua-driver-fresh07-rpp-cec1a5b92",
+   "sha256": "4d95eb4fad32aa9ae699a0c9cdc6353d79ac618aea2d1ca126d71ad0be1b6349",
+   "version": "cua-driver 0.33.0",
+   "source": "lane branch cec1a5b92aa3876b74b4b412b22d69afe3413fab (libs tree b70b43526c16)",
+   "used_in": "R2-10R smoke + rows; N-04 smk-rp"
+  },
+  "Cnpp": {
+   "name": "cua-driver-fresh07-cnpp-82e6d5227",
+   "sha256": "015e2f54e9127248eddcbf15b671644455ad6d9570369acb140d5239e005e66e",
+   "version": "cua-driver 0.33.0",
+   "source": "detached 82e6d522747d22a2724bb1e4de5705914906d2e8 = 9a2b1d99e + a4cda75bd + 8a2362770 (libs tree fd896cfe0d41)",
+   "used_in": "default-off smoke control"
+  },
+  "Rppn": {
+   "name": "cua-driver-fresh07-rppn-bbe2bd6e6",
+   "sha256": "e48487aefbaa96c39a3620291b923ab83dc3aff19caf2d3800227e2073f1afc3",
+   "version": "cua-driver 0.33.0",
+   "source": "lane branch bbe2bd6e6b41433a1e941325611636d6a74d9bd3 = R'' + 11a03bf51 (libs tree 2827a32e63a4)",
+   "used_in": "N-04 rows"
+  },
+  "G0pp": {
+   "name": "cua-driver-fresh07-g0pp-c99fcb3cf",
+   "sha256": "f3c7eb0c9ef6430d49ce3cf1aa61feb8fe71048d749b6959b86536ca7477f3f1",
+   "version": "cua-driver 0.33.0",
+   "source": "detached c99fcb3cf6901a5368e5497410000f323e7dd2f3 = 9a2b1d99e + a761f1f1f (libs tree 1af61155d427)",
+   "used_in": "OWN-20P NORMAL; OWN-20Q R1m"
+  },
+  "GApp": {
+   "name": "cua-driver-fresh07-gapp-6f850b558",
+   "sha256": "18f9aeaf0781c87d4ef73ddd7b7677f454d7b94ac52f360daabd402468649f14",
+   "version": "cua-driver 0.33.0",
+   "source": "detached 6f850b5582d65e5f7dcc173007f384947fa3c20d = G0'' + 064d2e4ad (libs tree af6dc48194d6)",
+   "used_in": "OWN-20Q DLG positive control"
+  },
+  "GQpp": {
+   "name": "cua-driver-fresh07-gqpp-8abd5789f",
+   "sha256": "62406b3ce34cafe56bcc93376727c436a60a0b3fa762f290ae0f62747f9edc21",
+   "version": "cua-driver 0.33.0",
+   "source": "detached 8abd5789f9e8073b788030ec6bac9c2fbd50abe6 = GA'' + 31318e374 + 4ac191a7c (libs tree 115d1573ae17)",
+   "used_in": "OWN-20Q DLG, normal path"
+  },
+  "U0mpp": {
+   "name": "cua-driver-fresh07-u0mpp-8d6d4189a",
+   "sha256": "914b585d4adea9e196f9981d1dfc9f0d2405e0a17cccec01374c71b46a2aaacd",
+   "version": "cua-driver 0.33.0",
+   "source": "detached 8d6d4189a6bf4f4a794bd9a4ec6a6283a68006b3 = 9a2b1d99e + 1185d8a05, 54ebd11cb, 0944feb31 (libs tree a7b14c4c83d5)",
+   "used_in": "OWN-20P R1, m; OWN-20Q calibration"
+  },
+  "G0mpp": {
+   "name": "cua-driver-fresh07-g0mpp-270ca36b2",
+   "sha256": "686f72a6674440c08fdd0cf0b7b13692f6e6e9d700085c8dbf22ebd279b40071",
+   "version": "cua-driver 0.33.0",
+   "source": "detached 270ca36b28e6a2c5c6b37db5b097a8ad809a24fd = G0'' + 47f0f7c1b, ae2308d08, 16d21fd56 (libs tree 8fa889d2c36f)",
+   "used_in": "OWN-20P R1, m; OWN-20Q calibration"
+  }
+ },
+ "replay_patch_ids": "raw/build/patch-ids.txt (wave-7 original, 6 rows, force-added) and raw/build/patch-ids-recomputed.tsv (all 8 replays incl. GA'' 93a1826e and GQ'' 7cf483a7, recomputed by patch_ids.sh; all equal)",
+ "build": "build-driver.sh <wt> <label> cua-release-fresh07 under hostless and flock cargo-build.lock: cargo build -v --locked --release -p cua-driver --features portal-input, rustc 1.97.1 (8bab26f4f 2026-07-14), every workspace crate recompiled (0 Fresh units). Builds are not byte-reproducible (they embed the worktree HEAD).",
+ "accepted_packets_cited": {
+  "R2-10R": "exp/r2-10r-recert-a2-20261003 c183b95e35f5af7f2548dec3720b58a65214d9da",
+  "B-07": "exp/b-07-transport-residual-rprime-20261003 eab1e87a3fb35a300a5d434cd10f2cddbf9a3bb1",
+  "B-08": "exp/b-08-per-process-cold-b7-20261003 49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3",
+  "N-04": "exp/n-04-native-composition-rprime-20261003 9d7d8d7a5fe4888eb7a48342d9fc32b1da5a29b2",
+  "N-03": "exp/n-03-native-closure-axfg-a3-20261003 6b70ec9024cc3921f7637bba2ffabcc93e29fc77",
+  "OWN-20P": "exp/own-20p-guard-port-a11y-20261003 64081dded4e0a3ddf144e68ab1ea43579f85f572",
+  "OWN-20Q": "exp/own-20q-a11y-triggers-dialog-markfree-20261003 44116546d54047f01d7318eecbc2f36303ec1013",
+  "FIX-03": "exp/fix-03-file-input-toctou-session-routing-20261003 e300edbd318f33b907741ca7aaec2ee666a2dac0",
+  "RECERT-FIX": "exp/fix-recert-a3-20261003 939580fc64073d0159865b547566d3522ce1565f",
+  "OWN-16W": "exp/own-16w-sway-modality-20261002 1b981915777f7fe6628eb3917906f9d0e345b107"
+ },
+ "live_heads": {
+  "start": "raw/heads-start.txt (2026-10-03T16:10:57Z)",
+  "end": "raw/heads-end.txt"
+ },
+ "environment": "Linux 7.2.2. Every code-executing command under bin/hostless (env strip, private runtime dir, Landlock scope); native and guard rows also under hostless-strict. GUI/Driver work only inside cua-x11-session.sh: private Xvfb (-nolisten tcp), openbox, picom (xrender), private session bus, private AT-SPI bus + registry when CUA_SESSION_ATSPI=1. Telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1). No provider; non-loopback connects refused by the harnesses (0 refused in every run).",
+ "locks": "probe and guard rows: SHARED quiet-lane lock (receipts in the shared ledger, labels fresh07-*); timing rows: EXCLUSIVE bin/quiet-timed fresh07-<chunk> (see README 'Timing rows status'); builds and unit runs: cargo-build lock",
+ "provider": {
+  "attempts": 0,
+  "reached": 0
+ },
+ "branch_history": {
+  "unpublished_original": "exp/fresh-07-main-9a2b1d99e-20261003 @ 88ec3d5e6 (privacy finding; never modified or pushed)",
+  "rewrite": "PRIVACY-REWRITE.md / privacy-rewrite.json: 0545c3314 -> 08c777f68, b2ddd9c7b -> e647854a4, 88ec3d5e6 -> ca981a25b; base 4c4e90ae5 unchanged"
+ }
 }
