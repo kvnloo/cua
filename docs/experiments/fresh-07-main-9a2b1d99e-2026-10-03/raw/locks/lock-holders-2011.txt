@@ -1,0 +1,16 @@
+# quiet-lane.lock holders at 2026-10-03T20:11:53Z (open fd on the lock file; read-only /proc scan)
+pid=3106722 etime=47:38 fd=3 cmd=python3 bench/run_arm.py --cand qwen3-8b-q6k --convs ALL --repeat 1 --run-id R1 
+pid=3144185 etime=43:48 fd=9 cmd=bash <lanes>/bin/quiet-timed fresh07-nm1-c02 flock -w 60 <tmp>/locks/cargo-build.lock timeou
+pid=3144187 etime=43:48 fd=9 cmd=flock -x 9 
+pid=3146548 etime=42:52 fd=9 cmd=bash <lanes>/bin/quiet-timed fresh07-S-c03 flock -w 60 <tmp>/locks/cargo-build.lock timeout 
+pid=3146550 etime=42:52 fd=9 cmd=flock -x 9 
+pid=3147334 etime=42:37 fd=9 cmd=bash <lanes>/bin/quiet-timed bendperf-cold timeout 590 python3 bench.py cold 
+pid=3147337 etime=42:37 fd=9 cmd=flock -x 9 
+pid=3151621 etime=41:10 fd=9 cmd=bash <lanes>/bin/quiet-timed bendperf-batch timeout 590 python3 bench.py batch 
+pid=3151624 etime=41:10 fd=9 cmd=flock -x 9 
+# flock processes (waiters or holders):
+pid=3144187 etime=43:50 args=flock -x 9 parent=bash <lanes>/bin/quiet-timed fresh07-nm1-c02 flock -w 60 <data>/cu
+pid=3146550 etime=42:54 args=flock -x 9 parent=bash <lanes>/bin/quiet-timed fresh07-S-c03 flock -w 60 <data>/cua-
+pid=3147337 etime=42:39 args=flock -x 9 parent=bash <lanes>/bin/quiet-timed bendperf-cold timeout 590 python3 bench.py col
+pid=3151624 etime=41:11 args=flock -x 9 parent=bash <lanes>/bin/quiet-timed bendperf-batch timeout 590 python3 bench.py ba
+pid=3603005 etime=00:04 args=flock -s <tmp>/locks/quiet-lane.lock <data>/z0-w parent=/usr/bin/zsh -c source <home>/.claude-home/shell-snapshots/snapshot-zsh-1790996090595-ce0rds.sh 2
