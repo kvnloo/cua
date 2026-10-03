@@ -18,12 +18,12 @@ sample at/after the last accepted mutation's return that shows the expected fina
 
 | layer | class/task | n pairs | median T_BASE | median T_composed | S | 95% CI | class |
 |---|---|---|---|---|---|---|---|
-| L-live (TypeSafe) | fill->submit | n=30 | 3647.2 ms | 80.9 ms | 45.11 | [42.43, 51.90] | LIVE_PROVIDER+REAL+BENCHMARK |
-| L-live (TypeSafe) | toggle->confirm | n=30 | 2928.3 ms | 491.8 ms | 5.95 | [5.70, 6.25] | LIVE_PROVIDER+REAL+BENCHMARK |
-| L-live (TypeSafe) | modal->act | n=30 | 2930.2 ms | 511.0 ms | 5.73 | [5.41, 6.00] | LIVE_PROVIDER+REAL+BENCHMARK |
-| L-scripted | fill->submit | n=32 | 3187.6 ms | 69.9 ms | 45.61 | [44.35, 46.98] | REAL+BENCHMARK |
-| L-scripted | toggle->confirm | n=32 | 2507.4 ms | 53.3 ms | 47.01 | [45.36, 48.54] | REAL+BENCHMARK |
-| L-scripted | modal->act | n=32 | 2483.6 ms | 53.3 ms | 46.56 | [45.56, 47.69] | REAL+BENCHMARK |
+| L-live (TypeSafe) | fill->submit | n=30 | 3647.2 ms | 80.9 ms | 45.11 | [42.43, 51.90] | LIVE_PROVIDER+REAL+BENCHMARK (FIXTURE) |
+| L-live (TypeSafe) | toggle->confirm | n=30 | 2928.3 ms | 491.8 ms | 5.95 | [5.70, 6.25] | LIVE_PROVIDER+REAL+BENCHMARK (FIXTURE) |
+| L-live (TypeSafe) | modal->act | n=30 | 2930.2 ms | 511.0 ms | 5.73 | [5.41, 6.00] | LIVE_PROVIDER+REAL+BENCHMARK (FIXTURE) |
+| L-scripted | fill->submit | n=32 | 3187.6 ms | 69.9 ms | 45.61 | [44.35, 46.98] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | toggle->confirm | n=32 | 2507.4 ms | 53.3 ms | 47.01 | [45.36, 48.54] | REAL+BENCHMARK (FIXTURE) |
+| L-scripted | modal->act | n=32 | 2483.6 ms | 53.3 ms | 46.56 | [45.56, 47.69] | REAL+BENCHMARK (FIXTURE) |
 | native GTK3 (X) | checkbox | n=24 | 334.9 ms | 283.0 ms | 1.18 | [1.18, 1.18] | REAL+BENCHMARK (FIXTURE) |
 | native GTK3 (X) | text entry | n=24 | 1760.9 ms | 300.9 ms | 5.85 | [5.81, 5.88] | REAL+BENCHMARK (FIXTURE) |
 
@@ -35,6 +35,33 @@ Reported, not gating (scripted layer): S_COMP_K (KEEP-only deletions, feedback a
 default) fill 1.01 [1.01, 1.01], toggle 1.01 [1.00, 1.01], modal 1.01 [1.00, 1.01]; S_COMP_E (COMP +
 endpoint bound check, OWNER_DECISION) fill 59.13 [55.03, 61.43], toggle 63.53 [58.03, 69.03], modal
 60.23 [57.52, 66.76]. Native S_S0 (post-action sleep only, KEEP): checkbox 1.18 [1.17, 1.18] (334.9 ms -> 283.5 ms), text 1.03 [1.03, 1.03] (1760.9 ms -> 1709.1 ms).
+Fill COMP_K, all invocations including the training charge: amortized ratio of means 0.98 [0.92, 1.01],
+next to the median S_COMP_K 1.01 above. The training invocation is charged with its compile and
+clean-reset admission replay, which at the default glide costs about one more full task, and that
+outweighs the small per-replay saving.
+
+### S on T_land next to S on T_oracle (publication addendum, 2026-10-03)
+
+T_land is the PREREG's landing time: T0 -> first oracle sample showing the expected final state,
+regardless of returns. T_oracle (the gating metric above) only counts samples at/after the last
+accepted mutation's return. Both come from the same trials. Native S on T_land uses the same paired
+statistic and seeded bootstrap as S on T_oracle (`analyze_r2_10.ratio_stat` over BASE/arm rounds).
+`verify_artifacts.py` recomputes every number in this table.
+
+| layer | task / arm | S on T_oracle | S on T_land | median T_land BASE -> arm | class |
+|---|---|---|---|---|---|
+| native GTK3 | checkbox, X | 1.18 [1.18, 1.18] | 1.00 [0.95, 1.06] | 35.0 ms -> 35.0 ms | REAL+BENCHMARK (FIXTURE) |
+| native GTK3 | checkbox, S0 | 1.18 [1.17, 1.18] | 0.99 [0.95, 1.06] | 35.0 ms -> 35.5 ms | REAL+BENCHMARK (FIXTURE) |
+| native GTK3 | text entry, X | 5.85 [5.81, 5.88] | 27.60 [26.62, 27.65] | 1461.0 ms -> 52.9 ms | REAL+BENCHMARK (FIXTURE) |
+| native GTK3 | text entry, S0 | 1.03 [1.03, 1.03] | 1.00 [1.00, 1.00] | 1461.0 ms -> 1460.9 ms | REAL+BENCHMARK (FIXTURE) |
+
+The native checkbox 1.18 and every S0 gain are post-effect Driver waiting. The GTK3 state has already
+changed (T_land ~35 ms in every arm), and the saving is the post-action sleep the Driver spends
+before it returns. This is caller wall-clock under the pre-registered N-01R at/after-return rule, as
+the N-01R README says: the target effect itself is not faster. Text X lands earlier on T_land
+(27.60) because the OWNER_DECISION cursor reveal runs before `set_value` lands. Browser COMP, as the
+ratio of arm medians of T_land (not paired, no CI): live fill 45.11, toggle 5.95, modal 5.74;
+scripted fill 45.61, toggle 46.98, modal 46.71. Each is within 0.4% of its S on T_oracle.
 
 Validity: 180/180 live, 384/384 scripted, 144/144 native main trials verified by the independent
 oracle with exactly one completion mutation and valid forced path (100% per arm per class/task).
@@ -116,23 +143,23 @@ raw/ as a failed session block and the block was re-run as N2 (Deviation 3).
 Browser components come from the Driver trace marks and caller events (B-01 decompose + B-02
 taxonomy). Native components come from the merged R2-01+R2-04 trace (CLOCK_MONOTONIC) per N-01R.
 
-| component | verdict | L-live fill | L-live toggle | L-live modal | L-scripted fill | L-scripted toggle | L-scripted modal |
-|---|---|---|---|---|---|---|---|
-| provider decision(s) | fill DELETED; toggle/modal UNTESTED | 6.0 (6.4%) | 434.8 (88.3%) | 462.4 (89.0%) | ~0 | ~0 | ~0 |
-| observation | IRREDUCIBLE | 29.0 (30.8%) | 17.2 (3.5%) | 17.3 (3.3%) | 26.2 (32.9%) | 16.0 (29.2%) | 15.7 (29.0%) |
-| endpoint revalidation | OWNER_DECISION (H_E) | 24.6 (26.2%) | 23.5 (4.8%) | 23.0 (4.4%) | 22.4 (28.2%) | 22.8 (41.6%) | 22.6 (41.6%) |
-| revalidation other | IRREDUCIBLE | 2.9 | 2.2 | 2.3 | 2.3 | 2.7 (5.0%) | 2.7 (5.0%) |
-| MCP admission residual | UNTESTED | 1.7 | 2.1 | 1.7 | 1.7 | 1.6 | 1.6 |
-| MCP transport in/out | UNTESTED | 5.8 (6.1%) | 5.2 | 5.4 | 5.2 (6.6%) | 4.7 (8.7%) | 4.8 (8.9%) |
-| resolution | UNTESTED | 2.7 | 1.4 | 1.3 | 2.4 | 1.2 | 1.1 |
-| visualization residual | OWNER_DECISION | 1.9 | 2.1 | 2.1 | 1.8 | 1.8 | 1.8 |
-| dispatch | IRREDUCIBLE | 4.3 | 1.3 | 1.5 | 3.3 | 1.2 | 1.3 |
-| sleeps/polls | IRREDUCIBLE (H_P) | 9.1 (9.7%) | 0 | 0 | 9.0 (11.3%) | 0 | 0 |
-| target effect, verification reads, input prep, client validation residual, runner, unattributed | mixed | <= 2.1 each | <= 1.2 each | <= 1.2 each | <= 1.8 each | <= 1.2 each | <= 1.1 each |
-| **mean T_runner** | | 94.0 ms | 492.5 ms | 519.6 ms | 79.6 ms | 54.8 ms | 54.2 ms |
-| **T_irreducible** | | 48.2 ms | 21.9 ms | 22.2 ms | 43.3 ms | 21.2 ms | 20.9 ms |
-| **floor ratio T_COMP / T_irreducible** | | 1.95x | 22.51x | 23.37x | 1.84x | 2.59x | 2.59x |
-| **untested share (E2)** | | 14.0% | 90.4% | 90.9% | 15.2% | 16.4% | 16.4% |
+| component | verdict | L-live fill | L-live toggle | L-live modal | L-scripted fill | L-scripted toggle | L-scripted modal | class |
+|---|---|---|---|---|---|---|---|---|
+| provider decision(s) | fill DELETED; toggle/modal UNTESTED | 6.0 (6.4%) | 434.8 (88.3%) | 462.4 (89.0%) | ~0 | ~0 | ~0 | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; fill verdict from this packet (R2-03 + R2-07b), toggle/modal deletion NOT_RUN |
+| observation | IRREDUCIBLE | 29.0 (30.8%) | 17.2 (3.5%) | 17.3 (3.3%) | 26.2 (32.9%) | 16.0 (29.2%) | 15.7 (29.0%) | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdict SOURCE (carried over) |
+| endpoint revalidation | OWNER_DECISION (H_E) | 24.6 (26.2%) | 23.5 (4.8%) | 23.0 (4.4%) | 22.4 (28.2%) | 22.8 (41.6%) | 22.6 (41.6%) | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdict SOURCE (carried over) |
+| revalidation other | IRREDUCIBLE | 2.9 | 2.2 | 2.3 | 2.3 | 2.7 (5.0%) | 2.7 (5.0%) | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdict SOURCE (carried over) |
+| MCP admission residual | UNTESTED | 1.7 | 2.1 | 1.7 | 1.7 | 1.6 | 1.6 | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; deletion NOT_RUN |
+| MCP transport in/out | UNTESTED | 5.8 (6.1%) | 5.2 | 5.4 | 5.2 (6.6%) | 4.7 (8.7%) | 4.8 (8.9%) | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; deletion NOT_RUN |
+| resolution | UNTESTED | 2.7 | 1.4 | 1.3 | 2.4 | 1.2 | 1.1 | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; deletion NOT_RUN |
+| visualization residual | OWNER_DECISION | 1.9 | 2.1 | 2.1 | 1.8 | 1.8 | 1.8 | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdict SOURCE (carried over) |
+| dispatch | IRREDUCIBLE | 4.3 | 1.3 | 1.5 | 3.3 | 1.2 | 1.3 | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdict SOURCE (carried over) |
+| sleeps/polls | IRREDUCIBLE (H_P) | 9.1 (9.7%) | 0 | 0 | 9.0 (11.3%) | 0 | 0 | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdict SOURCE (carried over) |
+| target effect, verification reads, input prep, client validation residual, runner, unattributed | mixed | <= 2.1 each | <= 1.2 each | <= 1.2 each | <= 1.8 each | <= 1.2 each | <= 1.1 each | values REAL+BENCHMARK (FIXTURE), live columns also LIVE_PROVIDER; verdicts SOURCE (carried over) or NOT_RUN |
+| **mean T_runner** | | 94.0 ms | 492.5 ms | 519.6 ms | 79.6 ms | 54.8 ms | 54.2 ms | computed from the same REAL+BENCHMARK (FIXTURE) trials, live columns also LIVE_PROVIDER |
+| **T_irreducible** | | 48.2 ms | 21.9 ms | 22.2 ms | 43.3 ms | 21.2 ms | 20.9 ms | computed from the same REAL+BENCHMARK (FIXTURE) trials, live columns also LIVE_PROVIDER |
+| **floor ratio T_COMP / T_irreducible** | | 1.95x | 22.51x | 23.37x | 1.84x | 2.59x | 2.59x | computed from the same REAL+BENCHMARK (FIXTURE) trials, live columns also LIVE_PROVIDER |
+| **untested share (E2)** | | 14.0% | 90.4% | 90.9% | 15.2% | 16.4% | 16.4% | computed from the same REAL+BENCHMARK (FIXTURE) trials, live columns also LIVE_PROVIDER |
 
 Native (arm X): checkbox T_irreducible 272.2 ms (focus-guard settle 240.9 ms, observation transport
 18.7, observation 10.9, dispatch 1.1, verification read 0.6), floor ratio 1.04x, untested share 4.1%
@@ -151,16 +178,16 @@ trials and compiled replay is qualified for fill only (pre-registered UNTESTED, 
 Work deleted = per-component mean (BASE minus COMP) from the decomposition; wall-clock saved =
 median paired T_oracle difference (fill COMP rows include the training charge).
 
-| | work deleted (mean ms per task) | wall-clock saved (median paired) |
-|---|---|---|
-| L-live fill | awaited glide 3000.5, provider decisions 484.8 (2 -> 0.03 per task), focus settle 101.0, client validation 13.1, MCP admission 9.8; work added: 10 ms poll sleeps +6.3, observation +4.5 | 3567.3 ms |
-| L-live toggle | glide 2421.0, client validation 12.5, admission 9.4; decisions unchanged (2 -> 2) | 2431.0 ms |
-| L-live modal | glide 2406.2, client validation 12.8, admission 9.2; decisions unchanged (2 -> 2) | 2423.8 ms |
-| L-scripted fill | glide 2997.6, focus settle 101.1, client validation 13.1, admission 9.1 | 3116.4 ms |
-| L-scripted toggle | glide 2434.5, client validation 12.4, admission 9.3 | 2452.6 ms |
-| L-scripted modal | glide 2411.7, client validation 12.4, admission 9.5 | 2430.9 ms |
-| native checkbox X | post-action sleep 50.9 | 50.0 ms |
-| native text X | cursor reveal 1409.7, post-action sleep 51.0 | 1458.4 ms |
+| | work deleted (mean ms per task) | wall-clock saved (median paired) | class |
+|---|---|---|---|
+| L-live fill | awaited glide 3000.5, provider decisions 484.8 (2 -> 0.03 per task), focus settle 101.0, client validation 13.1, MCP admission 9.8; work added: 10 ms poll sleeps +6.3, observation +4.5 | 3567.3 ms | LIVE_PROVIDER+REAL+BENCHMARK (FIXTURE) |
+| L-live toggle | glide 2421.0, client validation 12.5, admission 9.4; decisions unchanged (2 -> 2) | 2431.0 ms | LIVE_PROVIDER+REAL+BENCHMARK (FIXTURE) |
+| L-live modal | glide 2406.2, client validation 12.8, admission 9.2; decisions unchanged (2 -> 2) | 2423.8 ms | LIVE_PROVIDER+REAL+BENCHMARK (FIXTURE) |
+| L-scripted fill | glide 2997.6, focus settle 101.1, client validation 13.1, admission 9.1 | 3116.4 ms | REAL+BENCHMARK (FIXTURE) |
+| L-scripted toggle | glide 2434.5, client validation 12.4, admission 9.3 | 2452.6 ms | REAL+BENCHMARK (FIXTURE) |
+| L-scripted modal | glide 2411.7, client validation 12.4, admission 9.5 | 2430.9 ms | REAL+BENCHMARK (FIXTURE) |
+| native checkbox X | post-action sleep 50.9 | 50.0 ms | REAL+BENCHMARK (FIXTURE) |
+| native text X | cursor reveal 1409.7, post-action sleep 51.0 | 1458.4 ms | REAL+BENCHMARK (FIXTURE) |
 
 The browser saving is dominated by one OWNER_DECISION component (awaited cursor glide: 94-97% of
 BASE T); with it at the default (COMP_K) the KEEP-only deletions give S 1.01 in every class. In live
@@ -196,6 +223,34 @@ it is ~1.0x. No numbers are compared with B-01, B-02 or N-01R (different source,
 | load | 1-minute loadavg at trial start: L-live 3.1-8.4 (median ~4.1), L-scripted 2.3-17.1 (median ~4.8), native 1.9-7.0 (median ~3.9). Other tracks (a local model server, sway/Hermes stack, autoresearch, other lanes' builds) kept the host busy outside the quiet lock |
 | locks | measured chunks S1, S2, L1, nm1, nm2, nd1, N1, N2 each under `bin/quiet-timed` (EXCLUSIVE, receipt in the loop ledger) and `flock` on the cargo-build lock for the whole chunk (raw/lock-receipts-*.jsonl); Phase 0 rows and shakedowns under the SHARED quiet lock (unit tests also under the cargo lock) |
 
+### Provenance addendum (publication repair, 2026-10-03)
+
+`provenance-addendum.json` holds the following. Evidence class: SOURCE; no new run.
+
+- **Browser Driver per manifest.** The browser trial records and run manifests do not name the
+  Driver binary. The native rows and Phase 0 (b)/(e) `validity.json` do. The addendum maps every
+  browser manifest to its binary: `raw/browser/scripted-manifests/run-manifest-S1-.json`,
+  `run-manifest-S2-.json`, `raw/browser/live-manifests/run-manifest-L1-.json` and
+  `raw/browser/controls-manifests/run-manifest-N1-.json` / `run-manifest-N2-.json` ->
+  `cua-driver-r2-10-8f3a646b4`, sha256 `12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9`
+  (R). Phase 0 (d) `d-smoke-R-manifest.json` -> R, and `d-smoke-C-manifest.json` ->
+  `cua-driver-r2-10-ctl-1381014a3`, sha256 `bd656a2c73128323b010e2c81267a2c397f78a1e2921857d3f50efd7889938f2` (Cn).
+  The attribution comes from the records, not from a per-chunk hash, and has two parts. (1) Every
+  Driver trace line of the measured and controls bundles (live 181, scripted 387, controls 46 trace
+  files) carries `wall_ns`. Of the lane's three binaries, only R writes that field (the R2-04
+  phase-trace union). The U control traces (`c-nw2-U`) never carry it, and Cn has no phase trace. (2) R's sha256 is the one read
+  inside the session for Phase 0 (b)/(e) and every native row. `verify_artifacts.py` checks (1)
+  over every trace line and checks the addendum against `provenance.json`.
+- **Live heads at publication.** The field `live_heads_at_publication` is filled at publication
+  time by Publish (null in this commit). The start and end heads above remain the lane's readings.
+- **Logs.** The 28 scrubbed chunk logs in `raw/logs/` are committed (force-added; a packet-local
+  `.gitignore` keeps `*.log` and `build/` from being dropped again). First they went through the
+  packet's own scrubber (`harness/package_raw.py`), which changed 0 files. Then the private dbus
+  socket path (a `dbus-...` socket in the system temp directory) was rewritten to `<tmp>/dbus-...`
+  in 27 of them. `raw/force-added-logs.sha256` holds the committed hashes, and
+  `raw/force-added-logs.pre-rescrub.sha256` the pre-rewrite hashes, which equal the artifact mirror.
+  No raw trial record changed.
+
 ## Drift (E6)
 
 trycua/cua main moved during the lane from 989cc76ce to 9313551ef: `fix(cua-driver): extend first
@@ -224,7 +279,9 @@ the browser layers and n=1 for native: the host never reached loadavg < 2 while 
 
 LIVE_PROVIDER: L-live (306 attempts / 306 reached). REAL: every browser and native trial (private
 Xvfb, real Chromium and GTK3 app, real Driver over MCP stdio). BENCHMARK: the timed comparisons under
-the EXCLUSIVE lock. FIXTURE: native and the reconcile seam rows (Phase 0 (e)). UNIT: Phase 0 (a).
+the EXCLUSIVE lock. FIXTURE: every browser trial (jev-use fixture and the kvnloo/cua#24 pages; labelled
+"(FIXTURE)" in the tables since the 2026-10-03 addendum, like native), every native trial (canonical GTK3
+fixture) and the reconcile seam rows (Phase 0 (e)). UNIT: Phase 0 (a).
 SOURCE: drift reading, E2 verdict carry-overs. BLOCKED: native live-provider arms (budget).
 NOT_RUN: none of the pre-registered rows; secondary loadavg < 2 analysis has no browser pairs.
 
@@ -239,7 +296,12 @@ NOT_RUN: none of the pre-registered rows; secondary loadavg < 2 analysis has no 
 2. Harness edits after the PREREG commit: `nw2_one` now records a failed row instead of crashing when
    run_b02.control_one raises after a failed setup (found in N1); the analysis gained the
    work-deleted table, the failed-session-block exclusion and the reconcile dispatch counter fix. No
-   arm, plan, metric or gate changed.
+   arm, plan, metric or gate changed. Publication addendum: `harness/r2_10_browser.py` also gained a
+   post-PREREG plan kind, `nw2gate`, which is absent at the PREREG commit `2cedaa9a4` and present at
+   `030f6bdbf`. It is the Phase 0 (c) plan: B-02 N-W2 at the default path (no knobs), toggle and
+   modal interleaved, arm label K5, block C. Phase 0 (c) ran it under the shared lock from
+   17:59:27Z (R, `r2-10-p0c-nw2-R`) and 18:00:59Z (U, `r2-10-p0c-nw2-U`), per
+   `raw/lock-receipts-lane.jsonl`. The PREREG row (c) it implements did not change.
 3. Controls chunk N1 failed at session start (private Xvfb on `:99` did not come up); kept in raw/,
    excluded from row evaluation as the PREREG's failed-session rule says, re-run as N2. The re-run
    came after the native blocks, not before L-live as `order_of_work` listed.
@@ -274,7 +336,11 @@ NOT_RUN: none of the pre-registered rows; secondary loadavg < 2 analysis has no 
   (unchanged) from b282ff389 (B-02), 2d71548b4 (R2-07), 4a301d32a (FIX-01), 3bb4a7fc7 (N-01R) and
   0cd63f786 (the B-01 R2-10 PREREG draft this PREREG re-bases).
 - `raw/`: trial bundles (browser `*-trials.tar.gz`, native `trials.jsonl.gz`), Phase 0 rows, provider
-  ledger, lock receipts, routines, manifests, scrubbed chunk logs, shakedowns.
+  ledger, lock receipts, routines, manifests, scrubbed chunk logs (`raw/logs/*.log`, committed since the
+  2026-10-03 repair, with `raw/force-added-logs.sha256` and `raw/force-added-logs.pre-rescrub.sha256`),
+  shakedowns.
+- `provenance-addendum.json` (2026-10-03): browser Driver per manifest, live heads at publication
+  (filled by Publish). `.gitignore`: packet-local `!*.log`, `!build/`.
 - `analyze_r2_10.py` -> `r2-10-summary.json`; `make_headlines.py` -> `headline-numbers.json`;
   `provenance.json`; `verify_artifacts.py` (recomputes every headline from raw/ and privacy-scans
-  every branch commit; four upstream trycua/cua PR 4316 hits are allowlisted by commit+path: a GitHub Actions runner path in ci-jev-use.yml and a placeholder test key in run_guarded_completion.test.ts). Result: 115/115 checks.
+  every branch commit; four upstream trycua/cua PR 4316 hits are allowlisted by commit+path: a GitHub Actions runner path in ci-jev-use.yml and a placeholder test key in run_guarded_completion.test.ts). Result: 132/132 checks (115 at 030f6bdbf; the r1b addendum adds 17).
