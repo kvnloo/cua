@@ -215,7 +215,10 @@ def main() -> int:
                                      r"/Users/[A-Za-z]", r"sk-[A-Za-z0-9]{20,}", r"(?i)typesafe_api_key\s*=")]
     names_file = os.environ.get("CUA_PRIVACY_NAMES_FILE")
     if names_file and os.path.exists(names_file):
-        pats += [re.compile(re.escape(n.strip())) for n in open(names_file) if n.strip()]
+        # Word-boundary match, as B-08's verifier does: a private name is a hit only as a whole token,
+        # so the public fork owner token (which merely contains it) is not one (FIX-04 Part E).
+        pats += [re.compile(r"(?<![A-Za-z0-9])" + re.escape(n.strip()) + r"(?![A-Za-z0-9])", re.I)
+                 for n in open(names_file) if n.strip()]
     hits = []
     for path in glob.glob(os.path.join(HERE, "**", "*"), recursive=True):
         if os.path.isfile(path) and not path.endswith(".pyc"):
