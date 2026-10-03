@@ -1,0 +1,88 @@
+{
+ "schema": "own20p.prereg.v1",
+ "lane": "OWN-20P (wave 5, reviewed product-fix lane)",
+ "owners": ["kvnloo/cua#20", "kvnloo/cua#93", "kvnloo/cua#74"],
+ "advances": ["E1 (#20: guard port publishable on current main; a11y-bus liveness gets a terminal disposition)", "E4 (silent steal misses, stale-token actions)"],
+ "provider": {"name": "TypeSafe", "cap_requests_reaching_provider": 0, "used": false},
+ "planner_ruling_recorded": "The pre-registered R1 reply-delay row (OWN-20G, the faithful c08-017 reproduction) replaces the specified XGrabServer row as the gating R1 row for #20. The XGrabServer row stays reported as a different path on which U = G (OWN-20G ce7544cc0); it is not re-run here.",
+ "sources": {
+  "base": "upstream main cb685fad7aef1df6a35ffec653295a0cea4daee6 (libs/cua-driver tree df2b49c32e73, identical to 0f1955d2f's)",
+  "U0": "cb685fad7 (clean)",
+  "G0": "a761f1f1f = U0 + guard port (one commit, focus_guard.rs only)",
+  "GA": "064d2e4ad = G0 + AT-SPI reconnect fix (one commit)",
+  "U0m": "0944feb31 (detached) = U0 + cherry-picks of 28b915ae9, b9b357bc7, 194a6342e (OWN-20G's measurement picks, default off); libs/cua-driver tree 79ebebb63849 = OWN-20G U bdf33d9fe's",
+  "G0m": "16d21fd56 (detached) = G0 + the same picks; focus_guard.rs differs from OWN-20G G a30cbbc3b only by the re-anchor-only-on-a-found-change refinement",
+  "red": "c220be6a0 (detached) = U0 + the settle-loop extraction + both settle tests, without the final read"
+ },
+ "harness": {
+  "source": "OWN-20G packet at ce7544cc0 (files at the packet root; copied into harness/)",
+  "blob_identical": {
+   "own20g_harness.py": "8b357c65adb56f82262ac220cae3f62a85f815fc",
+   "r3_harness.py": "704b6ef0690df39eda992df1f0fbc6ac51342b8c",
+   "harness_common.py": "c3d0e05bff2f88f310fe9333547553c1c966324a",
+   "stealer.py": "6d0bc2d21e3e73c4cae5bd27250fe75da7d90912",
+   "xstall_proxy.py": "0399289be67c1255515aa006758618c0afbdb3b6",
+   "xprobe.py": "f17d83691faacc9397dc4c91a1f4018622c0d75d",
+   "run_block.sh": "f18f32aa5cc36ae1f06ef1c582843706c9460078",
+   "driver_versions.sh": "06dd66b2c85650689e8c5b43aa002ba51727c915"
+  },
+  "new_files": "make_plan.py, run_all.sh (orchestration: roles, shared lock per block <= 10 trials, 0-3 s jitter, xdpyinfo probe via session_entry.sh), unit_run.sh, unit_in_session.sh, build_run.sh, analyze.py, package.py, verify_artifacts.py"
+ },
+ "deviation_marked_twins": "The blob-identical R1 harness keys both the stall (xstall_proxy.py) and the steal (stealer.py) on the Driver-side atspi_action do_action_replied phase mark, which exists only with OWN-20G's measurement picks; clean main has no phase trace at all. With U0/G0 the steal never fires (stealer 'mark not seen'). The gated R1 row therefore runs on the marked twins U0m/G0m (the spec's attribution-only twins, same picks as OWN-20G). The normal path and R3 run on the product binaries U0, G0, GA (R3 does not use marks).",
+ "environment": "Linux X11: private Xvfb + openbox + picom + private session bus + private AT-SPI bus and registry (cua-x11-session.sh, CUA_SESSION_ATSPI=1), under hostless (v2) and hostless-strict; telemetry off; canonical GTK3 task fixture; one fresh Driver and fresh fixture per trial; 0-3 s jitter and an xdpyinfo probe before each session.",
+ "locks": "every REAL block under flock -s on the quiet-lane lock, <= 10 trials per acquisition, one receipt per block in the quiet-lane ledger; builds and units take the cargo-build lock, then the quiet-lane lock shared",
+ "plan": {"file": "plan.json", "generator": "make_plan.py measured", "order": "blocks run in plan order: q1-q8, qc1-qc2, n1-n8, m1-m4, r3a-r3h; AB/BA within each pair"},
+ "rows": {
+  "UNIT_A": {
+   "class": "UNIT",
+   "red": "c220be6a0 in worktree w5-own20p-red: a_steal_during_a_read_stalled_past_the_watch_is_seen FAILS",
+   "green": "a761f1f1f: both settle tests pass; input::focus_guard all pass; platform-linux lib 0 failed"
+  },
+  "UNIT_B": {
+   "class": "UNIT",
+   "green": "064d2e4ad: atspi::native::link_tests and atspi::snapshot pass; platform-linux lib 0 failed; cua-driver-core snapshot_store pass (core lib reported; known flaky history tests F7 are reported, not gating)"
+  },
+  "R1": {
+   "class": "REAL (FIXTURE)",
+   "design": "replystall (OWN-20G c08-017 reproduction): xstall_proxy.py holds for 2000 ms the reply to the guard's first new-client read issued >= 80 ms after do_action_replied; the decoy steals at mark + 217 ms on a direct connection. U0m vs G0m, checkbox arm S0 and text arm X, 20 per binary per task, AB/BA (blocks q1-q8). Control replyonly (proxy on, no hold, no steal) 5 per binary per task (qc1, qc2).",
+   "oracles": "target-owned only: xprobe.FocusSampler (separate X connection, XGetInputFocus + _NET_ACTIVE_WINDOW every 2 ms; reference = first sample of the first quiet 300 ms after placement) and the fixture's own state file (2 ms). The click receipt focus_outcome is checked, never an oracle.",
+   "valid": "no harness failure, stealer/sampler without error, reference_ok, hold requested <= 150 ms after the mark and held >= 1900 ms with >= 1 held chunk, no proxy error, steal issued <= 260 ms after the mark, the steal seen by the sampler and landing during the hold",
+   "pass": "valid AND stolen AND final sampler (focus, active) == reference AND receipt focus_outcome == restored AND task verified",
+   "silent_miss": "stolen AND final != reference AND no focus_outcome in the receipt",
+   "gate": "G0m: pass in 40/40 (20/20 per task) with 0 silent misses; U0m: silent miss in >= 36 of its 40 trials. Invalid trials are kept and reported; when a binary has < 20 valid trials on a task, up to 5 supplementary pairs per task run (blocks qs*), planned before they run. Control: 0 false restores on both binaries.",
+   "attribution_only": "phase marks (settle polls, hold timing) from the marked twins"
+  },
+  "NORMAL": {
+   "class": "REAL (FIXTURE)",
+   "design": "nosteal (decoy mapped, sampler on, no steal) U0 vs G0, arm D (no CUA_DRIVER_EXP_* variable: product defaults), 20 per binary per task (n1-n8). The product binaries write no marks, so the stealer waits out its 20 s deadline ('mark not seen') in every trial; that is expected and not a failure.",
+   "gate": "G0 task verified 40/40 and 0 false restores (receipt focus_outcome present or focus moved after T0); a port that adds failures (G0 failures > U0 failures) is KILL",
+   "settle": "descriptive: settle length (focus_guard body_done -> restored) from the marked twins in m1-m4 (nosteal, U0m vs G0m on the R1 arms, 10 per binary per task) and from R1; for U0/G0 only T (observation send -> state-file confirmation), descriptive"
+  },
+  "R3": {
+   "class": "REAL (FIXTURE)",
+   "design": "OWN-20G R3 exactly (r3_harness.py): observe fixture A and keep the 'I agree' token; perturb; re-observe A; click the pre-restart token (must be refused, no mutation of A's state file); a new token must verify, from A when truthful, else from a respawned fixture B observed by the same Driver process (5 tries, 1 s apart); a fresh Driver process then observes A and B (diagnostic). The restart kills only this session's a11y bus daemon (child of the session's at-spi-bus-launcher found through the harness's own parent process tree), waits for the launcher to exit, starts a new launcher and registry at the same address.",
+   "arms": "G0 vs GA, AB/BA; bus 20 per binary (r3a-r3d); controls registry, noop, noop_direct (discriminating: the old token must act), bus_direct 5 per binary each (r3e-r3h)",
+   "pass_safety": "no failure AND (direct variant OR re-observation truthful OR structured degraded) AND stale token refused AND no stale mutation AND 0 stale-authority mutations of A",
+   "pass": "pass_safety AND the new token's click verified by the fixture's state file",
+   "gate": "liveness: GA bus pass 20/20 with the new token from the respawned fixture (new_token_path respawned_fixture) in the same Driver process; G0 expected to fail liveness (reproducing OWN-20G). Safety on both: bus pass_safety 20/20 each. noop_direct: the old token acts (stale_mutated) 5/5 on both.",
+   "disposition": "fix candidate A (GA) KEEP (fork candidate) iff the whole gate holds; otherwise KILL naming the failing row, and #20's R3 row stays 'safe, not live; restart required'"
+  }
+ },
+ "dispositions": {
+  "G_port": "KEEP (fork candidate on current main) iff UNIT_A red/green holds, the platform-linux lib has 0 failures on G0, the R1 gate holds and the NORMAL gate holds; otherwise KILL naming the row",
+  "A_reconnect": "per R3.disposition, and UNIT_B must hold"
+ },
+ "e4_counters_per_arm": ["silent steal misses (valid R1 trials)", "stale-token actions (R3 bus/bus_direct: stale click mutated or stale-authority mutations > 0)", "stale mutations", "unverified successes (no failure, no click error, task not verified)"],
+ "binaries": {
+  "U0": "cua-driver-own20p-u0-cb685fad7, sha256 45ffb243ae5e2fddc66d452ce55586494e5da71fa1a927299d1158879c3598d4",
+  "G0": "cua-driver-own20p-g0-a761f1f1f, sha256 77a28152330405eabb0c17cd99ba2594239b3ac82a0484cff772ba865c14a1e4",
+  "GA": "cua-driver-own20p-ga-064d2e4ad, sha256 681627314e2f031641e7579ab8640a3cb673c58b8b029ef7399e277706ccc146",
+  "U0m": "cua-driver-own20p-u0m-0944feb31, sha256 9c5e9fffb3b02fd24cd3ba54d9347153680ed1058c92f9ed66cd24f75b8b6ad1",
+  "G0m": "cua-driver-own20p-g0m-16d21fd56, sha256 1568dc4a63ba4d09e19b4c254fa1c1f806a92ff0ea7f48934be7f26c6b02d13c",
+  "version": "cua-driver 0.32.0 for all five, read inside a private session",
+  "build": "build-driver.sh, family dir cua-release-own20g, cargo-build lock then quiet-lane shared, 0 Fresh workspace units each"
+ },
+ "pilots_before_prereg": "plan-pilot.json, labels own20p-pilot-pq/pn/pr, excluded from every count: pq U0m silent miss (polls 30/61/91 ms, settle 2091 ms) and G0m restored (settle 2247 ms); pn U0/G0 nosteal arm D verified, stealer 'mark not seen' as designed, 0 false restores; pr bus G0 safe but no new token, GA safe and the respawned fixture verified on the first same-process observation.",
+ "reporting":"every block attempt and every trial is kept; failures stay in the denominators; no timing claim beyond the descriptive settle and T",
+ "claim_boundary": "Linux X11 (private Xvfb + openbox), GTK3 canonical fixture, the exact SHAs and binaries above. Fork candidates only; nothing goes upstream. Wayland/Hyprland: BLOCKED (seat). Out of scope (wave 6): same_app_dialog misclassification under _NET_ACTIVE_WINDOW lag; restore-budget anchoring after a late change."
+}

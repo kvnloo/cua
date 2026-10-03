@@ -1,0 +1,119 @@
+{
+ "blocks": [
+  {
+   "bins": {
+    "G": "G0m",
+    "U": "U0m"
+   },
+   "block": "pq",
+   "kind": "replystall",
+   "lock": "shared",
+   "row": "pilot",
+   "trials": [
+    {
+     "arm": "S0",
+     "bin": "U",
+     "binary": "U0m",
+     "block": "pq",
+     "id": "pq-001",
+     "kind": "replystall",
+     "pair": 0,
+     "row": "pilot",
+     "task": "checkbox"
+    },
+    {
+     "arm": "S0",
+     "bin": "G",
+     "binary": "G0m",
+     "block": "pq",
+     "id": "pq-002",
+     "kind": "replystall",
+     "pair": 0,
+     "row": "pilot",
+     "task": "checkbox"
+    }
+   ]
+  },
+  {
+   "bins": {
+    "G": "G0",
+    "U": "U0"
+   },
+   "block": "pn",
+   "kind": "nosteal",
+   "lock": "shared",
+   "row": "pilot",
+   "trials": [
+    {
+     "arm": "D",
+     "bin": "U",
+     "binary": "U0",
+     "block": "pn",
+     "id": "pn-001",
+     "kind": "nosteal",
+     "pair": 0,
+     "row": "pilot",
+     "task": "checkbox"
+    },
+    {
+     "arm": "D",
+     "bin": "G",
+     "binary": "G0",
+     "block": "pn",
+     "id": "pn-002",
+     "kind": "nosteal",
+     "pair": 0,
+     "row": "pilot",
+     "task": "checkbox"
+    }
+   ]
+  },
+  {
+   "bins": {
+    "G": "GA",
+    "U": "G0"
+   },
+   "block": "pr",
+   "harness": "r3_harness.py",
+   "kind": "r3",
+   "lock": "shared",
+   "row": "pilot",
+   "trials": [
+    {
+     "bin": "U",
+     "binary": "G0",
+     "block": "pr",
+     "id": "pr-001",
+     "kind": "r3",
+     "pair": 0,
+     "row": "pilot",
+     "variant": "bus"
+    },
+    {
+     "bin": "G",
+     "binary": "GA",
+     "block": "pr",
+     "id": "pr-002",
+     "kind": "r3",
+     "pair": 0,
+     "row": "pilot",
+     "variant": "bus"
+    }
+   ]
+  }
+ ],
+ "max_trials_per_block": 10,
+ "roles": {
+  "G0": "U0 + guard port",
+  "G0m": "G0 + OWN-20G measurement picks",
+  "GA": "G0 + AT-SPI reconnect fix",
+  "U0": "upstream main cb685fad7 (clean)",
+  "U0m": "U0 + OWN-20G measurement picks"
+ },
+ "schema": "own20p.plan.v1",
+ "task_arm": {
+  "checkbox": "S0",
+  "text": "X"
+ },
+ "which": "pilot"
+}
