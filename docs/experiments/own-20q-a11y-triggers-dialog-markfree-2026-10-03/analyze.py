@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """OWN-20Q: recompute every number of the packet from the raw block ledgers (raw/<label>/trials.jsonl.gz).
 
-usage: analyze.py [<packet-dir>]  -> writes own20q-summary.json and own20q-trial-metrics.jsonl.gz
+usage: analyze.py [<packet-dir>] [--out-dir <dir>]
+  -> writes own20q-summary.json and own20q-trial-metrics.jsonl.gz (into the packet, or --out-dir)
 Counts only the labels listed in provenance.json ``counted_labels``; pilots are never read.
 """
 
@@ -20,10 +21,10 @@ FOCUS_KINDS = ("mfstall", "mfcal", "mfonly", "dlgsteal", "dlgdialog", "nosteal")
 SUCCESS_EFFECTS_HONEST = ("unverifiable", "unknown", "unconfirmed")
 
 
-def load(pkt: Path) -> tuple[list[dict], list[dict]]:
+def load(pkt: Path, key: str = "counted_labels") -> tuple[list[dict], list[dict]]:
     prov = json.loads((pkt / "provenance.json").read_text(encoding="utf-8"))
     trials, metas = [], []
-    for label in prov["counted_labels"]:
+    for label in prov.get(key, []):
         with gzip.open(pkt / "raw" / label / "trials.jsonl.gz", "rt", encoding="utf-8") as stream:
             for line in stream:
                 r = json.loads(line)
@@ -256,7 +257,14 @@ def cell(rows: list[dict], **kw) -> list[dict]:
 
 
 def main() -> None:
-    pkt = Path(sys.argv[1] if len(sys.argv) > 1 else Path(__file__).resolve().parent)
+    argv = sys.argv[1:]
+    out_dir = None
+    if "--out-dir" in argv:
+        i = argv.index("--out-dir")
+        out_dir = Path(argv[i + 1])
+        argv = argv[:i] + argv[i + 2:]
+    pkt = Path(argv[0] if argv else Path(__file__).resolve().parent)
+    out_dir = out_dir or pkt
     trials, _ = load(pkt)
     rows: list[dict] = []
     for t in trials:
@@ -388,6 +396,16 @@ def main() -> None:
                              "pass_where_killed": sum(r["pass"] for r in r3 if r["daemon_killed"]),
                              "stale_mutated": sum(r["stale_mutated"] for r in r3),
                              "perturb_ms_median": med([r["perturb_ms"] for r in r3])}}
+    # post-hoc restart-happened view (as OWN-20P deviation 2): counted r3_carry trials whose harness really
+    # signalled the bus daemon, plus the committed supplement (plan-supp.json); never a gate input
+    supp = [r3_metrics(t) for t in load(pkt, "supplement_labels")[0] if t.get("variant") == "bus"]
+    killed = [r for r in r3 + supp if r["daemon_killed"]]
+    a2["r3_carry"]["restart_happened_view"] = {
+        "counted_killed": sum(1 for r in r3 if r["daemon_killed"]), "supplement_n": len(supp),
+        "supplement_killed": sum(1 for r in supp if r["daemon_killed"]), "killed_total": len(killed),
+        "live_where_killed": sum(r["pass"] for r in killed), "safe_where_killed": sum(r["pass_safety"] for r in killed),
+        "respawned_fixture_verified_where_killed": sum(1 for r in killed if r["new_token_path"] == "respawned_fixture"
+                                                       and r["fresh_verified"])}
     a2["r3n_positive_control"] = a2["r3n"]["GA"]["b_degraded_all_tries"] >= 18
     a2["r3n_gate"] = bool(a2["r3n_positive_control"] and a2["r3n"]["GQ"]["pass"] == 20 == a2["r3n"]["GQ"]["n"])
     a2["r3s_gate"] = bool(a2["r3s"]["GQ"]["pass"] == 20 == a2["r3s"]["GQ"]["n"])
@@ -417,8 +435,9 @@ def main() -> None:
     S["loadavg1"] = {"min": min((r["loadavg1"] for r in rows if r.get("loadavg1") is not None), default=None),
                      "max": max((r["loadavg1"] for r in rows if r.get("loadavg1") is not None), default=None),
                      "median": med([r.get("loadavg1") for r in rows])}
-    (pkt / "own20q-summary.json").write_text(json.dumps(S, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    with gzip.open(pkt / "own20q-trial-metrics.jsonl.gz", "wt", encoding="utf-8") as stream:
+    (out_dir / "own20q-summary.json").write_text(json.dumps(S, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    with gzip.GzipFile(out_dir / "own20q-trial-metrics.jsonl.gz", "wb", compresslevel=9, mtime=0) as raw_stream, \
+            __import__("io").TextIOWrapper(raw_stream, encoding="utf-8") as stream:
         for r in rows:
             stream.write(json.dumps(r, sort_keys=True) + "\n")
     print(json.dumps({k: S[k].get("gate") if isinstance(S[k], dict) and "gate" in S[k] else None

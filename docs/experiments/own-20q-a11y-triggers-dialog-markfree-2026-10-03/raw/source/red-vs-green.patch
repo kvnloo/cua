@@ -1,0 +1,49 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+index 3445b2014..e32ea1880 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+@@ -426,18 +426,9 @@ fn note_unanswered_call() {
+ 
+ /// After an unanswered call: the bus is lost when its daemon does not answer
+ /// `org.freedesktop.DBus.Peer.Ping` in time.
+-async fn bus_lost_after_unanswered_call(bus: &atspi::zbus::Connection) -> bool {
+-    let ping = bus.call_method(
+-        Some("org.freedesktop.DBus"),
+-        "/org/freedesktop/DBus",
+-        Some("org.freedesktop.DBus.Peer"),
+-        "Ping",
+-        &(),
+-    );
+-    !matches!(
+-        tokio::time::timeout(BUS_PING_TIMEOUT, ping).await,
+-        Ok(Ok(_))
+-    )
++async fn bus_lost_after_unanswered_call(_bus: &atspi::zbus::Connection) -> bool {
++    // red: an unanswered call never loses the connection (GA behaviour)
++    false
+ }
+ 
+ /// The accessible that currently holds keyboard focus inside `pid`'s
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+index f879d944b..fd58f365e 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+@@ -326,15 +326,10 @@ fn same_app_move(
+     target_pid: Option<u32>,
+     previous_owner: Option<u32>,
+     active_owner: Option<u32>,
+-    core_owner: Option<u32>,
++    _core_owner: Option<u32>,
+ ) -> FocusMove {
+-    match (
+-        classify_focus_move(target_pid, previous_owner, active_owner),
+-        classify_focus_move(target_pid, previous_owner, core_owner.or(active_owner)),
+-    ) {
+-        (FocusMove::SameAppDialog, FocusMove::SameAppDialog) => FocusMove::SameAppDialog,
+-        _ => FocusMove::OtherApp,
+-    }
++    // red: the active window alone decides (GA behaviour)
++    classify_focus_move(target_pid, previous_owner, active_owner)
+ }
+ 
+ /// What a background action must not change.

@@ -1,0 +1,39 @@
+dbus-daemon[3354117]: [session uid=1000 pid=3354117 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=3354126 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[3354117]: [session uid=1000 pid=3354117 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:100 openbox=3354166 picom=3354167 dbus=unix:path=<session-bus-socket>,guid=096359a783c36db7ea7629c26ac1030c
+phase=red-d822b1fc0 head=d822b1fc003939c87f1ec0ac9d272b0c2a5effd5 tracked_diff_lines=0 rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
+crates/platform-linux/src/input/focus_guard.rs blob=fd58f365e19f1814f997931ec85d2dd39df11ead
+crates/platform-linux/src/atspi/native.rs blob=ba969cd65d77d1805eb9ffb73101459bf5aaba77
+### cargo test -p platform-linux --lib -- --exact input::focus_guard::tests::a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog atspi::native::unanswered_call_tests::an_unanswered_call_keeps_the_bus_while_its_daemon_answers_and_loses_a_hung_one --nocapture
+thread 'input::focus_guard::tests::a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog' (3362703) panicked at crates/platform-linux/src/input/focus_guard.rs:999:9:
+assertion `left == right` failed: core focus on another app while the active window lags
+  left: SameAppDialog
+ right: OtherApp
+test input::focus_guard::tests::a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog ... FAILED
+test atspi::native::unanswered_call_tests::an_unanswered_call_keeps_the_bus_while_its_daemon_answers_and_loses_a_hung_one has been running for over 60 seconds
+error: test failed, to rerun pass `-p platform-linux --lib`
+rc=101
+### cargo test -p platform-linux --lib -- input::focus_guard
+Terminated                 bash "<lane-tmp>/x11-session.UHSgQy/cmd.sh"
+test input::focus_guard::tests::same_app_rule_only_when_the_target_owned_the_focus_before_and_after ... ok
+test input::focus_guard::grab_tests::restore_and_settle_budgets_bound_the_guard_under_1500ms ... ok
+test input::focus_guard::tests::a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog ... FAILED
+test input::focus_guard::tests::quiet_report_is_silent ... ok
+test input::focus_guard::tests::report_json_and_summary_name_what_moved ... ok
+test input::focus_guard::grab_tests::a_popup_grab_is_reported_instead_of_a_failed_restore ... ok
+test input::focus_guard::tests::a_closed_focus_holder_is_window_closed_evidence_not_a_failed_restore ... ok
+test input::focus_guard::tests::mapped_but_unfocused_own_window_is_mentioned_without_a_focus_outcome ... ok
+test input::focus_guard::tests::same_app_dialog_is_reported_not_restored ... ok
+test input::focus_guard::tests::capture_without_display_degrades_to_none ... ok
+test input::focus_guard::tests::a_quiet_watch_ends_on_a_read_after_its_deadline_without_an_extra_read ... ok
+test input::focus_guard::tests::a_steal_during_a_read_stalled_past_the_watch_is_seen ... ok
+failures:
+thread 'input::focus_guard::tests::a_steal_seen_before_the_active_window_follows_is_not_the_apps_dialog' (4038729) panicked at crates/platform-linux/src/input/focus_guard.rs:999:9:
+assertion `left == right` failed: core focus on another app while the active window lags
+  left: SameAppDialog
+ right: OtherApp
+failures:
+test result: FAILED. 11 passed; 1 failed; 0 ignored; 0 measured; 609 filtered out; finished in 0.30s
+error: test failed, to rerun pass `-p platform-linux --lib`
+[session] exit rc=143 run_dir=<lane-tmp>/x11-session.UHSgQy
+{"lane":"OWN-20Q","label":"own20q-unit-red-d822b1fc0","lock":"cargo-build only","acquired":"2026-10-03T13:28:40.945Z","released":"2026-10-03T13:43:22.542Z","rc":143,"loadavg_at_acquire":"12.06 12.82 11.06"}
