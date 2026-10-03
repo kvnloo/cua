@@ -389,7 +389,11 @@ correction over-subtracts by 20-46%, so the lane view is the most favourable rea
     - verify_artifacts.py: the loose sensitivity fragments (for example `" / 8.6% |"`) are replaced by
       checks of every full row of the E2 sensitivity grid. Checks were added for the instrumentation
       shares, the BELOW_GATE list, the amends-SHA note, RESULT.json, and the unreachability of the
-      pre-rewrite commits. The privacy scan now also decodes hex and base64 literals.
+      pre-rewrite commits. The privacy scan now also decodes hex and base64 literals. With a names
+      file that holds the user name, the name sub-check matched that name inside the fork owner's
+      public GitHub handle (every `kvnloo/cua#N` reference). Only that exact public handle is now
+      removed before the name patterns run, and the generic home and mount path patterns still see
+      the full text.
     - The lane record (RESULT.json, new in the packet) replaces the stale wave-4 lane result. That
       result cited the pre-rewrite SHAs, said "E2 met for fill and toggle" and listed 3 near misses
       instead of 4.

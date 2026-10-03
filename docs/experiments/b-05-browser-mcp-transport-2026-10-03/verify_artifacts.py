@@ -60,6 +60,14 @@ def _private_names() -> tuple[list[str], str]:
 
 NAMES, NAMES_NOTE = _private_names()
 PRIVATE = GENERIC + [re.compile(re.escape(n)) for n in NAMES]
+# The public GitHub handle of the fork owner (kvnloo/cua#N references, commit identity) can contain a
+# private name as a substring. Only that exact handle is removed before the NAME patterns run; the
+# generic home/mount path patterns always see the full text.
+PUBLIC_HANDLE = re.compile(r"kvnloo")
+
+
+def private_hit(i: int, pat: re.Pattern, text: str) -> bool:
+    return bool(pat.search(text if i < len(GENERIC) else PUBLIC_HANDLE.sub("", text)))
 SECRET = [re.compile(p) for p in (r"sk-[A-Za-z0-9_-]{20,}", r"ghp_[A-Za-z0-9]{20,}", r"github_pat_[A-Za-z0-9_]{20,}",
                                   r"-----BEGIN [A-Z ]*PRIVATE KEY-----", r"AKIA[0-9A-Z]{16}",
                                   r"TYPESAFE_API_KEY\s*[=:]\s*['\"]?[A-Za-z0-9_\-]{12,}", r"(?i)bearer\s+[A-Za-z0-9._\-]{24,}")]
@@ -86,7 +94,7 @@ def git(*args: str) -> bytes:
 
 
 HEX_LIT = re.compile(r"(?<![0-9A-Za-z])(?:[0-9a-fA-F]{2}){3,}(?![0-9A-Za-z])")
-B64_LIT = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{8,}={0,2}(?![A-Za-z0-9+/=])")
+B64_LIT = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{4,}={0,2}(?![A-Za-z0-9+/=])")
 
 
 def decoded_literals(text: str) -> str:
@@ -148,7 +156,7 @@ def privacy_scan(base: str) -> None:
             targets.extend(texts_of_blob(path, git("cat-file", "blob", fields[3])))
         for where, text in targets:
             for i, pat in enumerate(PRIVATE):
-                if pat.search(text):
+                if private_hit(i, pat, text):
                     (allowed if (c[:9], where.removesuffix(":decoded"), f"private#{i}") in ALLOW else hits).append(f"{c[:9]} {where[:120]} private#{i}")
             for i, pat in enumerate(SECRET):
                 if pat.search(text):
@@ -329,7 +337,7 @@ def main() -> None:
     for f in sorted((HERE / "raw").rglob("*")):
         if f.is_file():
             for where, text in texts_of_blob(str(f.relative_to(HERE)), f.read_bytes()):
-                if any(pat.search(text) for pat in PRIVATE):
+                if any(private_hit(i, pat, text) for i, pat in enumerate(PRIVATE)):
                     check(f"raw privacy {where[:100]}", False, "private string in raw file")
     print(NAMES_NOTE)
     if not args.skip_git:
