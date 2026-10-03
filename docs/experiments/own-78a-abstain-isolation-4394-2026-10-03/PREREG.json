@@ -1,0 +1,90 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "lane": "OWN-78A",
+ "wave": 5,
+ "title": "trycua/cua PR 4394 step-1 abstain: credential-free fix candidate, single-factor live isolation, R1-lite",
+ "owners": ["kvnloo/cua#78", "kvnloo/cua#93", "kvnloo/cua#74"],
+ "upstream_item_plain_text": "trycua/cua PR 4394 (head 039257811e0bbb2348c616c52562409923d2856f, pinned; nothing is posted upstream)",
+ "registered_before": "every unit run recorded in this packet, the stub smoke and every live provider request",
+ "sources": {
+  "pr_head": "039257811e0bbb2348c616c52562409923d2856f",
+  "pre_pr_base": "2ca90d33857fdb4813ecc8d12c2058be7d4ebcc4",
+  "own78_packet": "5107f3ccaef38f9f5c66708f1a633f6288bc5dc8",
+  "fix_candidate": {"F1": "736410ea1", "F2": "9d8aad90c", "F3_tested_F": "61eec0909"},
+  "note": "Each tree is exported by SHA (git archive of libs/cua-driver/examples/jev-use) and checked file by file against git blob ids before every block. fixture_server.py, tasks.py, uv.lock are blob-identical in all three; run.py is identical in PR and F."
+ },
+ "driver": {
+  "binary_name": "cua-driver-own78-4394-0392578",
+  "sha256": "19bad35248702fd42f6aa372f1f4bebe4ca3728d9be0f67287f1c186a0b47df9",
+  "note": "built from 039257811 by OWN-78; the PR and F change no libs/cua-driver/rust file, so no build. Version read inside the session per block."
+ },
+ "part_a_unit": {
+  "evidence_class": "UNIT",
+  "environment": "bin/hostless, env -u TYPESAFE_API_KEY, and every TYPESAFE_* / CUA_S1_* variable unset inside harness/unit.sh; CI commands (unittest discover, 4 CLI verifiers, npm test, npm run typecheck)",
+  "rows": {
+   "U-PR": "PR tree 039257811: TS npm test 107/109 with exactly the two named failures ('S1 uses the bounded browser request and reports s1 as the actual backend', 'live and typesafe aliases report typesafe after a bounded decision'); Python count recorded",
+   "U-F": "F tree 61eec0909: TS 109/109, typecheck rc 0, Python all pass (count recorded), CLI verifiers rc 0",
+   "U-RED-F1": "PR source + F2 diff + F1's Python test (F1 code absent): the Python restored-state test fails and the TS aliases test fails on the restored-state assertion; every other test passes. Shows F1's tests are red without F1."
+  },
+  "source_row": "request field names (SOURCE) for PR, F and pre-PR from the code, cross-checked by the stub smoke's recorded key paths (FIXTURE)"
+ },
+ "part_b_isolation": {
+  "evidence_class": "LIVE_PROVIDER+REAL",
+  "task": "jev-use fixture fill->submit (journal variant: the page posts every input event on input[name=value]), private Xvfb via cua-x11-session.sh, Driver-launched isolated Chrome, default Driver safety, Python runner only",
+  "forced_path": "the runner's own --dry-run --max-steps 1: one step-1 provider decision is recorded (step or outcome event) and nothing is dispatched; launcher backstop OWN78A_FORBID_MUTATION=1 refuses any mutating Driver tool before dispatch (expected 0 refusals)",
+  "arms": {
+   "A0": "PR runner as-is (--provider typesafe)",
+   "A1": "PR runner + measurement-only launcher seam adding observation.form = task.state_summary(sources), nothing else (--provider typesafe)",
+   "A2": "F runner (= PR + form + page + outline, F1) (--provider typesafe)",
+   "A3": "pre-PR runner request (--provider live), control"
+  },
+  "design": {
+   "rounds": 5,
+   "order": [["A0", "A1", "A3", "A2"], ["A1", "A2", "A0", "A3"], ["A2", "A3", "A1", "A0"], ["A3", "A0", "A2", "A1"], ["A0", "A1", "A3", "A2"]],
+   "order_note": "rounds 1-4 are a 4x4 Williams (balanced Latin) square; round 5 repeats round 1",
+   "blocks": {"L1": "rounds 1-2 (8 cells)", "L2": "rounds 3-4 (8 cells)", "L3": "round 5 (4 cells)"},
+   "lock": "flock -s quiet-lane.lock per block, at most 10 cells per acquisition; no timing claims",
+   "replacements": "none; every trial is kept, failures stay in the denominator"
+  },
+  "oracle": {
+   "decision_kind": "provider_response.selected_id from the HTTP-backed SDK receipt: type-verification-value -> type; abstain -> abstain; reobserve -> reobserve; submit-* -> click; no ok response -> failure (no decision)",
+   "correct_type": "kind == type AND the validated choice's ref argument resolves, in the same step's Driver snapshot ref index, to role textbox whose name equals the fixture's own aria-label of input[name=value] (read from the fixture page source) AND the fixture shows 0 input events, 0 submits and submitted == null after the trial",
+   "backend_equals_responder": "per decision record: runner backend field (PR/F runners; the pre-PR runner has none) == responder classified from the HTTP host; that attempt returned status 200 and its x-typesafe-request-id sha256/16 equals the SDK response's",
+   "recorded": "request field names (state key paths, question names, criteria ids, instructions sha256/16, state sha256/16) and input/output token counts; no bodies, headers, values or credentials"
+  },
+  "attribution_rule": {
+   "validity": "valid only if A0 abstains >= 4/5 AND A3 is correct-type >= 4/5",
+   "form_sufficient": "'Form omission is sufficient' iff A1 is correct-type >= 4/5",
+   "page_outline_also_needed": "'Page/outline also needed' iff A1 <= 1/5 correct-type AND A2 >= 4/5",
+   "otherwise": "INCONCLUSIVE at n=5; more n is BLOCKED by budget",
+   "invalid": "if the validity condition fails, no attribution is claimed (INVALID)"
+  }
+ },
+ "part_c_r1_lite": {
+  "evidence_class": "LIVE_PROVIDER+REAL",
+  "precondition": "runs only if at least 6 reached remain inside the lane cap after Part B",
+  "budget_arithmetic": "Part B needs 20 reached; 24 - 20 = 4 < 6, so Part C is expected NOT_RUN (BLOCKED: lane cap) unless some Part B cells end without reaching the provider. Registered here, before any request.",
+  "cells": "3 x C: F runner end to end, --provider typesafe, --max-steps 2 (at most 2 decisions), block L4",
+  "pass": "fixture /state submitted == token, exactly 1 submit and the journal's last input event equals the token, browser_type dispatched once and the submit click once; backend == responder on every decision record"
+ },
+ "r4": "R4 live partial progress: NOT_RUN (BLOCKED: budget)",
+ "budget": {
+  "lane_cap_reached": 24,
+  "lane_cap_attempts": 30,
+  "includes": "shakedown; the smoke uses a loopback stub with a dummy non-secret key (0 provider attempts)",
+  "guard": "the launcher counts every non-loopback attempt before sending and refuses beyond the cell allowance (dry-run cells: 1 reached / 2 attempts; C: 2 / 3); the harness does not start a cell the remaining cap cannot cover",
+  "key": "forwarded by NAME only: CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY",
+  "ledger": "raw/provider-ledger.jsonl: host, path, status, request-id presence + sha256/16, latency, trial"
+ },
+ "smoke": {
+  "evidence_class": "FIXTURE",
+  "cells": "A0, A1, A2, A3, C against the loopback stub (0 provider); checks field-name recording, the A1 seam, the dry-run path and the end-to-end oracle; not part of any result row"
+ },
+ "e4_per_arm": "0 duplicate mutations (dry-run arms: any input event or submit counts; C: more than 1 submit or more than 1 browser_type/click dispatch), 0 unverified successes (runner verified while the fixture disagrees), 0 replays after partial progress (a mutating tool dispatched twice), 0 decisions counted from failure receipts (decisions come only from ok provider_response receipts)",
+ "disposition_rule": {
+  "KEEP": "fork fix candidate KEEP iff UNIT 109/109 credential-free AND A2 correct-type >= 4/5 AND R1-lite 3/3 verified with backend == responder",
+  "REVISE": "otherwise, naming the failing row",
+  "always_recorded": ["full-n live R1 20 / R4 20: BLOCKED (budget, about 60 reached)", "S1 backend row: BLOCKED (adapter not local; only TypeSafe is permitted)"]
+ },
+ "claim_boundary": "model id as recorded; this fixture task; Linux private Xvfb; Python runner (TS shares the request shape: SOURCE + UNIT only). A fork candidate on top of an upstream PR; nothing is posted or pushed. No new service; seams are measurement-only and env-gated."
+}
