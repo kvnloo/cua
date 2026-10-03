@@ -1,0 +1,114 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "lane": "OWN-78L",
+ "wave": 6,
+ "title": "R1-lite on fork fix candidate F for trycua/cua PR 4394: 3 live TypeSafe end-to-end trials (backend == responder, verified outcome) with MOCK, CAP-0 and stub key-shape controls",
+ "owners": ["kvnloo/cua#78", "kvnloo/cua#93", "kvnloo/cua#74"],
+ "upstream_item_plain_text": "trycua/cua PR 4394 (head 039257811e0bbb2348c616c52562409923d2856f, pinned; nothing is pushed, posted or linked upstream)",
+ "advances": "E1: runs OWN-78A's remaining pre-registered KEEP condition (Part C, R1-lite) and takes kvnloo/cua#78 from REVISE to a terminal disposition for fix candidate F",
+ "registered_before": "the credential-free unit re-run, the stub key-shape check, the MOCK and CAP-0 controls and every live provider request recorded in this packet",
+ "hypothesis": "With fork fix candidate F (PR 4394 at 039257811 + F1 restoring form+page+outline, F2 credential-free TS tests, F3 failure-receipt backend wording; head 61eec09092fd161f62651a890c882f276a642855) the PR's TypeSafe browser runner stops abstaining at step 1, completes fill->submit with a verified outcome, the receipt backend equals the actual HTTP responder, and nothing is replayed or restarted after partial progress.",
+ "base": {
+  "branch": "exp/own-78l-r1-lite-f-20261003",
+  "from": "6f6c67955505e5b48f130a69feac9ea11c6e9ed6 (OWN-78A packet head; contains F)",
+  "own78a_prereg_commit": "99632b75fe0c05d909576739e7bbefbeb249c546"
+ },
+ "sources": {
+  "pr_head": "039257811e0bbb2348c616c52562409923d2856f",
+  "fix_candidate_F": "61eec09092fd161f62651a890c882f276a642855",
+  "F_commits": {"F1": "736410ea1", "F2": "9d8aad90c", "F3": "61eec0909"},
+  "examples_tree_id_F": "fce87489ea3b6f64bda8ac6c1727dd20f433f3a2",
+  "note": "The F jev-use tree is exported by SHA (git archive) and checked file by file against git blob ids before every cell (OWN-78A tree_matches). The packet head's examples tree equals F's (OWN-78A added docs only)."
+ },
+ "reuse": {
+  "rule": "OWN-78A's harness is reused BY IMPORT and must be blob-identical to the OWN-78A packet head; the OWN-78L harness refuses to run otherwise and verify_artifacts.py asserts the blob ids",
+  "blobs": {
+   "own78a_harness.py": "01c08b1d1d206b9c4203f7acafb570e4a99364a6",
+   "own78a_launcher.py": "e814b649116349718e4c1dde28bd423b4f6bb50c",
+   "in_session.sh": "e7b2bcdc3a77499f13594ad3cb305afddcf0b6aa",
+   "unit.sh": "05c87cd6ca825eb67952c084c234fc5357120ae7",
+   "privacy_scan.py": "512412c9e49e54c3f5651d6285c9d19eb1bf8ab4"
+  },
+  "new_code": "harness/own78l_harness.py (sets OWN-78A module constants: lane cap, launcher path; calls own78a_harness.run_cell for arm C, one cell per invocation), harness/own78l_launcher.py (imports own78a_launcher unchanged; one env-gated default-off switch OWN78L_PROVIDER_OVERRIDE=mock for the MOCK control), harness/own78l_block.sh (shared quiet-lane lock per cell, receipt lines, 295 s hold cap, fresh cua-x11-session.sh per cell with CUA_DRIVER_RS_TELEMETRY_ENABLED=false)"
+ },
+ "driver": {
+  "binary_name": "cua-driver-own78-4394-0392578",
+  "sha256": "19bad35248702fd42f6aa372f1f4bebe4ca3728d9be0f67287f1c186a0b47df9",
+  "source": "read from OWN-78A provenance.json; the harness refuses on a mismatch. No build: neither the PR nor F touches libs/cua-driver/rust. Version read inside the session per cell."
+ },
+ "own78a_part_c_restated": {
+  "evidence_class": "LIVE_PROVIDER+REAL",
+  "precondition": "runs only if at least 6 reached remain inside the lane cap",
+  "cells": "3 x C: F runner end to end, --provider typesafe, --max-steps 2 (at most 2 decisions)",
+  "pass": "fixture /state submitted == token, exactly 1 submit and the journal's last input event equals the token, browser_type dispatched once and the submit click once; backend == responder on every decision record",
+  "own78a_disposition_rule_KEEP": "fork fix candidate KEEP iff UNIT 109/109 credential-free AND A2 correct-type >= 4/5 AND R1-lite 3/3 verified with backend == responder (A2 5/5 is already accepted in OWN-78A; this lane supplies the remaining two)",
+  "note": "Restated verbatim in substance from OWN-78A PREREG part_c_r1_lite and disposition_rule; the block for these cells is named R1 here (L4 in OWN-78A)."
+ },
+ "rows": {
+  "R1-lite": {
+   "evidence_class": "LIVE_PROVIDER+REAL",
+   "n": 3,
+   "cells": "R1t1, R1t2, R1t3: each one OWN-78A arm-C cell (F tree, --provider typesafe, --max-steps 2, no dry run, no mutation backstop) in its own fresh private Xvfb session, with a fresh cua-driver process, Driver-launched isolated Chrome, fixture server (journal variant) and token",
+   "session": "cua-x11-session.sh under bin/hostless, CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY (name only), CUA_SESSION_EXTRA_ENV=CUA_DRIVER_RS_TELEMETRY_ENABLED=false",
+   "precondition": "R1 runs only if the CAP-0 control passed and the stub key-shape check shows form+page+outline on every F request; otherwise R1 is NOT_RUN (precondition) and stays in the denominator"
+  },
+  "MOCK": {
+   "evidence_class": "FIXTURE",
+   "n": 3,
+   "cells": "MOCKt1..t3: the same arm-C cell with the runner's own --provider mock (OWN78L_PROVIDER_OVERRIDE=mock), lane cap forced to 0, no key in the session",
+   "pass": "every decision record has backend == mock, 0 http_attempt receipts (attempts and guard refusals) and 0 provider_request receipts; the fixture outcome is recorded (verified expected, descriptive)"
+  },
+  "CAP-0": {
+   "evidence_class": "UNIT+FIXTURE",
+   "n": 1,
+   "cells": "CAP0t1: arm-C cell with lane cap forced to 0 and a dummy non-secret key, real TypeSafe host (no base-URL override), no real key in the session",
+   "pass": "the harness-level guard refuses (own78a Budget.can_start('C') is false at cap 0) AND, with the cell started deliberately, the launcher guard refuses before sending: >= 1 guard_refused http_attempt receipt, 0 attempts, 0 reached, the runner ends outcome=unknown phase=decide, the fixture shows 0 input events and 0 submits"
+  },
+  "STUB-KEYSHAPE": {
+   "evidence_class": "FIXTURE",
+   "n": 1,
+   "cells": "STUBt1: arm-C cell against OWN-78A's loopback stub (dummy non-secret key, 0 provider requests), same key-path recording as OWN-78A (field names only)",
+   "pass": "every stub-recorded request carries observation.form, observation.page and observation.outline (plus the PR's capture_id, regions, history)"
+  },
+  "UNIT": {
+   "evidence_class": "UNIT",
+   "cells": "OWN-78A harness/unit.sh (blob-identical) on a separate F export, under bin/hostless with every TYPESAFE_* / CUA_S1_* variable unset",
+   "pass": "TS npm test 109/109, typecheck rc 0, Python unittest OK, the four CLI verifiers rc 0, credential_env_present=0"
+  }
+ },
+ "forced_path_and_attribution": {
+  "forced_path": "the F runner (python/run.py at 61eec0909) calls TypeSafe through the PR's adapter: browser_provider.choose_browser_provider -> decision_models.TypeSafeDecisionModel(runner_state) -> typesafe_sdk.TypeSafeClient.system_one -> httpx2",
+  "receipts": "OWN-78A launcher: http_attempt (host, path, status, request-id presence + sha256/16, latency, trial; no bodies or headers), provider_request (field names only), provider_response (responder from the HTTP host, model, tokens, selected id, request-id sha256/16), choice, driver_call",
+  "backend_equals_responder": "for every decision record (runner step event, or an abstain/outcome event carrying a decision) the runner's backend field equals the responder classified from the HTTP host of the matching ok provider_response; that response's HTTP attempt returned status 200 and its request-id sha256/16 equals the SDK response's; the ledger host is api.typesafe.ai",
+  "model": "recorded from each provider_response (model id as returned)"
+ },
+ "oracle": {
+  "owner": "target-owned: the jev-use fixture server (journal variant from OWN-78A: the page POSTs every input event on input[name=value]; the server counts /submit and reports submitted on /state)",
+  "verified_trial": "fixture /state submitted == token AND exactly 1 POST /submit AND the journal's last input event equals the token",
+  "replay_or_restart": "a failure (and an E4 flag) if any of: more than 1 POST /submit; more than 1 dispatched browser_type or more than 1 dispatched browser_click (driver_call receipts, any outcome); any mutating Driver call after the submit click; more than 1 browser_prepare, browser_navigate or POST /reset; any input event in the journal after the submit",
+  "unverified_success": "runner outcome verified while the fixture oracle disagrees (E4)"
+ },
+ "gate": {
+  "KEEP": "KEEP for F iff ALL hold: R1-lite 3/3 verified by the oracle; backend == responder in 3/3 trials (every decision record); 0 replays or restarts; MOCK 3/3 pass; CAP-0 pass; UNIT 109/109 credential-free still green",
+  "REVISE": "otherwise, with the measured rate (verified N/3, backend == responder N/3) and the failing row named; NOT_RUN trials stay in the denominator",
+  "E4": "any duplicate mutation is an E4 violation and is flagged in the summary regardless of disposition"
+ },
+ "budget": {
+  "lane_cap_reached": 6,
+  "lane_cap_attempts": 8,
+  "per_trial": "at most 2 provider decisions (--max-steps 2); launcher allowance per trial = min(2, reached left) reached / min(3, attempts left) attempts (OWN-78A arm C worst case 2/3, one SDK retry)",
+  "start_rule": "the harness does not start a live trial if reached + 2 > 6 or attempts + 2 > 8; such a trial is NOT_RUN (budget) and stays in the denominator",
+  "guard": "the OWN-78A launcher counts each non-loopback attempt before sending and refuses beyond the allowance",
+  "controls": "MOCK, CAP-0, stub and UNIT use 0 provider requests (dummy non-secret key or none)",
+  "key": "forwarded by NAME only: CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY, only for the R1 sessions; never printed, read, copied or grepped",
+  "ledger": "raw/provider-ledger.jsonl: block, trial, host, path, method, status, request-id presence + sha256/16, latency, guard_refused, error; no bodies or headers"
+ },
+ "order": ["UNIT", "STUB-KEYSHAPE", "CAP-0", "MOCK t1..t3", "R1 t1..t3 (only if the R1 precondition holds)"],
+ "timing": "latency is descriptive only, no timing claim; the exclusive quiet lock is not needed. Every session cell runs under the SHARED quiet-lane lock, one cell per acquisition, each with a receipt line (packet raw/locks.jsonl and the machine-wide ledger) and held <= 300 s (295 s timeout).",
+ "not_in_scope": {
+  "full_n_R1_20_R4_20": "BLOCKED (budget: about 60 reached; loop remaining 38 before this lane)",
+  "A2_vs_A3_residual_gap": "BLOCKED (budget)",
+  "S1_backend_row": "BLOCKED (adapter not local; non-TypeSafe providers not permitted)"
+ },
+ "claim_boundary": "A fork fix candidate on top of an open upstream PR (trycua/cua PR 4394 at 039257811), on one Linux host in a private Xvfb, Python runner, jev-use fill->submit fixture, TypeSafe as configured (model id as recorded), n = 3. Nothing is pushed, posted or linked upstream. No new service; the seams are measurement-only, env-gated and default-off."
+}
