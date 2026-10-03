@@ -1,0 +1,32 @@
+{
+ "schema": "cua-rfc-loop.prereg-amendment.v1",
+ "lane": "R2-10R",
+ "wave": 4,
+ "attempt": 2,
+ "amends": "PREREG.json and PREREG-AMENDMENT-1.json (both unchanged)",
+ "written_before_first_counted_row": false,
+ "post_hoc": "Written after the results commit 184b39b43, in response to a fresh verifier. No trial was added, re-run or removed; no arm, plan, metric, oracle, statistic or pass rule changed. Every item below is a disclosed post-hoc correction or a reporting-only sensitivity check.",
+ "corrections": [
+  {
+   "id": "C2-S_direction-coverage",
+   "what": "The PREREG S_direction rule is 'every R2-10 scripted/native S whose CI excluded 1 again excludes 1 in the same direction'. Its parenthetical enumeration (and recert_gates.s_paths in 184b39b43) listed 15 such rows; the accepted R2-10 summary (blob 5fe2549a, 030f6bdbf) has 18. Missing: browser.scripted.S.COMP_E.fill.amortized_mean_ratio (R2-10 55.27 [51.05, 58.87]), browser.scripted.S.COMP_E.fill.warm_only (59.14 [55.05, 61.43]), browser.scripted.S.COMP_K.fill.warm_only (1.0074 [1.0056, 1.0088]).",
+   "fix": "recert_gates.s_paths adds the COMP_E and COMP_K fill amortized_mean_ratio and warm_only rows; reference/r2-10-reference.json is re-extracted from the same blob; recert-summary.json is recomputed. COMP_K fill amortized_mean_ratio (R2-10 CI [0.92, 1.01] includes 1) is now reported as a non-gated row. S_direction now gates 18 rows (S_direction.gated_n).",
+   "result": "18/18 gated rows exclude 1 above 1 again; the three added rows on R': COMP_E fill amortized 56.4091 [52.6800, 59.9564], COMP_E fill warm-only 59.1965 [57.0584, 63.9202], COMP_K fill warm-only 1.0069 [1.0032, 1.0081]. Disposition unchanged (RECERTIFIED, changed_claims [])."
+  }
+ ],
+ "sensitivity": [
+  {
+   "id": "SENS-nm2-external-interference",
+   "what": "Another workflow (bend-stack lane B389 verifier) ran a few seconds of single-core Python without the quiet-lane lock at about 05:52:45-05:53:32Z on 2026-10-03, inside this lane's EXCLUSIVE window r2-10r-a2-nm2 (05:51:37.630-05:54:27.287Z). Source: the other track's synthesis (section 9) and the session orchestrator's note in the lane mirror (EXTERNAL-INTERFERENCE.md, written after 184b39b43). The lane did not know of it when it committed results.",
+   "check": "sensitivity_nm2.py -> nm2-sensitivity.json, recomputed by verify_artifacts.py. Same S rule (analyze_r2_10.s_block, seed 20261002, 10000 resamples) on (i) nm1 only (rounds 0-11) and (ii) all rounds minus every round with a main nm2 trial overlapping the window +/- 5 s (all arms of the round dropped). Each row passes iff its CI is on the same side of 1 as R2-10.",
+   "decision": "Report with disclosure, no rerun: correctness rows (validity, oracle, E4) are unaffected; the timing claims survive without the block. nm2 stays in the counted rows as pre-registered."
+  }
+ ],
+ "advisories_addressed": [
+  "verify_artifacts.reference_check uses 'git rev-parse --verify -q' so a clone without 030f6bdbf falls back to the recorded blob sha1 instead of crashing",
+  "Scripted timing rows are labelled REAL+BENCHMARK (FIXTURE) (jev-use fixture server and kvnloo/cua#24 pages)",
+  "D1 paired T and Driver-span differences are labelled BENCHMARK (indicative, load-contaminated); the gated D1 correctness rows are unaffected",
+  "The browser run manifests (S1, S2r, N1) do not record the Driver binary name or sha256; the README discloses that their attribution to R' a2-45dff8f32 rests on the lane run scripts outside the packet",
+  "Committed session logs contain ephemeral private-session D-Bus socket addresses under the session temp; disclosed, not redacted (no user or host name)"
+ ]
+}

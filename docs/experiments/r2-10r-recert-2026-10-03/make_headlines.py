@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Write headline-numbers.json from r2-10r-summary.json, d1-summary.json and recert-summary.json.
 
-Each headline is "<doc>:<path>" plus a format (doc S = r2-10r-summary, D = d1-summary, G = recert-summary);
+Each headline is "<doc>:<path>" plus a format (doc S = r2-10r-summary, D = d1-summary, G = recert-summary,
+N = nm2-sensitivity, PREREG-AMENDMENT-2);
 verify_artifacts.py recomputes each value from raw/ and requires the formatted text to appear verbatim
 in README.md. (R2-10R edit of the R2-10 make_headlines.py: three source documents, no live layer,
 T_land S and D1 rows added.)
@@ -13,8 +14,10 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-DOCS = {"S": "r2-10r-summary.json", "D": "d1-summary.json", "G": "recert-summary.json"}
+DOCS = {"S": "r2-10r-summary.json", "D": "d1-summary.json", "G": "recert-summary.json", "N": "nm2-sensitivity.json"}
 F1 = "{:.2f}"
+F4 = "{:.4f}"
+CI4 = "[{:.4f}, {:.4f}]"
 CI = "[{:.2f}, {:.2f}]"
 MS = "{:.1f} ms"
 CLASSES = ("fill", "toggle", "modal")
@@ -38,6 +41,11 @@ def items() -> list[tuple[str, str, str]]:
             ("S_fill_warm_ci", "S:browser.scripted.S.COMP.fill.warm_only.ci95", CI),
             ("S_COMPK_fill_amort", "S:browser.scripted.S.COMP_K.fill.amortized_mean_ratio.S", F1),
             ("S_COMPK_fill_amort_ci", "S:browser.scripted.S.COMP_K.fill.amortized_mean_ratio.ci95", CI)]
+    # PREREG-AMENDMENT-2: the three R2-10 fill rows the first gate list omitted (4 decimals, as gated)
+    for arm, k in (("COMP_E", "amortized_mean_ratio"), ("COMP_E", "warm_only"), ("COMP_K", "warm_only")):
+        out += [(f"S_{arm}_fill_{k}_4", f"S:browser.scripted.S.{arm}.fill.{k}.S", F4),
+                (f"S_{arm}_fill_{k}_ci4", f"S:browser.scripted.S.{arm}.fill.{k}.ci95", CI4)]
+    out += [("S_gated_n", "G:S_direction.gated_n", "{} gated S rows")]
     for arm in ("S0", "X"):
         for t in TASKS:
             base = f"S:native.S.{arm}.{t}.all"
@@ -73,6 +81,13 @@ def items() -> list[tuple[str, str, str]]:
             ("D1_walkG", "D:by_arm.G.walk_elapsed_ms.median", "{} ms walk"), ("D1_walkE", "D:by_arm.E.walk_elapsed_ms.median", "{} ms walk"),
             ("D1_browser_gws", "D:browser_marks.get_window_state_dispatches", "{} get_window_state dispatches"),
             ("D1_browser_traces", "D:browser_marks.trace_files", "{} browser trace files")]
+    for v in ("nm1_only", "drop_window"):  # PREREG-AMENDMENT-2: nm2 interference sensitivity
+        for arm in ("S0", "X"):
+            for t in TASKS:
+                out += [(f"N2_{v}_{arm}_{t}", f"N:rows.{v}.{arm}.{t}.S", F4), (f"N2_{v}_{arm}_{t}_ci", f"N:rows.{v}.{arm}.{t}.ci95", CI4),
+                        (f"N2_{v}_{arm}_{t}_n", f"N:rows.{v}.{arm}.{t}.n", "n={}")]
+    out += [("N2_overlap", "N:interference.nm2_trials_overlapping_window_pad", "{} nm2 trials"),
+            ("N2_maxdiff", "N:max_abs_median_diff_nm1_nm2_ms", "{:.2f} ms")]
     return out
 
 
