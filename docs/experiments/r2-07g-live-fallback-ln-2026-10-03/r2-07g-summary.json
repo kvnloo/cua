@@ -1,0 +1,948 @@
+{
+ "artifacts": {
+  "ctl-artifact-scripted-g-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "ctl-artifact-scripted-g-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "l2-artifact-l2-scripted-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "l2-artifact-l2-scripted-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "shake-l2-artifact-l2-scripted-modal.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "Open dialog",
+     "role": "button"
+    },
+    {
+     "name": "Confirm choice",
+     "role": "button"
+    }
+   ],
+   "task_class": "modal_act"
+  },
+  "shake-l2-artifact-l2-scripted-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  },
+  "t-artifact-timed-g-toggle.json": {
+   "problems": [],
+   "steps": [
+    {
+     "name": "feature",
+     "role": "checkbox"
+    },
+    {
+     "name": "Confirm",
+     "role": "button"
+    }
+   ],
+   "task_class": "toggle_confirm"
+  }
+ },
+ "authority_clean": true,
+ "disposition": {
+  "H_LF": "FAIL",
+  "H_T": "FAIL",
+  "authority_clean": true,
+  "controls": "PASS",
+  "e2_fallback_continuation_decisions": "IRREDUCIBLE",
+  "e2_live_modal_provider_decision": "OWNER_DECISION",
+  "e4_kill_candidate": false,
+  "lineage": "toggle REVISE / modal REVISE",
+  "modal_lineage": "REVISE",
+  "toggle_LN": "refused at the failed precondition, 0 completion, no success reported",
+  "toggle_lineage": "REVISE"
+ },
+ "e2": {
+  "basis": "deletion works on warm (R2-07e 29/29, 0 decisions), but admitting a routine whose live fallback continuation succeeds k/4 is an admission-policy choice",
+  "depends_on": "owner accepting the SOURCE-forced n7_presat substitution for the literal rename (BrowserSemanticSource.find matches role+name exactly, so a renamed target cannot verify)",
+  "fallback_basis": "invariant: a failed precondition must re-decide from the current state; blind replay is forbidden",
+  "fallback_continuation_decisions": "IRREDUCIBLE",
+  "live_modal_provider_decision_component": "OWNER_DECISION",
+  "modal_lineage": "REVISE"
+ },
+ "first_measured_trial_utc": "2026-10-03T17:37:10.651Z",
+ "part_C": {
+  "E4": {
+   "ambiguous_dispatch": 0,
+   "blind_replay": 0,
+   "caller_stale_dispatch": 0,
+   "dispatches_after_unknown": 0,
+   "duplicate_mutation": 0,
+   "refusal_returned_as_success": 0,
+   "unverified_success": 0
+  },
+  "E4_clean": true,
+  "G1_G2": {
+   "modal": {
+    "G1": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    },
+    "G2": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    }
+   },
+   "toggle": {
+    "G1": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    },
+    "G2": {
+     "n": 1,
+     "pass": true,
+     "pass_n": 1
+    }
+   }
+  },
+  "G3_nonfresh_refused": {
+   "n4b_cells": 2,
+   "nonfresh_attempts": 2,
+   "nonfresh_refused_effect_refused": 2
+  },
+  "all_pass": true,
+  "cells": 16,
+  "expected_cells": 12,
+  "first_trial_utc": "2026-10-03T17:37:10.651Z",
+  "pass_cells": 12,
+  "rows": {
+   "default_smoke": {
+    "modal": {
+     "n": 3,
+     "pass": 3
+    },
+    "toggle": {
+     "n": 3,
+     "pass": 3
+    }
+   },
+   "n4a": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C003-modal-COMP_CR-n4a-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': True}] obs=3 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C002-toggle-COMP_CR-n4a-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': True}] obs=3 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n4b": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C005-modal-COMP_CR-n4b-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': False}] obs=3 cm=1"
+     ],
+     "pass": 1
+    },
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C004-toggle-COMP_CR-n4b-r00: PASS refusals=[{'code': 'browser_ref_stale', 'effect': 'refused', 'fresh': False}] obs=3 cm=1"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:modal-on-toggle": {
+    "modal": {
+     "n": 1,
+     "notes": [
+      "C007-modal-on-toggle-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   },
+   "n8:toggle-on-modal": {
+    "toggle": {
+     "n": 1,
+     "notes": [
+      "C006-toggle-on-modal-COMP_CR-n8-r00: PASS accepted=0 cm=0 fallback=target_not_found"
+     ],
+     "pass": 1
+    }
+   }
+  }
+ },
+ "part_L2": {
+  "E4_all_cells": {
+   "ambiguous_dispatch": 0,
+   "blind_replay": 0,
+   "caller_stale_dispatch": 0,
+   "dispatches_after_unknown": 0,
+   "duplicate_mutation": 0,
+   "refusal_returned_as_success": 0,
+   "unverified_success": 0
+  },
+  "E4_clean": true,
+  "E4_live": {
+   "ambiguous_dispatch": 0,
+   "blind_replay": 0,
+   "caller_stale_dispatch": 0,
+   "dispatches_after_unknown": 0,
+   "duplicate_mutation": 0,
+   "refusal_returned_as_success": 0,
+   "unverified_success": 0
+  },
+  "G3": {
+   "accepted_fresh": 9,
+   "accepted_mutations": 9,
+   "cells": 8,
+   "nonfresh_attempts": 0,
+   "nonfresh_attempts_refused_effect_refused": 0,
+   "pass": true
+  },
+  "LF": [
+   {
+    "E4": {
+     "ambiguous_dispatch": 0,
+     "blind_replay": 0,
+     "caller_stale_dispatch": 0,
+     "dispatches_after_unknown": 0,
+     "duplicate_mutation": 0,
+     "refusal_returned_as_success": 0,
+     "unverified_success": 0
+    },
+    "T_oracle_ms": null,
+    "accepted_click_labels": [],
+    "accepted_mutations": 0,
+    "budget_exhausted": true,
+    "candidates": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "completion_mutations": 0,
+    "decided": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "decisions": 4,
+    "decisions_counted": true,
+    "fallback": {
+     "index": 0,
+     "reason": "requires_absent"
+    },
+    "false_success": false,
+    "kind": "n7",
+    "ledger_lines": 4,
+    "ledger_reached": 4,
+    "loadavg_1m": 6.23,
+    "non_completion_accepted": 0,
+    "note": "fallback=requires_absent accepted=0 cm=0",
+    "offered_per_step": [
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ]
+    ],
+    "outcome": "budget_exhausted",
+    "provider_error": null,
+    "reobserve_count": 4,
+    "requests": {
+     "attempts": 4,
+     "reached": 4
+    },
+    "routine_outcome": "budget_exhausted",
+    "row_pass": false,
+    "stop": null,
+    "t_to_end_ms": 1040.926834,
+    "trial": "L002-modal-COMP_CR-n7-r00",
+    "verified": false
+   },
+   {
+    "E4": {
+     "ambiguous_dispatch": 0,
+     "blind_replay": 0,
+     "caller_stale_dispatch": 0,
+     "dispatches_after_unknown": 0,
+     "duplicate_mutation": 0,
+     "refusal_returned_as_success": 0,
+     "unverified_success": 0
+    },
+    "T_oracle_ms": null,
+    "accepted_click_labels": [],
+    "accepted_mutations": 0,
+    "budget_exhausted": true,
+    "candidates": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "completion_mutations": 0,
+    "decided": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "decisions": 4,
+    "decisions_counted": true,
+    "fallback": {
+     "index": 0,
+     "reason": "requires_absent"
+    },
+    "false_success": false,
+    "kind": "n7",
+    "ledger_lines": 4,
+    "ledger_reached": 4,
+    "loadavg_1m": 5.81,
+    "non_completion_accepted": 0,
+    "note": "fallback=requires_absent accepted=0 cm=0",
+    "offered_per_step": [
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ]
+    ],
+    "outcome": "budget_exhausted",
+    "provider_error": null,
+    "reobserve_count": 4,
+    "requests": {
+     "attempts": 4,
+     "reached": 4
+    },
+    "routine_outcome": "budget_exhausted",
+    "row_pass": false,
+    "stop": null,
+    "t_to_end_ms": 923.239024,
+    "trial": "L003-modal-COMP_CR-n7-r01",
+    "verified": false
+   },
+   {
+    "E4": {
+     "ambiguous_dispatch": 0,
+     "blind_replay": 0,
+     "caller_stale_dispatch": 0,
+     "dispatches_after_unknown": 0,
+     "duplicate_mutation": 0,
+     "refusal_returned_as_success": 0,
+     "unverified_success": 0
+    },
+    "T_oracle_ms": null,
+    "accepted_click_labels": [],
+    "accepted_mutations": 0,
+    "budget_exhausted": true,
+    "candidates": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "completion_mutations": 0,
+    "decided": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "decisions": 4,
+    "decisions_counted": true,
+    "fallback": {
+     "index": 0,
+     "reason": "requires_absent"
+    },
+    "false_success": false,
+    "kind": "n7",
+    "ledger_lines": 4,
+    "ledger_reached": 4,
+    "loadavg_1m": 5.51,
+    "non_completion_accepted": 0,
+    "note": "fallback=requires_absent accepted=0 cm=0",
+    "offered_per_step": [
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ],
+     [
+      "confirm-choice",
+      "reobserve",
+      "abstain"
+     ]
+    ],
+    "outcome": "budget_exhausted",
+    "provider_error": null,
+    "reobserve_count": 4,
+    "requests": {
+     "attempts": 4,
+     "reached": 4
+    },
+    "routine_outcome": "budget_exhausted",
+    "row_pass": false,
+    "stop": null,
+    "t_to_end_ms": 862.997161,
+    "trial": "L004-modal-COMP_CR-n7-r02",
+    "verified": false
+   }
+  ],
+  "LF_completion_offered_every_step": [
+   true,
+   true,
+   true
+  ],
+  "LF_gate": {
+   "E4_total": 0,
+   "every_decision_counted": true,
+   "false_success": 0,
+   "pass": false,
+   "planned": 3,
+   "ran": 3,
+   "verified": 0
+  },
+  "LF_not_run": [],
+  "LF_pooled_with_r2_07e": {
+   "failure_modes": {
+    "budget_exhausted:reobserve_x4": 4
+   },
+   "k": 0,
+   "n": 4,
+   "r2_07e": {
+    "decided": [
+     "reobserve",
+     "reobserve",
+     "reobserve",
+     "reobserve"
+    ],
+    "outcome": "budget_exhausted",
+    "trial": "L061-modal-COMP_CR-n7-r30",
+    "verified": false
+   }
+  },
+  "LN": {
+   "E4": {
+    "ambiguous_dispatch": 0,
+    "blind_replay": 0,
+    "caller_stale_dispatch": 0,
+    "dispatches_after_unknown": 0,
+    "duplicate_mutation": 0,
+    "refusal_returned_as_success": 0,
+    "unverified_success": 0
+   },
+   "T_oracle_ms": null,
+   "accepted_click_labels": [
+    "action1"
+   ],
+   "accepted_mutations": 1,
+   "budget_exhausted": false,
+   "candidates": [
+    "toggle-feature",
+    "reobserve",
+    "reobserve",
+    "abstain"
+   ],
+   "completion_mutations": 0,
+   "decided": [
+    "toggle-feature",
+    "reobserve",
+    "reobserve",
+    "abstain"
+   ],
+   "decisions": 4,
+   "decisions_counted": true,
+   "fallback": {
+    "index": 0,
+    "reason": "requires_present"
+   },
+   "false_success": false,
+   "kind": "n1",
+   "ledger_lines": 4,
+   "ledger_reached": 4,
+   "loadavg_1m": 5.51,
+   "non_completion_accepted": 1,
+   "note": "fallback=requires_present cm=0 outcome=abstained",
+   "offered_per_step": [
+    [
+     "toggle-feature",
+     "reobserve",
+     "abstain"
+    ],
+    [
+     "reobserve",
+     "abstain"
+    ],
+    [
+     "reobserve",
+     "abstain"
+    ],
+    [
+     "reobserve",
+     "abstain"
+    ]
+   ],
+   "outcome": "abstained",
+   "provider_error": null,
+   "reobserve_count": 2,
+   "requests": {
+    "attempts": 4,
+    "reached": 4
+   },
+   "routine_outcome": "abstained",
+   "row_pass": true,
+   "stop": null,
+   "t_to_end_ms": 1175.310421,
+   "trial": "L005-toggle-COMP_CR-n1-r03",
+   "verified": false
+  },
+  "LN_expected_outcome_met": true,
+  "LN_not_run": [],
+  "controls_pass": true,
+  "first_trial_utc": "2026-10-03T19:27:42.971Z",
+  "loadavg_1m": {
+   "max": 6.51,
+   "median": 6.220000000000001,
+   "min": 5.51
+  },
+  "manifests": 1,
+  "not_run": [],
+  "provider_models": {
+   "jev-1.13.0": 16
+  },
+  "retrains": [],
+  "run": true,
+  "stopped_for_budget": [],
+  "training_modal": {
+   "G1": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G2": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "admission": [
+    {
+     "T_oracle_ms": 52.023819,
+     "trial": "L000-modal-COMP_CR-train-r-1-admission",
+     "valid": true
+    }
+   ],
+   "decisions": 2,
+   "requests": 0,
+   "training": [
+    {
+     "T_oracle_ms": 61.883781,
+     "admitted": true,
+     "compile_ms": 0.193215,
+     "decisions": 2,
+     "trial": "L000-modal-COMP_CR-train-r-1"
+    }
+   ]
+  },
+  "training_toggle": {
+   "G1": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "G2": {
+    "n": 1,
+    "pass": true,
+    "pass_n": 1
+   },
+   "admission": [
+    {
+     "T_oracle_ms": 56.064776,
+     "trial": "L001-toggle-COMP_CR-train-r-1-admission",
+     "valid": true
+    }
+   ],
+   "decisions": 2,
+   "requests": 0,
+   "training": [
+    {
+     "T_oracle_ms": 59.162653,
+     "admitted": true,
+     "compile_ms": 0.11225,
+     "decisions": 2,
+     "trial": "L001-toggle-COMP_CR-train-r-1"
+    }
+   ]
+  }
+ },
+ "part_T": {
+  "E4": {
+   "ambiguous_dispatch": 0,
+   "blind_replay": 0,
+   "caller_stale_dispatch": 0,
+   "dispatches_after_unknown": 0,
+   "duplicate_mutation": 0,
+   "refusal_returned_as_success": 0,
+   "unverified_success": 0
+  },
+  "E4_clean": true,
+  "G1": {
+   "n": 1,
+   "pass": true,
+   "pass_n": 1
+  },
+  "G2": {
+   "n": 1,
+   "pass": true,
+   "pass_n": 1
+  },
+  "G3": {
+   "accepted_fresh": 84,
+   "accepted_mutations": 84,
+   "cells": 42,
+   "nonfresh_attempts": 0,
+   "nonfresh_attempts_refused_effect_refused": 0,
+   "pass": true
+  },
+  "H_T": "FAIL",
+  "admission": [
+   {
+    "T_oracle_ms": 55.785459,
+    "trial": "T000-toggle-COMP_CR-train-r-1-admission",
+    "valid": true
+   }
+  ],
+  "cells": 82,
+  "decomposition": {
+   "COMP": {
+    "components_ms": {
+     "client_validation": 0.37030465,
+     "dispatch": 1.05401245,
+     "input_prep": 0.0,
+     "mcp_admission": 1.5696879,
+     "mcp_transport": 4.4625485000000005,
+     "observation": 14.088927875,
+     "provider_decision": 0.012487400000000001,
+     "resolution": 1.128605425,
+     "reval_endpoint": 20.80858215,
+     "reval_other": 2.501345899999999,
+     "runner": 0.26011867499999997,
+     "settles": 0.0,
+     "sleeps_polls": 0.196372975,
+     "target_effect_lag": 0.33493300000000004,
+     "unattributed": 0.68817465,
+     "verification_reads": 1.128140925,
+     "visualization": 1.7132259
+    },
+    "coverage_mean": 0.9862425318865458,
+    "irreducible_ms": 19.303733124999997,
+    "mean_T_oracle_ms": 50.213280425,
+    "mean_T_runner_ms": 50.317468375,
+    "n": 40,
+    "share": {
+     "client_validation": 0.007359365682713564,
+     "dispatch": 0.020947247229228277,
+     "input_prep": 0.0,
+     "mcp_admission": 0.03119568513069096,
+     "mcp_transport": 0.08868785819552871,
+     "observation": 0.2800007299651828,
+     "provider_decision": 0.00024817226309828237,
+     "resolution": 0.022429694129061994,
+     "reval_endpoint": 0.413545888177845,
+     "reval_other": 0.049711282796627766,
+     "runner": 0.005169550126437576,
+     "settles": 0.0,
+     "sleeps_polls": 0.0039026799507577573,
+     "target_effect_lag": 0.006656396094967488,
+     "unattributed": 0.013676654891920525,
+     "verification_reads": 0.022420462742527635,
+     "visualization": 0.034048332623411726
+    },
+    "untested_share": 0.1685188081563533
+   },
+   "COMP_CR": {
+    "components_ms": {
+     "client_validation": 0.378279875,
+     "dispatch": 1.035933025,
+     "input_prep": 0.0,
+     "mcp_admission": 1.563971075,
+     "mcp_transport": 4.4534033,
+     "observation": 14.304453174999999,
+     "provider_decision": 0.0,
+     "resolution": 1.191619725,
+     "reval_endpoint": 21.044209925,
+     "reval_other": 2.707190775,
+     "runner": 0.3301982,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.008092150000000001,
+     "unattributed": 0.689587175,
+     "verification_reads": 0.513753975,
+     "visualization": 1.682069275
+    },
+    "coverage_mean": 0.9861561563920863,
+    "irreducible_ms": 18.569423099999998,
+    "mean_T_oracle_ms": 50.07547595,
+    "mean_T_runner_ms": 49.90276165,
+    "n": 40,
+    "share": {
+     "client_validation": 0.0075803394940969155,
+     "dispatch": 0.020759031980347325,
+     "input_prep": 0.0,
+     "mcp_admission": 0.03134037121971585,
+     "mcp_transport": 0.08924162015790962,
+     "observation": 0.2866465242009306,
+     "provider_decision": 0.0,
+     "resolution": 0.023878833266936038,
+     "reval_endpoint": 0.4217043151358338,
+     "reval_other": 0.05424931778299688,
+     "runner": 0.0066168321969010705,
+     "settles": 0.0,
+     "sleeps_polls": 0.0,
+     "target_effect_lag": 0.00016215836022774504,
+     "unattributed": 0.013818617491282669,
+     "verification_reads": 0.0102951010728281,
+     "visualization": 0.033706937639993315
+    },
+    "untested_share": 0.17247661382684218
+   }
+  },
+  "first_trial_utc": "2026-10-03T18:48:29.806Z",
+  "interrupted_units": [],
+  "load_gate": {
+   "attempts": 41,
+   "chunks": [
+    "1"
+   ],
+   "end_chunk": 0,
+   "load_at_start_max": 2.17,
+   "load_at_start_median": 1.72,
+   "started_after_wait": 0,
+   "starts": 41
+  },
+  "sensitivity_load_le_3": {
+   "S_COMP_over_COMP_CR": {
+    "S": 0.9902260014916205,
+    "ci95": [
+     0.9733017001792857,
+     1.0231462645317102
+    ],
+    "median_arm_ms": 49.875954,
+    "median_base_ms": 49.3884665,
+    "n": 40
+   },
+   "diff_COMP_CR_minus_COMP_ms": {
+    "ci95": [
+     -0.6071764999999978,
+     2.173630000000003
+    ],
+    "max": 10.202754999999996,
+    "median": 0.5194794999999992,
+    "min": -14.502310000000001,
+    "n": 40,
+    "positive": 26
+   },
+   "median_T_COMP_CR_ms": 49.875954,
+   "median_T_COMP_ms": 49.3884665,
+   "n": 40
+  },
+  "timing": {
+   "S_COMP_over_COMP_CR": {
+    "S": 0.9902260014916205,
+    "ci95": [
+     0.9733017001792857,
+     1.0231462645317102
+    ],
+    "median_arm_ms": 49.875954,
+    "median_base_ms": 49.3884665,
+    "n": 40
+   },
+   "diff_COMP_CR_minus_COMP_ms": {
+    "ci95": [
+     -0.6071764999999978,
+     2.173630000000003
+    ],
+    "max": 10.202754999999996,
+    "median": 0.5194794999999992,
+    "min": -14.502310000000001,
+    "n": 40,
+    "positive": 26
+   },
+   "failed_pairs": [],
+   "gate_975_view": {
+    "ci": [
+     -1.3611140000000006,
+     2.259549
+    ],
+    "level": 0.975,
+    "max": 10.202754999999996,
+    "median": 0.5194794999999992,
+    "min": -14.502310000000001,
+    "n": 40,
+    "positive": 26,
+    "resamples": 10000,
+    "seed": 20261003
+   },
+   "loadavg_1m": {
+    "max": 2.17,
+    "median": 1.71,
+    "min": 1.43
+   },
+   "median_T_COMP_CR_ms": 49.875954,
+   "median_T_COMP_ms": 49.3884665,
+   "n": 40,
+   "not_run_rounds": [],
+   "pass": false,
+   "planned_pairs": 40,
+   "valid_pairs": 40
+  },
+  "toggle_keep_reconfirmed": false,
+  "training": [
+   {
+    "T_oracle_ms": 123.243987,
+    "admitted": true,
+    "compile_ms": 0.175216,
+    "decisions": 2,
+    "trial": "T000-toggle-COMP_CR-train-r-1"
+   }
+  ],
+  "warm": {
+   "decisions": 0,
+   "fallbacks": 0,
+   "n": 40,
+   "valid": 40
+  }
+ },
+ "provider": {
+  "attempts": 16,
+  "blocked_by_cap": 0,
+  "by_layer": {
+   "live": 16
+  },
+  "by_trial": {
+   "L002-modal-COMP_CR-n7-r00": 4,
+   "L003-modal-COMP_CR-n7-r01": 4,
+   "L004-modal-COMP_CR-n7-r02": 4,
+   "L005-toggle-COMP_CR-n1-r03": 4
+  },
+  "hosts": [
+   "api.typesafe.ai"
+  ],
+  "lane_cap": {
+   "attempts": 20,
+   "reached": 16
+  },
+  "latency_ms_median": 221.051,
+  "paths": [
+   "/v1/systemone"
+  ],
+  "reached": 16,
+  "request_id_present": 16,
+  "status": {
+   "200": 16
+  },
+  "within_cap": true
+ },
+ "schema": "r2-07g.summary.v1"
+}

@@ -1,0 +1,40 @@
+{
+ "lane": "R2-07g",
+ "branch": "exp/r2-07g-live-fallback-ln-20261003",
+ "base": "67b99ddc6a66a217c76dc491977de78180434751",
+ "prereg_commit": "721b461db1d69b4346bf29d2b863f3a3991fe539",
+ "prereg_committed_utc": "2026-10-03T16:04:23Z",
+ "tested_source": {
+  "driver_source": "8f3a646b4818b757648835cf89db8886626b1cf0",
+  "libs_cua_driver_tree": "bf8e7bdc90fdce295e44743f2754a6502d5d6e0e",
+  "r2_07c_harness_tree": "66bad345b1736b97b66884bbf40a1505c16083bf",
+  "r2_07d_runner_blob": "0989b68bc57d8fc16de3c0ab2cf80c61cd6bd334",
+  "r2_07e_packet_tree": "8c3901b1d660a760a1d0e34281cd43d1e26d2dcb",
+  "r2_07e_runner_blob": "27d850be87d83189cbe0c02f77c6746af72e4a4f",
+  "lane_runner": "driver/r2_07g.py at the PREREG commit (unchanged after it)"
+ },
+ "driver_binary": {
+  "name": "cua-driver-r2-10-8f3a646b4",
+  "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "version": "cua-driver 0.32.0",
+  "rehash_start_utc": "2026-10-03T15:56:11Z",
+  "rehash_end_utc": "2026-10-03T19:28:27Z",
+  "rehash_identical": true,
+  "build": "none"
+ },
+ "live_heads": {
+  "start_utc": "2026-10-03T15:56:11Z",
+  "start": {"trycua_cua_main": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b", "pr_4316_head": "a0bca744067d04f05904319d3d919be30c336556", "pr_4316_state": "OPEN", "pr_4394_head": "039257811e0bbb2348c616c52562409923d2856f", "pr_4394_state": "OPEN"},
+  "end_utc": "2026-10-03T19:28:27Z",
+  "end": {"trycua_cua_main": "e6127c6412eb2348f71ac40c70d088f6ca115a60", "pr_4316_head": "a0bca744067d04f05904319d3d919be30c336556", "pr_4316_state": "OPEN", "pr_4394_head": "039257811e0bbb2348c616c52562409923d2856f", "pr_4394_state": "OPEN"},
+  "source": "read-only gh api / gh pr view"
+ },
+ "windows_utc": {
+  "part_C": ["2026-10-03T17:37:02Z", "2026-10-03T17:38:02Z"],
+  "part_T": ["2026-10-03T18:48:20Z", "2026-10-03T18:50:07Z"],
+  "part_L2": ["2026-10-03T19:27:34Z", "2026-10-03T19:28:08Z"]
+ },
+ "environment": "one shared Linux host; every code-executing command under bin/hostless; Driver and Chrome inside cua-x11-session.sh (private Xvfb + D-Bus) with an xdpyinfo probe before any trial; isolated Chrome profile per trial, sandbox on; CUA_DRIVER_RS_TELEMETRY_ENABLED=false via CUA_SESSION_EXTRA_ENV",
+ "provider": {"name": "TypeSafe", "host": "api.typesafe.ai", "path": "/v1/systemone", "model": "jev-1.13.0", "attempts": 16, "reached": 16, "lane_cap": {"reached": 16, "attempts": 20}, "key": "forwarded by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY)"},
+ "publication_sha": null
+}

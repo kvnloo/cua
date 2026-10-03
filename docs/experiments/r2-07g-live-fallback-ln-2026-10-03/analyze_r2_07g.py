@@ -172,7 +172,8 @@ def part_c(raw: Path) -> dict[str, Any]:
     return C
 
 
-def l2_row(r: dict[str, Any] | None, summ: dict[str, Any], ledger: list[dict[str, Any]]) -> dict[str, Any] | None:
+def l2_row(r: dict[str, Any] | None, summ: dict[str, Any], ledger: list[dict[str, Any]],
+           events: dict[str, list[dict[str, Any]]]) -> dict[str, Any] | None:
     v = AE.fb_row(r, summ)
     if v is None:
         return None
@@ -187,6 +188,7 @@ def l2_row(r: dict[str, Any] | None, summ: dict[str, Any], ledger: list[dict[str
               "accepted_click_labels": clicks, "candidates": s.get("candidates"),
               "non_completion_accepted": (r["accepted_mutations"] or 0) - (r["completion_mutations"] or 0),
               "reobserve_count": sum(1 for x in v["decided"] if x == "reobserve"),
+              "offered_per_step": [e.get("ids") for e in events.get(r["trial"], []) if e.get("event") == "cand_done"],
               "budget_exhausted": r.get("outcome") == "budget_exhausted"})
     v["false_success"] = false_success(v)
     return v
@@ -194,7 +196,9 @@ def l2_row(r: dict[str, Any] | None, summ: dict[str, Any], ledger: list[dict[str
 
 def part_l2(raw: Path, controls_pass: bool) -> dict[str, Any]:
     rows = AD.rows_of(raw, "l2")
-    summ = {t["name"]: t["summary"] for t in AC.load_block(raw, "l2")}
+    blk = AC.load_block(raw, "l2")
+    summ = {t["name"]: t["summary"] for t in blk}
+    evs = {t["name"]: t["events"] for t in blk}
     man = AC.manifests(raw, "l2")
     ledger = AD.jsonl(raw / "provider-ledger.jsonl")
     not_run = [x for m in man for x in m.get("not_run", [])]
@@ -213,14 +217,16 @@ def part_l2(raw: Path, controls_pass: bool) -> dict[str, Any]:
                                 "requests": sum(((r["provider_requests"] or {}).get("attempts", 0)) for r in crow
                                                 if r["kind"] in ("train", "admission"))}
     lf_rows = sorted([r for r in rows if r["cls"] == "modal" and r["kind"] == "n7"], key=lambda r: r["round"])
-    lf = [l2_row(r, summ, ledger) for r in lf_rows]
+    lf = [l2_row(r, summ, ledger, evs) for r in lf_rows]
     lf_nr = [x for x in not_run if "-modal-" in x["trial"] and "-n7-" in x["trial"]]
     lf_all = lf + [None] * len(lf_nr)
     L["LF"] = lf
     L["LF_not_run"] = lf_nr
     L["LF_gate"] = lf_gate(lf_all)
+    L["LF_completion_offered_every_step"] = [all("confirm-choice" in (ids or []) for ids in x["offered_per_step"])
+                                            and bool(x["offered_per_step"]) for x in lf]
     ln = next((r for r in rows if r["cls"] == "toggle" and r["kind"] == "n1"), None)
-    L["LN"] = l2_row(ln, summ, ledger)
+    L["LN"] = l2_row(ln, summ, ledger, evs)
     L["LN_not_run"] = [x for x in not_run if "-toggle-" in x["trial"] and "-n1-" in x["trial"]]
     lnv = L["LN"]
     L["LN_expected_outcome_met"] = (None if lnv is None else
