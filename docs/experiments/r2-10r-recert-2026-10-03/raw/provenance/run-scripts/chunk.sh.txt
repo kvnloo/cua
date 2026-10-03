@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# lane-local: one measured chunk per call (< 2 h incl. lock queue); the 25 min cap is inside the lock
+set -u
+. <tmp>/w4a2-r2-10r/env.sh
+PS=$(sha256sum $H/native-plan.json | cut -d' ' -f1)
+name="$1"; label="r2-10r-a2-$2"; mkdir -p $M
+case "$name" in
+  S2) cmd=(timeout 7000 $B/hostless $H/run_chunk.sh $label exclusive 0 0 $W $H/r2_10_browser.py --driver $R --out $M/scripted --plan scripted --start-round 16 --rounds 16 --prefix S2r-) ;;
+  N1) cmd=(timeout 7000 $B/hostless $H/run_chunk.sh $label exclusive 0 0 $W $H/r2_10_browser.py --driver $R --out $M/controls --routines $M/scripted --plan controls --rounds 5 --prefix N1-) ;;
+  nm1|nm2|nd1) cmd=(timeout 7000 $B/hostless $B/hostless-strict $H/run_chunk.sh $label exclusive 1 0 $W $H/r2_10_native.py --wt $W --driver $R --driver-sha256 $RS --plan $H/native-plan.json --plan-sha256 $PS --block $name --label $name --out $M/native-$name/raw --work $M/native-$name/work) ;;
+  *) echo "unknown chunk $name"; exit 2 ;;
+esac
+"${cmd[@]}" > $M/$2.log 2>&1; r=$?
+echo "[$(date -u +%FT%TZ)] $name label=$label rc=$r" >> <tmp>/w4a2-r2-10r/m.out

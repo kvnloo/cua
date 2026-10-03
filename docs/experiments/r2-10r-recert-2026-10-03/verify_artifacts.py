@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """R2-10R packet verifier (standard library only).
 
-1. Recomputes r2-10r-summary.json (analyze_r2_10.analyze), d1-summary.json (analyze_d1.analyze) and
-   recert-summary.json (recert_gates.gates against reference/r2-10-reference.json) from raw/ and
-   requires each to equal the committed file (seeded bootstrap: deterministic).
+1. Recomputes r2-10r-summary.json (analyze_r2_10.analyze), d1-summary.json (analyze_d1.analyze),
+   recert-summary.json (recert_gates.gates against reference/r2-10-reference.json) and
+   nm2-sensitivity.json (sensitivity_nm2.analyze, PREREG-AMENDMENT-2) from raw/ and requires each to
+   equal the committed file (seeded bootstrap: deterministic) and the nm2 sensitivity rows to pass.
 2. Requires every headline number in headline-numbers.json to equal its recomputed value and to
    appear verbatim in README.md.
 3. Requires every file this packet cites (every file under raw/, reference/, harness/, the top-level
@@ -44,6 +45,7 @@ sys.path.insert(0, str(HERE))
 import analyze_d1 as D  # noqa: E402
 import analyze_r2_10 as A  # noqa: E402
 import recert_gates as G  # noqa: E402
+import sensitivity_nm2 as N2  # noqa: E402
 
 BASE = "0f1955d2f1ee2b01b40775aa53ea2af0b5544218"
 R2_10_COMMIT = "030f6bdbf"
@@ -82,7 +84,8 @@ ALLOW = {
     ("a0bca7440", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
     ("6f438492b", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
 }
-TOP = ["README.md", "PREREG.json", "PREREG-AMENDMENT-1.json", "provenance.json", "r2-10r-summary.json", "d1-summary.json", "recert-summary.json",
+TOP = ["README.md", "PREREG.json", "PREREG-AMENDMENT-1.json", "PREREG-AMENDMENT-2.json", "nm2-sensitivity.json",
+       "sensitivity_nm2.py", "provenance.json", "r2-10r-summary.json", "d1-summary.json", "recert-summary.json",
        "headline-numbers.json", "analyze_r2_10.py", "analyze_d1.py", "recert_gates.py", "make_headlines.py",
        "verify_artifacts.py", ".gitignore", "reference/r2-10-reference.json"]
 CHECKS: list[tuple[str, bool, str]] = []
@@ -226,7 +229,8 @@ def tracked_check() -> None:
 def reference_check() -> None:
     ref = json.loads((HERE / "reference" / "r2-10-reference.json").read_text())
     want = ref.get("source", {}).get("summary_git_blob_sha1")
-    got = git("rev-parse", f"{R2_10_COMMIT}:{R2_10_SUMMARY}", ok=False).decode().strip()
+    # --verify -q: a clone without 030f6bdbf (e.g. --single-branch) prints nothing instead of echoing the argument
+    got = git("rev-parse", "--verify", "-q", f"{R2_10_COMMIT}:{R2_10_SUMMARY}", ok=False).decode().strip()
     if got:
         blob = git("cat-file", "blob", got)
         same = G.extract(json.loads(blob))
@@ -257,7 +261,12 @@ def main() -> None:
     for name, rec in (("r2-10r-summary.json", S), ("d1-summary.json", Dd), ("recert-summary.json", Gg)):
         committed = json.loads((HERE / name).read_text())
         check(f"{name} recomputes identically from raw/", rec == committed, "" if rec == committed else "differs")
-    docs = {"S": S, "D": Dd, "G": Gg}
+    Nn = json.loads(json.dumps(N2.analyze(HERE / "raw"), sort_keys=True))
+    committed = json.loads((HERE / "nm2-sensitivity.json").read_text())
+    check("nm2-sensitivity.json recomputes identically from raw/", Nn == committed, "" if Nn == committed else "differs")
+    check("nm2 sensitivity: nm1-only and drop-window native S keep the R2-10 direction (8/8 rows)",
+          Nn["pass"] and Nn["rows_n"] == 8, f"rows {Nn['rows_n']}")
+    docs = {"S": S, "D": Dd, "G": Gg, "N": Nn}
     readme = (HERE / "README.md").read_text()
     heads = json.loads((HERE / "headline-numbers.json").read_text())
     for h in heads["numbers"]:

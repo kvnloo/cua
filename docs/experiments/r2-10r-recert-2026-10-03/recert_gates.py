@@ -39,6 +39,12 @@ def s_paths() -> list[str]:
         for cls in CLASSES:
             out.append(f"browser.scripted.S.{arm}.{cls}.all")
     out += ["browser.scripted.S.COMP.fill.amortized_mean_ratio", "browser.scripted.S.COMP.fill.warm_only"]
+    # PREREG-AMENDMENT-2.json (post-hoc correction after the fresh verifier; the PREREG rule is "every R2-10 S
+    # whose CI excluded 1", its enumeration listed 15): the
+    # first version omitted these R2-10 fill rows; COMP_E amortized/warm and COMP_K warm excluded 1 in R2-10
+    # and are gated, COMP_K amortized included 1 and is reported, not gated (18 gated rows in all).
+    out += [f"browser.scripted.S.{arm}.fill.{k}" for arm in ("COMP_E", "COMP_K")
+            for k in ("amortized_mean_ratio", "warm_only")]
     for arm in ("S0", "X"):
         for t in TASKS:
             out.append(f"native.S.{arm}.{t}.all")
@@ -107,7 +113,8 @@ def gates(summary: dict[str, Any], d1: dict[str, Any], ref: dict[str, Any]) -> d
         gated = rs in ("above_1", "below_1")
         srows[p] = {"R2_10_side": rs, "R_prime_side": cs, "R_prime_S": cur.get("S"), "R_prime_ci95": cur.get("ci95"),
                     "R_prime_n": cur.get("n"), "gated": gated, "pass": (cs == rs) if gated else None}
-    g["S_direction"] = {"rows": srows, "pass": all(v["pass"] for v in srows.values() if v["gated"]),
+    g["S_direction"] = {"rows": srows, "gated_n": sum(1 for v in srows.values() if v["gated"]),
+                        "gated_pass_n": sum(1 for v in srows.values() if v["gated"] and v["pass"]), "pass": all(v["pass"] for v in srows.values() if v["gated"]),
                         "changed": [p for p, v in srows.items() if v["gated"] and not v["pass"]],
                         "not_gated_changed": [p for p, v in srows.items() if not v["gated"] and v["R_prime_side"] != v["R2_10_side"]]}
     drows, crossings, e2_changes, mismatches = {}, [], [], []
