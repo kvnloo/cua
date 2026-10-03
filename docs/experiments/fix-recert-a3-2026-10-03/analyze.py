@@ -447,6 +447,13 @@ def dispositions(s):
     failing = [g for g, ok in g9.items() if not ok]
     out["OWN-09R (kvnloo/cua#84 revision)"] = {"wave3": "KEEP", "verdict": "RECERT_PASS" if not failing else "REVISE",
                                                "gates": g9, "failing_rows": failing}
+    if not failing and first.get("failed"):
+        # The verdict uses the re-run rule of 34b55dfac; a strict reading of PREREG ("head suites 0 failed")
+        # would make the head-core unit row REVISE. Reported next to the verdict, not instead of it.
+        out["OWN-09R (kvnloo/cua#84 revision)"].update({
+            "qualifier": "RECERT_PASS under Deviation 6 (strict PREREG reading: REVISE on the head-core unit row)",
+            "strict_prereg_reading": {"verdict": "REVISE", "failing_rows": ["unit head cua-driver-core first run "
+                                      f"{first.get('passed')}/{first.get('failed')} failed"]}})
     s16 = s.get("own16w") or {}
     x11, sw = (s16.get("modes") or {}).get("X11", {}), (s16.get("modes") or {}).get("SW", {})
     xr = lambda b, r: ((x11.get("rows") or {}).get(b, {}).get(r) or {})

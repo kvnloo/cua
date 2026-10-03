@@ -1,0 +1,20 @@
+# RECONSTRUCTION, not a recovered file: the qlock.sh that ran from about 08:16Z to 08:28Z (Deviation 4) was
+# not kept. Per the lane's own record its only difference from the committed qlock.sh was the yield cap,
+# 900 s instead of 120 s. Apply in reverse (patch -R) to the committed qlock.sh to get that version.
+--- a/qlock.sh-900s-reconstructed
++++ b/qlock.sh
+@@ -9,12 +9,12 @@
+ LOCKDIR="${CUA_LANE_LOCKDIR:?set CUA_LANE_LOCKDIR to the shared lock dir}"; GLOBAL="$LOCKDIR/quiet-lane-ledger.jsonl"
+ case "$mode" in shared) flag=-s ;; exclusive) flag=-x ;; *) echo "mode must be shared|exclusive" >&2; exit 64 ;; esac
+ # RECERT-FIX a3 (added after PREREG, Deviation): a shared acquisition first yields to any EXCLUSIVE
+-# waiter on the lock (another lane's timing phase), up to 900 s, so back-to-back shared blocks never
++# waiter on the lock (another lane's timing phase), up to 120 s, so back-to-back shared blocks never
+ # starve it. The wait is recorded in the receipt (yield_s).
+ ino=$(stat -c %i "$LOCKDIR/quiet-lane.lock" 2>/dev/null || echo none)
+ yield_start=$(date +%s)
+ if [ "$mode" = shared ]; then
+-  while grep -qE "^[0-9]+: -> FLOCK +ADVISORY +WRITE .*:${ino} " /proc/locks && [ $(( $(date +%s) - yield_start )) -lt 900 ]; do sleep 1; done
++  while grep -qE "^[0-9]+: -> FLOCK +ADVISORY +WRITE .*:${ino} " /proc/locks && [ $(( $(date +%s) - yield_start )) -lt 120 ]; do sleep 1; done
+ fi
+ yield_s=$(( $(date +%s) - yield_start ))
+ exec 9>"$LOCKDIR/quiet-lane.lock"

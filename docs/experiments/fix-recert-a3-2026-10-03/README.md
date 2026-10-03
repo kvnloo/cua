@@ -18,7 +18,8 @@ is **KEEP**. All dispositions are computed by `analyze.py` into `dispositions.js
   re-dispatched 10/10 per runtime: 20 duplicate submits.
 - **FIX-02 F4 (REVISE, as in wave 3).** F' refused the detached input 20/20 with 0 old-node events; U'
   accepted it 20/20. The check-to-assignment window is still not covered.
-- **OWN-09R (KEEP).** P' passes R1D 40/40, R6 80/80, and R2, R4, R4C, R5 and R7 40/40 each; arm M
+- **OWN-09R (KEEP; RECERT_PASS under Deviation 6, strict PREREG reading: REVISE on the head-core unit row).**
+  P' passes R1D 40/40, R6 80/80, and R2, R4, R4C, R5 and R7 40/40 each; arm M
   reproduces R1D 40/40, R2 40/40, R6 80/80 and R7 40/40; every control behaves as in wave 3.
 - **OWN-16W (KEEP).** On X11, F'' refused both string selectors 42/42 with 0 producers by marks and
   oracles, and U'' accepted 42/42. S-W on F'' meets every wave-3 row gate, 42 calls per row.
@@ -37,7 +38,7 @@ is **KEEP**. All dispositions are computed by `analyze.py` into `dispositions.js
 | FIX-02 F2 (`205a4ecb2`) | KEEP | **RECERT_PASS** (KEEP) | I5p 20/20, I5ps 20/20, I5pt 10/10, U' accepts I5p, forged I1 10/10, unit | REAL+FIXTURE, UNIT |
 | FIX-02 F3 (`cdffb3213`) | KEEP | **RECERT_PASS** (KEEP) | py and ts: post-dispatch 0 re-dispatches 10/10, pre-dispatch verified 10/10; 0 blind re-dispatches | REAL (injection at the stdio seam), UNIT |
 | FIX-02 F4 (`a357d061d`) | REVISE (narrower claim) | **RECERT_PASS** (stays REVISE) | detached input refused 20/20, 0 old-node events, rebind 20/20; TOCTOU window not covered | REAL, UNIT |
-| OWN-09R (kvnloo/cua#84 revision, `ba611b51a`) | KEEP | **RECERT_PASS** (KEEP) | R1D 40/40, R6 80/80, R2/R4/R4C/R5/R7 40/40, M reproduces, controls, per-commit red/green, head suites | FIXTURE (SDK + real C ABI), UNIT |
+| OWN-09R (kvnloo/cua#84 revision, `ba611b51a`) | KEEP | **RECERT_PASS** (KEEP) under Deviation 6 (strict PREREG reading: REVISE on the head-core unit row) | R1D 40/40, R6 80/80, R2/R4/R4C/R5/R7 40/40, M reproduces, controls, per-commit red/green, head suites | FIXTURE (SDK + real C ABI), UNIT |
 | OWN-16W (`7e31eae59`) | KEEP (S-W; X11 string fix) | **RECERT_PASS** (KEEP) | X11 F'' refuses 42/42 each, U'' accepts 42/42, S-W F'' rows 42/42, selector red/green | REAL+FIXTURE, UNIT |
 | kvnloo/cua#36 same-process two-window row (new) | NOT_RUN | **KEEP** | W2a/W2c/W2d refused 20/20 on F', every positive 20/20, 0 cross-session mutations | REAL+FIXTURE |
 
@@ -149,7 +150,9 @@ and the wave-3 merge `065ee203b`. The one semantic conflict (#84's slice-A fixtu
   runs inside `cua-x11-session.sh` with `CUA_SESSION_ATSPI=1` and `CUA_SESSION_EXTRA_ENV`; S-W inside
   `hostless cua-sway-session.sh`. 0-3 s jitter and an `xdpyinfo` probe before trusting each session. Every
   counted block holds the shared quiet-lane lock (`harness/a3/qlock.sh`, receipts in `raw/**/lock-ledger.jsonl`
-  and the loop-wide ledger), at most 10 attempts or cells per acquisition. Cargo work holds the cargo lock.
+  and the loop-wide ledger). Native, W2 and browser blocks hold at most 10 attempts or cells per
+  acquisition; each OWN-09R invocation and each OWN-16W truth session is one acquisition (Deviation 17).
+  Cargo work holds the cargo lock.
   Correctness only: no timing claim is made.
 - **Order.** U'/F' blocks interleaved with the arm that goes first alternating (`plans/`); every attempt
   stays in the denominator. A block whose session failed before its first attempt is kept (receipt, session
@@ -291,7 +294,9 @@ Unit runs used `hostless` -> cargo lock -> `cua-x11-session.sh` (`raw/unit/`).
    wait first for any queued exclusive waiter (another lane's timing phase), up to 900 s; the cap became
    120 s at 08:28Z after the long holder was found to be another track's shared job. Receipts gained
    `yield_s` (44 receipts carry it: 24 hit the cap). The forced path, oracle, n and gates are unchanged.
-   Courtesy only.
+   Courtesy only. Only the 120 s version is committed; the 900 s version was not kept, so it is given as a
+   one-constant reconstruction (`harness/a3/qlock-900s-reconstructed.diff`), not as a recovered file. The
+   one receipt acquired under it with a non-zero yield waited 751 s (< 900); every later yield is <= 121 s.
 5. **FIX-02 red core re-run.** The first red run stopped at the first failing test binary (the F4 lib test),
    so the integration tests never ran. It is kept as `raw/unit/fix02/red-core-failfast.log`. The red tree was
    re-applied with byte-equal files (`red-files-2.sha256`) and run with `--no-fail-fast` (`red-core.log`).
@@ -334,6 +339,26 @@ Unit runs used `hostless` -> cargo lock -> `cua-x11-session.sh` (`raw/unit/`).
     Result on all 4 branches: 0 findings (`raw/privacy-scan.txt`, every commit present when it ran; the
     final run over every commit including this one is reported by the lane). A self-test confirmed that it
     flags a hex- or base64-encoded machine name or local path.
+16. **Native and W2 session logs added after the fresh verification.** As first published, the 60 counted
+    native/W2 `raw/fix02/session-a3-{N,W}-*.log` files (and the 9 native/W2 shakedown ones) were 0 bytes:
+    `locked_block.sh` and `locked_w2.sh` send the `cua-x11-session.sh` output to `session.log` in the
+    block's lane-TMPDIR work directory, so the lock wrapper that `campaign_a3.sh` captures printed nothing.
+    Those 69 inner logs were copied over the empty files, sanitized with `sanitize_raw.py` (same prefix
+    map; the unsanitized copies are in the mirror's `raw-unsanitized/`), and listed with their sources and
+    hashes in `raw/fix02/session-log-sources.jsonl`. 65 show `[a3-probe] xdpyinfo ok` on a private display;
+    exactly 4 show `xdpyinfo FAILED`, the 4 pre-attempt deaths of Deviation 7, each re-run once as
+    `<block>R` with a passing probe. `verify_artifacts.py` now fails on any empty file under `raw/` (except
+    the two superseded unit logs of Deviation 2, listed with their reason), on any native/W2/browser receipt
+    without a non-empty session log, on a missing probe line, and on any failed probe that is not one of those 4.
+    No REAL row was re-run, and no count changed. The harness is not edited, because it ran as committed.
+17. **Lock acquisitions larger than 10 cells.** The 10-cell cap held for every native, W2 and browser block.
+    OWN-09R and OWN-16W took one shared acquisition per invocation, as their wave-3 drivers do: each OWN-09R
+    acquisition (`a3-own09r-sdk-{main,stress}-{M,P}-{r1,rows}`, `a3-own09r-cabi-{M,P}`) held the lock 98 to
+    223 s and covered hundreds of per-iteration cells, and each OWN-16W acquisition held one truth session of
+    63 to 168 row calls (18 to 40 s). Every hold was shared and yield-capped. No timing claim depends on them.
+18. **R6 wording.** The lane spec says "R6 80 (SDK + C-ABI)". PREREG and wave 3 define R6 as SDK only
+    (`shutdown_after_cancel` 40 + `end_session_after_cancel` 40, main and stress); the C ABI covers R1D and
+    R4C. The packet follows PREREG and wave 3.
 
 Shakedowns before PREREG (`raw/shakedown/`, not counted): S1, S2, and 1-attempt W2a (U', F'), W2b, W2c,
 W2d (2), I5ps (U', F'), f3ts stale (F'), f3ts trust_unknown (U'), f3 stale (F').
@@ -362,7 +387,7 @@ W2d (2), I5ps (U', F'), f3ts stale (F'), f3ts trust_unknown (U'), f3 stale (F').
 | `plans/` | every counted block, in run order |
 | `analyze.py` -> `recert-summary.json` | every row, gate count and E4 counter from `raw/` |
 | `dispositions.json` | per-fix RECERT verdicts with the gating rows behind them |
-| `verify_artifacts.py` | independent recomputation (no import of analyze.py), binary, lock, PREREG-order, unit, cited-file and privacy checks; run `python3 verify_artifacts.py --git <repo>` |
+| `verify_artifacts.py` | independent recomputation (no import of analyze.py), binary, lock, PREREG-order, unit, session-evidence (non-empty logs, probes), cited-file and privacy checks; run `python3 verify_artifacts.py --git <repo>` |
 | `verify_helper.py`, `test_verify_helper.py` | packet template helpers (cca59642d) |
 | `sanitize_raw.py` | the in-place sanitizer applied to `raw/` (prefix map given on the command line; originals mirrored outside the packet) |
 | `privacy_scan.py` | every-commit privacy scan (paths, names from `CUA_PRIVACY_NAMES_FILE`, secrets, decoded hex/base64) |
@@ -371,12 +396,13 @@ W2d (2), I5ps (U', F'), f3ts stale (F'), f3ts trust_unknown (U'), f3 stale (F').
 | `harness/fix02-w3/` | wave-3 FIX-02 harness copy (`BLOBS.txt`: source blob hashes at cea02cb74); marked change: `native/run_block.py` row `I5ps` |
 | `harness/own16w-w3/`, `harness/own09r-w3/` | wave-3 OWN-16W (1b9819157) and OWN-09R (0c2896a53) harness copies with `BLOBS.txt`; marked change: `run_in_session.sh` path |
 | `harness/w2/` | Part B rows and smokes (`w2_rows.py`, `locked_w2.sh`) |
-| `harness/a3/` | campaign, lock wrapper, session probe, TS seam proxy, a3 browser driver, OWN-09R and OWN-16W drivers |
+| `harness/a3/` | campaign, lock wrapper (`qlock-900s-reconstructed.diff`: the superseded 900 s cap, Deviation 4), session probe, TS seam proxy, a3 browser driver, OWN-09R and OWN-16W drivers |
 | `raw/fix02/native/<arm>/<topology>/<row>/b*.jsonl` | every native call with both fixtures' pre/post states (paths scrubbed) |
 | `raw/fix02/w2/<arm>/<row>/b*.jsonl` | every Part B call with per-window pre/post states |
 | `raw/fix02/browser/<block>-<phase>-<arm>[-code]/` | `validity.json`, `cells.jsonl`, `cells/*.jsonl` (Driver calls or seam journal, runner events, target journal), `end.json` |
 | `raw/fix02/*ledger.jsonl`, `raw/fix02/native/block-ledger.jsonl`, `raw/fix02/w2/block-ledger.jsonl` | lock receipts |
-| `raw/fix02/session-*.log` | per-block session logs (sanitized) |
+| `raw/fix02/session-*.log` | per-block session logs (sanitized). Browser blocks: the lock wrapper's own output. Native and W2 blocks: the inner `cua-x11-session.sh` log, copied in after the run (Deviation 16) |
+| `raw/fix02/session-log-sources.jsonl` | for each of the 69 native/W2 session logs (60 counted + 9 shakedown): its lane-TMPDIR source, the empty wrapper log it replaced, the sha256 before and after sanitizing, and the `xdpyinfo` probe result |
 | `raw/own16w/` | collected OWN-16W sessions (`raw/<MODE>/<BIN>/<ID>/`), `own-16w-summary.json`, `lock-ledger.jsonl` |
 | `raw/own09r/` | OWN-09R per-iteration records, receipts, lock ledger, logs |
 | `raw/unit/` | unit logs (FIX-02, OWN-16W, OWN-09R per commit and head), red-tree patches, superseded first run |

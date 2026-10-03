@@ -4,11 +4,13 @@
 Checks, from the committed packet alone:
   1. PREREG.json was committed before the first counted record (with --git <repo>).
   2. Every counted block header / validity / session-env names its arm's Driver sha256 and a version.
-  3. Every counted block has a shared quiet-lane lock receipt; <= 10 attempts/cells per acquisition.
+  3. Every counted native/W2 block has a shared quiet-lane lock receipt; <= 10 attempts per native/W2
+     acquisition (OWN-09R/OWN-16W take one acquisition per invocation/session: README Deviation 17).
   4. FIX-02 native, Part B, F3/F4 gates recomputed from the raw calls with the PREREG classification.
   5. OWN-09R gates from the raw harness verdicts; OWN-16W dispositions from own16w/own-16w-summary.json.
   6. Unit red/green from the unit logs.
   7. recert-summary.json equals a fresh analyze.py run (subprocess) and dispositions.json agrees.
+  8a. Session evidence: no empty raw file (outside EMPTY_OK), a non-empty session log per receipt, xdpyinfo probes.
   8. Cited files are tracked (template helper) and no packet file holds an absolute local path.
 usage: python3 verify_artifacts.py [--git <repo>]
 """
@@ -38,7 +40,15 @@ def jl(path):
 
 PROV = json.load(open(os.path.join(HERE, "provenance.json")))
 BIN = PROV["binaries"]
-ARM_SHA = {"U": BIN["fix02r3-u-513e45fee"]["sha256"], "F": BIN["fix02r3-f-df4f1edf5"]["sha256"]}
+# Empty files that are evidence as they are: the superseded first unit run (Deviation 2) was stopped by
+# exact PID (the rustup fix) before these two commands wrote any output (see its unit-runs.txt: no "unit end").
+EMPTY_OK = {
+    "raw/unit/superseded-rustup/own16w/green-selector-F.log": "superseded run stopped before the command wrote output",
+    "raw/unit/superseded-rustup/own09r/build-tests-P.log": "superseded run stopped before the command wrote output",
+}
+# Sessions whose private Xvfb died before the first attempt (Deviation 7).
+PROBE_FAILED = ["a3-N-F-T2-I2-02", "a3-N-U-T2-I2-02", "a3-N-U-T1-I2d-05", "a3-W-F-W2c-25"]
+ARM_SHA = {"U":BIN["fix02r3-u-513e45fee"]["sha256"], "F": BIN["fix02r3-f-df4f1edf5"]["sha256"]}
 
 
 # ── classification (independent re-implementation of PREREG refusal_classification) ──
@@ -278,7 +288,7 @@ def main(argv):
     check("every counted native/W2 block has a shared-lock receipt", not missing, ", ".join(missing[:5]))
     att_counts = [len([r for r in jl(p) if r.get("kind") == "attempt"])
                   for p in glob.glob(os.path.join(RAW, "fix02", "*", "*", "**", "b*.jsonl"), recursive=True)]
-    check("<= 10 attempts per lock acquisition", att_counts and max(att_counts) <= 10)
+    check("<= 10 attempts per native/W2 lock acquisition", att_counts and max(att_counts) <= 10)
 
     # 6: unit
     U_ = os.path.join(RAW, "unit")
@@ -333,6 +343,46 @@ def main(argv):
     # 7: summary consistency
     out = subprocess.run([sys.executable, os.path.join(HERE, "analyze.py"), "--check"], capture_output=True, text=True)
     check("recert-summary.json equals a fresh analyze.py run", out.returncode == 0, out.stdout.strip())
+
+    # 8a: session evidence. No file under raw/ may be empty unless listed in EMPTY_OK with its reason. Every
+    # native/W2/browser lock receipt needs a non-empty session log beside its ledger; native/W2 sessions
+    # must show the xdpyinfo probe passing, and a failed probe is allowed only for a pre-attempt death
+    # (receipt rc != 0) that was re-run once as <label>R with a passing probe (Deviation 7).
+    empty = sorted(os.path.relpath(p, HERE) for p in glob.glob(os.path.join(RAW, "**", "*"), recursive=True)
+                   if os.path.isfile(p) and os.path.getsize(p) == 0)
+    check("no empty raw file outside EMPTY_OK", set(empty) == set(EMPTY_OK), ", ".join(sorted(set(empty) ^ set(EMPTY_OK))[:5]))
+    missing, noprobe, failed_probe, bad_retry = [], [], [], []
+    for led in [os.path.join(RAW, "fix02", "lock-ledger.jsonl")] + glob.glob(os.path.join(RAW, "shakedown", "*", "lock-ledger.jsonl")):
+        recs = {r["label"]: r for r in jl(led)}
+        for label, r in recs.items():
+            if not re.match(r"a3-[NWB]-", label):
+                continue
+            log = os.path.join(os.path.dirname(led), f"session-{label}.log")
+            if not (os.path.isfile(log) and os.path.getsize(log) > 0):
+                missing.append(os.path.relpath(log, HERE))
+                continue
+            if label.startswith("a3-B-"):
+                continue
+            t = open(log, errors="replace").read()
+            if "[a3-probe] xdpyinfo ok" in t:
+                continue
+            if "[a3-probe] xdpyinfo FAILED" not in t:
+                noprobe.append(label)
+                continue
+            failed_probe.append(label)
+            rr = recs.get(label + "R")
+            rlog = os.path.join(os.path.dirname(led), f"session-{label}R.log")
+            if r.get("rc") == 0 or not rr or not os.path.isfile(rlog) or "[a3-probe] xdpyinfo ok" not in open(rlog, errors="replace").read():
+                bad_retry.append(label)
+    check("every native/W2/browser receipt has a non-empty session log", not missing, ", ".join(missing[:5]))
+    check("every native/W2 session log records the xdpyinfo probe", not noprobe, ", ".join(noprobe[:5]))
+    check("failed probes are exactly the 4 pre-attempt deaths of Deviation 7, each re-run once with a passing probe",
+          sorted(failed_probe) == sorted(PROBE_FAILED) and not bad_retry, f"{sorted(failed_probe)} bad={bad_retry}")
+    src = jl(os.path.join(RAW, "fix02", "session-log-sources.jsonl"))
+    src_ok = [os.path.isfile(os.path.join(HERE, e["path"])) and __import__("hashlib").sha256(
+        open(os.path.join(HERE, e["path"]), "rb").read()).hexdigest() == e["sha256_sanitized"] for e in src]
+    check("session-log-sources.jsonl: 69 inner session logs, sanitized sha256 match", len(src) == 69 and all(src_ok),
+          f"n={len(src)}, mismatched={src_ok.count(False)}")
 
     # 8: cited files + privacy
     sys.path.insert(0, HERE)
