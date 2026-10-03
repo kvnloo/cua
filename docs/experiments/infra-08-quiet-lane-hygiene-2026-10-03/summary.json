@@ -1,0 +1,57 @@
+{
+  "lane": "INFRA-08",
+  "evidence_class": "UNIT",
+  "disposition": "KEEP",
+  "result": "final scripts (runs 8-10): v2 17 of 17 rows GREEN per run; v1 12 of 12 rows match PREREG per run (T1, T3, T4, T5 RED; T2, T4c, T6, T7 GREEN). T7 stress x300: v2 0 hung / 0 leftover; v2pre (first installed v2) 47 of 300 hung with leftover sleep.",
+  "runs": [
+    {"run": "run1", "counts_for_result": false, "why": "test bug: scratch dir name with spaces broke v1 unquoted LOCKDIR; T3 v1 row invalid (no waiter queued, rc 127)", "scripts_sha256_quiet_timed": "8a03808b8eb24d45043d24c4b8c6c6cbba7b60dbec039ac2d4c862151ef1d1bc", "impls": {"v1": {"rows": 11, "match": 11}}},
+    {"run": "run2", "counts_for_result": false, "why": "pre-final scripts and tests", "scripts_sha256_quiet_timed": "8a03808b8eb24d45043d24c4b8c6c6cbba7b60dbec039ac2d4c862151ef1d1bc", "impls": {"v1": {"rows": 11, "match": 11}, "v2": {"rows": 15, "match": 15}}},
+    {"run": "run3", "counts_for_result": false, "why": "superseded: alarm-subshell design later found to orphan its sleep (T7 did not exist yet)", "scripts_sha256_quiet_timed": "710c38aa5688915ce9ab02aa580fc4f621cd3f64c30479ddd755c07cf0c8b6a5", "impls": {"v1": {"rows": 11, "match": 11}, "v2": {"rows": 15, "match": 15}}},
+    {"run": "run4", "counts_for_result": false, "why": "superseded: this is the first installed v2 (v2pre); orphan defect found by the verifier re-run", "scripts_sha256_quiet_timed": "745e66b0f3c8fc10d7dd4cc8d64df05fcf55c78078f827af084b73e43aedcb47", "impls": {"v1": {"rows": 11, "match": 11}, "v2": {"rows": 15, "match": 15}}},
+    {"run": "run5", "counts_for_result": false, "why": "superseded (same scripts as run4)", "scripts_sha256_quiet_timed": "745e66b0f3c8fc10d7dd4cc8d64df05fcf55c78078f827af084b73e43aedcb47", "impls": {"v1": {"rows": 11, "match": 11}, "v2": {"rows": 15, "match": 15}}},
+    {"run": "run6", "counts_for_result": false, "why": "wait -n rewrite with TERM cleanup: T7 RED (1 of 20 hung, 1 leftover sleep: TERM swallowed by a child before exec); v2pre T7s expectation mis-set (fixed to GREEN)", "scripts_sha256_quiet_timed": "620a77ccc0bcc2d60e49feb585963174494fbcfa0a4ef3632ee95d07fee8fe03", "impls": {"v1": {"rows": 12, "match": 12}, "v2": {"rows": 17, "match": 16}, "v2pre": {"rows": 17, "match": 16}}},
+    {"run": "run7", "counts_for_result": false, "why": "final scripts, pre-final test harness options (no --t7-runs/--only); kept as the v2pre red-evidence run", "scripts_sha256_quiet_timed": "2502ef3f7a0f680aa8106296e9030b55bad43fb954ea5ae331ef0962bc535fec", "impls": {"v1": {"rows": 12, "match": 12}, "v2": {"rows": 17, "match": 17}, "v2pre": {"rows": 17, "match": 17}}},
+    {"run": "run8", "counts_for_result": true, "scripts_sha256_quiet_timed": "2502ef3f7a0f680aa8106296e9030b55bad43fb954ea5ae331ef0962bc535fec", "impls": {"v1": {"rows": 12, "match": 12}, "v2": {"rows": 17, "match": 17}}},
+    {"run": "run9", "counts_for_result": true, "scripts_sha256_quiet_timed": "2502ef3f7a0f680aa8106296e9030b55bad43fb954ea5ae331ef0962bc535fec", "impls": {"v1": {"rows": 12, "match": 12}, "v2": {"rows": 17, "match": 17}}},
+    {"run": "run10", "counts_for_result": true, "scripts_sha256_quiet_timed": "2502ef3f7a0f680aa8106296e9030b55bad43fb954ea5ae331ef0962bc535fec", "impls": {"v1": {"rows": 12, "match": 12}, "v2": {"rows": 17, "match": 17}}}
+  ],
+  "stress": {
+    "test": "T7 only, 300 uncontended runs per tool, stdout/stderr on pipes, 5 s cap per call",
+    "v2": {"quiet-timed": {"runs": 300, "hung": 0, "leftover": 0}, "quiet-shared": {"runs": 300, "hung": 0, "leftover": 0}},
+    "v2pre": {"quiet-timed": {"runs": 300, "hung": 47, "leftover": 47}, "quiet-shared": {"runs": 300, "hung": 0, "leftover": 0}}
+  },
+  "install": {
+    "install_1": {
+      "utc": "2026-10-03T21:11:58Z",
+      "before": {"quiet-timed": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b", "quiet-shared": "absent", "quiet-holders": "absent", "quiet-timed.v1": "absent"},
+      "after": {"quiet-timed": "b55f84a40d937af863d9bdbd32e361fcf66d9f2b94e7bfe3a302fdfcc55cd170", "quiet-shared": "2fd7ae829abf655129329a75020d000b39364be050925b52770d4d4090ea9e38", "quiet-holders": "28a5493091bac4fa4974fde2be110f91cf6dc3a446163ca4c0faab0bb00a206a"},
+      "defect": "quiet-timed b55f84a4 (v2pre) can orphan its alarm sleep (up to 900 s) holding the caller's stdout/stderr when the lock is granted at once; replaced by install_2",
+      "exposure": "2026-10-03T21:11:58Z to 21:37:29Z; EXCLUSIVE receipts in the window: infra08-smoke (this lane) and two other-track labels (bendperf-audit-repro, bendperf-audit-untried); any orphaned sleep from those exits on its own within 900 s and holds no lock fd; not signalled by this lane"
+    },
+    "install_2": {
+      "utc": "2026-10-03T21:37:29Z",
+      "before": {"quiet-timed": "b55f84a40d937af863d9bdbd32e361fcf66d9f2b94e7bfe3a302fdfcc55cd170"},
+      "after": {"quiet-timed": "e3e9b1da0491ad429ab62fec34aeb355bf3bf8d999e552755d1b1ca83e43c603", "quiet-shared": "2fd7ae829abf655129329a75020d000b39364be050925b52770d4d4090ea9e38", "quiet-holders": "28a5493091bac4fa4974fde2be110f91cf6dc3a446163ca4c0faab0bb00a206a"}
+    },
+    "method": "cp -p quiet-timed -> quiet-timed.v1 once (install_1); each script rendered with the default lock dir, written to a dot-temp file in bin/, chmod 755, mv -f onto its name (atomic rename, new inode; running instances keep the old inode)",
+    "v1_backup_sha256": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b",
+    "before": {"quiet-timed": "65c8741b9f93486dd91a68bd6a7071086d8702ab50c4aab73be0f75113dd579b"},
+    "after": {"quiet-timed": "e3e9b1da0491ad429ab62fec34aeb355bf3bf8d999e552755d1b1ca83e43c603", "quiet-shared": "2fd7ae829abf655129329a75020d000b39364be050925b52770d4d4090ea9e38", "quiet-holders": "28a5493091bac4fa4974fde2be110f91cf6dc3a446163ca4c0faab0bb00a206a"},
+    "templated_v1_renders_to_installed_v1": true,
+    "signalled_or_stopped_other_processes": 0,
+    "other_tracks_wrappers_edited": 0
+  },
+  "smoke": [
+    {"label": "infra08-smoke", "install": "install_1", "command": "true", "mode": "EXCLUSIVE", "cap_s": 600, "status": "RAN",
+     "started_utc": "2026-10-03T21:12:05.553Z", "acquired_utc": "2026-10-03T21:16:36.583Z", "released_utc": "2026-10-03T21:16:36.586Z",
+     "wait_s": 271, "rc": 0, "receipt_keys_v1_compatible": true, "evidence": "raw/install/"},
+    {"label": "infra08-smoke2", "install": "install_2", "command": "true", "mode": "EXCLUSIVE", "cap_s": 600, "status": "SKIPPED (not granted within 10 min)",
+     "started_utc": "2026-10-03T21:37:44.226Z", "ended_utc": "2026-10-03T21:47:44.269Z", "rc": 124, "receipt_written": false,
+     "captured_output_bytes": 0, "pipe_returned_at_timeout": true, "waiting_entry_left_after": false,
+     "holders_at_start": "6 SHARED", "holders_at_end": "3 SHARED (python3 708 s, flock 939 s, one not-running)", "evidence": "raw/install2/smoke.log"}
+  ],
+  "work_deleted_vs_wall_clock": "none claimed; loop tooling, no task timing",
+  "provider": {"name": "TypeSafe", "attempts": 0, "reached": 0, "lane_cap": 0},
+  "near_misses": ["host-shell bash -n syntax check (no execution)", "host-shell python3 with empty stdin", "host-shell python3 -c 1"],
+  "hard_rule_breaches": []
+}

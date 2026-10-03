@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# quiet-timed (v2) <label> <cmd...>: run one timing phase under the EXCLUSIVE quiet-lane lock and append a
+# receipt line to the lock ledger, so lock compliance is evidenced by the harness, not by the agent.
+# USAGE
+#   quiet-timed <label> <cmd...>        CLI, exit code (= the command's rc) and receipt line as in v1:
+#                                       {"label","pid","acquired","released","rc","cmd_sha256"}
+#   QUIET_STARVE_ALARM_S=<s>            starvation alarm period while waiting (default 900; 0 disables)
+#   QUIET_LANE_LOCKDIR=<dir>            lock dir override, for tests only (default: the loop lock dir)
+# v2 changes (INFRA-08): the command runs with the lock fd closed ("$@" 9>&-), so nothing it starts can
+# keep the lock after quiet-timed exits; TERM/INT/HUP while waiting kill only this script's own flock
+# waiter; while waiting, every QUIET_STARVE_ALARM_S a holder snapshot (pid, ppid, elapsed, exe name, lock
+# mode, waiting/holding; never command lines or environment) is written to
+# <lockdir>/starvation/<label>-<utc>.txt by quiet-holders. The alarm signals nothing.
+set -euo pipefail
+LOCKDIR="${QUIET_LANE_LOCKDIR:-@QUIET_LANE_DEFAULT_LOCKDIR@}"; LEDGER="$LOCKDIR/quiet-lane-ledger.jsonl"
+mkdir -p "$LOCKDIR"; label="$1"; shift
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; STARVE_S="${QUIET_STARVE_ALARM_S:-900}"
+exec 9>"$LOCKDIR/quiet-lane.lock"
+
+waiter=; alarm=
+cleanup() {
+  if [ -n "$alarm" ]; then kill "$alarm" 2>/dev/null || true; wait "$alarm" 2>/dev/null || true; alarm=; fi
+  if [ -n "$waiter" ]; then kill "$waiter" 2>/dev/null || true; wait "$waiter" 2>/dev/null || true; waiter=; fi
+}
+trap cleanup EXIT
+trap 'exit 143' TERM; trap 'exit 130' INT; trap 'exit 129' HUP
+
+alarm_loop() {
+  sp=; f=; trap 'if [ -n "$sp" ]; then kill "$sp" 2>/dev/null; fi; if [ -n "$f" ]; then rm -f "$f.tmp"; fi; exit 0' TERM
+  mkdir -p "$LOCKDIR/starvation"
+  while :; do
+    sleep "$STARVE_S" & sp=$!; wait "$sp"; sp=
+    kill -0 "$parent" 2>/dev/null || exit 0   # parent gone (e.g. SIGKILL): stop at the next period
+    f="$LOCKDIR/starvation/${label//[^A-Za-z0-9._-]/_}-$(date -u +%Y%m%dT%H%M%SZ).txt"
+    if { printf '# quiet-lane starvation snapshot: label=%s waiter_pid=%d waited_s=%d utc=%s\n' \
+           "$label" "$parent" "$((SECONDS - t0))" "$(date -u +%FT%TZ)"
+         QUIET_LANE_LOCKDIR="$LOCKDIR" "$HERE/quiet-holders"; } > "$f.tmp" 2>/dev/null
+    then mv -f "$f.tmp" "$f" 2>/dev/null || true; else rm -f "$f.tmp"; fi
+  done
+}
+parent=$$; t0=$SECONDS
+if [ "$STARVE_S" -gt 0 ]; then alarm_loop 9>&- & alarm=$!; fi
+flock -x 9 & waiter=$!
+wait "$waiter"; waiter=
+trap - TERM INT HUP
+cleanup
+acq="$(date -u +%FT%T.%3NZ)"
+set +e; "$@" 9>&-; rc=$?; set -e
+rel="$(date -u +%FT%T.%3NZ)"
+printf '{"label":"%s","pid":%d,"acquired":"%s","released":"%s","rc":%d,"cmd_sha256":"%s"}\n' \
+  "$label" "$$" "$acq" "$rel" "$rc" "$(printf '%s\0' "$@" | sha256sum | cut -c1-16)" >> "$LEDGER"
+exit "$rc"

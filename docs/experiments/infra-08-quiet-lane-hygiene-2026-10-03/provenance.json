@@ -1,0 +1,49 @@
+{
+  "lane": "INFRA-08",
+  "wave": 8,
+  "branch": "exp/infra-08-quiet-lane-hygiene-20261003",
+  "base_sha": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+  "packet_only": true,
+  "product_source_changed": false,
+  "driver": {
+    "used": false,
+    "sha256": "N/A (no Driver binary built or run; loop tooling only)",
+    "version": "N/A"
+  },
+  "live_heads_at_packet_time": {
+    "fork_main_ls_remote": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9",
+    "main_clone_refs_heads_main": "da46c4bc85bc43f9641d3ce4b6f319e6d7b6c1a9",
+    "tested_source": "the packet templates at the commits below (no repo source is exercised)",
+    "publication_sha": "not published (no push in this lane)"
+  },
+  "commits": {
+    "prereg_and_templates": "2cdfbd80ddd9a6e00fde8e42096c68c79d31e820",
+    "tests_and_raw_runs": "313c54a958feebd9df882ae25527781d63740e63",
+    "orphan_timer_fix_and_t7": "836ea247798b64ded11cdea1c1b390ee2d35e4a9"
+  },
+  "templates_sha256": {
+    "scripts/quiet-timed": "2502ef3f7a0f680aa8106296e9030b55bad43fb954ea5ae331ef0962bc535fec",
+    "scripts/quiet-shared": "65a6effd13348731d8353213a20caf61799b06feb08edd5e89618c14ea3faeb0",
+    "scripts/quiet-holders": "3dffac08a32e24ffcea245ae423b681e3ca7086792521b9582f0d2afb731cbad",
+    "scripts/v1/quiet-timed": "fd20a41e95efd0f935d28d244cf2267ec8d3d0baf0c3faa91bfd461a8428af58",
+    "tests/test_quiet_lane.py": "edb3c277dbe9d386802a0375189b1260ae0e8e9ce5a5ed83067e11cb4242b742",
+    "render.sh": "3c4b1816935e4322bf41b53a0e5245af187c1188e5591c2dd89a1f014830e571"
+  },
+  "quiet_timed_template_history_sha256": {
+    "commit_2cdfbd80d (runs 1-2)": "8a03808b8eb24d45043d24c4b8c6c6cbba7b60dbec039ac2d4c862151ef1d1bc",
+    "run3 (final minus one comment edit)": "710c38aa5688915ce9ab02aa580fc4f621cd3f64c30479ddd755c07cf0c8b6a5",
+    "runs 4-5 = v2pre, installed as install_1 (orphan defect)": "745e66b0f3c8fc10d7dd4cc8d64df05fcf55c78078f827af084b73e43aedcb47",
+    "run6 (wait -n rewrite, TERM cleanup)": "620a77ccc0bcc2d60e49feb585963174494fbcfa0a4ef3632ee95d07fee8fe03",
+    "final (runs 7-10, installed as install_2)": "2502ef3f7a0f680aa8106296e9030b55bad43fb954ea5ae331ef0962bc535fec"
+  },
+  "environment": {
+    "wrapper": "bin/hostless v2 (Landlock scope + env scrub), sha256 367388956f01a7327421dccd3cfbfddaec98730cb9a8790328f0ba60b878ed6b",
+    "kernel": "Linux 7.2.2",
+    "bash": "5.3.15",
+    "util_linux_flock_findmnt": "2.42.2",
+    "coreutils_timeout": "9.11",
+    "python": "3.14.7",
+    "lock_dirs": "per-test scratch lock dirs under the lane tmp dir; the live lock was touched only by the post-install smokes (labels infra08-smoke, infra08-smoke2)"
+  },
+  "provider": {"name": "TypeSafe", "lane_cap_reached": 0, "attempts": 0, "reached": 0}
+}
