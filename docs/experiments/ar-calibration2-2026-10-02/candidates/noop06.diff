@@ -1,0 +1,13 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+index 571ce8fd5..35a003a8c 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+@@ -4321,7 +4321,7 @@ async fn select_item_in_chain(
+             );
+             return None;
+         }
+-        tokio::time::sleep(Duration::from_millis(50)).await;
++        tokio::time::sleep(Duration::from_micros(50_000)).await;
+         let verified = matches!(
+             call(selection.is_child_selected(index)).await,
+             Some(Ok(true))

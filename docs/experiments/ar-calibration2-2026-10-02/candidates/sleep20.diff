@@ -1,0 +1,12 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+index 571ce8fd5..71e9a4b22 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/atspi/native.rs
+@@ -3656,6 +3656,7 @@ pub fn perform_action_ref(object_ref: &ObjectRef) -> Result<(String, bool, bool)
+             };
+             cua_driver_core::phase_trace::mark("atspi_action", "do_action_replied");
+             tokio::time::sleep(Duration::from_millis(50)).await;
++            tokio::time::sleep(Duration::from_millis(20)).await;
+             cua_driver_core::phase_trace::mark("atspi_action", "post_sleep_done");
+             Ok((
+                 actions.get(chosen).cloned().unwrap_or_default(),

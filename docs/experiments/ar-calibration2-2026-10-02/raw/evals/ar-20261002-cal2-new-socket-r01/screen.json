@@ -1,0 +1,65 @@
+{
+ "ci95": [
+  -0.07112134811218289,
+  -0.0005422818276603879
+ ],
+ "delta": -0.024752055756642497,
+ "eval_id": "ar-20261002-cal2-new-socket-r01",
+ "failed_gate": "G2",
+ "gates": [
+  {
+   "gate": "G0",
+   "pass": true,
+   "reasons": []
+  },
+  {
+   "gate": "G1",
+   "pass": true,
+   "reasons": []
+  },
+  {
+   "gate": "G2",
+   "pass": false,
+   "reasons": [
+    "new_file:gtk:/tmp/dbus-ArSettleWatch",
+    "new_socket:gtk:8>7"
+   ]
+  }
+ ],
+ "mechanism_span_ms": {
+  "candidate_median": 51.339201,
+  "champion_median": 51.37617,
+  "pairs": 19
+ },
+ "median_diff_ms": -0.2339435,
+ "median_ms": {
+  "candidate": 303.31437,
+  "champion": 303.626042
+ },
+ "metric": "T_act",
+ "n_pairs": 24,
+ "pairs_trace_on_off": [
+  19,
+  5
+ ],
+ "rank_rule": "G0-G4 pass and delta(T_act) <= -0.01980 and ci95_hi < 0",
+ "ranks": false,
+ "schema": "ar.calibration_screen.v2",
+ "seed": 20280113,
+ "sigma_ln": 0.11062517709602511,
+ "tau": 0.02,
+ "verdict": "REJECT",
+ "whole_task": {
+  "ci95": [
+   -0.07780330230117476,
+   -0.0026331895041380613
+  ],
+  "delta": -0.030389189137295946,
+  "median_T_ms": {
+   "candidate": 506.2061925,
+   "champion": 508.4028675
+  },
+  "n_pairs": 24,
+  "sigma_ln": 0.10430701488637532
+ }
+}

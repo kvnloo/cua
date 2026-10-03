@@ -1,0 +1,31 @@
+dbus-daemon[31]: [session uid=1000 pid=31 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=40 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[31]: [session uid=1000 pid=31 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:99 openbox=52 picom=53 dbus=unix:path=/tmp/dbus-JwNw7jqhB4,guid=18e6d7b6f7ff33b33c89adc06ac068d2
+Traceback (most recent call last):
+  File "<tmp>/ar-calib2/tools/feedback_session.py", line 59, in <module>
+    main()
+  File "<tmp>/ar-calib2/tools/feedback_session.py", line 55, in main
+    session.main()
+  File "<lanes>/ar-harness/harness/ar/runner/session.py", line 213, in main
+    sys.exit(asyncio.run(main_async(args)))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "<lanes>/ar-harness/harness/ar/runner/session.py", line 129, in main_async
+    chunk = json.loads(Path(args.chunk).read_text(encoding="utf-8"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'feedback/gtk/chunks/s0.json'
+[session] exit rc=1 run_dir=<tmp>/x11-session.lhmLdz

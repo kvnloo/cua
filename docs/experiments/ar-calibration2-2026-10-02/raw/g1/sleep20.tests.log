@@ -1,0 +1,17 @@
+dbus-daemon[327095]: [session uid=1000 pid=327095 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=327122 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[327095]: [session uid=1000 pid=327095 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:102 openbox=327452 picom=327453 dbus=unix:path=/tmp/dbus-Awt1EkLPxu,guid=bfe38bd2f640f9cd856c403c6abfee44
+head=9c1d9296b8aad320fc48d3849095ce3aa554bf6b
+### cargo test -p cua-driver-core --lib
+test history::tests::offline_purge_is_exclusive_and_removes_state_only_after_keys ... FAILED
+failures:
+thread 'history::tests::offline_purge_is_exclusive_and_removes_state_only_after_keys' (332241) panicked at crates/cua-driver-core/src/history.rs:3424:72:
+failures:
+    history::tests::offline_purge_is_exclusive_and_removes_state_only_after_keys
+test result: FAILED. 816 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.59s
+error: test failed, to rerun pass `-p cua-driver-core --lib`
+rc=101
+### cargo test -p platform-linux --lib
+test result: ok. 599 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 20.69s
+rc=0
+[session] exit rc=0 run_dir=<tmp>/x11-session.P67x5I

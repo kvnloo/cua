@@ -1,0 +1,17 @@
+dbus-daemon[898734]: [session uid=1000 pid=898734 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=898775 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[898734]: [session uid=1000 pid=898734 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:101 openbox=898990 picom=898991 dbus=unix:path=/tmp/dbus-Zabkk5E7om,guid=9473dd62cd2c04e71784eadb6abffc9e
+head=6fceb666f260dcd2d6c93067617aee86973bd4a3
+### cargo test -p cua-driver-core --lib
+test history::tests::retention_is_enforced_for_disabled_and_long_lived_query_checkpoints ... FAILED
+failures:
+thread 'history::tests::retention_is_enforced_for_disabled_and_long_lived_query_checkpoints' (908253) panicked at crates/cua-driver-core/src/history.rs:3179:14:
+failures:
+    history::tests::retention_is_enforced_for_disabled_and_long_lived_query_checkpoints
+test result: FAILED. 816 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.69s
+error: test failed, to rerun pass `-p cua-driver-core --lib`
+rc=101
+### cargo test -p platform-linux --lib
+test result: ok. 599 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 20.45s
+rc=0
+[session] exit rc=0 run_dir=<tmp>/x11-session.Flnoxa

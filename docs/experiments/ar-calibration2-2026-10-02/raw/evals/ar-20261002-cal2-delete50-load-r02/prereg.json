@@ -1,0 +1,104 @@
+{
+ "candidate": {
+  "binary_label": "cua-driver-ar-calib2-delete50-edddf26fa",
+  "binary_sha256": "264482417eb1addd79a4ed517dfb77af6e0778b64eb0c29c5b0df7dfeee8cfd5",
+  "commit": "edddf26fa80311a08fcb982d0e2d0ef0cd7d8a07"
+ },
+ "champion": {
+  "binary_label": "cua-driver-ar-base-457bc65d4",
+  "binary_sha256": "8464c44496568ad04a9aaf3ca7a8a36363306bbde9e9926d7eedd0ed76c35209",
+  "commit": "457bc65d45b2a87ac080b281ea777f8914002c29"
+ },
+ "created_utc": "2026-10-02T22:36:08Z",
+ "design": {
+  "alpha_one_sided": 0.01,
+  "block_max_minutes": 10,
+  "fresh_driver_per_trial": true,
+  "metric": "T_act",
+  "n_pairs": 10,
+  "order": "AB/BA alternating",
+  "p_test": {
+   "min_resamples": 20000,
+   "name": "paired_sign_flip_mc",
+   "resamples_per_inverse_alpha": 20
+  },
+  "power": 0.8,
+  "psi_hz": 10,
+  "sandbox": "harness/ar/sandbox/sandbox-driver.sh",
+  "seed": 20281124,
+  "session_trials": 48,
+  "sigma_ln": 0.01734050935679649,
+  "trace_off_fraction": 0.2
+ },
+ "eval_id": "ar-20261002-cal2-delete50-load-r02",
+ "fdr": {
+  "alpha": 0.05,
+  "gamma_constant": 0.0722,
+  "procedure": "LORD++",
+  "w0": 0.025,
+  "w0_rationale": "W0 = alpha/2 = 0.025, the usual LORD++ choice. For ~30 tests a night with no rejection the levels run 1.25e-3 (t=1), 2.3e-4 (t=3), 9.1e-5 (t=10), 3.2e-5 (t=30) and spend 0.0037 of the 0.025 wealth, so a night never exhausts it. A larger W0 (up to alpha) raises those levels at most 2x but shrinks the first rejection's reward (alpha - W0); after any rejection the later levels are nearly W0-independent (alpha_30 ~6.5e-5 for W0 in 0.01..0.049). G5's sign-flip p resolves alpha_i/20 at every level, so W0 decides only marginal effects: at n=37 and the loaded-host T_act sigma 0.0376, 80% power needs ~2.4% at t=1 and ~3.0% at t=30."
+ },
+ "frozen": {
+  "allowlist_sha256": "2ee00e0893f0cf7ca38a28f1f11087fe29c6e482c48f32a6d01320d9adbf529f",
+  "harness_commit": "f56422868403857a032e069f33686efbbc0b48b6",
+  "manifest_sha256": "836a646e5b0e8acd439b9ed27c7aaa0f868b05eca8c1e8a4a810fa06230faa41",
+  "scanner_rules_sha256": "e94a14c9cfcb108f715b5ec548dcf77ec89ac7099ff55102cc7c3ada380802dd"
+ },
+ "g1_required_suites": [
+  "cua-driver-core --lib",
+  "platform-linux --lib"
+ ],
+ "gates": [
+  "G0",
+  "G1",
+  "G2",
+  "G3",
+  "G4",
+  "G5",
+  "G6",
+  "G7",
+  "G8",
+  "GS"
+ ],
+ "guardrail": {
+  "metric": "T",
+  "rule": "G6: whole-task mean paired ln ratio <= ln(1 + tau)",
+  "tau": 0.04184092003108808
+ },
+ "invariants": {
+  "expected_path": null,
+  "expected_route": "accessibility"
+ },
+ "mechanism": {
+  "end_mark": "atspi_action/post_sleep_done",
+  "min_share": 0.7,
+  "start_mark": "atspi_action/do_action_replied",
+  "trace_off_rule": "delta_off_within_ci95_on_widened_by_ln1p_tau"
+ },
+ "n01_reference": "cited, not duplicated: N-01R (RFC loop, local exp/n-01r-native-wait-ab-20261002 at 3bb4a7fc7) rules the 50 ms post-DoAction sleep DELETED on GTK3 AT-SPI background delivery",
+ "request": {
+  "branch": "ar/calib2/delete50",
+  "hypothesis": "Calibration known answer (KEEP): removing the fixed 50 ms post-DoAction sleep in perform_action_ref shortens the GTK3 checkbox click by about 50 ms inside atspi_action.",
+  "request_sha256": "d575dd764ef7434bc2136e5e44917d68383c34b55be93cc8272c9473c07c899b",
+  "submitted_utc": "2026-10-02T17:36:18Z"
+ },
+ "schema": "ar.prereg.v1",
+ "segment": "segment-1",
+ "soak": {
+  "min_trials": 300
+ },
+ "spot_checks": [
+  "spot_gtk3_text",
+  "spot_browser_fill_submit"
+ ],
+ "spot_min_pairs": 10,
+ "task": "gtk3_checkbox_toggle",
+ "tau": {
+  "aa_pairs": 48,
+  "aa_rows_sha256": "e4646e0be64d0d4eead5da9a5eeab29172c9046a1b12e65a4c7cef5326a75508",
+  "batch": 48,
+  "floor": 0.02,
+  "q975_abs_delta_aa_ln": 0.007107536582251258,
+  "value": 0.02
+ }
+}

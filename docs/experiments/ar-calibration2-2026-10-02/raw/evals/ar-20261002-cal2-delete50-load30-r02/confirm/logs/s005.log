@@ -1,0 +1,23 @@
+dbus-daemon[24]: [session uid=1000 pid=24 pidfd=5] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=33 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[24]: [session uid=1000 pid=24 pidfd=5] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:100 openbox=38 picom=39 dbus=unix:path=/tmp/dbus-Fb40opgbzc,guid=69e18999788c5f6cdba7e43a6ac097e6
+Traceback (most recent call last):
+  File "<lanes>/ar-harness/harness/ar/runner/session.py", line 217, in <module>
+    main()
+  File "<lanes>/ar-harness/harness/ar/runner/session.py", line 213, in main
+    sys.exit(asyncio.run(main_async(args)))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<home>/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "<lanes>/ar-harness/harness/ar/runner/session.py", line 147, in main_async
+    raise RuntimeError("fixture did not publish its state file")
+RuntimeError: fixture did not publish its state file
+<home>/.local/opt/cua-e2e-x11/root/usr/bin/xvfb-run: line 185: kill: (20) - No such process
+[session] exit rc=1 run_dir=<tmp>/x11-session.5n5tAO
