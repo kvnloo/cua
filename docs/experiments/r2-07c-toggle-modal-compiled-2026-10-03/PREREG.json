@@ -1,0 +1,101 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "R2-07c",
+ "attempt": 2,
+ "wave": 4,
+ "title": "Compiled fresh-bound routine for toggle->confirm and modal->act: six-gate scripted qualification + live TypeSafe COMP+CR arm on binary R",
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#74"],
+ "advances": {
+  "E2": "R2-10 live COMP toggle/modal provider decisions 434.8 / 462.4 ms (88-89% of T) are UNTESTED. This lane qualifies their deletion (G1-G6) and measures the live COMP+CR decomposition with every invocation in the denominator.",
+  "E3": "If the routine survives, the wave-5 composed configuration includes compiled replay for toggle/modal. The paired live BASE vs COMP+CR S stays BLOCKED on budget (needs >= 120 reached)."
+ },
+ "source": {
+  "branch": "exp/r2-07c-toggle-modal-compiled-a2-20261003",
+  "base": "8f3a646b4818b757648835cf89db8886626b1cf0",
+  "driver_changes": "none (no Driver build; harness-only lane)",
+  "binary_R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version_expected": "cua-driver 0.32.0", "rehash_and_version": "inside every session (harness refuses on mismatch)"},
+  "harness_basis": "R2-07b compiled_routine.py and R2-10 r2_10_browser.py copied by path, unchanged, from exp/r2-10-composition-20261002 030f6bdbf (harness/src/r2-10-composition-2026-10-02/); new: compiled_routine_tm.py, fixture_tm.py, fault_transport_tm.py, r2_07c.py (salvaged from the uncommitted attempt-1 harness after review, then edited as listed in deviations_from_attempt_1)",
+  "deviations_from_attempt_1": [
+   "training invocation = R2-10 rb10.step_loop unchanged (guard off for toggle/modal, visual_mode auto) instead of the attempt-1 continuation",
+   "guarded continuation (fallback) uses visual_mode auto (as the R2-10 step loop) plus the role+name uniqueness filter",
+   "fresh loopback fixture servers per invocation (artifact is port-agnostic)",
+   "Driver result tap: every mutation row keeps the Driver's own status/effect/code (effect=refused evidence)",
+   "TypeSafe model id captured from SystemOneResponse.model (no bodies)",
+   "timing plan starts with one training+compile+admission per class in the timed store (G6 costs under EXCLUSIVE)",
+   "live warm invocation without an admitted routine retrains once, then the class stops (NOT_RUN no_admitted_routine)"
+  ]
+ },
+ "artifact": {
+  "holds": "logical role+name targets; preconditions (toggle: page loopback origin + path, checkbox checked_state == false, Confirm uniquely present; modal: Open control present and unique, 'Confirm choice' absent = modal not open); depends_on; expected outcome; postcondition of step 1 checked by step 2; fallback point (guarded continuation before each mutation)",
+  "never_holds": "refs, ids, epochs, snapshot ids, pids, window ids, coordinates, capture ids, tokens, capabilities, session labels",
+  "authority_check": "compiled_routine_tm.check_artifact_authority_tm (forbidden keys anywhere, key whitelist, forbidden value patterns, floats) on every compiled artifact; verify_artifacts.py re-runs it on every artifact in raw/",
+  "binding": "every mutation binds to a ref from the routine's own fresh semantic_v2 observation, taken after the previous mutation; browser_ref_stale gets exactly one rebind; a possibly landed click is reconciled before anything else and never replayed; unresolved stays unknown",
+  "service": "none: in-process caller-side artifact per class; no engine, registry, router or service"
+ },
+ "arms": {
+  "COMP": "R2-10 COMP for toggle/modal, unchanged (rb10.one): feedback OFF, 10 ms completion poll, compiled validators, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, phase trace on; step loop decides each click (scripted chooser in Phase S)",
+  "COMP_CR": "COMP + compiled replay: warm invocation replays the admitted artifact, 0 decisions; failed precondition -> guarded continuation from the current state (decisions counted)"
+ },
+ "oracle": "jev-use/#24 fixture server journal and state (toggle: checked true; modal: opened and modal true), read every 2 ms in process by an independent harness thread (rb10.Sampler), never the runner's report. T_oracle = first expected-state sample at/after the return of the last accepted mutation minus the send of the first semantic observation (R2-10 browser_row). completion mutations counted from the server journal.",
+ "route_and_producer": "route from launcher receipts: two browser_click with input_route dom_event, receipt route dom, and a click.cdp_send mark inside each click window; decision producers from receipts (decided events + provider ledger lines per trial); a warm invocation must show 0 decided events and 0 provider ledger lines",
+ "phase_S": {
+  "provider": "scripted chooser (jev-use choose_mock_for_task); 0 provider requests; TYPESAFE_API_KEY not forwarded",
+  "blocks": {
+   "G": "traingate: 1 training + compile + clean-reset admission per class (store 'scripted'); SHARED lock",
+   "N": "negatives: 5 rounds x (N1,N2,N3,N4a,N4b,N5,N6,N7 x 2 classes + N8 OOD x 3 [toggle on fill, toggle on modal, modal on toggle]) = 95 cells, store 'scripted'; SHARED lock, <= 10 cells per acquisition",
+   "W": "N-W2: B-02 control (rb10.nw2_one, unchanged) with the COMP admission knob, 5 per class = 10 cells; SHARED",
+   "R": "G5 reconcile on action 2 via fault_transport_tm (R2-05/R2-07 seam): applied_ack_lost 5, delayed_after_first_unchanged_read 5, withheld_unresolved 3 per class = 26 cells; SHARED",
+   "T": "timing under bin/quiet-timed (EXCLUSIVE): 1 training(+compile+admission) per class into store 'timed', then 30 rounds; round r: class order alternates every 2 rounds, arm order AB (COMP first) on even r, BA on odd r",
+   "C6": "costs under bin/quiet-timed (EXCLUSIVE): 5 x N7 per class (fallback cost) + 5 x N8 cross-page per class (wrong-match cost), store 'timed'"
+  },
+  "gates": {
+   "G1": "per class, every training invocation (blocks G, T and Phase L) independently verified (outcome verified, oracle_exact_match, exactly 1 completion mutation), compiled without error, authority scan clean",
+   "G2": "per class, every clean-reset admission replay verified with 0 fallback, 0 decisions, every mutation fresh",
+   "G3": "100% of ACCEPTED mutations in every COMP_CR cell (all blocks, both phases) fresh per the launcher Driver-call receipts (ref minted by the latest observation, no mutation since); every non-fresh dispatch attempt (N4b by construction) refused with effect=refused",
+   "G4": {
+    "reps": "5 per class per row",
+    "N1_renamed": "routine dispatches nothing after the failed precondition (toggle: step 0 requires_present; modal: step 1 target_not_found); 0 completion mutations; not reported verified",
+    "N2_missing": "as N1",
+    "N3_duplicate": "routine fails precondition (ambiguous); 0 ambiguous dispatches = 0 completion mutations (both duplicates fire the completion event) and the continuation drops the non-unique candidate",
+    "N4a_node_replaced": "dom_replace == replaced between bind and dispatch of action 2; first action-2 dispatch refused browser_ref_stale with Driver effect=refused; exactly one rebind (one extra observation); verified; exactly 1 completion mutation",
+    "N4b_superseding_snapshot": "a second observation taken between bind and dispatch of action 2; verified with exactly 1 completion mutation; any refusal has effect=refused followed by exactly one rebind; no accepted non-fresh dispatch",
+    "N5_session_label_replaced": "label replaced before step 2; old target capability refused in the new session (discriminating control); fresh prepare+bind; verified; exactly 1 completion mutation; all accepted mutations fresh",
+    "N6_unexpected_dialog": "dialog_opened journal event present (discriminating); routine dispatches nothing after action 1; 0 completion mutations; not reported verified",
+    "N7_precondition_satisfied": "routine dispatches nothing (fails at step 0); guarded continuation verified from the current state with exactly 1 completion mutation and exactly 1 accepted mutation in the trial (0 double toggles / 0 re-opens)",
+    "N8_OOD": "0 accepted mutations in the trial (routine and continuation) and 0 completion mutations",
+    "N_W2": "stale action refused (effect refused, browser_ref_stale), 0 mutations from the stale action, fresh re-derivation verified"
+   },
+   "G5": "every cell fault_fired; applied_ack_lost and delayed rows verified_by_reconcile; withheld_unresolved verified_by_reconcile or unknown; per cell <= 1 completion mutation after harness release (0 duplicates) and 0 mutations dispatched after the transport failure",
+   "G6": "training (T_oracle of each training invocation), compile (ms), admission (T_oracle), warm (T_oracle), fallback (N7 C6 cells: T_oracle + decisions) and wrong-match (N8 C6 cells: time first observation -> routine end, decisions) reported separately with all-invocation denominators; reported, no threshold",
+   "timing_non_regression": "per class, paired diff T_oracle(COMP_CR warm) - T_oracle(COMP) over the 30 rounds; median diff with 95% seeded paired bootstrap CI (b01_analysis.paired_diff, seed 20261002, 10000 resamples); gate: CI upper bound <= +2.0 ms; also report S = median T_COMP / median T_COMP_CR with CI. Validity: every timing cell verified (failures stay in the denominator and fail the gate)"
+  }
+ },
+ "phase_L": {
+  "precondition": "Phase S passes every gate (G1-G6 + timing non-regression) in both classes",
+  "provider": "TypeSafe as configured by the jev-use runner (TypeSafeClient defaults; model id recorded from SystemOneResponse.model); key forwarded by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY)",
+  "budget": {"lane_cap_reached": 18, "lane_cap_attempts": 22, "includes_shakedown": true, "guard": "harness counts each HTTP attempt before sending and refuses once either cap would be exceeded; before each live invocation it stops if reached+4 or attempts+4 would exceed a cap; invocations not run are NOT_RUN (budget) and stay in the denominators", "ledger": "raw/provider-ledger.jsonl: host, path, status, request-id presence + sha256/16, latency, trial; no bodies or headers"},
+  "shakedown": "optional: one live toggle training invocation (+ compile + admission) under the SHARED lock, counted toward the cap, excluded from Phase L results",
+  "plan": "under bin/quiet-timed (EXCLUSIVE): 30 rounds; class order alternates per round; round 0 = training (ordinary R2-10 step loop, 2 decisions) + compile + clean-reset admission per class; rounds 1-29 = warm compiled invocations (0 decisions expected); fallbacks run the guarded continuation with live decisions, counted; fresh Driver, Chromium and fixture servers per invocation; loadavg per invocation; every invocation kept",
+  "metrics": {
+   "warm_validity": "verified (independent oracle, exactly 1 completion mutation), route compiled only, two dom_event clicks with click.cdp_send, 0 decided events, 0 provider ledger lines; denominator = 29 per class incl. failures and NOT_RUN",
+   "median_T_warm": "median T_oracle over warm invocations",
+   "amortized": "mean_all = (sum T_oracle over the 30 invocations + compile_ms + T_oracle(admission)) / 30; ratio_of_means = mean_all / mean_warm; T_training reported separately (n=1 per class)",
+   "decisions_per_invocation": "total decided events / 30 (training and fallbacks included)",
+   "decomposition": "R2-10 e2_components (b01 decompose + B-02 taxonomy) mean over warm invocations and over all 30 invocations; share of mean T_runner"
+  },
+  "not_compared": "Phase L T is never compared with R2-10 live numbers as an S (different session, host state, no paired BASE)"
+ },
+ "disposition_rules": {
+  "KEEP": "G1-G6 and timing non-regression pass in both classes AND Phase L warm-invocation validity 100% (every failure in the denominator) AND 0 E4 violations (routine-attributable stale dispatch, ambiguous dispatch, duplicate, unverified success, blind replay) AND no authority field in any artifact -> the live toggle/modal provider-decision component in COMP+CR is DELETED (KEEP); training and fallback costs shown separately",
+  "KILL": "any routine-attributable stale or ambiguous dispatch, any duplicate completion mutation, or any unverified success",
+  "REVISE": "scripted gates pass but Phase L fallbacks > 10% of warm invocations or the cap truncates Phase L; report the revised scope"
+ },
+ "e4_accounting": "per cell: caller_stale_dispatch = accepted non-fresh mutations; duplicate = completion mutations > 1; unverified_success = reported verified without oracle_exact_match; refusal_returned_as_success; blind_replay (R2-10 blind_replays) + dispatches_after_unknown",
+ "failed_session_blocks": "a chunk whose private session fails to start (e.g. Xvfb/openbox cannot open the display, every browser exits before DevTools) is kept in raw/ as a failed session block, excluded from row evaluation, and re-run under a new id",
+ "excluded": {
+  "attempt_1": "aborted attempt 1 (no commit): SHARED mock shakedowns shake-a, a2, o2, o12, o22 (0 TypeSafe requests) excluded; disclosed",
+  "attempt_2_shakedown": "mock shakedown blocks K (failed session start) and Kb (34 cells) before this PREREG; excluded from results"
+ },
+ "evidence_classes": ["REAL", "REAL+BENCHMARK", "LIVE_PROVIDER+REAL", "FIXTURE (reconcile seam)", "UNIT", "BLOCKED"],
+ "claim_boundary": "kvnloo/cua#24 toggle/modal pages, binary R, TypeSafe as configured by the jev-use runner (model id recorded), one host, private Xvfb. Paired live BASE vs COMP+CR S is BLOCKED (budget: needs >= 120 reached)."
+}
