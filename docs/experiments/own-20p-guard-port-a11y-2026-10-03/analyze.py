@@ -181,6 +181,9 @@ def r3_metrics(t: dict) -> dict[str, Any]:
     m["perturb_ms"] = t.get("perturb_ms")
     events = t.get("perturb_events") or []
     m["perturb"] = {k: v for e in events for k, v in e.items() if k not in ("mono_ns", "pid", "comm")}
+    # post-hoc (deviation 2): did this trial's restart really signal the bus daemon?
+    m["daemon_killed"] = any(e.get("kill") == "a11y-bus-daemon" and "pid" in e for e in events)
+    m["new_daemon_confirmed"] = next((e["new_daemon"] for e in events if "new_daemon" in e), None)
     direct = str(m["variant"]).endswith("_direct")
     m["pass_safety"] = bool(not m["failure"] and (direct or m["observe_2_truthful"] or m["observe_2_structured_error"])
                             and m["stale_refused"] and not m["stale_mutated"] and m["stale_authority_mutations"] == 0)
@@ -315,7 +318,7 @@ def main() -> None:
     r3: dict[str, Any] = {}
     for v in ("bus", "registry", "noop", "noop_direct", "bus_direct"):
         for b in ("G0", "GA"):
-            rows = cell(rm, variant=v, binary=b)
+            rows = [r for r in cell(rm, variant=v, binary=b) if r["row"] in ("R3", "R3_control")]
             r3[f"{v}/{b}"] = {
                 "n": len(rows), "pass": sum(r["pass"] for r in rows), "pass_safety": sum(r["pass_safety"] for r in rows),
                 "failures": sum(bool(r["failure"]) for r in rows),
@@ -351,6 +354,22 @@ def main() -> None:
     r3["noop_direct_acts_5_each"] = all(r3[f"noop_direct/{b}"]["stale_mutated"] == r3[f"noop_direct/{b}"]["n"] == 5
                                         for b in ("G0", "GA"))
     r3["gate"] = bool(r3["liveness_GA_20"] and r3["safety_bus_20_each"] and r3["noop_direct_acts_5_each"])
+    # post-hoc view (deviation 2; not the pre-registered gate): bus trials of r3a-r3d and the
+    # supplement r3s in which the harness really signalled the a11y bus daemon
+    view: dict[str, Any] = {}
+    for b in ("G0", "GA"):
+        rows = [r for r in cell(rm, variant="bus", binary=b) if r["row"] in ("R3", "R3_supp")]
+        killed = [r for r in rows if r["daemon_killed"]]
+        view[b] = {"bus_trials": len(rows), "daemon_killed": len(killed),
+                   "pass_safety": sum(r["pass_safety"] for r in killed),
+                   "live_respawned_verified": sum(1 for r in killed if r["fresh_verified"]
+                                                  and r["new_token_path"] == "respawned_fixture"),
+                   "observe_2_truthful": sum(r["observe_2_truthful"] for r in killed),
+                   "stale_mutated": sum(r["stale_mutated"] for r in killed),
+                   "supplement_trials": sum(1 for r in rows if r["row"] == "R3_supp"),
+                   "no_kill": [r["id"] for r in rows if not r["daemon_killed"]],
+                   "new_daemon_unconfirmed": [r["id"] for r in rows if r["new_daemon_confirmed"] is False]}
+    r3["restart_happened_view"] = view
     failing = [name for name, ok in (("R3 bus liveness on GA", r3["liveness_GA_20"]),
                                      ("R3 bus safety", r3["safety_bus_20_each"]),
                                      ("R3 noop_direct control", r3["noop_direct_acts_5_each"])) if not ok]

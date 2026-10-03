@@ -1,0 +1,3 @@
+2026-10-03T02:17:23-05:00 near_miss: python3 -c 1 (no-op) ran in plain host shell during first context read
+2026-10-03T02:39:25-05:00 interference: unit_run.sh/build_run.sh took quiet-lane (shared) before cargo-build; another lane held cargo and waited for quiet-lane exclusive behind my shared hold (~2.5 min lock-order inversion, no trial run by me inside; my waiters killed, order fixed to cargo -> quiet shared)
+2026-10-03T05:49:27-05:00 near_miss: 'pkill -P <own queue pid>' ran in the plain host shell while stopping this lane's own build queue; it matched nothing (the waiter had been reparented) and the waiter was stopped by its own pid
