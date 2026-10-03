@@ -1,0 +1,32 @@
+{
+ "amends": "CALIB2-PREREG.json (sha256 2caf57918b70608622b7bf53d8637d68b592ffbd802eddd04e1e576a13dbf3ec) and CALIB2-AMEND-R10B.json (sha256 03bb4f16d30ec2dcb5718d96f03c5883e050d71d9b508fd9f39a9cbab85ddb7f)",
+ "analysis_code": {
+  "tools/analyze.py": "d27f96c4436cedafd3653fd983d54ae645c029a84c8f8eccad28f7f4ed2496b8",
+  "tools/calib_eval.sh": "1ec8f69246a84cef15c58539bb7f6f21e83a92e03fb391416b59e50418bc387d",
+  "tools/run_blocks_loaded.py": "eb851d33f56c784a0ddc206aaf3ff9dd74e03a2dd6bbd2cfff82e2729bf31128",
+  "tools/run_r10c.sh": "0865b779bb8848e971e1dcdca1a7e09a929758adfd0108b5e3097c82dd4f9a9f",
+  "tools/with-load.sh": "a980265f9bd19db7ae5897fbb25dbbc925d8d22d83873577daf249a85818c572"
+ },
+ "does_not_change": "R1-R10/R10b data, their pass conditions, the evaluator (f56422868, manifest 836a646e), tau (0.02), the decision metric (T_act), or summary.overall_pass.",
+ "execution": "every code-executing step under hostless; every GUI step inside a private cua-x11-session.sh (session-pidns.sh for GTK sessions); every timed session one quiet-timed block (<= 10 min); burners only inside the quiet-lane lock, killed by with-load.sh when the session ends.",
+ "if_the_row_fails": "report R10c FAIL (or INCONCLUSIVE); calibration 2 stays FAIL; do not change the evaluator, tau, the dose, rules or pass conditions after seeing data.",
+ "owner_ruling": {
+  "date": "2026-10-03",
+  "meaning": "R10 failed only its manipulation check because the burner dose was derived from nproc (10, capped by OMP_NUM_THREADS=10) on a host with 20 logical CPUs, so the planted load never made runnable tasks wait. The owner rules that R10 is re-run once as R10c with that setup error fixed. If R10c passes, row R10 is resolved PASS by this ruling and calibration 2 is checked off (summary.overall_pass_owner_ruling = true). The original pre-registered verdict (summary.overall_pass = false) stays recorded, unchanged, beside it. If R10c fails or is inconclusive, calibration 2 stays FAIL.",
+  "verbatim": "ok can we run just that one test w/ the setup error fixed? then it can be fully checked off"
+ },
+ "row": {
+  "branch": "ar/calib2/delete50 (edddf26fa; same build and G1 rows as R3/R10/R10b)",
+  "candidate": "delete50 under CPU contention",
+  "change": "identical to R10/R10b (tools/calib_eval.sh full pipeline) except the planted-load dose: burners = 1.5 x getconf _NPROCESSORS_ONLN (= 30 on this host; the runner aborts if the logical CPU count is not 20), started inside each screen and confirm task/spot_gtk3_text quiet-timed block by tools/with-load.sh via tools/run_blocks_loaded.py. getconf is used because OMP_NUM_THREADS does not cap it (nproc does). Browser spot and soak sessions run without planted load, as in R10/R10b.",
+  "expect": "trace-off agreement passes on a real deletion under CPU contention",
+  "ledger": "cal2-amend2-results.jsonl = byte copy of cal2-amend-results.jsonl (13 lines) extended by the R10c evaluations, so LORD++ continues from all earlier p-values; earlier ledgers are not modified",
+  "pass_if": "identical to R10b, on each of the first two assessable repeats: (1) the screen ranks; (2) gates.g7 (unmodified, the repeat's own prereg) on its confirm rows passes (mechanism share >= 0.7 and the trace-unset Delta inside the traced CI95 widened by ln(1+tau)), whether or not an earlier gate stopped the pipeline; (3) manipulation check: the median per-trial cpu 'some' PSI stall share (psi.cpu_some_stall_us / (t_exit_ns - t_spawn_ns)) of its confirm task trials exceeds the median of the ten unloaded R3 repeats' per-repeat medians (0.00352), and the median loadavg_end[0] of its confirm task trials is >= 14. The pipeline verdict is reported (expected KEEP) but is not part of pass_if.",
+  "repeats": "2 assessable repeats, tag delete50-load30c, seeds by the calibration-2 formula with i = 22 (screen 20261102 + 22000 + 10r + 1, confirm ... + 2). A repeat is assessable if its confirm task rows exist. A repeat that stops (INFRA/REJECT) before its confirm task rows exist is replaced by the next repeat number (r03, r04), at most twice; if fewer than 2 repeats are assessable after r04 the row is INCONCLUSIVE (= not passed).",
+  "reported_not_gated": "screen and confirm T_act sigma_ln, champion-arm median T and T_act vs unloaded R3, failures, verdicts, non-assessable repeats",
+  "row": "R10c"
+ },
+ "schema": "ar.calibration_prereg_amendment.v1",
+ "written_after": "R1-R10, R8 and the R10b amendment had all run and been analysed (R10b PASS with the same dose). R10c is therefore an independent replication of the fixed design with fresh seeds, not a first look.",
+ "written_before": "any R10c trial (hash time in CALIB2-AMEND-R10C.sha256; committed on exp/ar-harness-20261002 before the first R10c G0)"
+}
