@@ -1,0 +1,227 @@
+{
+  "schema": "b-04.prereg.v2",
+  "lane": "B-04 (wave 4, attempt 2, experiment): browser cold-first-snapshot reconciliation on R2-10's binary R",
+  "owners": [
+    "kvnloo/cua#93",
+    "kvnloo/cua#10"
+  ],
+  "advances": {
+    "E1": "B-03 left toggle H_W UNDECIDED and fill's 'moved only' verdict provisional; make both terminal under one rule set",
+    "E2": "replace R2-10's IRREDUCIBLE-by-carry-over observation label with a measured verdict on R2-10's own binary; recompute the browser untested shares on R and state whether R2-10's shares are lower bounds"
+  },
+  "committed_before_first_measured_trial": true,
+  "excluded_runs_before_this_file": {
+    "attempt1_pilot1": "13 trials, attempt 1 (aborted), excluded",
+    "attempt1_pilot2": "18 trials, attempt 1 (aborted), excluded",
+    "attempt1_shake": "54 trials, attempt 1 (aborted), excluded",
+    "attempt2_pilot_r00": "27 trials = measured-plan round 0 (block 'shake'), SHARED lock (ledger label b04a2-pilot-r00), harness check after the attempt-2 edits, excluded",
+    "use_of_pilots": "pilots checked the harness (27/27 valid rows, routes, marks, Driver sha256, browser basename, T_oracle fields) and that the 'tail' injection fires and ends after browser_navigate returns. No gate, threshold, estimator or verdict rule below was set or changed from pilot outcomes; the positive-control injection mode was fixed by attempt 1 on mechanism and is kept unchanged"
+  },
+  "source_and_binary": {
+    "tested_source": "8f3a646b4818b757648835cf89db8886626b1cf0 (exp/r2-10-composition-20261002 source head; R2-10 accepted packet 030f6bdbf)",
+    "binary_R": {
+      "name": "cua-driver-r2-10-8f3a646b4",
+      "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+      "version": "cua-driver 0.32.0 (read inside cua-x11-session.sh at lane start, 02:44:16Z)",
+      "rebuilt": false,
+      "rehash": "at start and end of the lane"
+    },
+    "jev_use": "libs/cua-driver/examples/jev-use of the tested source (run.py incl. FIX-01 Part B)",
+    "provider": "scripted chooser (choose_mock_for_task); TypeSafe cap 0; runner blocks non-loopback connects",
+    "browser": "Driver-chosen system Chrome via browser_prepare {allow_launch, isolated_new}; version read in session at start: Google Chrome 151.0.7922.71 (chromium 151.0.7922.173 also installed); executable basename recorded per trial",
+    "upstream_main_at_start": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (gh + local upstream/main agree, 2026-10-03T02:40Z; libs/cua-driver tree df2b49c3)"
+  },
+  "harness": {
+    "runner": "run_b04.py: attempt-1 draft derived from B-03 run_b03.py (verbatim copy harness/run_b03.py, blob bfdae8a11154ca6cc0e597430b0503ce5c7d7204 @ b34eef71e), plus the attempt-2 changes listed under attempt.changes_vs_attempt_1_draft",
+    "copied_verbatim": {
+      "harness/run_critpath.py": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a (B-02 packet @ b282ff389)",
+      "harness/run_b02.py": "528966ddade37bfa076d716720f03efd696bb807 (B-02 @ b282ff389)",
+      "harness/cdp_raw.py": "6f103930dc543ad0bb69b8ea132c6ef7fb719c7d (B-02 @ b282ff389)",
+      "harness/b01_fixtures.py": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d (B-02 @ b282ff389)",
+      "harness/b01_tasks.py": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe (B-02 @ b282ff389)",
+      "harness/compiled_routine.py": "3be4518318d7e77fbbc46d0eb2855ad65a0a007e (R2-07 copy in R2-10 packet @ 030f6bdbf)",
+      "harness/r2-10-scripted-COMP-routine.json": "R2-10 raw/browser/scripted-routines/scripted-COMP.json @ 030f6bdbf (authority-free logical routine; require_clean passes)"
+    },
+    "per_trial": "fresh fixture servers, fresh cua-driver mcp process, fresh Driver-launched browser (browser_prepare allow_launch, isolated_new), fresh token; loadavg before/after; every trial kept",
+    "oracle_sampler": "R2-10 harness/r2_10_browser.py Sampler @ 030f6bdbf (2 ms independent re-read of the fixture server state, no HTTP, no runner involvement)"
+  },
+  "configuration": {
+    "COMP": "R2-10 COMP, scripted: set_agent_cursor_enabled false; CUA_DRIVER_EXP_TYPE_FOCUS_SETTLE_MS=0 on fill; 10 ms completion poll with 2.0 s deadline; caller-compiled output validators (compiled at tools/list, outside T); CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1; guarded completion on fill; compiled replay on fill (R2-10 scripted COMP artifact, guarded step loop as fallback); toggle/modal run R2-10's step loop; telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1); phase trace on in every trial",
+    "DEFAULT": "R2-10 BASE (product default) for the smoke only: cursor on, default glide, no guard, 100 ms poll, library output validation, no CUA_DRIVER_EXP_* variable"
+  },
+  "sibling_pages": "matched-content siblings served by the same fixture origin: fill /sibling (jev-use PAGE with title/h1/p/field name/aria-label/button text/output/action replaced), toggle /toggle-sibling and modal /modal-sibling (b01_fixtures pages with title, aria-label, button texts and event endpoints replaced). Same elements, roles and structure; different text and tokens; never clicked; no mutation",
+  "probes": {
+    "P1": {
+      "what": "negative control (estimator validity): cold process, same document, no navigation; first observation sent D ms after the task navigate returned, then an immediate matched re-snapshot",
+      "cells": {
+        "D80": "D=80",
+        "D160": "D=160"
+      },
+      "classes": [
+        "fill",
+        "toggle"
+      ],
+      "n": "30 pairs per D per class (one pair = snapshot1 + resnap1 of one trial)"
+    },
+    "P2": {
+      "what": "per-process contrast at D0: cold process vs warm process (warm = matched-content sibling navigate + semantic_v2 snapshot, then the task navigate)",
+      "cells": {
+        "cold": "P=cold",
+        "warm": "P=warm"
+      },
+      "classes": [
+        "fill",
+        "toggle",
+        "modal"
+      ],
+      "modal_role": "consistency check only; no modal verdict",
+      "n": "30 AB/BA pairs per class",
+      "contrast": "excess(cold, D0) - excess(warm, D0)"
+    },
+    "P3": {
+      "what": "per-document contrast at D0 in a warm process: new document via navigate vs re-snapshot of the same document",
+      "cells": {
+        "newdoc": "P=warm, task navigate, snapshot1 at D0",
+        "samedoc": "P=warm, task navigate, presnap (one semantic_v2 snapshot), then snapshot1 at D0"
+      },
+      "classes": [
+        "fill",
+        "toggle"
+      ],
+      "n": "30 AB/BA pairs per class",
+      "contrast": "excess(newdoc) - excess(samedoc)"
+    },
+    "P4": {
+      "what": "T_oracle rule",
+      "cells": {
+        "W0": "COMP as is (first observation at D0)",
+        "W80": "first observation 80 ms after navigate return (wait inside T)",
+        "PREWARM": "sibling warm-up inside T"
+      },
+      "classes": [
+        "fill",
+        "toggle"
+      ],
+      "n": "30 rounds per class",
+      "order": "Williams rows of run_b02.williams_any(3) (6 rows: square + mirror), row (r + 3k) mod 6 for the k-th class of round r",
+      "resnap": false
+    },
+    "POS": {
+      "what": "positive control",
+      "cells": {
+        "inject20": "cold, D0, the fixture delays its first task-document response by 20 ms (mode tail)",
+        "inject0": "same, no delay"
+      },
+      "classes": [
+        "fill",
+        "toggle"
+      ],
+      "n": "10 AB/BA pairs per class (rounds 0-9)"
+    },
+    "SMOKE": {
+      "what": "default config smoke on R",
+      "classes": [
+        "fill",
+        "toggle",
+        "modal"
+      ],
+      "n": "5 per class (rounds 0-4)",
+      "arm": "DEFAULT"
+    }
+  },
+  "plan": {
+    "rounds": 30,
+    "round_layout": "run_b04.round_trials(r): P1 (both classes, D80/D160), P2 (3 classes, cold/warm), P3 (2 classes), P4 (2 classes x 3 arms), POS if r<10, SMOKE if r<5. Class order and within-pair order flip with r parity (AB/BA)",
+    "trials_total": 655,
+    "chunks": "three measured chunks (rounds 0-10 = 255 trials, 10-20 = 200, 20-30 = 200), each one bin/quiet-timed acquisition (EXCLUSIVE quiet-lane lock, receipt in the quiet-lane ledger), expected about 9 min each, limit 25 min per acquisition. POS and SMOKE trials are interleaved in the rounds and therefore also run under the EXCLUSIVE lock (stronger than the SHARED lock the lane spec allows for them)",
+    "session": "hostless + cua-x11-session.sh, CUA_SESSION_EXTRA_ENV='CUA_DRIVER_RS_TELEMETRY_ENABLED=0 DO_NOT_TRACK=1 B04_LOCK=exclusive B04_LOCK_LABEL=<label>', TMPDIR under the lane temp",
+    "failed_session_start": "a chunk whose session or runner fails before its trials complete is kept (ledger line, log, any trial files) and its missing rounds are re-run under a new --block tag (m -> ma, mb, ...); kept trials of the failed block stay in the denominator",
+    "inject_mode": "tail (fixed)"
+  },
+  "estimators": {
+    "observation_span": "Driver trace marks of one semantic_v2 get_browser_state call: first snap.enter -> first snap.serialized inside the caller's call window of that label",
+    "matched_re_snapshot": "resnap1: the same semantic_v2 call sent again immediately after snapshot1 returns, same document, no other call in between; the routine/step loop consumes resnap1",
+    "E_span (primary)": "excess = span(snapshot1) - span(resnap1)",
+    "E_walk (fallback estimator)": "Driver-side walk duration marks only: walk = (snap.indexed - snap.layout_cdp_done) + sum over AX frames (snap.ax_composed - preceding snap.ax_cdp_done) + (snap.outcome - snap.oopif_done); excess_walk = walk(snapshot1) - walk(resnap1). It excludes every CDP round trip",
+    "descriptive_only": "B-02/B-03 excess span(snapshot1) - span(snapshot2) (post-action re-snapshot) and the per-CDP-step split of snapshot1 - resnap1"
+  },
+  "T_oracle_rule": {
+    "oracle": "independent harness thread re-reads the fixture server state every 2 ms (fill: submitted == token; toggle: checked is true; modal: opened and modal); the server's CLOCK_MONOTONIC journal must show exactly one completion mutation; the runner's outcome is logged but is not the oracle",
+    "task_start": "stamped immediately after the task browser_navigate returns (before presnap and the D wait)",
+    "T_oracle": "caller-side rule (R2-10): first oracle-confirmed sample at/after the caller-side return (call_return) of the last accepted mutation, minus task_start",
+    "T_oracle_P4": "T_oracle + warm-up span (warm_navigate send -> warm_snapshot return) for PREWARM; = T_oracle for W0 and W80 (W80's wait is inside T). The task navigate is outside T in every arm",
+    "secondary_descriptive": [
+      "T_land (+ warm-up span for PREWARM)",
+      "T_oracle_P4 + task navigate span (navigate inside T in every arm)",
+      "R2-10 T0 rule: first oracle sample at/after last-mutation return minus snapshot1 send"
+    ],
+    "T_land": "first oracle-confirmed sample minus task_start (secondary, descriptive)"
+  },
+  "statistics": {
+    "bootstrap": "percentile bootstrap, 10000 resamples, random.Random(20261003), 95% CI",
+    "P1": "mean excess per class and D, CI of the mean",
+    "paired_contrasts": "P2, P3, POS: per-round paired difference, both trials valid; median with CI (verdict statistic) plus mean (accounting)",
+    "P4": "per-round paired difference T_oracle_P4(arm) - T_oracle_P4(W0), rounds with both trials valid; median with CI; difference of cell medians also reported",
+    "loadavg": "1-minute loadavg before and after every trial, reported per cell"
+  },
+  "validity": {
+    "trial_valid": "outcome verified by the runner AND the independent poller saw the expected state AND exact token/state match AND T_oracle defined (an expected-state sample at/after the last mutation return) AND no revert after the first expected-state sample AND exactly 1 completion mutation in the server journal AND no stale dispatch (every action directly follows a task observation; no refusal, no call error) AND action routes equal the expected receipts (fill trusted_input then dom; toggle/modal dom, dom) AND the arm's forced path (COMP: admission-cache env and >=1 mcp.inner_validation_skipped mark; fill also settle 0 and route 'compiled'; DEFAULT: no CUA_DRIVER_EXP_* env and 0 skip marks) AND resnap1 present where required AND telemetry env 0 AND 0 non-loopback connects AND (POS inject20) the injection fired",
+    "denominator": "every trial is kept and reported as N valid of M; contrasts use pairs where both trials are valid",
+    "cell_gate": "a cell with validity < 95% makes every verdict that uses it UNDECIDED",
+    "E4": "0 stale-ref dispatches, 0 duplicate mutations, 0 unverified successes, 0 blind re-dispatches (redispatch_blocked or a second refusal stops the trial as unknown), refusals reported"
+  },
+  "controls": {
+    "P1_gate": "per estimator, per class, per D: |mean excess| < 1.0 ms AND the 95% CI of the mean includes 0. An estimator is P1-valid for a class iff both D80 and D160 pass",
+    "positive_control": {
+      "injection": "the fixture delays its first task-document response of the trial by 20 ms",
+      "mode_choice": "mode 'tail' (all bytes but the last, then the 20 ms delay, then the last byte), fixed by attempt 1 on mechanism and kept: browser_navigate returns when CDP Page.navigate returns (navigation commit; SOURCE tools.rs browser_navigate), so a delay before the status line ('hdr') is spent inside the navigate span and cannot reach any snapshot, while 'tail' ends after navigate return (attempt-2 pilot: 17.8 / 18.0 ms after return) and overlaps the D0 first observation",
+      "gate": "per estimator and class: paired delta = excess(inject20) - excess(inject0) > 0 in 10/10 valid pairs AND the 95% CI of the median delta excludes 0 (lower bound > 0)",
+      "literal_reading_reported": "excess(inject20) > 0 in 10/10 and its CI excludes 0 is reported descriptively; it cannot fail at cold D0 because the uninjected excess is already positive, so it is not used as the gate",
+      "lock": "interleaved in the measured rounds, EXCLUSIVE lock"
+    },
+    "default_smoke": "5/5 valid per class on DEFAULT (no EXP env, no skip marks), interleaved in rounds 0-4, EXCLUSIVE lock"
+  },
+  "verdict_mapping": {
+    "estimator_selection_per_class": "E_span if P1-valid; else E_walk if P1-valid; else NONE (per-process verdict UNDECIDED, no carry-over). The selected estimator's positive-control result is attached",
+    "per_document_part": "IRREDUCIBLE iff BOTH P4 deletions (W80, PREWARM) increase median T_oracle_P4 with the paired CI excluding 0 (lower bound > 0); otherwise UNDECIDED with numbers. This verdict uses T_oracle only and does not depend on the snapshot estimator; the estimator only sizes the part",
+    "per_process_part": {
+      "OWNER_DECISION": "P2 median contrast >= 1.0 ms AND its CI excludes 0 (lower bound > 0), with the selected estimator (browser process reuse / warm-pool policy)",
+      "NOT_MATERIAL": "P2 contrast CI includes 0 AND its upper bound < 1.0 ms, with the selected estimator, AND that estimator passed the positive control for the class (a no-effect claim needs demonstrated sensitivity)",
+      "UNDECIDED": "every other case, including estimator NONE, a failed cell gate, or NOT_MATERIAL conditions without a passed positive control",
+      "DELETED": "never (no product knob is proposed)"
+    },
+    "classes": "fill and toggle decided by the same rules in the same block; modal P2 reported as a consistency check only (no verdict; R2-10/B-02 modal row unchanged)"
+  },
+  "accounting": {
+    "excess_parts_this_lane": "means over valid trials, selected estimator: E_cold = mean excess(P2 cold); per_process = mean P2 paired contrast; per_document = mean P3 paired contrast; rest = E_cold - max(0, per_process) - max(0, per_document) (floor + unattributed; always counted UNTESTED, clipped at >= 0)",
+    "untested_fraction_u": "u = [max(0, per_process) if per_process verdict is UNDECIDED] + [max(0, per_document) if per_document verdict is UNDECIDED] + rest, divided by E_cold, clipped to [0, 1]. NOT_MATERIAL counts as tested in the standard reading; the conservative reading adds the P2 contrast CI upper bound",
+    "no_valid_estimator": "headline u = 1 (the whole cold excess counted UNTESTED); the E_span split is reported descriptively, labelled as coming from a gate-failed estimator",
+    "R2_10_rows": "R2-10 COMP rows (scripted and live, fill/toggle/modal) from r2-10-summary.json @ 030f6bdbf: mean_T_ms, untested_ms, observation mean. R2-10's own cold excess E_R = mean over valid COMP trials of span(snapshot1) - span(snapshot2) from R2-10 raw (BENCHMARK re-analysis, r210_observation.py over R2-10 raw scripted-trials.tar.gz / live-trials.tar.gz @ 030f6bdbf; COMP measured trials, verified, excluding admission rows). Updated untested share = (untested_ms + u * max(0, E_R)) / mean_T_ms. The observation row becomes: base observation (observation - E_R, IRREDUCIBLE as in R2-10) + E_R split by this lane's fractions with this lane's verdicts",
+    "modal": "unchanged (B-02 H_W IRREDUCIBLE); this lane's P2 modal contrast is printed next to it",
+    "lower_bound_statement": "R2-10's browser untested shares are lower bounds iff u * E_R > 0 for that class"
+  },
+  "claim_boundary": "One host, private Xvfb (cua-x11-session.sh under hostless), Driver-chosen system Chrome 151.0.7922.71 via browser_prepare isolated_new, binary R 12b9045a, tested source 8f3a646b4, scripted chooser, telemetry off, TypeSafe not used (cap 0). No product change; the warm pool is a policy question for the owner. Numbers are not added to or ratioed with B-02/B-03 (binary 7e6c0609) numbers",
+  "evidence_classes": [
+    "BENCHMARK+REAL (FIXTURE)",
+    "SOURCE",
+    "NOT_RUN"
+  ],
+  "attempt": {
+    "attempt": 2,
+    "branch": "exp/b-04-observation-reconcile-a2-20261003 (from 8f3a646b4818b757648835cf89db8886626b1cf0)",
+    "worktree": "<lanes>/w4-a2-b04",
+    "attempt_1": "ABORTED, no commit (branch exp/b-04-observation-reconcile-20261003 and its worktree left untouched). Its uncommitted harness (run_b04.py, b04_rows.py, harness/ copies, PREREG draft) was reviewed and copied; every harness/ copy was re-verified blob-for-blob against its source commit. Its pilots (pilot1 13 trials, pilot2 18 trials) and shakedown (54 trials) are EXCLUDED from every analysis and number in this packet.",
+    "changes_vs_attempt_1_draft": [
+      "oracle sampler: R2-10 Sampler (keeps every expected-state sample after the first) replaces B-01's first-hit OraclePoller, so the caller-side T_oracle rule can be applied",
+      "T_oracle: caller-side rule (first expected-state sample at/after the caller-side return of the last accepted mutation), was first expected-state sample (now reported as T_land)",
+      "locks: the runner takes no lock; measured chunks run under bin/quiet-timed (EXCLUSIVE); the pilot ran under lane-scripts/shared-locked.sh (SHARED flock plus a receipt line in the quiet-lane ledger); the runner refuses a plan without the matching B04_LOCK",
+      "provenance: Driver name + sha256 in every trial record and manifest; browser executable basename per trial; --block tag for re-runs of failed session-start blocks"
+    ]
+  },
+  "provider": {
+    "cap": 0,
+    "attempts": 0,
+    "reached": 0,
+    "note": "scripted chooser only; the runner's run_critpath loopback guard blocks non-loopback connects"
+  }
+}
