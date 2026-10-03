@@ -1,0 +1,985 @@
+{
+ "rows": [
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r12-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r12-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:windows",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: {} is not valid under any of the given schemas\n\nFailed validating 'anyOf' in schema[1]:\n    {'additionalProperties': True,\n     ",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:windows",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'n03-not-an-array' is not of type 'array'\n\nFailed validating 'type' in schema[0]['properties']['windows']:\n    {'items': {'prope",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:windows",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: None is not of type 'array'\n\nFailed validating 'type' in schema[0]['properties']['windows']:\n    {'items': {'properties': {'app_",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].window_id",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'window_id' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'propertie",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].pid",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'pid' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'properties': {'",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].app_name",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'app_name' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'properties",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].title",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'title' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'properties': ",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].bounds",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'bounds' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'properties':",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].is_on_screen",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'is_on_screen' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'proper",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "array_item_drop_required:windows[0].z_index",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool list_windows: 'z_index' is a required property\n\nFailed validating 'required' in schema[0]['properties']['windows']['items']:\n    {'properties'",
+   "same_message": true,
+   "tool": "list_windows",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r12-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r12-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:session",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: {'motion': {'arc_flow': 0.0, 'arc_size': 0.25, 'dwell_after_click_ms': 80.0, 'end_handle': 0.3, 'glide_duration_ms': ",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:motion",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: {'session': 'n03-d74cc6e4'} is not valid under any of the given schemas\n\nFailed validating 'anyOf' in schema[1]:\n    ",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:motion",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: 'n03-not-an-object' is not of type 'object'\n\nFailed validating 'type' in schema[0]['properties']['motion']:\n    {'pro",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:session",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: 12345 is not of type 'string'\n\nFailed validating 'type' in schema[0]['properties']['session']:\n    {'type': 'string'}",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:session",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: None is not of type 'string'\n\nFailed validating 'type' in schema[0]['properties']['session']:\n    {'type': 'string'}\n",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:motion",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: None is not of type 'object'\n\nFailed validating 'type' in schema[0]['properties']['motion']:\n    {'properties': {'arc",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "nested_wrong_type:motion.arc_flow",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: 'n03-x' is not of type 'number'\n\nFailed validating 'type' in schema[0]['properties']['motion']['properties']['arc_flo",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "nested_wrong_type:motion.arc_size",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: 'n03-x' is not of type 'number'\n\nFailed validating 'type' in schema[0]['properties']['motion']['properties']['arc_siz",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "nested_wrong_type:motion.dwell_after_click_ms",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: 'n03-x' is not of type 'number'\n\nFailed validating 'type' in schema[0]['properties']['motion']['properties']['dwell_a",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "nested_wrong_type:motion.end_handle",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_agent_cursor_motion: 'n03-x' is not of type 'number'\n\nFailed validating 'type' in schema[0]['properties']['motion']['properties']['end_han",
+   "same_message": true,
+   "tool": "set_agent_cursor_motion",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r12-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r12-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:session",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: {'enabled': True, 'motion': {'arc_flow': 0.0, 'arc_size': 0.25, 'dwell_after_click_ms': 80.0, 'end_handle': 0.3, 'glid",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:enabled",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: {'motion': {'arc_flow': 0.0, 'arc_size': 0.25, 'dwell_after_click_ms': 80.0, 'end_handle': 0.3, 'glide_duration_ms': 1",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:position",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: {'enabled': True, 'motion': {'arc_flow': 0.0, 'arc_size': 0.25, 'dwell_after_click_ms': 80.0, 'end_handle': 0.3, 'glid",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:theme",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: {'enabled': True, 'motion': {'arc_flow': 0.0, 'arc_size': 0.25, 'dwell_after_click_ms': 80.0, 'end_handle': 0.3, 'glid",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:visual_state",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: {'enabled': True, 'motion': {'arc_flow': 0.0, 'arc_size': 0.25, 'dwell_after_click_ms': 80.0, 'end_handle': 0.3, 'glid",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:motion",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: {'enabled': True, 'position': None, 'session': 'n03-d74cc6e4', 'theme': {'fallback': None, 'id': 'cua.default', 'profi",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:enabled",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: 'n03-x' is not of type 'boolean'\n\nFailed validating 'type' in schema[0]['properties']['enabled']:\n    {'type': 'boolea",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:motion",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: 'n03-not-an-object' is not of type 'object'\n\nFailed validating 'type' in schema[0]['properties']['motion']:\n    {'prop",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:session",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: 12345 is not of type 'string'\n\nFailed validating 'type' in schema[0]['properties']['session']:\n    {'type': 'string'}\n",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:theme",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_agent_cursor_state: 'n03-not-an-object' is not of type 'object'\n\nFailed validating 'type' in schema[0]['properties']['theme']:\n    {'prope",
+   "same_message": true,
+   "tool": "get_agent_cursor_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r12-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r12-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:pid",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: {'_note': 'Prefer `elements` \u2014 `tree_markdown` will continue to work but new fields will only be added to the structured sid",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:window_id",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: {'_note': 'Prefer `elements` \u2014 `tree_markdown` will continue to work but new fields will only be added to the structured sid",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:app_name",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 12345 is not of type 'string', 'null'\n\nFailed validating 'type' in schema[0]['properties']['app_name']:\n    {'type': ['strin",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:element_count",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-x' is not of type 'integer', 'null'\n\nFailed validating 'type' in schema[0]['properties']['element_count']:\n    {'minimu",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:elements",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-not-an-array' is not of type 'array', 'null'\n\nFailed validating 'type' in schema[0]['properties']['elements']:\n    {'it",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:elements_complete",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-x' is not of type 'boolean', 'null'\n\nFailed validating 'type' in schema[0]['properties']['elements_complete']:\n    {'ty",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:pid",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-x' is not of type 'integer'\n\nFailed validating 'type' in schema[0]['properties']['pid']:\n    {'minimum': 0, 'type': 'in",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:returned_element_count",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-x' is not of type 'integer', 'null'\n\nFailed validating 'type' in schema[0]['properties']['returned_element_count']:\n   ",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:screenshot_frame_valid",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-x' is not of type 'boolean', 'null'\n\nFailed validating 'type' in schema[0]['properties']['screenshot_frame_valid']:\n   ",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:screenshot_height",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool get_window_state: 'n03-x' is not of type 'integer', 'null'\n\nFailed validating 'type' in schema[0]['properties']['screenshot_height']:\n    {'mi",
+   "same_message": true,
+   "tool": "get_window_state",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r12-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "add_unknown_property",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'effect': 'confirmed', 'evidence': [{'kind': 'value_readback'}], 'route': 'accessibility', 'su",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'evidence': [{'kind': 'value_readback'}], 'route': 'accessibility', 'summary': \"Set value of e",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:route",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'effect': 'confirmed', 'evidence': [{'kind': 'value_readback'}], 'summary': \"Set value of elem",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:delivery",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: 'n03-not-an-object' is not of type 'object', 'null'\n\nFailed validating 'type' in schema[0]['properties']['delivery']:\n    {'additio",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'effect': 12345, 'evidence': [{'kind': 'value_readback'}], 'route': 'accessibility', 'summary'",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:evidence",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: 'n03-not-an-array' is not of type 'array', 'null'\n\nFailed validating 'type' in schema[0]['properties']['evidence']:\n    {'items': {",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:route",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'effect': 'confirmed', 'evidence': [{'kind': 'value_readback'}], 'route': 12345, 'summary': \"S",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:summary",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: 12345 is not of type 'string', 'null'\n\nFailed validating 'type' in schema[0]['properties']['summary']:\n    {'type': ['string', 'nul",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'effect': None, 'evidence': [{'kind': 'value_readback'}], 'route': 'accessibility', 'summary':",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:route",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool set_value: {'delivery': {'mode': 'background'}, 'effect': 'confirmed', 'evidence': [{'kind': 'value_readback'}], 'route': None, 'summary': \"Se",
+   "same_message": true,
+   "tool": "set_value",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-007"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r12-003"
+  },
+  {
+   "agree": true,
+   "case": "real",
+   "lazy_accepts": true,
+   "mutation": "none",
+   "reference_accepts": true,
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r12-007"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "add_unknown_property",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'effect': 'unverifiable', 'route': 'accessibility', 'summary': 'Clicked element [2] (pid 1770909).",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'route': 'accessibility', 'summary': 'Clicked element [2] (pid 1770909).'} is not valid under any ",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "drop_required:route",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'effect': 'unverifiable', 'summary': 'Clicked element [2] (pid 1770909).'} is not valid under any ",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:delivery",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: 'n03-not-an-object' is not of type 'object', 'null'\n\nFailed validating 'type' in schema[0]['properties']['delivery']:\n    {'additionalP",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'effect': 12345, 'route': 'accessibility', 'summary': 'Clicked element [2] (pid 1770909).'} is not",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:route",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'effect': 'unverifiable', 'route': 12345, 'summary': 'Clicked element [2] (pid 1770909).'} is not ",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "wrong_type:summary",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: 12345 is not of type 'string', 'null'\n\nFailed validating 'type' in schema[0]['properties']['summary']:\n    {'type': ['string', 'null']}",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'effect': None, 'route': 'accessibility', 'summary': 'Clicked element [2] (pid 1770909).'} is not ",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "required_to_null:route",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: {'delivery': {'mode': 'background'}, 'effect': 'unverifiable', 'route': None, 'summary': 'Clicked element [2] (pid 1770909).'} is not v",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  },
+  {
+   "agree": true,
+   "case": "invalid",
+   "lazy_accepts": false,
+   "mutation": "enum_violation:effect",
+   "reference_accepts": false,
+   "reference_error": "RuntimeError: Invalid structured content returned by tool click: 'n03-not-in-enum' is not one of ['confirmed', 'partial', 'unverifiable', 'suspected_noop', 'refused']\n\nFailed validating 'enum' in sche",
+   "same_message": true,
+   "tool": "click",
+   "trial": "k1-r00-003"
+  }
+ ],
+ "schema": "n03.hc_control.v1",
+ "summary": {
+  "agree": 82,
+  "labels": [
+   "n04-k1-r00",
+   "n04-k1-r12"
+  ],
+  "lazy_compiles": [
+   "list_windows",
+   "set_agent_cursor_motion",
+   "get_agent_cursor_state",
+   "get_window_state",
+   "set_value",
+   "click"
+  ],
+  "pass": true,
+  "per_tool": {
+   "click": {
+    "candidates_tried": 10,
+    "invalid": 10,
+    "invalid_rejected_by_both": 10,
+    "mutation_kinds": [
+     "add_unknown_property",
+     "drop_required",
+     "enum_violation",
+     "required_to_null",
+     "wrong_type"
+    ],
+    "real": 4,
+    "real_accepted_by_both": 4,
+    "same_message": 14
+   },
+   "get_agent_cursor_state": {
+    "candidates_tried": 11,
+    "invalid": 10,
+    "invalid_rejected_by_both": 10,
+    "mutation_kinds": [
+     "drop_required",
+     "wrong_type"
+    ],
+    "real": 4,
+    "real_accepted_by_both": 4,
+    "same_message": 14
+   },
+   "get_window_state": {
+    "candidates_tried": 11,
+    "invalid": 10,
+    "invalid_rejected_by_both": 10,
+    "mutation_kinds": [
+     "drop_required",
+     "wrong_type"
+    ],
+    "real": 4,
+    "real_accepted_by_both": 4,
+    "same_message": 14
+   },
+   "list_windows": {
+    "candidates_tried": 11,
+    "invalid": 10,
+    "invalid_rejected_by_both": 10,
+    "mutation_kinds": [
+     "array_item_drop_required",
+     "drop_required",
+     "required_to_null",
+     "wrong_type"
+    ],
+    "real": 4,
+    "real_accepted_by_both": 4,
+    "same_message": 14
+   },
+   "set_agent_cursor_motion": {
+    "candidates_tried": 11,
+    "invalid": 10,
+    "invalid_rejected_by_both": 10,
+    "mutation_kinds": [
+     "drop_required",
+     "nested_wrong_type",
+     "required_to_null",
+     "wrong_type"
+    ],
+    "real": 4,
+    "real_accepted_by_both": 4,
+    "same_message": 14
+   },
+   "set_value": {
+    "candidates_tried": 10,
+    "invalid": 10,
+    "invalid_rejected_by_both": 10,
+    "mutation_kinds": [
+     "add_unknown_property",
+     "drop_required",
+     "required_to_null",
+     "wrong_type"
+    ],
+    "real": 2,
+    "real_accepted_by_both": 2,
+    "same_message": 12
+   }
+  },
+  "rows": 82
+ }
+}
