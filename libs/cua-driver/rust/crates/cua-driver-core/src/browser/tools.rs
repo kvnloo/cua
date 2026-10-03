@@ -769,7 +769,11 @@ impl BrowserMotionPolicyTool {
     pub fn new(engine: Arc<BrowserEngine>) -> Self {
         let def = ToolDef {
             name: "browser_motion_policy".into(),
-            description: "Apply or clear the standard prefers-reduced-motion media                 emulation for one exactly-bound driver-owned browser tab. This is an                 explicit experimental performance/accessibility policy: it does not                 inject CSS, freeze timers, video, canvas, or WebGL, and refuses                 existing user profiles in v0."
+            description: "Apply or clear the standard prefers-reduced-motion media \
+                emulation for one exactly-bound driver-owned browser tab. This is an \
+                explicit experimental performance/accessibility policy: it does not \
+                inject CSS, freeze timers, video, canvas, or WebGL, and refuses \
+                existing user profiles in v0."
                 .into(),
             input_schema: json!({
                 "type": "object",
