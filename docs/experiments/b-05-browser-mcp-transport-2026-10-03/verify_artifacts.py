@@ -32,6 +32,9 @@ import tarfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+# The summary recompute imports the cited harness; never let it write __pycache__ into cited directories
+# (a plain `python3 verify_artifacts.py` from a clean clone must pass).
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(HERE))
 import analyze_b05 as A  # noqa: E402
 
@@ -152,7 +155,8 @@ def cited_files_tracked() -> None:
         if not p.exists():
             missing.append(c)
             continue
-        files = [p] if p.is_file() else [q for q in p.rglob("*") if q.is_file()]
+        # interpreter bytecode caches are build output, not cited content
+        files = [p] if p.is_file() else [q for q in p.rglob("*") if q.is_file() and "__pycache__" not in q.parts]
         for q in files:
             rel = str(q.relative_to(HERE))
             if rel in ignored:

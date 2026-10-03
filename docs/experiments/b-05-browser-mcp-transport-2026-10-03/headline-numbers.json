@@ -1,25 +1,208 @@
-{"numbers": [
- {"id": "phaseA_valid", "path": "phase_A.valid", "format": "{}", "text": "96"},
- {"id": "c_m_us", "path": "per_mark_cost.c_m_us", "format": "{:.1f} us", "text": "34.5 us"},
- {"id": "ovh_fill", "path": "overhead_control.by_class.fill.T_runner_ms.mean_diff", "format": "{:.2f} ms", "text": "6.11 ms"},
- {"id": "ovh_fill_ci", "path": "overhead_control.by_class.fill.T_runner_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[0.78, 10.39]"},
- {"id": "ovh_toggle", "path": "overhead_control.by_class.toggle.T_runner_ms.mean_diff", "format": "{:.2f} ms", "text": "6.57 ms"},
- {"id": "ovh_toggle_ci", "path": "overhead_control.by_class.toggle.T_runner_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[4.86, 8.42]"},
- {"id": "ovh_modal", "path": "overhead_control.by_class.modal.T_runner_ms.mean_diff", "format": "{:.2f} ms", "text": "4.40 ms"},
- {"id": "ovh_modal_ci", "path": "overhead_control.by_class.modal.T_runner_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[2.42, 6.53]"},
- {"id": "tr_fill", "path": "phase_A.by_class.fill.groups.transport_in_out.corr.mean", "format": "{:.2f} ms", "text": "4.51 ms"},
- {"id": "tr_toggle", "path": "phase_A.by_class.toggle.groups.transport_in_out.corr.mean", "format": "{:.2f} ms", "text": "3.95 ms"},
- {"id": "tr_modal", "path": "phase_A.by_class.modal.groups.transport_in_out.corr.mean", "format": "{:.2f} ms", "text": "6.75 ms"},
- {"id": "pf_fill", "path": "phase_B.PARSE_FAST.by_class.fill.caller_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[0.11, 0.34]"},
- {"id": "pf_toggle", "path": "phase_B.PARSE_FAST.by_class.toggle.caller_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[0.01, 0.25]"},
- {"id": "pf_modal", "path": "phase_B.PARSE_FAST.by_class.modal.caller_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[0.08, 0.34]"},
- {"id": "vf_fill", "path": "phase_B.VALIDATE_FAST.by_class.fill.caller_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[-0.04, 0.36]"},
- {"id": "vf_toggle", "path": "phase_B.VALIDATE_FAST.by_class.toggle.caller_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[0.02, 0.24]"},
- {"id": "vf_modal", "path": "phase_B.VALIDATE_FAST.by_class.modal.caller_ms.ci95", "format": "[{:.2f}, {:.2f}]", "text": "[0.04, 0.31]"},
- {"id": "e2_fill", "path": "e2.fill.corr:below_gate_as_irreducible.untested_share", "format": "{:.1%}", "text": "4.3%"},
- {"id": "e2_toggle", "path": "e2.toggle.corr:below_gate_as_irreducible.untested_share", "format": "{:.1%}", "text": "4.1%"},
- {"id": "e2_modal", "path": "e2.modal.corr:below_gate_as_irreducible.untested_share", "format": "{:.1%}", "text": "7.5%"},
- {"id": "e2s_fill", "path": "e2.fill.corr:below_gate_as_untested.untested_share", "format": "{:.1%}", "text": "6.0%"},
- {"id": "e2s_toggle", "path": "e2.toggle.corr:below_gate_as_untested.untested_share", "format": "{:.1%}", "text": "6.1%"},
- {"id": "e2s_modal", "path": "e2.modal.corr:below_gate_as_untested.untested_share", "format": "{:.1%}", "text": "9.7%"}
-]}
+{
+ "numbers": [
+  {
+   "id": "phaseA_valid",
+   "path": "phase_A.valid",
+   "format": "{}",
+   "text": "96"
+  },
+  {
+   "id": "c_m_us",
+   "path": "per_mark_cost.c_m_us",
+   "format": "{:.1f} us",
+   "text": "34.5 us"
+  },
+  {
+   "id": "ovh_fill",
+   "path": "overhead_control.by_class.fill.T_runner_ms.mean_diff",
+   "format": "{:.2f} ms",
+   "text": "6.11 ms"
+  },
+  {
+   "id": "ovh_fill_ci",
+   "path": "overhead_control.by_class.fill.T_runner_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[0.78, 10.39]"
+  },
+  {
+   "id": "ovh_toggle",
+   "path": "overhead_control.by_class.toggle.T_runner_ms.mean_diff",
+   "format": "{:.2f} ms",
+   "text": "6.57 ms"
+  },
+  {
+   "id": "ovh_toggle_ci",
+   "path": "overhead_control.by_class.toggle.T_runner_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[4.86, 8.42]"
+  },
+  {
+   "id": "ovh_modal",
+   "path": "overhead_control.by_class.modal.T_runner_ms.mean_diff",
+   "format": "{:.2f} ms",
+   "text": "4.40 ms"
+  },
+  {
+   "id": "ovh_modal_ci",
+   "path": "overhead_control.by_class.modal.T_runner_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[2.42, 6.53]"
+  },
+  {
+   "id": "tr_fill",
+   "path": "phase_A.by_class.fill.groups.transport_in_out.corr.mean",
+   "format": "{:.2f} ms",
+   "text": "4.51 ms"
+  },
+  {
+   "id": "tr_toggle",
+   "path": "phase_A.by_class.toggle.groups.transport_in_out.corr.mean",
+   "format": "{:.2f} ms",
+   "text": "3.95 ms"
+  },
+  {
+   "id": "tr_modal",
+   "path": "phase_A.by_class.modal.groups.transport_in_out.corr.mean",
+   "format": "{:.2f} ms",
+   "text": "6.75 ms"
+  },
+  {
+   "id": "pf_fill",
+   "path": "phase_B.PARSE_FAST.by_class.fill.caller_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[0.11, 0.34]"
+  },
+  {
+   "id": "pf_toggle",
+   "path": "phase_B.PARSE_FAST.by_class.toggle.caller_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[0.01, 0.25]"
+  },
+  {
+   "id": "pf_modal",
+   "path": "phase_B.PARSE_FAST.by_class.modal.caller_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[0.08, 0.34]"
+  },
+  {
+   "id": "vf_fill",
+   "path": "phase_B.VALIDATE_FAST.by_class.fill.caller_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[-0.04, 0.36]"
+  },
+  {
+   "id": "vf_toggle",
+   "path": "phase_B.VALIDATE_FAST.by_class.toggle.caller_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[0.02, 0.24]"
+  },
+  {
+   "id": "vf_modal",
+   "path": "phase_B.VALIDATE_FAST.by_class.modal.caller_ms.ci95",
+   "format": "[{:.2f}, {:.2f}]",
+   "text": "[0.04, 0.31]"
+  },
+  {
+   "id": "e2_fill",
+   "path": "e2.fill.corr:below_gate_as_irreducible.untested_share",
+   "format": "{:.1%}",
+   "text": "4.3%"
+  },
+  {
+   "id": "e2_toggle",
+   "path": "e2.toggle.corr:below_gate_as_irreducible.untested_share",
+   "format": "{:.1%}",
+   "text": "4.1%"
+  },
+  {
+   "id": "e2_modal",
+   "path": "e2.modal.corr:below_gate_as_irreducible.untested_share",
+   "format": "{:.1%}",
+   "text": "7.5%"
+  },
+  {
+   "id": "e2s_fill",
+   "path": "e2.fill.corr:below_gate_as_untested.untested_share",
+   "format": "{:.1%}",
+   "text": "6.0%"
+  },
+  {
+   "id": "e2s_toggle",
+   "path": "e2.toggle.corr:below_gate_as_untested.untested_share",
+   "format": "{:.1%}",
+   "text": "6.1%"
+  },
+  {
+   "id": "e2s_modal",
+   "path": "e2.modal.corr:below_gate_as_untested.untested_share",
+   "format": "{:.1%}",
+   "text": "9.7%"
+  },
+  {
+   "id": "sens_ratio_fill",
+   "path": "e2_sensitivity.measured_over_predicted.fill",
+   "format": "{:.3f}",
+   "text": "0.718"
+  },
+  {
+   "id": "sens_ratio_toggle",
+   "path": "e2_sensitivity.measured_over_predicted.toggle",
+   "format": "{:.3f}",
+   "text": "0.801"
+  },
+  {
+   "id": "sens_ratio_modal",
+   "path": "e2_sensitivity.measured_over_predicted.modal",
+   "format": "{:.3f}",
+   "text": "0.536"
+  },
+  {
+   "id": "sens_pred_fill",
+   "path": "overhead_control.by_class.fill.predicted_overhead_ms",
+   "format": "{:.2f} / ",
+   "text": "8.51 / "
+  },
+  {
+   "id": "sens_cm_pooled",
+   "path": "e2_sensitivity.by_scale.x_pooled.c_m_us",
+   "format": "c_m {:.1f} us",
+   "text": "c_m 23.6 us"
+  },
+  {
+   "id": "sens_cm_min",
+   "path": "e2_sensitivity.by_scale.x_min.c_m_us",
+   "format": "c_m {:.1f} us",
+   "text": "c_m 18.5 us"
+  },
+  {
+   "id": "sens_A_pooled_modal",
+   "path": "e2_sensitivity.by_scale.x_pooled.untested_share.phase_A:lane_rules.modal",
+   "format": " / {:.1%} |",
+   "text": " / 8.6% |"
+  },
+  {
+   "id": "sens_A_min_modal",
+   "path": "e2_sensitivity.by_scale.x_min.untested_share.phase_A:lane_rules.modal",
+   "format": " / {:.1%} |",
+   "text": " / 9.1% |"
+  },
+  {
+   "id": "sens_A_neither_modal",
+   "path": "e2_sensitivity.by_scale.x1.untested_share.phase_A:both_lane_rules_off.modal",
+   "format": " / {:.1%} |",
+   "text": " / 11.1% |"
+  },
+  {
+   "id": "sens_O1_lane_modal",
+   "path": "e2_sensitivity.by_scale.x1.untested_share.O1_COMP:lane_rules.modal",
+   "format": "low load (O1 rows, {:.1%})",
+   "text": "low load (O1 rows, 3.9%)"
+  },
+  {
+   "id": "sens_O1_T_fill",
+   "path": "e2_sensitivity.by_scale.x1.T_runner_corr_mean_ms.O1_COMP.fill",
+   "format": "T_runner {:.1f} / ",
+   "text": "T_runner 70.9 / "
+  }
+ ]
+}

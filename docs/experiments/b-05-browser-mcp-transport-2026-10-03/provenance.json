@@ -9,12 +9,14 @@
   "r2_10_packet_harness": "030f6bdbf811e124e11daa2de0569bffb993b66d",
   "n02_original": "194a6342e (cherry-picked as 4c786178b)",
   "upstream_base_of_R": "989cc76cec262ff8bcf6968b637820340fb9caaa",
-  "prereg_commit": "3cced771f16f73bcde33943bcd834b18217f392a",
-  "amendment_commit": "92cab8900",
+  "prereg_commit": "03f52d7eb00af946ea46f95e281fde9a78d23097",
+  "amendment_commit": "59034f53305e056a28d59d274c53b9b7d08f7046",
+  "results_commit": "dd8c11746718a50dae420d5f51c8d1a46d441d74",
+  "pre_rewrite_shas": "PREREG 3cced771f, amendment 92cab8900, results d1b42db63 (rewritten after verification to drop a committed private-name list; dates kept; README deviation 10)",
   "publication_sha": "set by the Publish agent"
  },
  "binaries": {
-  "B5": {"label": "b05-a2-b376f1ff3", "sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1", "version": "cua-driver 0.32.0 (read inside a private session)", "rustc": "1.97.1 (8bab26f4f 2026-07-14)", "use": "every arm of every phase"},
+  "B5": {"label": "b05-a2-b376f1ff3", "sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1", "version": "cua-driver 0.32.0 (read inside a private session)", "rustc": "1.97.1 (8bab26f4f 2026-07-14)", "use": "every arm of every phase (per-step sha256 in raw/run-plans/run-plans.json)"},
   "R": {"label": "r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version": "cua-driver 0.32.0", "use": "default-off smoke reference only"},
   "attempt_1_B5": {"label": "b05-b376f1ff3", "sha256": "e4c5f43d8cd24c2f594ab03ba443f0e8abf091a7b69ce06c4ef60bcc9b49eee3", "use": "tools/list functional compare only"},
   "floor_echo": {"source": "harness/floor/floor_echo.rs", "sha256": "86071c3c5f6a5076247c74583af01c8e7da307cfc2b050f85c4d4849b9d2adef", "build": "rustc 1.97.1 --edition 2021 -C opt-level=3 -C debuginfo=0, under hostless + cargo lock"}

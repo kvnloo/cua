@@ -349,7 +349,59 @@ def analyse(raw: Path) -> dict[str, Any]:
     S["e4"] = A.e4_totals(rows_a + rows_o + [x for v in rows_b.values() for x in v])
     S["verdicts"] = verdicts(S, amend)
     S["e2"] = e2_recompute(rows_a, S["verdicts"], c_m)
+    S["e2_sensitivity"] = e2_sensitivity(S, amend, raw, type_route, c_m, phase_a, ovh, rows_a,
+                                         [x for x in rows_o if x["arm"] == "COMP"])
     return r(S, 4)
+
+
+# Added after verification (documentation only; no verdict or gate uses it): how the E2 untested share
+# moves with the per-mark correction scale, the two lane verdict rules and host load.
+SENS_RULES = {"lane_rules": (True, "IRREDUCIBLE"), "below_gate_untested": (True, "UNTESTED"),
+              "invariant_rule_off": (False, "IRREDUCIBLE"), "both_lane_rules_off": (False, "UNTESTED")}
+
+
+def e2_sensitivity(S: dict[str, Any], amend: dict[str, Any], raw: Path, type_route: str | None, c_m: float,
+                   phase_a: list[dict[str, Any]], ovh: list[dict[str, Any]], rows_a1: list[dict[str, Any]],
+                   rows_o1: list[dict[str, Any]]) -> dict[str, Any]:
+    oc = S["overhead_control"]["by_class"]
+    meas = {c: oc[c]["T_runner_ms"]["mean_diff"] for c in CLASSES}
+    pred = {c: oc[c]["predicted_overhead_ms"] for c in CLASSES}
+    ratio = {c: meas[c] / pred[c] for c in CLASSES}
+    pooled = sum(meas.values()) / sum(pred.values())
+    scales = {"x1": 1.0, "x_pooled": pooled, "x_min": min(ratio.values())}
+    out: dict[str, Any] = {"note": "documentation only; verdicts and gates use the lane c_m (x1)",
+                           "overhead_measured_ms": meas, "overhead_predicted_ms": pred,
+                           "measured_over_predicted": ratio, "scales": scales,
+                           "loadavg_1m_mean": {"phase_A": S["phase_A"]["loadavg_1m"]["mean"],
+                                               "O1": S["overhead_control"]["loadavg_1m"]["mean"]},
+                           "by_scale": {}}
+    comp_a = [t for t in phase_a if t["summary"].get("arm") == "COMP"]
+    comp_o = [t for t in ovh if t["summary"].get("arm") == "COMP"]
+    for name, s in scales.items():
+        cm = c_m * s
+        if s == 1.0:
+            ra, ro, V = rows_a1, rows_o1, S["verdicts"]
+        else:
+            ra = [analyse_trial(t, type_route, cm, {}) for t in comp_a]
+            ro = [analyse_trial(t, type_route, cm, {}) for t in comp_o]
+            S2 = {**S, "phase_A": phase_a_summary(ra, cm)}
+            S2["floor"] = floor_summary(raw, ra)
+            V = verdicts(S2, amend)
+        changes = {f"{k}/{c}": [S["verdicts"][k][c], V[k][c]] for k in V for c in CLASSES
+                   if V[k][c] != S["verdicts"][k][c]}
+        res: dict[str, Any] = {"c_m_us": cm * 1000.0, "verdict_changes_vs_lane": changes, "untested_share": {}}
+        for rule, (inv_on, bg) in SENS_RULES.items():
+            Vr = V if inv_on else {k: {c: ("UNTESTED (lane invariant rule off)"
+                                           if isinstance(x, str) and x.startswith("IRREDUCIBLE (invariant") else x)
+                                       for c, x in per.items()} for k, per in V.items()}
+            for src, rows in (("phase_A", ra), ("O1_COMP", ro)):
+                e = e2_recompute(rows, Vr, cm)
+                res["untested_share"][f"{src}:{rule}"] = {
+                    c: e[c][f"corr:below_gate_as_{bg.lower()}"]["untested_share"] for c in CLASSES if c in e}
+        res["T_runner_corr_mean_ms"] = {src: {c: mean([x["b05"]["T_runner_corr_ms"] for x in per_class_rows(rows, c)])
+                                              for c in CLASSES} for src, rows in (("phase_A", ra), ("O1_COMP", ro))}
+        out["by_scale"][name] = res
+    return out
 
 
 def per_class_rows(rows: list[dict[str, Any]], cls: str) -> list[dict[str, Any]]:

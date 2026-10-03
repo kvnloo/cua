@@ -1,0 +1,298 @@
+{
+ "drivers": {
+  "cua-driver-b05-a2-b376f1ff3": {
+   "mtime_utc": "2026-10-03T02:52:19Z",
+   "sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1"
+  },
+  "cua-driver-b05-b376f1ff3": {
+   "mtime_utc": "2026-10-02T22:13:02Z",
+   "sha256": "e4c5f43d8cd24c2f594ab03ba443f0e8abf091a7b69ce06c4ef60bcc9b49eee3"
+  },
+  "cua-driver-r2-10-8f3a646b4": {
+   "mtime_utc": "2026-10-02T17:25:12Z",
+   "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9"
+  }
+ },
+ "note": "chunk plans as executed (paths scrubbed: bin/ = the lanes' shared binary directory, <lane-tmp>/ = the lane temp directory). driver_sha256 is the sha256 of that file, recorded when this manifest was added after verification; the file's mtime precedes the first Phase A trial and it was not rebuilt.",
+ "plans": {
+  "A1": {
+   "deadline_s": 1200,
+   "steps": [
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/A1",
+      "--plan",
+      "A",
+      "--layer",
+      "A",
+      "--rounds",
+      "32",
+      "--prefix",
+      "A1-"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "phaseA",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--floor-bin",
+      "<lane-tmp>/floorbin/floor_echo",
+      "--frames-dir",
+      "<lane-tmp>/runs/A1/frames",
+      "--out",
+      "<lane-tmp>/runs/floor-A1",
+      "--variant",
+      "F1",
+      "--prefix",
+      "A1"
+     ],
+     "driver": null,
+     "driver_sha256": null,
+     "label": "floorF1",
+     "script": "b05_floor.py"
+    },
+    {
+     "args": [
+      "--floor-bin",
+      "<lane-tmp>/floorbin/floor_echo",
+      "--frames-dir",
+      "<lane-tmp>/runs/A1/frames",
+      "--out",
+      "<lane-tmp>/runs/floor-A1",
+      "--variant",
+      "F0",
+      "--prefix",
+      "A1"
+     ],
+     "driver": null,
+     "driver_sha256": null,
+     "label": "floorF0",
+     "script": "b05_floor.py"
+    }
+   ]
+  },
+  "B": {
+   "deadline_s": 1380,
+   "steps": [
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/B1",
+      "--plan",
+      "B",
+      "--arms",
+      "COMP_OFF,PARSE_FAST",
+      "--layer",
+      "B1",
+      "--rounds",
+      "30",
+      "--prefix",
+      "B1-",
+      "--amendment",
+      "PREREG-AMENDMENT-1.json"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "B1",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/B1",
+      "--routines",
+      "<lane-tmp>/runs/B1",
+      "--plan",
+      "n4a",
+      "--arms",
+      "PARSE_FAST",
+      "--layer",
+      "B1",
+      "--rounds",
+      "5",
+      "--prefix",
+      "N1-",
+      "--amendment",
+      "PREREG-AMENDMENT-1.json"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "N4a-B1",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/B2",
+      "--plan",
+      "B",
+      "--arms",
+      "COMP_OFF,VALIDATE_FAST",
+      "--layer",
+      "B2",
+      "--rounds",
+      "30",
+      "--prefix",
+      "B2-",
+      "--amendment",
+      "PREREG-AMENDMENT-1.json"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "B2",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/B2",
+      "--routines",
+      "<lane-tmp>/runs/B2",
+      "--plan",
+      "n4a",
+      "--arms",
+      "VALIDATE_FAST",
+      "--layer",
+      "B2",
+      "--rounds",
+      "5",
+      "--prefix",
+      "N2-",
+      "--amendment",
+      "PREREG-AMENDMENT-1.json"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "N4a-B2",
+     "script": "b05_browser.py"
+    }
+   ]
+  },
+  "O1": {
+   "deadline_s": 1380,
+   "steps": [
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/O1",
+      "--plan",
+      "ovh",
+      "--arms",
+      "COMP_OFF,COMP",
+      "--layer",
+      "O",
+      "--rounds",
+      "20",
+      "--prefix",
+      "O1-"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "overhead",
+     "script": "b05_browser.py"
+    }
+   ]
+  },
+  "smoke": {
+   "deadline_s": 1300,
+   "steps": [
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/D-B5",
+      "--plan",
+      "toolslist",
+      "--prefix",
+      "B5"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "tl-B5",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-r2-10-8f3a646b4",
+      "--out",
+      "<lane-tmp>/runs/D-R",
+      "--plan",
+      "toolslist",
+      "--prefix",
+      "R"
+     ],
+     "driver": "cua-driver-r2-10-8f3a646b4",
+     "driver_sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+     "label": "tl-R",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/D-A1",
+      "--plan",
+      "toolslist",
+      "--prefix",
+      "A1"
+     ],
+     "driver": "cua-driver-b05-b376f1ff3",
+     "driver_sha256": "e4c5f43d8cd24c2f594ab03ba443f0e8abf091a7b69ce06c4ef60bcc9b49eee3",
+     "label": "tl-A1",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-b05-a2-b376f1ff3",
+      "--out",
+      "<lane-tmp>/runs/D-B5",
+      "--plan",
+      "smoke",
+      "--prefix",
+      "D1-"
+     ],
+     "driver": "cua-driver-b05-a2-b376f1ff3",
+     "driver_sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1",
+     "label": "smoke-B5",
+     "script": "b05_browser.py"
+    },
+    {
+     "args": [
+      "--driver",
+      "bin/cua-driver-r2-10-8f3a646b4",
+      "--out",
+      "<lane-tmp>/runs/D-R",
+      "--plan",
+      "smoke",
+      "--prefix",
+      "D2-"
+     ],
+     "driver": "cua-driver-r2-10-8f3a646b4",
+     "driver_sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+     "label": "smoke-R",
+     "script": "b05_browser.py"
+    }
+   ]
+  }
+ },
+ "schema": "b-05.run-plans.v1"
+}

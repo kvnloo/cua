@@ -8,9 +8,12 @@ are split into 27 sub-spans and judged as 24 verdict rows (some floor keys group
 item addresses (request-side session prep, Driver post-dispatch work, response routing, and the toggle
 inner admission). Both Phase B candidates delete real work but fail the 0.5 ms gate, so they are KILLed:
 caller parse and caller validation are IRREDUCIBLE by the "every tested candidate failed" rule. Most of
-R2-10's "MCP transport" and "admission residual" time was the phase-trace instrumentation itself. The
-E2 target (< 5% untested) is met for fill and toggle, and missed for modal, only under the corrected
-view with the lane's BELOW_GATE rule. Under every stricter view it is missed for all three classes.
+R2-10's "MCP transport" and "admission residual" time was the phase-trace instrumentation itself.
+**E2 (< 5% untested) is borderline and not established for any class.** The lane's primary view
+(per-mark correction at c_m, both lane verdict rules on) gives 4.3% / 4.1% / 7.5%, but that view is
+the most favourable one: scaling the correction to the measured instrumentation penalty, dropping
+either lane rule, or both, puts every class at or above 5% (see "E2 sensitivity" below). Modal passes
+only at low load (O1 rows, 3.9%).
 
 ## Headline
 
@@ -56,7 +59,9 @@ that also held the cargo lock (receipts: raw/locks/quiet-lane-ledger-b05a2.jsonl
   | BELOW_GATE counted as IRREDUCIBLE | 4.3% | 4.1% | 7.5% |
   | BELOW_GATE counted as UNTESTED | 6.0% | 6.1% | 9.7% |
 
-  The raw (marks-on) view gives 5.9 / 7.2 / 9.0% and 10.9 / 12.4 / 15.6%. Target: < 5%.
+  The raw (marks-on) view gives 5.9 / 7.2 / 9.0% and 10.9 / 12.4 / 15.6%. Target: < 5%. These
+  numbers are not robust; the full sensitivity grid is in "E2 sensitivity" below, and E2 is reported
+  as **borderline / not established** for all three classes.
 - **Provider:** 0 attempts, 0 reached. TypeSafe was not used (lane cap 0).
 
 ## Forced path, route/producer, oracle
@@ -202,9 +207,46 @@ No pre-registered menu item addresses any of these four:
 - response routing hops;
 - admission inner bookkeeping.
 
-They are named for a wave-5 follow-up. The reval_endpoint component (OWNER_DECISION) was 35-36 ms
-here against 22-23 ms in R2-10, because of host load. That shrinks every share's denominator in the
-other direction, so the shares are not comparable to R2-10's.
+They are named for a wave-5 follow-up. The caller parse and validate rows are IRREDUCIBLE only in the
+spec's "every tested candidate failed" sense: Phase B shows 0.12-0.26 ms per task of deletable work
+with 100% equivalence, and their F0 excess of 0.51-0.71 ms means even full deletion could barely clear
+the 0.5 ms gate for toggle and modal. For wave 5 read them as **reducible, below gate**.
+
+### E2 sensitivity (added after verification; documentation only)
+
+`e2_sensitivity` in b05-summary.json recomputes the untested share with analyze_b05's own code under
+three per-mark correction scales, the four combinations of the two lane verdict rules, and two load
+levels. Verdicts and gates are unchanged; they still use the lane c_m.
+
+- **Correction scale.** The predicted instrumentation cost (marks × c_m) is 8.51 / 8.20 / 8.20 ms,
+  but the overhead control measured 6.11 / 6.57 / 4.40 ms, i.e. 0.718 / 0.801 / 0.536 of the
+  prediction. "x_pooled" scales c_m by the pooled ratio 0.685 (c_m 23.6 us) and "x_min" by 0.536
+  (c_m 18.5 us). At both scales adm.inner flips from BELOW_GATE to UNTESTED for fill and modal.
+- **Lane rules.** "lane" = both lane rules on (BELOW_GATE and IRREDUCIBLE (invariant) count as not
+  untested). "no BG" counts BELOW_GATE as untested; "no inv" counts the four single-CDP-request
+  resolution rows as untested; "neither" drops both.
+- **Load.** Phase A ran at mean loadavg 13.8. The overhead control's COMP rows (O1, same binary and
+  arm, loadavg 4.3) have corrected T_runner 70.9 / 47.0 / 46.4 ms against Phase A's 98.9 / 71.1 /
+  71.9 ms, so load inflated the whole task by 40-55%, not only reval_endpoint. A larger denominator
+  lowers every share; it does not raise it.
+
+Untested share, fill / toggle / modal (target < 5%):
+
+| rows | rules | c_m x1 (lane) | x_pooled | x_min |
+|---|---|---|---|---|
+| Phase A (load 13.8) | lane | 4.3 / 4.1 / 7.5% | 5.4 / 5.2 / 8.6% | 5.7 / 5.6 / 9.1% |
+| Phase A | no BG | 6.0 / 6.1 / 9.7% | 7.6 / 8.2 / 11.7% | 8.4 / 9.2 / 12.6% |
+| Phase A | no inv | 6.8 / 5.6 / 8.9% | 7.9 / 6.6 / 10.1% | 8.2 / 7.1 / 10.5% |
+| Phase A | neither | 8.6 / 7.5 / 11.1% | 10.2 / 9.7 / 13.1% | 10.9 / 10.7 / 14.0% |
+| O1 COMP (load 4.3) | lane | 4.4 / 4.1 / 3.9% | 5.7 / 5.7 / 5.5% | 6.2 / 6.4 / 6.3% |
+| O1 COMP | no BG | 5.9 / 5.7 / 5.5% | 8.1 / 8.9 / 8.7% | 9.2 / 10.3 / 10.1% |
+| O1 COMP | no inv | 6.9 / 5.9 / 5.3% | 8.1 / 7.5 / 7.0% | 8.6 / 8.2 / 7.8% |
+| O1 COMP | neither | 8.4 / 7.6 / 6.9% | 10.6 / 10.8 / 10.2% | 11.6 / 12.2 / 11.6% |
+
+Only the lane view at the lane c_m is below 5%, for fill and toggle at both loads and for modal at low
+load. Every other cell is at or above 5%. **E2 is therefore borderline and not established for any
+class.** The two lane rules are pre-registered in PREREG.json but are not spec gates, and the per-mark
+correction over-subtracts by 20-46%, so the lane view is the most favourable reading.
 
 ## Provenance
 
@@ -216,8 +258,10 @@ other direction, so the shares are not comparable to R2-10's.
     context (raw/source/range-diff-4c786178b-vs-194a6342e.txt).
   - Every spec mark already existed, so no mark commit was added.
   - Privacy scan of all 12 inherited commits: 0 hits.
-- **Packet commits:** PREREG 3cced771f; PREREG-AMENDMENT-1 92cab8900; results = the commit that adds
-  this README. Publication SHA: set by the Publish agent.
+- **Packet commits:** PREREG 03f52d7eb (2026-10-03T03:29:02Z); PREREG-AMENDMENT-1 59034f533
+  (04:00:50Z); results dd8c11746; post-verification fixes = the commit that adds deviation 10. The
+  first three were rewritten from 3cced771f / 92cab8900 / d1b42db63 with original dates kept
+  (deviation 10). Publication SHA: set by the Publish agent.
 - **Binary B5:** label b05-a2-b376f1ff3, sha256 f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1,
   `cua-driver 0.32.0` (read inside a private session).
   - The attempt-1 binary (e4c5f43d..., same source and build command) has the same crate metadata
@@ -235,6 +279,8 @@ other direction, so the shares are not comparable to R2-10's.
     a0bca7440, open.
   - End, 05:27Z: main 67c2f39af (1 ahead, 0 files under libs/cua-driver); PR 4316 a0bca7440, open,
     unchanged.
+  - After the post-verification fixes, 06:14Z: main 66e0b6652 (3 ahead of the planning SHA, 0 files
+    under libs/cua-driver); PR 4316 a0bca7440, open, unchanged.
   - The tested source is not upstream main: R is 989cc76ce plus the R2-10 steps.
 
 ## Deviations and disclosures
@@ -251,21 +297,52 @@ other direction, so the shares are not comparable to R2-10's.
 4. **Lane rules for verdicts not in the spec:** two pre-registered rules are added. IRREDUCIBLE
    (invariant) covers single required CDP requests. BELOW_GATE covers a CI upper bound under 0.5 ms,
    and E2 is reported both ways.
-5. **Instrumentation correction is approximate:** the measured marks-on penalty is 4.40-6.57 ms, while
-   the predicted marks × c_m is 7.7-8.0 ms. In un-instrumented runs the caller side is 0.11-0.26 ms
-   slower per task, which is consistent with idle-state or frequency effects. Corrected values
-   therefore slightly under-state marks-off time. The raw view is reported beside every corrected
-   share.
+5. **Instrumentation correction over-subtracts (corrected after verification):** the measured
+   marks-on penalty is 6.11 / 6.57 / 4.40 ms, while the predicted marks × c_m is 8.51 / 8.20 / 8.20 ms,
+   so the measured penalty is only 54-80% of the prediction. In un-instrumented runs the caller side
+   is 0.11-0.26 ms slower per task, which is consistent with idle-state or frequency effects.
+   Corrected values therefore under-state marks-off time, and not slightly: with c_m scaled to the
+   measured penalty, the E2 shares rise by 1.1-2.4 points and adm.inner flips to UNTESTED for fill
+   and modal (E2 sensitivity). The raw view is reported beside every corrected share.
 6. **Near misses (no effect):** three commands ran directly in the host shell instead of under
    hostless. They were an empty `python3` heredoc, `rustc --version`, and `python3 -c 1`. None
-   touched a display, a session bus or the network.
+   touched a display, a session bus or the network. During the post-verification fixes a fourth
+   one ran: a stray `python3 -c 1` no-op appended to a README text edit in the host shell.
+7. **PREREG order_of_work not followed exactly:** shakedowns 1-4 (02:59-03:27Z) ran before the PREREG
+   commit (03:29Z), and the PREREG text already reports their outcomes. The overhead control O1 was
+   queued at 03:58Z but acquired the quiet lock only at 04:22:59Z, after the PREREG-AMENDMENT-1
+   commit (04:00:50Z), although order_of_work puts it before the amendment. No measured trial
+   preceded the PREREG, and the amendment used no O1 data, so the candidate selection is unaffected.
+8. **PREREG-AMENDMENT-1 erratum (file not edited):** `not_selected.others` says every other lane
+   sub-span is below 0.5 ms per task. That is false for resolution rows: res.cdp_node_resolve is
+   1.03 ms [0.92, 1.17] for fill (at least 1.0 ms above its zero floor, so a mandated row with no
+   menu item), and res.cdp_node_resolve toggle 0.56, res.type_focus 0.55 and res.frame_proof modal
+   0.58 ms are above 0.5 ms. The outcome does not change, because the PREREG's IRREDUCIBLE
+   (invariant) rule already covered these rows, but the amendment should have listed them.
+9. **Verdict precedence:** rows whose CI touches their zero floor (adm.outer modal [0.00, 0.05],
+   res.ref_parse [0.00, 0.01]) meet the spec's IRREDUCIBLE rule ("CI overlaps the floor") but are
+   labelled BELOW_GATE. The magnitude is negligible (≤ 0.03 ms per task).
+10. **Post-verification fixes (no new trial, no data change):**
+    - verify_artifacts.py imported the cited harness and wrote `__pycache__` into harness/r2-10/,
+      which then failed its own ignored-file check from a clean clone (29/30). It now disables
+      bytecode writing before the import and skips `__pycache__` in that check.
+    - The verifier stored the private-name list hex-encoded, which still committed the host name in
+      all three lane commits. The names now come from an untracked file at verify time
+      (CUA_PRIVACY_NAMES_FILE) plus the verifying host's name. The three unpublished lane commits were
+      rewritten with only that file changed, keeping messages, identities and author/committer dates:
+      PREREG 3cced771f → 03f52d7eb, amendment 92cab8900 → 59034f533, results d1b42db63 → dd8c11746.
+      Nothing had been pushed.
+    - raw/run-plans/run-plans.json adds the executed chunk plans (paths scrubbed) with the Driver
+      sha256 per step: B5 f4149bdd... in every A1, O1 and B step.
+    - The E2 sensitivity section and `e2_sensitivity` in the summary were added; disposition and
+      wording now call E2 borderline / not established.
 
 ## Limits and claim boundary
 
 - One host under heavy shared load, private Xvfb, scripted chooser only, and binary B5 (R + marks +
   default-off knobs) in every arm.
 - Nothing is ratioed against R2-10's binary or numbers. The shares use a different denominator
-  (load-inflated reval_endpoint).
+  (Phase A T_runner was inflated 40-55% by host load; see E2 sensitivity).
 - The caller-side candidates are harness-only variants of the jev-use Python client. They change no
   Driver default and no public output.
 - These verdicts reach the wave-5 composition only by cherry-picking onto R'. Neither KILLed variant
@@ -277,11 +354,15 @@ other direction, so the shares are not comparable to R2-10's.
 - **Pre-registration:** PREREG.json, PREREG-AMENDMENT-1.json.
 - **Results:** b05-summary.json (recomputed from raw/ by analyze_b05.py), headline-numbers.json,
   provenance.json.
-- **Verifier:** verify_artifacts.py. It recomputes the summary, checks every headline against this
-  README, fails on any cited file that is missing, untracked or git-ignored, and privacy-scans every
-  commit of the branch.
+- **Verifier:** verify_artifacts.py (`python3 verify_artifacts.py`, standard library, about 3 minutes;
+  run it under the lane's hostless wrapper). It recomputes the summary, checks every headline against
+  this README, fails on any cited file that is missing, untracked or git-ignored, and privacy-scans
+  every commit of the branch. Private names are never stored in the repository: set
+  CUA_PRIVACY_NAMES_FILE to an untracked file with one name per line; without it the name sub-check
+  covers the verifying host's name and the generic home/mount path patterns only, and says so.
 - **Harness:**
-  - the R2-10 harness (harness/r2-10/, byte-identical to 030f6bdbf);
+  - the R2-10 harness subset (harness/r2-10/: the 17 of the 40 harness files at 030f6bdbf that this
+    packet uses, each byte-identical);
   - caller stamps: harness/b05_stdio.py;
   - plans: harness/b05_browser.py;
   - sub-spans: harness/b05_spans.py;
@@ -290,4 +371,5 @@ other direction, so the shares are not comparable to R2-10's.
   - equivalence: harness/b05_equivalence.py;
   - session and lock wrappers: harness/run_chunk.sh and harness/in_session.sh.
 - **Raw:** raw/browser/ (A1, O1 without frames, B1, B2, D-B5, D-R), raw/floor/, raw/equivalence/,
-  raw/negative/, raw/smoke/, raw/unit/, raw/locks/, raw/source/.
+  raw/negative/, raw/smoke/, raw/unit/, raw/locks/, raw/source/, and raw/run-plans/run-plans.json
+  (executed chunk plans with the Driver sha256 per step).
