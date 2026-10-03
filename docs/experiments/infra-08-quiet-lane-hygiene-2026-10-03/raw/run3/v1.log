@@ -1,0 +1,12 @@
+v1 T0   env-override                 N/A (v1 has no lock dir override)
+v1 T1   quiet-timed daemon fd leak   observed=RED   expected=RED   ok
+v1 T1s  quiet-shared daemon fd leak  N/A (v1 has no quiet-shared)
+v1 T2   v1 receipt schema baseline   observed=GREEN expected=GREEN ok
+v1 T3   waiter reap on TERM          observed=RED   expected=RED   ok
+v1 T4   quiet-shared yields to EXCLUSIVE observed=RED   expected=RED   ok
+v1 T4c  control: plain flock -s overtakes observed=GREEN expected=GREEN ok
+v1 T4n  no writer: immediate acquire N/A (v1 has no quiet-shared)
+v1 T4t  max_s cap                    N/A (v1 has no quiet-shared)
+v1 T5   starvation alarm             observed=RED   expected=RED   ok
+v1 T6   quiet-timed rc propagation   observed=GREEN expected=GREEN ok
+v1: 11 of 11 rows match the PREREG expectation

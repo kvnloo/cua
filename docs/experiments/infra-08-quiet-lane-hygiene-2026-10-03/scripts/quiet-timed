@@ -26,14 +26,16 @@ trap cleanup EXIT
 trap 'exit 143' TERM; trap 'exit 130' INT; trap 'exit 129' HUP
 
 alarm_loop() {
-  sp=; trap 'if [ -n "$sp" ]; then kill "$sp" 2>/dev/null; fi; exit 0' TERM
+  sp=; f=; trap 'if [ -n "$sp" ]; then kill "$sp" 2>/dev/null; fi; if [ -n "$f" ]; then rm -f "$f.tmp"; fi; exit 0' TERM
   mkdir -p "$LOCKDIR/starvation"
   while :; do
     sleep "$STARVE_S" & sp=$!; wait "$sp"; sp=
+    kill -0 "$parent" 2>/dev/null || exit 0   # parent gone (e.g. SIGKILL): stop at the next period
     f="$LOCKDIR/starvation/${label//[^A-Za-z0-9._-]/_}-$(date -u +%Y%m%dT%H%M%SZ).txt"
-    { printf '# quiet-lane starvation snapshot: label=%s waiter_pid=%d waited_s=%d utc=%s\n' \
-        "$label" "$parent" "$((SECONDS - t0))" "$(date -u +%FT%TZ)"
-      QUIET_LANE_LOCKDIR="$LOCKDIR" "$HERE/quiet-holders"; } > "$f" 2>/dev/null || true
+    if { printf '# quiet-lane starvation snapshot: label=%s waiter_pid=%d waited_s=%d utc=%s\n' \
+           "$label" "$parent" "$((SECONDS - t0))" "$(date -u +%FT%TZ)"
+         QUIET_LANE_LOCKDIR="$LOCKDIR" "$HERE/quiet-holders"; } > "$f.tmp" 2>/dev/null
+    then mv -f "$f.tmp" "$f" 2>/dev/null || true; else rm -f "$f.tmp"; fi
   done
 }
 parent=$$; t0=$SECONDS
