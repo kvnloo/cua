@@ -1,0 +1,390 @@
+{
+ "classification_errors": [],
+ "commits_touching_libs_cua_driver": [
+  "15c6c24e2 fix(cua-driver): let verify_state read label-less display text on macOS (#4531)",
+  "5e13eb777 fix(cua-driver): keep idle X11 cursor overlays unmapped (#4529)",
+  "32b34fbc7 chore(cua-driver): advance published installer version to 0.33.0 [skip ci]",
+  "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)",
+  "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)",
+  "323af7c39 fix(cua-driver): refuse set_value on Finder file name cells instead of confirming a rename that never happened (#4483)",
+  "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)",
+  "154ca5690 fix(cua-driver): close the menu a failed macOS invoke_menu path opened (#4484)",
+  "51b925522 fix(cua-driver): deduplicate macOS browser setup identities (#4466)",
+  "f105145fa fix(cua-driver): re-resolve visible windows on a stale Space view (#4509)",
+  "030d5a0c0 fix(cua-driver): resolve sheet elements to their parent window (#4507)",
+  "197481193 fix(cua-driver): map Windows browser window rect into Chromium DIP layout (#4506)",
+  "fc6b4beaa fix(cua-driver): validate get_window_state window via exact Win32 lookup (#4505)"
+ ],
+ "complete": true,
+ "files_changed": 39,
+ "linux_relevant": [
+  "libs/cua-driver/rust/Cargo.lock",
+  "libs/cua-driver/rust/Cargo.toml",
+  "libs/cua-driver/rust/VERSION",
+  "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs",
+  "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs",
+  "libs/cua-driver/tests/fixtures/shared/scenarios.json"
+ ],
+ "linux_relevant_equals_expected": true,
+ "new": "9a2b1d99ec8044ff58b2a2b46802edd2609c057b",
+ "old": "0f1955d2f1ee2b01b40775aa53ea2af0b5544218",
+ "rows": [
+  {
+   "added": 12,
+   "class": "docs",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 4,
+   "path": "libs/cua-driver/docs/test-matrix.md"
+  },
+  {
+   "added": 1,
+   "class": "version:bindings-installers",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/python/pyproject.toml"
+  },
+  {
+   "added": 1,
+   "class": "version:bindings-installers",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/python/src/cua_driver/__init__.py"
+  },
+  {
+   "added": 29,
+   "class": "docs",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/CHANGELOG.md"
+  },
+  {
+   "added": 14,
+   "class": "version:rust-workspace",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 14,
+   "path": "libs/cua-driver/rust/Cargo.lock"
+  },
+  {
+   "added": 1,
+   "class": "version:rust-workspace",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/rust/Cargo.toml"
+  },
+  {
+   "added": 6,
+   "class": "docs",
+   "commits": [
+    "323af7c39 fix(cua-driver): refuse set_value on Finder file name cells instead of confirming a rename that never happened (#4483)",
+    "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)",
+    "154ca5690 fix(cua-driver): close the menu a failed macOS invoke_menu path opened (#4484)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/Skills/cua-driver/MACOS.md"
+  },
+  {
+   "added": 1,
+   "class": "docs",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/rust/Skills/cua-driver/SKILL.md"
+  },
+  {
+   "added": 1,
+   "class": "docs",
+   "commits": [
+    "15c6c24e2 fix(cua-driver): let verify_state read label-less display text on macOS (#4531)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/rust/Skills/cua-driver/WORKFLOW.md"
+  },
+  {
+   "added": 1,
+   "class": "version:rust-workspace",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/rust/VERSION"
+  },
+  {
+   "added": 104,
+   "class": "linux:cua-driver-core",
+   "commits": [
+    "15c6c24e2 fix(cua-driver): let verify_state read label-less display text on macOS (#4531)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs"
+  },
+  {
+   "added": 189,
+   "class": "non-linux:e2e-appkit-winui3-wpf",
+   "commits": [
+    "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)",
+    "154ca5690 fix(cua-driver): close the menu a failed macOS invoke_menu path opened (#4484)"
+   ],
+   "deleted": 4,
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_appkit_test.rs"
+  },
+  {
+   "added": 174,
+   "class": "non-linux:e2e-appkit-winui3-wpf",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 8,
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_winui3_test.rs"
+  },
+  {
+   "added": 149,
+   "class": "non-linux:e2e-appkit-winui3-wpf",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/harness_wpf_test.rs"
+  },
+  {
+   "added": 55,
+   "class": "non-linux:e2e-appkit-winui3-wpf",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/crates/cua-driver-e2e/tests/support/foreground_text_oracle.rs"
+  },
+  {
+   "added": 112,
+   "class": "linux:platform-linux",
+   "commits": [
+    "5e13eb777 fix(cua-driver): keep idle X11 cursor overlays unmapped (#4529)"
+   ],
+   "deleted": 27,
+   "path": "libs/cua-driver/rust/crates/platform-linux/src/overlay.rs"
+  },
+  {
+   "added": 76,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "323af7c39 fix(cua-driver): refuse set_value on Finder file name cells instead of confirming a rename that never happened (#4483)",
+    "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)",
+    "f105145fa fix(cua-driver): re-resolve visible windows on a stale Space view (#4509)"
+   ],
+   "deleted": 9,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/ax/bindings.rs"
+  },
+  {
+   "added": 125,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "030d5a0c0 fix(cua-driver): resolve sheet elements to their parent window (#4507)"
+   ],
+   "deleted": 3,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/ax/exact_target.rs"
+  },
+  {
+   "added": 339,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "51b925522 fix(cua-driver): deduplicate macOS browser setup identities (#4466)"
+   ],
+   "deleted": 69,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/browser/setup_ui.rs"
+  },
+  {
+   "added": 145,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/click.rs"
+  },
+  {
+   "added": 148,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "15c6c24e2 fix(cua-driver): let verify_state read label-less display text on macOS (#4531)"
+   ],
+   "deleted": 94,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs"
+  },
+  {
+   "added": 79,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "154ca5690 fix(cua-driver): close the menu a failed macOS invoke_menu path opened (#4484)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/invoke_menu.rs"
+  },
+  {
+   "added": 112,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "323af7c39 fix(cua-driver): refuse set_value on Finder file name cells instead of confirming a rename that never happened (#4483)"
+   ],
+   "deleted": 3,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/tools/set_value.rs"
+  },
+  {
+   "added": 82,
+   "class": "non-linux:platform-macos",
+   "commits": [
+    "154ca5690 fix(cua-driver): close the menu a failed macOS invoke_menu path opened (#4484)",
+    "f105145fa fix(cua-driver): re-resolve visible windows on a stale Space view (#4509)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/rust/crates/platform-macos/src/windows.rs"
+  },
+  {
+   "added": 278,
+   "class": "non-linux:platform-windows",
+   "commits": [
+    "197481193 fix(cua-driver): map Windows browser window rect into Chromium DIP layout (#4506)"
+   ],
+   "deleted": 6,
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/browser_platform.rs"
+  },
+  {
+   "added": 99,
+   "class": "non-linux:platform-windows",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 4,
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/input/keyboard.rs"
+  },
+  {
+   "added": 32,
+   "class": "non-linux:platform-windows",
+   "commits": [
+    "fc6b4beaa fix(cua-driver): validate get_window_state window via exact Win32 lookup (#4505)"
+   ],
+   "deleted": 27,
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/tools/impl_.rs"
+  },
+  {
+   "added": 2,
+   "class": "non-linux:platform-windows",
+   "commits": [
+    "fc6b4beaa fix(cua-driver): validate get_window_state window via exact Win32 lookup (#4505)"
+   ],
+   "deleted": 2,
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/win32/mod.rs"
+  },
+  {
+   "added": 118,
+   "class": "non-linux:platform-windows",
+   "commits": [
+    "fc6b4beaa fix(cua-driver): validate get_window_state window via exact Win32 lookup (#4505)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/rust/crates/platform-windows/src/win32/windows.rs"
+  },
+  {
+   "added": 1,
+   "class": "version:bindings-installers",
+   "commits": [
+    "32b34fbc7 chore(cua-driver): advance published installer version to 0.33.0 [skip ci]"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/scripts/_install-rust.sh"
+  },
+  {
+   "added": 1,
+   "class": "version:bindings-installers",
+   "commits": [
+    "32b34fbc7 chore(cua-driver): advance published installer version to 0.33.0 [skip ci]"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/scripts/install.ps1"
+  },
+  {
+   "added": 59,
+   "class": "non-linux:fixture-macos-windows",
+   "commits": [
+    "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/tests/fixtures/apps/macos/appkit/main.swift"
+  },
+  {
+   "added": 7,
+   "class": "non-linux:fixture-macos-windows",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml"
+  },
+  {
+   "added": 48,
+   "class": "non-linux:fixture-macos-windows",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/winui3/MainWindow.xaml.cs"
+  },
+  {
+   "added": 8,
+   "class": "non-linux:fixture-macos-windows",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml"
+  },
+  {
+   "added": 26,
+   "class": "non-linux:fixture-macos-windows",
+   "commits": [
+    "c8edda06b fix(cua-driver): drain Windows foreground input before restoring focus (#4500)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/tests/fixtures/apps/windows/wpf/MainWindow.xaml.cs"
+  },
+  {
+   "added": 10,
+   "class": "fixture:shared-scenarios",
+   "commits": [
+    "ca59dc0f1 fix(cua-driver): count an erroring macOS toggle press when its value moved (#4485)"
+   ],
+   "deleted": 0,
+   "path": "libs/cua-driver/tests/fixtures/shared/scenarios.json"
+  },
+  {
+   "added": 2,
+   "class": "version:bindings-installers",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 2,
+   "path": "libs/cua-driver/typescript/package-lock.json"
+  },
+  {
+   "added": 1,
+   "class": "version:bindings-installers",
+   "commits": [
+    "1553a3f36 chore(main): release cua-driver-rs 0.33.0 (#4423)"
+   ],
+   "deleted": 1,
+   "path": "libs/cua-driver/typescript/package.json"
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+# FRESH-07 (e) version bump: SOURCE diff, old 0f1955d2f vs new 9a2b1d99e
+## Linux-crate diff stat (cua-driver, core, sdk, contract, platform-linux, cursor-overlay, cua-perception)
+ .../rust/crates/cua-driver-core/src/expectation.rs | 105 +++++++++++++++-
+ .../rust/crates/platform-linux/src/overlay.rs      | 139 +++++++++++++++++----
+ 2 files changed, 216 insertions(+), 28 deletions(-)
+## env/knob string literals "CUA_*" in those crates: old 127, new 127; diff:
+(identical)
+## env reads / schema tokens added or removed in those crates (std::env, env::var, CUA_, schema, ToolSchema):
+(none)
+## tool-schema sources:
+libs/cua-driver/rust/crates/cua-driver-core/src/tool_schema.rs old=e9420949ec551c02351c92abb4f2a257086d3aed new=e9420949ec551c02351c92abb4f2a257086d3aed
+cua-driver-contract tree old=845c04fb2d069b19778d00371bb9fa809cbefc0d new=845c04fb2d069b19778d00371bb9fa809cbefc0d
+cua-driver tree old=96af1ee4ff0018147d7b8f1123fbb21eed379a02 new=96af1ee4ff0018147d7b8f1123fbb21eed379a02
+cua-driver-sdk tree old=6e8325d2db065f4c28d66a9f68ac295b3a496724 new=6e8325d2db065f4c28d66a9f68ac295b3a496724
+cursor-overlay tree old=80a91bdd5b3049f7627e22c92c035d0c861f40d9 new=80a91bdd5b3049f7627e22c92c035d0c861f40d9
+cua-perception tree old=cbee4148eadc1452e4faa0b82003d75a84439a8c new=cbee4148eadc1452e4faa0b82003d75a84439a8c
+## version lines changed in Cargo.lock/Cargo.toml/VERSION:
+      1 -0.32.0
+      1 +0.33.0
+     15 -version = "0.32.0"
+     15 +version = "0.33.0"
+## Cargo.lock: packages whose version line changed (all workspace members; no third-party dependency changed):
+ name = "cua-driver"
+ name = "cua-driver-bindgen"
+ name = "cua-driver-contract"
+ name = "cua-driver-core"
+ name = "cua-driver-e2e"
+ name = "cua-driver-sdk"
+ name = "cua-driver-testkit"
+ name = "cua-driver-uia"
+ name = "cursor-overlay"
+ name = "cursor-theme-cli"
+ name = "pip-preview"
+ name = "platform-linux"
+ name = "platform-macos"
+ name = "platform-windows"

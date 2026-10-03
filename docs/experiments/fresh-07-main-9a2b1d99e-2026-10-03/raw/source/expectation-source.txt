@@ -1,0 +1,42 @@
+# FRESH-07 (d) expectation.rs: display_only producers and verify_state consumers on 9a2b1d99e
+## git grep -n display_only 9a2b1d99ec8044ff58b2a2b46802edd2609c057b -- libs/cua-driver (every hit):
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:568:    let (addressable, display_only): (Vec<&Value>, Vec<&Value>) = all_matches
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:570:        .partition(|element| element.get("display_only").and_then(Value::as_bool) != Some(true));
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:572:        display_only
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:763:        "display_only",
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:926:                "display_only": true,
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:934:    fn addressable_match_wins_over_its_display_only_caption() {
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:943:                    "display_only": true
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:962:    fn display_only_web_text_stays_untrusted() {
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:969:                "display_only": true,
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/ax/tree.rs:818:        let display_only = read_control_state_if_actionable(false, || {
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/ax/tree.rs:826:        assert_eq!(display_only.enabled, None);
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs:923:/// order. Display-only rows carry `"display_only": true` and no
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs:962:        entry["display_only"] = serde_json::Value::Bool(true);
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs:1303:    fn observation_elements_include_display_only_rows_in_dfs_order() {
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs:1324:        assert_eq!(display["display_only"], true);
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-macos/src/tools/get_window_state.rs:1329:        assert!(observed[2].get("display_only").is_none());
+## Linux producers (platform-linux, jev-use, cua-driver, cua-driver-sdk, cua-perception, cua-driver-core other than expectation.rs):
+(none)
+## callers of evaluate_predicates outside its unit tests (expectation.rs:295 is VerifyStateTool::invoke):
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:295:                Ok(sample) => evaluate_predicates(&input.expect, &sample.snapshot),
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/cua-driver-core/src/expectation.rs:398:pub fn evaluate_predicates(
+## Linux registration of VerifyStateTool:
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-linux/src/tools/impl_.rs:14015:        cua_driver_core::expectation::VerifyStateTool::new(std::sync::Arc::new(
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/rust/crates/platform-linux/src/tools/stubs.rs:312:        cua_driver_core::expectation::VerifyStateTool::new(std::sync::Arc::new(
+## verify_state in the harness/source of every claim packet (raw/ excluded; 0 = the claim never calls Driver verify_state):
+exp/r2-10r-recert-a2-20261003 c183b95e3 files_with_verify_state=0
+exp/b-07-transport-residual-rprime-20261003 eab1e87a3 files_with_verify_state=0
+exp/b-08-per-process-cold-b7-20261003 49ae94590 files_with_verify_state=0
+exp/n-04-native-composition-rprime-20261003 9d7d8d7a5 files_with_verify_state=0
+exp/n-03-native-closure-axfg-a3-20261003 6b70ec902 files_with_verify_state=0
+exp/own-20p-guard-port-a11y-20261003 64081dded files_with_verify_state=0
+exp/own-20q-a11y-triggers-dialog-markfree-20261003 44116546d files_with_verify_state=0
+exp/fix-03-file-input-toctou-session-routing-20261003 e300edbd3 files_with_verify_state=0
+exp/fix-recert-a3-20261003 939580fc6 files_with_verify_state=0
+exp/own-16w-sway-modality-20261002 1b9819157 files_with_verify_state=0
+## jev-use (the runner the browser/native harnesses drive) on 9a2b1d99ec8044ff58b2a2b46802edd2609c057b: verify_state mentions (comments only):
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/examples/jev-use/README.md:84:`text_input`), keyed by the same normalization as Driver's `verify_state`.
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/examples/jev-use/python/native_roles.py:13:by that normalized form, two raw roles that Driver's ``verify_state`` treats as
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/examples/jev-use/python/tests/test_native_contract.py:121:        # Raw roles that Driver's verify_state treats as one role (equal
+9a2b1d99ec8044ff58b2a2b46802edd2609c057b:libs/cua-driver/examples/jev-use/typescript/native_roles.ts:8:// cua-driver-core/src/expectation.rs, so raw roles that Driver's verify_state
