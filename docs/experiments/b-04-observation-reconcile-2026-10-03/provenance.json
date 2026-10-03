@@ -1,0 +1,83 @@
+{
+ "schema": "b-04.provenance.v1",
+ "lane": "B-04 wave 4 attempt 2",
+ "branch": "exp/b-04-observation-reconcile-a2-20261003",
+ "base_commit": "8f3a646b4818b757648835cf89db8886626b1cf0",
+ "prereg_commit": "0683e57ec60ac40efb5ceb34a7daa79a1285baea (2026-10-03T02:49:10Z)",
+ "tested_source": "8f3a646b4818b757648835cf89db8886626b1cf0 (R2-10 source head: 989cc76ce + PREREG source.steps 1-8; rust tree f1f93375453d per R2-10)",
+ "driver_binary": {
+  "name": "cua-driver-r2-10-8f3a646b4",
+  "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "sha256_start": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "sha256_end": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9",
+  "version": "cua-driver 0.32.0",
+  "read": "inside cua-x11-session.sh at 02:44:16Z (start) and 03:26:04Z (end); raw/logs/versions-start.log, raw/logs/versions-end.log",
+  "rebuilt": false
+ },
+ "browser": {
+  "executable_basename": "chrome (every trial)",
+  "version": "Google Chrome 151.0.7922.71 (google-chrome-stable --version in session, start and end)",
+  "launch": "browser_prepare {allow_launch: true, profile: isolated_new}, sandbox on, fresh profile per trial"
+ },
+ "harness_sources": {
+  "run_b03.py": "b34eef71e (B-03)",
+  "run_critpath.py, run_b02.py, cdp_raw.py, b01_fixtures.py, b01_tasks.py": "b282ff389 (B-02)",
+  "compiled_routine.py, r2-10-scripted-COMP-routine.json, Sampler logic": "030f6bdbf (R2-10)"
+ },
+ "r2_10_inputs": {
+  "commit": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+  "r2-10-summary.json blob": "5fe2549a54ed26444a94c22924d72fb43c106302",
+  "scripted-trials.tar.gz blob": "344094e526935236a45a9beca22ff1afe1e2b743"
+ },
+ "live_heads": {
+  "start_2026-10-03T02:40Z": {
+   "upstream_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (libs/cua-driver tree df2b49c3)",
+   "trycua_cua_PR_4316": "a0bca744067d04f05904319d3d919be30c336556 open",
+   "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83 open",
+   "r2_10_packet": "030f6bdbf"
+  },
+  "end_2026-10-03T03:28Z": {
+   "upstream_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178 (libs/cua-driver tree df2b49c3)",
+   "trycua_cua_PR_4316": "a0bca744067d04f05904319d3d919be30c336556 open",
+   "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83 open"
+  },
+  "drift_note": "989cc76ce..41c34cb0d = 11 commits, 8 files under libs/cua-driver (incl. cua-driver-core snapshot_store.rs from trycua/cua PR 4375); no file under cua-driver-core/src/browser/. Numbers here are for binary R only.",
+  "publication_sha": "(set by Publish)"
+ },
+ "environment": {
+  "host": "one Linux host (10 CPUs)",
+  "isolation": "hostless v2 for every code-executing command; cua-x11-session.sh (private rootless Xvfb, openbox, picom, private dbus, env -i) for every Driver/Chrome run",
+  "telemetry": "CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1 (session env and every Driver env)",
+  "locks": "measured chunks under bin/quiet-timed (EXCLUSIVE); pilot under lane-scripts/shared-locked.sh (SHARED); raw/lock-ledger.jsonl",
+  "loadavg_1m_at_trial_start": "min 3.01, median 7.31, max 19.97 (b04-summary.json loadavg_1m_before_all)"
+ },
+ "measured_manifests": {
+  "run-manifest-measured-m-r00-10.json": {
+   "started_utc": "2026-10-03T02:50:48.552Z",
+   "ended_utc": "2026-10-03T02:58:30.774Z",
+   "lock_label": "b04a2-measured-r00-10",
+   "trials": 255
+  },
+  "run-manifest-measured-m-r10-20.json": {
+   "started_utc": "2026-10-03T03:07:05.874Z",
+   "ended_utc": "2026-10-03T03:12:07.827Z",
+   "lock_label": "b04a2-measured-r10-20",
+   "trials": 200
+  },
+  "run-manifest-measured-m-r20-30.json": {
+   "started_utc": "2026-10-03T03:19:30.851Z",
+   "ended_utc": "2026-10-03T03:25:52.155Z",
+   "lock_label": "b04a2-measured-r20-30",
+   "trials": 200
+  }
+ },
+ "raw_sha256": {
+  "raw/measured-trials.tar.gz": "435013ee10c97dac4be973e5f62d12c8fed9510c58f1a405e477940ded460dba",
+  "raw/pilot-trials.tar.gz": "2f9398a57758fd1e208bb399ff334d9c24a99e09e520c854acbafbbe152ef7f9"
+ },
+ "provider": {
+  "typesafe_attempts": 0,
+  "typesafe_reached": 0,
+  "chooser": "scripted (choose_mock_for_task)"
+ }
+}

@@ -138,6 +138,8 @@ def row(t: dict[str, Any]) -> dict[str, Any]:
     r["oracle_reverted_after_ok"] = s.get("oracle_reverted_after_ok")
     r["T_oracle_P4_ms"] = (None if (r["T_oracle_ms"] is None or r["warmup_ms"] is None)
                            else r["T_oracle_ms"] + r["warmup_ms"])
+    r["T_land_P4_ms"] = (None if (r["T_land_ms"] is None or r["warmup_ms"] is None)
+                         else r["T_land_ms"] + r["warmup_ms"])
     r["T_oracle_P4_incl_nav_ms"] = (None if (r["T_oracle_P4_ms"] is None or r["navigate_ms"] is None)
                                     else r["T_oracle_P4_ms"] + r["navigate_ms"])
     s1 = w.get("snapshot1")
