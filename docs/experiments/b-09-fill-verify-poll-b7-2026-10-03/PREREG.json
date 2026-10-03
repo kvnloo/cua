@@ -1,0 +1,378 @@
+{
+ "schema": "b-09.prereg.v1",
+ "lane": "B-09 (wave 7, experiment)",
+ "title": "Fill compiled-routine verify poll on binary B7: stamped causal A/B (P10a/P10b/P1/P0/PC) plus scripted BASE vs composed S on one binary",
+ "owners": [
+  "kvnloo/cua#93 (R2-10 / R2-07 composed fill)",
+  "kvnloo/cua#10 (accounting)",
+  "kvnloo/cua#73 (E2/E3/E4)"
+ ],
+ "lineage": "B-08 Part E: fill's last untested component 'runner' (9.82 ms = 14.5% of mean T_runner, C arm, corrected view, B7), post-hoc unmarked verify poll 10.23 ms per C trial (B-08 Deviation 4)",
+ "advances": {
+  "E2": "a terminal verdict (DELETED or IRREDUCIBLE) for the compiled routine's verify-poll sleep on fill, with the poll stamped; fill's untested share of mean T_runner recomputed on B7 (B-08: 16.9% / 19.0%), target < 5%",
+  "E3": "paired scripted BASE vs composed fill (including this poll verdict) S on the same binary B7, 36 pairs",
+  "E4": "counters in every arm; the live fill configuration's warm path is covered because compiled replay plus guarded completion on fill makes 0 provider decisions (R2-03), so the chooser is never called inside T"
+ },
+ "written_utc": "2026-10-03T16:10Z",
+ "committed_before_first_measured_trial": true,
+ "amendments": "none permitted: PREREG.json is never amended; any deviation is a disclosed post-hoc reading",
+ "hypothesis": {
+  "H_P": "fill's 'runner' component on B7 is the caller-side compiled routine's verify-poll sleep (bounded_read interval_s=0.010 in harness/b04/harness/compiled_routine.py, B-08 copy), which runs after the first verify read finds the effect not yet visible. Cutting the interval to 1 ms deletes >= 3 ms of median T_runner per fill task with identical verified outcomes. What remains of the wait is target-effect latency (submit dispatch return -> server journal commit), which is IRREDUCIBLE",
+  "scope": "caller runner configuration, not a Driver change; B7 is unchanged"
+ },
+ "source": {
+  "tested_sha": "ac319cbe90d6cdf0cc8cd8984f99f5b04b68fdac",
+  "tested_sha_note": "R' 45dff8f32 + B-05 marks + the default-off POST_FAST knob (B-07); libs/cua-driver Linux tree = upstream 0f1955d2f",
+  "build": "none; nothing is built in this lane"
+ },
+ "binary": {
+  "name": "cua-driver-b07-231f6e8bb",
+  "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+  "version": "cua-driver 0.32.0",
+  "rule": "re-hashed on the host and inside the session at lane start and end; the runner refuses on a sha256 mismatch and writes name, sha256 and version into every trial record, every control (SMOKE, N-W2) record and every chunk manifest"
+ },
+ "harness": {
+  "base": "49ae94590f3b7e25cf7bf5fbfbbf67d51aaadff3 (B-08 packet head)",
+  "first_commit": "exp(b-09): copy B-08 harness and lane code blob-identical from 49ae94590",
+  "copied_blobs_from_b08": {
+   ".gitignore": "9d903db81e618302c03602d2b3da4db8a90f6b52",
+   "harness/b04/b04_rows.py": "129bfb74c030e9904078e847a5374caeb034f040",
+   "harness/b04/harness/b01_fixtures.py": "6b2e7ad8b8b72c8fafbcb32ff8ad847d7d2c091d",
+   "harness/b04/harness/b01_tasks.py": "05dd33e5ee8fa4c98cfc563c9c94941bf3a8a3fe",
+   "harness/b04/harness/cdp_raw.py": "6f103930dc543ad0bb69b8ea132c6ef7fb719c7d",
+   "harness/b04/harness/compiled_routine.py": "3be4518318d7e77fbbc46d0eb2855ad65a0a007e",
+   "harness/b04/harness/r2-10-scripted-COMP-routine.json": "60ff1569896a4aac80e9dade247a6c89bf30ed1d",
+   "harness/b04/harness/run_b02.py": "528966ddade37bfa076d716720f03efd696bb807",
+   "harness/b04/harness/run_b03.py": "bfdae8a11154ca6cc0e597430b0503ce5c7d7204",
+   "harness/b04/harness/run_critpath.py": "673c7f5a7350e6ccc5e4736cfa59daae94c7088a",
+   "harness/b04/run_b04.py": "464cc9eade3de1dafbe40b4295b0905dccae1859",
+   "harness/b05/b05_spans.py": "bf1f90f830eda8cb7e36d9e6e3af91bc5a9c1969",
+   "harness/b07/b07_stdio.py": "da6f2bd45735319a153972bb68f5f75845e8caf4",
+   "harness/r2-10r/analyze_r2_10.py": "af3a691c3b4e6f1681fdfa4df107a560ff9c612b",
+   "harness/r2-10r/r2_10_browser.py": "83bccc2f351689ecd6f0d2103e61012130d84af4",
+   "harness/r2-10r/scripted-COMP.json": "c7a6e71ba93e2a875f38dde6bb81a80d891c97dc",
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/analyze_browser.py": "43f4e8db0076c03f71879084a91b99f9785b0b9d",
+   "harness/r2-10r/src/b-02-browser-driver-sites-2026-10-02/b01_analysis.py": "6632de0f9814e547f2aa8f70ee678aa31d1eac12",
+   "verify_helper.py": "23a3af67da58c1e9398ecb28f8587fe344e25669"
+  },
+  "changed": {
+   "harness/b04/harness/compiled_routine.py": "one reviewed commit before this PREREG: CUA_LANE_EXP_ROUTINE_POLL_MS sets the verify bounded_read interval (unset = 10 ms = current behaviour; 0 = await asyncio.sleep(0), a yield only; reconcile reads unaffected); STAMP hook (None by default) records routine_read_send / routine_read_return around each routine oracle read and poll_sleep_start / poll_sleep_end around each poll sleep (time.monotonic_ns)"
+  },
+  "unchanged_rule": "every other harness file keeps its B-08 blob id (provenance.json; verify_artifacts.py checks)",
+  "lane_code": [
+   "run_b09.py",
+   "b09_rows.py",
+   "analyze_b09.py",
+   "make_headlines.py",
+   "verify_artifacts.py",
+   "lane-scripts/*",
+   "tests/test_b09_poll.py"
+  ],
+  "unit_evidence": "tests/test_b09_poll.py + tests/test_compiled_routine_r207.py (R2-07 suite, blob e9c7ff81e from 2d71548b4): raw/unit/unit-red.log (new tests against the unmodified routine: 9 errors, 6 skipped) and raw/unit/unit-green.log (32/32 OK)",
+  "pilot": "12 trials (plan pilot, rounds 0-1 of the measured square, SHARED lock b09-pilot-r00-01, load rule off with --load-max 100, 1-min loadavg 11-12) ran before this PREREG to check the receipts and the pipeline; excluded from every analysis; it set no gate, threshold or rule"
+ },
+ "configuration": {
+  "forced_path_every_arm_except_BASE": "R2-10 scripted COMP fill exactly as B-08 C: feedback off, focus settle 0, caller-compiled output validators, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, guarded completion + compiled replay (R2-10R scripted COMP artifact, routine verify deadline 2.0 s), phase trace on with the B-05/B-07 marks, B-07 stamped stdio client (default variant), scripted chooser, telemetry false, no provider key forwarded",
+  "BASE": "R2-10 BASE = B-04 run_b04 'DEFAULT' config: feedback on, default glide, no guard, 100 ms poll, library validators, no CUA_DRIVER_EXP_*, step loop; phase trace on (as B-08 SMOKE); used for S only",
+  "per_trial": "fresh cua-driver mcp, fresh Driver-launched system Chrome (isolated_new, sandbox on), fresh fixture servers, token and session label; every trial cold (the task document is the process's first)",
+  "lane_variables": "set in the runner process for the trial only; the Driver environment never carries CUA_LANE_EXP_* (asserted per trial and recorded)"
+ },
+ "arms": {
+  "BASE": "R2-10 BASE (above)",
+  "P10a": "COMP fill, CUA_LANE_EXP_ROUTINE_POLL_MS unset (10 ms)",
+  "P10b": "identical to P10a, second label (A/A negative control)",
+  "P1": "COMP fill, CUA_LANE_EXP_ROUTINE_POLL_MS=1",
+  "P0": "COMP fill, CUA_LANE_EXP_ROUTINE_POLL_MS=0 (yield only); descriptive",
+  "PC": "P10a + CUA_LANE_EXP_PC_SLEEP_MS=15: a 15.0 ms CLOCK_MONOTONIC sleep inside T right after snapshot1 returns (as B-08 P2); measured per trial",
+  "SMOKE": "after the measured rounds: product default (B-04 DEFAULT, no CUA_DRIVER_EXP_*, no lane variable), 5 trials, correctness only",
+  "NW2": "after the measured rounds: FIX-01 N-W2 detached-node refusal (B-02 run_b02.control_one unchanged, COMP admission knob), 3 trials",
+  "not_run": "toggle / modal (their runner gap is 0.13-0.15 ms in B-08 Part E)"
+ },
+ "design": {
+  "square": "6x6 Williams square rc.williams(6) (rows [0,1,5,2,4,3] + i mod 6; index 0=BASE,1=P10a,2=P10b,3=P1,4=P0,5=PC); round r runs row r mod 6",
+  "rounds": "36 rounds (rounds 0-35) = 6 squares; every contrast has 36 pairs; 216 measured trials",
+  "controls": "plan ctl after round 35 (round index 36): 5 SMOKE then 3 N-W2",
+  "session": "0-3 s random start jitter before each private Xvfb session and an xdpyinfo probe before any trial",
+  "chunks": "each measured chunk = one EXCLUSIVE bin/quiet-timed acquisition (label b09-<chunk>) taken only after the cargo-build lock was seen free; inside it the cargo-build lock taken with flock -w 60 (not acquired: exit 74, nothing runs, retry later); timeout 900 around everything inside; the runner starts no round past a 780 s budget; up to 12 rounds per chunk",
+  "round_attempts": "a round is atomic for the load rule. If a round is cut its trials are kept in raw/ and reported, and the round index is re-run with attempt+1. For each round the analysis uses the first attempt listed as completed in its chunk manifest; failed trials stay in the denominators. Trials of cut attempts are counted separately"
+ },
+ "load_rule": {
+  "rule": "a round starts only when the 1-min loadavg is <= 4.0; the runner polls every 1 s for up to 60 s; if still > 4.0 it ends the chunk (exit 75), both locks are released, and the same round index resumes later",
+  "logging": "every load check is in the chunk manifest; loadavg before/after is in every trial record; every trial is kept",
+  "sensitivity": "descriptive view of NC / PC / POLL without rounds containing a trial with loadavg_before > 4.0"
+ },
+ "oracle": {
+  "owner": "target-owned, independent of the Driver: the jev-use fixture server state (submitted == token) and its CLOCK_MONOTONIC journal, which must show exactly one completion (submit) mutation",
+  "PRIMARY_T_runner": "snapshot1 call_send -> return of the first verified oracle read (R2-10's T, the one B-08 Part E decomposes)",
+  "SECONDARY": "T_j (B-08 definition: max(journal completion ts, caller return of the last accepted mutation) - task_start) and T_oracle (2 ms independent sampler, B-04 rule); reported, not gated",
+  "per_trial_accounting": "after the last accepted mutation returns: reads count (oracle reads up to and including the verified one), sleeps count and summed poll sleep (stamped pairs), effect latency = journal completion ts - submit dispatch return (may be negative)"
+ },
+ "validity": "b04_rows.row core (verified outcome, exact oracle match, T_oracle present, no revert after ok, exactly 1 completion mutation, no stale dispatch, expected action routes trusted_input + dom, configuration receipts of the arm's config) with the telemetry receipt 'false', AND the arm's config, AND T_runner and T_j defined, AND Driver pid + Chrome pid alive before the task navigate, AND Driver name / sha256 / version equal this PREREG, AND caller variant default, AND lane receipts (lane_env equals the arm's values, no CUA_LANE_EXP_* in the Driver environment, the routine's verify interval and every stamped sleep interval equal the arm's value), AND (PC: the sleep was measured), AND every E4 counter 0. Invalid trials stay in every denominator",
+ "e4": {
+  "counters": [
+   "stale_dispatch",
+   "ambiguous_dispatch",
+   "duplicate_mutation",
+   "unverified_success",
+   "blind_replay",
+   "refusal_returned_as_success",
+   "non_loopback_connect"
+  ],
+  "definitions": "as B-08 PREREG e4.definitions (b09_rows.e4_counts is b08_rows.e4_counts unchanged)",
+  "refusals": "refusals refused: N-W2 3/3 pass (stale action effect=refused, 0 detached effects, re-derived action verified with exactly one completion mutation)"
+ },
+ "statistics": {
+  "pairing": "paired within-round differences of the primary T_runner; a pair needs both trials valid",
+  "estimate": "median of the paired differences (statistics.median)",
+  "bootstrap": "percentile bootstrap of the median, 10000 resamples, a fresh random.Random(20261003) for every contrast, 95% CI = [sorted[250], sorted[9749]]",
+  "S": "S = median T_runner(BASE) / median T_runner(composed) over the paired rounds; percentile bootstrap over the pairs (resample round indices with replacement, ratio of the two medians), 10000 resamples, fresh random.Random(20261003), 95% CI"
+ },
+ "gates": {
+  "G0_validity": ">= 95% valid in every arm (BASE, P10a, P10b, P1, P0, PC; 36 each) AND identical verified outcomes (every valid trial verified with exactly one completion mutation; no measured trial refuted or with > 1 completion mutation)",
+  "G1_NC": "P10a - P10b: 95% CI contains 0 AND |median| <= 1.0 ms",
+  "G2_PC": "PC - P10a: 95% CI inside [12, 18] ms",
+  "G3_E4": "every E4 counter 0 in every arm (incl. SMOKE) AND N-W2 3/3 pass (refusals refused)"
+ },
+ "verdict_rules": {
+  "computed_only_if": "G0, G1, G2 and G3 pass; otherwise UNDECIDED naming the failed gate(s) (not terminal)",
+  "DELETED": "median (P10a - P1) >= 3.0 ms AND its CI lower bound > 0: KEEP; the verify-poll sleep is deleted by a 1 ms interval",
+  "IRREDUCIBLE": "CI upper bound of (P10a - P1) < 3.0 ms: KILL; the residual wait is re-attributed to target-effect latency",
+  "UNDECIDED": "otherwise; not terminal, stated as such",
+  "P0": "descriptive only: P10a - P0 and P1 - P0 and the reads P0 adds are reported as work added, never as a deletion"
+ },
+ "E3_S": {
+  "composed_arm": "P1 if the poll verdict is DELETED, else P10a",
+  "gate": "S 95% CI lower bound > 1",
+  "floor_ratio": "mean T_runner (corrected) of the composed arm / T_irreducible from Part E' (sum of the IRREDUCIBLE bucket; BELOW_GATE counted as IRREDUCIBLE and as UNTESTED); the cold excess inside observation (per-process OWNER_DECISION B-08 + per-document IRREDUCIBLE B-04, split not measured here) is reported both excluded from and included in T_irreducible",
+  "secondary": "S on T_j and T_oracle (reported, not gated)",
+  "boundary": "scripted chooser only; BASE and composed on the same binary B7, same environment, interleaved"
+ },
+ "disposition": {
+  "KEEP": "a terminal poll verdict (DELETED or IRREDUCIBLE) with G0-G3 passing, S CI lower > 1, SMOKE 5/5 verified with no CUA_DRIVER_EXP_*, no lane variable and 0 mcp.inner_validation_skipped marks, N-W2 3/3, E4 = 0",
+  "REVISE": "otherwise, naming the failing item"
+ },
+ "part_E_prime": {
+  "class": "BENCHMARK analysis of this lane's own P10a arm and of the best arm (P1 if DELETED, else P10a only), binary B7; nothing is added to or ratioed with another lane's or binary's numbers",
+  "T": "R2-10 T_runner per valid trial with phase trace; rows with B-05 coverage < 0.98 are excluded and counted",
+  "decomposition": "B-08 Part E (harness/b05/b05_spans.decompose_b05 with R2-10's classifier and the B-07 units; R2-10 e2_components consistency per trial)",
+  "split_view": "decompose_b05 on a copy of the event log in which poll_sleep_start / poll_sleep_end are presented as sleep_start / sleep_end (region sleep -> sleeps_polls, reported as poll_sleep) and routine_read_send / routine_read_return as decide_start / decided (region decision, reported as read_hop: the routine's asyncio.to_thread hop around each oracle read); compiled arms make no provider decision inside T, which the analyzer counts (real_decisions_in_T must be 0). The target-effect tail rule runs first and is unchanged, so poll-sleep time between the submit dispatch return and the journal commit stays target_effect_lag (effect_wait). Consistency: B-08's runner (no stamps) = poll_sleep + read_hop + runner_other per trial",
+  "runner_split_reported": "per arm and view: runner (B-08 labels), poll_sleep, read_hop, runner_other, target_effect_lag, effect_wait inside poll sleep (= summed poll sleep - poll_sleep), mean effect latency",
+  "views": "PRIMARY corrected at c_m = median of this lane's in-situ null-pair intervals over the valid P10a and best-arm trials; SECONDARY raw",
+  "cold_excess": "E = span(snapshot1) - span(snapshot2) per trial (b04_rows excess_b03_ms), mean per arm, inside observation; terminal (per-process OWNER_DECISION B-08, per-document IRREDUCIBLE B-04) but its split is not measured here (no warm arm), so it is its own bucket (COLD_EXCESS)",
+  "untested_share": "UNTESTED ms / mean T_runner (view) for P10a and the best arm, BELOW_GATE counted as IRREDUCIBLE and as UNTESTED; target < 5% in both BELOW_GATE views",
+  "list": "every component and every lane-scope unit with mean >= 5% of mean T or >= 50 ms, with verdict and source lane",
+  "verdict_map": {
+   "observation (rest)": [
+    "IRREDUCIBLE",
+    "B-04"
+   ],
+   "cold excess": [
+    "OWNER_DECISION (per-process, B-08) + IRREDUCIBLE (per-document, B-04)",
+    "B-08 / B-04"
+   ],
+   "reval_endpoint": [
+    "OWNER_DECISION",
+    "B-02 H_E"
+   ],
+   "reval_other": [
+    "IRREDUCIBLE",
+    "R2-10"
+   ],
+   "provider_decision": [
+    {
+     "fill": "DELETED",
+     "toggle": "UNTESTED",
+     "modal": "UNTESTED"
+    },
+    "R2-10 (R2-03 + R2-07b on fill)"
+   ],
+   "visualization": [
+    "OWNER_DECISION",
+    "R2-10"
+   ],
+   "input_prep": [
+    "UNTESTED",
+    "R2-10"
+   ],
+   "settles": [
+    "OWNER_DECISION",
+    "R2-10"
+   ],
+   "dispatch": [
+    "IRREDUCIBLE",
+    "R2-10"
+   ],
+   "target_effect_lag": [
+    "IRREDUCIBLE",
+    "R2-10 (effect_wait: submit dispatch return -> journal commit; H_P)"
+   ],
+   "verification_reads": [
+    "IRREDUCIBLE",
+    "R2-10"
+   ],
+   "poll_sleep": {
+    "P10a": {
+     "DELETED": "DELETED",
+     "IRREDUCIBLE": "IRREDUCIBLE",
+     "UNDECIDED": "UNTESTED"
+    },
+    "best_arm_residual": "UNTESTED",
+    "source": "B-09"
+   },
+   "read_hop": [
+    "UNTESTED",
+    "B-09 (routine asyncio.to_thread hop around each oracle read; not tested)"
+   ],
+   "runner_other": [
+    "UNTESTED",
+    "R2-10 / B-09 (rest of the runner gap)"
+   ],
+   "admission tools-list cache": [
+    "DELETED (already on: the deleted re-validation is not in T; receipt mcp.inner_validation_skipped)",
+    "B-02 H_V / R2-10"
+   ],
+   "lane_scope_components": [
+    "mcp_transport",
+    "mcp_admission",
+    "resolution",
+    "client_validation",
+    "unattributed"
+   ],
+   "units": {
+    "c_in.prep": [
+     {
+      "fill": "UNTESTED",
+      "toggle": "IRREDUCIBLE",
+      "modal": "IRREDUCIBLE"
+     },
+     "B-07 (PREP_FAST KILL on toggle/modal; fill's fragile DELETED is not carried)"
+    ],
+    "c_in.serialize": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "write_pipe_in": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "pipe_out_frame": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "c_out.parse": [
+     "IRREDUCIBLE",
+     "B-05 (PARSE_FAST KILL)"
+    ],
+    "c_out.route": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "c_out.result_model": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "c_out.validate": [
+     "IRREDUCIBLE",
+     "B-05 (VALIDATE_FAST KILL)"
+    ],
+    "c_out.return": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "d_in.parse": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "adm.outer": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "adm.inner": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "d_in.invoke": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "d_out.post": [
+     "IRREDUCIBLE",
+     "B-07 (POST_FAST KILL)"
+    ],
+    "d_out.serialize": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "d_out.write_flush": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "res.dispatch": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "res.ref_parse": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "res.store_lookup": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "res.post_check": [
+     "BELOW_GATE",
+     "B-07"
+    ],
+    "res.frame_proof": [
+     "IRREDUCIBLE",
+     "B-07 (invariant: Page.getFrameTree re-proves the ref's frame identity)"
+    ],
+    "res.type_focus": [
+     "IRREDUCIBLE",
+     "B-07 (invariant: DOM.focus for trusted_input typing)"
+    ],
+    "res.cdp_node_resolve": [
+     "IRREDUCIBLE",
+     "B-07 (invariant: DOM.resolveNode, FIX-01 detached-node refusal)"
+    ],
+    "res.editable_check": [
+     "IRREDUCIBLE",
+     "B-07 (invariant: non-editable targets refused before typing)"
+    ],
+    "any other lane-scope label": [
+     "UNTESTED",
+     "-"
+    ]
+   },
+   "unit_members": {
+    "write_pipe_in": [
+     "c_in.write",
+     "pipe_in"
+    ],
+    "pipe_out_frame": [
+     "pipe_out",
+     "c_out.frame"
+    ],
+    "d_out.write_flush": [
+     "d_out.write",
+     "d_out.flush"
+    ]
+   },
+   "carry_check": "the unit labels are B-08's PREREG part_E units (B-07 labels on the same binary B7; c_in.prep on fill UNTESTED by rule)"
+  },
+  "never": "no number is added to or ratioed across lanes or binaries; absolute T is never compared with B-06 / B-08 / R2-10R"
+ },
+ "descriptive": [
+  "median / mean T_runner, T_j, T_oracle per arm",
+  "reads, sleeps, summed poll sleep and effect latency per arm",
+  "measured PC sleep",
+  "P0 work added",
+  "load sensitivity view",
+  "routes / producers per arm"
+ ],
+ "provider": {
+  "cap": 0,
+  "provider": "TypeSafe not used (scripted chooser); attempts and reached are reported (0 / 0)"
+ },
+ "claim_boundary": "one shared Linux host, private Xvfb, Google Chrome as Driver-chosen, binary B7 only, scripted chooser. The poll is a caller runner setting; its jev-use product default (100 ms in run.py) is not changed, and any proposal to change that default is an OWNER_DECISION row, not this lane's claim. Absolute T is never compared with B-06 / B-08 / R2-10R"
+}
