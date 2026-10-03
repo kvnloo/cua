@@ -1,12 +1,12 @@
-"""Package B-06 raw outputs into the packet (standard library only; run under hostless).
+"""Package B-08 raw outputs into the packet (standard library only; run under hostless).
 
     python3 package_raw.py --lane-tmp <lane-tmp> --ledger <locks>/quiet-lane-ledger.jsonl --packet <packet> \
         --scrub <path>=<placeholder> [--scrub ...] [--names-file <untracked names file>]
 
-- raw/{main,wn,x,pilot}-trials.tar.gz: every trial file (event log +
+- raw/{main,pilot}-trials.tar.gz: every trial file (event log +
   summary + Driver trace), cut attempts included; sorted members, mtime 0, uid/gid 0 (deterministic);
-- raw/{main,wn,x,pilot}/run-manifest-*.json: chunk manifests (scrubbed);
-- raw/lock-ledger.jsonl: this lane's quiet-lane ledger lines (labels starting b06-), verbatim;
+- raw/{main,pilot}/run-manifest-*.json: chunk manifests (scrubbed);
+- raw/lock-ledger.jsonl: this lane's quiet-lane ledger lines (labels starting b08-), verbatim;
 - raw/logs/*.log: session and chunk logs with local paths and private names replaced by placeholders.
 Trial files are scrubbed too (paths only) before archiving.
 """
@@ -24,9 +24,13 @@ SCRUB: list[tuple[str, str]] = []
 NAMES: list[re.Pattern] = []
 
 
+DBUS = re.compile("/tmp/" + "dbus" + r"-[A-Za-z0-9]+")  # B-08: the private session bus socket path (session logs)
+
+
 def scrub(text: str) -> str:
     for a, b in SCRUB:
         text = text.replace(a, b)
+    text = DBUS.sub("<private-dbus>", text)
     for p in NAMES:
         text = p.sub("<name>", text)
     return text
@@ -65,7 +69,7 @@ def main() -> None:
     lt, pk = Path(a.lane_tmp), Path(a.packet)
     raw = pk / "raw"
     counts = {}
-    for plan in ("main", "wn", "x", "pilot"):
+    for plan in ("main", "pilot"):
         d = lt / plan
         if not (d / "trials").is_dir():
             continue
@@ -74,7 +78,7 @@ def main() -> None:
         for m in sorted(d.glob("run-manifest-*.json")):
             (raw / plan / m.name).write_text(scrub(m.read_text()))
     lines = [x for x in Path(a.ledger).read_text().splitlines()
-             if x.strip() and json.loads(x).get("label", "").startswith("b06-")]
+             if x.strip() and json.loads(x).get("label", "").startswith("b08-")]
     (raw / "lock-ledger.jsonl").write_text("\n".join(lines) + "\n")
     (raw / "logs").mkdir(parents=True, exist_ok=True)
     for log in sorted((lt / "logs").glob("*.log")):
