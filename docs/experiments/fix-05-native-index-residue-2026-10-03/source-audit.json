@@ -1,0 +1,73 @@
+{
+ "schema": "cua.r2.source-audit.v1",
+ "lane": "FIX-05",
+ "trees": {
+  "upstream": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0 (trycua/cua main at lane start)",
+  "F5m": "d5447e9d3 (replay through FIX-03 2237cf9c6)",
+  "F6m": "c07691e09 (replay through FIX-04 802700282)",
+  "F7m": "66afb3427 (F6m + F7)"
+ },
+ "line_numbers": "path:line on a9baa8d10 unless marked F6m / F7m; platform-linux paths are relative to libs/cua-driver/rust/crates/platform-linux/src/",
+ "drift_since_fix04_base": "0f1955d2f..a9baa8d10 changes no file FIX-04 or FIX-05 touches; the Linux Rust changes are overlay.rs (5e13eb777) and cua-driver-core expectation.rs only; the native residue line numbers below are identical to FIX-04's e300edbd3 map (native.rs 3468 / 4677 / 5276)",
+ "index_space": {
+  "where": "atspi/native.rs:1312-1408 collect_visited_bounded_opts (a9baa8d10)",
+  "fact": "a window-scoped snapshot walk (xid != 0) walks the caller's window FIRST ('Walk the caller's window FIRST', native.rs:1393), so a snapshot's element index is an address in that window-first order; collect_visited(conn, pid) (xid 0, native.rs:950) walks the whole application in the application's own window order",
+  "consequence": "the same index in a pid-wide walk names the first window's node for a token of any later window (live), and the next window's node for a token of a closed window. Observed: both windows' checkbox index 2, Note index 6, Scroll bar index 10 (shakedown handles)"
+ },
+ "paths": [
+  {
+   "id": "PA",
+   "fn": "native::perform_action(pid, idx)",
+   "where": "atspi/native.rs:3468 (F6m 3494); wrappers atspi/mod.rs:282 perform_action -> mod.rs:289-299 perform_action_in -> mod.rs:298 native::perform_action",
+   "walk": "collect_visited(conn, pid): pid-wide",
+   "callers": ["browser_consent_ui.rs:240 and :287 (Driver-owned browser consent prompt)", "browser_setup_ui.rs:382 and :561 (Driver-owned browser setup UI)"],
+   "public_element_token_tool": "none. click / double_click / right_click resolve an element token through atspi::perform_action_observed (mod.rs:304; tools/impl_.rs:5945, 6455, 6457 on a9baa8d10), which acts on the exact observed object and refuses a gone object as CachedElementGone (stale_element_token) without any walk. perform_action_in has no caller with a window.",
+   "reachable_from_public_tool": false,
+   "reason": "only the Driver's own browser consent/setup UI calls it, with an index taken from walk_tree(pid, window_id) (window-first order) and resolved against the pid-wide walk: an index-space mismatch candidate when the browser process has more than one top-level frame. Not a session token path; not measured here (follow-up).",
+   "verdict": "KEEP without fix for E4 token paths (REAL row R-PA through click)"
+  },
+  {
+   "id": "SC",
+   "fn": "native::scroll_element(pid, idx, ..)",
+   "where": "atspi/native.rs:4677 (F6m 4703); wrapper atspi/mod.rs:339-347 (F6m 367-375) passes no window",
+   "caller": "tools/impl_.rs:9456 (F6m 9480) ScrollTool, for EVERY element token (no cached-object attempt first); on Err the tool falls through to the hyprland / inject / Wayland / X11 wheel routes",
+   "walk": "collect_visited(conn, pid): pid-wide, nth indexable node",
+   "reachable_from_public_tool": true,
+   "expected_hole": "a closed-w1 token scrolls w2; a LIVE w2 token scrolls w1 (index-space mismatch, no window closed)",
+   "fix_F7": "F7m atspi/mod.rs:372 scroll_element(pid, xid, ..) computes token_frame (cached element frame; window-scoped token without its snapshot entry -> CachedElementGone); native.rs:4704 collect_visited_in walks in the snapshot's index space (window first); native.rs:4720 scroll_element resolves through indexed_node(.., frame); tools/impl_.rs:9500/9511 passes the token's window and refuses CachedElementGone as stale_element_token, effect refused, before the fallback routes"
+  },
+  {
+   "id": "SV",
+   "fn": "native::set_value(pid, idx, value) as the set_value_in fallback",
+   "where": "atspi/native.rs:5276 (F6m 5298); atspi/mod.rs:491-502 set_value_in (F6m 529-540) falls back to it at mod.rs:501 when the cached object's write fails with anything but NO_VALUE_ROUTE (e.g. its window closed); mod.rs:482 set_value has no caller",
+   "caller": "tools/impl_.rs:8932 (F6m 8956) SetValueTool; Ok(Err) -> input_error_result",
+   "walk": "collect_visited(conn, pid): pid-wide",
+   "reachable_from_public_tool": true,
+   "expected_hole": "a closed-w1 Note token writes into w2's Note",
+   "fix_F7": "F7m mod.rs:547 set_value_in falls back to native::set_value(pid, xid, idx, value, token_frame) (native.rs:5315: window-first walk + indexed_node); tools/impl_.rs:8988 refuses CachedElementGone as stale_element_token, effect refused"
+  },
+  {
+   "id": "CF",
+   "fn": "atspi::focus_element(pid, Some(xid), idx) -> native::focus_element",
+   "where": "atspi/mod.rs:327-338 (F6m) / native.rs:4887 (F6m); on F5m native::focus_element(pid, idx) is pid-wide",
+   "discriminating_route": "tools/impl_.rs:8794 (F6m) HotkeyTool, delivery_mode foreground with an element token: the up-front GrabFocus runs BEFORE the window activation, so on F5m a closed-w1 token's GrabFocus lands on w2's control (shakedown 2/2) while the receipt says foreground_unavailable 'no input was sent'. press_key (8405) and type_text (7712) run focus_element inside with_x11_foreground*, after the activation of the closed window fails (FIX-04 CF: non-discriminating).",
+   "F6m": "focus_element is already frame-scoped (F6c): refused, but surfaced as a bare tool error (shakedown: code tool_invocation_failed, no effect)",
+   "fix_F7": "tools/impl_.rs:8819 (F7m) hotkey refuses CachedElementGone as stale_element_token, effect refused"
+  },
+  {
+   "id": "WT",
+   "fn": "type_text fall-through after a failed type_into_editable_at on the Hyprland foreground and Wayland-inject routes",
+   "where": "tools/impl_.rs:7348-7372 (F6m; Hyprland foreground: falls to focus_hyprland_foreground 4534-4585 -> Activate then focus_element 4571) and 7436-7470 (F6m; inject mode, is_inject_mode() = CUA_INJECT_SOCKET of a cua-compositor: falls to focus_nested_inject_target 7119-7145 -> focus_element 7127, then inject_type_text(pid, xid))",
+   "F6m": "both fall-throughs reach atspi::focus_element(pid, Some(xid), idx), which F6c already keeps in the token's frame (CachedElementGone for a gone element), and their key delivery is window-targeted by the token's xid; no pid-wide walk remains on either route",
+   "receipt_shape": "inject: ToolResult::error(error.to_string()) with no code; Hyprland: foreground_hyprland_refusal('AT-SPI child focus failed')",
+   "reachable_here": "no: the inject route needs a cua-compositor inject socket (not provided by cua-sway-session.sh; SWAY_SETUP.json lists native Wayland as PARTIAL and documents no inject compositor); the Hyprland route needs a real Hyprland seat (BLOCKED, hardware)",
+   "evidence": "SOURCE + UNIT (F6c's window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide pins focus_element's CachedElementGone)",
+   "verdict": "KEEP without fix (SOURCE): no pid-wide resolution remains on these routes on F6m"
+  }
+ ],
+ "receipt_finding": {
+  "where": "cua-driver-core/src/action_record.rs:693-699 (F6m legacy_effect: effect 'refused' -> Refused, any other value incl. 'none' -> Unverifiable); platform-linux tools/impl_.rs (F6m) 6002 / 6016 / 6515 click stale_element_token {code, effect: none}, 7586 type_text (F6c) {code, effect: none}",
+  "fact": "the existing stale_element_token refusals of click and type_text carry effect 'none', which is not a public ActionEffect name; the MCP receipt keeps the raw envelope (errors are not projected), and ActionExecutionRecord::from_legacy maps it to Unverifiable for tools whose transport it can name (type_text: path '' -> key events)",
+  "scope": "not changed by F7 (F7's own refusals say 'refused'); listed as a follow-up for the receipt contract"
+ }
+}

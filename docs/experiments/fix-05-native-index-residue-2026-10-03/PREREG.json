@@ -1,0 +1,154 @@
+{
+ "schema": "cua.r2.prereg.v1",
+ "lane": "FIX-05",
+ "wave": 8,
+ "owners": [
+  "kvnloo/cua#36",
+  "kvnloo/cua#105",
+  "kvnloo/cua#73 (E4 invariants)"
+ ],
+ "hypothesis": "FIX-04 F6c closed the pid-wide nth-node re-resolution for type_text and focus. The same pid-wide pattern remains in native::perform_action(pid, idx), native::scroll_element(pid, idx) and native::set_value(pid, idx) (the set_value_in fallback). Each is expected to act on w2 when the token's window w1 is gone (a stale / foreign dispatch, E4). F7 applies F6c's window-scoped rule: a token whose window snapshot is gone is refused stale_element_token with effect refused before dispatch; never a pid-wide walk.",
+ "shakedown_before_prereg": {
+  "where": "raw/shakedown/ (not counted)",
+  "observed": {
+   "F6m RSC": "2/2 cross-window (A's closed-w1 Scroll token scrolled w2)",
+   "F6m NC": "B's LIVE w2 Scroll token scrolled w1 2/2 (both windows open): scroll resolves every element token pid-wide, in the application's window order, while the snapshot's indices are window-first",
+   "F6m RSV": "2/2 cross-window (w2 Note = fix05A), A's receipt effect unverifiable",
+   "F5m RCF": "2/2 cross-window focus (w2 focus / focus_log changed) with A's receipt foreground_unavailable 'no input was sent'",
+   "F6m RCF": "0/2, refused as a bare tool error (code tool_invocation_failed, no effect)",
+   "F6m RPA": "0/1, refused stale_element_token (effect 'none')",
+   "F6m NS": "2/2 per tool except set_value: the single-window fixture did not publish note_text (fixture fixed before PREREG: harness/gtk3_main_two_windows.fix05.diff)"
+  },
+  "changes_after_shakedown": [
+   "F7 also maps hotkey's CachedElementGone to stale_element_token / refused (seen as a bare error on F6m)",
+   "fixture: single-window mode publishes note_text when CUA_GTK3_SCROLL_STATE=1 and CUA_GTK3_NOTE_TEXT_STATE=1"
+  ],
+  "F7m_smoke": {
+   "where": "raw/shakedown-f7m/ (not counted)",
+   "observed": "NC 2/2 every tool x window own-effect only (B's live w2 scroll moves w2); RSC 2/2, RSV 1/1, RCF 1/1 refused stale_element_token effect refused, 0 cross-window, tails ok; NS 1/1 all four tools"
+  }
+ },
+ "source": {
+  "upstream_base": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+  "replay": "0fd76ecc5 513e45fee 8e0e8aea0 205a4ecb2 cdffb3213 a357d061d df4f1edf5 5a1e209ab b235fabef 37d17e0b3 2237cf9c6 937ef7cfa bb1e01f7b 802700282, cherry-picked in order, patch-id equal 14/14, no conflict (raw/replay.txt)",
+  "F5m": {
+   "commit": "d5447e9d3",
+   "binary": "cua-driver-fix05-f5m-d5447e9d3",
+   "sha256": "4778ada19ae343aed9ebae4ff43db36921bf65459094df535694a658aa0e37e1",
+   "role": "positive control: replay through 2237cf9c6, pid-wide fallbacks present"
+  },
+  "F6m": {
+   "commit": "c07691e09",
+   "binary": "cua-driver-fix05-f6m-c07691e09",
+   "sha256": "b8efb6ec89a2920128e3100364d8aa3999fa1decb111eae0540bbfceb9767830",
+   "role": "the full F6 chain on current main"
+  },
+  "F7m": {
+   "commit": "66afb3427",
+   "binary": "cua-driver-fix05-f7m-66afb3427",
+   "sha256": "220b5e11145f74539739967dbfc5ddaca5ccfef3574b3d302dc2714dc13d806a",
+   "role": "F6m + F7"
+  },
+  "seam": "5a1e209ab (FIX-03 set_input_files gap seam) is in every binary, measurement-only and default off; no FIX-05 row sets it"
+ },
+ "environment": "bin/hostless -> harness/qlock_fix05.sh (SHARED quiet-lane, lock fd closed for children, <= 300 s per block, >= 30 s spacing, yield to queued EXCLUSIVE waiters) -> cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV containing CUA_SESSION_ATSPI=1; telemetry off",
+ "topology": "T2: one cua-driver serve daemon per block, two mcp --socket clients = sessions A and B; a fresh fixture per attempt; w1 closed by the fixture itself (SIGUSR1, confirmed on its state file) in every two-window closed row; observation order AB/BA alternates by attempt; 10 attempts per block; binaries interleaved per row (plans/1-all.txt)",
+ "fixtures": {
+  "CT": "blob-identical FIX-04 copy harness/copied/fix-04-.../harness/gtk3_main_two_windows.py (sha256 49bc8c98...), FIX-04 env (NOTE_TEXT_STATE, FOCUS_STATE), FIX-04 harness fix04_native.py --row CT unchanged",
+  "R rows, NC, NS": "harness/gtk3_main_two_windows.py = FIX-04 copy + harness/gtk3_main_two_windows.fix05.diff (opt-in scroll region after every task control, per-window scroll_value, focus_log written by the fixture on GtkWindow::set-focus, single-window note_text); env NOTE_TEXT_STATE, FOCUS_STATE, SCROLL_STATE, FOCUS_LOG = 1"
+ },
+ "rows": {
+  "CT-recert": {
+   "arms": [
+    "F5m",
+    "F6m"
+   ],
+   "n": 20,
+   "call": "A type_text {A's own closed-w1 Note token, 'fix04A'}; tail B type_text own w2 Note"
+  },
+  "R-SC": {
+   "arms": [
+    "F6m",
+    "F7m"
+   ],
+   "n": 20,
+   "call": "A scroll {A's own closed-w1 Scroll token, down, 1}; tail B scroll own w2 Scroll"
+  },
+  "R-SV": {
+   "arms": [
+    "F6m",
+    "F7m"
+   ],
+   "n": 20,
+   "call": "A set_value {A's own closed-w1 Note token, 'fix05A'}; tail B set_value own w2 Note 'fix05B'"
+  },
+  "R-PA": {
+   "arms": [
+    "F6m",
+    "F7m"
+   ],
+   "n": 20,
+   "call": "A click {A's own closed-w1 checkbox token} (the public element action; SOURCE: perform_action_observed, perform_action(pid, idx) has no public token caller); tail B click own w2 checkbox"
+  },
+  "R-CF": {
+   "arms": [
+    "F5m",
+    "F6m",
+    "F7m"
+   ],
+   "n": 20,
+   "call": "A hotkey {A's own closed-w1 checkbox token, keys [ctrl, F12], delivery_mode foreground}; tail B click own w2 checkbox"
+  },
+  "NC": {
+   "arms": [
+    "F7m",
+    "F6m"
+   ],
+   "n": 20,
+   "call": "both windows open, live tokens: A on w1 then B on w2 with click, scroll, set_value, hotkey-focus"
+  },
+  "NS": {
+   "arms": [
+    "F7m",
+    "F6m"
+   ],
+   "n": 20,
+   "call": "single window, session A only: click, scroll, set_value, hotkey-focus on its own tokens"
+  },
+  "R-WT": "not run: SOURCE + UNIT (source-audit.json path WT). The Wayland-inject route needs a cua-compositor inject socket that cua-sway-session.sh does not provide (SWAY_SETUP.json documents native Wayland as PARTIAL and no inject compositor); the Hyprland route is BLOCKED (hardware: real Hyprland seat)"
+ },
+ "oracle": "the fixture's own per-window state file, written by the fixture process, read before and after every call (agreed, counter, size, note_saved, note_text, scroll_value, focus, focus_log; active/open reported separately), plus session B's own tail call on w2 (B's read of w2). A's receipt (is_error, code, effect, status) is recorded for E4 accounting only, never as the oracle.",
+ "definitions": {
+  "cross_window_effect": "R rows and CT: any compared key of w2 changed between the pre and post reads of A's call",
+  "own_effect": "the call's tool key changed in the addressed window: click agreed, scroll scroll_value, set_value note_text, hotkey focus_log, type_text note_text",
+  "tail_ok": "B's own-token call changed w2's tool key",
+  "refused_receipt": "is_error true with code stale_element_token and effect 'refused' (F7's paths); other refusal shapes are reported as observed"
+ },
+ "gates": {
+  "HOLE(path)": "F6m shows >= 1/20 cross-window effects on that R row",
+  "KEEP_without_fix(path)": "F6m 0/20 on that R row, with its SOURCE reason cited",
+  "KEEP(F7)": "F7m 0/20 cross-window on every R row AND NC on F7m: own_effect 20/20 and other window unchanged 20/20 for every tool x window AND NS on F7m: own_effect 20/20 per tool AND F7m refusals on R-SC / R-SV / R-CF receipt code stale_element_token + effect refused 20/20 (never unverifiable) AND UNIT red then green AND core, platform-linux and jev-use suites green on F6m and F7m",
+  "CT_recert_pass": "F6m 0/20 cross-window AND F5m >= 18/20",
+  "R-CF_discriminating": "F5m >= 18/20 cross-window focus (w2 focus or focus_log changed during A's call); otherwise R-CF is UNIT-only, labelled non-discriminating, with the reason",
+  "tails": "B's tail ok on every attempt of every arm (a failed tail is reported, kept in the denominator, and flags the attempt)"
+ },
+ "predictions": {
+  "F6m": {
+   "R-SC": "HOLE",
+   "R-SV": "HOLE",
+   "R-PA": "0/20 (KEEP without fix)",
+   "R-CF": "0/20 (F6c)",
+   "NC scroll B": "w1 scrolled instead of w2"
+  },
+  "F7m": "0/20 on every R row; NC and NS clean"
+ },
+ "e4_counters": "per arm and row: cross-window effects (stale/foreign dispatches), refusal receipts with effect unverifiable, success-shaped receipts with a cross-window effect, blind replays (none possible: one A call per attempt)",
+ "every_attempt_kept": true,
+ "provider": {
+  "name": "TypeSafe",
+  "cap": 0,
+  "use": "none"
+ },
+ "claim_boundary": "same-process two-window GTK3 on X11 (private Xvfb, openbox, AT-SPI); isolation between distinct sessions, not adversarial isolation; fork candidates only",
+ "product_status": "F7 changes default native behaviour only for an element token whose element is not in its own window (same class as F6c): a reviewed product-fix candidate pending owner review"
+}

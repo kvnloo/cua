@@ -1,0 +1,39 @@
+# FIX-05 counted blocks, run order. 10 attempts per block (one SHARED quiet-lane hold each, <= 300 s);
+# binaries interleaved inside every row; observation order alternates AB/BA by attempt index.
+# CT-recert: FIX-04 CT (blob-identical FIX-04 harness + fixture) on F5m (positive control) and F6m
+CT F5m c1 0-9
+CT F6m c2 0-9
+CT F6m c3 10-19
+CT F5m c4 10-19
+# R-SC scroll -> atspi::scroll_element
+N F6m RSC s1 0-9
+N F7m RSC s2 0-9
+N F7m RSC s3 10-19
+N F6m RSC s4 10-19
+# R-SV set_value -> set_value_in -> set_value(pid, idx) fallback
+N F6m RSV v1 0-9
+N F7m RSV v2 0-9
+N F7m RSV v3 10-19
+N F6m RSV v4 10-19
+# R-PA click (the public element action) -> perform_action_observed
+N F6m RPA p1 0-9
+N F7m RPA p2 0-9
+N F7m RPA p3 10-19
+N F6m RPA p4 10-19
+# R-CF hotkey foreground -> up-front atspi::focus_element; F5m decides whether the row discriminates
+N F5m RCF f1 0-9
+N F6m RCF f2 0-9
+N F7m RCF f3 0-9
+N F7m RCF f4 10-19
+N F6m RCF f5 10-19
+N F5m RCF f6 10-19
+# NC: live tokens, both windows open, all four tools, both sessions (F7m gate; F6m measured)
+N F7m NC n1 0-9
+N F6m NC n2 0-9
+N F6m NC n3 10-19
+N F7m NC n4 10-19
+# NS: single window, single session normal path
+N F7m NS u1 0-9
+N F6m NS u2 0-9
+N F6m NS u3 10-19
+N F7m NS u4 10-19

@@ -1,0 +1,73 @@
+diff (FIX-04 copy blob e96bfca8d -> FIX-05 copy)
+--- copied/fix-04-unknown-delivery-effect-2026-10-03/harness/gtk3_main_two_windows.py
++++ gtk3_main_two_windows.py
+@@ -420,6 +420,10 @@
+         # FIX-03 (measurement only, two-window mode only): CUA_GTK3_NOTE_TEXT_STATE=1 also publishes
+         # each window's live Note text, so a write into the wrong window's field is target-observed.
+         self.note_text_state = shared is not None and os.environ.get("CUA_GTK3_NOTE_TEXT_STATE") == "1"
++        # FIX-05 (measurement only): with CUA_GTK3_SCROLL_STATE=1 the single-window mode publishes the live
++        # Note text too (the single-window, single-session normal-path control NS reads it).
++        if os.environ.get("CUA_GTK3_SCROLL_STATE") == "1" and os.environ.get("CUA_GTK3_NOTE_TEXT_STATE") == "1":
++            self.note_text_state = True
+         if self.note_text_state:
+             self.note.connect("changed", lambda *_: self.publish())
+         note_row.pack_start(self.note, False, False, 0)
+@@ -427,6 +431,30 @@
+         root.pack_start(note_row, False, False, 0)
+ 
+         root.pack_start(self.button("Exit", lambda *_: Gtk.main_quit()), False, False, 0)
++        # FIX-05 (measurement only, opt-in): CUA_GTK3_SCROLL_STATE=1 adds, AFTER every task control (so
++        # the task controls keep their element indices), a short scroll region whose vertical scroll bar
++        # carries the accessible name "Scroll", and publishes each window's adjustment value as
++        # scroll_value, so a scroll that lands in the wrong window is target-observed.
++        self.scroll_state = os.environ.get("CUA_GTK3_SCROLL_STATE") == "1"
++        if self.scroll_state:
++            region = Gtk.ScrolledWindow()
++            region.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
++            region.set_size_request(300, 60)
++            lines = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
++            for line in range(30):
++                lines.pack_start(Gtk.Label(label=f"line {line}", xalign=0), False, False, 0)
++            region.add(lines)
++            aid(region.get_vscrollbar(), "Scroll")
++            self.scroll_adjustment = region.get_vadjustment()
++            self.scroll_adjustment.connect("value-changed", lambda *_: self.publish())
++            root.pack_start(region, False, False, 0)
++        # FIX-05 (measurement only, opt-in): CUA_GTK3_FOCUS_LOG=1 appends every focus-widget change of this
++        # window (GtkWindow::set-focus, written by the fixture process) to focus_log, so a GrabFocus that
++        # lands in the wrong window is target-observed even when it ends on the same widget name.
++        self.focus_log_on = os.environ.get("CUA_GTK3_FOCUS_LOG") == "1"
++        self.focus_log = []
++        if self.focus_log_on:
++            self.connect("set-focus", self.on_set_focus_logged)
+         self.connect("destroy", Gtk.main_quit if shared is None else self.on_closed)
+         # FIX-04 (measurement only, two-window mode only): CUA_GTK3_FOCUS_STATE=1 also publishes each
+         # window's focused widget (its label or accessible name) and whether the window is active, so a
+@@ -442,6 +470,16 @@
+             self.publish()
+         return GLib.SOURCE_REMOVE
+ 
++    def on_set_focus_logged(self, _window, widget):
++        if widget is None:
++            name = None
++        else:
++            label = widget.get_label() if hasattr(widget, "get_label") else None
++            name = label or widget.get_accessible().get_name() or type(widget).__name__
++        self.focus_log.append(name)
++        del self.focus_log[:-50]
++        GLib.idle_add(self.publish_once)
++
+     def focus_name(self):
+         widget = self.get_focus()
+         if widget is None:
+@@ -535,6 +573,10 @@
+         if getattr(self, "focus_state", False) and self.open:
+             state["focus"] = self.focus_name()
+             state["active"] = self.is_active()
++        if getattr(self, "scroll_state", False):
++            state["scroll_value"] = round(self.scroll_adjustment.get_value(), 3)
++        if getattr(self, "focus_log_on", False):
++            state["focus_log"] = list(self.focus_log)
+         if self.density is not None:
+             state["density"] = self.density
+             state["distractor_actions"] = self.distractor_actions
