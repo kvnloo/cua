@@ -1,0 +1,107 @@
+{
+ "schema": "cua-rfc-loop.prereg.v1",
+ "lane": "R2-07d",
+ "wave": 5,
+ "title": "Compiled toggle/modal routine: quiet-window scripted timing block with a load ceiling, then live Phase L COMP+CR within 18 reached",
+ "owners": ["kvnloo/cua#93", "kvnloo/cua#10", "kvnloo/cua#74"],
+ "relation_to_r2_07c": "A new block that reports alongside R2-07c (branch exp/r2-07c-toggle-modal-compiled-a2-20261003, 7f46edd16). It does not edit R2-07c: the R2-07c packet directory is carried on this branch unchanged and its harness is executed in place.",
+ "advances": {
+  "E2": "R2-10 live COMP toggle/modal provider decisions 434.8 / 462.4 ms (88-89% of live COMP T) are UNTESTED. Measuring live COMP+CR warm invocations (0 decisions expected) gives that component a DELETED or REVISE verdict on the admitted compiled path.",
+  "E1_E3": "R2-07c's failed timing non-regression gate (CI upper +16.9 / +12.1 ms vs +2 ms at loadavg 8-32) gets a pre-registered outcome in a quiet window; the compiled routine is either included in or excluded from the composed configuration."
+ },
+ "source": {
+  "branch": "exp/r2-07d-quiet-timing-phase-l-20261003",
+  "base": "7f46edd1681fbf58586f8b4972636c3da56e3be6",
+  "libs_cua_driver_tree": "bf8e7bdc90fdce295e44743f2754a6502d5d6e0e (identical at 8f3a646b4 = binary R source)",
+  "driver_changes": "none (no Driver build; harness-only lane)",
+  "binary_R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version_expected": "cua-driver 0.32.0", "rehash": "host-side at lane start and end; inside every session the runner refuses on a sha256 mismatch and records name/sha256/version in every trial"},
+  "harness_identity": {
+   "path": "docs/experiments/r2-07c-toggle-modal-compiled-2026-10-03/harness/",
+   "tree_at_7f46edd16": "66bad345b1736b97b66884bbf40a1505c16083bf",
+   "files": 49,
+   "key_blobs_at_7f46edd16": {
+    "harness/r2_07c.py": "25f9807c3e4de20515f5ddeda1a5bd1d81b61661",
+    "harness/in_session.sh": "ed4f42b2daf8ea4715b315c45fb05709d8aca65b",
+    "harness/compiled_routine_tm.py": "4e94d30753a66180f7cee79293edf16b1a92bccf",
+    "analyze_r2_07c.py": "dab482887210fc68ab13a325aae55bd09388ac4d"
+   },
+   "check": "verify_artifacts.py asserts git rev-parse <commit>:<path> equals the tree/blob above at every packet commit; that identity is what lets G1-G6 carry over from R2-07c"
+  },
+  "new_code_this_lane": {
+   "driver/r2_07d.py": "load-gated Phase S runner and controls plan; imports r2_07c and calls build_plan('timing'), one_comp, one_c, rb10.nw2_one, rb10.one unchanged; adds only the load gate, the chunk budget, resume bookkeeping and the controls spec list",
+   "driver/run_chunk_d.sh": "lock + session wrapper (cargo-build lock, then bin/quiet-timed for measured chunks; SHARED quiet-lane lock for controls), 0-2.9 s start jitter, 600 s cap per acquisition",
+   "driver/probe_then.sh": "xdpyinfo probe inside the private session before any trial (fail -> exit 97, failed session block)",
+   "driver/test_r2_07d.py": "unit tests of the gate, unit grouping and plan counts"
+  }
+ },
+ "arms": {
+  "COMP": "R2-10 COMP for toggle/modal, unchanged (r2_07c.one_comp -> rb10.one): feedback OFF, 10 ms completion poll, compiled validators, CUA_DRIVER_EXP_ADMISSION_TOOLS_CACHE=1, phase trace on; step loop decides each click (scripted chooser in Phase S, TypeSafe in Phase L training)",
+  "COMP_CR": "COMP + compiled fresh-bound replay of the admitted artifact (r2_07c.one_c): fresh semantic_v2 observation before every click, 0 decisions; failed precondition -> guarded continuation from the current state (decisions counted)"
+ },
+ "oracle": "jev-use/#24 fixture server journal and state (toggle: checked true; modal: opened and modal true), sampled every 2 ms in process by an independent harness thread (rb10.Sampler), never the runner's report; exactly one completion mutation from the journal. T_oracle by the R2-10 caller-side rule (send of the first semantic observation -> first expected-state sample at/after the return of the last accepted mutation).",
+ "route_and_producer": "from launcher receipts: two browser_click with input_route dom_event, receipt route dom and a click.cdp_send mark inside each click window; decision producers from receipts (decided events + provider ledger lines per trial)",
+ "phase_S": {
+  "evidence_class": "REAL+BENCHMARK",
+  "provider": "scripted chooser (jev-use choose_mock_for_task); 0 provider requests; TYPESAFE_API_KEY not forwarded (runner refuses if present)",
+  "block_Q": {
+   "plan": "r2_07c.build_plan('timing', 0, 40): one training (+compile+clean-reset admission) per class into store 'timed' (round -1), then 40 rounds; round r: class order alternates every 2 rounds, arm order AB (COMP first) on even r and BA on odd r; 40 AB/BA pairs per class",
+   "fresh_per_trial": "Driver process, isolated Chromium, loopback fixture servers, token and session label",
+   "locks": "each chunk: flock cargo-build.lock first, then bin/quiet-timed R2-07d-Q<n> (EXCLUSIVE + receipt in the loop ledger); no new unit starts after 480 s in an acquisition; session hard cap 600 s",
+   "load_rule": {
+    "unit": "a training invocation, or one pair = both arms of one class in one round (run back to back in plan order)",
+    "ceiling": "a unit starts only when the 1-min loadavg (/proc/loadavg field 1) is <= 3.0",
+    "wait": "otherwise poll every 1 s for up to 60 s inside the acquisition; if no read is <= 3.0, end the chunk (exit 75: locks released) and resume the SAME unit indices in a later chunk",
+    "log": "every gate attempt (start or end_chunk) to load-gate.jsonl with the reads, wait and full loadavg line",
+    "resume_scheduling": "between chunks the lane waits outside the locks and starts the next chunk after a host-side read of the 1-min loadavg <= 3.0 (polled every 30 s)",
+    "lane_deadline": "no new Q chunk starts after 2026-10-03T19:00:00Z; units not run by then are NOT_RUN (load) and stay in the denominators (the timing gate then fails as incomplete)",
+    "interrupted_units": "a unit started but not finished in a chunk (session cap or crash) is kept as interrupted, excluded from the pair statistic, and re-run under an attempt suffix (-a2); no trial file is overwritten"
+   }
+  },
+  "gates": {
+   "timing_non_regression": "per class: paired diff T_oracle(COMP_CR warm) - T_oracle(COMP) over all valid pairs; median diff with 95% seeded paired bootstrap CI (b01_analysis.paired_diff via analyze_r2_07c, seed 20261002, 10000 resamples); PASS iff CI upper <= +2.0 ms AND all 40 pairs ran AND every timing cell is valid (an invalid or unverified cell stays in the denominator and fails the gate, unchanged from R2-07c). Also reported: S = median T_COMP / median T_COMP_CR with CI, medians, loadavg per trial.",
+   "sensitivity_view": "the same statistic excluding pairs in which either trial's recorded loadavg_before 1-min value is > 3.0 (reported, not a gate)",
+   "G1_G2_block_Q": "the Q-block training per class verified (oracle, exactly 1 completion mutation), compiled without error, authority-clean, and its clean-reset admission verified with 0 fallback, 0 decisions, every mutation fresh",
+   "G3": "100% of accepted mutations in every COMP_CR cell fresh per the launcher Driver-call receipts; every non-fresh dispatch attempt refused with Driver effect=refused",
+   "E4": "per cell (both arms): stale dispatch, ambiguous dispatch, duplicate, unverified success, refusal returned as success, blind replay, dispatch after unknown; all must be 0",
+   "decomposition": "R2-10 e2_components (analyze_r2_07c.decomposition) per arm per class over valid timing cells",
+   "phase_S_pass": "per class: timing_non_regression PASS and G1_G2_block_Q PASS and G3 PASS and E4 0 over that class's Q cells"
+  },
+  "controls_block_C": {
+   "evidence_class": "REAL; G5 rows FIXTURE (reconcile seam) + REAL",
+   "lock": "SHARED quiet-lane lock, <= 10 cells per acquisition (receipt per acquisition)",
+   "plan": "driver/r2_07d.py controls: 1 training(+admission) per class into store 'scripted'; G4 1 rep per row per class (N1, N2, N3, N4a stale-ref, N4b, N5 old capability, N6, N7, and N8 OOD toggle-on-fill, toggle-on-modal, modal-on-toggle) = 19 cells; N-W2 1 per class; G5 applied_ack_lost and withheld_unresolved 1 per class; default smoke 5 per class",
+   "pass_rules": "G4/G5 cells: analyze_r2_07c.g4_pass unchanged; N-W2: analyze_r2_07c.nw2_row pass; default smoke (R2-10 BASE arm via rb10.one, kind smoke: no CUA_DRIVER_EXP_* variable, no phase trace, feedback on, 100 ms poll, scripted chooser): verified, oracle_exact_match, exactly 1 completion mutation, driver_env_exp empty",
+   "purpose": "carry-over smoke showing the harness and Driver behaviour are unchanged from R2-07c; not timing"
+  }
+ },
+ "phase_L": {
+  "evidence_class": "LIVE_PROVIDER+REAL",
+  "precondition": "Phase S passes in BOTH classes. Otherwise Phase L is NOT_RUN and the reason is recorded.",
+  "runner": "R2-07c harness/r2_07c.py --plan live, unchanged (the R2-07c PREREG phase_L plan): per class 30 invocations; round 0 = training (ordinary R2-10 step loop, 2 live decisions) + compile + clean-reset admission; rounds 1-29 = warm compiled invocations (0 decisions expected); fallbacks run the guarded continuation with live decisions and are counted; a warm invocation without an admitted routine retrains once, then the class stops (NOT_RUN no_admitted_routine); class order alternates per round; fresh Driver, Chromium and fixture per invocation; loadavg per invocation; every invocation kept",
+  "chunks": "under flock cargo-build.lock + bin/quiet-timed R2-07d-L<n> (EXCLUSIVE): L1 = --start-round 0 --rounds 15, L2 = --start-round 15 --rounds 15, shared routines dir and provider ledger; no load ceiling (loadavg recorded; chunks scheduled in a quiet window when possible)",
+  "shakedown": "optional: one live toggle training invocation (+compile+admission) via r2_07c.py --plan live_shake under the SHARED lock, same provider ledger (counts toward the cap), excluded from Phase L results",
+  "provider": "TypeSafe as configured by the jev-use runner (TypeSafeClient defaults; model id recorded from SystemOneResponse.model); key forwarded by NAME only (CUA_SESSION_FORWARD_SECRETS=TYPESAFE_API_KEY); its value is never printed, read or grepped",
+  "budget": {"lane_cap_reached": 18, "lane_cap_attempts": 22, "includes_shakedown": true, "guard": "r2_07c install_provider_ledger_c counts each HTTP attempt before sending and refuses once either cap would be exceeded; before each live invocation r2_07c.main_async stops if reached+4 or attempts+4 would exceed a cap; invocations not run are NOT_RUN (budget) and stay in the denominators", "ledger": "raw/provider-ledger.jsonl: host, path, status, request-id presence + sha256/16, latency, trial, layer; no bodies or headers"},
+  "metrics": {
+   "warm_validity": "verified by the independent oracle with exactly 1 completion mutation; route compiled only; two dom_event clicks with click.cdp_send; 0 decided events; 0 provider ledger lines; denominator = 29 per class including failures and NOT_RUN",
+   "median_T_warm": "median T_oracle over warm invocations",
+   "amortized": "mean_all = (sum T_oracle over the 30 invocations + compile_ms + T_oracle(admission)) / 30; ratio_of_means = mean_all / mean_warm",
+   "T_training": "reported separately (n=1 per class unless a retrain happened)",
+   "decisions_per_invocation": "total decided events / 30 (training and fallbacks included)",
+   "decomposition": "R2-10 e2_components over warm invocations and over all invocations, with the provider-decision share"
+  },
+  "verdict": "the live provider-decision component on admitted toggle/modal COMP+CR is DELETED (KEEP) iff warm validity is 29/29 per class AND warm decisions are 0 AND E4 is 0; otherwise REVISE with the measured rate",
+  "not_compared": "Phase L T is never compared with R2-10 live numbers as an S. The paired live BASE vs COMP+CR S is BLOCKED (needs >= 120 reached)."
+ },
+ "disposition_rules": {
+  "KEEP": "Phase S passes in both classes AND Phase L verdict DELETED AND controls block C all pass AND no authority field in any artifact -> KEEP for the compiled routine in toggle/modal COMP (included in the composed configuration)",
+  "REVISE": "otherwise, naming the exact failing gate(s) (timing per class, G1/G2/G3/E4, controls, Phase L warm validity / decisions, budget truncation)",
+  "E4_note": "any E4 violation is named as the failing gate and flagged for the planner as a KILL candidate under the R2-07c rule (routine-attributable stale or ambiguous dispatch, duplicate completion mutation, unverified success)"
+ },
+ "failed_session_blocks": "a chunk whose private session fails to start (xdpyinfo probe exit 97, or every browser exits before DevTools) is kept in raw/ as a failed session block, excluded from row evaluation, and its units re-run (timing units by the resume rule)",
+ "excluded": {
+  "pre_prereg_shakedowns": "SHARED mock shakedowns R2-07d-shake-q1 (gate ended the chunk at load 5.7-6.6: 0 trials) and R2-07d-shake-c1..c3 (9 cells: 2 trainings + 2 admissions, 3 negatives, 2 BASE smoke), 0 TypeSafe requests; excluded from results, kept in raw/"
+ },
+ "evidence_classes": ["REAL", "REAL+BENCHMARK", "LIVE_PROVIDER+REAL", "FIXTURE (reconcile seam)", "UNIT", "BLOCKED", "NOT_RUN"],
+ "claim_boundary": "One host, private Xvfb, system Chrome (the Driver's root-owned candidate), binary R, the jev-use #24 toggle/modal fixture, the TypeSafe model id as recorded. No new service. The compiled artifact has no authority; logical routine identity only; refs, tokens and captures are never durable. Paired live BASE vs COMP+CR S is BLOCKED (budget)."
+}
