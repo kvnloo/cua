@@ -1,5 +1,7 @@
 # Offline lazy validators: MODIFY
 
+> Update (2026-10-03): [Current-upstream reconciliation: the lazy-cache mechanism already exists](UPSTREAM-RECONCILIATION.md). The historical offline results below are preserved; a duplicate implementation is superseded by supported-release compatibility qualification.
+
 The bounded offline experiment preserves acceptance on the covered corpus and reduces repeated schema checking, but does not establish a cold one-task win. Cold means a new validator session inside a warm Python process: checks/constructors are included, interpreter/import/driver startup and native transport are excluded. Production invalidation and concurrency remain unproven. No CUA production code is changed.
 
 Credit: Kevin Rajan's N-02 native-transport experiment supplied the historical schemas/results; its provenance attributes the caller-compiled mechanism to Kevin Rajan's B-01 H_C. This is an isolated first-use-cache adaptation, with no ownership/exclusivity claim.
