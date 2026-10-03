@@ -325,15 +325,41 @@ pub fn element_showing_observed(element: &cache::CachedElement) -> Result<bool> 
 /// activating its window. As in [`type_into_editable_at`], the cached element
 /// comes from that window's snapshot, never from another window of the pid.
 pub fn focus_element(pid: u32, xid: Option<u64>, idx: usize) -> Result<bool> {
-    if let Some(object_ref) = cache::cached_element(pid, xid, idx).and_then(|e| e.object_ref) {
-        match native::focus_element_ref(&object_ref) {
+    let cached = cache::cached_element(pid, xid, idx);
+    if let Some(object_ref) = cached.as_ref().and_then(|e| e.object_ref.as_ref()) {
+        match native::focus_element_ref(object_ref) {
             Ok(done) => return Ok(done),
             Err(error) => tracing::debug!(
                 "cached element {idx} (pid {pid}) focus failed, re-resolving: {error:#}"
             ),
         }
     }
-    native::focus_element(pid, idx)
+    native::focus_element(pid, idx, token_frame(pid, xid, idx, cached.as_ref())?.as_ref())
+}
+
+/// The top-level frame that a window-scoped element index belongs to, so a
+/// re-resolution by index never leaves that window. Element indices are only
+/// an address within the walk the snapshot saw: once a window of the process
+/// closes or its tree changes, the same index in a fresh walk of the whole
+/// application can name another window's control (possibly observed by another
+/// session). `None` only for window-less callers.
+fn token_frame(
+    pid: u32,
+    xid: Option<u64>,
+    idx: usize,
+    cached: Option<&cache::CachedElement>,
+) -> Result<Option<(String, String)>> {
+    match (xid, cached) {
+        (None, _) => Ok(None),
+        (Some(_), Some(element)) => Ok(Some((
+            element.identity.frame_bus_name.clone(),
+            element.identity.frame_path.clone(),
+        ))),
+        (Some(xid), None) => Err(native::CachedElementGone(format!(
+            "element {idx} of window {xid} (pid {pid}) is not in that window's snapshot"
+        ))
+        .into()),
+    }
 }
 
 pub use native::ScrollProgress;
@@ -471,15 +497,21 @@ pub fn type_into_editable(pid: u32, text: &str) -> Result<()> {
 /// another window of the same process (possibly observed by another session)
 /// has its own element at the same index.
 pub fn type_into_editable_at(pid: u32, xid: Option<u64>, idx: usize, text: &str) -> Result<()> {
-    if let Some(object_ref) = cache::cached_element(pid, xid, idx).and_then(|e| e.object_ref) {
-        match native::type_into_editable_ref(&object_ref, text) {
+    let cached = cache::cached_element(pid, xid, idx);
+    if let Some(object_ref) = cached.as_ref().and_then(|e| e.object_ref.as_ref()) {
+        match native::type_into_editable_ref(object_ref, text) {
             Ok(()) => return Ok(()),
             Err(error) => tracing::debug!(
                 "cached element {idx} (pid {pid}) editable write failed, re-resolving: {error:#}"
             ),
         }
     }
-    native::type_into_editable_at(pid, idx, text)
+    native::type_into_editable_at(
+        pid,
+        idx,
+        text,
+        token_frame(pid, xid, idx, cached.as_ref())?.as_ref(),
+    )
 }
 
 /// Set the text value of element `idx` within pid's app tree via AT-SPI.
@@ -833,5 +865,57 @@ mod budget_tests {
         assert!(!result.truncated);
         assert_eq!(result.nodes_visited, 0);
         assert!(result.bounds_complete);
+    }
+}
+
+#[cfg(test)]
+mod window_scoped_fallback_tests {
+    use super::*;
+
+    /// FIX-04 (kvnloo/cua#36): with the window known, an element index whose
+    /// window snapshot does not hold it is stale. It is never re-resolved
+    /// against a fresh walk of the whole application (pid-wide), where the same
+    /// index can name another window's control of the same process.
+    #[test]
+    fn window_scoped_index_without_its_snapshot_is_stale_not_resolved_pid_wide() {
+        // No snapshot was ever published for this (pid, window).
+        let (pid, xid) = (3_999_917_u32, 0x7fff_0f04_u64);
+        let typed = type_into_editable_at(pid, Some(xid), 6, "fix04").unwrap_err();
+        assert!(typed.is::<native::CachedElementGone>(), "{typed:#}");
+        let focused = focus_element(pid, Some(xid), 6).unwrap_err();
+        assert!(focused.is::<native::CachedElementGone>(), "{focused:#}");
+    }
+}
+
+#[cfg(test)]
+mod token_frame_tests {
+    use super::*;
+
+    fn element(frame_path: &str) -> cache::CachedElement {
+        cache::CachedElement {
+            key: 1,
+            identity: AtspiIdentity {
+                bus_name: ":1.7".into(),
+                path: "/node/6".into(),
+                frame_bus_name: ":1.7".into(),
+                frame_path: frame_path.into(),
+            },
+            object_ref: None,
+            role: "text".into(),
+            in_web_content: false,
+            bounds: None,
+        }
+    }
+
+    #[test]
+    fn re_resolution_stays_in_the_token_window_frame() {
+        assert_eq!(token_frame(7, None, 6, None).unwrap(), None);
+        assert_eq!(
+            token_frame(7, Some(11), 6, Some(&element("/frame/w1"))).unwrap(),
+            Some((":1.7".to_owned(), "/frame/w1".to_owned()))
+        );
+        assert!(token_frame(7, Some(11), 6, None)
+            .unwrap_err()
+            .is::<native::CachedElementGone>());
     }
 }
