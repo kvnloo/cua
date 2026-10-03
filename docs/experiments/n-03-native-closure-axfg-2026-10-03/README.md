@@ -24,7 +24,7 @@ Source: R2-10's source plus the N-02 span marks (`85a73c2c7`). This branch makes
 | Upstream main | Planning and start: `41c34cb0d704d816e612dd3f9d0c816cdfacf178` (0 ahead at 02:40Z). End: `a8d5788fddee3d851beaabd0d626bbc5e9fdf7cc` (2 ahead, 0 libs/cua-driver files, 05:45Z). Drift between the tested upstream base `989cc76ce` and main touches `tools/impl_.rs` (get_window_state's first-snapshot walk budget and description text) and `tool_schema.rs` (helper). It does not touch output schemas, `atspi/native.rs`, `input/foreground.rs`, `proxy.rs`, `server.rs` or `sdk_adapter.rs` |
 | Live heads | trycua/cua PR 4316 `a0bca744067d` (open, unchanged start/end); kvnloo/cua#106 `c45845797b71` (open, unchanged) |
 | Publication SHA | set by the Publish agent |
-| Environment | One Linux host (10 CPUs). Every code-executing command ran under hostless; native blocks also ran under hostless-strict and `cua-x11-session.sh` (private Xvfb, private AT-SPI bus). Telemetry off (`CUA_DRIVER_RS_TELEMETRY_ENABLED=0`, `DO_NOT_TRACK=1`). jev-use venv: mcp 1.30.0, jsonschema 4.26.0 |
+| Environment | One Linux host (10 CPUs). Every code-executing command ran under hostless; native blocks also ran under hostless-strict and cua-x11-session.sh (private Xvfb, private AT-SPI bus). Telemetry off (`CUA_DRIVER_RS_TELEMETRY_ENABLED=0`, `DO_NOT_TRACK=1`). jev-use venv: mcp 1.30.0, jsonschema 4.26.0 |
 | Load | 1-minute loadavg per trial. k=1 tasks: median about 8 (5.3-31.1). Part B family D: 8.2-13.1. Family U: 1.5-2.2. Other tracks kept the host busy outside the quiet lock |
 
 Full details: `provenance.json`.
@@ -201,4 +201,4 @@ GTK3 AT-SPI on X11 (private Xvfb), binary N3 only (`b1843871...`), scripted, no 
 - `hc_control.py` writes `hc-control.json`. `make_headlines.py` writes `headline-numbers.json`. `package_raw.py` builds `raw/`.
 - `verify_artifacts.py` checks everything. Run `python3 verify_artifacts.py` from a clean clone.
 - `provenance.json`.
-- `raw/`: `raw/runs/<label>/trials.jsonl.gz` per block, plus tools-list, output schemas, HC corpus and session logs. Also `raw/pilots/` (excluded), `raw/locks/quiet-lane-receipts.jsonl`, `raw/locks/aborted-blocks.json`, `raw/provenance/range-diff.txt` and `raw/MANIFEST.json`.
+- `raw/`: `raw/runs/<label>/trials.jsonl.gz` per block, plus tools-list, output schemas, HC corpus and `session-log.txt` (the redacted session.log; the repository ignores `*.log`). Also `raw/pilots/` (excluded), `raw/locks/quiet-lane-receipts.jsonl`, `raw/locks/aborted-blocks.json`, `raw/provenance/range-diff.txt` and `raw/MANIFEST.json`.

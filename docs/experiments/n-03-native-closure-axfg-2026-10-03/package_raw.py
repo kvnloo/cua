@@ -5,7 +5,7 @@ usage (under hostless): package_raw.py --runs <runs-dir> [--runs <pilot-runs-dir
     package_raw.py --runs <tmp>/runs --pilot-runs <tmp>/runs-pilot --ledger <locks>/quiet-lane-ledger.jsonl
 
 Per block label: trials.jsonl -> raw/runs/<label>/trials.jsonl.gz, tools-list.json,
-output-schemas.json, hc-corpus.jsonl.gz, session.log (redacted). Pilot blocks (excluded from
+output-schemas.json, hc-corpus.jsonl.gz, session-log.txt (session.log, redacted). Pilot blocks (excluded from
 analysis) go to raw/pilots/<label>/. Lock receipts: every shared-ledger line whose label starts with
 n03a2 (this attempt) or n03p- (attempt 1, disclosed) -> raw/locks/quiet-lane-receipts.jsonl.
 Writes raw/MANIFEST.json (sha256 + bytes of every packaged file).
@@ -56,7 +56,8 @@ def package_block(src: Path, dst: Path) -> None:
         if (raw / name).exists():
             (dst / name).write_text(redact((raw / name).read_text(encoding="utf-8")), encoding="utf-8")
     if (src / "session.log").exists():
-        (dst / "session.log").write_text(redact((src / "session.log").read_text(encoding="utf-8", errors="replace")),
+        # *.log is ignored by the repository .gitignore: keep the log as .txt so it is tracked
+        (dst / "session-log.txt").write_text(redact((src / "session.log").read_text(encoding="utf-8", errors="replace")),
                                          encoding="utf-8")
 
 
