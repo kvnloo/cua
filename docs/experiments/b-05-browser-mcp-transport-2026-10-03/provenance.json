@@ -1,0 +1,29 @@
+{
+ "schema": "cua-rfc-loop.provenance.v1",
+ "lane": "B-05 (attempt 2, wave 4)",
+ "branch": "exp/b-05-browser-mcp-transport-a2-20261003",
+ "shas": {
+  "tested_driver_source": "b376f1ff3867d92f9ec1b7fb1428d642eff05c67",
+  "tested_rust_tree": "d58bf362e461db9c29516d6764f568cbff445bb5",
+  "r2_10_source_R": "8f3a646b4818b757648835cf89db8886626b1cf0",
+  "r2_10_packet_harness": "030f6bdbf811e124e11daa2de0569bffb993b66d",
+  "n02_original": "194a6342e (cherry-picked as 4c786178b)",
+  "upstream_base_of_R": "989cc76cec262ff8bcf6968b637820340fb9caaa",
+  "prereg_commit": "3cced771f16f73bcde33943bcd834b18217f392a",
+  "amendment_commit": "92cab8900",
+  "publication_sha": "set by the Publish agent"
+ },
+ "binaries": {
+  "B5": {"label": "b05-a2-b376f1ff3", "sha256": "f4149bddffab0a4b02d6c529be3dc01e7b4a1c364f2270db0b57caf283732ae1", "version": "cua-driver 0.32.0 (read inside a private session)", "rustc": "1.97.1 (8bab26f4f 2026-07-14)", "use": "every arm of every phase"},
+  "R": {"label": "r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version": "cua-driver 0.32.0", "use": "default-off smoke reference only"},
+  "attempt_1_B5": {"label": "b05-b376f1ff3", "sha256": "e4c5f43d8cd24c2f594ab03ba443f0e8abf091a7b69ce06c4ef60bcc9b49eee3", "use": "tools/list functional compare only"},
+  "floor_echo": {"source": "harness/floor/floor_echo.rs", "sha256": "86071c3c5f6a5076247c74583af01c8e7da307cfc2b050f85c4d4849b9d2adef", "build": "rustc 1.97.1 --edition 2021 -C opt-level=3 -C debuginfo=0, under hostless + cargo lock"}
+ },
+ "live_heads": {
+  "start_2026-10-03T02:40:32Z": {"trycua_cua_main": "41c34cb0d704d816e612dd3f9d0c816cdfacf178", "trycua_cua_main_vs_planning": "0 ahead, 0 libs/cua-driver files", "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556 (open)"},
+  "end": "see README Provenance"
+ },
+ "environment": "one Linux host shared with other tracks; bin/hostless for every code-executing command; private Xvfb session (cua-x11-session.sh) for every Driver/Chromium run; telemetry off; provider key never forwarded",
+ "jev_use": "mcp 1.30.0, pydantic 2.13.5, jsonschema 4.26.0, Python 3.12 (uv.lock, uv sync --frozen)",
+ "provider": {"attempts": 0, "reached": 0}
+}

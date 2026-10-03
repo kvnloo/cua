@@ -345,9 +345,7 @@ def analyse(raw: Path) -> dict[str, Any]:
     # controls
     S["smoke"] = smoke_summary(chunks)
     S["n4a"] = n4a_summary(chunks)
-    for name in ("negative", "equivalence"):
-        p = raw / name / f"{name}.json"
-        S[name] = json.loads(p.read_text()) if p.exists() else {"status": "NOT_RUN"}
+    S["equivalence"], S["negative"] = controls_summary(raw, amend)
     S["e4"] = A.e4_totals(rows_a + rows_o + [x for v in rows_b.values() for x in v])
     S["verdicts"] = verdicts(S, amend)
     S["e2"] = e2_recompute(rows_a, S["verdicts"], c_m)
@@ -379,7 +377,8 @@ def phase_a_summary(rows: list[dict[str, Any]], c_m: float) -> dict[str, Any]:
             cor = stat([x["b05"]["sub_corr"].get(k, 0.0) for x in v])
             table[k] = {"raw": raw_, "corr": cor, "share_raw": raw_["mean"] / T["mean"],
                         "share_corr": cor["mean"] / Tc["mean"],
-                        "left_marks_per_task": mean([sum(c["left_marks"].get(k, 0) for c in x["calls"]) for x in v])}
+                        "left_marks_per_task": mean([sum(c["left_marks"].get(k, 0) for c in x["calls"]) for x in v]),
+                        "max_corr": max(((x["b05"]["sub_corr"].get(k, 0.0), x["trial"]) for x in v))}
         groups = {}
         for g, members in GROUPS.items():
             raw_ = stat([sum(x["b05"]["sub"].get(k, 0.0) for k in members) for x in v])
@@ -391,7 +390,13 @@ def phase_a_summary(rows: list[dict[str, Any]], c_m: float) -> dict[str, Any]:
         for k in r210:
             r210[k]["share_raw"] = r210[k]["mean_ms"] / T["mean"]
             r210[k]["share_corr"] = r210[k]["corr_mean_ms"] / Tc["mean"]
-        out["by_class"][cls] = {"n": len(v), "T_runner_ms": T, "T_runner_corr_ms": Tc,
+        per_call: dict[str, Any] = {}
+        for tool in sorted({c["tool"] for x in v for c in x["calls"]}):
+            cs = [c for x in v for c in x["calls"] if c["tool"] == tool]
+            labs = sorted({k for c in cs for k in c["sub"] if k in SP.LANE_SUBSPANS})
+            per_call[tool] = {"n_calls": len(cs), "subspans_corr": {
+                k: stat([c["sub"].get(k, 0.0) - c["left_marks"].get(k, 0) * c_m for c in cs]) for k in labs}}
+        out["by_class"][cls] = {"n": len(v), "T_runner_ms": T, "T_runner_corr_ms": Tc, "per_call": per_call,
                                 "T_oracle_ms": stat([x["T_oracle_ms"] for x in v]),
                                 "n_marks_in_T": mean([x["b05"]["n_marks_in_T"] for x in v]),
                                 "n_calls_in_T": mean([x["n_calls_in_T"] for x in v]),
@@ -429,6 +434,9 @@ def overhead_summary(rows: list[dict[str, Any]], c_m: float) -> dict[str, Any]:
                            "loadavg_1m": stat([x["loadavg_1m"] for x in rows]), "by_class": {}}
     keys = {"T_runner_ms": lambda x: x.get("T_runner_ms"), "T_oracle_ms": lambda x: x.get("T_oracle_ms"),
             "caller_ms": lambda x: x.get("caller_ms")}
+    nulls = [u for x in rows if x["arm"] == "COMP" and x["valid"] for u in (x.get("null_us") or [])]
+    c_m_here = statistics.median(nulls) / 1000.0 if nulls else None
+    out["c_m_us_in_control"] = None if c_m_here is None else c_m_here * 1000.0
     for cls in CLASSES:
         res = {}
         for name, fn in keys.items():
@@ -436,6 +444,8 @@ def overhead_summary(rows: list[dict[str, Any]], c_m: float) -> dict[str, Any]:
             res[name] = diff_stat(p)
         on = [x for x in rows if x["cls"] == cls and x["arm"] == "COMP" and x["valid"] and x.get("b05")]
         res["predicted_overhead_ms"] = mean([x["b05"]["n_marks_in_T"] * c_m for x in on])
+        res["predicted_overhead_ms_control_c_m"] = (mean([x["b05"]["n_marks_in_T"] * c_m_here for x in on])
+                                                    if c_m_here is not None else None)
         m = res["T_runner_ms"]["mean_diff"]
         res["overhead_above_0_5ms"] = bool(m is not None and m > 0.5)
         out["by_class"][cls] = res
@@ -546,6 +556,31 @@ def n4a_summary(chunks: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def controls_summary(raw: Path, amend: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Equivalence (harness/b05_equivalence.py per Phase B chunk) and negative controls, per candidate arm."""
+    eq: dict[str, Any] = {}
+    neg: dict[str, Any] = {}
+    pneg_path = raw / "negative" / "parser-neg-control.json"
+    pneg = json.loads(pneg_path.read_text())["rows"] if pneg_path.exists() else []
+    for cand in amend.get("candidates", []):
+        p = raw / "equivalence" / f"equivalence-{cand['chunk_prefix']}.json"
+        if not p.exists():
+            eq[cand["arm"]] = {"status": "NOT_RUN", "all_equal": None}
+            continue
+        e = json.loads(p.read_text())
+        eq[cand["arm"]] = {k: (len(v) if isinstance(v, list) else v) for k, v in e.items()}
+        if "parser" in cand.get("caller_variant", {}):
+            rows = [x for x in pneg if x["parser"] in ("default", cand["caller_variant"]["parser"])]
+            neg[cand["arm"]] = {"kind": "malformed frames through the client stack", "n": len(rows),
+                                "rejected": sum(1 for x in rows if x["rejected"]),
+                                "all_rejected": bool(rows) and all(x["rejected"] for x in rows)}
+        else:
+            neg[cand["arm"]] = {"kind": "schema-invalid structured results", "n": e["neg_cases"],
+                                "rejected_by_library": e["neg_rejected_by_library"],
+                                "all_rejected": e["neg_all_match"] and e["neg_rejected_by_library"] > 0}
+    return eq, neg
+
+
 def verdicts(S: dict[str, Any], amend: dict[str, Any]) -> dict[str, Any]:
     """Pre-registered gates applied per FLOOR_KEYS group and resolution sub-span (see PREREG gates)."""
     out: dict[str, Any] = {}
@@ -579,7 +614,7 @@ def verdicts(S: dict[str, Any], amend: dict[str, Any]) -> dict[str, Any]:
             elif cands:
                 ok = [a for a in cands if tested[a]["by_class"][cls]["deleted"] and not tested[a]["by_class"][cls]["regression"]
                       and S.get("equivalence", {}).get(a, {}).get("all_equal") is True
-                      and S.get("negative", {}).get(a, {}).get("all_rejected", True) is True]
+                      and S.get("negative", {}).get(a, {}).get("all_rejected") is True and n4a_ok(S, a)]
                 if ok:
                     v = "OWNER_DECISION" if any(tested[a]["output_contract_change"] for a in ok) else f"DELETED ({ok[0]})"
                 else:
@@ -605,6 +640,11 @@ def verdicts(S: dict[str, Any], amend: dict[str, Any]) -> dict[str, Any]:
             else:
                 out[k][cls] = "UNTESTED (no candidate)"
     return out
+
+
+def n4a_ok(S: dict[str, Any], arm: str) -> bool:
+    rows = [x for c in S.get("n4a", {}).values() for x in c["rows"] if x["arm"] == arm]
+    return len(rows) >= 15 and all(x["pass"] for x in rows) and all(c in {x["cls"] for x in rows} for c in CLASSES)
 
 
 def subspan_verdict(sub: str, cls: str, V: dict[str, Any]) -> str:

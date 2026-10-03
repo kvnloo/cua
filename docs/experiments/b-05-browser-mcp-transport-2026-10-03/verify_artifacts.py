@@ -65,6 +65,7 @@ ALLOW = {
     ("b10cd09f2", "libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts", "secret#5"),
 }
 CITE = re.compile(r"(?<![A-Za-z0-9_./-])((?:raw|harness)/[A-Za-z0-9_./-]+[A-Za-z0-9_-])")
+FILE_EXT = (".py", ".rs", ".sh", ".json", ".jsonl", ".gz", ".txt", ".md")
 CHECKS: list[tuple[str, bool, str]] = []
 
 
@@ -135,7 +136,11 @@ def cited_files_tracked() -> None:
                          "headline-numbers.json") if (HERE / p).exists()]
     cited: set[str] = set()
     for name in texts:
-        cited |= {m.rstrip(".") for m in CITE.findall((HERE / name).read_text())}
+        for m in CITE.findall((HERE / name).read_text()):
+            m = m.rstrip(".")
+            # a file path has a known extension; an extension-less token counts only as a directory
+            if m.endswith(FILE_EXT) or (HERE / m).is_dir() or "." not in Path(m).name and m.count("/") > 1:
+                cited.add(m)
     try:
         tracked = set(git("ls-files", "--", ".").decode().split())
         ignored = set(git("ls-files", "--others", "--ignored", "--exclude-standard", "--", ".").decode().split())

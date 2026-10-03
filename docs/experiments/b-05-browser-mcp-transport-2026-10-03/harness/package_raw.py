@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Package one run directory into raw/browser/<chunk>.tar.gz (deterministic: sorted, mtime 0).
 
-usage: package_raw.py <run-dir> <out.tar.gz>
+usage: package_raw.py <run-dir> <out.tar.gz> [--no-frames]
 Includes trials/, frames/, routines/ and run-manifest-*.json. Refuses (exit 3) if any member, after
 gzip decoding, contains an absolute home/mount path or a secret-like value.
 """
@@ -21,8 +21,9 @@ BAD = [re.compile(p) for p in (r"/home/[A-Za-z0-9_.-]+/", r"/mnt/[A-Za-z0-9_.-]+
 
 def main() -> None:
     src, out = Path(sys.argv[1]), Path(sys.argv[2])
+    dirs = ("trials", "routines") if "--no-frames" in sys.argv[3:] else ("trials", "frames", "routines")
     members = sorted(p for p in src.rglob("*") if p.is_file() and (
-        p.relative_to(src).parts[0] in ("trials", "frames", "routines") or p.name.startswith("run-manifest-")))
+        p.relative_to(src).parts[0] in dirs or p.name.startswith("run-manifest-")))
     bad = []
     for p in members:
         data = p.read_bytes()
