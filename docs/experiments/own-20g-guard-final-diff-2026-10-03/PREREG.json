@@ -1,0 +1,102 @@
+{
+ "schema": "own20g.prereg.v1",
+ "lane": "OWN-20G (wave 4, attempt 2)",
+ "owners": ["kvnloo/cua#20", "kvnloo/cua#93"],
+ "packet": "docs/experiments/own-20g-guard-final-diff-2026-10-03",
+ "branch": "exp/own-20g-guard-final-diff-a2-20261003",
+ "question": "Does one final focus diff at the settle watch's deadline exit close the N-02 c08-017 hole (a steal during an X call stalled across the deadline goes unreported) without changing anything else; is the ~21 ms settle overshoot (CL clamp) deletable under a valid steal control; does the Driver stay safe across an AT-SPI accessibility bus restart?",
+ "source": {
+  "U": {"sha": "bdf33d9fe4d716033089244a6571db21934374d6", "what": "0f1955d2f + picks 74d178575 (28b915ae9, R2-04 marks), 20243ea20 (b9b357bc7, N-01R knobs), bdf33d9fe (194a6342e, N-02 settle_poll marks + CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP); all measurement-only, default off; range-diffs identical (raw/source/range-diff.txt)"},
+  "G": {"sha": "a30cbbc3b230e8bad7d86ae1e89866d4f9cdd1af", "what": "U + one reviewed fix commit in platform-linux input/focus_guard.rs"},
+  "libs_tree_base": "0f1955d2f libs/cua-driver tree df2b49c3 = 41c34cb0d's (upstream main at planning)"
+ },
+ "binaries": {
+  "U": {"name": "cua-driver-own20g-a2-u-bdf33d9fe", "sha256": "f0fe3219e5e0d4227d57128f3f4f2c487f54462d206d0fbe3ea9317c56eb41eb", "version": "cua-driver 0.32.0"},
+  "G": {"name": "cua-driver-own20g-a2-g-a30cbbc3b", "sha256": "66e303c7167d6bd912b628f5d2558f9fafa6695bb1b7cafdafba2914595aa6ff", "version": "cua-driver 0.32.0"}
+ },
+ "fix_semantics": "When the settle watch ends on its deadline with nothing seen and its last read began before the deadline (an X call stalled across it), read once more (one final focus diff); a change found by that read is restored like any other, with the restore budget counted from that read (it had run out by the guard's start). Without a stall the last poll already began past the deadline, so the normal path takes no extra read. The settle loop moves unchanged into a function over two read closures (behaviour-preserving extraction, checked by the unchanged suite on the red tree). No new timer, constant, service, or knob.",
+ "unit": {
+  "status_at_prereg": "DONE before this file (no REAL row depends on it being re-run): red = G with only the fix hunk reverse-applied fails a_steal_during_a_read_stalled_past_the_watch_is_seen and passes every other test (610 lib tests); green = G passes both new tests, 16/16 focus_guard, 611/611 platform-linux lib",
+  "rule": "UNIT passes iff the new stall test fails on red and passes on green, and every existing focus_guard and platform-linux lib test passes on green"
+ },
+ "pilots": {
+  "status": "excluded from every count; labels own20g-pilot0-p01..p06 (raw kept in the lane mirror, not in the packet)",
+  "what_they_showed": [
+   "XGrabServer row as specified (8 stalls, U in both slots): every request the guard queued behind the grab was served after the grab, after the queued steal, so the guard's stalled read SAW the steal; with the restore budget (600 ms from the guard's start) already spent, U re-asserted once without verification and reported focus_outcome=not_restored (7/8; final focus was back on the reference in those 7), and 1/8 (text) reported same_app_dialog with the focus left on the decoy. Opening the steal connection after the guard's (p03) did not change the order. This is not c08-017's mechanism.",
+   "c08-017's marks (polls at 30/60/90 ms, next guard mark 'restored' at 2404 ms, steal at 217.5 ms seen by the sampler in real time) put the stall in the X call AFTER the 90 ms poll's focus diff (the new-client read), with the server answering in real time. A reply-delay proxy reproduces exactly that: U 2/2 silent (no focus_outcome, focus left on the decoy), G 3/3 restored with final focus = reference.",
+   "x11rb 0.13.2 maps a path DISPLAY to /tmp/.X11-unix/X0 and tries the abstract socket first: a near miss in p04-r1 (refused by hostless's Landlock abstract-unix scope; nothing reached the host). The proxy therefore listens on /tmp/.X11-unix/X<M> on the session's private tmpfs, with no abstract @/tmp/.X11-unix/X<M> anywhere (checked per trial), DISPLAY=:M, and forwards SCM_RIGHTS (MIT-SHM).",
+   "R3: every re-observation invalidates older snapshots (stale_element_token), so the noop control alone does not show a restart-specific refusal; noop_direct (old token without re-observation) acts and is the discriminating control. After a bus restart the same Driver process returns degraded trees (x11_property_fallback_partial) for the old and a respawned fixture for at least 5 tries; a fresh Driver process sees the respawned fixture."
+  ]
+ },
+ "environment": "hostless (v2: env scrub + Landlock abstract-unix/signal scope) + hostless-strict (bwrap tmpfs over /tmp/.X11-unix, /tmp/.ICE-unix, /run/user/<uid>) + cua-x11-session.sh (private Xvfb 1920x1080x24, openbox, picom, private session D-Bus, private AT-SPI bus + registry), CUA_SESSION_ATSPI=1, telemetry off (CUA_DRIVER_RS_TELEMETRY_ENABLED=0, DO_NOT_TRACK=1). Fixture libs/cua-driver/tests/fixtures/apps/linux/gtk3/main.py task window; one fresh Driver and one fresh fixture per trial. No provider (TypeSafe cap 0).",
+ "tasks_and_arms": {
+  "checkbox": "arm S0 = CUA_DRIVER_EXP_NATIVE_POST_ACTION_SLEEP_MS=0: get_window_state (tree + screenshot), jev-use eligible_controls, click(I agree element_token, background)",
+  "text": "arm X = S0 + set_agent_cursor_motion{glide 1 ms, dwell 0}: get_window_state, set_value(Note), click(Save note, background)",
+  "CL": "+ CUA_DRIVER_EXP_FOCUS_GUARD_CLAMP=1 (R2 and timing only, on G)",
+  "D": "default-off smoke: no CUA_DRIVER_EXP_* at all"
+ },
+ "forced_path": "AT-SPI DoAction on the cached element identity, background delivery, inside focus_guard::guarded (capture, body, restore_if_changed with the 220 ms settle watch); set_value via AT-SPI for text. Checked per trial: click route == accessibility, focus_guard body_done/settle_poll/restored marks present, exp_knob marks match the arm.",
+ "oracles": {
+  "task": "the app's own state file, read every 2 ms by an independent thread (harness_common.StateSampler); verified iff a sample at/after the last action's return matches the expected state (seq + 1 and the toggled/saved value)",
+  "focus": "xprobe.FocusSampler (verbatim N-02 module, blob f17d83691faa): an independent X client sampling XGetInputFocus and _NET_ACTIVE_WINDOW every 2 ms, timestamps taken when each sample is issued",
+  "reference": "the sampler's value once GTK has settled after the pre-trial EWMH placement on the task window: the first sample of the first 300 ms run without a change (cap 3 s; reference_ok=false otherwise)",
+  "receipt": "focus_outcome=<x> parsed from the click's text content (FocusGuardReport.summary); the receipt is never an oracle, only the thing being checked",
+  "steal_trigger": "stealer.py / xstall_proxy.py are separate processes keyed on the Driver-side atspi_action do_action_replied mark's wall_ns (tailing the phase trace); their stamps are schedule records, never oracles"
+ },
+ "rows": {
+  "s01_smoke": {"class": "REAL", "n": "2 per binary per task, arm D", "expect": "verified; no exp_knob mark; settle >= 220 ms"},
+  "R1_reply": {
+   "class": "REAL (FIXTURE)",
+   "role": "PRIMARY R1 row: the c08-017 reproduction",
+   "design": "U vs G, AB/BA pairs, n = 20 per binary per task (blocks r1qa-r1qd). The Driver's X traffic passes xstall_proxy.py; on the guard's restore connection (accepted after the mark) the reply to the first new-client read (2nd GetProperty(_NET_CLIENT_LIST_STACKING) after a GetInputFocus) issued >= 80 ms after the mark is held 2000 ms; the decoy (pre-mapped harness window) is stolen at mark + 217 ms on a direct connection (EWMH activate + raise + XSetInputFocus).",
+   "valid": "no harness failure, stealer and sampler without error, reference_ok, hold armed <= 150 ms after the mark and held >= 1900 ms with >= 1 held chunk, steal issued <= 260 ms after the mark, the sampler saw the steal (focus or active == decoy) and its first such sample lies inside the hold",
+   "pass": "valid AND stolen AND final sampler (focus, active) == reference AND receipt focus_outcome == restored AND task verified",
+   "silent_miss": "stolen AND final != reference AND no focus_outcome in the receipt",
+   "gate": "G passes every valid trial and has >= 20 valid per task. U's silent misses are reported as the default-guard finding.",
+   "invalid_rerun": "cells of invalid trials are re-run (same design, new ids, block r1qz*) until 20 valid per binary per task, at most 2 supplementary blocks; every attempt is kept",
+   "control": "replyonly (proxy on, no hold, no steal), 5 per binary per task (r1qe): 0 false restores expected (any focus_outcome or any focus change after T0 counts)"
+  },
+  "R1_grab": {
+   "class": "REAL (FIXTURE)",
+   "role": "the planner's XGrabServer row, run exactly as specified and reported with the specified gate",
+   "design": "U vs G, AB/BA, n = 20 per binary per task (r1ga-r1gd): a harness client issues XGrabServer at mark + 100 ms for 2000 ms; the decoy steal is issued at mark + 217 ms on another connection (queued behind the grab)",
+   "valid": "no harness failure, stealer/sampler without error, reference_ok, grab issued <= 150 ms and steal issued <= 260 ms after the mark",
+   "pass": "same as R1_reply",
+   "prediction_from_pilots": "the stalled read sees the steal (the grab serves the guard's queued read after the steal); U and G then behave the same (re-assert once, budget spent, not_restored); the specified gate is therefore expected to fail on this row, which exercises a different path than the deadline exit",
+   "control": "stallonly (grab, no steal), 5 per binary per task (r1ge)"
+  },
+  "R2_cl": {
+   "class": "REAL (FIXTURE) for steals; REAL + BENCHMARK for timing",
+   "runs_iff": "UNIT passes AND R1_reply gate holds",
+   "arms": "G (S0 / X) vs G+CL (S0+CL / X+CL), AB/BA pairs",
+   "steal": "stealer.py at mark + delay on its own pre-opened connection; groups: band = {216,220,225,230,235,240,245} ms (one round = every delay once per arm per task, delay order rotated by round), edge = 205 + (k mod 11) ms for 21 pairs per task, d100 = 100 ms for 20 pairs per task; nosteal control 10 pairs per task",
+   "window_validity_rule": "guard_start = wall time of the guarded click's focus_guard body_done mark; window_end = wall time of the same click's focus_guard restored mark (the guard's last settle-phase read, the final diff when one is taken, precedes it by under ~1 ms when nothing was seen); both mapped to the harness monotonic clock with the trial's median (wall - mono) offset over the harness clock pairs. t_s = the first FocusSampler sample after T0 with focus == decoy or active == decoy. A steal trial is VALID iff it has no harness failure, stealer/sampler without error, reference_ok, sampler max gap <= 20 ms, the steal was seen, and guard_start <= t_s <= window_end. Invalid trials are kept and reported (per delay).",
+   "miss": "valid AND NOT (final sampler (focus, active) == reference AND receipt focus_outcome == restored). Misses are classified only by this rule. Misses with t_s within 3 ms of window_end are listed (near-boundary), not reclassified.",
+   "counts": ">= 20 valid steals per group per arm per task; band rounds 1-6 always; if after round 6 either arm of a task has < 20 valid band steals, rounds 7..10 of that task run in order, stopping after the first round in which both arms have >= 20 (or after round 10, shortfall reported); edge/d100: if < 20 valid per arm per task, up to 10 supplementary pairs with the same delays",
+   "timing": "block t01 under quiet-timed (EXCLUSIVE, <= 25 min): G vs G+CL, 24 AB/BA pairs per task, tasks alternating, no decoy and no steal; T = first state-file sample matching the expected state at/after the last action's return minus T0 (the observation send); saving = median over pairs of T(G) - T(G+CL) with a 95% percentile bootstrap CI over pairs (10000 resamples, seed 9101); also the settle (body_done -> restored) difference; loadavg recorded per trial",
+   "gate": "CL KEEP iff (0 misses among valid trials in both arms, all groups, both tasks) AND (saving >= 10 ms with the CI lower bound > 0, on both tasks) AND (validity = 100%: every R2 steal trial of both arms valid). Otherwise CL KILL.",
+   "descriptive": "per delay and arm: n, valid, restored, left on the decoy, median landing after guard start; 'uncovered' = stolen, outside the arm's window, final on the decoy"
+  },
+  "R3_bus_restart": {
+   "class": "REAL (FIXTURE)",
+   "design": "one fresh Driver and fixture A per trial, n = 20 per binary (variant bus, r3a-r3b): (1) observe A, keep T_old (I agree); (2) kill the a11y bus daemon (child of at-spi-bus-launcher in this session), wait for the launcher to exit, kill the old registry if it is still alive after 1 s, start a new at-spi-bus-launcher --launch-immediately and a new at-spi2-registryd, wait until the new daemon exists and the registry owns org.a11y.atspi.Registry; (3) observe A (the fixture keeps running); (4) click T_old (A's pid/window, background); (5) a new token from step 3 if truthful, else respawn fixture B and observe it up to 5 times, 1 s apart, then click the new token; (6) diagnostic only: a fresh Driver process observes A and B",
+   "truthful": "the eligible-control label set equals the fixture-declared set {Exit, I agree, Increment, Large, Medium, Note, Reset, Save note, Small}, an I agree token exists, not degraded, and I agree's selected state (when present) equals the state file's agreed",
+   "structured_error": "MCP isError with a structured code, or a success payload with degraded == true, a non-empty degraded_reason, and no I agree token",
+   "pass": "no failure AND step 3 truthful or structured_error AND step 4 refused (isError / status refused / refusal) AND A's seq unchanged across step 4 AND 0 mutations from stale authority (A's final seq - initial seq - [1 if the fresh click verified on A]) AND step 5 verified by the app's state file in the SAME Driver process",
+   "pass_safety": "the same without the step-5 liveness clause (reported separately)",
+   "gate": "bus: pass 20/20 on G and 20/20 on U",
+   "controls": "registry (registry-only restart, inherited OWN-20 row) and noop (no restart), 5 per binary each (r3c), same rules; noop_direct (no restart, step 3 skipped: the old token is clicked first) 5 per binary (r3d): the discriminating control, expected to ACT (seq + 1, the mutation detector works); bus_direct (exploratory, restart then the old token without re-observation) 5 per binary (r3d), reported",
+   "kill_scope": "only the session's own launcher/daemon/registry (children of this harness's parent, the session's inner shell, with this session's XDG_RUNTIME_DIR) or processes this harness started"
+  }
+ },
+ "e4_counters_per_arm": {
+  "silent_steal_misses": "valid R1/R2 trials with silent_miss",
+  "stale_token_actions": "R3 bus/bus_direct trials where the pre-restart token mutated the app or stale-authority mutations > 0",
+  "unverified_successes": "trials whose actions returned without error and with no failure, but whose state oracle never confirmed"
+ },
+ "locks": "builds/units: cargo-build lock first; REAL safety blocks: flock -s quiet-lane.lock, <= 20 trials per acquisition, one receipt line per block in quiet-lane-ledger.jsonl (lane, label, mode shared, pid, acquired, released, rc, loadavg_at_acquire); timing: bin/quiet-timed (exclusive)",
+ "plan": {"file": "plan.json", "generator": "make_plan.py measured"},
+ "analysis": "analyze.py recomputes own20g-summary.json from raw/; verify_artifacts.py checks it",
+ "claim_boundary": "Linux X11 (private Xvfb, openbox, picom), GTK3 task fixture, binaries U and G built from 0f1955d2f (libs tree identical to 41c34cb0d). The fix is a fork candidate only. Hyprland/Wayland focus rows are BLOCKED (real seat).",
+ "provider": {"name": "TypeSafe", "cap": 0, "attempts": 0, "reached": 0}
+}
