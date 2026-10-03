@@ -1,0 +1,8 @@
+# U rebuild (attempt 2) vs attempt-1 U binary
+b4ef51d47b8edf4fbeabe7a60f230ea3c79ac859bf6527ac57c44601f546bb54  attempt-1 U (cua-driver-own20g-u-bdf33d9fe)
+f0fe3219e5e0d4227d57128f3f4f2c487f54462d206d0fbe3ea9317c56eb41eb  attempt-2 U (cua-driver-own20g-a2-u-bdf33d9fe)
+cua-driver-own20g-u-bdf33d9fe size=57351784
+cua-driver-own20g-a2-u-bdf33d9fe size=57338880
+same HEAD bdf33d9fe and rustc 1.97.1 in both build logs; not bit-identical.
+strings -n 6 diff lines (worktree dir name normalised): 17171
+Explanation (not verified further): cargo's -C metadata for path packages hashes the package source path, so symbol hashes and layout differ between worktrees. Attempt-1's binary is not used for any counted row; every row uses the attempt-2 builds.
