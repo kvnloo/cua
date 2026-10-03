@@ -1,0 +1,58 @@
+{
+  "tree": "F' df4f1edf56a6b1ca01cd2f9facbed3dc4843280c (line numbers are F' lines; paths relative to libs/cua-driver/rust/crates)",
+  "part_a_set_input_files_path": [
+    {"at": "cua-driver-core/src/browser/tools.rs:2409", "what": "impl Tool for BrowserSetInputFilesTool"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2423", "what": "validated_upload_paths: absolute, regular, non-symlink, canonicalized"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2427", "what": "require_explicit_session"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2433", "what": "engine.lock_mutation(session, target, tab): per-tab mutation lock (serializes Driver calls, not page JS)"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2441", "what": "revalidate_for_mutation (binding still exact)"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2450", "what": "store.resolve_ref(session, target, tab, ref): live snapshot namespace -> backend_node_id"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2455", "what": "semantic ref must declare Upload"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2464", "what": "frame_session_for_mutation"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2474", "what": "CDP DOM.describeNode: input[type=file] check (2490)"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2516", "what": "CDP DOM.resolveNode -> objectId"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2527-2535", "what": "CDP Runtime.callFunctionOn NODE_IS_CONNECTED (tools.rs:1350) on that objectId: the F4 check"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2538", "what": "not connected -> detached_node_refusal (tools.rs:1353, browser_ref_stale, nothing dispatched)"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2541-2548", "what": "CDP DOM.setFileInputFiles {backendNodeId, files}: a SEPARATE CDP command, i.e. a separate renderer task; page tasks (timers, fetch callbacks) may run between 2527 and 2541"},
+    {"at": "cua-driver-core/src/browser/tools.rs:2550-2554", "what": "Ok -> success receipt {status ok, target_id, tab_id, ref, frame, file_count}: no post-condition, so a node detached inside the window yields a success receipt"}
+  ],
+  "part_a_atomicity": "No CDP command checks connectedness and assigns files in one renderer task: DOM.setFileInputFiles is a DOM-domain command that the page cannot gate (a Runtime.callFunctionOn cannot set files from paths), and Chromium's assignment fires input/change on the node whether or not it is connected (the wave-3 mock models this at browser/v2_tests.rs:543-549; the REAL F'S/F5 cells observe it). Pausing the page (Page.setWebLifecycleState frozen, Emulation.setScriptExecutionDisabled, a Debugger pause) would change page-visible behaviour or suppress the page's own listeners, so it is not a candidate. F5 therefore closes the RECEIPT (re-check the same objectId after the assignment; detached -> refused browser_ref_stale with detail delivery=unknown, retryable=false) and leaves the EFFECT window irreducible.",
+  "part_a_receipt_mapping_limit": "action_record.rs:663-677 (legacy_effect) maps every status=refused receipt to effect=refused, including this delivery-unknown one; the same holds for the pre-existing trusted-click cleanup case (tools.rs:1316-1324). The receipt itself carries delivery=unknown, retryable=false; both jev-use runners never re-dispatch on retryable=false (python/run.py:111, typescript/run.ts:134-137).",
+  "part_b_recording_lookup": [
+    {"at": "cua-driver-core/src/recording.rs:921-936", "what": "begin_turn strips internal keys, then re-inserts the CALLER's session as _session_id for the element lookup (FIX-02 F1 change)"},
+    {"at": "cua-driver-sdk/src/runtime.rs:690-692", "what": "Linux set_element_bounds_fn -> platform_linux::recording_hooks::element_window_local_xy"},
+    {"at": "platform-linux/src/recording_hooks.rs:95-118", "what": "element_window_local_xy: current_runtime_store().resolve(pid, args) -> F1 session filter (snapshot_store.rs:395-402)"},
+    {"at": "cua-driver-core/src/snapshot_store.rs:163-172", "what": "publish_capture_for_session (trycua/cua PR 4375): same lane, semantic=false"}
+  ],
+  "part_c_routing_readers": [
+    {"at": "cua-driver-core/src/snapshot_store.rs:346-354", "what": "window_for_snapshot(pid, snapshot_id): pid-only, NOT session-filtered"},
+    {"at": "platform-linux/src/tools/impl_.rs:134-142", "what": "snapshot_window_resolver: the only caller of window_for_snapshot"},
+    {"at": "cua-driver-core/src/window_target.rs:165-177", "what": "PidOnlyWindowTargetGuard::invoke passes through any call with window_id or element_token (no routing)"},
+    {"at": "cua-driver-core/src/window_target.rs:186-197", "what": "the routing reader: args.snapshot_id -> resolver -> inserts window_id"},
+    {"at": "platform-linux/src/tools/impl_.rs:14026-14109", "what": "13 guarded tools: bring_to_front, click, double_click, right_click, drag, mouse_button_down, mouse_drag, mouse_button_up, type_text, press_key, hotkey, set_value, scroll"},
+    {"at": "platform-linux/src/tools/impl_.rs (schemas: 13798-13802, 6142-6166, 9784-9795, 10062-10074, 10367-10384, 11067-11079, 11243-11255, 11453-11464, 7156-7168, 8032-8045, 8451-8463, 8880-8888, 9221-9239)", "what": "every guarded tool's input schema is closed (additionalProperties false) and none lists snapshot_id"},
+    {"at": "cua-driver-core/src/tool.rs:200-210, 1278, 1442-1447", "what": "invoke_authorized (the canonical boundary for the SDK and every transport) refuses an argument absent from the closed schema: '<tool>: unknown argument snapshot_id', invalid_arguments, before the tool and its guard run"},
+    {"verdict": "the pid-only routing reader is unreachable through the registry for every guarded tool, so a foreign snapshot_id causes no routing side effect (REAL row WR s1/s2 measures it). The reader itself is not session-checked: if a future schema admits snapshot_id it must take the caller's session (the draft ea12e6f86 does this; not in F5)."}
+  ],
+  "part_c_side_index": {
+    "store": "platform-linux/src/atspi/snapshot.rs:110-157: process-global HashMap<(pid, xid), elements>; written by every session's get_window_state (tools/impl_.rs:1479-1481, publish at 1476-1484); removed by forget_window (impl_.rs:1472)",
+    "xid_less_lookup": "atspi/snapshot.rs:141-150: snapshot_for(pid, None) returns the FIRST entry found for the pid (HashMap iteration order, random per process): in a process with two observed windows it may be the other window's walk, possibly published by another session",
+    "readers": [
+      {"at": "atspi/mod.rs:290", "fn": "perform_action_in(pid, xid, idx)", "token_callers": "perform_action(pid, idx) -> xid None (mod.rs:282); no token caller found in tools (token clicks use perform_action_observed, impl_.rs:5945, 6455)"},
+      {"at": "atspi/mod.rs:326", "fn": "focus_element(pid, idx) -> cached_element(pid, None, idx)", "token_callers": "impl_.rs:3094 via grab_focus_for_background (3131-3144), 3115 (background_key_route), 4566 (Hyprland fg), 7118 (nested inject), 7522, 7591, 7688 (type_text), 8329, 8381 (press_key), 8770 (hotkey): HAZARD (window-less)"},
+      {"at": "atspi/mod.rs:405", "fn": "perform_action_at_point_in -> hit_test(pid, xid, ...)", "token_callers": "pixel paths with an explicit xid: window-scoped"},
+      {"at": "atspi/mod.rs:468", "fn": "type_into_editable_at(pid, idx) -> cached_element(pid, None, idx)", "token_callers": "impl_.rs:7347, 7434, 7552 (type_text): HAZARD (window-less)"},
+      {"at": "atspi/mod.rs:492", "fn": "set_value_in(pid, xid_opt, idx)", "token_callers": "impl_.rs:8932: window-scoped"},
+      {"at": "atspi/mod.rs:508", "fn": "read_value_in(pid, xid_opt, idx)", "token_callers": "impl_.rs:2721, 8938, 9024: window-scoped"},
+      {"at": "atspi/mod.rs:537-541, 560", "fn": "get_element_bounds(pid, idx) -> cached_bounds(pid, None, idx)", "token_callers": "impl_.rs:2294, 2395 only when no xid hint; token paths pass the token window (get_element_bounds_for_window): window-scoped"},
+      {"at": "recording_hooks.rs:128", "fn": "get_element_bounds_for_window(pid, window_id, idx)", "token_callers": "recording lookup after the F1-filtered resolve: window-scoped"}
+    ],
+    "native_fallbacks": "atspi/native.rs:2837-2849 (type_into_editable_at) and 4861-4873 (focus_element) index the WHOLE application walk by pid when the cached object is missing or fails; F5 does not change them (the cache hit is the normal path; noted as a limit)",
+    "foreign_snapshot_id": "no side-index reader is keyed by snapshot_id, so a foreign snapshot_id never reaches it",
+    "verdict_source": "a session's OWN valid token can make type_text / focus-based keyboard actions act on another window of the same process, including a window another session observed; shakedown on F' (not counted): 2/2 type_text and 2/2 press_key landed in the other window. F5 passes the token's window to both readers (mirrors set_value_in / perform_action_in). Measured by WS and WK."
+  },
+  "part_d": {
+    "W2c": "non-discriminating by construction: capture admission binds runtime generation + session id + session generation (capture_registry.rs:842-844 on U') and the capture's target window (845-847) before FIX-02; F' changes no capture file (git diff 513e45fee df4f1edf5 -- capture_registry.rs capture_runtime.rs is empty). Any capture variant (cross-window or cross-session) is refused on U' already; W2cX measures the cross-session one.",
+    "W2d": "the closed-window token is refused on U' by AT-SPI object liveness (impl_.rs:5987-5993 / 6499-6506, CachedElementGone), which FIX-02 does not touch, so W2d proper cannot discriminate. W2dX (cross-session dispatch of A's surviving w2 token after w1 closes) discriminates through F1, not through window lifecycle."
+  }
+}

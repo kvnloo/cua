@@ -1,0 +1,85 @@
+{
+  "schema": "cua-rfc-loop.prereg.v1",
+  "lane": "FIX-03",
+  "wave": 6,
+  "title": "FIX-02 F4 TOCTOU in the set_input_files call path; recording-lookup session test; pid-only snapshot routing and the (pid, xid) side index; discriminating W2c/W2d variants",
+  "owners": ["kvnloo/cua#36", "kvnloo/cua#105", "kvnloo/cua#73 (E4 residue)"],
+  "branch": "exp/fix-03-file-input-toctou-session-routing-20261003",
+  "committed_before_first_real_trial": true,
+  "provider": {"name": "TypeSafe", "cap_reached": 0, "use": "none: every browser cell is a direct MCP caller, no chooser, no model; a socket guard refuses and counts non-loopback connects"},
+  "hypotheses": {
+    "A": "On F' the isConnected check and DOM.setFileInputFiles are separate CDP commands. A page that detaches/replaces the input inside that window gets the files assigned to the detached node and F' reports success. F5 (same call path) never reports success for a detached node: it refuses or reports unknown.",
+    "B": "A capture published for session A (publish_capture_for_session) is not resolvable by the recording element lookup running as session B, and is resolvable as A.",
+    "C": "Neither the pid-only window_for_snapshot routing nor the process-global (pid, xid) side index lets session B's call cause a side effect on session A's window.",
+    "D": "W2c/W2d can be made discriminating: U' accepts and F5 refuses."
+  },
+  "sources": {
+    "U_prime": {"sha": "513e45fee0c5b02c7dd6d41a960f925a164b5066", "binary": "cua-driver-fix02r3-u-513e45fee", "sha256": "3d27b55b76bdfa64d8659100f995db23400c3b46c06543832aa3c8acb0b31acd", "sha256_source": "RECERT-FIX provenance exp/fix-recert-a3-20261003 @ 939580fc6 (verified equal at lane start)"},
+    "F_prime": {"sha": "df4f1edf56a6b1ca01cd2f9facbed3dc4843280c", "binary": "cua-driver-fix02r3-f-df4f1edf5", "sha256": "e438980aa6812ac43a63793fca001fc1e2d86515a105eeb099f6a9c269fd64a1", "sha256_source": "RECERT-FIX provenance (verified equal at lane start)"},
+    "F_prime_S": {"sha": "5a1e209aba39b02fdc7b1dfe8f3afbf184405038", "definition": "F' + the measurement-only seam CUA_DRIVER_EXP_SET_FILES_GAP_MS (default off)", "binary": "cua-driver-fix03-fs-5a1e209ab", "sha256": "d247ef8d7e3c94709716e6201155ba9e3651468613a9fad230a2d8ff0ba44dda", "family": "cua-release-fix02r"},
+    "F5": {"definition": "this branch after this PREREG commit + the fix commits that follow it, cherry-picked unchanged from the pre-registration drafts 2e8fe3946 (F4 post-assignment connectedness check), cc2c0d24a (Part B recording-lookup test, test only) and 68677a11d (side-index readers use the token's window). The libs/cua-driver/rust tree of F5 must equal 68677a11d's; its build (family cua-release-fix02r) is recorded in provenance with sha256 and --version before any F5 row runs.", "routing_fix": "NOT included: SOURCE + shakedown show the snapshot_id argument is refused by the canonical registry before the routing reader (tool.rs unknown_argument). If counted F' WR rows show any routing side effect, C is REVISE and a routing fix is a follow-up (the draft ea12e6f86 is not part of F5)."}
+  },
+  "pre_prereg_evidence_not_counted": ["unit red/green on the drafts (raw/unit/pre-prereg/)", "shakedowns raw/shakedown/: A1 F'S 1 cell, A1 F5-pre 1, A3 F5-pre 1, WR F' 1, WR F5-pre 1, WS F' 2 (B's own-token text landed in w1 2/2), WK F' 2 (B's own-token space toggled w1 2/2), W2cX U' 1 (refused capture_generation_mismatch), W2dX U' 2 (cross-session landed), WS U' 2"],
+  "isolation": {
+    "every_code_execution": "bin/hostless",
+    "browser_rows": "cua-x11-session.sh (private Xvfb), jev-use venv Python, the Driver-launched Chrome (browser_prepare isolated_new), fresh Driver + Chrome + fixture server per cell",
+    "native_rows": "cua-x11-session.sh with CUA_SESSION_ATSPI=1 and CUA_SESSION_EXTRA_ENV containing CUA_SESSION_ATSPI=1 CUA_DRIVER_RS_TELEMETRY_ENABLED=false; topology T2 (one serve daemon, two mcp --socket clients = sessions A and B)",
+    "locks": "every REAL block holds the SHARED quiet-lane lock (harness/qlock_fix03.sh): receipt in raw/lock-ledger.jsonl and the loop-wide ledger, hold <= 300 s (timeout), >= 30 s between acquisitions, yield up to 120 s to a queued exclusive waiter. Builds and unit runs take only the cargo lock; never one lock while waiting on the other."
+  },
+  "rows": {
+    "A1": {"part": "A", "arms": ["FS", "F5"], "n_per_arm": 20, "phase": "a1", "gap_ms": 50,
+      "forced_path": "Driver env CUA_DRIVER_EXP_SET_FILES_GAP_MS=50; the harness releases the page re-render when the Driver's stderr seam marker appears (after the connectedness check, before the assignment); the page replaces the input (generation 0 -> 1).",
+      "oracle": "fixture server journal: page beacons of input/change events and of the generation-0 node's files poll, keyed by node generation (old = gen0, fresh = gen1), plus the re-render beacon; page-clock order proves the detach preceded the assignment",
+      "race_forced": "first seam marker inside the first set_input_files call, re-render released and acknowledged, and on the page clock the re-render precedes every gen0 file event (or there is none)",
+      "positive_control": "FS: success receipt (status ok) for a race_forced cell in >= 18/20",
+      "gate_F5": "0/20 success receipts; 20/20 first calls refused (pre-check browser_ref_stale, or post-assignment browser_ref_stale with detail delivery=unknown, retryable=false); 0 gen0 change events reaching the server in 20/20 cells",
+      "prediction_from_source": "the last clause FAILS on F5: CDP runs the check and DOM.setFileInputFiles as separate renderer tasks and Chromium fires input/change on the detached node, so F5 can only make the receipt honest (unknown), not prevent the old-node effect => IRREDUCIBLE-with-honest-unknown"},
+    "A2": {"part": "A", "arms": ["F5"], "n": 20, "source": "the A1 F5 cells", "gate": "after the refusal, one fresh observation, the fresh (gen1) ref set: gen1 change with a file journaled, 20/20 verified (FS reported descriptively)"},
+    "A3": {"part": "A", "arms": ["F5", "F"], "n_per_arm": 20, "phase": "a3", "gate": "no seam variable, no re-render: 20/20 verified per arm (gen0 change1 journaled, 0 seam markers, 0 re-render); receipt key set and (status, frame, file_count) identical across all 40 cells"},
+    "WR": {"part": "C", "arms": ["U", "F", "F5"], "n_per_arm": 20,
+      "steps": {"s0": "B bring_to_front {pid, window_id: w2} (setup)", "s1": "B click {pid, snapshot_id: sA, element_token: tB2} (the spec row)", "s2": "B bring_to_front {pid, snapshot_id: sA} (routing reader input)", "s3": "B click {pid, element_token: '<sA>:<A checkbox index>'}", "s4": "B click own tB2 (positive)", "s5": "A bring_to_front {pid, window_id: w1} (X RECORD oracle control)", "s6": "A click own tA1 (positive)"},
+      "oracle": "fixture state file (per-window agreed) before/after each call; X RECORD on the private display: within each step's [send, settled] window, any SendEvent _NET_ACTIVE_WINDOW for w1, SetInputFocus to w1, ConfigureWindow with stack mode on w1 or its frame, or FocusIn on w1, its frame or its children counts as a routing side effect on A's window",
+      "gate_F_and_F5": "s1 and s2 refused 20/20 with 0 mutations and 0 w1 side effects; s3 refused 20/20 (stale_element_token at the F1 filter) with 0 mutations; s4 and s6 verified 20/20; s5 w1 activation observed >= 18/20 (oracle control)",
+      "note": "spec wording 'refused at the F1 token filter' applies to s3; s1/s2 are expected to be refused earlier, at the registry's closed-schema check (unknown argument snapshot_id), on every arm. U' is reported as is (s3 expected to land, as W2a)",
+      "if_F_shows_side_effect": "C = REVISE; the routing session check (draft ea12e6f86) is a follow-up, not in F5"},
+    "WS": {"part": "C", "arms": ["U", "F", "F5"], "n_per_arm": 20, "fresh": "daemon and fixture per attempt",
+      "steps": "A observes w1, B observes w2 (order alternates); B type_text own w2 Note token 'fix03B'; A type_text own w1 Note token 'fix03A'",
+      "oracle": "fixture state file per-window note_text (CUA_GTK3_NOTE_TEXT_STATE=1, packet fixture copy, two-window mode only)",
+      "gate_F5": "B's text in w2 and not in w1 20/20; A's text in w1 and not in w2 20/20 (0 cross-window / cross-session writes)",
+      "U_and_F": "reported as is; a write into the other session's window is an E4 cross-session mutation for that arm"},
+    "WK": {"part": "C", "arms": ["F", "F5"], "n_per_arm": 20, "fresh": "daemon and fixture per attempt",
+      "steps": "as WS with press_key 'space' delivery_mode foreground on each session's own checkbox token",
+      "oracle": "fixture state file per-window agreed",
+      "gate_F5": "B toggles w2 only 20/20; A toggles w1 only 20/20",
+      "F": "reported as is"},
+    "W2dX": {"part": "D", "arms": ["U", "F5"], "n_per_arm": 20, "steps": "A observes w1 and w2; harness closes w1 (SIGUSR1, confirmed); B clicks A's w2 token; A clicks its own w2 token",
+      "gating_rule": "gating (discriminating) only if U' lands B's call >= 18/20 AND F5 refuses 20/20 with 0 mutations AND A's tail verifies 20/20 on F5; otherwise non-gating", "note": "discrimination comes from F1 (session filter), not from window lifecycle: W2d proper (A's closed-w1 token) is refused on U' by AT-SPI object liveness (impl_.rs CachedElementGone), which FIX-02 does not change"},
+    "W2cX": {"part": "D", "arms": ["U", "F5"], "n_per_arm": 20, "steps": "A and B observe w2; B clicks w2's checkbox point with A's w2 capture; B's own capture at the same point",
+      "gating_rule": "as W2dX", "prediction_from_source": "non-discriminating by construction: capture admission (capture_registry.rs:842-847 on U') binds runtime generation + session id + session generation and target before FIX-02; F' changes no capture file"}
+  },
+  "units": {
+    "A": "v2_tests set_input_files_detached_after_the_check_is_never_a_success: red on F'S + test-only file, green on F5",
+    "B": "recording_hooks recording_element_lookup_resolves_a_capture_publication_only_for_its_session: red on U' + test-only file, green on F5",
+    "C_side_index": "no unit seam without AT-SPI; red/green is REAL (WS, WK: F' vs F5)",
+    "regression": "on F5: cua-driver-core --lib --tests, platform-linux --lib, jev-use python + TypeScript (the RECERT-FIX FIX-02 suites); gate 0 failures"
+  },
+  "e4_counters_per_arm": {
+    "stale_dispatch": "an effect journaled on a node/element that was detached or retired when the effect landed (A1: gen0 file events after the re-render)",
+    "cross_session_mutation": "a fixture-state change on the window of the session that did not send the call (WR s1-s3 on w1; WS/WK B-step change on w1 or A-step change on w2; W2dX/W2cX B-step landing)",
+    "duplicate": "more than one journaled application for one intended action",
+    "unverified_success": "a success receipt (status ok / no refusal) whose intended effect is not independently verified on the intended target (A1: success for a detached node)",
+    "blind_replay": "a re-dispatch after a may-have-landed refusal (the harness never re-dispatches; Driver-internal retries would show as duplicates)",
+    "refusal_as_success": "a refusal receipt while the oracle shows the intended effect landed on the intended target"
+  },
+  "e4_gate": "F5 E4 = 0 on every counter in every row, EXCEPT the A1 stale_dispatch residue which is reported separately as the seam-forced IRREDUCIBLE residue; E4 strict (including it) is also reported",
+  "dispositions": {
+    "F4": "KEEP if A1 gate passes and the FS positive control reproduces; REVISE (IRREDUCIBLE-with-honest-unknown, measured claim) if F5 has 0 success receipts and every first call refused/unknown but gen0 events still reach the server; REVISE if the positive control does not reproduce",
+    "B": "KEEP if red on U' and green on F5; REVISE otherwise",
+    "C": "KEEP if WR gates hold on F' and F5 and WS/WK gates hold on F5; REVISE otherwise (routing and side index reported separately)",
+    "D": "each of W2dX, W2cX: discriminating KEEP if its gating rule holds, else non-gating with the SOURCE reason; W2c/W2d proper: non-discriminating by construction",
+    "regression": "0 failures on F5 suites or the lane reports REVISE"
+  },
+  "timing": "correctness rows only; wall times are descriptive, no timing claim",
+  "denominator": "every counted attempt/cell stays in the denominator; a block that records nothing (session/fixture start failure) is kept with its receipt and re-run once as <block>R",
+  "claim_boundary": "fork fix candidates on 0f1955d2f, not merged anywhere; Linux X11 only (macOS/Windows BLOCKED: hardware); I3s stays OWNER_DECISION; no new service; the seam is measurement-only and default off"
+}
