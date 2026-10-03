@@ -152,3 +152,9 @@ saved: not applicable; no Driver or task path changed.
 - Rescan: `raw/rescan/rescan-heads.txt`, `raw/rescan/rescan-live-refs.txt`, `raw/rescan/rescan-wave6-heads.json`,
   `raw/rescan/rescan-wave6-heads.txt`, `raw/rescan/rescan-wave6-heads-pub03scanner.txt`, `raw/rescan/pub03scanner-*.json`.
 - Lock receipts: `raw/locks/shared-lock-receipts.jsonl`.
+- Final checks on the evidence commit `f6ba9ee1ff76072e2bc8365ecbe0ee781c8e348e` (fresh clean clone, status 0
+  lines before and after; added by the last commit, which only adds `raw/final/` and this line):
+  `raw/final/pub04-verify-nonames.txt`, `raw/final/pub04-verify-names.txt`, `raw/final/pub04-verify-names-patterns.txt`
+  (31/31 each); `raw/final/r2-10r-verify-tip-nonames.txt`, `raw/final/r2-10r-verify-tip-names.txt` (R2-10R verifier on
+  the branch tip, 189/189 each); `raw/final/scan-tip-not-upstream.json` (21 commits) and `raw/final/scan-tip-not-main.json`
+  (26 commits), both 0 private findings; `raw/final/setup.txt`; `raw/final/shared-lock-receipts-final.jsonl`.

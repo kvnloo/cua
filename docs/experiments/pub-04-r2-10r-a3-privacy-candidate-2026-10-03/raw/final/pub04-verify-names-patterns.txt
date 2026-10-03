@@ -1,0 +1,34 @@
+live privacy scan: 21 commits; private names: 2 (file 0, host 1, user 1); CUA_PRIVACY_NAMES_FILE read; local roots: 2
+[PASS] pub04-summary.json recomputes identically from raw/
+[PASS] cited files are tracked by git
+[PASS] rewrite map = PREREG commit map
+[PASS] 25 redactions in 25 files, tmp-dbus only
+[PASS] 0 commit-message redactions, 0 manifest references
+[PASS] normalized diff (raw): 4 pairs pass, masked and pattern-free
+[PASS] normalized diff (raw): head pair = 25 redacted paths, only the note added
+[PASS] normalized diff (live, masked check run) passes
+[PASS] every commit after the candidate head touches only this packet
+[PASS] R2-10R verifier: same N/M on published, redaction-only and candidate heads, both modes
+[PASS] R2-10R verifier (nonames): published and redaction-only output byte-identical
+[PASS] R2-10R verifier (nonames): candidate differs only by the note commit (+1 commit, +1 blob)
+[PASS] R2-10R verifier (names): published and redaction-only output byte-identical
+[PASS] R2-10R verifier (names): candidate differs only by the note commit (+1 commit, +1 blob)
+[PASS] candidate scan: 0 private findings on every commit (17 commits, tip = candidate head)
+[PASS] candidate scan: non-private findings only the 2 known CI runner path hits
+[PASS] published scan: exactly 25 tmp-dbus findings, all in 8be812d0c
+[PASS] scanner real-data control (one log restored): tmp-dbus x1
+[PASS] scanner tests red before fix: 11 failures, url-encoded class only
+[PASS] scanner tests green after fix: 10 tests OK
+[PASS] scanner tests re-run live: OK
+[PASS] controls: masked mode fails all 5 tampered candidates
+[PASS] controls: pattern-free fails 4, passes only the unredacted-file control (known limit)
+[PASS] rescan: 7 heads, each equal to the fetched live origin head
+[PASS] rescan: 0 private findings on every commit of every head
+[PASS] rescan: non-private findings are upstream content or the known CI runner path
+[PASS] rescan headline in README
+[PASS] live privacy scan of every commit since the R2-10R base (21): 0 private findings
+[PASS] live privacy scan: non-private only the known CI runner path
+[PASS] shared quiet-lane lock receipts: 6, lane PUB-04, rc 0
+[PASS] cited full SHAs present in this clone (7)
+31/31 checks passed
+rc=0
