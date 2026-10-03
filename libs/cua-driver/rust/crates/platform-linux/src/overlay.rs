@@ -138,6 +138,40 @@ fn should_start_x11_overlay(wayland_display_present: bool) -> bool {
 /// desktop capture ask it to hide a visible overlay.
 static X11_OVERLAY_LIVE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
+/// X11 windows this process's overlay created and still owns (the cursor
+/// overlay and its startup readback probe). They are override-redirect root
+/// children like an application's menu, so a popup census must skip them by
+/// exact id; a title such as `Cua.*` could be set by any client.
+static OWN_X11_WINDOWS: Mutex<std::collections::BTreeSet<u32>> =
+    Mutex::new(std::collections::BTreeSet::new());
+
+/// Whether `window` is an X11 window this process's overlay owns.
+pub(crate) fn is_own_x11_window(window: u32) -> bool {
+    OWN_X11_WINDOWS
+        .lock()
+        .is_ok_and(|windows| windows.contains(&window))
+}
+
+/// Registers an overlay-created X11 window for as long as it is held.
+pub(crate) struct OwnX11Window(u32);
+
+impl OwnX11Window {
+    pub(crate) fn register(window: u32) -> Self {
+        if let Ok(mut windows) = OWN_X11_WINDOWS.lock() {
+            windows.insert(window);
+        }
+        Self(window)
+    }
+}
+
+impl Drop for OwnX11Window {
+    fn drop(&mut self) {
+        if let Ok(mut windows) = OWN_X11_WINDOWS.lock() {
+            windows.remove(&self.0);
+        }
+    }
+}
+
 /// Whether an X11 overlay window exists that a desktop capture must hide.
 pub(crate) fn x11_overlay_live() -> bool {
     X11_OVERLAY_LIVE.load(std::sync::atomic::Ordering::Acquire)
@@ -1269,6 +1303,8 @@ fn run_overlay_thread(cfg: CursorConfig, rx: std::sync::mpsc::Receiver<OverlayMs
         &win_aux,
     )
     .ok();
+    // Ours until the connection closes when this thread returns.
+    let _own_window = OwnX11Window::register(win);
 
     // Set window title (identifies our overlay, matches Windows convention).
     // `Cua.` namespace mirrors the Windows class-name + install-path
@@ -2502,6 +2538,7 @@ fn x11_visual_readback_reliable(
             .override_redirect(1u32)
             .event_mask(EventMask::NO_EVENT),
     )?;
+    let _own_window = OwnX11Window::register(win);
     let probe = (|| -> anyhow::Result<bool> {
         let gc = conn.generate_id()?;
         conn.create_gc(gc, win, &CreateGCAux::new())?;
