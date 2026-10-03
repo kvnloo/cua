@@ -178,7 +178,7 @@ def identity_check() -> None:
 
 
 def prereg_before_trials(summary: dict) -> None:
-    out = git("log", "--diff-filter=A", "--format=%H %cI", "--", f"{PKT}/PREREG.json").decode().split()
+    out = git("log", "--diff-filter=A", "--format=%H %cI", "--", f":(top){PKT}/PREREG.json").decode().split()
     if not out:
         check("PREREG committed before the first measured trial", False, "PREREG.json not committed")
         return
