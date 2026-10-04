@@ -339,5 +339,152 @@
   "cap": 0,
   "attempts": 0,
   "reached": 0
+ },
+ "status": "B-09 (wave 7) BLOCKED; resumed as B-09R (wave 8): measured run complete, KEEP (poll DELETED)",
+ "b09r": {
+  "lane": "B-09R (wave 8 resume of B-09)",
+  "branch": "exp/b-09r-fill-verify-poll-b7-resume-20261003",
+  "base_commit": "56284782d41246f81509119dc975082e3ad073c6 (B-09 wave 7 head)",
+  "bookkeeping_commit": "21a331786 (before the first measured trial; labels, lock fd hygiene, holder snapshots, verifier receipt names)",
+  "tested_source_sha": "ac319cbe90d6cdf0cc8cd8984f99f5b04b68fdac",
+  "tested_source_note": "R' 45dff8f32 (0f1955d2f + R2-10 steps 1-8) + B-07 picks + the default-off POST_FAST knob; nothing built",
+  "prereg_identity": {
+   "commit": "b4480de1f",
+   "git_diff_b4480de1f_HEAD": "empty",
+   "sha256": "c2b5f207340a566464ac1a87d6ba2c790cd960366ae52041409ccba9da0b78d4",
+   "blob": "d952677a18ea54f428f81ec4cbff546e30359fb8"
+  },
+  "driver": {
+   "name": "cua-driver-b07-231f6e8bb",
+   "version": "cua-driver 0.32.0",
+   "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa",
+   "rehash": {
+    "host_start": {
+     "utc": "2026-10-03T21:00:28Z",
+     "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+    },
+    "session_start": {
+     "log": "raw/logs/versions-b09r-start.log",
+     "version": "cua-driver 0.32.0"
+    },
+    "session_end": {
+     "log": "raw/logs/versions-b09r-end.log",
+     "version": "cua-driver 0.32.0"
+    },
+    "host_end": {
+     "utc": "2026-10-04T03:01:40Z",
+     "sha256": "6f95aef5bab98d59e86e9a064380667907080a276f4339540155463cafb6b4aa"
+    }
+   },
+   "rebuilt": false
+  },
+  "browser": {
+   "chrome": "Google Chrome 151.0.7922.71 (Driver-launched, isolated_new, sandbox on)",
+   "same_as_b08": true,
+   "note": "B-09R decomposition numbers are not combined with B-08's"
+  },
+  "environment": "one shared Linux host; private rootless Xvfb 1920x1080x24 + private dbus + openbox (cua-x11-session.sh) under bin/hostless; 0-3 s jitter + xdpyinfo probe; scripted chooser; no provider",
+  "quiet_lane_receipts": [
+   {
+    "lane": "B-09",
+    "label": "b09r-versions-start",
+    "mode": "shared",
+    "pid": 3954623,
+    "acquired": "2026-10-03T21:01:54.109Z",
+    "released": "2026-10-03T21:02:02.584Z",
+    "rc": 0,
+    "loadavg_at_acquire": "15.75 10.91 9.19"
+   },
+   {
+    "label": "b09r-main-a1-r00-11-k1",
+    "pid": 353003,
+    "acquired": "2026-10-03T23:05:30.397Z",
+    "released": "2026-10-03T23:08:03.289Z",
+    "rc": 0,
+    "cmd_sha256": "d3be1c211a47766b"
+   },
+   {
+    "label": "b09r-main-a1-r12-23-k2",
+    "pid": 586187,
+    "acquired": "2026-10-03T23:57:25.685Z",
+    "released": "2026-10-03T23:59:59.020Z",
+    "rc": 0,
+    "cmd_sha256": "ec925c74c4159962"
+   },
+   {
+    "label": "b09r-main-a1-r24-35-k3",
+    "pid": 873734,
+    "acquired": "2026-10-04T01:27:10.964Z",
+    "released": "2026-10-04T01:29:43.158Z",
+    "rc": 0,
+    "cmd_sha256": "20f1ced73d41dbe4"
+   },
+   {
+    "label": "b09r-ctl-a1-r36-36-k4",
+    "pid": 1225138,
+    "acquired": "2026-10-04T02:58:50.384Z",
+    "released": "2026-10-04T02:59:26.516Z",
+    "rc": 0,
+    "cmd_sha256": "387a8e01f9cc9dd9"
+   },
+   {
+    "lane": "B-09",
+    "label": "b09r-versions-end",
+    "mode": "shared",
+    "pid": 1480994,
+    "acquired": "2026-10-04T03:01:32.420Z",
+    "released": "2026-10-04T03:01:39.994Z",
+    "rc": 0,
+    "loadavg_at_acquire": "3.06 2.10 1.92"
+   },
+   {
+    "lane": "B-09",
+    "label": "b09r-analyze-final",
+    "mode": "shared",
+    "pid": 1490449,
+    "acquired": "2026-10-04T03:02:04.499Z",
+    "released": "2026-10-04T03:02:07.183Z",
+    "rc": 0,
+    "loadavg_at_acquire": "2.85 2.16 1.95"
+   }
+  ],
+  "wait_accounting_s": {
+   "host_side_load_and_cargo_checks": 5963,
+   "queued_for_exclusive": 14979,
+   "total_h": 5.82,
+   "cap_h": 8
+  },
+  "live_heads": {
+   "start": {
+    "utc": "2026-10-03T21:02:13Z",
+    "method": "git ls-remote (read-only)",
+    "trycua_cua_main": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0",
+    "trycua_cua_pr_4316": "a0bca744067d04f05904319d3d919be30c336556",
+    "kvnloo_cua_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+    "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83"
+   },
+   "end": {
+    "utc": "2026-10-04T03:03:09Z",
+    "method": "git ls-remote (read-only)",
+    "trycua_cua_main": "fbec9eece30a4a5ee7cd3bbaabee244766e5b17b",
+    "trycua_cua_pr_4316": "b2ae7cb934403f2585c7d3ed23a188b44264f293",
+    "kvnloo_cua_105": "98a45e6c528da9e2715288c20c2a0feeeef8e73f",
+    "kvnloo_cua_106": "c45845797b714ccfd76a9569d3238a0724107a83"
+   },
+   "pr_4316_note": "rebased during the lane (merge base 345ff6d9d -> 8fdcd83ed); its 12 changed files have identical blobs at a0bca7440 and b2ae7cb93"
+  },
+  "b7_source_vs_upstream_main": {
+   "0f1955d2f..a9baa8d10": "77 commits; Linux-relevant libs/cua-driver files: platform-linux/src/overlay.rs (trycua/cua PR 4529, idle X11 cursor overlays unmapped; feedback-on path BASE uses) and cua-driver-core/src/expectation.rs (trycua/cua PR 4531, macOS verify_state); the rest is VERSION/CHANGELOG/Cargo/docs/macOS/Windows/installers; examples/jev-use unchanged",
+   "a9baa8d10..fbec9eece": "20 commits; libs/cua-driver: platform-macos invoke_menu.rs, installers, contract manifest + a doc-only InvokeMenuInput comment; no platform-linux or cua-driver-core change",
+   "note": "B7's tested source is fixed; carrying a claim to current main needs recertification"
+  },
+  "provider": {
+   "name": "TypeSafe",
+   "cap": 0,
+   "attempts": 0,
+   "reached": 0,
+   "key_forwarded": false
+  },
+  "publication_sha": null
  }
 }
