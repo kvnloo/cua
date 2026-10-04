@@ -1,0 +1,29 @@
+{
+ "schema": "r2-10-provenance-addendum-v1",
+ "written": "2026-10-03 (publication repair, branch exp/r2-10-composition-r1-20261003, parent 030f6bdbf811e124e11daa2de0569bffb993b66d)",
+ "evidence_class": "SOURCE (no new run)",
+ "browser_driver_per_manifest": {
+  "raw/browser/scripted-manifests/run-manifest-S1-.json": "R",
+  "raw/browser/scripted-manifests/run-manifest-S2-.json": "R",
+  "raw/browser/live-manifests/run-manifest-L1-.json": "R",
+  "raw/browser/controls-manifests/run-manifest-N1-.json": "R",
+  "raw/browser/controls-manifests/run-manifest-N2-.json": "R",
+  "raw/phase0/d-smoke-R-manifest.json": "R",
+  "raw/phase0/d-smoke-C-manifest.json": "Cn"
+ },
+ "binaries": {
+  "R": {"name": "cua-driver-r2-10-8f3a646b4", "sha256": "12b9045aafddd208c7aeb7e49d5a2e5ab7e776c07ec6d7bd62322807291458a9", "version": "cua-driver 0.32.0"},
+  "Cn": {"name": "cua-driver-r2-10-ctl-1381014a3", "sha256": "bd656a2c73128323b010e2c81267a2c397f78a1e2921857d3f50efd7889938f2", "version": "cua-driver 0.32.0"}
+ },
+ "attribution_basis": [
+  "every Driver trace line in raw/browser/{live,scripted,controls}-trials.tar.gz carries wall_ns, which among the lane's binaries only R writes (R2-04 phase-trace union); the U control traces in raw/phase0/c-nw2-U-trials.tar.gz never carry it; Cn has no phase trace (989cc76ce + FIX-01 only)",
+  "R's sha256 is the value read inside the private session in raw/phase0/b-c1-R/validity.json, raw/phase0/e-g5/validity.json and every native trial row",
+  "the Phase 0 (d) smoke ran without trace by design (no trace file in either bundle); its R/C attribution is the manifest name, as in the README Phase 0 table"
+ ],
+ "live_heads_at_publication": {
+  "filled_by": "Publish, at publication time",
+  "utc": null,
+  "upstream_main": null,
+  "trycua_cua_pr_4316": null
+ }
+}
