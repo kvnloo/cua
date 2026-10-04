@@ -1,0 +1,66 @@
+[
+  {
+    "mode": "accepted",
+    "language": "python",
+    "step2_proof": {
+      "fresh_ref": "p2:2",
+      "prior_ref": "p1:1",
+      "session": "jev-python-b338600d",
+      "status": "accepted",
+      "submit_matches": 1,
+      "verification_field": "contains_required_token"
+    },
+    "routes": [
+      "provider",
+      "guarded-completion"
+    ],
+    "token_absent": true,
+    "oracle_verified": true
+  },
+  {
+    "mode": "accepted",
+    "language": "typescript",
+    "step2_proof": {
+      "status": "accepted",
+      "prior_ref": "p1:1",
+      "fresh_ref": "p2:2",
+      "verification_field": "contains_required_token",
+      "submit_matches": 1,
+      "session": "jev-typescript-c45788da"
+    },
+    "routes": [
+      "provider",
+      "guarded-completion"
+    ],
+    "token_absent": true,
+    "oracle_verified": true
+  },
+  {
+    "mode": "declined",
+    "language": "python",
+    "step2_proof": {
+      "reason": "submit_not_unique",
+      "status": "declined"
+    },
+    "routes": [
+      "provider",
+      "provider"
+    ],
+    "token_absent": true,
+    "oracle_verified": true
+  },
+  {
+    "mode": "declined",
+    "language": "typescript",
+    "step2_proof": {
+      "status": "declined",
+      "reason": "submit_not_unique"
+    },
+    "routes": [
+      "provider",
+      "provider"
+    ],
+    "token_absent": true,
+    "oracle_verified": true
+  }
+]

@@ -1,0 +1,2302 @@
+diff --git i/.github/workflows/ci-jev-use.yml w/.github/workflows/ci-jev-use.yml
+index 3fc375216..896d82db1 100644
+--- i/.github/workflows/ci-jev-use.yml
++++ w/.github/workflows/ci-jev-use.yml
+@@ -247,6 +247,8 @@ jobs:
+           uv run --frozen python verify_setup.py --typescript --output-dir "$proof"
+           uv run --frozen python verify_setup.py --typescript --guarded-completion \
+             --output-dir "$proof/guarded-completion"
++          uv run --frozen python verify_setup.py --typescript --guarded-completion \
++            --guarded-completion-decline --output-dir "$proof/guarded-completion-decline"
+           # Visual-path fixture: Submit has no DOM button ref. Without the
+           # cua-perception extension, both runners must log not_installed on
+           # every step that attempts a visual parse, fall back to the
+@@ -285,6 +287,15 @@ jobs:
+           )
+           assert all(item["observed"] == {"submitted": "jev-guide-mock"}
+                      for item in guarded["checks"])
++          declined = json.loads((root / "guarded-completion-decline" / "summary.json").read_text())
++          assert declined["complete"] is True
++          assert declined["guarded_completion_decline_requested"] is True
++          assert {(item["language"], item["outcome"]) for item in declined["checks"]} == {
++              ("python", "verified"), ("typescript", "verified")
++          }
++          assert all(item["decision_routes"] == ["provider", "provider"]
++                     and item["observed"] == {"submitted": "jev-guide-mock"}
++                     for item in declined["checks"])
+           # Page-structure refs exist on every default-fixture step, so the
+           # visual parse is skipped rather than paid for and discarded.
+           assert all(item["visual_statuses"] and set(item["visual_statuses"]) == {"skipped"}
+@@ -309,6 +320,7 @@ jobs:
+           for path in [
+               *root.iterdir(),
+               *(root / "guarded-completion").iterdir(),
++              *(root / "guarded-completion-decline").iterdir(),
+               *(root / "visual-fixture").iterdir(),
+           ]:
+               if path.name == "summary.json" or path.suffix == ".jsonl":
+@@ -325,6 +337,8 @@ jobs:
+             ${{ runner.temp }}/jev-use-mock-proof/*.jsonl
+             ${{ runner.temp }}/jev-use-mock-proof/guarded-completion/summary.json
+             ${{ runner.temp }}/jev-use-mock-proof/guarded-completion/*.jsonl
++            ${{ runner.temp }}/jev-use-mock-proof/guarded-completion-decline/summary.json
++            ${{ runner.temp }}/jev-use-mock-proof/guarded-completion-decline/*.jsonl
+             ${{ runner.temp }}/jev-use-mock-proof/visual-fixture/summary.json
+             ${{ runner.temp }}/jev-use-mock-proof/visual-fixture/*.jsonl
+           if-no-files-found: errordiff --git i/libs/cua-driver/examples/jev-use/README.md w/libs/cua-driver/examples/jev-use/README.md
+index df9f8012d..f00cc99e9 100644
+--- i/libs/cua-driver/examples/jev-use/README.md
++++ w/libs/cua-driver/examples/jev-use/README.md
+@@ -238,6 +238,25 @@ or stale/tampered ref falls back to the ordinary chooser.
+ This is caller policy in the example, not a Driver batch API or a reusable
+ authorization service. It does not skip the fresh observation.
+ 
++An accepted step logs `guarded_completion` with `status: "accepted"`, the
++prior and fresh refs, `verification_field: "contains_required_token"`,
++`submit_matches: 1`, and the session label. Its `confidence` and `probabilities`
++are `null`, not model calibration output, and `provider_decision_ms` remains
++zero. A declined proof logs `status: "declined"` and a stable `reason` on the
++following provider step; steps that never attempted a guard omit the record.
++Neither proof records nor outcome JSONL expose the required field value.
++
++The owned fixture can invalidate Submit uniqueness after typing to prove a
++real-Driver fallback without changing Driver or the runners' production flags:
++
++```bash
++uv run --frozen python verify_setup.py --typescript --guarded-completion \
++  --guarded-completion-decline --output-dir /absolute/new/guard-decline-proof
++```
++
++This row requires `provider → provider`, `submit_not_unique`, and success from
++the independent fixture state, rather than trusting the runner's outcome alone.
++
+ Page references are snapshot-bound, so the runners take another snapshot after
+ the page changes rather than reusing an older reference.
+ Visual candidates are also bound to the exact capture ID and screenshotdiff --git i/libs/cua-driver/examples/jev-use/python/guarded_completion.py w/libs/cua-driver/examples/jev-use/python/guarded_completion.py
+index 700a74059..213643f70 100644
+--- i/libs/cua-driver/examples/jev-use/python/guarded_completion.py
++++ w/libs/cua-driver/examples/jev-use/python/guarded_completion.py
+@@ -31,6 +31,12 @@ class GuardedCompletionPlan:
+     prior_ref: str
+ 
+ 
++@dataclass(frozen=True)
++class GuardedCompletionResult:
++    candidate: Candidate | None
++    telemetry: dict[str, Any]
++
++
+ def _matching_refs(
+     snapshot: Mapping[str, Any],
+     *,
+@@ -88,19 +94,22 @@ def resolve_guarded_completion(
+     candidates: list[Candidate],
+     *,
+     session: str,
+-) -> Candidate | None:
+-    """Return the fresh completion candidate, or fail closed to the chooser."""
+-    if (
+-        not session
+-        or session != plan.session
+-        or task.id != FIXTURE_TASK_ID
+-        or sources.page is None
+-    ):
+-        return None
++) -> GuardedCompletionResult:
++    """Return fresh authority and redacted proof, or a stable decline reason."""
++
++    def declined(reason: str) -> GuardedCompletionResult:
++        return GuardedCompletionResult(None, {"status": "declined", "reason": reason})
++
++    if not session or session != plan.session:
++        return declined("session_mismatch")
++    if task.id != FIXTURE_TASK_ID:
++        return declined("task_mismatch")
++    if sources.page is None:
++        return declined("page_missing")
+ 
+     state = task.state_summary(sources)
+     if state.get("verification_field") != "contains_required_token":
+-        return None
++        return declined("field_not_proven")
+ 
+     matches = _matching_refs(
+         sources.page.snapshot,
+@@ -108,10 +117,10 @@ def resolve_guarded_completion(
+         name=plan.target_name,
+     )
+     if len(matches) != 1:
+-        return None
++        return declined("submit_not_unique")
+     fresh_ref = str(matches[0]["ref"])
+     if fresh_ref == plan.prior_ref:
+-        return None
++        return declined("ref_reused")
+ 
+     executable = [
+         candidate
+@@ -121,8 +130,18 @@ def resolve_guarded_completion(
+         and candidate.source == "page"
+     ]
+     if len(executable) != 1:
+-        return None
++        return declined("candidate_not_unique")
+     candidate = executable[0]
+     if candidate.arguments.get("ref") != fresh_ref:
+-        return None
+-    return candidate
++        return declined("candidate_mismatch")
++    return GuardedCompletionResult(
++        candidate,
++        {
++            "status": "accepted",
++            "prior_ref": plan.prior_ref,
++            "fresh_ref": fresh_ref,
++            "verification_field": "contains_required_token",
++            "submit_matches": len(matches),
++            "session": session,
++        },
++    )diff --git i/libs/cua-driver/examples/jev-use/python/run.py w/libs/cua-driver/examples/jev-use/python/run.py
+index c4f531be0..462554e69 100644
+--- i/libs/cua-driver/examples/jev-use/python/run.py
++++ w/libs/cua-driver/examples/jev-use/python/run.py
+@@ -410,7 +410,7 @@ async def run(args: argparse.Namespace) -> str:
+             for step in range(1, task.max_steps + 1):
+                 current = task.classify(task.read_oracle(), steps=step - 1)
+                 if current in {"verified", "refuted"}:
+-                    write_event(log_path, {"event": "outcome", "outcome": current, "token": token})
++                    write_event(log_path, {"event": "outcome", "outcome": current})
+                     return current
+ 
+                 started = time.perf_counter()
+@@ -446,15 +446,18 @@ async def run(args: argparse.Namespace) -> str:
+ 
+                 visual = sources.visual.observation if sources.visual is not None else None
+                 guarded_candidate = None
++                guarded_record: dict[str, Any] = {}
+                 provider_decision_ms = 0.0
+                 if args.guarded_completion and pending_completion is not None:
+-                    guarded_candidate = resolve_guarded_completion(
++                    resolution = resolve_guarded_completion(
+                         pending_completion,
+                         task,
+                         sources,
+                         candidates,
+                         session=label,
+                     )
++                    guarded_candidate = resolution.candidate
++                    guarded_record = {"guarded_completion": resolution.telemetry}
+                     # A failed proof never keeps authority alive. The ordinary
+                     # chooser handles this fresh step instead.
+                     pending_completion = None
+@@ -462,32 +465,60 @@ async def run(args: argparse.Namespace) -> str:
+                 if guarded_candidate is not None:
+                     candidate = guarded_candidate
+                     choice = candidate.id
+-                    confidence = 1.0
+-                    probabilities = {
+-                        item.id: float(item.id == candidate.id) for item in candidates
+-                    }
++                    confidence = None
++                    probabilities = None
+                     decision_route = "guarded-completion"
+                 else:
+                     provider_started = time.perf_counter()
+-                    if args.provider == "mock":
+-                        choice, confidence, probabilities = choose_mock_for_task(
+-                            task, sources, candidates, history
++                    try:
++                        if args.provider == "mock":
++                            choice, confidence, probabilities = choose_mock_for_task(
++                                task, sources, candidates, history
++                            )
++                        else:
++                            choice, confidence, probabilities = await asyncio.to_thread(
++                                choose_live_for_task, task, sources, candidates, history
++                            )
++                        provider_decision_ms = round(
++                            (time.perf_counter() - provider_started) * 1000, 2
+                         )
+-                    else:
+-                        choice, confidence, probabilities = await asyncio.to_thread(
+-                            choose_live_for_task, task, sources, candidates, history
++                        if choice is None:
++                            if guarded_record:
++                                write_event(
++                                    log_path,
++                                    {
++                                        "event": "outcome",
++                                        "outcome": "abstained",
++                                        "step": step,
++                                        "decision_route": "provider",
++                                        **guarded_record,
++                                        "visual": visual_record,
++                                    },
++                                )
++                            return "abstained"
++                        candidate = validate_choice(
++                            choice,
++                            candidates,
++                            current_capture_id=visual.capture_id if visual else None,
+                         )
+-                    provider_decision_ms = round(
+-                        (time.perf_counter() - provider_started) * 1000, 2
+-                    )
+-                    if choice is None:
+-                        return "abstained"
+-                    candidate = validate_choice(
+-                        choice,
+-                        candidates,
+-                        current_capture_id=visual.capture_id if visual else None,
+-                    )
+-                    decision_route = "provider"
++                        decision_route = "provider"
++                    except Exception as error:
++                        if not guarded_record:
++                            raise
++                        write_event(
++                            log_path,
++                            {
++                                "event": "outcome",
++                                "outcome": "unknown",
++                                "step": step,
++                                "phase": "provider",
++                                "error": type(error).__name__,
++                                "decision_route": "provider",
++                                **guarded_record,
++                                "visual": visual_record,
++                            },
++                        )
++                        return "unknown"
+ 
+                 next_completion = (
+                     plan_guarded_completion(
+@@ -521,6 +552,7 @@ async def run(args: argparse.Namespace) -> str:
+                         "dry_run": args.dry_run,
+                         "tool": None,
+                         "decision_route": decision_route,
++                        **guarded_record,
+                         "visual": visual_record,
+                     }
+                     history.append(task.history_entry(step, candidate.id))
+@@ -534,6 +566,8 @@ async def run(args: argparse.Namespace) -> str:
+                             "event": "outcome",
+                             "outcome": "abstained",
+                             "step": step,
++                            "decision_route": decision_route,
++                            **guarded_record,
+                             "confidence": confidence,
+                             "probabilities": probabilities,
+                             "visual": visual_record,
+@@ -560,6 +594,7 @@ async def run(args: argparse.Namespace) -> str:
+                                 "probabilities": probabilities,
+                                 **timing,
+                                 "decision_route": decision_route,
++                                **guarded_record,
+                                 "action_ms": round((time.perf_counter() - action_started) * 1000, 2),
+                                 "total_step_ms": round((time.perf_counter() - started) * 1000, 2),
+                                 "dry_run": args.dry_run,
+@@ -583,6 +618,8 @@ async def run(args: argparse.Namespace) -> str:
+                                 "outcome": "unknown",
+                                 "step": step,
+                                 "phase": "action",
++                                "decision_route": decision_route,
++                                **guarded_record,
+                                 "error": type(error).__name__,
+                                 "tool": candidate.tool,
+                                 "visual": visual_record,
+@@ -606,6 +643,7 @@ async def run(args: argparse.Namespace) -> str:
+                     "tool": candidate.tool,
+                     "delivery_mode": candidate.arguments.get("delivery_mode"),
+                     "decision_route": decision_route,
++                    **guarded_record,
+                     "visual": visual_record,
+                 }
+                 history.append(task.history_entry(step, candidate.id))
+@@ -617,13 +655,13 @@ async def run(args: argparse.Namespace) -> str:
+                         outcome = task.classify(task.read_oracle(), steps=step)
+                         if outcome in {"verified", "refuted"}:
+                             write_event(
+-                                log_path, {"event": "outcome", "outcome": outcome, "token": token}
++                                log_path, {"event": "outcome", "outcome": outcome}
+                             )
+                             return outcome
+                         await asyncio.sleep(0.1)
+ 
+             outcome = task.classify(task.read_oracle(), steps=task.max_steps)
+-            write_event(log_path, {"event": "outcome", "outcome": outcome, "token": token})
++            write_event(log_path, {"event": "outcome", "outcome": outcome})
+             return outcomediff --git i/libs/cua-driver/examples/jev-use/python/tests/test_guarded_completion.py w/libs/cua-driver/examples/jev-use/python/tests/test_guarded_completion.py
+index 70b8e4fab..7c0b8e4aa 100644
+--- i/libs/cua-driver/examples/jev-use/python/tests/test_guarded_completion.py
++++ w/libs/cua-driver/examples/jev-use/python/tests/test_guarded_completion.py
+@@ -2,7 +2,9 @@ from __future__ import annotations
+ 
+ import sys
+ import unittest
++from dataclasses import replace
+ from pathlib import Path
++from types import SimpleNamespace
+ 
+ BASE = Path(__file__).resolve().parents[2]
+ sys.path.insert(0, str(BASE / "python"))
+@@ -21,10 +23,7 @@ def snapshot(value: str, submit_refs: list[str]) -> dict:
+             "value": value,
+         }
+     ]
+-    refs.extend(
+-        {"role": "button", "name": "Submit", "ref": ref}
+-        for ref in submit_refs
+-    )
++    refs.extend({"role": "button", "name": "Submit", "ref": ref} for ref in submit_refs)
+     return {"target_id": "target", "tab_id": "tab", "refs": refs}
+ 
+ 
+@@ -46,29 +45,48 @@ class GuardedCompletionTest(unittest.TestCase):
+ 
+         fresh_sources = fixture_sources(snapshot("proof", ["p2:1"]))
+         candidates = self.task.candidates(fresh_sources)
+-        completion = resolve_guarded_completion(
++        result = resolve_guarded_completion(
+             plan, self.task, fresh_sources, candidates, session="session-a"
+         )
++        self.assertEqual(
++            result.telemetry,
++            {
++                "status": "accepted",
++                "prior_ref": "p1:1",
++                "fresh_ref": "p2:1",
++                "verification_field": "contains_required_token",
++                "submit_matches": 1,
++                "session": "session-a",
++            },
++        )
++        completion = result.candidate
+         self.assertIsNotNone(completion)
+         assert completion is not None
+         self.assertEqual(completion.id, "submit-form")
+         self.assertEqual(completion.arguments["ref"], "p2:1")
+         self.assertNotEqual(completion.arguments["ref"], plan.prior_ref)
+ 
++    def assert_declined(self, result, reason):
++        self.assertIsNone(result.candidate)
++        self.assertEqual(result.telemetry, {"status": "declined", "reason": reason})
++
+     def test_wrong_session_fails_closed(self) -> None:
+         sources, selected = self.initial()
+         plan = plan_guarded_completion(self.task, sources, selected, session="session-a")
+         assert plan is not None
+         fresh_sources = fixture_sources(snapshot("proof", ["p2:1"]))
+-        self.assertIsNone(
+-            resolve_guarded_completion(
+-                plan,
+-                self.task,
+-                fresh_sources,
+-                self.task.candidates(fresh_sources),
+-                session="session-b",
+-            )
+-        )
++        for session in ("session-b", ""):
++            with self.subTest(session=session):
++                self.assert_declined(
++                    resolve_guarded_completion(
++                        plan,
++                        self.task,
++                        fresh_sources,
++                        self.task.candidates(fresh_sources),
++                        session=session,
++                    ),
++                    "session_mismatch",
++                )
+ 
+     def test_ambiguous_or_missing_target_fails_closed(self) -> None:
+         sources, selected = self.initial()
+@@ -77,14 +95,15 @@ class GuardedCompletionTest(unittest.TestCase):
+         for refs in ([], ["p2:1", "p2:2"]):
+             with self.subTest(refs=refs):
+                 fresh_sources = fixture_sources(snapshot("proof", refs))
+-                self.assertIsNone(
++                self.assert_declined(
+                     resolve_guarded_completion(
+                         plan,
+                         self.task,
+                         fresh_sources,
+                         self.task.candidates(fresh_sources),
+                         session="session-a",
+-                    )
++                    ),
++                    "submit_not_unique",
+                 )
+ 
+     def test_unverified_first_postcondition_fails_closed(self) -> None:
+@@ -92,14 +111,15 @@ class GuardedCompletionTest(unittest.TestCase):
+         plan = plan_guarded_completion(self.task, sources, selected, session="session-a")
+         assert plan is not None
+         fresh_sources = fixture_sources(snapshot("other", ["p2:1"]))
+-        self.assertIsNone(
++        self.assert_declined(
+             resolve_guarded_completion(
+                 plan,
+                 self.task,
+                 fresh_sources,
+                 self.task.candidates(fresh_sources),
+                 session="session-a",
+-            )
++            ),
++            "field_not_proven",
+         )
+ 
+     def test_old_or_tampered_ref_never_gains_authority(self) -> None:
+@@ -107,14 +127,15 @@ class GuardedCompletionTest(unittest.TestCase):
+         plan = plan_guarded_completion(self.task, sources, selected, session="session-a")
+         assert plan is not None
+         reused_sources = fixture_sources(snapshot("proof", [plan.prior_ref]))
+-        self.assertIsNone(
++        self.assert_declined(
+             resolve_guarded_completion(
+                 plan,
+                 self.task,
+                 reused_sources,
+                 self.task.candidates(reused_sources),
+                 session="session-a",
+-            )
++            ),
++            "ref_reused",
+         )
+ 
+         fresh_sources = fixture_sources(snapshot("proof", ["p2:1"]))
+@@ -125,21 +146,58 @@ class GuardedCompletionTest(unittest.TestCase):
+             {"target_id": "target", "tab_id": "tab", "ref": plan.prior_ref},
+             source="page",
+         )
+-        self.assertIsNone(
+-            resolve_guarded_completion(
+-                plan, self.task, fresh_sources, [bad], session="session-a"
+-            )
++        self.assert_declined(
++            resolve_guarded_completion(plan, self.task, fresh_sources, [bad], session="session-a"),
++            "candidate_mismatch",
+         )
+ 
++    def test_wrong_task_or_missing_page_has_a_specific_reason(self) -> None:
++        sources, selected = self.initial()
++        plan = plan_guarded_completion(self.task, sources, selected, session="session-a")
++        assert plan is not None
++        fresh = fixture_sources(snapshot("proof", ["p2:1"]))
++        candidates = self.task.candidates(fresh)
++        wrong_task = SimpleNamespace(id="other-task")
++        self.assert_declined(
++            resolve_guarded_completion(plan, wrong_task, fresh, candidates, session="session-a"),
++            "task_mismatch",
++        )
++        self.task = FixtureFormTask("proof")
++        self.assert_declined(
++            resolve_guarded_completion(
++                plan, self.task, replace(fresh, page=None), candidates, session="session-a"
++            ),
++            "page_missing",
++        )
++
++    def test_completion_candidate_must_be_unique_and_executable(self) -> None:
++        sources, selected = self.initial()
++        plan = plan_guarded_completion(self.task, sources, selected, session="session-a")
++        assert plan is not None
++        fresh = fixture_sources(snapshot("proof", ["p2:1"]))
++        good = next(c for c in self.task.candidates(fresh) if c.id == "submit-form")
++        for candidates in (
++            [],
++            [good, good],
++            [replace(good, tool="browser_type")],
++            [replace(good, source="visual")],
++            [replace(good, id="other")],
++        ):
++            with self.subTest(candidates=candidates):
++                self.assert_declined(
++                    resolve_guarded_completion(
++                        plan, self.task, fresh, candidates, session="session-a"
++                    ),
++                    "candidate_not_unique",
++                )
++
+     def test_plan_requires_unique_initial_logical_target(self) -> None:
+         for refs in ([], ["p1:1", "p1:2"]):
+             with self.subTest(refs=refs):
+                 sources = fixture_sources(snapshot("", refs))
+                 selected = self.task.candidates(sources)[0]
+                 self.assertIsNone(
+-                    plan_guarded_completion(
+-                        self.task, sources, selected, session="session-a"
+-                    )
++                    plan_guarded_completion(self.task, sources, selected, session="session-a")
+                 )diff --git i/libs/cua-driver/examples/jev-use/python/tests/test_verify_setup.py w/libs/cua-driver/examples/jev-use/python/tests/test_verify_setup.py
+index 1d998afe6..9eace3ca0 100644
+--- i/libs/cua-driver/examples/jev-use/python/tests/test_verify_setup.py
++++ w/libs/cua-driver/examples/jev-use/python/tests/test_verify_setup.py
+@@ -23,7 +23,7 @@ from urllib.request import Request, urlopen
+ url, value, outcome, log, code = sys.argv[1:]
+ with urlopen(Request(url + 'submit', data=urlencode({'value': value}).encode()), timeout=2):
+     pass
+-Path(log).write_text(json.dumps({'event': 'outcome', 'outcome': outcome, 'token': 'proof'}) + '\\n')
++Path(log).write_text(json.dumps({'event': 'outcome', 'outcome': outcome}) + '\\n')
+ raise SystemExit(int(code))
+ """
+ 
+@@ -142,22 +142,107 @@ class VerifySetupTests(unittest.TestCase):
+ 
+     def test_required_guarded_completion_requires_exact_route(self):
+         events = [
+-            {'event': 'step', 'step': 1, 'candidate': 'type-verification-value',
+-             'tool': 'browser_type', 'decision_route': 'provider',
+-             'visual': {'status': 'skipped', 'reason': 'page_structure_candidate'}},
+-            {**self.submit_step('browser_click', 'not_installed'),
+-             'decision_route': 'guarded-completion'},
+-            {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'},
++            {
++                "event": "step",
++                "step": 1,
++                "candidate": "type-verification-value",
++                "tool": "browser_type",
++                "decision_route": "provider",
++                "visual": {"status": "skipped", "reason": "page_structure_candidate"},
++            },
++            {
++                **self.submit_step("browser_click", "not_installed"),
++                "decision_route": "guarded-completion",
++                "provider_decision_ms": 0,
++                "confidence": None,
++                "probabilities": None,
++                "guarded_completion": {
++                    "status": "accepted",
++                    "prior_ref": "p1:1",
++                    "fresh_ref": "p2:1",
++                    "verification_field": "contains_required_token",
++                    "submit_matches": 1,
++                    "session": "session-a",
++                },
++            },
++            {"event": "outcome", "outcome": "verified"},
+         ]
+         result = self.replay(events, require_guarded_completion=True)
+         self.assertEqual(result['decision_routes'], ['provider', 'guarded-completion'])
+ 
+         wrong = [dict(event) for event in events]
+-        wrong[1] = {**wrong[1], 'decision_route': 'provider'}
+-        with self.assertRaisesRegex(RuntimeError, 'exact provider→guarded route'):
++        wrong[1] = {**wrong[1], "decision_route": "provider"}
++        with self.assertRaisesRegex(RuntimeError, "exact provider→guarded route"):
+             self.replay(wrong, require_guarded_completion=True)
+ 
+-    def replay(self, events, *, submit=True, code='0', **options):
++    def test_required_guarded_completion_rejects_missing_or_invalid_proof(self):
++        proof = {
++            "status": "accepted",
++            "prior_ref": "p1:1",
++            "fresh_ref": "p2:1",
++            "verification_field": "contains_required_token",
++            "submit_matches": 1,
++            "session": "session-a",
++        }
++        for change in (
++            {"guarded_completion": None},
++            {"guarded_completion": {**proof, "fresh_ref": "p1:1"}},
++            {"confidence": 1.0},
++            {"probabilities": {"submit-form": 1.0}},
++        ):
++            with (
++                self.subTest(change=change),
++                self.assertRaisesRegex(RuntimeError, "guard proof"),
++            ):
++                self.replay(
++                    [
++                        {"event": "step", "decision_route": "provider"},
++                        {
++                            **self.submit_step("browser_click", "skipped"),
++                            "decision_route": "guarded-completion",
++                            "confidence": None,
++                            "probabilities": None,
++                            "provider_decision_ms": 0,
++                            "guarded_completion": proof,
++                            **change,
++                        },
++                        {"event": "outcome", "outcome": "verified"},
++                    ],
++                    require_guarded_completion=True,
++                )
++
++    def test_required_guard_decline_keeps_the_independent_oracle(self):
++        events = [
++            {"event": "step", "decision_route": "provider"},
++            {
++                **self.submit_step("browser_click", "skipped"),
++                "decision_route": "provider",
++                "guarded_completion": {
++                    "status": "declined",
++                    "reason": "submit_not_unique",
++                },
++            },
++            {"event": "outcome", "outcome": "verified"},
++        ]
++        result = self.replay(events, require_guarded_decline=True)
++        self.assertEqual(result["observed"], {"submitted": "proof"})
++        for replacement in (
++            {"guarded_completion": None},
++            {"guarded_completion": {"status": "declined", "reason": "ref_reused"}},
++            {"decision_route": "guarded-completion"},
++        ):
++            with (
++                self.subTest(replacement=replacement),
++                self.assertRaisesRegex(RuntimeError, "guard decline"),
++            ):
++                self.replay(
++                    [events[0], {**events[1], **replacement}, events[2]],
++                    require_guarded_decline=True,
++                )
++        with self.assertRaisesRegex(RuntimeError, "Independent"):
++            self.replay(events, submit=False, require_guarded_decline=True)
++
++    def replay(self, events, *, submit=True, code="0", **options):
+         """Run a child that replays a JSONL log and optionally submits the token."""
+         child = (
+             "import sys\n"
+@@ -178,7 +263,10 @@ class VerifySetupTests(unittest.TestCase):
+             return verify(command, url, 'proof', log, **options)
+ 
+     def verified(self, tool, status):
+-        return [self.submit_step(tool, status), {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'}]
++        return [
++            self.submit_step(tool, status),
++            {"event": "outcome", "outcome": "verified"},
++        ]
+ 
+     def test_reports_page_structure_path(self):
+         result = self.replay(self.verified('browser_click', 'not_installed'))
+@@ -200,52 +288,106 @@ class VerifySetupTests(unittest.TestCase):
+ 
+     def test_visual_fixture_fallback_is_observable_and_never_claims_success(self):
+         events = [
+-            {'event': 'step', 'step': 1, 'candidate': 'type-verification-value', 'tool': 'browser_type',
+-             'visual': {'status': 'not_installed', 'error_code': 'not_installed'}},
+-            {'event': 'step', 'step': 2, 'candidate': 'reobserve', 'tool': None,
+-             'visual': {'status': 'not_installed', 'error_code': 'not_installed'}},
+-            {'event': 'outcome', 'outcome': 'budget_exhausted', 'token': 'proof'},
++            {
++                "event": "step",
++                "step": 1,
++                "candidate": "type-verification-value",
++                "tool": "browser_type",
++                "visual": {"status": "not_installed", "error_code": "not_installed"},
++            },
++            {
++                "event": "step",
++                "step": 2,
++                "candidate": "reobserve",
++                "tool": None,
++                "visual": {"status": "not_installed", "error_code": "not_installed"},
++            },
++            {"event": "outcome", "outcome": "budget_exhausted"},
+         ]
+-        result = self.replay(events, submit=False, code='1', visual_fixture=True,
+-                             expect_visual_status='not_installed')
+-        self.assertEqual(result['outcome'], 'budget_exhausted')
+-        self.assertIsNone(result['acted_path'])
+-        self.assertEqual(result['observed'], {'submitted': None})
+-        with self.assertRaisesRegex(RuntimeError, 'unexpected submission'):
+-            self.replay(events, submit=True, code='1', visual_fixture=True,
+-                        expect_visual_status='not_installed')
+-
++        result = self.replay(
++            events,
++            submit=False,
++            code="1",
++            visual_fixture=True,
++            expect_visual_status="not_installed",
++        )
++        self.assertEqual(result["outcome"], "budget_exhausted")
++        self.assertIsNone(result["acted_path"])
++        self.assertEqual(result["observed"], {"submitted": None})
++        with self.assertRaisesRegex(RuntimeError, "unexpected submission"):
++            self.replay(
++                events,
++                submit=True,
++                code="1",
++                visual_fixture=True,
++                expect_visual_status="not_installed",
++            )
+ 
+     def test_skipped_steps_are_not_visual_attempts(self):
+-        skipped = {'status': 'skipped', 'reason': 'page_structure_candidate'}
+-        type_step = {'event': 'step', 'step': 1, 'candidate': 'type-verification-value',
+-                     'tool': 'browser_type', 'visual': skipped}
+-        events = [type_step, self.submit_step('click', 'ok'),
+-                  {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'}]
+-        result = self.replay(events, expect_visual_status='ok', require_visual=True, visual_fixture=True)
+-        self.assertEqual(result['visual_statuses'], ['skipped', 'ok'])
++        skipped = {"status": "skipped", "reason": "page_structure_candidate"}
++        type_step = {
++            "event": "step",
++            "step": 1,
++            "candidate": "type-verification-value",
++            "tool": "browser_type",
++            "visual": skipped,
++        }
++        events = [
++            type_step,
++            self.submit_step("click", "ok"),
++            {"event": "outcome", "outcome": "verified"},
++        ]
++        result = self.replay(
++            events, expect_visual_status="ok", require_visual=True, visual_fixture=True
++        )
++        self.assertEqual(result["visual_statuses"], ["skipped", "ok"])
+         only_skipped = [
+-            {**type_step, 'step': 1},
+-            {'event': 'step', 'step': 2, 'candidate': 'submit-form', 'tool': 'browser_click', 'visual': skipped},
+-            {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'},
++            {**type_step, "step": 1},
++            {
++                "event": "step",
++                "step": 2,
++                "candidate": "submit-form",
++                "tool": "browser_click",
++                "visual": skipped,
++            },
++            {"event": "outcome", "outcome": "verified"},
+         ]
+         with self.assertRaisesRegex(RuntimeError, "visual status 'not_installed'"):
+-            self.replay(only_skipped, expect_visual_status='not_installed')
++            self.replay(only_skipped, expect_visual_status="not_installed")
+ 
+     def test_reports_foreground_escalation_after_background_refusal(self):
+-        refused = {**self.submit_step('click', 'ok'), 'delivery_mode': 'background',
+-                   'action_error': 'background_unavailable',
+-                   'escalation': {'from': 'background', 'to': 'foreground', 'reason': 'background_unavailable'}}
+-        foreground = {**self.submit_step('click', 'ok'), 'step': 3,
+-                      'candidate': 'submit-form-foreground', 'delivery_mode': 'foreground'}
+-        events = [refused, foreground, {'event': 'outcome', 'outcome': 'verified', 'token': 'proof'}]
++        refused = {
++            **self.submit_step("click", "ok"),
++            "delivery_mode": "background",
++            "action_error": "background_unavailable",
++            "escalation": {
++                "from": "background",
++                "to": "foreground",
++                "reason": "background_unavailable",
++            },
++        }
++        foreground = {
++            **self.submit_step("click", "ok"),
++            "step": 3,
++            "candidate": "submit-form-foreground",
++            "delivery_mode": "foreground",
++        }
++        events = [refused, foreground, {"event": "outcome", "outcome": "verified"}]
+         result = self.replay(events, require_visual=True, visual_fixture=True)
+-        self.assertEqual(result['acted_path'], 'visual')
+-        self.assertEqual(result['submit_delivery_mode'], 'foreground')
+-        self.assertEqual(result['escalations'],
+-                         [{'from': 'background', 'to': 'foreground', 'reason': 'background_unavailable'}])
+-        self.assertEqual(acted_path([refused])['submit_tool'], None)
++        self.assertEqual(result["acted_path"], "visual")
++        self.assertEqual(result["submit_delivery_mode"], "foreground")
++        self.assertEqual(
++            result["escalations"],
++            [
++                {
++                    "from": "background",
++                    "to": "foreground",
++                    "reason": "background_unavailable",
++                }
++            ],
++        )
++        self.assertEqual(acted_path([refused])["submit_tool"], None)
+ 
+ 
+-if __name__ == '__main__':
++if __name__ == "__main__":
+     unittest.main()diff --git i/libs/cua-driver/examples/jev-use/typescript/guarded_completion.test.ts w/libs/cua-driver/examples/jev-use/typescript/guarded_completion.test.ts
+index 12f05058d..716c2e1ad 100644
+--- i/libs/cua-driver/examples/jev-use/typescript/guarded_completion.test.ts
++++ w/libs/cua-driver/examples/jev-use/typescript/guarded_completion.test.ts
+@@ -1,12 +1,9 @@
+ import assert from 'node:assert/strict';
+ import test from 'node:test';
+ 
+-import {
+-  planGuardedCompletion,
+-  resolveGuardedCompletion,
+-} from './guarded_completion.js';
+-import { immutableCandidate } from './sources.js';
+-import { FixtureFormTask, fixtureSources } from './tasks.js';
++import { planGuardedCompletion, resolveGuardedCompletion } from './guarded_completion.js';
++import { immutableCandidate, type Candidate } from './sources.js';
++import { FixtureFormTask, fixtureSources, type Task } from './tasks.js';
+ import type { BrowserSnapshot } from './core.js';
+ 
+ function snapshot(value: string, submitRefs: string[]): BrowserSnapshot {
+@@ -20,7 +17,7 @@ function snapshot(value: string, submitRefs: string[]): BrowserSnapshot {
+   };
+ }
+ 
+-test('guarded completion uses only the fresh ref', () => {
++test('guarded completion returns the fresh candidate and exact redacted accepted telemetry', () => {
+   const task = new FixtureFormTask('proof');
+   const initial = fixtureSources(snapshot('', ['p1:1']));
+   const selected = task.candidates(initial)[0];
+@@ -28,74 +25,155 @@ test('guarded completion uses only the fresh ref', () => {
+   assert.ok(plan);
+ 
+   const fresh = fixtureSources(snapshot('proof', ['p2:1']));
+-  const completion = resolveGuardedCompletion(
+-    plan,
+-    task,
+-    fresh,
+-    task.candidates(fresh),
+-    'session-a'
+-  );
+-  assert.ok(completion);
+-  assert.equal(completion.id, 'submit-form');
+-  assert.equal(completion.arguments.ref, 'p2:1');
+-  assert.notEqual(completion.arguments.ref, plan.priorRef);
+-});
+-
+-test('guarded completion refuses a foreign session', () => {
+-  const task = new FixtureFormTask('proof');
+-  const initial = fixtureSources(snapshot('', ['p1:1']));
+-  const plan = planGuardedCompletion(task, initial, task.candidates(initial)[0], 'session-a');
+-  assert.ok(plan);
+-  const fresh = fixtureSources(snapshot('proof', ['p2:1']));
+-  assert.equal(
+-    resolveGuardedCompletion(plan, task, fresh, task.candidates(fresh), 'session-b'),
+-    undefined
+-  );
+-});
+-
+-test('guarded completion refuses ambiguity, missing targets, and unverified state', () => {
+-  const task = new FixtureFormTask('proof');
+-  const initial = fixtureSources(snapshot('', ['p1:1']));
+-  const plan = planGuardedCompletion(task, initial, task.candidates(initial)[0], 'session-a');
+-  assert.ok(plan);
+-
+-  for (const refs of [[], ['p2:1', 'p2:2']]) {
+-    const fresh = fixtureSources(snapshot('proof', refs));
+-    assert.equal(
+-      resolveGuardedCompletion(plan, task, fresh, task.candidates(fresh), 'session-a'),
+-      undefined
+-    );
+-  }
+-
+-  const wrong = fixtureSources(snapshot('other', ['p2:1']));
+-  assert.equal(
+-    resolveGuardedCompletion(plan, task, wrong, task.candidates(wrong), 'session-a'),
+-    undefined
+-  );
+-});
+-
+-test('guarded completion refuses old-ref reuse and requires a unique initial target', () => {
+-  const task = new FixtureFormTask('proof');
+-  const initial = fixtureSources(snapshot('', ['p1:1']));
+-  const plan = planGuardedCompletion(task, initial, task.candidates(initial)[0], 'session-a');
+-  assert.ok(plan);
+-
+-  const reused = fixtureSources(snapshot('proof', [plan.priorRef]));
+-  assert.equal(
+-    resolveGuardedCompletion(plan, task, reused, task.candidates(reused), 'session-a'),
+-    undefined
+-  );
+-
+-  const fresh = fixtureSources(snapshot('proof', ['p2:1']));
+-  const bad = immutableCandidate({
+-    id: 'submit-form',
+-    description: 'tampered',
+-    tool: 'browser_click',
+-    arguments: { target_id: 'target', tab_id: 'tab', ref: plan.priorRef },
+-    source: 'page',
++  const candidates = task.candidates(fresh);
++  const completion = resolveGuardedCompletion(plan, task, fresh, candidates, 'session-a');
++  assert.deepEqual(completion, {
++    candidate: candidates[0],
++    telemetry: {
++      status: 'accepted',
++      prior_ref: 'p1:1',
++      fresh_ref: 'p2:1',
++      verification_field: 'contains_required_token',
++      submit_matches: 1,
++      session: 'session-a',
++    },
+   });
+-  assert.equal(resolveGuardedCompletion(plan, task, fresh, [bad], 'session-a'), undefined);
++  assert.equal(completion.candidate, candidates[0]);
++  assert.notEqual(completion.candidate.arguments.ref, plan.priorRef);
++  assert.ok(!JSON.stringify(completion.telemetry).includes(task.token));
++});
+ 
++function plannedCompletion() {
++  const task = new FixtureFormTask('proof');
++  const initial = fixtureSources(snapshot('', ['p1:1']));
++  const plan = planGuardedCompletion(task, initial, task.candidates(initial)[0], 'session-a');
++  assert.ok(plan);
++  const fresh = fixtureSources(snapshot('proof', ['p2:1']));
++  return { task, initial, plan, fresh, candidates: task.candidates(fresh) };
++}
++
++for (const session of ['', 'session-b']) {
++  test(`guarded completion declines session ${JSON.stringify(session)} before other checks`, () => {
++    const { task, plan, fresh, candidates } = plannedCompletion();
++    const expected = {
++      candidate: undefined,
++      telemetry: { status: 'declined', reason: 'session_mismatch' },
++    };
++    assert.deepEqual(resolveGuardedCompletion(plan, task, fresh, candidates, session), expected);
++    const otherTask: Task = Object.assign(Object.create(task), { id: 'other-task' });
++    assert.deepEqual(
++      resolveGuardedCompletion(plan, otherTask, { visualPath: false }, [], session),
++      expected
++    );
++  });
++}
++
++test('guarded completion declines a different task before checking page presence', () => {
++  const { task, plan, fresh, candidates } = plannedCompletion();
++  const otherTask: Task = Object.assign(Object.create(task), { id: 'other-task' });
++  const expected = {
++    candidate: undefined,
++    telemetry: { status: 'declined', reason: 'task_mismatch' },
++  };
++  assert.deepEqual(
++    resolveGuardedCompletion(plan, otherTask, fresh, candidates, 'session-a'),
++    expected
++  );
++  assert.deepEqual(
++    resolveGuardedCompletion(plan, otherTask, { visualPath: false }, [], 'session-a'),
++    expected
++  );
++});
++
++test('guarded completion declines a missing page without reading task state', () => {
++  const { task, plan } = plannedCompletion();
++  assert.deepEqual(resolveGuardedCompletion(plan, task, { visualPath: false }, [], 'session-a'), {
++    candidate: undefined,
++    telemetry: { status: 'declined', reason: 'page_missing' },
++  });
++});
++
++for (const value of ['', 'other', undefined]) {
++  test(`guarded completion declines unproven field ${JSON.stringify(value)} before targets`, () => {
++    const { task, plan } = plannedCompletion();
++    const observed = snapshot(value ?? '', []);
++    if (value === undefined) observed.refs = [];
++    const sources = fixtureSources(observed);
++    assert.deepEqual(
++      resolveGuardedCompletion(plan, task, sources, task.candidates(sources), 'session-a'),
++      { candidate: undefined, telemetry: { status: 'declined', reason: 'field_not_proven' } }
++    );
++  });
++}
++
++for (const refs of [[], ['p2:1', 'p2:2'], ['p1:1', 'p1:1'], ['']]) {
++  test(`guarded completion declines non-unique submit refs ${JSON.stringify(refs)} before reuse`, () => {
++    const { task, plan } = plannedCompletion();
++    const fresh = fixtureSources(snapshot('proof', refs));
++    assert.deepEqual(resolveGuardedCompletion(plan, task, fresh, [], 'session-a'), {
++      candidate: undefined,
++      telemetry: { status: 'declined', reason: 'submit_not_unique' },
++    });
++  });
++}
++
++test('guarded completion declines old-ref reuse before checking executable candidates', () => {
++  const { task, plan } = plannedCompletion();
++  const reused = fixtureSources(snapshot('proof', [plan.priorRef]));
++  assert.deepEqual(resolveGuardedCompletion(plan, task, reused, [], 'session-a'), {
++    candidate: undefined,
++    telemetry: { status: 'declined', reason: 'ref_reused' },
++  });
++});
++
++const nonExecutable: [string, Partial<Candidate>][] = [
++  ['wrong ID', { id: 'another-submit' }],
++  ['wrong tool', { tool: 'browser_type' }],
++  ['visual tool', { tool: 'click' }],
++  ['missing tool', { tool: null }],
++  ['visual source', { source: 'visual' }],
++  ['native source', { source: 'ax' }],
++  ['missing source', { source: undefined }],
++];
++
++for (const [name, overrides] of nonExecutable) {
++  test(`guarded completion declines a candidate with ${name}`, () => {
++    const { task, plan, fresh, candidates } = plannedCompletion();
++    const bad = immutableCandidate({ ...candidates[0], ...overrides });
++    assert.deepEqual(resolveGuardedCompletion(plan, task, fresh, [bad], 'session-a'), {
++      candidate: undefined,
++      telemetry: { status: 'declined', reason: 'candidate_not_unique' },
++    });
++  });
++}
++
++for (const count of [0, 2]) {
++  test(`guarded completion declines ${count} executable candidates before ref matching`, () => {
++    const { task, plan, fresh, candidates } = plannedCompletion();
++    const bad = immutableCandidate({ ...candidates[0], arguments: { ref: plan.priorRef } });
++    assert.deepEqual(
++      resolveGuardedCompletion(plan, task, fresh, Array<Candidate>(count).fill(bad), 'session-a'),
++      { candidate: undefined, telemetry: { status: 'declined', reason: 'candidate_not_unique' } }
++    );
++  });
++}
++
++for (const ref of ['p1:1', 'p2:2', '', undefined, null, 2, { ref: 'p2:1' }]) {
++  test(`guarded completion declines mismatched or malformed candidate ref ${JSON.stringify(ref)}`, () => {
++    const { task, plan, fresh, candidates } = plannedCompletion();
++    const bad = immutableCandidate({
++      ...candidates[0],
++      arguments: ref === undefined ? {} : { ref },
++    });
++    assert.deepEqual(resolveGuardedCompletion(plan, task, fresh, [bad], 'session-a'), {
++      candidate: undefined,
++      telemetry: { status: 'declined', reason: 'candidate_mismatch' },
++    });
++  });
++}
++
++test('guarded completion still requires a unique initial target', () => {
++  const { task } = plannedCompletion();
+   for (const refs of [[], ['p1:1', 'p1:2']]) {
+     const sources = fixtureSources(snapshot('', refs));
+     assert.equal(diff --git i/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts w/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts
+index 4fb069a69..1142d7264 100644
+--- i/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts
++++ w/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts
+@@ -7,12 +7,7 @@
+  * never carries an old page ref forward as action authority.
+  */
+ import type { Candidate } from './sources.js';
+-import {
+-  FIXTURE_TASK_ID,
+-  SUBMIT_NAME,
+-  type Task,
+-  type TaskSources,
+-} from './tasks.js';
++import { FIXTURE_TASK_ID, SUBMIT_NAME, type Task, type TaskSources } from './tasks.js';
+ 
+ export const TYPE_CANDIDATE_ID = 'type-verification-value';
+ export const SUBMIT_CANDIDATE_ID = 'submit-form';
+@@ -26,6 +21,33 @@ export type GuardedCompletionPlan = Readonly<{
+   priorRef: string;
+ }>;
+ 
++type DeclineReason =
++  | 'session_mismatch'
++  | 'task_mismatch'
++  | 'page_missing'
++  | 'field_not_proven'
++  | 'submit_not_unique'
++  | 'ref_reused'
++  | 'candidate_not_unique'
++  | 'candidate_mismatch';
++
++export type GuardedCompletionTelemetry = Readonly<
++  | {
++      status: 'accepted';
++      prior_ref: string;
++      fresh_ref: string;
++      verification_field: 'contains_required_token';
++      submit_matches: 1;
++      session: string;
++    }
++  | { status: 'declined'; reason: DeclineReason }
++>;
++
++export type GuardedCompletionResult = Readonly<{
++  candidate: Candidate | undefined;
++  telemetry: GuardedCompletionTelemetry;
++}>;
++
+ function matchingRefs(
+   snapshot: Readonly<Record<string, unknown>>,
+   role: string,
+@@ -78,17 +100,23 @@ export function resolveGuardedCompletion(
+   sources: TaskSources,
+   candidates: readonly Candidate[],
+   session: string
+-): Candidate | undefined {
+-  if (!session || session !== plan.session || task.id !== FIXTURE_TASK_ID || !sources.page) {
+-    return undefined;
++): GuardedCompletionResult {
++  const decline = (reason: DeclineReason): GuardedCompletionResult => ({
++    candidate: undefined,
++    telemetry: { status: 'declined', reason },
++  });
++  if (!session || session !== plan.session) {
++    return decline('session_mismatch');
+   }
++  if (task.id !== FIXTURE_TASK_ID) return decline('task_mismatch');
++  if (!sources.page) return decline('page_missing');
+   const state = task.stateSummary(sources);
+-  if (state.verification_field !== 'contains_required_token') return undefined;
++  if (state.verification_field !== 'contains_required_token') return decline('field_not_proven');
+ 
+   const matches = matchingRefs(sources.page.snapshot, plan.targetRole, plan.targetName);
+-  if (matches.length !== 1) return undefined;
++  if (matches.length !== 1) return decline('submit_not_unique');
+   const freshRef = String(matches[0].ref);
+-  if (freshRef === plan.priorRef) return undefined;
++  if (freshRef === plan.priorRef) return decline('ref_reused');
+ 
+   const executable = candidates.filter(
+     (candidate) =>
+@@ -96,8 +124,18 @@ export function resolveGuardedCompletion(
+       candidate.tool === 'browser_click' &&
+       candidate.source === 'page'
+   );
+-  if (executable.length !== 1) return undefined;
++  if (executable.length !== 1) return decline('candidate_not_unique');
+   const candidate = executable[0];
+-  if (candidate.arguments.ref !== freshRef) return undefined;
+-  return candidate;
++  if (candidate.arguments.ref !== freshRef) return decline('candidate_mismatch');
++  return {
++    candidate,
++    telemetry: {
++      status: 'accepted',
++      prior_ref: plan.priorRef,
++      fresh_ref: freshRef,
++      verification_field: 'contains_required_token',
++      submit_matches: 1,
++      session,
++    },
++  };
+ }diff --git i/libs/cua-driver/examples/jev-use/typescript/run.ts w/libs/cua-driver/examples/jev-use/typescript/run.ts
+index ef96500cd..3ee46ee43 100644
+--- i/libs/cua-driver/examples/jev-use/typescript/run.ts
++++ w/libs/cua-driver/examples/jev-use/typescript/run.ts
+@@ -22,6 +22,7 @@ import {
+   planGuardedCompletion,
+   resolveGuardedCompletion,
+   type GuardedCompletionPlan,
++  type GuardedCompletionTelemetry,
+ } from './guarded_completion.js';
+ import { chooseLiveForTask, chooseMockForTask } from './jev_adapter.js';
+ import { FixtureFormTask, fixtureSources, type Task, type TaskSources } from './tasks.js';
+@@ -63,8 +64,7 @@ function parseArgs(argv: string[]): Arguments {
+         throw new Error('--visual-observation must be auto, always, or off');
+       }
+       result.visualObservation = mode;
+-    }
+-    else throw new Error(`unknown argument: ${value}`);
++    } else throw new Error(`unknown argument: ${value}`);
+   }
+   if (!Number.isInteger(result.maxSteps) || result.maxSteps < 1) {
+     throw new Error('--max-steps must be a positive integer');
+@@ -255,7 +255,10 @@ export async function observeVisual(
+       return { status: visualStatus('error', error.code) };
+     }
+     // parseVisualRegions reports other contract violations as plain errors.
+-    if (error instanceof Error && /^(visual (result|region)|unsupported visual)/.test(error.message)) {
++    if (
++      error instanceof Error &&
++      /^(visual (result|region)|unsupported visual)/.test(error.message)
++    ) {
+       return { status: visualStatus('error', 'invalid_visual_result') };
+     }
+     return { status: visualStatus('error', 'driver_error') };
+@@ -445,7 +448,7 @@ async function run(args: Arguments): Promise<Outcome> {
+     for (let step = 1; step <= task.maxSteps; step += 1) {
+       const current = task.classify(await task.readOracle(), step - 1);
+       if (current === 'verified' || current === 'refuted') {
+-        await writeEvent(args.log, { event: 'outcome', outcome: current, token });
++        await writeEvent(args.log, { event: 'outcome', outcome: current });
+         return current;
+       }
+ 
+@@ -484,43 +487,72 @@ async function run(args: Arguments): Promise<Outcome> {
+       }
+       const visual = sources.visual?.observation;
+       let guardedCandidate: Candidate | undefined;
++      let guardedTelemetry: GuardedCompletionTelemetry | undefined;
+       if (args.guardedCompletion && pendingCompletion) {
+-        guardedCandidate = resolveGuardedCompletion(
++        const resolution = resolveGuardedCompletion(
+           pendingCompletion,
+           task,
+           sources,
+           candidates,
+           driver.sessionLabel
+         );
++        guardedCandidate = resolution.candidate;
++        guardedTelemetry = resolution.telemetry;
+         // A failed proof never keeps authority alive. The ordinary chooser
+         // handles this fresh step instead.
+         pendingCompletion = undefined;
+       }
++      const guardedFields = guardedTelemetry ? { guarded_completion: guardedTelemetry } : {};
+ 
+       let candidate: Candidate;
+-      let confidence: number;
+-      let probabilities: Record<string, number>;
++      let confidence: number | null;
++      let probabilities: Record<string, number> | null;
+       let decisionRoute: 'provider' | 'guarded-completion';
+       let providerDecisionMs = 0;
+       if (guardedCandidate) {
+         candidate = guardedCandidate;
+-        confidence = 1;
+-        probabilities = Object.fromEntries(
+-          candidates.map((item) => [item.id, Number(item.id === candidate.id)])
+-        );
++        confidence = null;
++        probabilities = null;
+         decisionRoute = 'guarded-completion';
+       } else {
+         const providerStarted = performance.now();
+-        const answer =
+-          args.provider === 'mock'
+-            ? chooseMockForTask(task, sources, candidates, history)
+-            : await chooseLiveForTask(task, sources, candidates, history);
+-        providerDecisionMs = performance.now() - providerStarted;
+-        if (!answer.choice) return 'abstained';
+-        candidate = validateChoice(answer.choice, candidates, visual?.captureId);
+-        confidence = answer.confidence;
+-        probabilities = answer.probabilities;
+-        decisionRoute = 'provider';
++        try {
++          const answer =
++            args.provider === 'mock'
++              ? chooseMockForTask(task, sources, candidates, history)
++              : await chooseLiveForTask(task, sources, candidates, history);
++          providerDecisionMs = performance.now() - providerStarted;
++          if (!answer.choice) {
++            if (guardedTelemetry) {
++              await writeEvent(args.log, {
++                event: 'outcome',
++                outcome: 'abstained',
++                decision_route: 'provider',
++                step,
++                visual: visualRecord,
++                ...guardedFields,
++              });
++            }
++            return 'abstained';
++          }
++          candidate = validateChoice(answer.choice, candidates, visual?.captureId);
++          confidence = answer.confidence;
++          probabilities = answer.probabilities;
++          decisionRoute = 'provider';
++        } catch (error: unknown) {
++          if (!guardedTelemetry) throw error;
++          await writeEvent(args.log, {
++            event: 'outcome',
++            outcome: 'unknown',
++            step,
++            phase: 'provider',
++            decision_route: 'provider',
++            error: error instanceof Error ? error.name : 'UnknownError',
++            visual: visualRecord,
++            ...guardedFields,
++          });
++          return 'unknown';
++        }
+       }
+       const nextCompletion =
+         args.guardedCompletion && decisionRoute === 'provider'
+@@ -549,6 +581,7 @@ async function run(args: Arguments): Promise<Outcome> {
+           tool: null,
+           decision_route: decisionRoute,
+           visual: visualRecord,
++          ...guardedFields,
+         };
+         history.push(task.historyEntry(step, candidate.id));
+         await writeEvent(args.log, event);
+@@ -559,10 +592,12 @@ async function run(args: Arguments): Promise<Outcome> {
+         await writeEvent(args.log, {
+           event: 'outcome',
+           outcome: 'abstained',
++          decision_route: decisionRoute,
+           step,
+           confidence,
+           probabilities,
+           visual: visualRecord,
++          ...guardedFields,
+         });
+         return 'abstained';
+       }
+@@ -595,6 +630,7 @@ async function run(args: Arguments): Promise<Outcome> {
+               action_error: refusal,
+               escalation: { from: 'background', to: 'foreground', reason: refusal },
+               visual: visualRecord,
++              ...guardedFields,
+             };
+             history.push(task.historyEntry(step, candidate.id, refusal));
+             await writeEvent(args.log, event);
+@@ -605,9 +641,11 @@ async function run(args: Arguments): Promise<Outcome> {
+             outcome: 'unknown',
+             step,
+             phase: 'action',
++            decision_route: decisionRoute,
+             error: error instanceof Error ? error.name : 'UnknownError',
+             tool: candidate.tool,
+             visual: visualRecord,
++            ...guardedFields,
+           });
+           return 'unknown';
+         }
+@@ -628,6 +666,7 @@ async function run(args: Arguments): Promise<Outcome> {
+         delivery_mode: candidate.arguments.delivery_mode ?? null,
+         decision_route: decisionRoute,
+         visual: visualRecord,
++        ...guardedFields,
+       };
+       history.push(task.historyEntry(step, candidate.id));
+       await writeEvent(args.log, event);
+@@ -636,7 +675,7 @@ async function run(args: Arguments): Promise<Outcome> {
+         for (let attempt = 0; attempt < 20; attempt += 1) {
+           const outcome = task.classify(await task.readOracle(), step);
+           if (outcome === 'verified' || outcome === 'refuted') {
+-            await writeEvent(args.log, { event: 'outcome', outcome, token });
++            await writeEvent(args.log, { event: 'outcome', outcome });
+             return outcome;
+           }
+           await new Promise((resolve) => setTimeout(resolve, 100));
+@@ -645,7 +684,7 @@ async function run(args: Arguments): Promise<Outcome> {
+     }
+ 
+     const outcome = task.classify(await task.readOracle(), task.maxSteps);
+-    await writeEvent(args.log, { event: 'outcome', outcome, token });
++    await writeEvent(args.log, { event: 'outcome', outcome });
+     return outcome;
+   } finally {
+     await client.close();diff --git i/libs/cua-driver/examples/jev-use/verify_setup.py w/libs/cua-driver/examples/jev-use/verify_setup.py
+index 095c7bdfc..f26512829 100644
+--- i/libs/cua-driver/examples/jev-use/verify_setup.py
++++ w/libs/cua-driver/examples/jev-use/verify_setup.py
+@@ -10,6 +10,9 @@ import threading
+ from contextlib import contextmanager
+ from pathlib import Path
+ from urllib.request import urlopen
++from unittest.mock import patch
++
++import fixture_server
+ 
+ from fixture_server import FixtureServer
+ 
+@@ -21,13 +24,32 @@ VISUAL_STATUSES = ('ok', 'not_installed', 'error', 'unavailable')
+ SUBMIT_IDS = ('submit-form', 'submit-form-foreground')
+ 
+ 
++# Fixture-only fault injection: the initial Submit is unique, but the first
++# input mutation invalidates the completion proof. Both controls submit the
++# same form, so the ordinary provider can still succeed with a fresh ref.
++DUPLICATE_SUBMIT_ON_INPUT = b"""<script>
++const field = document.querySelector('input[name="value"]');
++field.addEventListener('input', () => {
++  const form = field.form;
++  if (!field.value || form.dataset.guardTampered) return;
++  form.dataset.guardTampered = '1';
++  const button = form.querySelector('button[type="submit"]');
++  button.after(button.cloneNode(true));
++});
++</script>"""
++
++
+ @contextmanager
+-def fixture(port: int = 0, *, visual: bool = False):
+-    with FixtureServer(('127.0.0.1', port), visual=visual) as server:
++def fixture(port: int = 0, *, visual: bool = False, guarded_decline: bool = False):
++    page = fixture_server.PAGE + (DUPLICATE_SUBMIT_ON_INPUT if guarded_decline else b"")
++    with (
++        patch.object(fixture_server, "PAGE", page),
++        FixtureServer(("127.0.0.1", port), visual=visual) as server,
++    ):
+         thread = threading.Thread(target=server.serve_forever, daemon=True)
+         thread.start()
+         try:
+-            yield f'http://127.0.0.1:{server.server_port}/'
++            yield f"http://127.0.0.1:{server.server_port}/"
+         finally:
+             server.shutdown()
+             thread.join(timeout=5)
+@@ -71,6 +93,7 @@ def verify(
+     expect_visual_status: str | None = None,
+     visual_fixture: bool = False,
+     require_guarded_completion: bool = False,
++    require_guarded_decline: bool = False,
+ ) -> dict:
+     """Run one runner and independently verify what it did.
+ 
+@@ -104,24 +127,72 @@ def verify(
+         return {'outcome': final['outcome'], 'token': token, 'observed': observed, **path}
+     if completed.returncode != 0:
+         raise subprocess.CalledProcessError(completed.returncode, command)
+-    expected = {'event': 'outcome', 'outcome': 'verified', 'token': token}
++    expected = {"event": "outcome", "outcome": "verified"}
+     if not events or events[-1] != expected:
+-        raise RuntimeError('Runner did not report the expected verified outcome')
+-    if observed != {'submitted': token}:
+-        raise RuntimeError('Independent fixture state does not match the expected token')
+-    if require_visual and path['acted_path'] != 'visual':
++        raise RuntimeError("Runner did not report the expected verified outcome")
++    if observed != {"submitted": token}:
+         raise RuntimeError(
+-            'Visual path was required but the runner submitted with '
++            "Independent fixture state does not match the expected token"
++        )
++    if require_visual and path["acted_path"] != "visual":
++        raise RuntimeError(
++            "Visual path was required but the runner submitted with "
+             f'{path["submit_tool"] or "no action"}; visual statuses: {path["visual_statuses"]}'
+         )
+-    if require_guarded_completion and path['decision_routes'] != [
+-        'provider', 'guarded-completion'
++    if require_guarded_completion and path["decision_routes"] != [
++        "provider",
++        "guarded-completion",
+     ]:
+         raise RuntimeError(
+-            'Guarded completion was required but the exact provider→guarded route did not run: '
++            "Guarded completion was required but the exact provider→guarded route did not run: "
+             f'{path["decision_routes"]}'
+         )
+-    return {'outcome': 'verified', 'token': token, 'observed': observed, **path}
++    steps = [event for event in events if event.get("event") == "step"]
++    if require_guarded_completion:
++        step = steps[1]
++        proof = step.get("guarded_completion")
++        if (
++            not isinstance(proof, dict)
++            or set(proof)
++            != {
++                "status",
++                "prior_ref",
++                "fresh_ref",
++                "verification_field",
++                "submit_matches",
++                "session",
++            }
++            or proof["status"] != "accepted"
++            or proof["verification_field"] != "contains_required_token"
++            or proof["submit_matches"] != 1
++            or not all(
++                isinstance(proof[key], str) and proof[key]
++                for key in ("prior_ref", "fresh_ref", "session")
++            )
++            or proof["prior_ref"] == proof["fresh_ref"]
++            or step.get("provider_decision_ms") != 0
++            or "confidence" not in step
++            or step["confidence"] is not None
++            or "probabilities" not in step
++            or step["probabilities"] is not None
++        ):
++            raise RuntimeError("Runner did not log the required accepted guard proof")
++    if require_guarded_decline:
++        if (
++            path["decision_routes"] != ["provider", "provider"]
++            or path["submit_tool"] != "browser_click"
++            or steps[1].get("guarded_completion")
++            != {"status": "declined", "reason": "submit_not_unique"}
++            or steps[1].get("action_error")
++        ):
++            raise RuntimeError(
++                "Runner did not log the required guard decline and provider fallback"
++            )
++    if (
++        require_guarded_completion or require_guarded_decline
++    ) and token in log.read_text():
++        raise RuntimeError("Runner logged the required field value")
++    return {"outcome": "verified", "token": token, "observed": observed, **path}
+ 
+ 
+ def require_key() -> None:
+@@ -150,6 +221,11 @@ def main() -> None:
+         action='store_true',
+         help='require the opt-in provider→guarded-completion route on the default fixture',
+     )
++    parser.add_argument(
++        '--guarded-completion-decline',
++        action='store_true',
++        help='invalidate Submit uniqueness after typing; require logged provider fallback and fixture success',
++    )
+     parser.add_argument('--port', type=int, default=0, help='fixture port; defaults to an unused loopback port')
+     parser.add_argument('--max-steps', type=int, default=4, help='maximum decisions per runner')
+     parser.add_argument('--output-dir', type=Path, required=True, help='new directory for evidence; existing paths are refused')
+@@ -162,30 +238,43 @@ def main() -> None:
+                              'with --visual-fixture and a non-ok status, '
+                              'require a logged fallback that never submits')
+     args = parser.parse_args()
+-    if args.require_visual_path and args.expect_visual_status not in (None, 'ok'):
+-        parser.error('--require-visual-path needs a working visual observation')
++    if args.guarded_completion_decline and (
++        not args.guarded_completion or args.visual_fixture
++    ):
++        parser.error(
++            "--guarded-completion-decline requires --guarded-completion on the default fixture"
++        )
++    if args.require_visual_path and args.expect_visual_status not in (None, "ok"):
++        parser.error("--require-visual-path needs a working visual observation")
+     if args.live:
+         require_key()
+     output = args.output_dir.resolve()
+     output.mkdir(mode=0o700, parents=True, exist_ok=False)
+     summary = {
+-        'complete': False,
+-        'live_requested': args.live,
+-        'typescript_requested': args.typescript,
+-        'guarded_completion_requested': args.guarded_completion,
+-        'fixture': 'visual' if args.visual_fixture else 'default',
+-        'visual_path_required': args.require_visual_path,
+-        'expected_visual_status': args.expect_visual_status,
+-        'checks': [],
++        "complete": False,
++        "live_requested": args.live,
++        "typescript_requested": args.typescript,
++        "guarded_completion_requested": args.guarded_completion,
++        "guarded_completion_decline_requested": args.guarded_completion_decline,
++        "fixture": "visual" if args.visual_fixture else "default",
++        "visual_path_required": args.require_visual_path,
++        "expected_visual_status": args.expect_visual_status,
++        "checks": [],
+     }
+     try:
+-        with fixture(args.port, visual=args.visual_fixture) as url:
+-            print(json.dumps({'event': 'fixture_ready', 'url': url}), flush=True)
+-            summary['fixture_url'] = url
+-            for language in (['python', 'typescript'] if args.typescript else ['python']):
+-                for provider in (['mock', 'live'] if args.live else ['mock']):
+-                    token = f'jev-guide-{provider}'
+-                    log = output / f'{language}-{provider}.jsonl'
++        with fixture(
++            args.port,
++            visual=args.visual_fixture,
++            guarded_decline=args.guarded_completion_decline,
++        ) as url:
++            print(json.dumps({"event": "fixture_ready", "url": url}), flush=True)
++            summary["fixture_url"] = url
++            for language in (
++                ["python", "typescript"] if args.typescript else ["python"]
++            ):
++                for provider in (["mock", "live"] if args.live else ["mock"]):
++                    token = f"jev-guide-{provider}"
++                    log = output / f"{language}-{provider}.jsonl"
+                     command = runner_command(language, provider)
+                     command += ['--fixture-url', url, '--token', token, '--max-steps', str(args.max_steps), '--log', str(log)]
+                     if args.guarded_completion:
+@@ -201,15 +290,29 @@ def main() -> None:
+                             require_visual=args.require_visual_path,
+                             expect_visual_status=args.expect_visual_status,
+                             visual_fixture=args.visual_fixture,
+-                            require_guarded_completion=args.guarded_completion,
++                            require_guarded_completion=args.guarded_completion
++                            and not args.guarded_completion_decline,
++                            require_guarded_decline=args.guarded_completion_decline,
+                         ),
+                     }
+-                    summary['checks'].append(result)
+-                    print(json.dumps({'event': 'independently_verified', **result}), flush=True)
+-        summary['complete'] = True
++                    summary["checks"].append(result)
++                    print(
++                        json.dumps({"event": "independently_verified", **result}),
++                        flush=True,
++                    )
++        summary["complete"] = True
+     finally:
+-        (output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+-    print(json.dumps({'event': 'setup_complete', 'checks': len(summary['checks']), 'fixture_closed': True}), flush=True)
++        (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
++    print(
++        json.dumps(
++            {
++                "event": "setup_complete",
++                "checks": len(summary["checks"]),
++                "fixture_closed": True,
++            }
++        ),
++        flush=True,
++    )
+ 
+ 
+ if __name__ == '__main__':diff --git 1/libs/cua-driver/examples/jev-use/python/tests/test_guarded_runner.py 2/libs/cua-driver/examples/jev-use/python/tests/test_guarded_runner.py
+new file mode 100644
+index 000000000..124ce97c0
+--- /dev/null
++++ 2/libs/cua-driver/examples/jev-use/python/tests/test_guarded_runner.py
+@@ -0,0 +1,256 @@
++from __future__ import annotations
++
++import argparse
++import asyncio
++import contextlib
++import io
++import json
++import sys
++import tempfile
++import unittest
++from contextlib import asynccontextmanager
++from dataclasses import replace
++from pathlib import Path
++from types import SimpleNamespace
++from unittest.mock import patch
++from urllib.parse import urlencode
++from urllib.request import Request, urlopen
++
++BASE = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(BASE / "python"))
++sys.path.insert(0, str(BASE))
++
++import run
++from verify_setup import fixture
++
++
++@asynccontextmanager
++async def transport(_params):
++    yield None, None
++
++
++class FixtureSession:
++    """In-memory MCP transport; the HTTP fixture remains the outcome oracle."""
++
++    def __init__(self, url, token):
++        self.url = url
++        self.token = token
++        self.value = ""
++        self.mutations = []
++
++    async def __aenter__(self):
++        return self
++
++    async def __aexit__(self, *_args):
++        pass
++
++    async def initialize(self):
++        pass
++
++    async def list_tools(self):
++        return SimpleNamespace(tools=[])
++
++    async def call_tool(self, name, args):
++        if name == "browser_prepare":
++            data = {"prepared_pid": 1}
++        elif name == "list_windows":
++            data = {
++                "windows": [
++                    {"window_id": 1, "is_on_screen": True, "bounds": {"width": 100, "height": 100}}
++                ]
++            }
++        elif name == "get_browser_state":
++            data = {
++                "target_id": "target",
++                "tabs": [{"tab_id": "tab"}],
++                "tab_id": "tab",
++                "refs": [
++                    {
++                        "role": "textbox",
++                        "name": "verification value",
++                        "ref": "p2:0",
++                        "value": self.value,
++                    },
++                    {"role": "button", "name": "Submit", "ref": "p2:1" if self.value else "p1:1"},
++                ],
++            }
++        elif name == "browser_type":
++            self.value = args["text"]
++            self.mutations.append(name)
++            data = {}
++        elif name == "browser_click":
++            self.mutations.append(name)
++            with urlopen(
++                Request(self.url + "submit", data=urlencode({"value": self.value}).encode()),
++                timeout=2,
++            ):
++                pass
++            data = {}
++        else:
++            self.assert_navigation(name)
++            data = {}
++        return SimpleNamespace(isError=False, structuredContent=data)
++
++    @staticmethod
++    def assert_navigation(name):
++        assert name == "browser_navigate", name
++
++
++class GuardedRunnerTest(unittest.TestCase):
++    def execute(
++        self,
++        *,
++        guarded=True,
++        tamper=False,
++        provider_failure=False,
++        no_choice=False,
++        reobserve=False,
++        action_failure=False,
++        expected="verified",
++    ):
++        token = "private-field-canary-4316"
++        with tempfile.TemporaryDirectory() as directory, fixture() as url:
++            session = FixtureSession(url, token)
++            args = argparse.Namespace(
++                token=token,
++                fixture_url=url,
++                max_steps=4,
++                log=str(Path(directory) / "run.jsonl"),
++                provider="mock",
++                guarded_completion=guarded,
++                visual_observation="off",
++                dry_run=False,
++            )
++            if action_failure:
++                original_call = session.call_tool
++
++                async def call(name, args):
++                    if name == "browser_click":
++                        raise RuntimeError(token)
++                    return await original_call(name, args)
++
++                session.call_tool = call
++            original = run.plan_guarded_completion
++
++            def plan(*values, **options):
++                result = original(*values, **options)
++                return replace(result, session="foreign-session") if tamper and result else result
++
++            original_choose = run.choose_mock_for_task
++            forced = False
++
++            def choose(*values):
++                nonlocal forced
++                if session.value and not forced:
++                    forced = True
++                    if provider_failure:
++                        raise RuntimeError(token)
++                    if no_choice:
++                        return None, 0.0, {}
++                    if reobserve:
++                        return "reobserve", 1.0, {"reobserve": 1.0}
++                return original_choose(*values)
++
++            with (
++                patch.object(run, "stdio_client", transport),
++                patch.object(run, "ClientSession", return_value=session),
++                patch.object(run, "plan_guarded_completion", side_effect=plan),
++                patch.object(run, "choose_mock_for_task", side_effect=choose) as provider,
++                contextlib.redirect_stdout(io.StringIO()),
++            ):
++                self.assertEqual(asyncio.run(run.run(args)), expected)
++            text = Path(args.log).read_text()
++            self.assertNotIn(token, text)
++            return (
++                [json.loads(line) for line in text.splitlines()],
++                provider.call_count,
++                session.mutations,
++            )
++
++    def test_accepted_proof_is_emitted_without_model_calibration_or_field_value(self):
++        events, calls, mutations = self.execute()
++        steps = [event for event in events if event["event"] == "step"]
++        self.assertEqual(calls, 1)
++        self.assertEqual(mutations, ["browser_type", "browser_click"])
++        self.assertNotIn("guarded_completion", steps[0])
++        self.assertEqual(
++            [step["decision_route"] for step in steps], ["provider", "guarded-completion"]
++        )
++        accepted = steps[1]
++        proof = accepted["guarded_completion"]
++        self.assertEqual(
++            proof,
++            {
++                "status": "accepted",
++                "prior_ref": "p1:1",
++                "fresh_ref": "p2:1",
++                "verification_field": "contains_required_token",
++                "submit_matches": 1,
++                "session": proof["session"],
++            },
++        )
++        self.assertTrue(proof["session"].startswith("jev-python-"))
++        self.assertEqual(accepted["provider_decision_ms"], 0)
++        self.assertIsNone(accepted["confidence"])
++        self.assertIsNone(accepted["probabilities"])
++
++    def test_decline_emits_reason_on_provider_fallback(self):
++        events, calls, _ = self.execute(tamper=True)
++        steps = [event for event in events if event["event"] == "step"]
++        self.assertEqual(calls, 2)
++        self.assertEqual([step["decision_route"] for step in steps], ["provider", "provider"])
++        self.assertEqual(
++            steps[1]["guarded_completion"], {"status": "declined", "reason": "session_mismatch"}
++        )
++        self.assertIsInstance(steps[1]["confidence"], float)
++        self.assertIsInstance(steps[1]["probabilities"], dict)
++
++    def test_provider_failure_keeps_declined_proof_visible(self):
++        events, calls, _ = self.execute(tamper=True, provider_failure=True, expected="unknown")
++        self.assertEqual(calls, 2)
++        self.assertEqual(
++            events[-1],
++            {
++                "event": "outcome",
++                "outcome": "unknown",
++                "step": 2,
++                "phase": "provider",
++                "decision_route": "provider",
++                "error": "RuntimeError",
++                "guarded_completion": {"status": "declined", "reason": "session_mismatch"},
++                "visual": {"status": "skipped", "reason": "disabled"},
++            },
++        )
++
++    def test_provider_no_choice_keeps_decline_visible(self):
++        events, calls, _ = self.execute(tamper=True, no_choice=True, expected="abstained")
++        self.assertEqual(calls, 2)
++        self.assertEqual(
++            events[-1]["guarded_completion"], {"status": "declined", "reason": "session_mismatch"}
++        )
++        self.assertEqual(events[-1]["decision_route"], "provider")
++
++    def test_declined_plan_is_consumed_once_across_reobserve(self):
++        events, calls, _ = self.execute(tamper=True, reobserve=True)
++        steps = [event for event in events if event["event"] == "step"]
++        self.assertEqual(calls, 3)
++        self.assertEqual(
++            [step["candidate"] for step in steps],
++            ["type-verification-value", "reobserve", "submit-form"],
++        )
++        self.assertEqual(steps[1]["guarded_completion"]["reason"], "session_mismatch")
++        self.assertNotIn("guarded_completion", steps[2])
++
++    def test_action_failure_retains_proof_without_error_content(self):
++        for tamper in (False, True):
++            with self.subTest(tamper=tamper):
++                events, _, _ = self.execute(tamper=tamper, action_failure=True, expected="unknown")
++                self.assertEqual(events[-1]["phase"], "action")
++                self.assertEqual(
++                    events[-1]["guarded_completion"]["status"], "declined" if tamper else "accepted"
++                )
++
++    def test_default_off_never_records_an_attempted_guard(self):
++        events, calls, _ = self.execute(guarded=False)
++        self.assertEqual(calls, 2)
++        self.assertTrue(all("guarded_completion" not in event for event in events))diff --git 1/libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts 2/libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts
+new file mode 100644
+index 000000000..d1b18fd13
+--- /dev/null
++++ 2/libs/cua-driver/examples/jev-use/typescript/run_guarded_completion.test.ts
+@@ -0,0 +1,419 @@
++import assert from 'node:assert/strict';
++import { spawnSync } from 'node:child_process';
++import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
++import test, { mock } from 'node:test';
++import { fileURLToPath } from 'node:url';
++
++import { Client } from '@modelcontextprotocol/sdk/client/index.js';
++import { TypeSafeClient } from '@typesafe-ai/sdk';
++import { FixtureFormTask, type TaskSources } from './tasks.js';
++
++const TOKEN = 'runner-private-verification-value';
++
++type Scenario = {
++  guarded?: boolean;
++  mode?:
++    | 'accepted'
++    | 'already-verified'
++    | 'budget'
++    | 'reobserve'
++    | 'abstain'
++    | 'no-choice'
++    | 'ref-reused'
++    | 'visual-refusal';
++  actionError?: boolean;
++  providerError?: boolean;
++  duplicateCandidate?: boolean;
++};
++
++async function runFixture(scenario: Scenario, log: string) {
++  let value = '';
++  let submitted: string | null = scenario.mode === 'already-verified' ? TOKEN : null;
++  let observations = 0;
++  let providerCalls = 0;
++  const actions: Record<string, unknown>[] = [];
++  const visual = JSON.parse(
++    readFileSync(new URL('../fixtures/jev-visual-replay-v1.json', import.meta.url), 'utf8')
++  ).visual_regions;
++
++  if (scenario.mode === 'abstain') {
++    Object.defineProperty(FixtureFormTask.prototype, 'mockPreferences', {
++      value: ['type-verification-value', 'abstain'],
++    });
++  }
++  if (scenario.mode === 'no-choice' || scenario.duplicateCandidate) {
++    const original = FixtureFormTask.prototype.candidates;
++    mock.method(
++      FixtureFormTask.prototype,
++      'candidates',
++      function (this: FixtureFormTask, sources: TaskSources) {
++        const candidates = original.call(this, sources);
++        if (observations !== 2) return candidates;
++        return scenario.duplicateCandidate
++          ? [...candidates, candidates[0]]
++          : candidates.filter((candidate) => candidate.id === 'abstain');
++      }
++    );
++  }
++  if (scenario.providerError) {
++    process.env.TYPESAFE_API_KEY = 'test-only-key';
++    mock.method(TypeSafeClient.prototype, 'systemOne', async () => {
++      providerCalls += 1;
++      if (providerCalls > 1) throw new Error(TOKEN);
++      return {
++        answers: {
++          driver_action: {
++            type: 'choice',
++            choice: 'type-verification-value',
++            confidence: 0.72,
++            probabilities: { 'type-verification-value': 0.72, reobserve: 0.18, abstain: 0.1 },
++          },
++        },
++      };
++    });
++  }
++
++  mock.method(FixtureFormTask.prototype, 'reset', async () => {});
++  mock.method(FixtureFormTask.prototype, 'readOracle', async () => ({ submitted }));
++  mock.method(Client.prototype, 'connect', async () => {});
++  mock.method(Client.prototype, 'listTools', async () => ({
++    tools: [
++      { name: 'click', inputSchema: { properties: { capture_id: {} } } },
++      { name: 'get_window_state' },
++      { name: 'parse_visual_regions' },
++    ],
++  }));
++  mock.method(Client.prototype, 'close', async () => {
++    console.error(JSON.stringify({ closed: true, actions, providerCalls }));
++  });
++  mock.method(
++    Client.prototype,
++    'callTool',
++    async (request: { name: string; arguments: Record<string, unknown> }) => {
++      const { name, arguments: args } = request;
++      let data: Record<string, unknown> = {};
++      if (name === 'browser_prepare') data = { prepared_pid: 42 };
++      else if (name === 'list_windows') {
++        data = {
++          windows: [{ window_id: 7, is_on_screen: true, bounds: { width: 800, height: 600 } }],
++        };
++      } else if (name === 'get_browser_state') {
++        if (args.snapshot_format !== 'semantic_v2') {
++          data = { target_id: 'target', tabs: [{ tab_id: 'tab', active: true }] };
++        } else {
++          observations += 1;
++          const noSubmit =
++            (observations === 2 &&
++              ['reobserve', 'abstain', 'no-choice'].includes(scenario.mode ?? '')) ||
++            (observations >= 2 && scenario.mode === 'visual-refusal');
++          const submitRef = scenario.mode === 'ref-reused' ? 'p1:1' : `p${observations}:1`;
++          data = {
++            target_id: 'target',
++            tab_id: 'tab',
++            refs: [
++              { role: 'textbox', name: 'verification value', ref: `p${observations}:0`, value },
++              ...(noSubmit ? [] : [{ role: 'button', name: 'Submit', ref: submitRef }]),
++            ],
++          };
++        }
++      } else if (name === 'get_window_state') {
++        data = { capture_id: visual.capture.capture_id };
++      } else if (name === 'parse_visual_regions') {
++        data = {
++          ...visual,
++          capture: { ...visual.capture, source: { kind: 'window', pid: 42, window_id: 7 } },
++        };
++      } else if (name === 'browser_type' || name === 'browser_click' || name === 'click') {
++        actions.push({
++          tool: name,
++          ref: args.ref,
++          session: args.session,
++          ...(name === 'click' ? { delivery_mode: args.delivery_mode } : {}),
++        });
++        if (
++          (scenario.actionError && name === 'browser_click') ||
++          (name === 'click' && args.delivery_mode === 'background')
++        ) {
++          return {
++            isError: true,
++            content: [{ type: 'text', text: TOKEN }],
++            structuredContent: {
++              code: name === 'click' ? 'background_not_supported' : 'action_failed',
++            },
++          };
++        }
++        if (name === 'browser_type') value = String(args.text);
++        else submitted = value;
++      } else if (name !== 'browser_navigate') {
++        throw new Error(`unexpected Driver tool ${name}`);
++      }
++      return { content: [], structuredContent: data };
++    }
++  );
++
++  process.argv = [
++    process.execPath,
++    fileURLToPath(new URL('./run.ts', import.meta.url)),
++    '--provider',
++    scenario.providerError ? 'live' : 'mock',
++    '--visual-observation',
++    scenario.mode === 'visual-refusal' ? 'auto' : 'off',
++    '--token',
++    TOKEN,
++    '--max-steps',
++    scenario.mode === 'budget' ? '1' : '4',
++    '--log',
++    log,
++    ...(scenario.guarded === false ? [] : ['--guarded-completion']),
++  ];
++  await import('./run.js');
++}
++
++function runScenario(scenario: Scenario = {}) {
++  const directory = mkdtempSync(join(tmpdir(), 'jev-guarded-run-'));
++  try {
++    const log = join(directory, 'events.jsonl');
++    const child = spawnSync(
++      process.execPath,
++      [
++        '--import',
++        'tsx',
++        fileURLToPath(import.meta.url),
++        '--fixture-run',
++        JSON.stringify(scenario),
++        log,
++      ],
++      { encoding: 'utf8', timeout: 15_000 }
++    );
++    assert.equal(child.error, undefined);
++    const jsonl = readFileSync(log, 'utf8');
++    assert.equal(child.stdout, jsonl);
++    const events: Record<string, any>[] = jsonl
++      .trim()
++      .split('\n')
++      .filter(Boolean)
++      .map((line) => JSON.parse(line));
++    const receipt = JSON.parse(
++      child.stderr
++        .trim()
++        .split('\n')
++        .find((line) => line.startsWith('{')) ?? '{}'
++    );
++    assert.equal(receipt.closed, true, child.stderr);
++    return { events, receipt, jsonl, status: child.status, stderr: child.stderr };
++  } finally {
++    rmSync(directory, { recursive: true, force: true });
++  }
++}
++
++if (process.argv[2] === '--fixture-run') {
++  await runFixture(JSON.parse(process.argv[3]), process.argv[4]);
++} else {
++  test('runner dispatches the accepted fresh candidate with proof telemetry, not model scores', () => {
++    const { events, receipt, status, stderr } = runScenario();
++    assert.equal(status, 0, stderr);
++    const steps = events.filter((event) => event.event === 'step');
++    assert.equal(steps.length, 2);
++    assert.equal(steps[0].decision_route, 'provider');
++    assert.equal(Object.hasOwn(steps[0], 'guarded_completion'), false);
++    assert.equal(steps[0].confidence, 1);
++    assert.deepEqual(steps[0].probabilities, {
++      'type-verification-value': 1,
++      reobserve: 0,
++      abstain: 0,
++    });
++    assert.equal(steps[1].candidate, 'submit-form');
++    assert.equal(steps[1].decision_route, 'guarded-completion');
++    assert.equal(steps[1].confidence, null);
++    assert.equal(steps[1].probabilities, null);
++    assert.equal(steps[1].provider_decision_ms, 0);
++    assert.deepEqual(steps[1].guarded_completion, {
++      status: 'accepted',
++      prior_ref: 'p1:1',
++      fresh_ref: 'p2:1',
++      verification_field: 'contains_required_token',
++      submit_matches: 1,
++      session: receipt.actions[0].session,
++    });
++    assert.deepEqual(receipt.actions, [
++      { tool: 'browser_type', ref: 'p1:0', session: receipt.actions[0].session },
++      { tool: 'browser_click', ref: 'p2:1', session: receipt.actions[0].session },
++    ]);
++    assert.equal(events.at(-1)?.outcome, 'verified');
++  });
++
++  for (const mode of ['accepted', 'already-verified', 'budget'] as const) {
++    for (const guarded of [false, true]) {
++      test(`runner ${mode} outcomes omit the verification token (guarded=${guarded})`, () => {
++        const { events, jsonl, status } = runScenario({ mode, guarded });
++        const outcome = mode === 'budget' ? 'budget_exhausted' : 'verified';
++        assert.equal(status, mode === 'budget' ? 1 : 0);
++        assert.deepEqual(events.at(-1), { event: 'outcome', outcome });
++        assert.equal(jsonl.includes(TOKEN), false);
++      });
++    }
++  }
++
++  test('runner keeps the default-off provider path and scores unchanged', () => {
++    const { events, receipt, status } = runScenario({ guarded: false });
++    assert.equal(status, 0);
++    const steps = events.filter((event) => event.event === 'step');
++    assert.equal(steps.length, 2);
++    for (const event of events) assert.equal(Object.hasOwn(event, 'guarded_completion'), false);
++    for (const step of steps) {
++      assert.equal(step.decision_route, 'provider');
++      assert.equal(step.confidence, 1);
++      assert.equal(step.probabilities[step.candidate], 1);
++    }
++    assert.equal(receipt.actions[1].ref, 'p2:1');
++  });
++
++  test('runner logs a declined reobserve step and consumes the pending proof once', () => {
++    const { events, receipt, status } = runScenario({ mode: 'reobserve' });
++    assert.equal(status, 0);
++    const steps = events.filter((event) => event.event === 'step');
++    assert.deepEqual(
++      steps.map((step) => step.candidate),
++      ['type-verification-value', 'reobserve', 'submit-form']
++    );
++    assert.deepEqual(steps[1].guarded_completion, {
++      status: 'declined',
++      reason: 'submit_not_unique',
++    });
++    assert.equal(steps[1].decision_route, 'provider');
++    assert.equal(steps[1].confidence, 1);
++    assert.equal(steps[2].decision_route, 'provider');
++    assert.equal(Object.hasOwn(steps[2], 'guarded_completion'), false);
++    assert.equal(receipt.actions[1].ref, 'p3:1');
++  });
++
++  for (const mode of ['abstain', 'no-choice'] as const) {
++    test(`runner logs a declined ${mode} outcome`, () => {
++      const { events, receipt, status, jsonl } = runScenario({ mode });
++      assert.equal(status, 1);
++      const outcome = events.at(-1)!;
++      assert.equal(outcome.event, 'outcome');
++      assert.equal(outcome.outcome, 'abstained');
++      assert.equal(outcome.step, 2);
++      assert.deepEqual(outcome.guarded_completion, {
++        status: 'declined',
++        reason: 'submit_not_unique',
++      });
++      assert.equal(receipt.actions.length, 1);
++      assert.equal(jsonl.includes(TOKEN), false);
++    });
++  }
++
++  test('runner retains declined telemetry on a normal provider action', () => {
++    const { events, status } = runScenario({ mode: 'ref-reused' });
++    assert.equal(status, 0);
++    assert.deepEqual(events[1].guarded_completion, { status: 'declined', reason: 'ref_reused' });
++    assert.equal(events[1].decision_route, 'provider');
++    assert.equal(events[1].confidence, 1);
++    assert.deepEqual(events[1].probabilities, { 'submit-form': 1, reobserve: 0, abstain: 0 });
++  });
++
++  for (const mode of ['accepted', 'ref-reused'] as const) {
++    for (const guarded of [false, true]) {
++      test(`runner logs action failure telemetry for ${mode} (guarded=${guarded})`, () => {
++        const { events, receipt, status, jsonl } = runScenario({
++          mode,
++          guarded,
++          actionError: true,
++        });
++        assert.equal(status, 1);
++        const outcome = events.at(-1)!;
++        assert.equal(outcome.event, 'outcome');
++        assert.equal(outcome.outcome, 'unknown');
++        assert.equal(outcome.step, 2);
++        assert.equal(outcome.phase, 'action');
++        assert.equal(outcome.error, 'DriverToolError');
++        assert.equal(outcome.tool, 'browser_click');
++        if (!guarded) assert.equal(Object.hasOwn(outcome, 'guarded_completion'), false);
++        else
++          assert.deepEqual(
++            outcome.guarded_completion,
++            mode === 'accepted'
++              ? {
++                  status: 'accepted',
++                  prior_ref: 'p1:1',
++                  fresh_ref: 'p2:1',
++                  verification_field: 'contains_required_token',
++                  submit_matches: 1,
++                  session: receipt.actions[0].session,
++                }
++              : { status: 'declined', reason: 'ref_reused' }
++          );
++        assert.equal(receipt.actions.length, 2);
++        assert.equal(jsonl.includes(TOKEN), false);
++      });
++    }
++  }
++
++  test('runner logs declined telemetry on background refusal without carrying it to foreground', () => {
++    const { events, receipt, status } = runScenario({ mode: 'visual-refusal' });
++    assert.equal(status, 0);
++    const steps = events.filter((event) => event.event === 'step');
++    assert.equal(steps.length, 3);
++    assert.deepEqual(steps[1].guarded_completion, {
++      status: 'declined',
++      reason: 'submit_not_unique',
++    });
++    assert.equal(steps[1].action_error, 'background_not_supported');
++    assert.equal(steps[1].decision_route, 'provider');
++    assert.equal(steps[2].decision_route, 'provider');
++    assert.equal(Object.hasOwn(steps[2], 'guarded_completion'), false);
++    assert.deepEqual(
++      receipt.actions.slice(1).map((action: Record<string, unknown>) => action.delivery_mode),
++      ['background', 'foreground']
++    );
++  });
++
++  for (const providerError of [false, true]) {
++    test(`runner logs declined telemetry on provider ${providerError ? 'request' : 'validation'} failure`, () => {
++      const { events, receipt, status, jsonl } = runScenario({
++        mode: providerError ? 'ref-reused' : 'accepted',
++        providerError,
++        duplicateCandidate: !providerError,
++      });
++      assert.equal(status, 1);
++      const outcome = events.at(-1)!;
++      assert.deepEqual(outcome, {
++        event: 'outcome',
++        outcome: 'unknown',
++        step: 2,
++        phase: 'provider',
++        decision_route: 'provider',
++        error: 'Error',
++        visual: { status: 'skipped', reason: 'disabled' },
++        guarded_completion: {
++          status: 'declined',
++          reason: providerError ? 'ref_reused' : 'candidate_not_unique',
++        },
++      });
++      if (providerError) {
++        assert.equal(receipt.providerCalls, 2);
++        assert.equal(events[0].confidence, 0.72);
++        assert.deepEqual(events[0].probabilities, {
++          'type-verification-value': 0.72,
++          reobserve: 0.18,
++          abstain: 0.1,
++        });
++      }
++      assert.equal(receipt.actions.length, 1);
++      assert.equal(jsonl.includes(TOKEN), false);
++    });
++  }
++
++  test('runner preserves default-off provider failure behavior without guard telemetry', () => {
++    const { events, receipt, status, jsonl } = runScenario({ guarded: false, providerError: true });
++    assert.equal(status, 1);
++    assert.equal(events.length, 1);
++    assert.equal(events[0].event, 'step');
++    assert.equal(Object.hasOwn(events[0], 'guarded_completion'), false);
++    assert.equal(receipt.providerCalls, 2);
++    assert.equal(jsonl.includes(TOKEN), false);
++  });
++}

@@ -1,0 +1,67 @@
+{
+  "blocking_accepted_proof": {
+    "code": [
+      "python/guarded_completion.py:GuardedCompletionResult and accepted proof",
+      "typescript/guarded_completion.ts:GuardedCompletionResult and accepted proof",
+      "python/run.py and typescript/run.ts:guarded_completion on step JSONL"
+    ],
+    "tests": [
+      "Python test_fresh_unique_completion_uses_only_the_fresh_ref",
+      "TypeScript exact accepted telemetry test",
+      "Python/TypeScript runner regressions",
+      "verify_setup accepted proof audit"
+    ]
+  },
+  "blocking_decline_reasons": {
+    "code": [
+      "Both resolvers return a result for every rejected branch",
+      "Both runners emit declined proof on subsequent provider step and on fallback failure/abstention, consume pending authority once"
+    ],
+    "reasons": [
+      "session_mismatch",
+      "task_mismatch",
+      "page_missing",
+      "field_not_proven",
+      "submit_not_unique",
+      "ref_reused",
+      "candidate_not_unique",
+      "candidate_mismatch"
+    ],
+    "tests": [
+      "Exact reason assertions for all eight in both languages",
+      "Fallback JSONL, reobserve/one-use, provider error/no-choice and action failure tests"
+    ]
+  },
+  "calibration_cleanup": {
+    "code": [
+      "Both guarded branches assign null confidence/probabilities and zero provider_decision_ms"
+    ],
+    "tests": [
+      "Both runner accepted tests",
+      "Verifier refuses non-null or absent score fields",
+      "Existing #4052 timing regressions unchanged"
+    ]
+  },
+  "optional_real_driver_decline": {
+    "code": [
+      "Fixture-only duplicate Submit injection in verify_setup.py",
+      "--guarded-completion-decline requires the existing guarded mode/default fixture",
+      "Small CI invocation and evidence-upload additions",
+      "README reproduction command"
+    ],
+    "tests": [
+      "Verifier exact fallback route/reason and independent state checks",
+      "Real Driver Python+TypeScript receipt will be rerun on final clean committed head"
+    ]
+  },
+  "constraints": [
+    "No Driver API changes",
+    "Selection predicates unchanged",
+    "No generic authorization abstraction",
+    "Default guard disabled; ordinary provider selection preserved",
+    "Fresh ref required; rejected plans cleared once",
+    "Fixture /state remains independent; additional journal is captured on genuine FixtureState.submit only",
+    "Current main fe9b0c6d3, #4330 and #4052 ancestry preserved through normal merges",
+    "Only existing #4316 branch changed; no GitHub comments"
+  ]
+}

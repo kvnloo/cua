@@ -1,0 +1,73 @@
+[
+  {
+    "name": "python-full",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "uv run python -m unittest discover -s python/tests -v",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-python-full.log",
+    "tests": 248,
+    "duration_seconds": 23.037,
+    "skipped": 1
+  },
+  {
+    "name": "python-focused",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "uv run --frozen python -m unittest discover -s python/tests -p 'test_guarded*.py' -v",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-python-focused.log",
+    "tests": 15,
+    "duration_seconds": 4.034
+  },
+  {
+    "name": "typescript-full",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "export PATH=/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin:$PATH; npm test",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-typescript-full.log",
+    "tests": 155,
+    "pass": 155,
+    "fail": 0,
+    "skipped": 0
+  },
+  {
+    "name": "typescript-typecheck",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "export PATH=/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin:$PATH; npm run typecheck",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-typescript-typecheck.log"
+  },
+  {
+    "name": "typescript-focused",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "export PATH=/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin:$PATH; node --import tsx --test typescript/guarded_completion.test.ts typescript/run_guarded_completion.test.ts",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-typescript-focused.log",
+    "tests": 50,
+    "pass": 50,
+    "fail": 0,
+    "skipped": 0
+  },
+  {
+    "name": "python-lint",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "ruff check python/guarded_completion.py python/run.py verify_setup.py python/tests/test_guarded_completion.py python/tests/test_guarded_runner.py python/tests/test_verify_setup.py",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-python-lint.log"
+  },
+  {
+    "name": "typescript-format",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "export PATH=/home/kvn/.local/share/fnm/node-versions/v22.23.2/installation/bin:$PATH; npx prettier --check typescript/guarded_completion.ts typescript/guarded_completion.test.ts typescript/run.ts typescript/run_guarded_completion.test.ts",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-typescript-format.log"
+  },
+  {
+    "name": "verifier-focused",
+    "exact_head": "c78f50efed1ee7b289ab8947ec997904ea18fd72",
+    "command": "uv run --frozen python -m unittest discover -s python/tests -p test_verify_setup.py -v",
+    "exit_code": 0,
+    "log": "/mnt/zer0models/github/cua-lanes/evidence/4316-maintainer-proof-review/final-verifier-focused.log",
+    "tests": 21,
+    "duration_seconds": 11.76
+  }
+]

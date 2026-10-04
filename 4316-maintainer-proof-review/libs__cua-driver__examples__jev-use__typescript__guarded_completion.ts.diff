@@ -1,0 +1,104 @@
+diff --git i/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts w/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts
+index 4fb069a69..1142d7264 100644
+--- i/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts
++++ w/libs/cua-driver/examples/jev-use/typescript/guarded_completion.ts
+@@ -7,12 +7,7 @@
+  * never carries an old page ref forward as action authority.
+  */
+ import type { Candidate } from './sources.js';
+-import {
+-  FIXTURE_TASK_ID,
+-  SUBMIT_NAME,
+-  type Task,
+-  type TaskSources,
+-} from './tasks.js';
++import { FIXTURE_TASK_ID, SUBMIT_NAME, type Task, type TaskSources } from './tasks.js';
+ 
+ export const TYPE_CANDIDATE_ID = 'type-verification-value';
+ export const SUBMIT_CANDIDATE_ID = 'submit-form';
+@@ -26,6 +21,33 @@ export type GuardedCompletionPlan = Readonly<{
+   priorRef: string;
+ }>;
+ 
++type DeclineReason =
++  | 'session_mismatch'
++  | 'task_mismatch'
++  | 'page_missing'
++  | 'field_not_proven'
++  | 'submit_not_unique'
++  | 'ref_reused'
++  | 'candidate_not_unique'
++  | 'candidate_mismatch';
++
++export type GuardedCompletionTelemetry = Readonly<
++  | {
++      status: 'accepted';
++      prior_ref: string;
++      fresh_ref: string;
++      verification_field: 'contains_required_token';
++      submit_matches: 1;
++      session: string;
++    }
++  | { status: 'declined'; reason: DeclineReason }
++>;
++
++export type GuardedCompletionResult = Readonly<{
++  candidate: Candidate | undefined;
++  telemetry: GuardedCompletionTelemetry;
++}>;
++
+ function matchingRefs(
+   snapshot: Readonly<Record<string, unknown>>,
+   role: string,
+@@ -78,17 +100,23 @@ export function resolveGuardedCompletion(
+   sources: TaskSources,
+   candidates: readonly Candidate[],
+   session: string
+-): Candidate | undefined {
+-  if (!session || session !== plan.session || task.id !== FIXTURE_TASK_ID || !sources.page) {
+-    return undefined;
++): GuardedCompletionResult {
++  const decline = (reason: DeclineReason): GuardedCompletionResult => ({
++    candidate: undefined,
++    telemetry: { status: 'declined', reason },
++  });
++  if (!session || session !== plan.session) {
++    return decline('session_mismatch');
+   }
++  if (task.id !== FIXTURE_TASK_ID) return decline('task_mismatch');
++  if (!sources.page) return decline('page_missing');
+   const state = task.stateSummary(sources);
+-  if (state.verification_field !== 'contains_required_token') return undefined;
++  if (state.verification_field !== 'contains_required_token') return decline('field_not_proven');
+ 
+   const matches = matchingRefs(sources.page.snapshot, plan.targetRole, plan.targetName);
+-  if (matches.length !== 1) return undefined;
++  if (matches.length !== 1) return decline('submit_not_unique');
+   const freshRef = String(matches[0].ref);
+-  if (freshRef === plan.priorRef) return undefined;
++  if (freshRef === plan.priorRef) return decline('ref_reused');
+ 
+   const executable = candidates.filter(
+     (candidate) =>
+@@ -96,8 +124,18 @@ export function resolveGuardedCompletion(
+       candidate.tool === 'browser_click' &&
+       candidate.source === 'page'
+   );
+-  if (executable.length !== 1) return undefined;
++  if (executable.length !== 1) return decline('candidate_not_unique');
+   const candidate = executable[0];
+-  if (candidate.arguments.ref !== freshRef) return undefined;
+-  return candidate;
++  if (candidate.arguments.ref !== freshRef) return decline('candidate_mismatch');
++  return {
++    candidate,
++    telemetry: {
++      status: 'accepted',
++      prior_ref: plan.priorRef,
++      fresh_ref: freshRef,
++      verification_field: 'contains_required_token',
++      submit_matches: 1,
++      session,
++    },
++  };
+ }
