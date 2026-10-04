@@ -1,0 +1,21 @@
+{"locks":"cargo-build then quiet-shared","mode":"new","requested":"2026-10-02T22:09:42.805Z"}
+{"locks":"cargo-build+quiet-shared","acquired":"2026-10-02T22:13:23.468Z","loadavg":"5.60 7.18 5.05"}
+dbus-daemon[1991097]: [session uid=1000 pid=1991097 pidfd=4] Activating service name='org.freedesktop.systemd1' requested by ':1.1' (uid=1000 pid=1991109 comm="/usr/bin/dbus-broker-launch --config-file=/usr/sha")
+dbus-daemon[1991097]: [session uid=1000 pid=1991097 pidfd=4] Activated service 'org.freedesktop.systemd1' failed: Process org.freedesktop.systemd1 exited with status 1
+[session] DISPLAY=:101 openbox=1991133 picom=1991134 dbus=unix:path=/tmp/dbus-uKvF6en2zw,guid=139f61fee0031e38962d4f736ac02c86
+head=bdf33d9fe4d716033089244a6571db21934374d6 dirty_files=1 rustc=rustc 1.97.1 (8bab26f4f 2026-07-14)
+ .../crates/platform-linux/src/input/focus_guard.rs | 220 ++++++++++++++++-----
+ 1 file changed, 169 insertions(+), 51 deletions(-)
+### cargo test -p platform-linux --lib -- input::focus_guard::tests::a_steal_during_a_read_stalled_past_the_watch_is_restored input::focus_guard::tests::a_change_first_seen_after_the_restore_budget_is_still_verified
+test input::focus_guard::tests::a_steal_during_a_read_stalled_past_the_watch_is_restored ... FAILED
+test input::focus_guard::tests::a_change_first_seen_after_the_restore_budget_is_still_verified ... FAILED
+failures:
+thread 'input::focus_guard::tests::a_steal_during_a_read_stalled_past_the_watch_is_restored' (2003848) panicked at crates/platform-linux/src/input/focus_guard.rs:1185:9:
+thread 'input::focus_guard::tests::a_change_first_seen_after_the_restore_budget_is_still_verified' (2003847) panicked at crates/platform-linux/src/input/focus_guard.rs:1198:9:
+assertion `left == right` failed: FocusGuardReport { changed: true, restored: false, changes: ["focus 0x1->0x2"], grab_held_by: None, same_app_window: None, closed_window: None, elapsed_ms: 0 }
+failures:
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 619 filtered out; finished in 0.70s
+error: test failed, to rerun pass `-p platform-linux --lib`
+rc=101
+[session] exit rc=0 run_dir=/mnt/zer0models/cua-lane-tmp/x11-session.AxsgDh
+{"released":"2026-10-02T22:14:14.453Z","rc":0}

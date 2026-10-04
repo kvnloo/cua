@@ -646,36 +646,16 @@ impl FocusSnapshot {
         // The target app owns the focus: whatever it maps next is its own.
         let target_owns_focus = target_pid.is_some() && self.previous_owner == target_pid;
 
-        // Settle watch: stop at the first observed change. A new top-level
-        // (dialog being mapped) extends the watch when the focus belongs to
-        // another application, since the WM focuses it only once mapped and
-        // that steal must be undone; when the target app already owns the
-        // focus the new window is its own and the watch ends at once.
-        let mut watch_until = if settle_watch {
-            started + self::settle_watch()
-        } else {
-            started
-        };
-        let mut extended = false;
-        let mut changes = self.diff(&x);
-        let mut new_clients = self.new_clients(&x);
-        let mut own_window = self.own_new_window(&x, target_pid, &new_clients);
-        if !settle_watch && !new_clients.is_empty() && own_window.is_none() {
-            extended = true;
-            watch_until = started + SETTLE_WATCH_NEW_WINDOW;
-        }
-        let clamp = settle_clamp();
-        while changes.is_empty() && own_window.is_none() && Instant::now() < watch_until {
-            std::thread::sleep(settle_poll_sleep(clamp, Instant::now(), watch_until));
-            changes = self.diff(&x);
-            cua_driver_core::phase_trace::mark("focus_guard", "settle_poll");
-            new_clients = self.new_clients(&x);
-            own_window = self.own_new_window(&x, target_pid, &new_clients);
-            if !extended && !new_clients.is_empty() && own_window.is_none() {
-                extended = true;
-                watch_until = started + SETTLE_WATCH_NEW_WINDOW;
-            }
-        }
+        let (changes, new_clients, own_window) = settle(
+            started,
+            settle_watch.then(self::settle_watch),
+            || self.diff(&x),
+            || {
+                let new_clients = self.new_clients(&x);
+                let own_window = self.own_new_window(&x, target_pid, &new_clients);
+                (new_clients, own_window)
+            },
+        );
 
         // Popups opened by the action: an open GTK/VCL menu grabs the keyboard.
         let new_popups: Vec<Window> = x
@@ -750,27 +730,7 @@ impl FocusSnapshot {
         // Restore. EWMH re-activation makes the WM restore stacking and its
         // own focus bookkeeping; the explicit XSetInputFocus covers WMs that
         // treat _NET_ACTIVE_WINDOW as raise-only and the no-WM case.
-        let mut stable = 0;
-        let mut resent = 0;
-        let deadline = started + RESTORE_BUDGET;
-        self.reassert(&x);
-        while Instant::now() < deadline {
-            std::thread::sleep(RESTORE_POLL);
-            let now = self.diff(&x);
-            if now.is_empty() {
-                stable += 1;
-                if stable >= STABLE_POLLS {
-                    report.restored = true;
-                    break;
-                }
-                continue;
-            }
-            stable = 0;
-            if resent < 2 {
-                resent += 1;
-                self.reassert(&x);
-            }
-        }
+        report.restored = restore_verified(started, || self.diff(&x), || self.reassert(&x));
         if !report.restored {
             tracing::warn!(
                 "background focus guard: could not restore {:?}",
@@ -834,6 +794,74 @@ impl FocusSnapshot {
             x.set_focus(self.core_focus, self.revert_to);
         }
     }
+}
+
+/// Settle watch: stop at the first observed change. A new top-level (dialog
+/// being mapped) extends the watch when the focus belongs to another
+/// application, since the WM focuses it only once mapped and that steal must
+/// be undone; when the target app already owns the focus the new window is
+/// its own and the watch ends at once.
+///
+/// `watch` is the settle window (`None`: one check, unless a new top-level is
+/// still being mapped). `diff` reads what moved since the snapshot; `windows`
+/// reads the top-levels mapped since and the target's own new window among
+/// them. Returns the last of each.
+fn settle(
+    started: Instant,
+    watch: Option<Duration>,
+    mut diff: impl FnMut() -> Vec<String>,
+    mut windows: impl FnMut() -> (Vec<Window>, Option<SameAppWindow>),
+) -> (Vec<String>, Vec<Window>, Option<SameAppWindow>) {
+    let mut watch_until = started + watch.unwrap_or_default();
+    let mut extended = false;
+    let mut changes = diff();
+    let (mut new_clients, mut own_window) = windows();
+    if watch.is_none() && !new_clients.is_empty() && own_window.is_none() {
+        extended = true;
+        watch_until = started + SETTLE_WATCH_NEW_WINDOW;
+    }
+    let clamp = settle_clamp();
+    while changes.is_empty() && own_window.is_none() && Instant::now() < watch_until {
+        std::thread::sleep(settle_poll_sleep(clamp, Instant::now(), watch_until));
+        changes = diff();
+        cua_driver_core::phase_trace::mark("focus_guard", "settle_poll");
+        (new_clients, own_window) = windows();
+        if !extended && !new_clients.is_empty() && own_window.is_none() {
+            extended = true;
+            watch_until = started + SETTLE_WATCH_NEW_WINDOW;
+        }
+    }
+    (changes, new_clients, own_window)
+}
+
+/// Re-assert the snapshot (`reassert`) until `diff` reads nothing moved for
+/// `STABLE_POLLS` polls in a row, re-sending at most twice, within the
+/// restore budget. `true` once the restore held.
+fn restore_verified(
+    started: Instant,
+    mut diff: impl FnMut() -> Vec<String>,
+    mut reassert: impl FnMut(),
+) -> bool {
+    let mut stable = 0;
+    let mut resent = 0;
+    let deadline = started + RESTORE_BUDGET;
+    reassert();
+    while Instant::now() < deadline {
+        std::thread::sleep(RESTORE_POLL);
+        if diff().is_empty() {
+            stable += 1;
+            if stable >= STABLE_POLLS {
+                return true;
+            }
+            continue;
+        }
+        stable = 0;
+        if resent < 2 {
+            resent += 1;
+            reassert();
+        }
+    }
+    false
 }
 
 /// Run `body` (a background delivery) between a snapshot and a restore.
@@ -1079,6 +1107,96 @@ mod tests {
             classify_focus_move(None, Some(7), Some(7)),
             FocusMove::OtherApp
         );
+    }
+
+    /// A fake focus source for the settle watch and the restore loop. Each
+    /// read returns what the "server" held when it processed the read; the
+    /// `stall_read`-th read is processed, then blocks until `stall_until`, and
+    /// the focus is stolen while it blocks (`seen_late`: the read is processed
+    /// after the steal instead). `reassert` moves the focus back.
+    struct StalledSource {
+        reads: std::cell::Cell<u32>,
+        stolen: std::cell::Cell<bool>,
+        stall_read: u32,
+        stall_until: Instant,
+        seen_late: bool,
+    }
+
+    impl StalledSource {
+        fn new(stall_read: u32, stall_until: Instant, seen_late: bool) -> Self {
+            Self {
+                reads: std::cell::Cell::new(0),
+                stolen: std::cell::Cell::new(false),
+                stall_read,
+                stall_until,
+                seen_late,
+            }
+        }
+
+        fn diff(&self) -> Vec<String> {
+            let read = self.reads.get() + 1;
+            self.reads.set(read);
+            let stall = read == self.stall_read;
+            if stall && self.seen_late {
+                std::thread::sleep(self.stall_until.saturating_duration_since(Instant::now()));
+                self.stolen.set(true);
+            }
+            let changes = if self.stolen.get() {
+                vec!["focus 0x1->0x2".to_owned()]
+            } else {
+                Vec::new()
+            };
+            if stall && !self.seen_late {
+                std::thread::sleep(self.stall_until.saturating_duration_since(Instant::now()));
+                self.stolen.set(true);
+            }
+            changes
+        }
+
+        /// The guard's settle watch and restore over this source.
+        fn guard(&self, started: Instant) -> FocusGuardReport {
+            let (changes, _, _) = settle(
+                started,
+                Some(SETTLE_WATCH),
+                || self.diff(),
+                || (Vec::new(), None),
+            );
+            let mut report = FocusGuardReport {
+                changed: !changes.is_empty(),
+                changes,
+                ..FocusGuardReport::default()
+            };
+            if report.changed {
+                report.restored =
+                    restore_verified(started, || self.diff(), || self.stolen.set(false));
+            }
+            report
+        }
+    }
+
+    #[test]
+    fn a_steal_during_a_read_stalled_past_the_watch_is_restored() {
+        // c08-017: the reads at 0/30/60/90 ms see nothing; the 4th is
+        // processed before a steal at ~217 ms and returns only at 700 ms,
+        // past the 220 ms watch and the 600 ms restore budget.
+        let started = Instant::now();
+        let source = StalledSource::new(4, started + Duration::from_millis(700), false);
+        let report = source.guard(started);
+        assert!(report.changed, "the steal went unseen: {report:?}");
+        assert_eq!(report.outcome(), Some("restored"), "{report:?}");
+        assert!(!source.stolen.get(), "the focus was left on the decoy");
+    }
+
+    #[test]
+    fn a_change_first_seen_after_the_restore_budget_is_still_verified() {
+        // The stalled read itself returns the steal, at 700 ms: the restore
+        // still verifies the re-assertion before it reports `restored`.
+        let started = Instant::now();
+        let source = StalledSource::new(4, started + Duration::from_millis(700), true);
+        let report = source.guard(started);
+        assert!(report.changed, "{report:?}");
+        assert_eq!(report.outcome(), Some("restored"), "{report:?}");
+        assert!(!source.stolen.get());
     }
 
     #[test]
