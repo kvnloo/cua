@@ -1,0 +1,81 @@
+diff --git a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+index 4e0581d9e..c78a8a217 100644
+--- a/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
++++ b/libs/cua-driver/rust/crates/platform-linux/src/input/focus_guard.rs
+@@ -979,4 +979,76 @@ mod grab_tests {
+     fn restore_and_settle_budgets_bound_the_guard_under_1500ms() {
+         assert!(SETTLE_WATCH_NEW_WINDOW + RESTORE_BUDGET <= Duration::from_millis(1500));
+     }
++
++    /// The cursor reveal of a native action maps the overlay mid-action; the
++    /// census must not take it for a menu, while a foreign override-redirect
++    /// window (even one titled like ours) still counts.
++    #[test]
++    #[ignore = "requires a live X11 server (run inside a private Xvfb session)"]
++    fn live_popup_census_skips_the_drivers_overlay_and_counts_a_foreign_popup() -> anyhow::Result<()>
++    {
++        use cursor_overlay::{CursorConfig, OverlayCommand};
++        use x11rb::wrapper::ConnectionExt as _;
++
++        let x = X::open()?;
++        let foreign = x.conn.generate_id()?;
++        x.conn.create_window(
++            COPY_DEPTH_FROM_PARENT,
++            foreign,
++            x.root,
++            10,
++            10,
++            40,
++            40,
++            0,
++            WindowClass::INPUT_OUTPUT,
++            0,
++            &CreateWindowAux::new().override_redirect(1u32),
++        )?;
++        x.conn.change_property8(
++            PropMode::REPLACE,
++            foreign,
++            AtomEnum::WM_NAME,
++            AtomEnum::STRING,
++            b"Cua.ImpostorMenu",
++        )?;
++        x.conn.map_window(foreign)?;
++        x.conn.flush()?;
++
++        let cursor_id = "fix-20o-own-overlay";
++        crate::overlay::init(CursorConfig {
++            cursor_id: cursor_id.to_owned(),
++            ..CursorConfig::default()
++        });
++        crate::overlay::run_on_thread();
++        crate::overlay::send_command(OverlayCommand::SetEnabled(true));
++        crate::overlay::send_command(OverlayCommand::SnapTo {
++            x: 160.0,
++            y: 160.0,
++            heading_radians: None,
++        });
++        let title = format!("Cua.AgentCursorOverlay.{cursor_id}");
++        let deadline = Instant::now() + Duration::from_secs(10);
++        let overlay = loop {
++            let tree = x.conn.query_tree(x.root)?.reply()?;
++            if let Some(w) = tree
++                .children
++                .iter()
++                .copied()
++                .find(|w| x.window_title(*w) == title && x.window_viewable(*w))
++            {
++                break w;
++            }
++            anyhow::ensure!(Instant::now() < deadline, "the overlay never mapped");
++            std::thread::sleep(Duration::from_millis(20));
++        };
++
++        let popups = x.mapped_popups();
++        assert!(popups.contains(&foreign), "a foreign popup must be counted");
++        assert!(
++            !popups.contains(&overlay),
++            "the Driver's own overlay 0x{overlay:x} was counted as a popup"
++        );
++        Ok(())
++    }
+ }

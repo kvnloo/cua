@@ -51,7 +51,7 @@ def put(src: Path, dst: Path, gz: bool = False) -> None:
 
 def main() -> None:
     rows = PKT / "raw" / "rows"
-    for pass_dir in sorted((TMP / "runs").glob("*")):
+    for pass_dir in sorted(p for p in (TMP / "runs").glob("*") if p.is_dir()):
         for block in sorted(p for p in pass_dir.iterdir() if p.is_dir()):
             out = rows / pass_dir.name / block.name
             for name in ("trials.jsonl", "probe.jsonl"):

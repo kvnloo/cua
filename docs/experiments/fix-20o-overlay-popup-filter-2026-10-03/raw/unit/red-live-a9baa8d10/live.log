@@ -1,0 +1,28 @@
+   Compiling cua-driver-contract v0.33.1 (<lanes>/w8-fix20o-red/libs/cua-driver/rust/crates/cua-driver-contract)
+   Compiling pip-preview v0.33.1 (<lanes>/w8-fix20o-red/libs/cua-driver/rust/crates/pip-preview)
+   Compiling cua-driver-core v0.33.1 (<lanes>/w8-fix20o-red/libs/cua-driver/rust/crates/cua-driver-core)
+   Compiling cursor-overlay v0.33.1 (<lanes>/w8-fix20o-red/libs/cua-driver/rust/crates/cursor-overlay)
+   Compiling platform-linux v0.33.1 (<lanes>/w8-fix20o-red/libs/cua-driver/rust/crates/platform-linux)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 55.11s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (<targets>/cua-test-fix20o/debug/deps/platform_linux-c692f3ac707c9ddf)
+
+running 1 test
+test input::focus_guard::grab_tests::live_popup_census_skips_the_drivers_overlay_and_counts_a_foreign_popup ... FAILED
+
+failures:
+
+---- input::focus_guard::grab_tests::live_popup_census_skips_the_drivers_overlay_and_counts_a_foreign_popup stdout ----
+
+thread 'input::focus_guard::grab_tests::live_popup_census_skips_the_drivers_overlay_and_counts_a_foreign_popup' (215057) panicked at crates/platform-linux/src/input/focus_guard.rs:1048:9:
+the Driver's own overlay 0xa00003 was counted as a popup
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    input::focus_guard::grab_tests::live_popup_census_skips_the_drivers_overlay_and_counts_a_foreign_popup
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 612 filtered out; finished in 0.18s
+
+error: test failed, to rerun pass `-p platform-linux --lib`

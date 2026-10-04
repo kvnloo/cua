@@ -1,0 +1,25 @@
+{
+ "schema": "fix20o.unit.v1",
+ "red": {"source": "a9baa8d107fba8b0aef5a4ed6233e498e88d14d0 + test-only diff (the live census test; raw/unit/red-live-a9baa8d10/worktree.diff)",
+         "result": "FAILED by assertion: \"the Driver's own overlay 0xa00003 was counted as a popup\" (0 passed, 1 failed)",
+         "earlier_attempts": ["attempt0: rustup had no default toolchain inside the session HOME (no test ran)",
+                              "attempt1: the private display refused the connection (display collision; no assertion reached)"]},
+ "green": {"source": "dd7f33b581038220d8176350ab075dda1b036205 (F20)",
+           "platform_linux": "lib 603 passed, 0 failed, 11 ignored (includes the_drivers_own_overlay_is_not_a_popup_but_a_foreign_one_is); every integration test binary ok",
+           "cua_driver_core": "lib 823 passed, 0 failed; every integration test binary ok",
+           "live": "live_popup_census_skips_the_drivers_overlay_and_counts_a_foreign_popup: 1 passed"},
+ "red_live_assertion_failed": true,
+ "green_live_passed": true,
+ "green_suites_passed": true,
+ "environment": "hostless + hostless-strict (red rerun) / hostless (green), cua-x11-session.sh private Xvfb + openbox + picom, quiet lane SHARED with the cargo lock inside (receipts fix20o-unit-*), rustc 1.97.1",
+ "evidence": [
+  ["red assertion", "raw/unit/red-live-a9baa8d10/live.log", "the Driver's own overlay 0x[0-9a-f]+ was counted as a popup"],
+  ["red result line", "raw/unit/red-live-a9baa8d10/live.log", "test result: FAILED\\. 0 passed; 1 failed"],
+  ["red source", "raw/unit/red-live-a9baa8d10/env.txt", "head=a9baa8d107fba8b0aef5a4ed6233e498e88d14d0"],
+  ["green source", "raw/unit/green-suites-dd7f33b58/env.txt", "head=dd7f33b581038220d8176350ab075dda1b036205"],
+  ["green linux lib", "raw/unit/green-suites-dd7f33b58/linux-full.log", "test result: ok\\. 603 passed; 0 failed; 11 ignored"],
+  ["green core lib", "raw/unit/green-suites-dd7f33b58/core-full.log", "test result: ok\\. 823 passed; 0 failed"],
+  ["green live", "raw/unit/green-suites-dd7f33b58/live.log", "test result: ok\\. 1 passed; 0 failed; 0 ignored; 0 measured; 613 filtered out"],
+  ["green steps", "raw/unit/green-suites-dd7f33b58/steps.txt", "linux-full rc=0[\\s\\S]*core-full rc=0[\\s\\S]*live rc=0"]
+ ]
+}
