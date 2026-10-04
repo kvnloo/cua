@@ -1,0 +1,22 @@
+PASS  summary: recomputed from raw/ equals b09-summary.json (gates, verdict, S, Part E')                                                          224 trial records
+PASS  headline numbers equal the recomputed values and appear verbatim in README.md                                                               119 numbers; bad: []
+PASS  harness: first commit = B-08 blobs; untouched harness files keep them; compiled_routine.py fixed since the harness commit; R2-07 test blob  []
+PASS  harness: run_b04 COMP arm == R2-10R r2_10_browser COMP arm                                                                                  "COMP": {"cursor": False, "guard": True, "settle0": True, "poll_ms": 10, "compiled_validator": True, "knobs": {V_ENV: "1"}, "replay": True},
+PASS  harness: R2-10R scripted COMP artifact == B-04 copy                                                                                         r2-10-fill-submit-scripted-COMP
+PASS  B-07 carry: PREREG unit labels equal b07-summary.json labels on fill (same binary B7)                                                       []
+PASS  receipts: every trial and control record carries the binary name, sha256 and version                                                        224 records {'measured': 216, 'nw2': 3, 'smoke': 5}; bad []
+PASS  receipts: no CUA_LANE_EXP_* variable in any Driver environment                                                                              []
+PASS  receipts: measured / control manifests hostless/exclusive/mock/name/sha/version and inside their EXCLUSIVE ledger window                    4 manifests; []
+PASS  receipts: every completed round started at 1-min loadavg <= 4.0                                                                             []
+PASS  receipts: SHARED-lock receipts for the pilot, the version reads and the final analysis                                                      missing []
+PASS  receipts: versions logs (start, end) show the version and sha256                                                                            ['versions-b09r-end.log', 'versions-b09r-start.log', 'versions-end.log', 'versions-start.log'] []
+PASS  unit: red log fails (new tests vs the unmodified routine) and green log passes 32/32                                                        
+PASS  cited files tracked (verify_helper: README Files + summary/headline JSON)                                                                   []
+PASS  cited raw/harness/lane-scripts/tests paths are tracked                                                                                      []
+PASS  PREREG.json committed before the first measured trial                                                                                       prereg 2026-10-03T11:10:35-05:00, first measured chunk 2026-10-03T23:05:38.656000+00:00
+PASS  PREREG.json never amended after its first commit                                                                                            1 commits touch it
+PASS  privacy: no absolute local paths / session-bus paths / host or user names in any commit (hex/base64 decoded)                                6 commits, 83 blobs; names 2 (CUA_PRIVACY_NAMES_FILE + host name); extra patterns 5 (CUA_PRIVACY_PATTERNS_FILE); hits: []
+PASS  privacy: no secret-like values in any commit                                                                                                hits: []
+PASS  privacy: author/committer identity and trailer                                                                                              bad: []
+
+20/20 checks passed

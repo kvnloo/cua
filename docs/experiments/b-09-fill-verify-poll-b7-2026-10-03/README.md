@@ -280,6 +280,10 @@ Hard-rule breaches: none.
   - Manifests: `raw/main/run-manifest-main-m-a1-r00-11-k1.json`, `raw/main/run-manifest-main-m-a1-r12-23-k2.json`,
     `raw/main/run-manifest-main-m-a1-r24-35-k3.json`, `raw/main/run-manifest-ctl-m-a1-r36-36-k4.json`.
   - Locks: `raw/lock-ledger.jsonl` (wave 7 + B-09R lines), `raw/locks/holders.jsonl`.
+  - Final checks: `raw/final/verify-b09r-1.txt` (verify_artifacts.py 20/20 on `33deb4f2a`, SHARED `b09r-verify-1`),
+    `raw/final/scan-range-b09r.json` (PUB-04 scanner, range 56284782d..33deb4f2a: 2 commits, 0 private findings),
+    `raw/final/scan-census-b09r.json` (PUB-04 census of the branch tip: 28 commits not in upstream main, 0 private;
+    2 generic-path hits in upstream PR 4316 commits, not lane commits).
   - Logs: `raw/logs/b09r-run_all.log`, `raw/logs/b09r-main-a1-r00-11-k1.log`, `raw/logs/b09r-main-a1-r12-23-k2.log`,
     `raw/logs/b09r-main-a1-r24-35-k3.log`, `raw/logs/b09r-ctl-a1-r36-36-k4.log`,
     `raw/logs/versions-b09r-start.log`, `raw/logs/versions-b09r-end.log`.
