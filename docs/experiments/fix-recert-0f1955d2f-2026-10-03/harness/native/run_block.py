@@ -6,6 +6,10 @@ harness-supplied handle when the refusal discloses none (so the minted token is 
 I5p runs the 'same' observation order in every attempt; new row I5pt relaunches A with a different
 tree (CUA_GTK3_TASK_DENSITY=12) between Driver generations. Everything else is unchanged.
 
+RECERT-FIX copy (from the FIX-02 packet at cea02cb74), changes marked "RECERT-FIX": --i5p-order
+selects the I5p generation-2 observation order (same | swapped, the OWN-36 arms); the block header
+records the fixture sha256; rows W2a-W2d (same-process two windows, w2_rows.py) run under T2.
+
 One invocation = one block (at most 10 attempts) run inside a private X11 session
 (cua-x11-session.sh under hostless) while the caller holds the shared quiet-lane lock.
 Measurement only: the Driver binary is unmodified; the GTK3 task fixture's own state
@@ -593,7 +597,7 @@ def t3_block(args, out):
             # Driver process generation 1 observes; it exits; generation 2 observes and is
             # handed generation 1's token and capture. Arm 'same' keeps the observation order
             # (A first), arm 'swapped' observes B first in generation 2.
-            arm = "same"  # FIX-02: every I5p attempt keeps the observation order
+            arm = args.i5p_order  # RECERT-FIX: same | swapped per block (FIX-02 ran same only)
             rec["arm"] = arm
             g1 = proc()
             wa, wb = window(g1, apps["A"]), window(g1, apps["B"])
@@ -674,6 +678,7 @@ def main():
     parser.add_argument("--forged", action="store_true",
                         help="attempt k presents forged value family[k] instead of the real one")
     parser.add_argument("--out", required=True)
+    parser.add_argument("--i5p-order", choices=["same", "swapped"], default="same")  # RECERT-FIX
     args = parser.parse_args()
     args.attempt_list = parse_attempts(args.attempts)
     assert len(args.attempt_list) <= 10, "at most 10 attempts per lock acquisition"
@@ -688,11 +693,18 @@ def main():
                   "block": args.block, "attempts": args.attempt_list, "forged": args.forged,
                   "display": os.environ.get("DISPLAY"), "driver_sha256": sha,
                   "driver_version": version, "started_utc": utc(),
+                  "fixture_sha256": hashlib.sha256(open(FIX, "rb").read()).hexdigest(),  # RECERT-FIX
+                  "i5p_order": args.i5p_order if args.row == "I5p" else None,  # RECERT-FIX
                   "telemetry_env": {"DO_NOT_TRACK": "1", "CUA_DRIVER_RS_TELEMETRY_ENABLED": "0"}}
         out.write(json.dumps(header, sort_keys=True) + "\n")
         out.flush()
         if args.topology == "T3":
             n = t3_block(args, out)
+        elif args.row.startswith("W2"):  # RECERT-FIX: same-process two-window rows
+            import w2_rows
+
+            assert args.topology == "T2", "W2 rows run under T2"
+            n = w2_rows.w2_block(args, out)
         else:
             topo = Topology(args.topology, args.block)
             ctx = Ctx(topo, args.block, out)
