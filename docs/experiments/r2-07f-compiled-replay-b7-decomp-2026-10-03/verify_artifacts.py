@@ -12,7 +12,7 @@
 6. Provider: TypeSafe cap 0 -> no provider ledger in raw/, every manifest ran with provider_mode mock, every trial
    record has 0 provider attempts.
 7. Lock evidence: every measured chunk (blocks t, m, f) ran with lock_mode exclusive and has a quiet-lane ledger
-   receipt labelled r207f-<chunk> (raw/lock-receipts-global.jsonl, written by bin/quiet-timed); controls ran with
+   receipt labelled r207fr-<chunk> (R2-07fR resume) (raw/lock-receipts-global.jsonl, written by bin/quiet-timed); controls ran with
    the SHARED lock and a receipt.
 8. Driver identity: every trial record carries B7's name, sha256 and version.
 9. Every file the packet cites is tracked and not ignored; no untracked file under raw/.
@@ -244,7 +244,7 @@ def lock_check(raw: Path) -> None:
         for p in sorted((raw / f"{b}-manifests").glob("*.json")):
             m = json.loads(p.read_text())
             n += 1
-            if m.get("lock_mode") != mode or f"r207f-{m.get('chunk')}" not in labels:
+            if m.get("lock_mode") != mode or f"r207fr-{m.get('chunk')}" not in labels:
                 bad.append(f"{b}:{m.get('chunk')}:{m.get('lock_mode')}")
     check("lock evidence: measured chunks EXCLUSIVE with a quiet-timed receipt, controls SHARED with a receipt",
           n > 0 and not bad, f"{n} manifests; bad: {bad[:6]}")
