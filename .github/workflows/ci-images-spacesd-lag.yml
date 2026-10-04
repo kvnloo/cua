@@ -49,7 +49,12 @@ jobs:
         run: |
           set -euo pipefail
           git fetch -q --depth=1 origin "$BASE_SHA"
-          before="$(git show "$BASE_SHA:libs/cua-spacesd/VERSION")"
+          # A base predating cua-spacesd has no VERSION yet. The successful
+          # fetch above still requires a valid base revision.
+          before="(not present)"
+          if git cat-file -e "$BASE_SHA:libs/cua-spacesd/VERSION" 2>/dev/null; then
+            before="$(git show "$BASE_SHA:libs/cua-spacesd/VERSION")"
+          fi
           after="$(cat libs/cua-spacesd/VERSION)"
           if [ "$before" != "$after" ]; then
             echo "::notice title=Images follow this release::This PR moves cua-spacesd $before -> $after. Once it is released, cd-images-spacesd-release.yml rebuilds the images and opens the images/pins PR."
