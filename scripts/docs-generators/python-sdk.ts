@@ -18,7 +18,7 @@
  * Usage:
  *   pnpm --dir docs docs:generate:python            # write the pages
  *   pnpm --dir docs docs:check:python               # drift check (CI)
- *   tsx scripts/docs-generators/python-sdk.ts [--check] [--only cua|cua-sandbox]
+ *   tsx scripts/docs-generators/python-sdk.ts [--check]
  *
  * griffe is pinned in requirements.txt and run through `uv run --no-project`.
  * Set PYTHON_DOCS_EXTRACTOR="python3" to use an interpreter that already has
