@@ -227,13 +227,26 @@ async def test_files_round_trip():
     assert await sb.files.exists("/tmp/dir") is False
     assert await sb.files.is_dir("/tmp/dir") is True
     assert await sb.files.size("/tmp/blob") == len(payload)
-    names = sorted(e.name for e in await sb.files.list("/tmp"))
-    assert names == ["blob", "note.txt"]
     await sb.files.remove("/tmp/blob")
     await sb.files.remove_dir("/tmp/dir")
     assert ("remove", "/tmp/blob", False) in env.calls
     assert ("remove", "/tmp/dir", True) in env.calls
     assert env.files["/tmp/note.txt"] == "héllo".encode()
+
+
+async def test_files_listing_metadata():
+    env = FakeEnv()
+    env.files = {"/tmp/note.txt": b"hello", "/tmp/dir/nested.txt": b"nested"}
+    env.dirs.update({"/tmp", "/tmp/dir", "/tmp/dir/nested"})
+    sb = sandbox_with(env)
+
+    entries = await sb.files.list("/tmp/")
+
+    assert sorted((e.name, e.path, e.is_dir, e.size) for e in entries) == [
+        ("dir", "/tmp/dir", True, 0),
+        ("note.txt", "/tmp/note.txt", False, 5),
+    ]
+    await sb.disconnect()
 
 
 async def test_clipboard_screen_and_environment():

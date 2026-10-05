@@ -155,10 +155,23 @@ class FakeEnv:
 
     async def list_dir(self, path: str, depth: int) -> list:
         prefix = path.rstrip("/") + "/"
+
+        def included(entry_path: str) -> bool:
+            relative = entry_path[len(prefix) :]
+            return (
+                entry_path.startswith(prefix)
+                and bool(relative)
+                and len(relative.split("/")) <= depth
+            )
+
         return [
             SimpleNamespace(name=p[len(prefix) :], path=p, kind="file", size=len(d))
             for p, d in self.files.items()
-            if p.startswith(prefix)
+            if included(p)
+        ] + [
+            SimpleNamespace(name=p[len(prefix) :], path=p, kind="directory", size=0)
+            for p in self.dirs
+            if included(p)
         ]
 
     async def make_dir(self, path: str) -> Any:
