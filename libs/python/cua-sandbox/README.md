@@ -185,56 +185,17 @@ sandboxes refuse sidecars. Cloud `env=` and registry secrets work on both
 runtimes; cloud image layers (a remote build) are not available yet. See
 [Sidecars](https://cua.ai/docs/cua-sdk/guides/sidecars).
 
-## Ephemeral sandbox
+## Sandbox lifecycle
 
-Created on enter, destroyed on exit.
+See [Manage sandbox lifecycle](https://cua.ai/docs/cua-sdk/guides/lifecycle)
+for ephemeral and persistent sandboxes, reconnecting, and deletion. Disconnecting
+leaves the sandbox running; cloud sandboxes still expire when their TTL lapses.
+The guide explains how to extend cloud lifetime and how local lifetime differs.
 
-```python
-from cua_sandbox import Image, Sandbox
-
-async with Sandbox.ephemeral(Image.linux()) as sb:
-    await sb.shell.run("uname -a")
-    await sb.screenshot()
-```
-
-## Persistent sandbox
-
-Provision a new sandbox that stays alive after your script exits.
-
-```python
-from cua_sandbox import Image, Sandbox
-
-sb = await Sandbox.create(Image.linux())
-await sb.shell.run("uname -a")
-print(sb.id)  # save this to reconnect later: Sandbox.connect(sb.id)
-await sb.disconnect()
-```
-
-## Connect to existing sandbox
-
-Attach to a sandbox that's already running. Works as a plain await or context manager.
-
-```python
-from cua_sandbox import Sandbox
-
-# plain await
-sb = await Sandbox.connect("my-sandbox")
-await sb.shell.run("whoami")
-await sb.disconnect()
-
-# context manager: disconnects on exit, the sandbox keeps running
-async with Sandbox.connect("my-sandbox") as sb:
-    await sb.shell.run("whoami")
-```
-
-Attach to any reachable cua-spacesd with
+For Python method signatures, see the
+[Python Sandbox reference](https://cua.ai/docs/cua-sdk/reference/python/sandbox).
+To attach directly to a reachable cua-spacesd, use
 `Sandbox.connect(url="http://host:3211", token=...)`.
-
-## Destroy a sandbox
-
-```python
-await sb.destroy()  # disconnect + permanently delete
-```
 
 ## Local VM
 
