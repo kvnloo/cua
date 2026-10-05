@@ -96,6 +96,18 @@ class SandboxComputerHandler(AsyncComputerHandler):
             normalized.append(mapped)
         await self._sandbox.keyboard.keypress(normalized)
 
+    async def key_down(self, keys: Union[List[str], str]) -> None:
+        """Hold keys in the supplied order until key_up."""
+        names = [keys] if isinstance(keys, str) else list(keys)
+        for name in names:
+            await self._sandbox.keyboard.key_down(name)
+
+    async def key_up(self, keys: Union[List[str], str]) -> None:
+        """Release held keys in reverse order."""
+        names = [keys] if isinstance(keys, str) else list(keys)
+        for name in reversed(names):
+            await self._sandbox.keyboard.key_up(name)
+
     async def drag(
         self,
         path: Optional[List[Dict[str, int]]] = None,

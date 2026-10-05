@@ -89,3 +89,33 @@ def test_is_agent_computer_rejects_plain_objects():
 
     assert not is_agent_computer("not a computer")
     assert is_agent_computer({"screenshot": lambda: b""})
+
+
+@pytest.mark.asyncio
+async def test_held_keys_forward_in_press_and_reverse_release_order():
+    sb = _fake_sandbox()
+    calls = []
+
+    async def key_down(key):
+        calls.append(("down", key))
+
+    async def key_up(key):
+        calls.append(("up", key))
+
+    sb.keyboard.key_down = key_down
+    sb.keyboard.key_up = key_up
+    handler = SandboxComputerHandler(sb)
+
+    await handler.key_down(["Control", "shift"])
+    await handler.key_up(["Control", "shift"])
+    await handler.key_down("enter")
+    await handler.key_up("enter")
+
+    assert calls == [
+        ("down", "Control"),
+        ("down", "shift"),
+        ("up", "shift"),
+        ("up", "Control"),
+        ("down", "enter"),
+        ("up", "enter"),
+    ]
