@@ -1,0 +1,30 @@
+{
+  "issue": {
+    "url": "https://github.com/kvnloo/cua/issues/59",
+    "title": "[RFC pruning] Separate Driver mechanical batching from caller semantic guarded runs",
+    "issue_number": 59,
+    "body": "## Goal\n\nResolve the boundary between trycua/cua#2794/#3494 batching and RFC caller-side guarded runs.\n\nPinned main: `c5ee191c02b11448ffefcc38b78b064a87d8ef23`.\n\nRelevant:\n- #5 guarded run\n- #6 stale-target batch\n- #43 abstraction pressure\n- trycua/cua#2794\n- trycua/cua#3494\n\n## Candidate boundary\n\n**Driver/mechanical batch**\n- transport/dispatch efficiency;\n- existing authorization per child;\n- fail-fast;\n- no semantic claim that child N remains valid after child N-1.\n\n**Caller guarded run**\n- decides whether another semantic action is still justified;\n- reobserves/re-proves dependencies;\n- evaluates postconditions;\n- may choose a new fresh target.\n\n## Experiment / review\n\nTry to implement one workflow using the wrong owner in each direction:\n- put semantic dependency logic into a Driver batch;\n- emulate mechanical batching entirely in caller round trips.\n\nUse the failure to sharpen the ownership boundary.\n\n## Acceptance\n\nFinal RFC must not create a competing batch API if upstream #2794/#3494 owns mechanical composition.\n\n## Deliverable\n\nTwo-column ownership contract and exact integration point between the two mechanisms.",
+    "state": "closed",
+    "user": {
+      "login": "kvnloo",
+      "name": "kvnloo",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/7121943?v=4",
+      "id": 7121943
+    },
+    "assignees": null,
+    "labels": null,
+    "milestone": null,
+    "state_reason": "completed",
+    "comments": 2,
+    "created_at": "2026-09-25T22:03:42Z",
+    "updated_at": "2026-09-26T01:04:27Z",
+    "closed_at": "2026-09-26T01:02:28Z",
+    "display_url": "https://github.com/kvnloo/cua/issues/59",
+    "display_title": "[RFC pruning] Separate Driver mechanical batching from caller semantic guarded runs"
+  },
+  "url": "https://github.com/kvnloo/cua/issues/59",
+  "title": "[RFC pruning] Separate Driver mechanical batching from caller semantic guarded runs",
+  "display_url": "https://github.com/kvnloo/cua/issues/59",
+  "display_title": "[RFC pruning] Separate Driver mechanical batching from caller semantic guarded runs"
+}
