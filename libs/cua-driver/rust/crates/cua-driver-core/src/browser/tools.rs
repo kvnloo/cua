@@ -17,12 +17,13 @@ use crate::tool_args::ArgsExt;
 use super::cdp_ws::CdpConnection;
 use super::download::BrowserDownloadTool;
 use super::engine::{BrowserEngine, BrowserTabScreenshot};
+use super::motion_policy::BrowserMotionPolicy;
 use super::platform::{BrowserVisualActionKind, PrepareProfile, PrepareRequest, PrepareStrategy};
 use super::pointer::BrowserPointerTool;
 use super::refusal::{BrowserRefusal, BrowserRefusalCode};
 use super::session_schema as schema_session;
 use super::store::BrowserActionKind;
-use super::types::BindingQuality;
+use super::types::{BindingQuality, EndpointAccessClass};
 
 /// Register the complete browser surface against one shared engine. Platform
 /// crates call this from their `register_all` after constructing the
@@ -31,6 +32,7 @@ pub fn register_browser_tools(engine: &Arc<BrowserEngine>, registry: &mut ToolRe
     registry.register(Box::new(GetBrowserStateTool::new(engine.clone())));
     registry.register(Box::new(BrowserPrepareTool::new(engine.clone())));
     registry.register(Box::new(BrowserNavigateTool::new(engine.clone())));
+    registry.register(Box::new(BrowserMotionPolicyTool::new(engine.clone())));
     registry.register(Box::new(BrowserClickTool::new(engine.clone())));
     registry.register(Box::new(BrowserTypeTool::new(engine.clone())));
     registry.register(Box::new(BrowserDialogTool::new(engine.clone())));
@@ -752,6 +754,154 @@ impl Tool for BrowserPrepareTool {
                 }))
             }
             Err(refusal) => refusal.to_tool_result(),
+        }
+    }
+}
+
+// ── browser_motion_policy ────────────────────────────────────────────────────
+
+pub struct BrowserMotionPolicyTool {
+    def: ToolDef,
+    engine: Arc<BrowserEngine>,
+}
+
+impl BrowserMotionPolicyTool {
+    pub fn new(engine: Arc<BrowserEngine>) -> Self {
+        let def = ToolDef {
+            name: "browser_motion_policy".into(),
+            description: "Apply or clear the standard prefers-reduced-motion media \
+                emulation for one exactly-bound driver-owned browser tab. This is an \
+                explicit experimental performance/accessibility policy: it does not \
+                inject CSS, freeze timers, video, canvas, or WebGL, and refuses \
+                existing user profiles in v0."
+                .into(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "target_id": schema_target_id(),
+                    "tab_id": schema_tab_id(),
+                    "session": schema_session(),
+                    "mode": {
+                        "type": "string",
+                        "enum": ["reduce", "default"],
+                        "description": "reduce emulates prefers-reduced-motion: reduce; default clears the emulated media-feature override."
+                    }
+                },
+                "required": ["target_id", "tab_id", "mode"],
+                "additionalProperties": true
+            }),
+            read_only: false,
+            destructive: false,
+            idempotent: true,
+            open_world: true,
+        };
+        Self { def, engine }
+    }
+}
+
+#[async_trait]
+impl Tool for BrowserMotionPolicyTool {
+    fn def(&self) -> &ToolDef {
+        &self.def
+    }
+
+    async fn protected_resource_ownership(
+        &self,
+        adapter_id: &str,
+        args: &Value,
+    ) -> ProtectedResourceOwnership {
+        if adapter_id == "browser_bound_input" {
+            browser_resource_ownership(&self.engine, args)
+        } else {
+            ProtectedResourceOwnership::UserOwned
+        }
+    }
+
+    async fn protected_resource_scope(
+        &self,
+        adapter_id: &str,
+        args: &Value,
+    ) -> Result<Option<Value>, String> {
+        if adapter_id == "browser_bound_input" {
+            browser_protected_resource_scope(&self.engine, args, "browser_motion_policy").await
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn invoke(&self, args: Value) -> ToolResult {
+        let (target_id, tab_id, mode) = match (
+            args.require_str("target_id"),
+            args.require_str("tab_id"),
+            args.require_str("mode"),
+        ) {
+            (Ok(target), Ok(tab), Ok(mode)) => (target, tab, mode),
+            (Err(error), _, _) | (_, Err(error), _) | (_, _, Err(error)) => return error,
+        };
+        let motion_policy = match BrowserMotionPolicy::parse(&mode) {
+            Ok(policy) => policy,
+            Err(error) => return ToolResult::error(error),
+        };
+        let session = match require_explicit_session(&args) {
+            Ok(session) => session,
+            Err(error) => return error,
+        };
+
+        let _mutation = match self
+            .engine
+            .lock_mutation(&session, &target_id, &tab_id)
+            .await
+        {
+            Ok(guard) => guard,
+            Err(refusal) => return refusal.to_tool_result(),
+        };
+        let validated = match self
+            .engine
+            .revalidate_for_mutation(&session, &target_id, Some(&tab_id))
+            .await
+        {
+            Ok(validated) => validated,
+            Err(refusal) => return refusal.to_tool_result(),
+        };
+
+        if validated.record.endpoint_access_class != EndpointAccessClass::DriverOwned {
+            return BrowserRefusal::new(
+                BrowserRefusalCode::BrowserWrongTargetRefused,
+                "browser_motion_policy v0 is limited to driver-owned isolated browser tabs; existing user profiles and embedded applications are unchanged",
+            )
+            .with_detail(json!({
+                "reason": "motion_policy_driver_owned_only",
+                "endpoint_access_class": validated.record.endpoint_access_class,
+                "requested_mode": mode,
+            }))
+            .to_tool_result();
+        }
+
+        match validated
+            .conn
+            .call(
+                Some(&validated.cdp_session),
+                "Emulation.setEmulatedMedia",
+                motion_policy.cdp_params(),
+            )
+            .await
+        {
+            Ok(_) => ToolResult::text(format!(
+                "browser motion policy for {tab_id}: {mode}"
+            ))
+            .with_structured(json!({
+                "status": "ok",
+                "target_id": target_id,
+                "tab_id": tab_id,
+                "mode": mode,
+                "prefer_reduced_motion": motion_policy.prefers_reduced_motion(),
+                "browser_generation": validated.record.generation,
+                "scope": "driver_owned_tab",
+                "css_injected": false,
+            })),
+            Err(error) => ToolResult::error(format!(
+                "Emulation.setEmulatedMedia failed: {error}"
+            )),
         }
     }
 }
@@ -2675,6 +2825,10 @@ mod tests {
                 "browser_navigate",
             ),
             (
+                BrowserMotionPolicyTool::new(e.clone()).def().clone(),
+                "browser_motion_policy",
+            ),
+            (
                 BrowserClickTool::new(e.clone()).def().clone(),
                 "browser_click",
             ),
@@ -2708,6 +2862,7 @@ mod tests {
         for def in [
             BrowserPrepareTool::new(e.clone()).def().clone(),
             BrowserNavigateTool::new(e.clone()).def().clone(),
+            BrowserMotionPolicyTool::new(e.clone()).def().clone(),
             BrowserClickTool::new(e.clone()).def().clone(),
             BrowserTypeTool::new(e.clone()).def().clone(),
             BrowserDialogTool::new(e.clone()).def().clone(),
@@ -2732,6 +2887,7 @@ mod tests {
                 "get_browser_state",
                 "browser_prepare",
                 "browser_navigate",
+                "browser_motion_policy",
                 "browser_click",
                 "browser_type",
                 "browser_dialog",
