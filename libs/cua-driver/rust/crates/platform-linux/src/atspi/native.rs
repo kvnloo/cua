@@ -2786,8 +2786,8 @@ async fn write_into_editable_acc(
 /// the full string). Passing a Unicode scalar count truncates multibyte text
 /// (e.g. `✓ABC` → `✓A`) — see trycua/cua#4754.
 fn atspi_insert_text_byte_length(text: &str) -> i32 {
-    // RED: still the buggy scalar-count contract so the unit test fails first.
-    text.chars().count() as i32
+    // AT-SPI InsertText length is UTF-8 bytes (trycua/cua#4754).
+    text.len() as i32
 }
 
 async fn write_through_editable_proxies(
