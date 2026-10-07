@@ -2781,6 +2781,15 @@ async fn write_into_editable_acc(
     write_through_editable_proxies(&proxies, text).await
 }
 
+
+/// AT-SPI `EditableText.InsertText` takes a UTF-8 **byte** length (or -1 for
+/// the full string). Passing a Unicode scalar count truncates multibyte text
+/// (e.g. `✓ABC` → `✓A`) — see trycua/cua#4754.
+fn atspi_insert_text_byte_length(text: &str) -> i32 {
+    // RED: still the buggy scalar-count contract so the unit test fails first.
+    text.chars().count() as i32
+}
+
 async fn write_through_editable_proxies(
     proxies: &atspi::proxy::proxy_ext::Proxies<'_>,
     text: &str,
@@ -2794,7 +2803,7 @@ async fn write_through_editable_proxies(
         Ok(tp) => tp.caret_offset().await.unwrap_or(0),
         Err(_) => 0,
     };
-    let len = text.chars().count() as i32;
+    let len = atspi_insert_text_byte_length(text);
 
     if et.insert_text(off, text, len).await.unwrap_or(false) {
         return Ok(true);
@@ -5250,7 +5259,7 @@ async fn set_value_on(
             Ok(tp) => tp.caret_offset().await.unwrap_or(0),
             Err(_) => 0,
         };
-        let len = value.chars().count() as i32;
+        let len = atspi_insert_text_byte_length(value);
         if et.insert_text(off, value, len).await.unwrap_or(false) {
             commit_editable_write(&proxies).await;
             return Ok(());
@@ -7618,5 +7627,21 @@ mod at_point_rules_tests {
             .describe()
             .starts_with("selected: canvas \"file.txt\""));
         assert!(selected.describe().contains("read back as selected"));
+    }
+}
+
+#[cfg(test)]
+mod insert_text_byte_length_tests {
+    use super::atspi_insert_text_byte_length;
+
+    #[test]
+    fn uses_utf8_byte_length_not_unicode_scalar_count() {
+        // ✓ is U+2713 (3 UTF-8 bytes). Four scalars → six bytes.
+        assert_eq!(atspi_insert_text_byte_length("✓ABC"), 6);
+        assert_eq!(atspi_insert_text_byte_length("é"), 2);
+        assert_eq!(atspi_insert_text_byte_length("中"), 3);
+        assert_eq!(atspi_insert_text_byte_length("😀"), 4);
+        assert_eq!(atspi_insert_text_byte_length("ABC"), 3);
+        assert_eq!(atspi_insert_text_byte_length("é€中😀"), "é€中😀".len() as i32);
     }
 }
