@@ -1,0 +1,96 @@
+{
+  "scope": "Python post-completion URLError outcome handling only; simulated MCP transport and owned loopback HTTP oracle; no native, live Driver, Rust, latency or whole-PR qualification",
+  "base_commit": "8db4b94b555c84bc4b6a8eb37cb59501ca35e8ff",
+  "credit": "Existing guard and refusal adapter work by Kevin Rajan (kvnloo); preserve Cua AI, Inc. MIT notice",
+  "finding": "Accepted completion followed by post-submit HTTP503 previously exited 1 without terminal verdict. Fixed caller records unknown/verification with accepted proof; no replay or false verified result.",
+  "actual_cli_controls": [
+    {
+      "case": "healthy",
+      "exit_code": 0,
+      "terminal_outcome": "verified",
+      "type_requests": 1,
+      "submit_requests": 1,
+      "submit_effects": 1
+    },
+    {
+      "case": "oracle_503",
+      "exit_code": 1,
+      "terminal_outcome": "unknown",
+      "type_requests": 1,
+      "submit_requests": 1,
+      "submit_effects": 1
+    },
+    {
+      "case": "wrong_submission",
+      "exit_code": 1,
+      "terminal_outcome": "refuted",
+      "type_requests": 1,
+      "submit_requests": 1,
+      "submit_effects": 1
+    }
+  ],
+  "independent_review": "Scoped PASS: all three actual CLI controls and focused 21 tests independently reproduced; source hashes verified",
+  "focused_tests": {
+    "new": 4,
+    "guarded": 15,
+    "previous_observation": 2,
+    "total_passed": 21
+  },
+  "new_regression_baseline": {
+    "tests": 4,
+    "errors": 2,
+    "passing_negative_controls": 2
+  },
+  "aggregate_gate": {
+    "baseline_summary": "Ran 247 tests in 24.506s\n\nFAILED (failures=3, errors=25, skipped=2)",
+    "fixed_summary": "Ran 251 tests in 26.434s\n\nFAILED (failures=3, errors=25, skipped=2)",
+    "same_error_failure_test_identities": true,
+    "error_failure_test_identities": [
+      "ERROR: setUpClass (test_authorized_workflow.AuthorizedWorkflowTest)",
+      "ERROR: test_core_entry_points_send_byte_identical_requests (test_provider_request_golden.ProviderRequestGoldenTest.test_core_entry_points_send_byte_identical_requests)",
+      "ERROR: test_labels (test_native_density.DistractorLabelTest.test_labels)",
+      "ERROR: test_live_adapter_rejects_id_outside_the_supplied_table (test_live_adapter.LiveAdapterTest.test_live_adapter_rejects_id_outside_the_supplied_table)",
+      "ERROR: test_live_adapter_uses_one_choice_over_candidate_ids (test_live_adapter.LiveAdapterTest.test_live_adapter_uses_one_choice_over_candidate_ids)",
+      "ERROR: test_live_client_receives_bounded_state_and_returns_model (test_choose_action.ChooseActionTest.test_live_client_receives_bounded_state_and_returns_model)",
+      "ERROR: test_provider_cannot_select_or_score_an_unknown_id (test_choose_action.ChooseActionTest.test_provider_cannot_select_or_score_an_unknown_id)",
+      "ERROR: test_recorded_live_choices_replay_through_the_new_state (test_decision_state.ProviderPathTest.test_recorded_live_choices_replay_through_the_new_state) (run='linux-page-2-python')",
+      "ERROR: test_recorded_live_choices_replay_through_the_new_state (test_decision_state.ProviderPathTest.test_recorded_live_choices_replay_through_the_new_state) (run='linux-page-3-python')",
+      "ERROR: test_recorded_live_choices_replay_through_the_new_state (test_decision_state.ProviderPathTest.test_recorded_live_choices_replay_through_the_new_state) (run='linux-page-7-typescript')",
+      "ERROR: test_recorded_live_choices_replay_through_the_new_state (test_decision_state.ProviderPathTest.test_recorded_live_choices_replay_through_the_new_state) (run='windows-page-1-python')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_post_4255_regression_1')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_post_4255_regression_2')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_post_4255_regression_3')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_post_4255_regression_4')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_post_4255_regression_5')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_pre_4255_a')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_python_pre_4255_b')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_typescript_pre_4255_a')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='linux_typescript_pre_4255_b')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='windows_python_pre_4255_a')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='windows_python_pre_4255_b')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='windows_typescript_pre_4255_a')",
+      "ERROR: test_recorded_visual_run_choices_replay_through_the_new_state (test_visual_decision_state.VisualReplayTest.test_recorded_visual_run_choices_replay_through_the_new_state) (run='windows_typescript_pre_4255_b')",
+      "ERROR: test_task_spec_and_sources_send_byte_identical_requests (test_provider_request_golden.ProviderRequestGoldenTest.test_task_spec_and_sources_send_byte_identical_requests)",
+      "FAIL: test_jev_adapter_receives_native_observation (test_native_contract.V2ContractTest.test_jev_adapter_receives_native_observation)",
+      "FAIL: test_typesafe_request_contains_no_screenshot_or_action_arguments (test_decision_models.DecisionModelsTest.test_typesafe_request_contains_no_screenshot_or_action_arguments)",
+      "FAIL: test_typesafe_selection_can_differ_from_provider_confidence (test_decision_models.DecisionModelsTest.test_typesafe_selection_can_differ_from_provider_confidence)"
+    ],
+    "limits": [
+      "typesafe_sdk unavailable: 23 error tracebacks; 3 failed adapter result assertions",
+      "recovered layout lacks full-repo workflow and native fixture paths: 2 FileNotFoundError tracebacks"
+    ],
+    "full_suite_pass": false
+  },
+  "handler_scope": "URLError around immediate post-completion read_oracle only; classification outside handler; programmer faults propagate; other oracle locations unchanged",
+  "excluded": [
+    "TypeScript edits",
+    "Rust edits or compilation",
+    "installations",
+    "upstream writes",
+    "merges",
+    "workflow edits",
+    "CI reruns"
+  ],
+  "runtime_sha256": "a781e65c0d68b9df27ba39a51e5064d5b33c306055118e1d974e723e5df52487",
+  "tests_sha256": "d35e416e15a85d621644211a12e25bee4d75af8e842239f594b5333ea9503e17"
+}

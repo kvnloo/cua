@@ -1,0 +1,50 @@
+{
+  "title": "Python semantic-observation refusal produces bounded unknown outcome",
+  "tested_guard_source": "a0bca744067d04f05904319d3d919be30c336556",
+  "existing_adapter_source": "8693e5f87c47f84ac2280d9cdd91eb37a32f8e56",
+  "captured_typing_producer": "7b1d95321ddd30775843c8b72b5b148f60326813",
+  "credit": "Kevin Rajan (kvnloo), existing guarded completion and canonical-refusal adapters; upstream Cua AI, Inc. MIT copyright retained",
+  "qualified_runtime": "Python only",
+  "python_run_sha256": "2afdd338b4ea73dc0cade2a47b2dc6ba4bf1cb08c493405b18614fc55ec3a8b1",
+  "regression_test_sha256": "9d8409855d9f936e831d45899c659ec902fc88b24960f12bd8ea1e4681a21956",
+  "tests": {
+    "new_regressions": {
+      "baseline_errors": 1,
+      "baseline_passes": 1,
+      "fixed_passes": 2
+    },
+    "existing_guarded_tests_passed": 15,
+    "actual_cli_controls_passed": [
+      "healthy_success",
+      "post_type_semantic_tool_refusal",
+      "stale_guard_decline"
+    ],
+    "programmer_TypeError_propagation_control": "pass",
+    "independent_reproduction": "pass"
+  },
+  "fault_counts": {
+    "provider_decisions": 1,
+    "initial_bind_requests": 1,
+    "semantic_requests": 2,
+    "successful_semantic_reads": 1,
+    "setup_navigation_requests": 1,
+    "type_requests": 1,
+    "submit_requests": 0,
+    "submit_effects": 0
+  },
+  "fault_result": {
+    "terminal_outcome": "unknown",
+    "phase": "observation",
+    "error_class": "DriverToolError",
+    "raw_diagnostic_in_terminal_event_or_stderr": false,
+    "HTTP_submission_oracle": "unsubmitted"
+  },
+  "limits": [
+    "Deterministic synthetic stdio fixture with replayed captured Rust envelope; no live Rust/browser/native/provider.",
+    "HTTP oracle independently verifies submission only; typing value is fixture state from captured receipt.",
+    "Empty tools/list means no advertised tool-specific schema qualification.",
+    "Catches recognized DriverToolError only; unrelated programmer/SDK/oracle failures are not recategorized.",
+    "No timing, speedup, CI or broader runtime qualification.",
+    "TypeScript mirror remains private source-only, not part of publication."
+  ]
+}
