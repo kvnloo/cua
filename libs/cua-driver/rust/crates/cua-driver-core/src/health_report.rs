@@ -223,6 +223,11 @@ pub struct Report {
     pub driver_version: String,
     pub overall: Overall,
     pub checks: Vec<CheckEntry>,
+    /// Build identity of the running process (source revision and the
+    /// sha256 of the executable actually running). Additive under
+    /// `schema_version="1"`; absent from older drivers.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub build: Option<crate::build_info::BuildInfo>,
 }
 
 // ── Provider trait ───────────────────────────────────────────────────────────
@@ -368,7 +373,7 @@ fn def() -> &'static ToolDef {
         // The description is part of the public contract — downstream
         // consumers depend on it spelling out `schema_version="1"` and the per-
         // platform check matrix. A test pins this commitment.
-        description: r#"Single-call end-to-end driver diagnostics. Designed to let downstream consumers ship one stable call instead of stitching together check_permissions, doctor, version, bundle attribution, and platform capability status. On macOS, prompt-capable direct capture is deliberately skipped; use `cua-driver permissions grant` to verify it explicitly. cua-driver owns the health model; consumers stay thin.
+        description: r#"Single-call end-to-end driver diagnostics. Designed to let downstream consumers ship one stable call instead of stitching together check_permissions, doctor, version, bundle attribution, and platform capability status. On macOS, prompt-capable direct capture is deliberately skipped. For standalone CuaDriver, use `cua-driver permissions grant` to verify it explicitly. For an embedded or linked driver, use the host's permission flow for the app or executable macOS attributes this process's permission request to; the standalone command does not verify the host's capture readiness. cua-driver owns the health model; consumers stay thin.
 
 Input — all optional:
   {
@@ -466,6 +471,7 @@ impl Tool for HealthReportTool {
             driver_version: env!("CARGO_PKG_VERSION").to_owned(),
             overall: compute_overall(&checks),
             checks,
+            build: Some(crate::build_info::current()),
         };
 
         let text = text_summary(&report);
@@ -585,6 +591,14 @@ mod tests {
         let chosen = select_checks(macos_names(), &BTreeSet::new(), &skip);
         assert!(!chosen.contains(NAME_TCC_ACCESSIBILITY));
         assert!(chosen.contains(NAME_BINARY_VERSION));
+    }
+
+    #[test]
+    fn advertised_capture_remediation_is_owner_scoped() {
+        let description = &def().description;
+        assert!(description.contains("For standalone CuaDriver"));
+        assert!(description.contains("does not verify"));
+        assert!(def().read_only);
     }
 
     // ── compute_overall ──────────────────────────────────────────────

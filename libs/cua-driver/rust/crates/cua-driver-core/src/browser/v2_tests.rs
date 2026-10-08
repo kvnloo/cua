@@ -43,7 +43,10 @@ use super::types::{
 /// test body. Tests flip loaders/capabilities mid-run to simulate
 /// navigations, frame removal, and capability regression.
 #[derive(Debug)]
-struct FixtureState {
+pub(super) struct FixtureState {
+    pub(super) endpoint_responses:
+        std::collections::VecDeque<Result<Option<OwnedEndpoint>, BrowserRefusal>>,
+    pub(super) endpoint_discovery_count: usize,
     oopif_supported: bool,
     oopif_present: bool,
     emit_rogue_attach: bool,
@@ -78,6 +81,8 @@ struct FixtureState {
 impl Default for FixtureState {
     fn default() -> Self {
         Self {
+            endpoint_responses: Default::default(),
+            endpoint_discovery_count: 0,
             oopif_supported: true,
             oopif_present: true,
             emit_rogue_attach: false,
@@ -449,6 +454,15 @@ fn fixture_handler(state: SharedState) -> MockHandler {
                 infos.extend(st.windowless_targets.iter().cloned());
                 MockReply::ok(json!({ "targetInfos": infos }))
             }
+            "Target.getTargetInfo" => MockReply::ok(json!({
+                "targetInfo": {
+                    "targetId": "T1",
+                    "type": "page",
+                    "title": "Fixture after navigation",
+                    "url": "https://fixture.test/",
+                    "attached": true,
+                }
+            })),
             "Browser.getWindowForTarget" => {
                 let target_id = call.params["targetId"].as_str().unwrap_or("");
                 let windowless = st
@@ -689,6 +703,7 @@ fn fixture_handler(state: SharedState) -> MockHandler {
 /// Platform adapter pointing at the fixture endpoint: pid 1 is a
 /// Chromium browser owning native window 7 at (0,0,800,600).
 struct FixturePlatform {
+    endpoint_state: Option<SharedState>,
     ws_url: String,
     trusted_input_limited: bool,
     managed_endpoint_visible: bool,
@@ -753,6 +768,16 @@ impl BrowserPlatform for FixturePlatform {
         pid: i64,
     ) -> Result<Option<OwnedEndpoint>, BrowserRefusal> {
         self.managed_discovery_invoked.store(true, Ordering::SeqCst);
+        if let Some(state) = &self.endpoint_state {
+            let mut state = state.lock().unwrap();
+            state.endpoint_discovery_count += 1;
+            if state.endpoint_responses.len() > 1 {
+                return state.endpoint_responses.pop_front().unwrap();
+            }
+            if let Some(response) = state.endpoint_responses.front() {
+                return response.clone();
+            }
+        }
         if !self.managed_endpoint_visible {
             return Ok(None);
         }
@@ -882,11 +907,11 @@ impl BrowserPlatform for FixturePlatform {
 
 // ── Scaffolding ──────────────────────────────────────────────────────────────
 
-struct Fixture {
-    state: SharedState,
+pub(super) struct Fixture {
+    pub(super) state: SharedState,
     // Kept alive for the test's duration; dropping it kills the endpoint.
     _server: MockCdpServer,
-    engine: Arc<BrowserEngine>,
+    pub(super) engine: Arc<BrowserEngine>,
     setup_invoked: Arc<AtomicBool>,
 }
 
@@ -904,6 +929,7 @@ async fn fixture_with_platform(
     let server = MockCdpServer::start(fixture_handler(state.clone())).await;
     let setup_invoked = Arc::new(AtomicBool::new(false));
     let engine = BrowserEngine::new(Arc::new(FixturePlatform {
+        endpoint_state: Some(state.clone()),
         ws_url: server.ws_url(),
         trusted_input_limited,
         managed_endpoint_visible: true,
@@ -922,7 +948,7 @@ async fn fixture_with_platform(
     }
 }
 
-async fn fixture() -> Fixture {
+pub(super) async fn fixture() -> Fixture {
     fixture_with(|_| {}).await
 }
 
@@ -957,6 +983,7 @@ async fn protected_existing_profile_fixture() -> (Fixture, Arc<FixtureProtectedP
     });
     let engine = BrowserEngine::new_with_protected_consent_provider(
         Arc::new(FixturePlatform {
+            endpoint_state: None,
             ws_url: server.ws_url(),
             trusted_input_limited: false,
             managed_endpoint_visible: false,
@@ -986,6 +1013,7 @@ async fn existing_profile_setup_fixture() -> (Fixture, Arc<AtomicBool>) {
     let setup_invoked = Arc::new(AtomicBool::new(false));
     let engine = BrowserEngine::new_with_protected_consent_provider(
         Arc::new(FixturePlatform {
+            endpoint_state: None,
             ws_url: server.ws_url(),
             trusted_input_limited: false,
             managed_endpoint_visible: false,
@@ -1040,6 +1068,7 @@ async fn standalone_consumer_bind_without_grant_refuses_before_endpoint_discover
     let managed_discovery_invoked = Arc::new(AtomicBool::new(false));
     let setup_invoked = Arc::new(AtomicBool::new(false));
     let engine = BrowserEngine::new(Arc::new(FixturePlatform {
+        endpoint_state: None,
         ws_url: server.ws_url(),
         trusted_input_limited: false,
         managed_endpoint_visible: true,
@@ -1286,6 +1315,7 @@ async fn refused_consent_cancels_stalled_claim_before_revoking_grant() {
     });
     let engine = BrowserEngine::new_with_protected_consent_provider(
         Arc::new(FixturePlatform {
+            endpoint_state: None,
             ws_url: format!("ws://{address}/devtools/browser"),
             trusted_input_limited: false,
             managed_endpoint_visible: false,
@@ -1330,6 +1360,7 @@ async fn cancelled_prepare_aborts_the_exact_pending_setup() {
     let setup_aborted = Arc::new(AtomicBool::new(false));
     let engine = BrowserEngine::new_with_protected_consent_provider(
         Arc::new(FixturePlatform {
+            endpoint_state: None,
             ws_url: format!("ws://{address}/devtools/browser"),
             trusted_input_limited: false,
             managed_endpoint_visible: false,
@@ -2025,6 +2056,136 @@ async fn rogue_attach_announcements_are_contained() {
     );
 }
 
+#[tokio::test]
+async fn stale_profile_path_redials_only_the_exact_endpoint() {
+    use tokio_tungstenite::tungstenite::handshake::server::{Request, Response};
+    let f = fixture().await;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let mut server = tokio::spawn(async move {
+        let mut paths = Vec::new();
+        for _ in 0..2 {
+            let (stream, _) = listener.accept().await.unwrap();
+            let result =
+                tokio_tungstenite::accept_hdr_async(stream, |request: &Request, _: Response| {
+                    paths.push(request.uri().path().to_owned());
+                    Err(tokio_tungstenite::tungstenite::http::Response::builder()
+                        .status(404)
+                        .body(Some("stale browser path".to_owned()))
+                        .unwrap())
+                })
+                .await;
+            assert!(result.is_err());
+        }
+        paths
+    });
+    f.state
+        .lock()
+        .unwrap()
+        .endpoint_responses
+        .push_back(Ok(Some(OwnedEndpoint {
+            ws_url: format!("ws://127.0.0.1:{port}/devtools/browser/stale"),
+            http_port: Some(port),
+            transport: EndpointTransport::DevToolsActivePort,
+            ownership: EndpointOwnershipProof {
+                method: EndpointOwnershipMethod::DevtoolsActivePortsFile,
+                owner_pid: 1,
+                listener_pid: None,
+                detail: None,
+            },
+        })));
+    let exchange = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        let result = GetBrowserStateTool::new(f.engine.clone())
+            .invoke(json!({ "pid": 1, "window_id": 7, "session": SESSION }))
+            .await;
+        (result, (&mut server).await.unwrap())
+    })
+    .await;
+    server.abort();
+    let (result, paths) = exchange.expect("both exact-path attempts must finish");
+    assert_eq!(
+        structured(&result)["refusal"]["code"],
+        "browser_route_unavailable"
+    );
+    assert_eq!(paths, ["/devtools/browser/stale"; 2]);
+    assert!(f.state.lock().unwrap().calls.is_empty());
+}
+
+#[tokio::test]
+async fn owned_endpoint_transitions_refuse_before_dispatch() {
+    use super::refusal::BrowserRefusalCode;
+    for initial in [
+        EndpointTransport::LegacyJsonVersion,
+        EndpointTransport::DevToolsActivePort,
+    ] {
+        for change in ["transport", "url", "missing", "malformed", "unreadable"] {
+            let f = fixture().await;
+            let endpoint = OwnedEndpoint {
+                ws_url: f._server.ws_url(),
+                http_port: None,
+                transport: initial,
+                ownership: EndpointOwnershipProof {
+                    method: EndpointOwnershipMethod::ListeningSocketPid,
+                    owner_pid: 1,
+                    listener_pid: None,
+                    detail: None,
+                },
+            };
+            f.state
+                .lock()
+                .unwrap()
+                .endpoint_responses
+                .push_back(Ok(Some(endpoint.clone())));
+            let (target, tab) = bind(&f).await;
+            let snapshot = snapshot(&f, &target, &tab).await;
+            let reference = ref_of(&snapshot, "main", "main-btn");
+            let mut changed = endpoint;
+            let (response, code) = match change {
+                "transport" => {
+                    changed.transport = if initial == EndpointTransport::LegacyJsonVersion {
+                        EndpointTransport::DevToolsActivePort
+                    } else {
+                        EndpointTransport::LegacyJsonVersion
+                    };
+                    (Ok(Some(changed)), "browser_binding_stale")
+                }
+                "url" => {
+                    changed.ws_url.push_str("-changed");
+                    (Ok(Some(changed)), "browser_binding_stale")
+                }
+                "missing" => (Ok(None), "browser_requires_setup"),
+                "malformed" => (
+                    Err(BrowserRefusal::new(
+                        BrowserRefusalCode::BrowserEndpointOwnerMismatch,
+                        "malformed profile",
+                    )),
+                    "browser_endpoint_owner_mismatch",
+                ),
+                _ => (
+                    Err(BrowserRefusal::new(
+                        BrowserRefusalCode::BrowserRouteUnavailable,
+                        "unreadable profile",
+                    )),
+                    "browser_route_unavailable",
+                ),
+            };
+            f.state.lock().unwrap().endpoint_responses = [response].into();
+            let result = BrowserClickTool::new(f.engine.clone())
+                .invoke(json!({
+                    "target_id": target, "tab_id": tab, "ref": reference, "session": SESSION
+                }))
+                .await;
+            assert_eq!(
+                structured(&result)["refusal"]["code"],
+                code,
+                "{initial:?} {change}: {}",
+                structured(&result)
+            );
+            assert!(recorded_calls(&f, "Input.dispatchMouseEvent").is_empty());
+        }
+    }
+}
+
 // ── Mutation routing + frame identity revalidation ──────────────────────────
 
 #[tokio::test]
@@ -2133,6 +2294,58 @@ async fn click_validates_same_process_iframe_loader_and_uses_the_tab_session() {
         !recorded_calls(&f, "Page.getFrameTree").is_empty(),
         "frame identity must have been re-proven"
     );
+}
+
+#[tokio::test]
+async fn semantic_snapshot_reports_the_live_page_title() {
+    let f = fixture().await;
+    let (target, tab) = bind(&f).await;
+    let snap = semantic_snapshot(&f, &target, &tab).await;
+    assert_eq!(snap["status"], "ok", "{snap}");
+    assert_eq!(snap["page"]["title"], "Fixture after navigation", "{snap}");
+}
+
+#[tokio::test]
+async fn foreground_delivery_mode_accepts_window_activation_for_trusted_click() {
+    let f = fixture_with_platform(|_| {}, true).await;
+    let (target, tab) = bind(&f).await;
+    let snap = snapshot(&f, &target, &tab).await;
+    let main_ref = ref_of(&snap, "main", "main-btn");
+
+    let bad = BrowserClickTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref,
+            "delivery_mode": "sideways", "session": SESSION
+        }))
+        .await;
+    assert!(
+        bad.is_error.unwrap_or(false),
+        "an unknown delivery_mode is refused"
+    );
+    assert!(recorded_calls(&f, "Input.dispatchMouseEvent").is_empty());
+
+    let refused = BrowserClickTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref, "session": SESSION
+        }))
+        .await;
+    assert_eq!(
+        structured(&refused)["refusal"]["detail"]["alternative_delivery_mode"],
+        "foreground"
+    );
+
+    let foreground = BrowserClickTool::new(f.engine.clone())
+        .invoke(json!({
+            "target_id": target, "tab_id": tab, "ref": main_ref,
+            "delivery_mode": "foreground", "session": SESSION
+        }))
+        .await;
+    let s = structured(&foreground);
+    assert_eq!(s["status"], "ok", "{s}");
+    assert_eq!(s["route"], "trusted");
+    assert_eq!(s["delivery_mode"], "foreground");
+    let mouse = recorded_calls(&f, "Input.dispatchMouseEvent");
+    assert_eq!(mouse.len(), 2, "press and release: {mouse:?}");
 }
 
 #[tokio::test]
