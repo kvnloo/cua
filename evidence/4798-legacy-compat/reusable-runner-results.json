@@ -1,0 +1,102 @@
+[
+  {
+    "case": "legacy-bool-baseline",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/node_modules/.bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--typeRoots",
+      "/workspace/scratch/cua-compat-tools/node_modules/@types",
+      "/tmp/cua-compat-typechecks-8c5chaun/legacy-bool-baseline.mts"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "case": "legacy-bool-candidate",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/node_modules/.bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--typeRoots",
+      "/workspace/scratch/cua-compat-tools/node_modules/@types",
+      "/tmp/cua-compat-typechecks-8c5chaun/legacy-bool-candidate.mts"
+    ],
+    "returncode": 2,
+    "expected": 2,
+    "stdout": "../../tmp/cua-compat-typechecks-8c5chaun/legacy-bool-candidate.mts(2,39): error TS2322: Type 'true' is not assignable to type 'CursorEffectSetting | undefined'.\n../../tmp/cua-compat-typechecks-8c5chaun/legacy-bool-candidate.mts(2,52): error TS2322: Type 'false' is not assignable to type 'CursorEffectSetting | undefined'.\n",
+    "stderr": ""
+  },
+  {
+    "case": "omitted-baseline",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/node_modules/.bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--typeRoots",
+      "/workspace/scratch/cua-compat-tools/node_modules/@types",
+      "/tmp/cua-compat-typechecks-8c5chaun/omitted-baseline.mts"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "case": "omitted-candidate",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/node_modules/.bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--typeRoots",
+      "/workspace/scratch/cua-compat-tools/node_modules/@types",
+      "/tmp/cua-compat-typechecks-8c5chaun/omitted-candidate.mts"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "case": "enum-candidate",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/node_modules/.bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--typeRoots",
+      "/workspace/scratch/cua-compat-tools/node_modules/@types",
+      "/tmp/cua-compat-typechecks-8c5chaun/enum-candidate.mts"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

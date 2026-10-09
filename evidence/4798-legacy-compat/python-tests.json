@@ -1,0 +1,74 @@
+[
+  {
+    "head": "115",
+    "kind": "existing source-contract unit tests",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/venv/bin/python",
+      "-m",
+      "pytest",
+      "-c",
+      "/dev/null",
+      "-p",
+      "no:cacheprovider",
+      "--confcutdir=/workspace/cua-compat-115-review/libs/cua-driver/python/tests",
+      "/workspace/cua-compat-115-review/libs/cua-driver/python/tests/test_compatibility_contract.py",
+      "-q"
+    ],
+    "returncode": 0,
+    "stdout": "..                                                                       [100%]\n2 passed in 0.07s\n",
+    "stderr": ""
+  },
+  {
+    "head": "115",
+    "kind": "native required gate, missing library",
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/workspace/cua-compat-115-review/libs/cua-driver/python/tests",
+      "-p",
+      "test_cursor_motion.py"
+    ],
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "E\n======================================================================\nERROR: test_cursor_motion (unittest.loader._FailedTest.test_cursor_motion)\n----------------------------------------------------------------------\nImportError: Failed to import test module: test_cursor_motion\nTraceback (most recent call last):\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py\", line 396, in _find_test_path\n    module = self._get_module_from_name(name)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py\", line 339, in _get_module_from_name\n    __import__(name)\n  File \"/workspace/cua-compat-115-review/libs/cua-driver/python/tests/test_cursor_motion.py\", line 34, in <module>\n    raise RuntimeError(f\"required staged UniFFI library is missing: {LIBRARY}\")\nRuntimeError: required staged UniFFI library is missing: /workspace/cua-compat-115-review/libs/cua-driver/python/src/cua_driver/libcua_driver_sdk.so\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+  },
+  {
+    "head": "4888",
+    "kind": "existing source-contract unit tests",
+    "command": [
+      "/workspace/scratch/cua-compat-tools/venv/bin/python",
+      "-m",
+      "pytest",
+      "-c",
+      "/dev/null",
+      "-p",
+      "no:cacheprovider",
+      "--confcutdir=/workspace/cua-compat-4888/libs/cua-driver/python/tests",
+      "/workspace/cua-compat-4888/libs/cua-driver/python/tests/test_compatibility_contract.py",
+      "-q"
+    ],
+    "returncode": 0,
+    "stdout": "..                                                                       [100%]\n2 passed in 0.07s\n",
+    "stderr": ""
+  },
+  {
+    "head": "4888",
+    "kind": "native required gate, missing library",
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/workspace/cua-compat-4888/libs/cua-driver/python/tests",
+      "-p",
+      "test_cursor_motion.py"
+    ],
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "E\n======================================================================\nERROR: test_cursor_motion (unittest.loader._FailedTest.test_cursor_motion)\n----------------------------------------------------------------------\nImportError: Failed to import test module: test_cursor_motion\nTraceback (most recent call last):\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py\", line 396, in _find_test_path\n    module = self._get_module_from_name(name)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py\", line 339, in _get_module_from_name\n    __import__(name)\n  File \"/workspace/cua-compat-4888/libs/cua-driver/python/tests/test_cursor_motion.py\", line 34, in <module>\n    raise RuntimeError(f\"required staged UniFFI library is missing: {LIBRARY}\")\nRuntimeError: required staged UniFFI library is missing: /workspace/cua-compat-4888/libs/cua-driver/python/src/cua_driver/libcua_driver_sdk.so\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+  }
+]
