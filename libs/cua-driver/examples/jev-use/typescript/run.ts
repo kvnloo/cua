@@ -113,47 +113,33 @@ export class Driver {
     private readonly session: string
   ) {}
 
-  get sessionLabel(): string {
-    return this.session;
-  }
-
   async call(name: string, args: Record<string, unknown>): Promise<Record<string, any>> {
     const result = await this.client.callTool({
       name,
       arguments: { ...args, session: this.session },
     });
-    // Preserve #4902: ActionResult refusals need not set MCP isError.
-    const effect = (result.structuredContent as Record<string, unknown> | undefined)?.effect;
-    if (result.isError || effect === 'refused') {
-      const structured = result.structuredContent as Record<string, unknown> | undefined;
-      const refusalCode = (structured?.refusal as Record<string, unknown> | undefined)?.code;
-      const code =
-        typeof structured?.code === 'string' && structured.code
-          ? structured.code
-          : typeof refusalCode === 'string' && refusalCode
-            ? refusalCode
-            : undefined;
-      const escalation = structured?.escalation as Record<string, unknown> | undefined;
-      const recommended =
-        typeof escalation?.recommended === 'string' && escalation.recommended
-          ? escalation.recommended
-          : undefined;
-      throw new DriverToolError(
-        `${name} failed: ${JSON.stringify(result.content)}`,
-        code,
-        recommended
-      );
-    }
     const data = result.structuredContent as Record<string, any> | undefined;
-    if (!data) throw new Error(`${name} returned no structured result`);
-    if (data.status === 'refused' || data.refusal) {
-      const code = data.refusal?.code;
-      // DriverToolError is an Error, so existing handlers still match.
-      throw new DriverToolError(
-        `${name} refused: ${JSON.stringify(data.refusal ?? data)}`,
-        typeof code === 'string' && code ? code : undefined
+    // All refusal envelopes must preserve the same recovery metadata.
+    const failed = Boolean(result.isError) || data?.effect === 'refused';
+    if (failed || data?.status === 'refused' || data?.refusal) {
+      const canonicalCode = (data?.error as Record<string, unknown> | undefined)?.code;
+      const refusalCode = (data?.refusal as Record<string, unknown> | undefined)?.code;
+      const code = [canonicalCode, data?.code, refusalCode].find(
+        (value): value is string => typeof value === 'string' && value.length > 0
       );
+      const escalation = data?.escalation as Record<string, unknown> | undefined;
+      // A present canonical target wins; never turn an invalid/session target
+      // into a legacy foreground hint.
+      const target = escalation && Object.prototype.hasOwnProperty.call(escalation, 'target')
+        ? escalation.target
+        : escalation?.recommended;
+      const recommended = typeof target === 'string' && target ? target : undefined;
+      const message = failed
+        ? `${name} failed: ${JSON.stringify(result.content)}`
+        : `${name} refused: ${JSON.stringify(data?.refusal ?? data)}`;
+      throw new DriverToolError(message, code, recommended);
     }
+    if (!data) throw new Error(`${name} returned no structured result`);
     return data;
   }
 }
@@ -168,7 +154,8 @@ export function supportsCaptureBoundClick(
 /**
  * Return Driver's code when it refused a background visual click. Only a
  * structured refusal counts: a background_* error code or an explicit
- * escalation.recommended === 'foreground'. Anything else stays a failure.
+ * foreground target (escalation.target or legacy recommended). Anything else
+ * stays a failure.
  */
 export function backgroundRefusalCode(candidate: Candidate, error: unknown): string | undefined {
   if (candidate.tool !== 'click' || candidate.arguments.delivery_mode !== 'background') {
