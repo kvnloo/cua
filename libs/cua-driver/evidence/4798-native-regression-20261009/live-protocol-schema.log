@@ -1,0 +1,18 @@
+2026-10-09T21:30:08Z
+COMMAND: env CUA_TEST_REQUIRE_DRIVER_BIN=1 CUA_TEST_DRIVER_BIN=/workspace/cua-native-gate/libs/cua-driver/rust/target/debug/cua-driver cargo test --locked -p cua-driver --test protocol_schema_test -- --nocapture
+   Compiling cua-driver v0.34.0 (/workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.10s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/protocol_schema_test.rs (target/debug/deps/protocol_schema_test-57537ee64b671533)
+
+running 3 tests
+test cursor_motion_knobs_are_applied ... ok
+test tools_list_schema_shape ... ok
+test legacy_page_mutation_requires_unrestricted_launch_and_operator_opt_in ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.78s
+
+
+EXIT_CODE=0
+2026-10-09T21:30:12Z

@@ -1,0 +1,31 @@
+2026-10-09T21:29:21Z
+COMMAND: env CUA_TEST_REQUIRE_DRIVER_BIN=1 CUA_TEST_DRIVER_BIN=/workspace/cua-native-gate/libs/cua-driver/rust/target/debug/cua-driver CUA_TEST_DRIVER_STDERR=1 cargo test --locked -p cua-driver --test protocol_vertex_schema_test -- --nocapture
+    Blocking waiting for file lock on build directory
+   Compiling cua-driver-testkit v0.34.0 (/workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit)
+   Compiling cua-driver v0.34.0 (/workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.67s
+warning: the following packages contain code that will be rejected by a future version of Rust: nom v1.2.4
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/protocol_vertex_schema_test.rs (target/debug/deps/protocol_vertex_schema_test-8da815ffa41d12af)
+
+running 1 test
+2026-10-09T21:29:50.536028Z  WARN cua_driver_sdk::runtime: could not activate the persistent AT-SPI listener: AT-SPI connect failed: ZBus Error: InputOutput(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+Cua Driver daemon listening on /tmp/cua-QuMKPu/d.sock
+
+thread 'live_tools_list_input_schemas_are_vertex_compatible' (14667) panicked at crates/cua-driver/tests/protocol_vertex_schema_test.rs:73:5:
+live input schema violations (#4798 / #4717):
+set_value.inputSchema $.properties.value: type must be one of ["string", "number", "integer", "boolean", "array", "object", "null"] as a single string, got ["string","number"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test live_tools_list_input_schemas_are_vertex_compatible ... FAILED
+
+failures:
+
+failures:
+    live_tools_list_input_schemas_are_vertex_compatible
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.41s
+
+error: test failed, to rerun pass `-p cua-driver --test protocol_vertex_schema_test`
+
+EXIT_CODE=101
+2026-10-09T21:29:51Z

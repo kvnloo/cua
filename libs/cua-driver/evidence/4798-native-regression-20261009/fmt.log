@@ -1,0 +1,129 @@
+2026-10-09T21:25:57Z
+COMMAND: cargo fmt --all -- --check
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver/tests/protocol_vertex_schema_test.rs:31:
+         .iter()
+         .map(|tool| tool["name"].as_str().expect("tool name"))
+         .collect();
+-    assert_eq!(names.len(), tools.len(), "tools/list has duplicate tool names");
++    assert_eq!(
++        names.len(),
++        tools.len(),
++        "tools/list has duplicate tool names"
++    );
+     assert!(
+         names.contains("run_actions"),
+         "the runtime-only run_actions tool must be covered"
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-core/src/batch_tools/tests.rs:409:
+         .get_def(super::RUN_ACTIONS_TOOL)
+         .expect("registered");
+     assert_eq!(def.input_schema["required"], json!(["steps"]));
+-    let listed: Vec<_> = def.input_schema["properties"]["steps"]["items"]["properties"]
+-        ["tool"]["enum"]
++    let listed: Vec<_> = def.input_schema["properties"]["steps"]["items"]["properties"]["tool"]
++        ["enum"]
+         .as_array()
+         .unwrap()
+         .iter()
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-core/src/batch_tools/tests.rs:422:
+ #[test]
+ fn run_actions_advertises_provider_compatible_schema_without_unions() {
+     let harness = Harness::new();
+-    let schema = &harness.registry.get_def(super::RUN_ACTIONS_TOOL).unwrap().input_schema;
++    let schema = &harness
++        .registry
++        .get_def(super::RUN_ACTIONS_TOOL)
++        .unwrap()
++        .input_schema;
+     let item = &schema["properties"]["steps"]["items"];
+     assert_eq!(item["type"], "object");
+     assert!(item.get("anyOf").is_none());
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-core/src/batch_tools/tests.rs:430:
+     assert_eq!(item["additionalProperties"], true);
+     assert_eq!(item["properties"]["expect"]["type"], "array");
+     assert_eq!(item["properties"]["expect"]["items"]["type"], "object");
+-    assert_eq!(item["properties"]["expect"]["maxItems"], json!(super::MAX_EXPECTS));
++    assert_eq!(
++        item["properties"]["expect"]["maxItems"],
++        json!(super::MAX_EXPECTS)
++    );
+     assert_eq!(schema["properties"]["observe"]["type"], "object");
+     // The adjacent regression still covers observe:true on the runtime path.
+ }
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:65:
+         Some(other) => out.push(format!(
+             "{path}: type must be one of {VERTEX_SCHEMA_TYPES:?} as a single string, got {other}"
+         )),
+-        None if !node.contains_key("$ref") => {
+-            out.push(format!("{path}: schema node has no type"))
+-        }
++        None if !node.contains_key("$ref") => out.push(format!("{path}: schema node has no type")),
+         None => {}
+     }
+     if let Some(values) = node.get("enum") {
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:85:
+                     walk(child, &format!("{path}.{keyword}.{name}"), out);
+                 }
+             } else {
+-                out.push(format!("{path}.{keyword}: expected an object, got {children}"));
++                out.push(format!(
++                    "{path}.{keyword}: expected an object, got {children}"
++                ));
+             }
+         }
+     }
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:103:
+                 walk(variant, &format!("{path}.anyOf[{index}]"), out);
+             }
+         } else {
+-            out.push(format!("{path}.anyOf: expected a nonempty array, got {variants}"));
++            out.push(format!(
++                "{path}.anyOf: expected a nonempty array, got {variants}"
++            ));
+         }
+     }
+     if let Some(required) = node.get("required") {
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:111:
+             .as_array()
+             .is_some_and(|fields| fields.iter().all(Value::is_string))
+         {
+-            out.push(format!("{path}.required: expected an array of strings, got {required}"));
++            out.push(format!(
++                "{path}.required: expected an array of strings, got {required}"
++            ));
+         }
+     }
+     if let Some(nullable) = node.get("nullable") {
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:118:
+         if !nullable.is_boolean() {
+-            out.push(format!("{path}.nullable: expected a boolean, got {nullable}"));
++            out.push(format!(
++                "{path}.nullable: expected a boolean, got {nullable}"
++            ));
+         }
+     }
+     if let Some(reference) = node.get("$ref") {
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:205:
+             "$.properties.bad_defs.$defs: expected an object",
+         ] {
+             assert!(
+-                violations.iter().any(|violation| violation.starts_with(expected)),
++                violations
++                    .iter()
++                    .any(|violation| violation.starts_with(expected)),
+                 "missing {expected} in {violations:#?}"
+             );
+         }
+Diff in /workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-testkit/src/vertex.rs:237:
+             "$.additionalProperties: type must be one of",
+         ] {
+             assert!(
+-                violations.iter().any(|message| message.starts_with(expected)),
++                violations
++                    .iter()
++                    .any(|message| message.starts_with(expected)),
+                 "missing {expected} in {violations:#?}"
+             );
+         }
+
+EXIT_CODE=1
+2026-10-09T21:26:04Z

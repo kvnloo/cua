@@ -1,0 +1,113 @@
+2026-10-09T21:27:13Z
+COMMAND: cargo test --locked -p cua-driver-contract --lib
+    Blocking waiting for file lock on build directory
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling getrandom v0.4.2
+   Compiling rustix v1.1.4
+   Compiling linux-raw-sys v0.12.1
+   Compiling hashbrown v0.17.1
+   Compiling zerocopy v0.8.48
+   Compiling aho-corasick v1.1.4
+   Compiling indexmap v2.14.0
+   Compiling uniffi_internal_macros v0.31.0
+   Compiling regex-automata v0.4.14
+   Compiling serde_json v1.0.149
+   Compiling tempfile v3.27.0
+   Compiling uniffi_pipeline v0.31.0
+   Compiling siphasher v1.0.2
+   Compiling fluent-uri v0.4.1
+   Compiling uniffi_meta v0.31.0
+   Compiling cargo-platform v0.1.9
+   Compiling semver v1.0.28
+   Compiling camino v1.2.4
+   Compiling uniffi_macros v0.31.0
+   Compiling cargo_metadata v0.19.2
+   Compiling ahash v0.8.12
+   Compiling referencing v0.46.10
+   Compiling regex v1.12.3
+   Compiling fancy-regex v0.18.0
+   Compiling email_address v0.2.9
+   Compiling schemars v1.2.1
+   Compiling jsonschema v0.46.10
+   Compiling uniffi v0.31.0
+   Compiling cua-driver-contract v0.34.0 (/workspace/cua-native-gate/libs/cua-driver/rust/crates/cua-driver-contract)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 12s
+     Running unittests src/lib.rs (target/debug/deps/cua_driver_contract-d8b28aa9ab77549a)
+
+running 69 tests
+test compatibility::tests::identical_unknown_schema_is_a_proven_subset ... ok
+test compatibility::tests::additional_property_domain_must_be_accepted_live ... ok
+test compatibility::tests::broader_enum_and_bounds_fail ... ok
+test compatibility::tests::pattern_constraints_are_compared_conservatively ... ok
+test compatibility::tests::narrower_portable_object_is_accepted ... ok
+test compatibility::tests::portable_nullable_requires_live_to_accept_null ... ok
+test compatibility::tests::missing_property_and_live_requirement_fail ... ok
+test compatibility::tests::portable_only_pattern_is_safe_narrowing ... ok
+test compatibility::tests::unknown_validation_keyword_fails_closed ... ok
+test cursor::tests::canonical_vocabulary_is_complete_and_unique ... ok
+test compatibility::tests::portable_union_is_safe_only_when_base_schema_proves_subset ... ok
+test cursor::tests::cursor_configuration_does_not_animate_itself ... ok
+test cursor::tests::classifier_uses_resolved_target_and_delivery ... ok
+test cursor_tools::tests::unset_effects_are_omitted_on_the_wire ... ok
+test cursor_tools::tests::motion_style_schema_lists_public_names_and_accepts_lab_ids ... ok
+test inputs::tests::hotkey_parser_enforces_the_published_two_key_minimum ... ok
+test inputs::tests::generated_session_schema_makes_name_and_legacy_capture_optional ... ok
+test inputs::tests::serde_and_schema_reject_unknown_fields ... ok
+test outputs::error_envelope_tests::a_diagnostic_without_a_marker_gains_one ... ok
+test inputs::tests::typed_click_rejects_ambiguous_missing_or_invalid_positions ... ok
+test outputs::error_envelope_tests::a_non_object_diagnostic_becomes_an_object ... ok
+test outputs::error_envelope_tests::an_absent_diagnostic_still_produces_a_refusal ... ok
+test outputs::error_envelope_tests::each_existing_marker_is_left_alone ... ok
+test inputs::tests::typed_click_round_trips_flat_native_wire_and_exact_window_id ... ok
+test inputs::tests::legacy_click_schema_matches_coordinate_driver_dialect ... ok
+test outputs::tests::action_result_enforces_effect_invariants ... ok
+test outputs::tests::schema_compaction_keeps_properties_named_title_or_description ... ok
+test outputs::tests::action_result_schema_is_exact_and_closed ... ok
+test outputs::tests::action_result_round_trips_without_legacy_or_request_fields ... ok
+test session::tests::start_description_explains_direct_naming_and_explicit_revival ... ok
+test tests::delivery_mode_capability_matches_the_typed_input_schema ... ok
+test tests::action_target_advertises_a_flat_object_for_vertex_clients ... ok
+test tests::every_action_result_tool_uses_the_closed_runtime_validator ... ok
+test tests::desktop_action_contracts_share_the_strict_action_result ... ok
+test tests::every_contract_has_success_schema_and_platforms ... ok
+test tests::input_and_output_schemas_drop_only_schemars_numeric_formats ... ok
+test tests::every_published_tool_has_a_live_typed_output_validator ... ok
+test tests::invoke_menu_requires_an_exact_nonempty_bounded_path ... ok
+test tests::desktop_contracts_are_explicit_portable_subsets ... ok
+test tests::manifest_is_sorted_and_versioned ... ok
+test tests::list_windows_defines_nullable_higher_is_frontmost_z_index ... ok
+test tests::published_input_schemas_are_vertex_gemini_compatible ... ok
+test tests::run_actions_validation_form_accepts_explicit_null ... ok
+test tests::session_success_schemas_require_every_typed_field ... ok
+test tests::set_config_value_coercion_leaves_other_values_alone ... ok
+test tests::set_config_value_strings_are_coerced_to_the_key_type ... ok
+test tests::set_window_frame_is_exact_targeted_and_positive_sized ... ok
+test tests::typed_success_outputs_accept_extensions_and_reject_wrong_common_fields ... ok
+test tests::nullable_inputs_advertise_openapi_nullable ... ok
+test tests::verify_state_is_a_portable_read_only_contract ... ok
+test tests::vertex_lint_follows_the_documented_schema_fields ... ok
+test verification::tests::output_requires_tri_state_and_bounded_evidence_projection ... ok
+test verification::tests::predicate_shape_is_flat_and_language_binding_friendly ... ok
+test verification::tests::schema_bounds_the_polling_contract ... ok
+test visual::tests::errors_cover_capture_worker_artifact_and_inference_failures ... ok
+test visual::tests::output_schema_is_versioned_integer_pixel_data_without_dynamic_extensions ... ok
+test visual::tests::capture_sources_are_exact_window_or_primary_desktop ... ok
+test visual::tests::parse_options_schema_and_validation_require_unique_kinds ... ok
+test visual::tests::region_center_is_geometric_then_mapped_by_the_normative_equation ... ok
+test visual::tests::production_type_names_remain_model_neutral ... ok
+test visual::tests::result_validates_metadata_content_and_region_references ... ok
+test visual::tests::v1_refers_to_a_registry_capture_without_bytes_or_file_paths ... ok
+test windows::tests::invalid_window_observation_metadata_fails_validation ... ok
+test windows::tests::native_app_success_shapes_allow_unavailable_metadata ... ok
+test windows::tests::native_window_success_shapes_preserve_unknown_pid_and_order ... ok
+test windows::tests::window_state_supports_capture_only_and_degraded_native_shapes ... ok
+test windows::tests::images_are_envelope_only_and_not_structured_schema_fields ... ok
+test tests::portable_action_sessions_explain_named_multi_call_runs ... ok
+test tests::advertised_schema_presence_matches_the_cheap_predicate ... ok
+
+test result: ok. 69 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+
+EXIT_CODE=0
+2026-10-09T21:28:26Z
