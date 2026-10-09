@@ -1,7 +1,8 @@
 # CUA compatibility evidence — 2026-10-09
 
 Review only. No implementation edited, no upstream post, no Rust/testkit/live tools-list
-commands run. Contributor credit remains with kvnloo (#4871/#115/#118), injaneity
+commands run in the initial audit. The authorized SDK-only native follow-up below
+supersedes the initial missing-library limit. Contributor credit remains with kvnloo (#4871/#115/#118), injaneity
 (#4888) and RitikaxG (original live-inventory diagnosis).
 
 ## Pinned scope
@@ -108,3 +109,58 @@ test registry or desktop fixture. No host input/config/security mutation occurre
 Napari controls remain at `/workspace/scratch/dot-napari9515/`. Its fork lookup
 returned HTTP 404, so no downstream evidence push was made. Library 403 was not
 bypassed. Physical pressure/cold disk/baseline extension remain blocked.
+
+## Native SDK follow-up — same pinned #4888 head
+
+The missing-library preflight was recovered. Rust 1.97.1 built the unchanged SDK
+at `6dba09b0394f93b0d6a7ad0cc31c62c764538af1` with:
+
+```sh
+sh build-sdk.sh
+```
+
+The script records the exact isolated environment and executes
+`cargo build --locked -p cua-driver-sdk --lib`, two jobs, debug symbols disabled.
+Final invocation exited 0 in 1m 25s after reusing partial compilation. An earlier
+release attempt and first debug invocation were intentionally interrupted to
+switch to the supported debug/local-sysroot recipe; neither was a compiler failure.
+Rust 1.90 was initially installed in the disposable toolchain directory before
+checking the CI pin; the successful build uses 1.97.1 exclusively.
+
+The host had no development package metadata. `apt-get download` could not locate
+libx11-dev and could not read a host apt configuration file. Recovery downloaded
+Debian trixie amd64 Packages.xz from deb.debian.org and the 32 packages listed in
+`sysroot-packages.json`, verified each package SHA256 against that index, and
+extracted with `dpkg-deb -x` into the disposable local sysroot. No host packages,
+configuration, credentials, display or user installation were changed.
+
+Built `target-4888/debug/libcua_driver_sdk.so` SHA256:
+`7a27c0fcd552989febc363b6ca66663968c41329f45802b4dbc23a5776792d88`.
+`native-library-ldd.txt` records all dependencies resolved. The same library was
+copied beside this exact head's committed Python bindings; no bindings regenerated.
+
+From `libs/cua-driver/python`:
+
+```sh
+CUA_DRIVER_REQUIRE_UNIFFI=1 PYTHONPATH=src \
+LD_LIBRARY_PATH=/workspace/scratch/cua-sdk-build/sysroot/usr/lib/x86_64-linux-gnu \
+/workspace/scratch/cua-compat-tools/venv/bin/python -m unittest \
+  tests/test_cursor_motion.py tests/test_uniffi_loader.py tests/test_remote_channel.py -v
+```
+
+**20 tests passed, 0.675 seconds**, exit 0 (`native-tests.log`). Cursor golden
+trajectories exercise the native SDK. Remote-channel tests use their existing
+fixtures; this is not a live Driver or real remote transport claim.
+
+`native_probe.py` invokes `plan_cursor_move` through the real same-head SDK.
+Legacy `trail=True` and `trail=False` both raise `ValueError`; omitted (`None`)
+and `CursorEffectSetting.ON/OFF/DEFAULT` each return `CursorTrajectory`.
+The rerun with explicit assertions exits 0; `native-probe-results.json` has results.
+This supplies observed rejection/accepted-control evidence without modifying the
+implementation. The baseline bool acceptance remains TypeScript compiler/source
+evidence, not a second native build. Numeric direct/batch and raw JSON null reset
+remain source-only findings here. Debug Linux SDK success is not release, live
+Driver, Windows/macOS, or Vertex certification.
+
+Immediately before this follow-up push, all four PR heads above and recent
+#115/#4888 comments were rechecked unchanged. Existing #118 ownership is respected.
