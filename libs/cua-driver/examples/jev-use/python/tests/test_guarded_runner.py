@@ -106,6 +106,7 @@ class GuardedRunnerTest(unittest.TestCase):
         no_choice=False,
         reobserve=False,
         action_failure=False,
+        refused_effect=False,
         expected="verified",
     ):
         token = "private-field-canary-4316"
@@ -121,6 +122,21 @@ class GuardedRunnerTest(unittest.TestCase):
                 visual_observation="off",
                 dry_run=False,
             )
+            if refused_effect:
+                original_call = session.call_tool
+
+                async def refuse(name, args):
+                    if name == "browser_click":
+                        # Record the attempted dispatch, without performing a write.
+                        session.mutations.append(name)
+                        return SimpleNamespace(
+                            isError=False,
+                            structuredContent={"effect": "refused", "code": "browser_ref_stale"},
+                            content=[],
+                        )
+                    return await original_call(name, args)
+
+                session.call_tool = refuse
             if action_failure:
                 original_call = session.call_tool
 
@@ -249,6 +265,24 @@ class GuardedRunnerTest(unittest.TestCase):
                 self.assertEqual(
                     events[-1]["guarded_completion"]["status"], "declined" if tamper else "accepted"
                 )
+
+    def test_guarded_refusal_without_mcp_error_stops_without_replay(self):
+        for guarded in (False, True):
+            with self.subTest(guarded=guarded):
+                events, calls, mutations = self.execute(
+                    guarded=guarded, refused_effect=True, expected="unknown"
+                )
+                self.assertEqual(calls, 1 if guarded else 2)
+                self.assertEqual(mutations, ["browser_type", "browser_click"])
+                outcome = events[-1]
+                self.assertEqual(outcome["event"], "outcome")
+                self.assertEqual(outcome["outcome"], "unknown")
+                self.assertEqual(outcome["phase"], "action")
+                self.assertEqual(outcome["error"], "DriverToolError")
+                if guarded:
+                    self.assertEqual(outcome["guarded_completion"]["status"], "accepted")
+                else:
+                    self.assertNotIn("guarded_completion", outcome)
 
     def test_default_off_never_records_an_attempted_guard(self):
         events, calls, _ = self.execute(guarded=False)

@@ -24,6 +24,7 @@ type Scenario = {
     | 'ref-reused'
     | 'visual-refusal';
   actionError?: boolean;
+  actionRefusedWithoutError?: boolean;
   providerError?: boolean;
   duplicateCandidate?: boolean;
 };
@@ -142,6 +143,13 @@ async function runFixture(scenario: Scenario, log: string) {
             structuredContent: {
               code: name === 'click' ? 'background_not_supported' : 'action_failed',
             },
+          };
+        }
+        if (scenario.actionRefusedWithoutError && name === 'browser_click') {
+          return {
+            isError: false,
+            content: [],
+            structuredContent: { effect: 'refused', code: 'browser_ref_stale' },
           };
         }
         if (name === 'browser_type') value = String(args.text);
@@ -350,6 +358,27 @@ if (process.argv[2] === '--fixture-run') {
         assert.equal(jsonl.includes(TOKEN), false);
       });
     }
+  }
+
+  for (const guarded of [false, true]) {
+    test(`runner preserves unknown on structured refusal without MCP error (guarded=${guarded})`, () => {
+      const { events, receipt, status, jsonl } = runScenario({
+        guarded,
+        actionRefusedWithoutError: true,
+      });
+      assert.equal(status, 1);
+      const outcome = events.at(-1)!;
+      assert.equal(outcome.event, 'outcome');
+      assert.equal(outcome.outcome, 'unknown');
+      assert.equal(outcome.phase, 'action');
+      assert.equal(outcome.error, 'DriverToolError');
+      if (guarded) assert.equal(outcome.guarded_completion.status, 'accepted');
+      else assert.equal(Object.hasOwn(outcome, 'guarded_completion'), false);
+      assert.deepEqual(receipt.actions.map((action: Record<string, unknown>) => action.tool), [
+        'browser_type', 'browser_click',
+      ]);
+      assert.equal(jsonl.includes(TOKEN), false);
+    });
   }
 
   test('runner logs declined telemetry on background refusal without carrying it to foreground', () => {
