@@ -122,7 +122,9 @@ export class Driver {
       name,
       arguments: { ...args, session: this.session },
     });
-    if (result.isError) {
+    // Preserve #4902: ActionResult refusals need not set MCP isError.
+    const effect = (result.structuredContent as Record<string, unknown> | undefined)?.effect;
+    if (result.isError || effect === 'refused') {
       const structured = result.structuredContent as Record<string, unknown> | undefined;
       const refusalCode = (structured?.refusal as Record<string, unknown> | undefined)?.code;
       const code =
