@@ -1,0 +1,28 @@
+diff --git a/evidence/baseline-native-compat/successor_native_probe.py b/evidence/baseline-native-compat/baseline_native_probe.py
+index 0703d26aa..a1ad6939a 100644
+--- a/evidence/baseline-native-compat/successor_native_probe.py
++++ b/evidence/baseline-native-compat/baseline_native_probe.py
+@@ -1,10 +1,13 @@
++# Baseline adaptation: identical true/false/omitted request and native call.
++# Successor-only enum cases are unavailable on baseline; do not transplant bindings.
++# Expected outcomes changed to baseline boolean acceptance.
+ """Run with PYTHONPATH pointing to the pinned candidate's committed bindings."""
+ from cua_driver import _native as n
+ from cua_driver import _native_contract as c
+ import json
+ r = n.CursorMoveRequest(from_point=n.CursorMotionPoint(x=0, y=0), to_point=n.CursorMotionPoint(x=20, y=20), from_heading=0, end_heading=None, target=None, seed='compat', reduced_motion=False)
+ results = []
+-for name, value in [('true', True), ('false', False), ('omitted', None), ('enum_on', c.CursorEffectSetting.ON), ('enum_off', c.CursorEffectSetting.OFF), ('enum_default', c.CursorEffectSetting.DEFAULT)]:
++for name, value in [('true', True), ('false', False), ('omitted', None)]:
+     p = n.default_cursor_motion_params()
+     p.effects.trail = value
+     try:
+@@ -13,5 +16,6 @@ for name, value in [('true', True), ('false', False), ('omitted', None), ('enum_
+     except Exception as e:
+         results.append({'input': name, 'outcome': 'rejected', 'exception': type(e).__name__, 'message': str(e)})
+ print(json.dumps(results, indent=2))
+-assert [r['outcome'] for r in results] == ['rejected'] * 2 + ['native_call_returned'] * 4
+-assert all(r['exception'] == 'ValueError' for r in results[:2])
++assert [r['outcome'] for r in results] == ['native_call_returned'] * 3
++assert all(r['type'] == 'CursorTrajectory' for r in results)
++assert not hasattr(c, 'CursorEffectSetting'), 'Baseline unexpectedly exports successor enum'

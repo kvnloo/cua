@@ -1,0 +1,73 @@
+test_action_target_is_public_and_uses_the_generated_contract (tests.test_uniffi_loader.GeneratedOptionsTests.test_action_target_is_public_and_uses_the_generated_contract) ... ok
+test_embedded_overlay_option_defaults_false_and_accepts_true (tests.test_uniffi_loader.GeneratedOptionsTests.test_embedded_overlay_option_defaults_false_and_accepts_true) ... ok
+test_public_constructors_keep_released_signatures (tests.test_uniffi_loader.GeneratedOptionsTests.test_public_constructors_keep_released_signatures) ... ok
+test_generated_python_embedded_host_owns_the_rust_lifecycle (tests.test_uniffi_loader.SdkLoaderTests.test_generated_python_embedded_host_owns_the_rust_lifecycle) ... Traceback (most recent call last):
+  File "/tmp/tmpr8p8o70_/fake cua-driver", line 11, in <module>
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+ERROR
+test_generated_python_sdk_calls_the_rust_daemon_interface (tests.test_uniffi_loader.SdkLoaderTests.test_generated_python_sdk_calls_the_rust_daemon_interface) ... ERROR
+test_generated_python_sdk_can_own_the_runtime_in_process (tests.test_uniffi_loader.SdkLoaderTests.test_generated_python_sdk_can_own_the_runtime_in_process) ... ok
+test_typed_discovery_snapshot_and_token_click_cross_ffi (tests.test_remote_channel.NativeWindowTests.test_typed_discovery_snapshot_and_token_click_cross_ffi) ... ok
+test_cancel_forwards_exact_request_identity (tests.test_remote_channel.RemoteChannelTests.test_cancel_forwards_exact_request_identity) ... ok
+test_cancelled_bound_negotiation_closes_channel (tests.test_remote_channel.RemoteChannelTests.test_cancelled_bound_negotiation_closes_channel) ... ok
+test_canonical_driver_projection_and_bound_lifecycle (tests.test_remote_channel.RemoteChannelTests.test_canonical_driver_projection_and_bound_lifecycle) ... ok
+test_channels_on_independent_loops_and_wrong_loop_rejected (tests.test_remote_channel.RemoteChannelTests.test_channels_on_independent_loops_and_wrong_loop_rejected) ... ok
+test_closed_owner_loop_returns_error_without_unraisable_callback (tests.test_remote_channel.RemoteChannelTests.test_closed_owner_loop_returns_error_without_unraisable_callback) ... ok
+test_generated_foreign_future_drop_uses_threadsafe_scheduler (tests.test_remote_channel.RemoteChannelTests.test_generated_foreign_future_drop_uses_threadsafe_scheduler) ... ok
+test_identity_is_snapshotted_and_bound_identity_must_match (tests.test_remote_channel.RemoteChannelTests.test_identity_is_snapshotted_and_bound_identity_must_match) ... ok
+test_negotiation_fails_before_dispatch (tests.test_remote_channel.RemoteChannelTests.test_negotiation_fails_before_dispatch) ... ok
+test_rejected_bound_negotiation_closes_channel (tests.test_remote_channel.RemoteChannelTests.test_rejected_bound_negotiation_closes_channel) ... ok
+test_response_validation_and_unknown_completion (tests.test_remote_channel.RemoteChannelTests.test_response_validation_and_unknown_completion) ... ok
+test_built_in_styles_match_the_golden_trajectories (tests.test_cursor_motion.CursorMotionGoldenTests.test_built_in_styles_match_the_golden_trajectories) ... ok
+test_custom_specs_match_the_golden_trajectories (tests.test_cursor_motion.CursorMotionGoldenTests.test_custom_specs_match_the_golden_trajectories) ... ok
+test_the_arc_styles_are_specs (tests.test_cursor_motion.CursorMotionGoldenTests.test_the_arc_styles_are_specs) ... ok
+
+======================================================================
+ERROR: test_generated_python_embedded_host_owns_the_rust_lifecycle (tests.test_uniffi_loader.SdkLoaderTests.test_generated_python_embedded_host_owns_the_rust_lifecycle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/tests/test_uniffi_loader.py", line 174, in test_generated_python_embedded_host_owns_the_rust_lifecycle
+    socket_path = asyncio.run(scenario())
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/tests/test_uniffi_loader.py", line 159, in scenario
+    connection = await host.start()
+                 ^^^^^^^^^^^^^^^^^^
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/src/cua_driver/_native.py", line 10217, in start
+    return await _uniffi_rust_call_async(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/src/cua_driver/_native.py", line 2271, in _uniffi_rust_call_async
+    _uniffi_rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/src/cua_driver/_native.py", line 296, in _uniffi_rust_call_with_error
+    _uniffi_check_call_status(error_ffi_converter, call_status)
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/src/cua_driver/_native.py", line 307, in _uniffi_check_call_status
+    raise error_ffi_converter.lift(call_status.error_buf)
+cua_driver._native.EmbeddedDriverError.ExitedBeforeReady: code=1
+
+======================================================================
+ERROR: test_generated_python_sdk_calls_the_rust_daemon_interface (tests.test_uniffi_loader.SdkLoaderTests.test_generated_python_sdk_calls_the_rust_daemon_interface)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/shared/cua-baseline-native-compat/repo/libs/cua-driver/python/tests/test_uniffi_loader.py", line 208, in test_generated_python_sdk_calls_the_rust_daemon_interface
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.630s
+
+FAILED (errors=2)
