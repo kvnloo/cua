@@ -1,0 +1,54 @@
+{
+  "time_utc": "2026-10-09T22:24:47.438201+00:00",
+  "status": "BLOCKED",
+  "e2e_executed": false,
+  "failed_checks": [
+    "unix_socket",
+    "desktop",
+    "session_bus",
+    "cargo",
+    "dbus_start",
+    "gtk3"
+  ],
+  "checks": {
+    "unix_socket": {
+      "ok": false,
+      "errno": 1,
+      "error": "[Errno 1] Operation not permitted"
+    },
+    "inet_socket": {
+      "ok": true
+    },
+    "desktop": {
+      "ok": false
+    },
+    "session_bus": {
+      "ok": false
+    },
+    "cargo": {
+      "ok": false
+    },
+    "uv": {
+      "ok": true
+    },
+    "node": {
+      "ok": true
+    },
+    "npm": {
+      "ok": true
+    },
+    "dbus-run-session": {
+      "ok": true
+    },
+    "dbus_start": {
+      "ok": false,
+      "exit_code": 127,
+      "stderr": "dbus-daemon[11]: Failed to start message bus: Failed to open socket: Operation not permitted\ndbus-run-session: EOF reading address from bus daemon"
+    },
+    "gtk3": {
+      "ok": false,
+      "exit_code": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'gi'"
+    }
+  }
+}
