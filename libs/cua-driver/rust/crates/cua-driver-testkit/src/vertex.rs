@@ -79,9 +79,13 @@ fn walk(schema: &Value, path: &str, out: &mut Vec<String>) {
         }
     }
     for keyword in ["properties", "$defs"] {
-        if let Some(children) = node.get(keyword).and_then(Value::as_object) {
-            for (name, child) in children {
-                walk(child, &format!("{path}.{keyword}.{name}"), out);
+        if let Some(children) = node.get(keyword) {
+            if let Some(children) = children.as_object() {
+                for (name, child) in children {
+                    walk(child, &format!("{path}.{keyword}.{name}"), out);
+                }
+            } else {
+                out.push(format!("{path}.{keyword}: expected an object, got {children}"));
             }
         }
     }
@@ -93,9 +97,31 @@ fn walk(schema: &Value, path: &str, out: &mut Vec<String>) {
             walk(additional, &format!("{path}.additionalProperties"), out);
         }
     }
-    if let Some(variants) = node.get("anyOf").and_then(Value::as_array) {
-        for (index, variant) in variants.iter().enumerate() {
-            walk(variant, &format!("{path}.anyOf[{index}]"), out);
+    if let Some(variants) = node.get("anyOf") {
+        if let Some(variants) = variants.as_array().filter(|values| !values.is_empty()) {
+            for (index, variant) in variants.iter().enumerate() {
+                walk(variant, &format!("{path}.anyOf[{index}]"), out);
+            }
+        } else {
+            out.push(format!("{path}.anyOf: expected a nonempty array, got {variants}"));
+        }
+    }
+    if let Some(required) = node.get("required") {
+        if !required
+            .as_array()
+            .is_some_and(|fields| fields.iter().all(Value::is_string))
+        {
+            out.push(format!("{path}.required: expected an array of strings, got {required}"));
+        }
+    }
+    if let Some(nullable) = node.get("nullable") {
+        if !nullable.is_boolean() {
+            out.push(format!("{path}.nullable: expected a boolean, got {nullable}"));
+        }
+    }
+    if let Some(reference) = node.get("$ref") {
+        if !reference.is_string() {
+            out.push(format!("{path}.$ref: expected a string, got {reference}"));
         }
     }
 }
@@ -152,6 +178,35 @@ mod tests {
             assert!(
                 violations.iter().any(|message| message.starts_with(path)),
                 "missing {path} in {violations:#?}"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_malformed_schema_container_fields_instead_of_skipping_them() {
+        let schema = json!({
+            "type": "object",
+            "properties": {
+                "bad_properties": {"type": "object", "properties": ["not an object"]},
+                "bad_anyof": {"type": "object", "anyOf": []},
+                "bad_required": {"type": "object", "required": [true]},
+                "bad_nullable": {"type": "string", "nullable": "yes"},
+                "bad_ref": {"$ref": 7},
+                "bad_defs": {"type": "object", "$defs": false}
+            }
+        });
+        let violations = input_schema_violations(&schema);
+        for expected in [
+            "$.properties.bad_properties.properties: expected an object",
+            "$.properties.bad_anyof.anyOf: expected a nonempty array",
+            "$.properties.bad_required.required: expected an array of strings",
+            "$.properties.bad_nullable.nullable: expected a boolean",
+            "$.properties.bad_ref.$ref: expected a string",
+            "$.properties.bad_defs.$defs: expected an object",
+        ] {
+            assert!(
+                violations.iter().any(|violation| violation.starts_with(expected)),
+                "missing {expected} in {violations:#?}"
             );
         }
     }
