@@ -1,5 +1,6 @@
 """Tests for the cua-driver Python wrapper."""
 
+import errno
 import importlib.util
 import io
 import os
@@ -34,6 +35,88 @@ def test_get_binary_path():
     except FileNotFoundError:
         # Expected in development without building
         pytest.skip("Binary not bundled yet (run build_wheel.py first)")
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix executable-bit behavior")
+@pytest.mark.parametrize(
+    "chmod_error",
+    [
+        PermissionError(errno.EPERM, "Operation not permitted"),
+        OSError(errno.EROFS, "Read-only file system"),
+    ],
+    ids=["EPERM", "EROFS"],
+)
+def test_already_executable_bundle_needs_no_runtime_chmod(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, chmod_error: OSError
+) -> None:
+    """An installer-owned executable still launches and preserves its exit status."""
+    wrapper = load_wrapper_module()
+    binary = tmp_path / "cua_driver" / "bin" / "cua-driver"
+    binary.parent.mkdir(parents=True)
+    binary.symlink_to(sys.executable)
+    assert os.access(binary, os.X_OK)
+    monkeypatch.setattr(wrapper, "__file__", str(binary.parent.parent / "wrapper.py"))
+
+    chmod = Mock(side_effect=chmod_error)
+    monkeypatch.setattr(wrapper.os, "chmod", chmod)
+
+    assert wrapper.run_cua_driver(["-c", "import sys; sys.exit(42)"]) == 42
+    chmod.assert_not_called()
+
+
+def test_missing_bundle_still_reports_missing_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    wrapper = load_wrapper_module()
+    monkeypatch.setattr(wrapper, "__file__", str(tmp_path / "cua_driver" / "wrapper.py"))
+    chmod = Mock(side_effect=AssertionError("must not chmod a missing binary"))
+    monkeypatch.setattr(wrapper.os, "chmod", chmod)
+
+    with pytest.raises(FileNotFoundError, match="binary not found"):
+        wrapper.get_binary_path()
+    chmod.assert_not_called()
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix executable-bit behavior")
+def test_nonexecutable_bundle_keeps_repair_and_permission_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Simulated missing execute access still tries the existing repair."""
+    wrapper = load_wrapper_module()
+    binary = tmp_path / "cua_driver" / "bin" / "cua-driver"
+    binary.parent.mkdir(parents=True)
+    binary.symlink_to(sys.executable)
+    monkeypatch.setattr(wrapper, "__file__", str(binary.parent.parent / "wrapper.py"))
+    monkeypatch.setattr(wrapper.os, "access", Mock(return_value=False))
+
+    chmod = Mock(return_value=None)
+    monkeypatch.setattr(wrapper.os, "chmod", chmod)
+    assert wrapper.get_binary_path() == binary
+    chmod.assert_called_once_with(binary, 0o755)
+
+    denied = PermissionError("repair is forbidden")
+    chmod.reset_mock(side_effect=True)
+    chmod.side_effect = denied
+    with pytest.raises(PermissionError) as captured:
+        wrapper.get_binary_path()
+    assert captured.value is denied
+    chmod.assert_called_once_with(binary, 0o755)
+
+
+def test_windows_binary_lookup_never_chmods(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    wrapper = load_wrapper_module()
+    binary = tmp_path / "cua_driver" / "bin" / "cua-driver.exe"
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(b"fixture")
+    monkeypatch.setattr(wrapper, "__file__", str(binary.parent.parent / "wrapper.py"))
+    monkeypatch.setattr(wrapper.sys, "platform", "win32")
+    chmod = Mock(side_effect=AssertionError("Windows must not chmod"))
+    monkeypatch.setattr(wrapper.os, "chmod", chmod)
+
+    assert wrapper.get_binary_path() == binary
+    chmod.assert_not_called()
 
 
 def test_run_cua_driver_version(monkeypatch):
@@ -169,9 +252,7 @@ def test_keyboard_interrupt_handling(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         wrapper, "get_binary_path", Mock(return_value=Path("/fake/path/cua-driver"))
     )
-    monkeypatch.setattr(
-        wrapper.subprocess, "run", Mock(side_effect=KeyboardInterrupt())
-    )
+    monkeypatch.setattr(wrapper.subprocess, "run", Mock(side_effect=KeyboardInterrupt()))
 
     exit_code = wrapper.run_cua_driver(["mcp"])
     assert exit_code == 130
