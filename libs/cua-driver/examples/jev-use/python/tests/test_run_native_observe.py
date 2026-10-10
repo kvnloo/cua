@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from run import DriverToolError
 from run_native import observe
+from native import eligible_controls
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures/native/appkit-window-state-initial-v1.json"
 
@@ -39,6 +40,24 @@ class ObserveTests(unittest.TestCase):
     def setUp(self) -> None:
         payload = json.loads(FIXTURE.read_text())
         self.pid, self.window_id = payload["pid"], payload["window_id"]
+
+    def test_lean_default_preserves_structured_candidates_only_with_full_output(self) -> None:
+        # Same synthetic observation on both reads: Driver 0.35 omits
+        # structured elements by default unless full_output is requested.
+        class LeanDefaultDriver(FakeDriver):
+            async def call(self, name, arguments):
+                self.calls.append(dict(arguments))
+                payload = json.loads(FIXTURE.read_text())
+                if not arguments.get("full_output"):
+                    payload.pop("elements", None)
+                    payload.pop("elements_complete", None)
+                return payload
+
+        driver = LeanDefaultDriver(refuse_full_output=False)
+        observation = asyncio.run(observe(driver, TASK, self.pid, self.window_id))
+        ids = [control.id for control in eligible_controls(observation, "macos").controls]
+        self.assertIn("ax:button:increment", ids)
+        self.assertEqual(len(driver.calls), 1)
 
     def test_asks_for_the_full_response(self) -> None:
         driver = FakeDriver(refuse_full_output=False)

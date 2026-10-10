@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import { DriverToolError, type Driver } from './run.js';
 import { observe } from './run_native.js';
+import { eligibleControls } from './native.js';
 import type { NativeTask } from './native_tasks.js';
 
 const fixture = JSON.parse(
@@ -55,5 +56,24 @@ test('native observe does not retry unrelated Driver refusals', async () => {
   await assert.rejects(observe(driver, task, pid, windowId), (error: unknown) =>
     error instanceof DriverToolError && error.code === 'permission_denied'
   );
+  assert.equal(calls.length, 1);
+});
+
+// Same synthetic observation as Python: the lean default must not lose candidates.
+test('native observe preserves candidates against a lean-by-default 0.35 Driver', async () => {
+  const calls: Record<string, unknown>[] = [];
+  const driver = {
+    async call(_name: string, args: Record<string, unknown>) {
+      calls.push({ ...args });
+      const payload = structuredClone(fixture);
+      if (!args.full_output) {
+        delete payload.elements;
+        delete payload.elements_complete;
+      }
+      return payload;
+    },
+  } as unknown as Driver;
+  const result = await observe(driver, task, pid, windowId);
+  assert.ok(eligibleControls(result, 'macos').controls.some((c) => c.id === 'ax:button:increment'));
   assert.equal(calls.length, 1);
 });
