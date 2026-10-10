@@ -1,0 +1,118 @@
+{
+  "kind": "NEW canonical Linux docs/snapshot setup blocker; generator and drift result NOT_RUN",
+  "parent_checkpoint": "0e3acf4610649a7859f8ede3f8da30303659a63c",
+  "prior_tree": "1d312b89d66634f46f8e540994887233672c0f38",
+  "source_tree": "9727e8cee4ec17c787b22457a72de36101a3b7be",
+  "production_owner_head": "e7d056e8def8d5e0027025ee7b9511280bf8f8c5",
+  "scope": "Canonical Linux native registry snapshot and shared CLI/rendered docs only; other OS snapshots are committed-source inputs",
+  "canonical_argv": [
+    "NODE_RUNTIME_BIN/node",
+    "QUALIFICATION_ROOT/docs-launcher/node_modules/tsx/dist/cli.mjs",
+    "QUALIFICATION_ROOT/owner-current/scripts/docs-generators/cua-driver.ts",
+    "--check"
+  ],
+  "canonical_binary_override": "CUA_DRIVER_BINARY=QUALIFICATION_ROOT/target-native/release/cua-driver",
+  "attempts": [
+    {
+      "time_utc": "2026-10-10T16:21:01Z",
+      "setup_exit": 78,
+      "status": "NOT_RUN at names-only inherited NODE_PATH preflight; no Node or generator launch",
+      "supervisor_sha256": "61e4e14ccd787f6c108d1eb58a0efcf136e66d543e8142b8e24fb157f1700d94"
+    },
+    {
+      "time_utc": "2026-10-10T16:24:31.229626+00:00",
+      "launcher_exit": 1,
+      "status": "BLOCKED_AT_CANONICAL_TSX_IPC_LISTEN; generator/Driver dump/drift result NOT_RUN",
+      "error_code": "EPERM",
+      "failed_syscall": "listen",
+      "timed_out": false,
+      "supervisor_sha256": "0f6b06115ffe8ede3ea42426c63c673613af7a7ec390b64f6eb565d97a110b3f"
+    }
+  ],
+  "required_environment": "Authorized Linux environment permitting the official tsx local Unix socket, Node children and piped esbuild service, with fresh short isolated temp/cwd/HOME/XDG roots. No permission change, alternate launcher or retry was used here.",
+  "source_and_verified_artifact_hashes_unchanged": true,
+  "generator_sha256": "f2bc3beb1dfc7de71bb39f03083883ca4a29b960702362c5e7b13c3ec824ee29",
+  "driver_sha256": "8278bf0df45d0f2656957c1a8b71a8c58a18d9c4cb39527f4590b21e213cee06",
+  "launcher_sha256": "8729ecfb90d9d568939e4190e6f1d3317c946583b7d37a776e0c23a21c021cf8",
+  "esbuild_sha256": "ecd2aeff7d78a9feefa96d9c6f3bb9a9cbb38cc74ec3e7f044e8e6ed02e33d00",
+  "node_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+  "normalization": {
+    "method": "Original UTF-8 receipt/log bytes are embedded with portable path tokens only; JSON text records are not rewritten",
+    "normalizer_source_sha256": "e1d5e0ca2408d8bf531ba97979f1e304336adbdec2fb22bc8907c16853d70a42",
+    "path_tokens": [
+      "ISOLATED_SYSROOT_LIB",
+      "QUALIFICATION_ROOT",
+      "ISOLATED_TEMP_ROOT",
+      "NODE_RUNTIME_BIN",
+      "HOST_BIN_PATH"
+    ],
+    "opaque_host_and_NODE_PATH_values": "Never serialized or included; preservation results and counts remain in frozen receipt",
+    "independent_receipt_hashes": "Refer to raw originals; each embedded record maps them to included normalized bytes"
+  },
+  "records": [
+    {
+      "name": "preflight-v3",
+      "raw_original_sha256": "c8bf1d3e9338ab145776a398af2e61f8c3719a5daa1f06f3faba9a90ca88b047",
+      "normalized_sha256": "c8bf1d3e9338ab145776a398af2e61f8c3719a5daa1f06f3faba9a90ca88b047",
+      "raw_bytes": 639,
+      "normalized_bytes": 639,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": "{\n  \"kind\": \"NEW canonical-docs names-only preflight HOLD; no generator execution\",\n  \"attempt_utc\": \"2026-10-10T16:21:01Z\",\n  \"recorded_utc\": \"2026-10-10T16:21:44.516356+00:00\",\n  \"supervisor_sha256\": \"61e4e14ccd787f6c108d1eb58a0efcf136e66d543e8142b8e24fb157f1700d94\",\n  \"exit\": 78,\n  \"generator_launched\": false,\n  \"configured_policy_names\": [],\n  \"unreviewed_launcher_override_names\": [\n    \"NODE_PATH\"\n  ],\n  \"override_values_inspected\": false,\n  \"overrides_cleared\": false,\n  \"runtime_root_created\": false,\n  \"source_tree\": \"9727e8cee4ec17c787b22457a72de36101a3b7be\",\n  \"disk_free_bytes\": 15835537408,\n  \"mem_available_kb\": 8831312\n}\n"
+    },
+    {
+      "name": "launcher-restoration",
+      "raw_original_sha256": "a07afc55746405466216bd5899675cc33430639f94f0934780960019f5d50d5f",
+      "normalized_sha256": "2ad11052d3925b829cd1825d0f771ef0a97589ddd8262c9a6179b2d14e4b90af",
+      "raw_bytes": 4305,
+      "normalized_bytes": 3976,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": "{\n  \"kind\": \"Official minimal docs launcher subset, exact versions and SHA-512 integrities from tracked docs lock; no lifecycle execution\",\n  \"restored_utc\": \"2026-10-10T16:18:04.694378+00:00\",\n  \"docs_lock_sha256\": \"fc3eaeefd487499a17715210feff5098a6f59f1d6a768742606a71febd4d44f9\",\n  \"source_tree\": \"9727e8cee4ec17c787b22457a72de36101a3b7be\",\n  \"packages\": [\n    {\n      \"package\": \"tsx\",\n      \"version\": \"4.21.0\",\n      \"source_url\": \"https://registry.npmjs.org/tsx/-/tsx-4.21.0.tgz\",\n      \"official_tarball_integrity\": \"sha512-5C1sg4USs1lfG0GFb2RLXsdpXqBSEhAaA/0kPL01wxzpMqLILNxIxIOKiILz+cdg/pLnOUxFYOR5yhHU666wbw==\",\n      \"download_bytes\": 154267,\n      \"tarball_sha256\": \"d403b8208816de76eddbbe5642bfefbbfe7c8c2109fa886e3710e0a1907f33a5\",\n      \"package_json_sha256\": \"6e764b21991c21595441f82387c1451ccd10a3e7a3f0973cc5e3649a12dea7d2\",\n      \"materialized_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/tsx\",\n      \"install_scripts_executed\": false\n    },\n    {\n      \"package\": \"esbuild\",\n      \"version\": \"0.27.2\",\n      \"source_url\": \"https://registry.npmjs.org/esbuild/-/esbuild-0.27.2.tgz\",\n      \"official_tarball_integrity\": \"sha512-HyNQImnsOC7X9PMNaCIeAm4ISCQXs5a5YasTXVliKv4uuBo1dKrG0A+uQS8M5eXjVMnLg3WgXaKvprHlFJQffw==\",\n      \"download_bytes\": 30945,\n      \"tarball_sha256\": \"db2785400b5bde79f342308fddc41f7c431ea7babb8b8b4feba3a25e11899220\",\n      \"package_json_sha256\": \"3139328c2722a5f517e908ef5c3d8aa28cf154fe3931185ed456351e662025df\",\n      \"materialized_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/esbuild\",\n      \"install_scripts_executed\": false\n    },\n    {\n      \"package\": \"get-tsconfig\",\n      \"version\": \"4.13.0\",\n      \"source_url\": \"https://registry.npmjs.org/get-tsconfig/-/get-tsconfig-4.13.0.tgz\",\n      \"official_tarball_integrity\": \"sha512-1VKTZJCwBrvbd+Wn3AOgQP/2Av+TfTCOlE4AcRJE72W1ksZXbAx8PPBR9RzgTeSPzlPMHrbANMH3LbltH73wxQ==\",\n      \"download_bytes\": 46459,\n      \"tarball_sha256\": \"5d1b43284553748f51d9ce3a71b25bb4bfc7aecb7210ca460d96b2d202c5b33e\",\n      \"package_json_sha256\": \"8d506183857f961bff977fad697712e70136b5608b74aa7eda296d90dcee19cb\",\n      \"materialized_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/get-tsconfig\",\n      \"install_scripts_executed\": false\n    },\n    {\n      \"package\": \"resolve-pkg-maps\",\n      \"version\": \"1.0.0\",\n      \"source_url\": \"https://registry.npmjs.org/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz\",\n      \"official_tarball_integrity\": \"sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==\",\n      \"download_bytes\": 5194,\n      \"tarball_sha256\": \"4a7cbdb7054b1dd6e466067129be9577b495ff69d02064913e1723405db0df76\",\n      \"package_json_sha256\": \"e372f809865bc3fc6ad75be76a90b031eece36e9d12d283de9955aca6be8537d\",\n      \"materialized_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/resolve-pkg-maps\",\n      \"install_scripts_executed\": false\n    },\n    {\n      \"package\": \"@esbuild/linux-x64\",\n      \"version\": \"0.27.2\",\n      \"source_url\": \"https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.27.2.tgz\",\n      \"official_tarball_integrity\": \"sha512-uwp2Tip5aPmH+NRUwTcfLb+W32WXjpFejTIOWZFw/v7/KnpCDKG66u4DLcurQpiYTiYwQ9B7KOeMJvLCu/OvbA==\",\n      \"download_bytes\": 4650639,\n      \"tarball_sha256\": \"4ac0a36a8573ef6b612263661e7c77343a38789485344e1875cf33a498292310\",\n      \"package_json_sha256\": \"bb6a1435e39368fc5041d0abcdb5927e021f5810e5129e8cf01094f1884e6318\",\n      \"materialized_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/@esbuild/linux-x64\",\n      \"install_scripts_executed\": false\n    }\n  ],\n  \"launcher_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/tsx/dist/cli.mjs\",\n  \"launcher_sha256\": \"8729ecfb90d9d568939e4190e6f1d3317c946583b7d37a776e0c23a21c021cf8\",\n  \"esbuild_binary_path\": \"QUALIFICATION_ROOT/docs-launcher/node_modules/@esbuild/linux-x64/bin/esbuild\",\n  \"esbuild_binary_sha256\": \"ecd2aeff7d78a9feefa96d9c6f3bb9a9cbb38cc74ec3e7f044e8e6ed02e33d00\",\n  \"generator_launched\": false\n}\n"
+    },
+    {
+      "name": "frozen-attempt-v4",
+      "raw_original_sha256": "fd1063ede763c394f65c721b0ba20c474f2bc8b9212ce0d987252d7415d5fd83",
+      "normalized_sha256": "c316573d37cfdb4b78a8e155f0cb23c2bf336615e84637040972e4604af2d97e",
+      "raw_bytes": 3499,
+      "normalized_bytes": 3130,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": "{\n  \"kind\": \"NEW canonical Linux snapshot/rendered-docs check frozen before launch\",\n  \"frozen_utc\": \"2026-10-10T16:24:30.510184+00:00\",\n  \"argv\": [\n    \"NODE_RUNTIME_BIN/node\",\n    \"QUALIFICATION_ROOT/docs-launcher/node_modules/tsx/dist/cli.mjs\",\n    \"QUALIFICATION_ROOT/owner-current/scripts/docs-generators/cua-driver.ts\",\n    \"--check\"\n  ],\n  \"cwd\": \"ISOLATED_TEMP_ROOT\",\n  \"source_tree\": \"9727e8cee4ec17c787b22457a72de36101a3b7be\",\n  \"tracked_delta_before\": [],\n  \"generator_sha256\": \"f2bc3beb1dfc7de71bb39f03083883ca4a29b960702362c5e7b13c3ec824ee29\",\n  \"launcher_sha256\": \"8729ecfb90d9d568939e4190e6f1d3317c946583b7d37a776e0c23a21c021cf8\",\n  \"esbuild_binary_sha256\": \"ecd2aeff7d78a9feefa96d9c6f3bb9a9cbb38cc74ec3e7f044e8e6ed02e33d00\",\n  \"qualified_driver_binary_sha256\": \"8278bf0df45d0f2656957c1a8b71a8c58a18d9c4cb39527f4590b21e213cee06\",\n  \"supervisor_sha256\": \"0f6b06115ffe8ede3ea42426c63c673613af7a7ec390b64f6eb565d97a110b3f\",\n  \"node_binary_sha256\": \"bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12\",\n  \"environment_without_opaque_host_controls\": {\n    \"PATH\": \"NODE_RUNTIME_BIN:HOST_BIN_PATH\",\n    \"HOME\": \"ISOLATED_TEMP_ROOT/home\",\n    \"USERPROFILE\": \"ISOLATED_TEMP_ROOT/home\",\n    \"TMPDIR\": \"ISOLATED_TEMP_ROOT/tmp\",\n    \"XDG_CONFIG_HOME\": \"ISOLATED_TEMP_ROOT/config\",\n    \"XDG_CACHE_HOME\": \"ISOLATED_TEMP_ROOT/cache\",\n    \"XDG_DATA_HOME\": \"ISOLATED_TEMP_ROOT/data\",\n    \"XDG_STATE_HOME\": \"ISOLATED_TEMP_ROOT/state\",\n    \"XDG_RUNTIME_DIR\": \"ISOLATED_TEMP_ROOT/run\",\n    \"XAUTHORITY\": \"ISOLATED_TEMP_ROOT/no-xauthority\",\n    \"DBUS_SESSION_BUS_ADDRESS\": \"unix:path=ISOLATED_TEMP_ROOT/no-session-bus\",\n    \"NO_AT_BRIDGE\": \"1\",\n    \"DO_NOT_TRACK\": \"1\",\n    \"CUA_DRIVER_RS_TELEMETRY_ENABLED\": \"0\",\n    \"CUA_TELEMETRY\": \"0\",\n    \"CUA_TELEMETRY_ENABLED\": \"false\",\n    \"CUA_DRIVER_RS_UPDATE_CHECK\": \"0\",\n    \"CUA_DRIVER_PERMISSION_MODE\": \"standard\",\n    \"LD_LIBRARY_PATH\": \"ISOLATED_SYSROOT_LIB\",\n    \"CUA_DRIVER_BINARY\": \"QUALIFICATION_ROOT/target-native/release/cua-driver\",\n    \"TSX_DISABLE_CACHE\": \"1\"\n  },\n  \"opaque_host_control_count\": 2,\n  \"opaque_host_controls_preserved_unchanged\": true,\n  \"inherited_node_path_preserved_unchanged\": true,\n  \"configured_policy_names\": [],\n  \"filesystem_before\": [\n    {\n      \"path\": \"cache\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"config\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"data\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"home\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"run\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"state\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"tmp\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    }\n  ],\n  \"timeout_seconds\": 30,\n  \"scope\": \"Unedited --check with supported CUA_DRIVER_BINARY; Linux native snapshot and shared CLI/docs only; normal finite-command wrapper retained, no action runtime or tool call\"\n}\n"
+    },
+    {
+      "name": "terminal-attempt-v4",
+      "raw_original_sha256": "1bd2238523d23d33e66ed064b3d26c7134895732db46c4ee0f11d6476499deb8",
+      "normalized_sha256": "1bd2238523d23d33e66ed064b3d26c7134895732db46c4ee0f11d6476499deb8",
+      "raw_bytes": 1769,
+      "normalized_bytes": 1769,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": "{\n  \"kind\": \"NEW canonical docs drift check terminal\",\n  \"terminal_utc\": \"2026-10-10T16:24:31.229626+00:00\",\n  \"exit\": 1,\n  \"timed_out\": false,\n  \"elapsed_seconds\": 0.11948821999976644,\n  \"stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n  \"stderr_sha256\": \"bd1d478b8974d2893ecd17d11f98aac228d92df095326493406e6c64a4518af2\",\n  \"source_tree_after\": \"9727e8cee4ec17c787b22457a72de36101a3b7be\",\n  \"tracked_delta_after\": [],\n  \"qualified_driver_binary_sha256_after\": \"8278bf0df45d0f2656957c1a8b71a8c58a18d9c4cb39527f4590b21e213cee06\",\n  \"launcher_sha256_after\": \"8729ecfb90d9d568939e4190e6f1d3317c946583b7d37a776e0c23a21c021cf8\",\n  \"esbuild_binary_sha256_after\": \"ecd2aeff7d78a9feefa96d9c6f3bb9a9cbb38cc74ec3e7f044e8e6ed02e33d00\",\n  \"filesystem_after\": [\n    {\n      \"path\": \"cache\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"config\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"data\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"home\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"run\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"state\",\n      \"mode\": 448,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"tmp\",\n      \"mode\": 448,\n      \"size\": 60,\n      \"kind\": \"directory\"\n    },\n    {\n      \"path\": \"tmp/tsx-1000\",\n      \"mode\": 493,\n      \"size\": 40,\n      \"kind\": \"directory\"\n    }\n  ],\n  \"scope\": \"Unedited --check with supported CUA_DRIVER_BINARY; Linux native snapshot and shared CLI/docs only; normal finite-command wrapper retained, no action runtime or tool call\"\n}\n"
+    },
+    {
+      "name": "stdout-attempt-v4",
+      "raw_original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalized_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_bytes": 0,
+      "normalized_bytes": 0,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": ""
+    },
+    {
+      "name": "stderr-attempt-v4",
+      "raw_original_sha256": "bd1d478b8974d2893ecd17d11f98aac228d92df095326493406e6c64a4518af2",
+      "normalized_sha256": "25cc983aed1a0bfda861383176a8c18f55b0446d45444a6a6f192d1b445e2fe3",
+      "raw_bytes": 948,
+      "normalized_bytes": 799,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": "node:net:2145\n      const error = new UVExceptionWithHostPort(rval, 'listen', address, port);\n                    ^\n\nError: listen EPERM: operation not permitted ISOLATED_TEMP_ROOT/tmp/tsx-1000/46.pipe\n    at Server.setupListenHandle [as _listen2] (node:net:2145:21)\n    at listenInCluster (node:net:2224:12)\n    at Server.listen (node:net:2361:5)\n    at file://QUALIFICATION_ROOT/docs-launcher/node_modules/tsx/dist/cli.mjs:53:31537\n    at new Promise (<anonymous>)\n    at createIpcServer (file://QUALIFICATION_ROOT/docs-launcher/node_modules/tsx/dist/cli.mjs:53:31515)\n    at async file://QUALIFICATION_ROOT/docs-launcher/node_modules/tsx/dist/cli.mjs:55:459 {\n  code: 'EPERM',\n  errno: -1,\n  syscall: 'listen',\n  address: 'ISOLATED_TEMP_ROOT/tmp/tsx-1000/46.pipe',\n  port: -1\n}\n\nNode.js v24.19.0\n"
+    },
+    {
+      "name": "independent-terminal-audit",
+      "raw_original_sha256": "93aa80e3e7ffed174fbba280d5ac9f96bb4bcc0541ac53b7db0dfec2884056ec",
+      "normalized_sha256": "93aa80e3e7ffed174fbba280d5ac9f96bb4bcc0541ac53b7db0dfec2884056ec",
+      "raw_bytes": 2568,
+      "normalized_bytes": 2568,
+      "normalization": "Single-pass longest-prefix path tokens only; all measurements and warnings unchanged",
+      "normalized_text": "{\n  \"observedUtc\": \"2026-10-10T16:25:38.742078+00:00\",\n  \"verdict\": \"BLOCKED_AT_CANONICAL_TSX_IPC_LISTEN\",\n  \"qualificationStatus\": \"LINUX_NATIVE_SNAPSHOT_AND_SHARED_DOCS_NOT_RUN\",\n  \"processExit\": 1,\n  \"timedOut\": false,\n  \"elapsedSeconds\": 0.11948821999976644,\n  \"stdoutBytes\": 0,\n  \"errorCode\": \"EPERM\",\n  \"failedSyscall\": \"listen\",\n  \"blockedStage\": \"Pinned tsx createIpcServer before its awaited return and script-child spawn\",\n  \"stageEvidence\": \"Official unchanged cli.mjs awaits createIpcServer before run(child); exact stack is in createIpcServer and no script was launched. This classification is source/control-flow evidence, not syscall tracing.\",\n  \"generatorReached\": false,\n  \"driverDumpReached\": false,\n  \"driftResultObtained\": false,\n  \"isolatedFilesystemNewMembers\": [\n    \"tmp/tsx-1000\"\n  ],\n  \"isolatedFilesystemOtherChanges\": [\n    \"tmp directory size increased\"\n  ],\n  \"sourceTree\": \"9727e8cee4ec17c787b22457a72de36101a3b7be\",\n  \"sourceAndVerifiedArtifactsUnchanged\": true,\n  \"receiptSha256\": {\n    \"frozen.json\": \"fd1063ede763c394f65c721b0ba20c474f2bc8b9212ce0d987252d7415d5fd83\",\n    \"terminal.json\": \"1bd2238523d23d33e66ed064b3d26c7134895732db46c4ee0f11d6476499deb8\",\n    \"stdout.log\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n    \"stderr.log\": \"bd1d478b8974d2893ecd17d11f98aac228d92df095326493406e6c64a4518af2\"\n  },\n  \"supervisorSha256\": \"0f6b06115ffe8ede3ea42426c63c673613af7a7ec390b64f6eb565d97a110b3f\",\n  \"checkedConditions\": [\n    \"supervisor_hash\",\n    \"driver_actual_before\",\n    \"driver_actual_after\",\n    \"launcher_actual_before\",\n    \"launcher_actual_after\",\n    \"esbuild_actual_before\",\n    \"esbuild_actual_after\",\n    \"generator_hash\",\n    \"node_hash\",\n    \"stdout_bytes\",\n    \"stdout_hash\",\n    \"stderr_hash\",\n    \"exit\",\n    \"timed_out\",\n    \"current_source_delta\",\n    \"current_source_index\",\n    \"terminal_source\",\n    \"terminal_delta\",\n    \"policies_absent\",\n    \"host_controls_preserved\",\n    \"node_path_preserved\",\n    \"cache_disabled\",\n    \"only_new_temp_member\",\n    \"no_removed_temp_members\",\n    \"unchanged_temp_member/cache\",\n    \"unchanged_temp_member/config\",\n    \"unchanged_temp_member/data\",\n    \"unchanged_temp_member/home\",\n    \"unchanged_temp_member/run\",\n    \"unchanged_temp_member/state\"\n  ],\n  \"runtimeExecutionsByVerifier\": 0,\n  \"scope\": \"Canonical launcher attempt failed before the docs generator. Existing canonical UniFFI drift, SDK cursor ABI and actual Driver metadata/EOF evidence retain their prior narrow results. No alternate execution path or permission change used.\"\n}\n"
+    }
+  ],
+  "previous_qualification_results": "Canonical UniFFI and current Linux native planner ABI passes, live Driver metadata/EOF lifecycle pass, and full composed core FAIL: 942 passed / 13 failed retain their existing separate scope; nine prior evidence blobs unchanged."
+}
