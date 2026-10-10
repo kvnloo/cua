@@ -159,7 +159,8 @@ class LumeRuntime(NativeRuntime):
                 )
             if vm.get("status") in ("stopped", "suspended"):
                 logger.info(f"Base VM '{base_name}' already exists (stopped) — skipping pull")
-                return CheckpointInfo(name=base_name, runtime_type="lume", created_at=time.time())
+                # Lume's VM details carry no creation time; leave created_at unknown.
+                return CheckpointInfo(name=base_name, runtime_type="lume")
 
         oci_ref = _macos_ref(image)
         logger.info(f"Pulling base image '{oci_ref}' → '{base_name}' (first time only)...")
@@ -244,13 +245,12 @@ class LumeRuntime(NativeRuntime):
 
     async def list_checkpoints(self):  # -> list[CheckpointInfo]
         """Return VMs that are checkpoints (cua-base-* or cua-ckpt-* prefix)."""
-        import time
-
         from cua_sandbox.runtime.base import CheckpointInfo
 
         vms = await self.list()
+        # Lume's VM details carry no creation time; leave created_at unknown.
         return [
-            CheckpointInfo(name=v["name"], runtime_type="lume", created_at=time.time())
+            CheckpointInfo(name=v["name"], runtime_type="lume")
             for v in vms
             if v["name"].startswith("cua-base-") or v["name"].startswith(self._CHECKPOINT_PREFIX)
         ]
