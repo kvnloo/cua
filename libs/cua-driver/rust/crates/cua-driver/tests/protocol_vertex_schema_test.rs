@@ -32,9 +32,25 @@ fn live_tools_list_input_schemas_are_vertex_compatible() {
         .map(|tool| tool["name"].as_str().expect("tool name"))
         .collect();
     assert_eq!(names.len(), tools.len(), "tools/list has duplicate tool names");
+    // #4935 publishes run_steps and keeps run_actions as an invoke-only alias.
+    // This test is stacked on #4871 (before the rename) and must also survive
+    // rebasing to current main without dropping the runtime-only tool from lint.
+    let batch_name = if names.contains("run_steps") {
+        assert!(
+            !names.contains("run_actions"),
+            "run_actions must be hidden when run_steps is advertised"
+        );
+        "run_steps"
+    } else {
+        assert!(
+            names.contains("run_actions"),
+            "tools/list must expose run_steps or its legacy run_actions predecessor"
+        );
+        "run_actions"
+    };
     assert!(
-        names.contains("run_actions"),
-        "the runtime-only run_actions tool must be covered"
+        tools.iter().any(|tool| tool["name"] == batch_name && tool["inputSchema"].is_object()),
+        "the advertised batch tool {batch_name} must have a schema for the Vertex lint"
     );
 
     // Do not certify a partial roster as Vertex-compatible. The contract
