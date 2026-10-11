@@ -50,7 +50,7 @@ class StaleErrorTest(unittest.TestCase):
 
 
 class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
-    async def run_case(self, code: str | None) -> tuple[str, list[dict], list[dict], dict]:
+    async def run_case(self, code: str | None, *, effect_refused: bool = False, always_refuse: bool = False) -> tuple[str, list[dict], list[dict], dict]:
         payload = json.loads(
             (ROOT / "fixtures/native/gtk3-window-state-initial-v1.json").read_text(encoding="utf-8")
         )
@@ -95,10 +95,13 @@ class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
                             element["element_token"] = f"{snapshot}:{element['element_index']}"
                     elif name == "click":
                         actions.append(dict(arguments))
-                        if len(actions) == 1 or code not in (None, "stale_element_token"):
+                        if always_refuse or len(actions) == 1 or code not in (None, "stale_element_token"):
+                            structured = {} if code is None else {"code": code}
+                            if effect_refused:
+                                structured["effect"] = "refused"
                             return SimpleNamespace(
-                                isError=True,
-                                structuredContent={} if code is None else {"code": code},
+                                isError=not effect_refused,
+                                structuredContent=structured,
                                 content=[{"type": "text", "text": STALE_MESSAGE}],
                             )
                         state["counter"] = 3
@@ -164,6 +167,40 @@ class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
                     1,
                 )
 
+
+
+    async def test_effect_refused_without_mcp_error_does_not_hide_denial(self) -> None:
+        for code in ("permission_denied", "tool_invocation_failed", "future_error"):
+            with self.subTest(code=code):
+                outcome, actions, reads, result = await self.run_case(code, effect_refused=True)
+                self.assertEqual(outcome, "unknown")
+                self.assertEqual(len(actions), 1)
+                self.assertEqual(len(reads), 1)
+                self.assertEqual(result["state"]["counter"], 0)
+                self.assertEqual(result["events"][-1]["phase"], "action")
+
+    async def test_effect_refused_stale_reobserves_using_fresh_token(self) -> None:
+        outcome, actions, reads, result = await self.run_case(
+            "stale_element_token", effect_refused=True
+        )
+        self.assertEqual(outcome, "verified")
+        self.assertEqual(len(actions), 2)
+        self.assertEqual(len(reads), 2)
+        self.assertNotEqual(actions[0]["element_token"], actions[1]["element_token"])
+        self.assertEqual(result["state"]["counter"], 3)
+
+    async def test_persistent_refusal_stale_stops_bounded_recovery(self) -> None:
+        outcome, actions, reads, result = await self.run_case(
+            "stale_element_token", effect_refused=True, always_refuse=True
+        )
+        self.assertEqual(outcome, "abstained")
+        self.assertEqual(len(actions), 3)
+        self.assertEqual(len(reads), 3)
+        self.assertEqual(len({a["element_token"] for a in actions}), 3)
+        self.assertEqual(result["state"]["counter"], 0)
+        self.assertEqual(result["events"][-1]["reason"], "no_progress")
+        self.assertEqual(result["events"][-1]["pattern"], "recovery")
+        self.assertEqual(result["events"][-1]["streak"], 3)
 
 if __name__ == "__main__":
     unittest.main()

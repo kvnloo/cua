@@ -41,15 +41,19 @@ test('wrapped error does not borrow its causes stale code', () => {
   assert.equal(isStaleTokenError(error), false);
 });
 
-test('native loop preserves code precedence and legacy stale recovery', async (context) => {
-  for (const code of [
-    'permission_denied',
-    'tool_invocation_failed',
-    'future_error',
-    'stale_element_token',
-    undefined,
-  ]) {
-    await context.test(code ?? 'legacy no code', async (t) => {
+test('native loop composes structured refusals, stale recovery and no-progress', async (context) => {
+  const cases: Array<{name: string; code?: string; effectRefused?: boolean; alwaysRefuse?: boolean}> = [
+    {name: 'denied error', code: 'permission_denied'},
+    {name: 'tool invocation error', code: 'tool_invocation_failed'},
+    {name: 'future error', code: 'future_error'},
+    {name: 'stale error', code: 'stale_element_token'},
+    {name: 'legacy no code'},
+    {name: 'refused effect denied without MCP error', code: 'permission_denied', effectRefused: true},
+    {name: 'refused effect stale without MCP error', code: 'stale_element_token', effectRefused: true},
+    {name: 'persistent stale refused effect stops', code: 'stale_element_token', effectRefused: true, alwaysRefuse: true},
+  ];
+  for (const {name, code, effectRefused, alwaysRefuse} of cases) {
+    await context.test(name, async (t) => {
       const directory = await mkdtemp(join(tmpdir(), 'jev-native-stale-'));
       try {
         const payload = JSON.parse(
@@ -87,10 +91,13 @@ test('native loop preserves code precedence and legacy stale recovery', async (c
                 element.element_token = `${snapshot}:${element.element_index}`;
             } else if (request.name === 'click') {
               actions.push({ ...args });
-              if (actions.length === 1 || !isStale) {
+              if (alwaysRefuse || actions.length === 1 || !isStale) {
                 return {
-                  isError: true,
-                  structuredContent: code === undefined ? {} : { code },
+                  isError: !effectRefused,
+                  structuredContent: {
+                    ...(code === undefined ? {} : {code}),
+                    ...(effectRefused ? {effect: 'refused'} : {}),
+                  },
                   content: [{ type: 'text', text: STALE_MESSAGE }],
                 };
               }
@@ -119,15 +126,21 @@ test('native loop preserves code precedence and legacy stale recovery', async (c
           .trim()
           .split('\n')
           .map((line) => JSON.parse(line));
-        assert.equal(outcome, isStale ? 'verified' : 'unknown');
-        assert.equal(actions.length, isStale ? 2 : 1);
-        assert.equal(reads.length, isStale ? 2 : 1);
-        assert.equal(JSON.parse(await readFile(statePath, 'utf8')).counter, isStale ? 3 : 0);
+        const expectedActions = alwaysRefuse ? 3 : isStale ? 2 : 1;
+        assert.equal(outcome, alwaysRefuse ? 'abstained' : isStale ? 'verified' : 'unknown');
+        assert.equal(actions.length, expectedActions);
+        assert.equal(reads.length, expectedActions);
+        assert.equal(JSON.parse(await readFile(statePath, 'utf8')).counter, isStale && !alwaysRefuse ? 3 : 0);
         assert.equal(
           events.filter((event) => event.action_error === 'stale_element_token').length,
-          isStale ? 1 : 0
+          alwaysRefuse ? 3 : isStale ? 1 : 0
         );
-        if (isStale) {
+        if (alwaysRefuse) {
+          assert.equal(new Set(actions.map((action) => action.element_token)).size, 3);
+          assert.equal(events.at(-1).reason, 'no_progress');
+          assert.equal(events.at(-1).pattern, 'recovery');
+          assert.equal(events.at(-1).streak, 3);
+        } else if (isStale) {
           assert.notEqual(actions[0].element_token, actions[1].element_token);
         } else {
           assert.equal(events.at(-1).phase, 'action');
