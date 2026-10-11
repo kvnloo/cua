@@ -1,0 +1,107 @@
+{
+  "captured_utc": "2026-10-01T17:49:53.608749+00:00",
+  "commands": {
+    "uname -a": {
+      "returncode": 0,
+      "stdout": "Linux [container-hostname-redacted] 6.18.44 #1 SMP Sat Sep 26 20:02:31 UTC 2026 x86_64 GNU/Linux\n",
+      "stderr": ""
+    },
+    "cat /etc/os-release": {
+      "returncode": 0,
+      "stdout": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.6\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\n",
+      "stderr": ""
+    },
+    "lscpu": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "lscpu: failed to determine number of CPUs: /sys/devices/system/cpu/possible: No such file or directory\n"
+    },
+    "nproc": {
+      "returncode": 0,
+      "stdout": "9\n",
+      "stderr": ""
+    },
+    "free -h": {
+      "returncode": 0,
+      "stdout": "               total        used        free      shared  buff/cache   available\nMem:           9.7Gi       5.0Gi       1.3Gi       3.0Gi       6.8Gi       4.8Gi\nSwap:             0B          0B          0B\n",
+      "stderr": ""
+    },
+    "df -h": {
+      "returncode": 0,
+      "stdout": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           4.9G     0  4.9G   0% /\noverlay          32G  7.3G   23G  25% /usr\ntmpfs           4.9G     0  4.9G   0% /dev\ntmpfs            64M     0   64M   0% /dev/tty\ntmpfs           4.9G  3.1G  1.9G  63% /tmp\ntmpfs           4.9G     0  4.9G   0% /run\ntmpfs           4.9G     0  4.9G   0% /home/agent\ntmpfs           4.9G     0  4.9G   0% /home/agent/.codex\ntmpfs           4.9G     0  4.9G   0% /home/agent/.codex/tmp\ntmpfs           4.9G     0  4.9G   0% /tmp/codex-daemon-1000\ntmpfs           4.9G     0  4.9G   0% /tmp/.git\ntmpfs           4.9G     0  4.9G   0% /tmp/.agents\ntmpfs           4.9G     0  4.9G   0% /tmp/.codex\ntmpfs           4.9G     0  4.9G   0% /tmp/.aws\ntmpfs           4.9G     0  4.9G   0% /workspace/shared/.git\ntmpfs           4.9G     0  4.9G   0% /workspace/shared/.agents\ntmpfs           4.9G     0  4.9G   0% /workspace/shared/.codex\ntmpfs           4.9G     0  4.9G   0% /workspace/shared/.aws\ntmpfs           4.9G     0  4.9G   0% /workspace/scratch/df37e4e44cce/.git\ntmpfs           4.9G     0  4.9G   0% /workspace/scratch/df37e4e44cce/.agents\ntmpfs           4.9G     0  4.9G   0% /workspace/scratch/df37e4e44cce/.codex\ntmpfs           4.9G     0  4.9G   0% /workspace/scratch/df37e4e44cce/.aws\n",
+      "stderr": ""
+    },
+    "lspci": {
+      "returncode": 127,
+      "stdout": "",
+      "stderr": "/bin/sh: 1: lspci: not found\n"
+    },
+    "python --version": {
+      "returncode": 0,
+      "stdout": "Python 3.12.14\n",
+      "stderr": ""
+    },
+    "node --version": {
+      "returncode": 0,
+      "stdout": "v24.19.0\n",
+      "stderr": ""
+    },
+    "rustc --version": {
+      "returncode": 127,
+      "stdout": "",
+      "stderr": "/bin/sh: 1: rustc: not found\n"
+    },
+    "printf \"DISPLAY=%s\\nWAYLAND_DISPLAY=%s\\nXDG_SESSION_TYPE=%s\\nDESKTOP_SESSION=%s\\n\" \"$DISPLAY\" \"$WAYLAND_DISPLAY\" \"$XDG_SESSION_TYPE\" \"$DESKTOP_SESSION\"": {
+      "returncode": 0,
+      "stdout": "DISPLAY=\nWAYLAND_DISPLAY=\nXDG_SESSION_TYPE=\nDESKTOP_SESSION=\n",
+      "stderr": ""
+    },
+    "command -v chromium chromium-browser google-chrome Xvfb xprop xdpyinfo dbus-send gdbus": {
+      "returncode": 0,
+      "stdout": "/usr/bin/chromium\n",
+      "stderr": ""
+    },
+    "ps -eo comm | sort -u": {
+      "returncode": 0,
+      "stdout": "COMMAND\nbash\ncodex\nps\npython\nsh\nsort\n",
+      "stderr": ""
+    },
+    "ls /dev/dri": {
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "ls: cannot access '/dev/dri': No such file or directory\n"
+    },
+    "test -S /run/dbus/system_bus_socket; echo system_bus_socket=$?": {
+      "returncode": 0,
+      "stdout": "system_bus_socket=1\n",
+      "stderr": ""
+    },
+    "python -c \"import gi; print(gi.__version__)\"": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'gi'\n"
+    }
+  },
+  "desktop_surface": {
+    "observed": "separate cloud desktop API",
+    "window_manager": "Xfwm4",
+    "display_protocol": "X11 (window inventory evidence)",
+    "native_app": "Mousepad GTK",
+    "accessibility": "at_spi explicitly reported; structured menu/button/text/checkbox nodes and semantic actions executed",
+    "dbus": "shell system bus socket absent; service desktop AT-SPI works, bus address/version not exposed",
+    "browser": "cloud Chromium present; service version not independently exposed; shell Chromium151.0.7922.173",
+    "cdp": "cloud browser supports DOM read and locator actions; raw CDP transport/runtime/backend IDs not exposed",
+    "hardware_acceleration": "not measured; shell /dev/dri absent",
+    "restrictions": [
+      "shell AF_UNIX socket creation EPERM, including approved escalation",
+      "shell AF_INET TCP works",
+      "cloud browser loopback URL blocked ERR_BLOCKED_BY_CLIENT",
+      "self-contained data URL rejected by URL scheme policy",
+      "no raw event subscriptions in documented native API",
+      "native Linux setValue unavailable",
+      "native typeText failed editable Paste did not insert text; individual key fallback worked"
+    ],
+    "warning": "shell manifest must not be presented as verified underlying remote desktop resource manifest"
+  },
+  "redaction": "Only ephemeral container hostname removed for public evidence; all command errors/resources unchanged"
+}

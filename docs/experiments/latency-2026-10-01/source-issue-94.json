@@ -1,0 +1,30 @@
+{
+  "issue": {
+    "url": "https://github.com/kvnloo/cua/issues/94",
+    "title": "Omarchy integration: structured desktop control plane + revision-aware CUA",
+    "issue_number": 94,
+    "body": "## Goal\n\nTurn Omarchy/Hyprland from a pixel-first CUA target into a structured desktop control plane, with pixels as the final fallback.\n\n## Current implementation wave\n\n- [ ] **Multi-output frame/capture** — downstream PR #92\n  - internal signed output topology;\n  - common zero-origin, uniform-scale multi-monitor desktop frame;\n  - no first-output-only screenshot paired with union coordinates;\n  - unsupported mixed-scale / rotated / negative-origin action frames refuse explicitly.\n- [ ] **Omarchy structured snapshot** — kvnloo/omarchy#96\n  - `omarchy.desktop-state.v1`;\n  - normalized monitors/workspaces/windows/active target;\n  - deterministic semantic revision;\n  - no daemon, no mutation.\n- [ ] **Agent-seat lifetime** — downstream draft #100 implements the trycua/cua#4257 maintainer decision without the rejected global-filter design; native qualification still required before promotion.\n\n- [ ] **CUA Omarchy revision provider** — downstream draft #101 consumes the #96 revision as observation-freshness-only metadata; CI/native validation pending.\n\n## Next slice\n\n### CUA Omarchy provider\n\nConsume `omarchy.desktop-state.v1` when available and bind it to the exact Hyprland instance. Draft #101 implements the snapshot receipt; the remaining work is the long-lived `--watch` invalidation consumer and guarded-continuation binding.\n\nProvider precedence for state:\n1. Omarchy structured desktop state;\n2. native Hyprland IPC;\n3. AT-SPI / browser semantic providers;\n4. visual capture only when semantic state is insufficient.\n\nThe provider must not shell out for each low-level action once an equivalent direct native observation already exists. The Omarchy contract is for desktop semantics/revision/provenance, not a replacement for CUA's direct compositor transport.\n\n### Revision-aware continuation\n\nUse the Omarchy revision + Hyprland `.socket2.sock` invalidation events to avoid redundant:\n`capture -> parse -> model -> rediscover target`\n\nA guarded continuation may reuse prior native state only while:\n- compositor instance matches;\n- desktop revision has not changed in a way relevant to the target;\n- target pid/window identity is unchanged;\n- action-specific freshness rules still pass.\n\n## Acceptance criteria\n\n1. **Topology:** dual-monitor Omarchy at scale 1 can capture and address both outputs without coordinate drift.\n2. **Truthfulness:** unsupported topology never silently degrades to monitor 1.\n3. **State contract:** two equivalent Omarchy snapshots with different enumeration order produce the same revision.\n4. **Invalidation:** open/close/move/focus/workspace/output changes invalidate the relevant cached revision.\n5. **Fast path:** a two-action deterministic fixture completes the second action without a second full desktop screenshot when no relevant state changed.\n6. **Fallback:** removing/invalidating the Omarchy provider leaves existing Hyprland/AT-SPI behavior unchanged.\n7. **Human isolation:** no integration step moves the user's pointer/focus merely to observe state.\n8. **Evidence:** retain timing + route receipts showing which provider supplied observation/action evidence.\n\n## Stop conditions\n\nDo not promote this upstream until:\n- PR #92 has focused Rust tests + native two-monitor evidence;\n- Omarchy #96 shell tests pass on current Quattro;\n- no public contract is widened without the required CUA RFC/maintainer decision;\n- agent-seat lifetime behavior matches the decision in trycua/cua#4257.\n\n## Non-goals\n\n- another coordinator daemon;\n- pixel/vision replacement for semantics already exposed by Omarchy/Hyprland;\n- claiming mixed-scale/rotated-output support before per-output affine mapping exists;\n- increasing agent lane count before seat visibility/lifetime is safe.\n",
+    "state": "open",
+    "user": {
+      "login": "kvnloo",
+      "name": "kvnloo",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/7121943?v=4",
+      "id": 7121943
+    },
+    "assignees": null,
+    "labels": null,
+    "milestone": null,
+    "state_reason": null,
+    "comments": 0,
+    "created_at": "2026-10-01T09:04:31Z",
+    "updated_at": "2026-10-01T14:26:23Z",
+    "closed_at": null,
+    "display_url": "https://github.com/kvnloo/cua/issues/94",
+    "display_title": "Omarchy integration: structured desktop control plane + revision-aware CUA"
+  },
+  "url": "https://github.com/kvnloo/cua/issues/94",
+  "title": "Omarchy integration: structured desktop control plane + revision-aware CUA",
+  "display_url": "https://github.com/kvnloo/cua/issues/94",
+  "display_title": "Omarchy integration: structured desktop control plane + revision-aware CUA"
+}
