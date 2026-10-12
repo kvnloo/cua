@@ -1,0 +1,184 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <CANDIDATE>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 8 items
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_public_drag_dispatches_ordered_scaled_input[left] FAILED [ 12%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_public_drag_dispatches_ordered_scaled_input[right] FAILED [ 25%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_public_click_control PASSED [ 37%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_direct_coordinate_drag_control PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_path_waypoints_keep_one_button_press FAILED [ 62%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_invalid_path_refuses_before_commands[path0] FAILED [ 75%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_invalid_path_refuses_before_commands[path1] FAILED [ 87%]
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py::test_invalid_path_refuses_before_commands[path2] FAILED [100%]
+
+=================================== FAILURES ===================================
+____________ test_public_drag_dispatches_ordered_scaled_input[left] ____________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), button = 'left'
+
+    @pytest.mark.parametrize("button", ["left", "right"])
+    async def test_public_drag_dispatches_ordered_scaled_input(recorded_qmp, button):
+        sb, commands = recorded_qmp
+        try:
+>           await sb.mouse.drag(100, 100, 300, 300, button=button)
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+libs/python/cua-sandbox/cua_sandbox/interfaces/mouse.py:44: in drag
+    await self._t.send(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_sandbox.transport.qmp.QMPTransport object at 0x7f5ffbc03a10>
+action = 'drag', params = {'path': [[100, 100], [300, 300]], 'button': 'left'}
+
+    async def send(self, action: str, **params: Any) -> Any:
+        """Dispatch interface actions to QMP commands."""
+        handler = _ACTION_DISPATCH.get(action)
+        if handler:
+>           return await handler(self, **params)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: QMPTransport._drag() missing 4 required positional arguments: 'start_x', 'start_y', 'end_x', and 'end_y'
+
+libs/python/cua-sandbox/cua_sandbox/transport/qmp.py:180: TypeError
+----------------------------- Captured stdout call -----------------------------
+PUBLIC_DRAG_TYPEERROR_COMMANDS []
+___________ test_public_drag_dispatches_ordered_scaled_input[right] ____________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [])
+button = 'right'
+
+    @pytest.mark.parametrize("button", ["left", "right"])
+    async def test_public_drag_dispatches_ordered_scaled_input(recorded_qmp, button):
+        sb, commands = recorded_qmp
+        try:
+>           await sb.mouse.drag(100, 100, 300, 300, button=button)
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+libs/python/cua-sandbox/cua_sandbox/interfaces/mouse.py:44: in drag
+    await self._t.send(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_sandbox.transport.qmp.QMPTransport object at 0x7f5ffbc23bc0>
+action = 'drag', params = {'path': [[100, 100], [300, 300]], 'button': 'right'}
+
+    async def send(self, action: str, **params: Any) -> Any:
+        """Dispatch interface actions to QMP commands."""
+        handler = _ACTION_DISPATCH.get(action)
+        if handler:
+>           return await handler(self, **params)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: QMPTransport._drag() missing 4 required positional arguments: 'start_x', 'start_y', 'end_x', and 'end_y'
+
+libs/python/cua-sandbox/cua_sandbox/transport/qmp.py:180: TypeError
+----------------------------- Captured stdout call -----------------------------
+PUBLIC_DRAG_TYPEERROR_COMMANDS []
+__________________ test_path_waypoints_keep_one_button_press ___________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [])
+
+    async def test_path_waypoints_keep_one_button_press(recorded_qmp):
+        sb, commands = recorded_qmp
+        points = [(100, 100), (300, 100), (300, 300)]
+>       await sb._transport.send("drag", path=points, button="left")
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py:90:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_sandbox.transport.qmp.QMPTransport object at 0x7f5ffbc23170>
+action = 'drag'
+params = {'path': [(100, 100), (300, 100), (300, 300)], 'button': 'left'}
+
+    async def send(self, action: str, **params: Any) -> Any:
+        """Dispatch interface actions to QMP commands."""
+        handler = _ACTION_DISPATCH.get(action)
+        if handler:
+>           return await handler(self, **params)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: QMPTransport._drag() missing 4 required positional arguments: 'start_x', 'start_y', 'end_x', and 'end_y'
+
+libs/python/cua-sandbox/cua_sandbox/transport/qmp.py:180: TypeError
+_______________ test_invalid_path_refuses_before_commands[path0] _______________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), path = []
+
+    @pytest.mark.parametrize("path", [[], [[100, 100]], [[100, 100], [300]]])
+    async def test_invalid_path_refuses_before_commands(recorded_qmp, path):
+        sb, commands = recorded_qmp
+        with pytest.raises(ValueError):
+>           await sb._transport.send("drag", path=path)
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py:98:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_sandbox.transport.qmp.QMPTransport object at 0x7f5ffba49520>
+action = 'drag', params = {'path': []}
+
+    async def send(self, action: str, **params: Any) -> Any:
+        """Dispatch interface actions to QMP commands."""
+        handler = _ACTION_DISPATCH.get(action)
+        if handler:
+>           return await handler(self, **params)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: QMPTransport._drag() missing 4 required positional arguments: 'start_x', 'start_y', 'end_x', and 'end_y'
+
+libs/python/cua-sandbox/cua_sandbox/transport/qmp.py:180: TypeError
+_______________ test_invalid_path_refuses_before_commands[path1] _______________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [])
+path = [[100, 100]]
+
+    @pytest.mark.parametrize("path", [[], [[100, 100]], [[100, 100], [300]]])
+    async def test_invalid_path_refuses_before_commands(recorded_qmp, path):
+        sb, commands = recorded_qmp
+        with pytest.raises(ValueError):
+>           await sb._transport.send("drag", path=path)
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py:98:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_sandbox.transport.qmp.QMPTransport object at 0x7f5ffba4a780>
+action = 'drag', params = {'path': [[100, 100]]}
+
+    async def send(self, action: str, **params: Any) -> Any:
+        """Dispatch interface actions to QMP commands."""
+        handler = _ACTION_DISPATCH.get(action)
+        if handler:
+>           return await handler(self, **params)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: QMPTransport._drag() missing 4 required positional arguments: 'start_x', 'start_y', 'end_x', and 'end_y'
+
+libs/python/cua-sandbox/cua_sandbox/transport/qmp.py:180: TypeError
+_______________ test_invalid_path_refuses_before_commands[path2] _______________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [])
+path = [[100, 100], [300]]
+
+    @pytest.mark.parametrize("path", [[], [[100, 100]], [[100, 100], [300]]])
+    async def test_invalid_path_refuses_before_commands(recorded_qmp, path):
+        sb, commands = recorded_qmp
+        with pytest.raises(ValueError):
+>           await sb._transport.send("drag", path=path)
+
+libs/python/cua-sandbox/tests/test_qmp_drag_path.py:98:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_sandbox.transport.qmp.QMPTransport object at 0x7f5ffba4bda0>
+action = 'drag', params = {'path': [[100, 100], [300]]}
+
+    async def send(self, action: str, **params: Any) -> Any:
+        """Dispatch interface actions to QMP commands."""
+        handler = _ACTION_DISPATCH.get(action)
+        if handler:
+>           return await handler(self, **params)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: QMPTransport._drag() missing 4 required positional arguments: 'start_x', 'start_y', 'end_x', and 'end_y'
+
+libs/python/cua-sandbox/cua_sandbox/transport/qmp.py:180: TypeError
+==================================== PASSES ====================================
+========================= 6 failed, 2 passed in 0.26s ==========================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

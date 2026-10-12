@@ -1,0 +1,18 @@
+Existing interpreter, no installs/sync:
+/workspace/scratch/cua4930-setup/venv/bin/python
+
+Final baseline (executed in /workspace/scratch/cua-qmp-drag before production edit, exact f87f1915270afe8b645036d698809f35cbe5721c plus final test overlay):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_drag_path.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-results/base-final-temp
+
+Candidate (same cwd; identical executable bytes committed as e2e004304499e24f227baf9e5c1a6910e34ef1b9):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_drag_path.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-results/candidate-first-temp
+
+Adjacent (candidate cwd):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_agentless_transport.py -k 'not the_native_guest_display_never_prints_its_password' --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-results/adjacent-temp
+
+Lint/format/whitespace:
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff check --no-cache libs/python/cua-sandbox/cua_sandbox/transport/qmp.py libs/python/cua-sandbox/tests/test_qmp_drag_path.py
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check --no-cache libs/python/cua-sandbox/cua_sandbox/transport/qmp.py libs/python/cua-sandbox/tests/test_qmp_drag_path.py
+git diff HEAD^ HEAD --check
+
+Every basetemp verified absent and not a symlink before execution. Fresh paths required for reruns; never reuse/clear. Independent exact-code baseline/candidate commands in critic-receipt.txt.

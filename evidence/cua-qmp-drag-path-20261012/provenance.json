@@ -1,0 +1,22 @@
+{
+  "contract_origin": {
+    "url": "https://github.com/trycua/cua/pull/1242",
+    "author": "ddupont808",
+    "head": "0abd248985a58791f479bda472ca1ca09945f166",
+    "merge": "d7a2452fdf314c0b5faed84069d4d261cd26748f",
+    "merged": "2026-03-30T20:04:29Z",
+    "public_mouse_drag_diff": "@@ -36,5 +36,7 @@ async def drag(\n         self, start_x: int, start_y: int, end_x: int, end_y: int, button: str = \"left\"\n     ) -> None:\n         await self._t.send(\n-            \"drag\", start_x=start_x, start_y=start_y, end_x=end_x, end_y=end_y, button=button\n+            \"drag\",\n+            path=[[start_x, start_y], [end_x, end_y]],\n+            button=button,\n         )"
+  },
+  "separate_screenshot_owner": {
+    "url": "https://github.com/trycua/cua/pull/1432",
+    "author": "hobostay",
+    "head": "b8a1e22edd738ebb3f4022341be24f6ccb098370",
+    "diff": "@@ -192,9 +192,10 @@ async def screenshot(self, format: str = \"png\", quality: int = 95) -> bytes:\n         ppm_file = Path(ppm_path)\n         if not ppm_file.exists():\n             raise RuntimeError(f\"screendump failed — {ppm_path} not created\")\n-        png_bytes = _ppm_to_png(ppm_file.read_bytes())\n+        ppm_data = ppm_file.read_bytes()\n+        png_bytes = _ppm_to_png(ppm_data)\n         # Update screen dimensions from the PPM\n-        w, h = _ppm_dimensions(ppm_file.read_bytes())\n+        w, h = _ppm_dimensions(ppm_data)\n         if w and h:\n             self._screen_w = w\n             self._screen_h = h"
+  },
+  "policy_blobs": {
+    "AGENTS.md": "6e82603b5240e8df852ccf8825dc172fc93a07e8",
+    "factory/CONTROL_PLANE.md": "9748a97d314de4ee5af978a9035732a0335270ee",
+    "factory/HITL.md": "cbeffe3c44c3fa11668b3023866d7ffe6c5c8d32",
+    "factory/projects.json": "ccf438ba968b2ae5351406c808ee56777186a4ca"
+  }
+}
