@@ -296,17 +296,37 @@ class QMPTransport(Transport):
             )
 
     async def _drag(
-        self, start_x: int, start_y: int, end_x: int, end_y: int, button: str = "left", **_: Any
+        self,
+        start_x: Optional[int] = None,
+        start_y: Optional[int] = None,
+        end_x: Optional[int] = None,
+        end_y: Optional[int] = None,
+        button: str = "left",
+        *,
+        path: Optional[List[Tuple[int, int]]] = None,
+        **_: Any,
     ) -> None:
+        if path is None:
+            if any(value is None for value in (start_x, start_y, end_x, end_y)):
+                raise TypeError("drag needs start_x, start_y, end_x and end_y or a path")
+            points = [(start_x, start_y), (end_x, end_y)]
+        else:
+            if len(path) < 2:
+                raise ValueError("drag needs at least a start and an end point")
+            # Unpack every point before pressing a button; retain intermediate waypoints.
+            points = [(x, y) for x, y in path]
+        start_x, start_y = points[0]
+        end_x, end_y = points[-1]
         await self._mouse_down(start_x, start_y, button)
         await asyncio.sleep(0.05)
         # Interpolate a few intermediate points for smoother drag
         steps = 10
-        for i in range(1, steps + 1):
-            ix = start_x + (end_x - start_x) * i // steps
-            iy = start_y + (end_y - start_y) * i // steps
-            await self._mouse_move(ix, iy)
-            await asyncio.sleep(0.01)
+        for (sx, sy), (ex, ey) in zip(points, points[1:]):
+            for i in range(1, steps + 1):
+                ix = sx + (ex - sx) * i // steps
+                iy = sy + (ey - sy) * i // steps
+                await self._mouse_move(ix, iy)
+                await asyncio.sleep(0.01)
         await self._mouse_up(end_x, end_y, button)
 
     # ── Keyboard actions ──────────────────────────────────────────────────
