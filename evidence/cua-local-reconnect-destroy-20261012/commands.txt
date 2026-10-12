@@ -1,0 +1,18 @@
+All commands cwd /workspace/scratch/cua136. Existing interpreter; no install/sync.
+Initial baseline
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/red-temp
+Corrected 16-case baseline
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/red-corrected-temp
+Fixed 16-case fixture
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/green-temp
+Expanded prior20-case fixture
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/green-final-temp
+Stopped guarded adjacent attempt (BEFORE collection; no retry):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience libs/python/cua-sandbox/tests/test_agentless_transport.py libs/python/cua-sandbox/tests/test_env_transport_forward.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/adjacent-temp
+Final source lint/format:
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff check libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py
+git diff --check
+Final main source applicability:
+git diff --exit-code a329fcf435191655a8dc8271c0df9ea824c2b564 6984010502583a8fb5c667e76063a65b5a6a0a67 -- libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/cua_sandbox/transport/env.py libs/python/cua-sandbox/cua_sandbox/runtime/native.py libs/python/cua-sandbox/tests/test_vm_cleanup.py
+Independent exact-code test commands: NONE EXECUTED. No push attempted.
