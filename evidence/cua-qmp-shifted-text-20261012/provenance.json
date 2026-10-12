@@ -1,0 +1,59 @@
+{
+  "original": {
+    "url": "https://github.com/trycua/cua/pull/1218",
+    "author": "ddupont808",
+    "head": "17e2613e65045d75c11678acba5518d349a25adb",
+    "merge": "7d1fa31fb6ed1d5565fad6eef756044be76061e4",
+    "blob": "bdbcd34a3c8a51b9d9ced5381af952cdd7258eb1",
+    "type_text_source": "    async def _type_text(self, text: str, **_: Any) -> None:\n        \"\"\"Type text character by character via send-key.\"\"\"\n        for ch in text:\n            qcode = _KEY_MAP.get(ch.lower())\n            if qcode is None:\n                logger.warning(f\"QMP: unmapped character {ch!r}, skipping\")\n                continue\n            keys: List[Dict] = []\n            if ch.isupper() or ch in '~!@#$%^&*()_+{}|:\"<>?':\n                keys.append({\"type\": \"qcode\", \"data\": \"shift\"})\n            keys.append({\"type\": \"qcode\", \"data\": qcode})\n            await self._execute(\"send-key\", {\"keys\": keys, \"hold-time\": 50})\n            await asyncio.sleep(0.02)\n\n"
+  },
+  "qemu": {
+    "url": "https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html#command-send-key",
+    "observed_date": "2026-10-12",
+    "verified": "keys array sends represented keys together; qcode must be valid QKeyCode; hold-time is milliseconds",
+    "limit": "Master reference, not installed version or physical guest output; US-style ASCII mapping only."
+  },
+  "neighbors": [
+    {
+      "number": 1432,
+      "title": "Fix PPM double-read race condition in QMP screenshot",
+      "head": "b8a1e22edd738ebb3f4022341be24f6ccb098370",
+      "author": "hobostay",
+      "diff_length": 618,
+      "type_text_mentions": []
+    },
+    {
+      "number": 1420,
+      "title": "fix: await telemetry.shutdown in stop() and re-throw auth timeout error",
+      "head": "cd06110273d1dda8a3ed54669c7b32f0763870ca",
+      "author": "Ricardo-M-L",
+      "diff_length": 562,
+      "type_text_mentions": []
+    },
+    {
+      "number": 1226,
+      "title": "feat(sandbox): multi-arch AndroidWorld and OSWorld image support",
+      "head": "52a9f2d2701143be3686782e6c1e62c0bc29444c",
+      "author": "ddupont808",
+      "diff_length": 135815,
+      "type_text_mentions": []
+    },
+    {
+      "number": 3509,
+      "title": "feat(computer-server): add --vnc-force-caps for servers that drop Shift",
+      "head": "61264eaec9746672cf20aa6eefe6573abf42a6b7",
+      "author": "c8dhjp4tyv-bit",
+      "diff_length": 23922,
+      "type_text_mentions": []
+    }
+  ],
+  "vnc_issue": {
+    "url": "https://github.com/trycua/cua/issues/3629",
+    "scope": "Python computer-server VNC only; unrelated sandbox transports explicitly excluded"
+  },
+  "fork_tips": {
+    "codex/cua-driver-desktop-input-correctness": "d8ec88bf15a9f5b8908b2b4285dc04ef0fb9a947",
+    "muse/sandbox-handler-input-guards": "903048f74fe92c188230234ab45245877f06de82"
+  },
+  "unknown": "Prior hold-duration qmp.py404 not retried; ownership checks bounded."
+}

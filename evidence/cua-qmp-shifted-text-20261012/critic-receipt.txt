@@ -1,0 +1,60 @@
+Independent xhigh critic receipt — CUA #141 QMP shifted typed text, 2026-10-12
+
+Verdict: LIMITED PASS for scoped US-style ASCII typed-text payload generation. No unexpected regression or substantive defect found in the approved cases.
+
+Exact candidate: 283c18c0d389d8c715b67e17e300569dfa1725cb
+Exact base: 1c985c2dee92e0f23d4a5f348bdd2ec14ddf30cd
+
+Independent actual reruns:
+  exact base with identical final 28-case overlay: 23 FAIL / 5 PASS; exit 1
+  exact candidate owning file: 28 PASS; exit 0
+  candidate adjacent agentless file: 4 PASS / 1 native-only case DESELECTED; exit 0
+  Ruff check --no-cache: PASS
+  Ruff format --check --no-cache: PASS; two files already formatted
+  committed git diff --check base..candidate: PASS
+
+All 21 single shifted-symbol cases on base return None and record no send-key command. The mixed Hi! a_2+Z? and standalone Hi! cases also fail at payload assertions: base omits punctuation while retaining letter/digit/space commands. The five base/head passing controls are the unshifted text sequence, direct-key sequence, and three exact direct-symbol refusals. No setup/import/native/network/deletion-guard failure counts as RED. Each final run reports native SDK unloaded.
+
+Candidate assertions cover every one of the 21 intended shifted punctuation symbols with the exact Shift plus unshifted QCode array and hold-time 50. The mixed and standalone traces check ordered per-character payloads and capitalization. The unshifted control covers uppercase/lowercase, digit, space and all currently mapped unshifted ASCII punctuation. Explicit direct Shift+1 keypress remains hold-time 100, and 1 down/up remain input-send-event key payloads. keypress/key_down/key_up of ! still raise the exact ValueError message Unknown key '!' before any command.
+
+Official primary protocol reference independently browsed read-only on 2026-10-12:
+https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html#command-send-key
+QEMU documents that represented keys in one send-key array are sent together; qcode values must be valid QKeyCode names; hold-time delays key-up in milliseconds. The official enumeration contains Shift and the base key names used by this mapping. This corroborates protocol payload construction, not actual guest glyphs, installed QEMU compatibility, physical modifier release or timing. US-style character-to-physical-key mapping is an explicit scope assumption.
+
+Source and hash checks independently passed:
+  base QMP Git blob: 46f5173d8092d74c07721b903891c2426858d2ec
+  base QMP SHA256: c47a4de7b222baf5b410fbac264019013ea68094abe9c7a41e27e634a5a49854
+  head QMP Git blob: f3a2ccfd2733857ae2c09a91eb5238e13a221a5c
+  head QMP SHA256: dbccb9b0b6434ec937aed10a8a75e8bf8d080a0b95e064e5f10de79cc49b65e0
+  identical final test SHA256: ac70cb652a1a24916b03fa11124a98bd6f0000cf6f69f7ece681dd15b9e63e77
+  unchanged qualified harness SHA256: e61a9d50901912c77cd7f59304e7323bfbe80e88d08fc2a85b0ebe3d620de82d
+
+The entire production AST is unchanged outside _type_text. Shared _KEY_MAP and each _hotkey/_key_down/_key_up method AST are explicitly identical. The function-local 21-symbol mapping covers exactly the previous shifted-punctuation condition's character set. Public Keyboard source is byte-identical between snapshots. Current production/test bytes equal their pinned Git objects. The base overlay is untracked and historically absent; its test bytes equal the committed candidate test. Existing hold-time 50 and inter-character asyncio sleep remain. Other handlers including drag/scroll remain exact base AST; prior carriers are not stacked.
+
+Real Sandbox, public Keyboard, QMPTransport construction/send/_type_text and real asyncio sleeps execute. Only _execute is the inert command recorder, and constructor tempfile.mkdtemp returns the already prepared unique nonnumbered pytest directory. No source helpers are extracted or substituted. The qualified harness is byte-identical to #137, retaining native/import/network/unlink refusals and supported nonnumbered environment isolation.
+
+README fidelity: US-style limitation, normal-return omission, direct API preservation, simultaneous-key protocol scope, earlier 27-case result versus final 28-case qualification, and no actual guest-output claim are accurate. The supplied original #1218 _type_text source snippet AST matches the exact base method. Historical attribution/neighbor ownership were reviewed from the provided official-fetch receipts; no independent live GitHub sweep or historical tree lookup was performed. The prior hold-duration QMP 404 remains unknown and was not retried.
+
+Limits: no Unicode solution, layout discovery, non-US or Caps Lock certification, actual character rendering, real modifier release, elapsed hold timing, cancellation/fault recovery, QMP wire acknowledgement, guest/backend/version or hosted CI qualification. Existing unsupported-character warning/skip behavior remains source unchanged outside newly mapped ASCII symbols. Only the approved owning cases and four pure adjacent cases were run; no broad matrix.
+
+Each basetemp was verified absent and not a symlink before use; logs used set -o noclobber. No existing directory was reused or cleared. No production/test edits, installs, native SDK execution, test/runtime socket network, QEMU/VM/container, state persistence, filesystem deletion, cleanup, credentials or push occurred. Read-only official documentation browsing was separate from runtime network refusal. Only authorized critic result files were written.
+
+Exact pytest commands, each shell using set -o noclobber:
+
+cwd /workspace/scratch/cua-qmp-text-base
+test ! -e /workspace/scratch/cua-qmp-text-results/critic-base-temp && test ! -L /workspace/scratch/cua-qmp-text-results/critic-base-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua-qmp-text-base/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-text-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_shifted_text.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-text-results/critic-base-temp > /workspace/scratch/cua-qmp-text-results/critic-base.log 2>&1
+
+cwd /workspace/scratch/cua-qmp-text
+test ! -e /workspace/scratch/cua-qmp-text-results/critic-head-temp && test ! -L /workspace/scratch/cua-qmp-text-results/critic-head-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua-qmp-text/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-text-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_shifted_text.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-text-results/critic-head-temp > /workspace/scratch/cua-qmp-text-results/critic-head.log 2>&1
+
+cwd /workspace/scratch/cua-qmp-text
+test ! -e /workspace/scratch/cua-qmp-text-results/critic-adjacent-temp && test ! -L /workspace/scratch/cua-qmp-text-results/critic-adjacent-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua-qmp-text/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-text-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_agentless_transport.py -k 'not the_native_guest_display_never_prints_its_password' --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-text-results/critic-adjacent-temp > /workspace/scratch/cua-qmp-text-results/critic-adjacent.log 2>&1
+
+Lint/format cwd /workspace/scratch/cua-qmp-text/libs/python/cua-sandbox:
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff check --no-cache cua_sandbox/transport/qmp.py tests/test_qmp_shifted_text.py
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check --no-cache cua_sandbox/transport/qmp.py tests/test_qmp_shifted_text.py
+
+Whitespace cwd /workspace/scratch/cua-qmp-text:
+GIT_NO_LAZY_FETCH=1 git diff --check 1c985c2dee92e0f23d4a5f348bdd2ec14ddf30cd 283c18c0d389d8c715b67e17e300569dfa1725cb
+
+Supporting files under /workspace/scratch/cua-qmp-text-results: critic-base.log, critic-head.log, critic-adjacent.log and critic-source.log.

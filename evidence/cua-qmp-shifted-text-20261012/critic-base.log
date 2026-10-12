@@ -1,0 +1,672 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <BASE>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 28 items
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[~-grave_accent] FAILED [  3%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[!-1] FAILED [  7%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[@-2] FAILED [ 10%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[#-3] FAILED [ 14%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[$-4] FAILED [ 17%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[%-5] FAILED [ 21%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[^-6] FAILED [ 25%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[&-7] FAILED [ 28%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[*-8] FAILED [ 32%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[(-9] FAILED [ 35%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[)-0] FAILED [ 39%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[_-minus] FAILED [ 42%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[+-equal] FAILED [ 46%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[{-bracket_left] FAILED [ 50%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[}-bracket_right] FAILED [ 53%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[|-backslash] FAILED [ 57%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[:-semicolon] FAILED [ 60%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation["-apostrophe] FAILED [ 64%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[<-comma] FAILED [ 67%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[>-dot] FAILED [ 71%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[?-slash] FAILED [ 75%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_mixed_sentence_and_hi_bang FAILED [ 78%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_public_hi_bang FAILED [ 82%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_unshifted_text_control PASSED [ 85%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_key_apis_control PASSED [ 89%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_symbol_is_still_unknown[keypress] PASSED [ 92%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_symbol_is_still_unknown[key_down] PASSED [ 96%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_symbol_is_still_unknown[key_up] PASSED [100%]
+
+=================================== FAILURES ===================================
+________________ test_each_shifted_punctuation[~-grave_accent] _________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '~'
+qcode = 'grave_accent'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'grave_accent'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "~", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '~', skipping
+______________________ test_each_shifted_punctuation[!-1] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '!'
+qcode = '1'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '1'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "!", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '!', skipping
+______________________ test_each_shifted_punctuation[@-2] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '@'
+qcode = '2'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '2'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "@", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '@', skipping
+______________________ test_each_shifted_punctuation[#-3] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '#'
+qcode = '3'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '3'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "#", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '#', skipping
+______________________ test_each_shifted_punctuation[$-4] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '$'
+qcode = '4'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '4'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "$", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '$', skipping
+______________________ test_each_shifted_punctuation[%-5] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '%'
+qcode = '5'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '5'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "%", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '%', skipping
+______________________ test_each_shifted_punctuation[^-6] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '^'
+qcode = '6'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '6'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "^", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '^', skipping
+______________________ test_each_shifted_punctuation[&-7] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '&'
+qcode = '7'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '7'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "&", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '&', skipping
+______________________ test_each_shifted_punctuation[*-8] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '*'
+qcode = '8'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '8'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "*", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '*', skipping
+______________________ test_each_shifted_punctuation[(-9] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '('
+qcode = '9'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '9'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "(", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '(', skipping
+______________________ test_each_shifted_punctuation[)-0] ______________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = ')'
+qcode = '0'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '0'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": ")", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character ')', skipping
+____________________ test_each_shifted_punctuation[_-minus] ____________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '_'
+qcode = 'minus'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'minus'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "_", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '_', skipping
+____________________ test_each_shifted_punctuation[+-equal] ____________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '+'
+qcode = 'equal'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'equal'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "+", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '+', skipping
+________________ test_each_shifted_punctuation[{-bracket_left] _________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '{'
+qcode = 'bracket_left'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'bracket_left'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "{", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '{', skipping
+________________ test_each_shifted_punctuation[}-bracket_right] ________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '}'
+qcode = 'bracket_right'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'bracket_right'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "}", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '}', skipping
+__________________ test_each_shifted_punctuation[|-backslash] __________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '|'
+qcode = 'backslash'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'backslash'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "|", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '|', skipping
+__________________ test_each_shifted_punctuation[:-semicolon] __________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = ':'
+qcode = 'semicolon'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'semicolon'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": ":", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character ':', skipping
+_________________ test_each_shifted_punctuation["-apostrophe] __________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '"'
+qcode = 'apostrophe'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'apostrophe'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "\"", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '"', skipping
+____________________ test_each_shifted_punctuation[<-comma] ____________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '<'
+qcode = 'comma'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'comma'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "<", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '<', skipping
+_____________________ test_each_shifted_punctuation[>-dot] _____________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '>'
+qcode = 'dot'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'dot'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": ">", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '>', skipping
+____________________ test_each_shifted_punctuation[?-slash] ____________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), []), symbol = '?'
+qcode = 'slash'
+
+    @pytest.mark.parametrize("symbol,qcode", SHIFTED)
+    async def test_each_shifted_punctuation(recorded_qmp, symbol, qcode):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type(symbol) is None
+        print("SHIFTED_TRACE", json.dumps({"text": symbol, "commands": commands}))
+>       assert commands == [typed(qcode, shifted=True)]
+E       AssertionError: assert [] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'slash'}], 'hold-time': 50})
+E
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E
+E         ...Full output truncated (16 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "?", "commands": []}
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '?', skipping
+_______________________ test_mixed_sentence_and_hi_bang ________________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qco...: 50}), ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'z'}], 'hold-time': 50})])
+
+    async def test_mixed_sentence_and_hi_bang(recorded_qmp):
+        sb, commands = recorded_qmp
+        await sb.keyboard.type("Hi! a_2+Z?")
+        print("MIXED_TRACE", json.dumps(commands))
+>       assert commands == [
+            typed("h", True),
+            typed("i"),
+            typed("1", True),
+            typed("spc"),
+            typed("a"),
+            typed("minus", True),
+            typed("2"),
+            typed("equal", True),
+            typed("z", True),
+            typed("slash", True),
+        ]
+E       AssertionError: assert [('send-key',...d-time': 50})] == [('send-key',...e': 50}), ...]
+E
+E         At index 2 diff: ('send-key', {'keys': [{'type': 'qcode', 'data': 'spc'}], 'hold-time': 50}) != ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '1'}], 'hold-time': 50})
+E         Right contains 4 more items, first extra item: ('send-key', {'keys': [{'type': 'qcode', 'data': '2'}], 'hold-time': 50})
+E
+E         Full diff:
+E           [
+E               (...
+E
+E         ...Full output truncated (144 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:69: AssertionError
+----------------------------- Captured stdout call -----------------------------
+MIXED_TRACE [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "h"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "i"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "spc"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "a"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "2"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "z"}], "hold-time": 50}]]
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '!', skipping
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '_', skipping
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '+', skipping
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '?', skipping
+_____________________________ test_public_hi_bang ______________________________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': 'h'}], 'hold-time': 50}), ('send-key', {'keys': [{'type': 'qcode', 'data': 'i'}], 'hold-time': 50})])
+
+    async def test_public_hi_bang(recorded_qmp):
+        sb, commands = recorded_qmp
+        assert await sb.keyboard.type("Hi!") is None
+        print("HI_BANG_TRACE", json.dumps(commands))
+>       assert commands == [typed("h", True), typed("i"), typed("1", True)]
+E       AssertionError: assert [('send-key',...d-time': 50})] == [('send-key',...d-time': 50})]
+E
+E         Right contains one more item: ('send-key', {'keys': [{'type': 'qcode', 'data': 'shift'}, {'type': 'qcode', 'data': '1'}], 'hold-time': 50})
+E
+E         Full diff:
+E           [
+E               (
+E                   'send-key',...
+E
+E         ...Full output truncated (43 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py:87: AssertionError
+----------------------------- Captured stdout call -----------------------------
+HI_BANG_TRACE [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "h"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "i"}], "hold-time": 50}]]
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.transport.qmp:qmp.py:319 QMP: unmapped character '!', skipping
+==================================== PASSES ====================================
+========================= 23 failed, 5 passed in 0.62s =========================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

@@ -1,0 +1,109 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <HEAD>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 28 items
+
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[~-grave_accent] PASSED [  3%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[!-1] PASSED [  7%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[@-2] PASSED [ 10%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[#-3] PASSED [ 14%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[$-4] PASSED [ 17%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[%-5] PASSED [ 21%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[^-6] PASSED [ 25%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[&-7] PASSED [ 28%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[*-8] PASSED [ 32%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[(-9] PASSED [ 35%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[)-0] PASSED [ 39%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[_-minus] PASSED [ 42%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[+-equal] PASSED [ 46%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[{-bracket_left] PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[}-bracket_right] PASSED [ 53%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[|-backslash] PASSED [ 57%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[:-semicolon] PASSED [ 60%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation["-apostrophe] PASSED [ 64%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[<-comma] PASSED [ 67%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[>-dot] PASSED [ 71%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_each_shifted_punctuation[?-slash] PASSED [ 75%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_mixed_sentence_and_hi_bang PASSED [ 78%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_public_hi_bang PASSED [ 82%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_unshifted_text_control PASSED [ 85%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_key_apis_control PASSED [ 89%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_symbol_is_still_unknown[keypress] PASSED [ 92%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_symbol_is_still_unknown[key_down] PASSED [ 96%]
+libs/python/cua-sandbox/tests/test_qmp_shifted_text.py::test_direct_symbol_is_still_unknown[key_up] PASSED [100%]
+
+==================================== PASSES ====================================
+________________ test_each_shifted_punctuation[~-grave_accent] _________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "~", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "grave_accent"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[!-1] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "!", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "1"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[@-2] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "@", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "2"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[#-3] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "#", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "3"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[$-4] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "$", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "4"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[%-5] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "%", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "5"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[^-6] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "^", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "6"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[&-7] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "&", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "7"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[*-8] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "*", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "8"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[(-9] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "(", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "9"}], "hold-time": 50}]]}
+______________________ test_each_shifted_punctuation[)-0] ______________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": ")", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "0"}], "hold-time": 50}]]}
+____________________ test_each_shifted_punctuation[_-minus] ____________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "_", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "minus"}], "hold-time": 50}]]}
+____________________ test_each_shifted_punctuation[+-equal] ____________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "+", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "equal"}], "hold-time": 50}]]}
+________________ test_each_shifted_punctuation[{-bracket_left] _________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "{", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "bracket_left"}], "hold-time": 50}]]}
+________________ test_each_shifted_punctuation[}-bracket_right] ________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "}", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "bracket_right"}], "hold-time": 50}]]}
+__________________ test_each_shifted_punctuation[|-backslash] __________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "|", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "backslash"}], "hold-time": 50}]]}
+__________________ test_each_shifted_punctuation[:-semicolon] __________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": ":", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "semicolon"}], "hold-time": 50}]]}
+_________________ test_each_shifted_punctuation["-apostrophe] __________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "\"", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "apostrophe"}], "hold-time": 50}]]}
+____________________ test_each_shifted_punctuation[<-comma] ____________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "<", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "comma"}], "hold-time": 50}]]}
+_____________________ test_each_shifted_punctuation[>-dot] _____________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": ">", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "dot"}], "hold-time": 50}]]}
+____________________ test_each_shifted_punctuation[?-slash] ____________________
+----------------------------- Captured stdout call -----------------------------
+SHIFTED_TRACE {"text": "?", "commands": [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "slash"}], "hold-time": 50}]]}
+_______________________ test_mixed_sentence_and_hi_bang ________________________
+----------------------------- Captured stdout call -----------------------------
+MIXED_TRACE [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "h"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "i"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "1"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "spc"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "a"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "minus"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "2"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "equal"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "z"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "slash"}], "hold-time": 50}]]
+_____________________________ test_public_hi_bang ______________________________
+----------------------------- Captured stdout call -----------------------------
+HI_BANG_TRACE [["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "h"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "i"}], "hold-time": 50}], ["send-key", {"keys": [{"type": "qcode", "data": "shift"}, {"type": "qcode", "data": "1"}], "hold-time": 50}]]
+============================== 28 passed in 1.09s ==============================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

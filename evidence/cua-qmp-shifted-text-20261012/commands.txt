@@ -1,0 +1,15 @@
+Final primary baseline, cwd /workspace/scratch/cua-qmp-text before production edit (exact1c985c2d + final overlay):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-text-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_shifted_text.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-text-results/base-final-temp
+
+Primary candidate, same cwd and executable bytes committed as283c18c0:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-text-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_shifted_text.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-text-results/head-temp
+
+Primary adjacent, same candidate cwd:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-text-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_agentless_transport.py -k 'not the_native_guest_display_never_prints_its_password' --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-text-results/adjacent-temp
+
+Lint/format/whitespace:
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff check --no-cache libs/python/cua-sandbox/cua_sandbox/transport/qmp.py libs/python/cua-sandbox/tests/test_qmp_shifted_text.py
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check --no-cache libs/python/cua-sandbox/cua_sandbox/transport/qmp.py libs/python/cua-sandbox/tests/test_qmp_shifted_text.py
+git diff 1c985c2dee92e0f23d4a5f348bdd2ec14ddf30cd 283c18c0d389d8c715b67e17e300569dfa1725cb --check
+
+Every basetemp verified absent and nonsymlink. Fresh paths required for reruns; never reuse/clear. Independent exact-code commands in critic-receipt.txt.
