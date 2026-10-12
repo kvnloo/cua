@@ -1,0 +1,48 @@
+cua_bench/tests/test_reward.py::test_default_success_threshold_is_half
+cua_bench/tests/test_reward.py::test_emit_result_envelope_round_trips
+cua_bench/tests/test_reward.py::test_emit_result_envelope_round_trips_alongside_legacy_line
+cua_bench/tests/test_reward.py::test_emit_result_envelope_preferred_over_later_legacy_line
+cua_bench/tests/test_reward.py::test_coerce_reward[result0-0.8]
+cua_bench/tests/test_reward.py::test_coerce_reward[0.6-0.6]
+cua_bench/tests/test_reward.py::test_coerce_reward[result2-0.4]
+cua_bench/tests/test_reward.py::test_coerce_reward[result3-0.9]
+cua_bench/tests/test_reward.py::test_coerce_reward[result4-None]
+cua_bench/tests/test_reward.py::test_coerce_reward[True-None]
+cua_bench/tests/test_reward.py::test_parse_reward_success[\u2713 Evaluation result: [0.8]-0.8]
+cua_bench/tests/test_reward.py::test_parse_reward_success[\u2713 Evaluation result: 0.25-0.25]
+cua_bench/tests/test_reward.py::test_parse_reward_success[some log line\nEvaluation result: [1.0]\nmore-1.0]
+cua_bench/tests/test_reward.py::test_parse_reward_success[CUA_BENCH_RESULT {"reward": 0.91}-0.91]
+cua_bench/tests/test_reward.py::test_parse_reward_success[noise\nCUA_BENCH_RESULT {"score": 1.0}\nmore-1.0]
+cua_bench/tests/test_reward.py::test_parse_reward_success[CUA_BENCH_RESULT: {"success": true, "score": 0.3}-0.3]
+cua_bench/tests/test_reward.py::test_structured_envelope_preferred_over_text
+cua_bench/tests/test_reward.py::test_last_structured_envelope_wins
+cua_bench/tests/test_reward.py::test_unrelated_json_score_does_not_override_evaluator_result
+cua_bench/tests/test_reward.py::test_unrelated_json_reward_does_not_override_evaluator_result
+cua_bench/tests/test_reward.py::test_marker_without_reward_falls_back_to_text
+cua_bench/tests/test_reward.py::test_parse_reward_raises_when_absent[]
+cua_bench/tests/test_reward.py::test_parse_reward_raises_when_absent[no reward here]
+cua_bench/tests/test_reward.py::test_parse_reward_raises_when_absent[{"reward": 0.9}]
+cua_bench/tests/test_reward.py::test_parse_reward_raises_when_absent[{"evaluation": {"score": 1.0}}]
+cua_bench/tests/test_reward.py::test_parse_reward_raises_when_absent[{"result": [{"score": 0.3}]}]
+cua_bench/tests/test_reward.py::test_parse_reward_raises_when_absent[CUA_BENCH_RESULT not-json]
+cua_bench/tests/test_reward.py::test_try_parse_reward_returns_none_when_absent
+cua_bench/tests/test_unified_runner.py::TestAdapter::test_build_image_same_ref_everywhere
+cua_bench/tests/test_unified_runner.py::TestAdapter::test_kwargs_local_carry_caps_but_never_pool_options
+cua_bench/tests/test_unified_runner.py::TestAdapter::test_kwargs_cloud_managed
+cua_bench/tests/test_unified_runner.py::TestAdapter::test_explain_pull_error_cloud_and_local
+cua_bench/tests/test_unified_runner.py::TestAdapter::test_explain_auth_error
+cua_bench/tests/test_unified_runner.py::TestCloudAuth::test_source_comes_from_the_sdk
+cua_bench/tests/test_unified_runner.py::TestCloudAuth::test_not_authed_says_cua_auth_login
+cua_bench/tests/test_unified_runner.py::TestCloudAuth::test_cloud_run_stops_before_any_claim_without_credentials
+cua_bench/tests/test_unified_runner.py::TestBatchRunner::test_cloud_batch_claims_one_pool_sized_to_concurrency
+cua_bench/tests/test_unified_runner.py::TestBatchRunner::test_first_cloud_claim_per_pool_is_single_flight
+cua_bench/tests/test_unified_runner.py::TestBatchRunner::test_local_batch_uses_local_sandboxes
+cua_bench/tests/test_unified_runner.py::TestBatchRunner::test_cancel_releases_every_claim
+cua_bench/tests/test_unified_runner.py::TestBatchRunner::test_output_is_routed_per_task
+cua_bench/tests/test_unified_runner.py::test_screenshot_is_bounded_and_skipped_after_failure
+cua_bench/tests/test_unified_runner.py::test_normalize_argv_detects_task_or_dataset
+cua_bench/tests/test_unified_runner.py::test_build_jobs_resolves_specs
+cua_bench/tests/test_unified_runner.py::test_session_status_without_docker
+cua_bench/tests/test_unified_runner.py::test_pool_image_opens_a_claim_from_that_pool
+
+46 tests collected in 0.73s

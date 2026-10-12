@@ -1,0 +1,380 @@
+diff --git a/libs/cua-bench/cua_bench/core.py b/libs/cua-bench/cua_bench/core.py
+index ab33166ed..58d359cb0 100644
+--- a/libs/cua-bench/cua_bench/core.py
++++ b/libs/cua-bench/cua_bench/core.py
+@@ -6,6 +6,8 @@ from dataclasses import dataclass
+ from pathlib import Path
+ from typing import Any, Optional
+ 
++from .reward import coerce_reward, emit_result_envelope
++
+ 
+ @dataclass
+ class Task:
+@@ -100,6 +102,9 @@ async def _interact(env_path: str, task_id: int = 0) -> None:
+         if env.evaluate_task_fn:
+             result = await env.evaluate()
+             print(f"{GREEN}✓ Evaluation result: {result}{RESET}")
++            reward = coerce_reward(result)
++            if reward is not None:
++                print(emit_result_envelope(reward))
+         else:
+             print(f"{GREY}✓ Evaluation not implemented{RESET}")
+     except Exception as e:
+diff --git a/libs/cua-bench/cua_bench/environment.py b/libs/cua-bench/cua_bench/environment.py
+index 6ac51b679..e66fe1be6 100644
+--- a/libs/cua-bench/cua_bench/environment.py
++++ b/libs/cua-bench/cua_bench/environment.py
+@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, Literal, Optional, Tuple
+ 
+ from .bot import Bot
+ from .computers import DesktopSession, DesktopSetupConfig, get_session
++from .reward import DEFAULT_SUCCESS_THRESHOLD
+ from .tracing import Tracing
+ from .types import Action
+ 
+@@ -440,7 +441,7 @@ class Environment:
+             duration = time.time() - self._execution_start_time if self._execution_start_time else 0
+             success = False
+             if isinstance(result, (int, float)):
+-                success = result >= 0.5  # Common threshold for success
++                success = result >= DEFAULT_SUCCESS_THRESHOLD
+             elif isinstance(result, bool):
+                 success = result
+             elif isinstance(result, dict) and "success" in result:
+diff --git a/libs/cua-bench/cua_bench/reward.py b/libs/cua-bench/cua_bench/reward.py
+new file mode 100644
+index 000000000..48e3006b1
+--- /dev/null
++++ b/libs/cua-bench/cua_bench/reward.py
+@@ -0,0 +1,151 @@
++"""Structured extraction of task reward/score from evaluation output.
++
++Historically reward was recovered by scanning raw stdout with a brittle regular
++expression (``✓ Evaluation result: [0.8]``). That breaks whenever the
++evaluation harness changes its formatting, or when a result is emitted as JSON.
++
++``parse_reward`` only trusts an explicit, machine-readable envelope that the
++evaluator prefixes with the ``CUA_BENCH_RESULT`` marker:
++
++    CUA_BENCH_RESULT {"reward": 0.9}
++
++The JSON is limited to a top-level ``reward`` or ``score`` key. Arbitrary JSON
++an agent or tool happens to print (a model confidence ``score``, an OCR score,
++an API response) is ignored, so it can never be mistaken for the task reward.
++Report sites emit the envelope with :func:`emit_result_envelope`;
++:func:`coerce_reward` turns an ``evaluate`` result (a scalar, a list, or a
++``reward``/``score`` mapping) into the scalar it formats.
++When several envelopes are present the last one wins. When no envelope is
++present the legacy ``Evaluation result:`` text form is used. When neither is
++present a clear ``ValueError`` is raised instead of silently returning ``None``
++or 0.0, so a parse failure can never be mistaken for a zero reward.
++"""
++
++from __future__ import annotations
++
++import json
++import re
++from typing import Any, Iterator, Optional
++
++# Single source of truth for the reward threshold that classifies a task as
++# successful. Used by Environment.evaluate() telemetry and run_single_task().
++DEFAULT_SUCCESS_THRESHOLD = 0.5
++
++# Explicit marker the evaluator prefixes to its machine-readable envelope.
++# Only JSON attached to this marker is treated as a task result.
++_RESULT_MARKER = "CUA_BENCH_RESULT"
++
++# Keys accepted inside a structured envelope, checked in order.
++_REWARD_JSON_KEYS = ("reward", "score")
++
++# Legacy human-readable form. Brackets are optional because producers have
++# emitted both ``Evaluation result: [0.8]`` and ``Evaluation result: 0.8``.
++_EVAL_RESULT_RE = re.compile(
++    r"Evaluation result:\s*\[?\s*([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)\s*\]?"
++)
++
++
++def _reward_from_payload(payload: Any) -> Optional[float]:
++    """Return the top-level reward/score from a decoded envelope, if present."""
++    if not isinstance(payload, dict):
++        return None
++    for key in _REWARD_JSON_KEYS:
++        if key in payload:
++            try:
++                return float(payload[key])
++            except (TypeError, ValueError):
++                return None
++    return None
++
++
++def coerce_reward(result: Any) -> Optional[float]:
++    """Coerce an evaluation result into a scalar reward, if one is present.
++
++    Evaluation functions return a scalar, a one-element list of scores, or a
++    ``{"reward"/"score": ...}`` mapping. Returns ``None`` when no numeric reward
++    can be recovered (for example a bare boolean success flag).
++    """
++    if isinstance(result, bool):
++        return None
++    if isinstance(result, (int, float)):
++        return float(result)
++    if isinstance(result, dict):
++        return _reward_from_payload(result)
++    if isinstance(result, (list, tuple)):
++        for item in result:
++            value = coerce_reward(item)
++            if value is not None:
++                return value
++    return None
++
++
++def emit_result_envelope(reward: float) -> str:
++    """Format a machine-readable result line for :func:`parse_reward`.
++
++    Returns ``CUA_BENCH_RESULT {"reward": <reward>}``. Evaluators should print
++    this next to the human-readable result so reward extraction no longer
++    depends on log formatting.
++    """
++    return f"{_RESULT_MARKER} {json.dumps({'reward': float(reward)})}"
++
++
++def _decode_marker_payloads(stdout: str) -> Iterator[Any]:
++    """Yield decoded JSON objects attached to ``CUA_BENCH_RESULT`` markers."""
++    for line in stdout.splitlines():
++        index = line.find(_RESULT_MARKER)
++        if index == -1:
++            continue
++        remainder = line[index + len(_RESULT_MARKER) :].lstrip(":= \t")
++        start = remainder.find("{")
++        end = remainder.rfind("}")
++        if start == -1 or end <= start:
++            continue
++        try:
++            yield json.loads(remainder[start : end + 1])
++        except (json.JSONDecodeError, ValueError):
++            continue
++
++
++def _structured_reward(stdout: str) -> Optional[float]:
++    """Return the reward from the last ``CUA_BENCH_RESULT`` envelope carrying one."""
++    reward: Optional[float] = None
++    for payload in _decode_marker_payloads(stdout):
++        found = _reward_from_payload(payload)
++        if found is not None:
++            reward = found
++    return reward
++
++
++def parse_reward(stdout: str) -> float:
++    """Extract the reward from evaluation output.
++
++    Prefers the explicit ``CUA_BENCH_RESULT`` JSON envelope (taking the last one
++    emitted), then falls back to the legacy ``Evaluation result:`` text form.
++    Raises ``ValueError`` when neither is present.
++    """
++    if stdout:
++        structured = _structured_reward(stdout)
++        if structured is not None:
++            return structured
++
++        match = _EVAL_RESULT_RE.search(stdout)
++        if match:
++            try:
++                return float(match.group(1))
++            except ValueError as exc:  # pragma: no cover - regex constrains shape
++                raise ValueError(
++                    f"Could not parse reward {match.group(1)!r} from evaluation output"
++                ) from exc
++
++    raise ValueError(
++        "No reward found in evaluation output: expected a 'CUA_BENCH_RESULT' "
++        "JSON envelope with a 'reward' or 'score' key, or an 'Evaluation result:' line."
++    )
++
++
++def try_parse_reward(stdout: str) -> Optional[float]:
++    """Like :func:`parse_reward` but returns ``None`` instead of raising."""
++    try:
++        return parse_reward(stdout)
++    except ValueError:
++        return None
+diff --git a/libs/cua-bench/cua_bench/runner/episode.py b/libs/cua-bench/cua_bench/runner/episode.py
+index 02e1d1ab0..438187a38 100644
+--- a/libs/cua-bench/cua_bench/runner/episode.py
++++ b/libs/cua-bench/cua_bench/runner/episode.py
+@@ -226,6 +226,10 @@ async def run_episode(
+         result.evaluation = evaluation
+         result.reward = reward_of(evaluation)
+         print(f"✓ Evaluation result: {evaluation}")
++        if result.reward is not None:
++            from ..reward import emit_result_envelope
++
++            print(emit_result_envelope(result.reward))
+         _record(env, "evaluate", {"result": evaluation})
+ 
+     trace_dir = output_dir / f"task_{task_index}_trace"
+diff --git a/libs/cua-bench/cua_bench/runners.py b/libs/cua-bench/cua_bench/runners.py
+index 9e888b0e6..491bc6559 100644
+--- a/libs/cua-bench/cua_bench/runners.py
++++ b/libs/cua-bench/cua_bench/runners.py
+@@ -14,6 +14,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
+ 
+ from .core import Task, make
+ from .environment import Environment
++from .reward import DEFAULT_SUCCESS_THRESHOLD
+ from .types import Action, DoneAction
+ 
+ 
+@@ -147,7 +148,7 @@ async def run_single_task(
+         return TaskResult(
+             task_path=str(env_path),
+             variant_id=task_index,
+-            success=reward >= 0.5,  # Common threshold
++            success=reward >= DEFAULT_SUCCESS_THRESHOLD,
+             reward=reward,
+             steps=step_count,
+         )
+diff --git a/libs/cua-bench/cua_bench/tests/test_reward.py b/libs/cua-bench/cua_bench/tests/test_reward.py
+new file mode 100644
+index 000000000..25b71597a
+--- /dev/null
++++ b/libs/cua-bench/cua_bench/tests/test_reward.py
+@@ -0,0 +1,137 @@
++"""Tests for structured reward extraction (cua_bench.reward)."""
++
++import pytest
++
++from cua_bench.reward import (
++    DEFAULT_SUCCESS_THRESHOLD,
++    coerce_reward,
++    emit_result_envelope,
++    parse_reward,
++    try_parse_reward,
++)
++
++
++def test_default_success_threshold_is_half():
++    assert DEFAULT_SUCCESS_THRESHOLD == 0.5
++
++
++def test_emit_result_envelope_round_trips():
++    line = emit_result_envelope(0.8)
++    assert line == 'CUA_BENCH_RESULT {"reward": 0.8}'
++    assert try_parse_reward(line) == pytest.approx(0.8)
++
++
++def test_emit_result_envelope_round_trips_alongside_legacy_line():
++    stdout = "\n".join(
++        [
++            "✓ Evaluation result: [0.8]",
++            emit_result_envelope(0.8),
++        ]
++    )
++    assert try_parse_reward(stdout) == pytest.approx(0.8)
++
++
++def test_emit_result_envelope_preferred_over_later_legacy_line():
++    stdout = "\n".join(
++        [
++            emit_result_envelope(0.25),
++            "✓ Evaluation result: [0.9]",
++        ]
++    )
++    assert try_parse_reward(stdout) == pytest.approx(0.25)
++
++
++@pytest.mark.parametrize(
++    "result,expected",
++    [
++        ([0.8], 0.8),
++        (0.6, 0.6),
++        ({"reward": 0.4}, 0.4),
++        ({"score": 0.9, "success": True}, 0.9),
++        ([], None),
++        (True, None),
++    ],
++)
++def test_coerce_reward(result, expected):
++    value = coerce_reward(result)
++    if expected is None:
++        assert value is None
++    else:
++        assert value == pytest.approx(expected)
++
++
++@pytest.mark.parametrize(
++    "stdout,expected",
++    [
++        ("✓ Evaluation result: [0.8]", 0.8),
++        ("✓ Evaluation result: 0.25", 0.25),
++        ("some log line\nEvaluation result: [1.0]\nmore", 1.0),
++        ('CUA_BENCH_RESULT {"reward": 0.91}', 0.91),
++        ('noise\nCUA_BENCH_RESULT {"score": 1.0}\nmore', 1.0),
++        ('CUA_BENCH_RESULT: {"success": true, "score": 0.3}', 0.3),
++    ],
++)
++def test_parse_reward_success(stdout, expected):
++    assert parse_reward(stdout) == pytest.approx(expected)
++
++
++def test_structured_envelope_preferred_over_text():
++    stdout = 'Evaluation result: [0.2]\nCUA_BENCH_RESULT {"reward": 0.9}'
++    assert parse_reward(stdout) == pytest.approx(0.9)
++
++
++def test_last_structured_envelope_wins():
++    stdout = "\n".join(
++        [
++            'CUA_BENCH_RESULT {"reward": 0.1}',
++            'CUA_BENCH_RESULT {"reward": 0.7}',
++        ]
++    )
++    assert parse_reward(stdout) == pytest.approx(0.7)
++
++
++def test_unrelated_json_score_does_not_override_evaluator_result():
++    stdout = "\n".join(
++        [
++            'tool_call: {"score": 0.01, "note": "model confidence"}',
++            'ocr: {"score": 0.98}',
++            "✓ Evaluation result: [0.8]",
++        ]
++    )
++    assert parse_reward(stdout) == pytest.approx(0.8)
++
++
++def test_unrelated_json_reward_does_not_override_evaluator_result():
++    stdout = "\n".join(
++        [
++            'provider response {"reward": 1234.0}',
++            "Evaluation result: 0.6",
++        ]
++    )
++    assert parse_reward(stdout) == pytest.approx(0.6)
++
++
++def test_marker_without_reward_falls_back_to_text():
++    stdout = 'CUA_BENCH_RESULT {"status": "ok"}\nEvaluation result: [0.4]'
++    assert parse_reward(stdout) == pytest.approx(0.4)
++
++
++@pytest.mark.parametrize(
++    "stdout",
++    [
++        "",
++        "no reward here",
++        '{"reward": 0.9}',
++        '{"evaluation": {"score": 1.0}}',
++        '{"result": [{"score": 0.3}]}',
++        "CUA_BENCH_RESULT not-json",
++    ],
++)
++def test_parse_reward_raises_when_absent(stdout):
++    with pytest.raises(ValueError):
++        parse_reward(stdout)
++
++
++def test_try_parse_reward_returns_none_when_absent():
++    assert try_parse_reward("no reward here") is None
++    assert try_parse_reward("✓ Evaluation result: [0.5]") == pytest.approx(0.5)

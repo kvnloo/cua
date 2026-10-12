@@ -1,0 +1,43 @@
+{
+  "observed_at_utc": "2026-10-12T04:08:32.706349+00:00",
+  "origin": "https://github.com/trycua/cua/pull/4990",
+  "owner": "Al-aminI",
+  "head": "86ee66d9587344efd47226b18df3294dcd4b0dc0",
+  "base": "29823dd6b556cb893cdc5fdbeb687eb18d1c8f54",
+  "state": "open",
+  "draft": false,
+  "reviews": [],
+  "inline_review_count": 0,
+  "comments": [
+    {
+      "url": "https://github.com/trycua/cua/pull/4990#issuecomment-6110941045",
+      "owner": "github-actions[bot]",
+      "body": "<!-- release-reminder -->\n### \ud83d\udce6 Publishable packages changed\n\nThis comment is status-only. Editing it or adding task-list checkboxes cannot authorize a release.\nOnly owner-applied `release:<service>` labels can do that.\n\n- \u23f8\ufe0f `pypi/bench` \u2014 no owner-authorized release label\n\nAsk the release owner to apply `release:<service>` labels to auto-release on merge (+ optional `bump:minor` or `bump:major`, default is patch).\nOr add `no-release` to skip.\n"
+    },
+    {
+      "url": "https://github.com/trycua/cua/pull/4990#issuecomment-6110941129",
+      "owner": "github-actions[bot]",
+      "body": "All contributors have signed the CLA  \u270d\ufe0f \u2705<br/><sub>Posted by the ****CLA Assistant Lite bot****.</sub>"
+    },
+    {
+      "url": "https://github.com/trycua/cua/pull/4990#issuecomment-6111161540",
+      "owner": "Al-aminI",
+      "body": "I have read the CLA Document and I hereby sign the CLA"
+    },
+    {
+      "url": "https://github.com/trycua/cua/pull/4990#issuecomment-6111275700",
+      "owner": "github-actions[bot]",
+      "body": "<!-- release-reminder -->\n### \ud83d\udce6 Publishable packages changed\n\nThis comment is status-only. Editing it or adding task-list checkboxes cannot authorize a release.\nOnly owner-applied `release:<service>` labels can do that.\n\n- \u23f8\ufe0f `pypi/bench` \u2014 no owner-authorized release label\n\nAsk the release owner to apply `release:<service>` labels to auto-release on merge (+ optional `bump:minor` or `bump:major`, default is patch).\nOr add `no-release` to skip.\n"
+    },
+    {
+      "url": "https://github.com/trycua/cua/pull/4990#issuecomment-6111287898",
+      "owner": "Al-aminI",
+      "body": "@f-trycua this is the first focused PR out of #4018, and I need to flag a base change plus ask for re-review.\n\n**The branch was cut from an older `main`; I synced it with current `main` and re-scoped it.** Since it was opened, reward extraction moved in-process: `runner/episode.py` now sets `EpisodeResult.reward = reward_of(evaluate())` and `cli/commands/run.py` / `sessions/providers/docker.py` no longer scan stdout at all. So the old stdout-parsing call sites this PR edited are gone, and I resolved the sync by dropping those hunks rather than resurrecting them.\n\nYour points, against the current tree:\n\n1. **Explicit envelope, not arbitrary JSON** \u2014 `parse_reward` now reads only a line with the fixed `CUA_BENCH_RESULT` marker and only a top-level `reward`/`score` key; unrelated JSON (a model-confidence `score`, an OCR score, an API response) is ignored. The new producer emits it from the unified runner (`runner/episode.py`) and the interactive path (`core.py`), so the parser has a real producer again.\n2. **Last result wins** \u2014 `_structured_reward` takes the last marker envelope carrying a reward.\n3. **Test that unrelated JSON does not override** \u2014 added `test_unrelated_json_score_does_not_override_evaluator_result` and `test_unrelated_json_reward_does_not_override_evaluator_result`.\n4. **Single threshold** \u2014 the two remaining literal `0.5` comparisons on `main` (`environment.py` evaluate telemetry, `runners.py` `run_single_task`) now go through `DEFAULT_SUCCESS_THRESHOLD`.\n\nLegacy `Evaluation result:` text is still the fallback; `parse_reward` raises when neither form is present and call sites use `try_parse_reward`. Net diff is now 6 files: `reward.py` (new), `runner/episode.py`, `core.py`, `environment.py`, `runners.py`, `tests/test_reward.py`.\n\nThe Windows Arena guard is split out as #4992; the docs and the `checkpoint.py` message are still not in this PR (and the `checkpoint.py` hunk is superseded by #4226/#4218, so I won't rebase it).\n\nValidation: `pytest cua_bench/tests/test_reward.py` \u2192 28 passed; envelope round-trip verified; `ruff check` / `ruff format --check` clean. Could you take another look? The only remaining gate on my side is the release owner applying `release:pypi/bench` (this adds the public `cua_bench.reward` module) or `no-release`.\n"
+    },
+    {
+      "url": "https://github.com/trycua/cua/pull/4990#issuecomment-6111325534",
+      "owner": "github-actions[bot]",
+      "body": "<!-- release-reminder -->\n### \ud83d\udce6 Publishable packages changed\n\nThis comment is status-only. Editing it or adding task-list checkboxes cannot authorize a release.\nOnly owner-applied `release:<service>` labels can do that.\n\n- \u23f8\ufe0f `pypi/bench` \u2014 no owner-authorized release label\n\nAsk the release owner to apply `release:<service>` labels to auto-release on merge (+ optional `bump:minor` or `bump:major`, default is patch).\nOr add `no-release` to skip.\n"
+    }
+  ]
+}

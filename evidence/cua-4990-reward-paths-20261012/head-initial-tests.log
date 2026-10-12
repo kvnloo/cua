@@ -1,0 +1,224 @@
+...................................F..................F.FFF              [100%]
+=================================== FAILURES ===================================
+___ TestCloudAuth.test_cloud_run_stops_before_any_claim_without_credentials ____
+
+self = <cua_bench.tests.test_unified_runner.TestCloudAuth object at 0x7fb77d0ca0f0>
+fake_sdk = <cua_bench.tests.test_unified_runner.FakeFleetSDK object at 0x7fb77d0edc10>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb77d0ed8b0>
+tmp_path = PosixPath('${TEST_OUTPUT_ROOT}/cua-4990-pytest-head/test_cloud_run_stops_before_an0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7fb77d0eddc0>
+
+    def test_cloud_run_stops_before_any_claim_without_credentials(
+        self, fake_sdk, monkeypatch, tmp_path, capsys
+    ):
+        from cua_bench.cli import main as cli_main
+        from cua_bench.sessions import manager
+    
+        monkeypatch.setattr(sandboxes, "cloud_auth_source", _raise_auth)
+        monkeypatch.setattr(manager, "RUNS_FILE", tmp_path / "runs.json")
+        monkeypatch.setenv("CUA_BENCH_NO_BANNER", "1")
+        monkeypatch.setenv("CUA_TELEMETRY_ENABLED", "false")
+        task = tmp_path / "t"
+        task.mkdir()
+        (task / "main.py").write_text(TASK)
+        with pytest.raises(SystemExit) as exit_info:
+>           cli_main.main(["run", str(task), "--on", "cloud", "--output-dir", str(tmp_path / "o")])
+
+libs/cua-bench/cua_bench/tests/test_unified_runner.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+libs/cua-bench/cua_bench/cli/main.py:496: in main
+    sys.exit(run.execute(args) or 0)
+             ^^^^^^^^^^^^^^^^^
+libs/cua-bench/cua_bench/cli/commands/run.py:992: in execute
+    return command(args)
+           ^^^^^^^^^^^^^
+libs/cua-bench/cua_bench/cli/commands/run.py:421: in cmd_run_task
+    return _cmd_execute(args, "task")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+libs/cua-bench/cua_bench/cli/commands/run.py:433: in _cmd_execute
+    _load_dotenv()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_dotenv() -> None:
+>       from dotenv import load_dotenv
+E       ModuleNotFoundError: No module named 'dotenv'
+
+libs/cua-bench/cua_bench/cli/commands/run.py:412: ModuleNotFoundError
+____________________________ test_probe_is_bounded _____________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb77cce2b70>
+
+    @pytest.mark.asyncio
+    async def test_probe_is_bounded(monkeypatch):
+        monkeypatch.setattr(interact, "DISPLAY_PROBE_ATTEMPTS", 2)
+        monkeypatch.setattr(interact, "DISPLAY_PROBE_INTERVAL_S", 0.0)
+        # Port 1 on loopback: nothing listens, the connect is refused at once.
+>       problem = await interact._probe_display("http://127.0.0.1:1/viewer/")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+libs/cua-bench/cua_bench/tests/test_interact_display.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+url = 'http://127.0.0.1:1/viewer/'
+
+    async def _probe_display(url: str) -> Optional[str]:
+        """``None`` once the display page answers, else the last problem seen.
+    
+        Bounded: at most ``DISPLAY_PROBE_ATTEMPTS`` requests.
+        """
+>       import httpx
+E       ModuleNotFoundError: No module named 'httpx'
+
+libs/cua-bench/cua_bench/cli/commands/interact.py:43: ModuleNotFoundError
+_______________________ test_actual_reward_paths[multi] ________________________
+
+cli_env = <cua_bench.tests.fakes.FakeSDK object at 0x7fb77cca3350>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb77cca2750>
+tmp_path = PosixPath('${TEST_OUTPUT_ROOT}/cua-4990-pytest-head/test_actual_reward_paths_multi0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7fb77cc53440>
+value = [1, 0, 0], mean = 0.3333333333333333, first = 1.0
+
+    @pytest.mark.parametrize('value,mean,first', [([1, 0, 0], 1/3, 1.0), (0.75, 0.75, 0.75), ([0.75], 0.75, 0.75)], ids=['multi', 'scalar', 'single'])
+    def test_actual_reward_paths(cli_env, monkeypatch, tmp_path, capsys, value, mean, first):
+        task = tmp_path / 'controlled'
+        task.mkdir()
+        (task / 'main.py').write_text('''import json
+    import cua_bench as cb
+    @cb.tasks_config
+    def tasks():
+        return [cb.Task(description="controlled reward", computer={"provider":"native", "setup_config":{"os_type":"linux", "image":"registry.example/desktop:docker-1"}})]
+    @cb.setup_task
+    async def setup(task, session):
+        await session.write_file("/tmp/evaluation", %r)
+    @cb.evaluate_task
+    async def evaluate(task, session):
+        return json.loads(await session.read_file("/tmp/evaluation"))
+    ''' % json.dumps(value))
+        monkeypatch.setattr(builtins, 'input', lambda: '')
+        cb.interact(str(task))
+        interactive = capsys.readouterr().out
+        assert 'Error:' not in interactive
+        assert 'Evaluation result: ' + str(value) in interactive
+        assert len(cli_env.calls) == 1 and cli_env.released == 1
+        env = cb.make(str(task))
+        async def episode():
+            try:
+                return await run_episode(env, 0, AgentOptions(dump=True), tmp_path / 'episode')
+            finally:
+                await env.close()
+        result = asyncio.run(episode())
+        unified = capsys.readouterr().out
+        assert result.evaluation == value
+        assert result.reward == pytest.approx(mean)
+        assert len(cli_env.calls) == 2 and cli_env.released == 2 and cli_env.live == 0
+>       assert all(s.disconnected for s in cli_env.sandboxes)
+E       assert False
+E        +  where False = all(<generator object test_actual_reward_paths.<locals>.<genexpr> at 0x7fb77cda7e80>)
+
+${HEAD_WORKTREE}/libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py:48: AssertionError
+_______________________ test_actual_reward_paths[scalar] _______________________
+
+cli_env = <cua_bench.tests.fakes.FakeSDK object at 0x7fb77cc7c890>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb77cc7d190>
+tmp_path = PosixPath('${TEST_OUTPUT_ROOT}/cua-4990-pytest-head/test_actual_reward_paths_scala0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7fb77cc7ff80>, value = 0.75
+mean = 0.75, first = 0.75
+
+    @pytest.mark.parametrize('value,mean,first', [([1, 0, 0], 1/3, 1.0), (0.75, 0.75, 0.75), ([0.75], 0.75, 0.75)], ids=['multi', 'scalar', 'single'])
+    def test_actual_reward_paths(cli_env, monkeypatch, tmp_path, capsys, value, mean, first):
+        task = tmp_path / 'controlled'
+        task.mkdir()
+        (task / 'main.py').write_text('''import json
+    import cua_bench as cb
+    @cb.tasks_config
+    def tasks():
+        return [cb.Task(description="controlled reward", computer={"provider":"native", "setup_config":{"os_type":"linux", "image":"registry.example/desktop:docker-1"}})]
+    @cb.setup_task
+    async def setup(task, session):
+        await session.write_file("/tmp/evaluation", %r)
+    @cb.evaluate_task
+    async def evaluate(task, session):
+        return json.loads(await session.read_file("/tmp/evaluation"))
+    ''' % json.dumps(value))
+        monkeypatch.setattr(builtins, 'input', lambda: '')
+        cb.interact(str(task))
+        interactive = capsys.readouterr().out
+        assert 'Error:' not in interactive
+        assert 'Evaluation result: ' + str(value) in interactive
+        assert len(cli_env.calls) == 1 and cli_env.released == 1
+        env = cb.make(str(task))
+        async def episode():
+            try:
+                return await run_episode(env, 0, AgentOptions(dump=True), tmp_path / 'episode')
+            finally:
+                await env.close()
+        result = asyncio.run(episode())
+        unified = capsys.readouterr().out
+        assert result.evaluation == value
+        assert result.reward == pytest.approx(mean)
+        assert len(cli_env.calls) == 2 and cli_env.released == 2 and cli_env.live == 0
+>       assert all(s.disconnected for s in cli_env.sandboxes)
+E       assert False
+E        +  where False = all(<generator object test_actual_reward_paths.<locals>.<genexpr> at 0x7fb77cc89840>)
+
+${HEAD_WORKTREE}/libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py:48: AssertionError
+_______________________ test_actual_reward_paths[single] _______________________
+
+cli_env = <cua_bench.tests.fakes.FakeSDK object at 0x7fb77cca3ad0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb77cca20f0>
+tmp_path = PosixPath('${TEST_OUTPUT_ROOT}/cua-4990-pytest-head/test_actual_reward_paths_singl0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7fb77cca1ca0>
+value = [0.75], mean = 0.75, first = 0.75
+
+    @pytest.mark.parametrize('value,mean,first', [([1, 0, 0], 1/3, 1.0), (0.75, 0.75, 0.75), ([0.75], 0.75, 0.75)], ids=['multi', 'scalar', 'single'])
+    def test_actual_reward_paths(cli_env, monkeypatch, tmp_path, capsys, value, mean, first):
+        task = tmp_path / 'controlled'
+        task.mkdir()
+        (task / 'main.py').write_text('''import json
+    import cua_bench as cb
+    @cb.tasks_config
+    def tasks():
+        return [cb.Task(description="controlled reward", computer={"provider":"native", "setup_config":{"os_type":"linux", "image":"registry.example/desktop:docker-1"}})]
+    @cb.setup_task
+    async def setup(task, session):
+        await session.write_file("/tmp/evaluation", %r)
+    @cb.evaluate_task
+    async def evaluate(task, session):
+        return json.loads(await session.read_file("/tmp/evaluation"))
+    ''' % json.dumps(value))
+        monkeypatch.setattr(builtins, 'input', lambda: '')
+        cb.interact(str(task))
+        interactive = capsys.readouterr().out
+        assert 'Error:' not in interactive
+        assert 'Evaluation result: ' + str(value) in interactive
+        assert len(cli_env.calls) == 1 and cli_env.released == 1
+        env = cb.make(str(task))
+        async def episode():
+            try:
+                return await run_episode(env, 0, AgentOptions(dump=True), tmp_path / 'episode')
+            finally:
+                await env.close()
+        result = asyncio.run(episode())
+        unified = capsys.readouterr().out
+        assert result.evaluation == value
+        assert result.reward == pytest.approx(mean)
+        assert len(cli_env.calls) == 2 and cli_env.released == 2 and cli_env.live == 0
+>       assert all(s.disconnected for s in cli_env.sandboxes)
+E       assert False
+E        +  where False = all(<generator object test_actual_reward_paths.<locals>.<genexpr> at 0x7fb77cc881c0>)
+
+${HEAD_WORKTREE}/libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py:48: AssertionError
+=============================== warnings summary ===============================
+cua_bench/tests/test_unified_runner.py: 28 warnings
+cua_bench/tests/test_4990_reward_paths_evidence.py: 6 warnings
+  ${HEAD_WORKTREE}/libs/cua-bench/cua_bench/tracing.py:67: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat(timespec="milliseconds") + "Z",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED libs/cua-bench/cua_bench/tests/test_unified_runner.py::TestCloudAuth::test_cloud_run_stops_before_any_claim_without_credentials
+FAILED libs/cua-bench/cua_bench/tests/test_interact_display.py::test_probe_is_bounded
+FAILED libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[multi]
+FAILED libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[scalar]
+FAILED libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[single]
+5 failed, 54 passed, 34 warnings in 11.33s

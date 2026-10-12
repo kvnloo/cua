@@ -1,0 +1,82 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_actual_reward_paths[multi] ________________________
+
+cli_env = <cua_bench.tests.fakes.FakeSDK object at 0x7f76dfd83f80>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f76dfbb2900>
+tmp_path = PosixPath('${TEST_OUTPUT_ROOT}/cua-4990-contract/test_actual_reward_paths_multi0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7f76df728770>
+value = [1, 0, 0], mean = 0.3333333333333333, first = 1.0
+
+    @pytest.mark.parametrize('value,mean,first', [([1, 0, 0], 1/3, 1.0), (0.75, 0.75, 0.75), ([0.75], 0.75, 0.75)], ids=['multi', 'scalar', 'single'])
+    def test_actual_reward_paths(cli_env, monkeypatch, tmp_path, capsys, value, mean, first):
+        task = tmp_path / 'controlled'
+        task.mkdir()
+        (task / 'main.py').write_text('''import json
+    import cua_bench as cb
+    @cb.tasks_config
+    def tasks():
+        return [cb.Task(description="controlled reward", computer={"provider":"native", "setup_config":{"os_type":"linux", "image":"registry.example/desktop:docker-1"}})]
+    @cb.setup_task
+    async def setup(task, session):
+        await session.write_file("/tmp/evaluation", %r)
+    @cb.evaluate_task
+    async def evaluate(task, session):
+        return json.loads(await session.read_file("/tmp/evaluation"))
+    ''' % json.dumps(value))
+        monkeypatch.setattr(builtins, 'input', lambda: '')
+        cb.interact(str(task))
+        interactive = capsys.readouterr().out
+        assert 'Error:' not in interactive
+        assert 'Evaluation result: ' + str(value) in interactive
+        assert len(cli_env.calls) == 1 and cli_env.released == 1
+        env = cb.make(str(task))
+        async def episode():
+            try:
+                return await run_episode(env, 0, AgentOptions(dump=True), tmp_path / 'episode')
+            finally:
+                await env.close()
+        result = asyncio.run(episode())
+        unified = capsys.readouterr().out
+        assert result.evaluation == value
+        assert result.reward == pytest.approx(mean)
+        assert len(cli_env.calls) == 2 and cli_env.released == 2 and cli_env.live == 0
+        def envelopes(output):
+            return [json.loads(line.split('CUA_BENCH_RESULT ', 1)[1])['reward'] for line in output.splitlines() if 'CUA_BENCH_RESULT ' in line]
+        i, u = envelopes(interactive), envelopes(unified)
+        added = os.environ['EXPECT_ENVELOPES'] == '1'
+        assert i == ([first] if added else [])
+        assert u == ([mean] if added else [])
+        if added:
+            from cua_bench.reward import parse_reward
+            assert parse_reward(interactive) == pytest.approx(first)
+            assert parse_reward(unified) == pytest.approx(mean)
+        name = 'multi' if isinstance(value, list) and len(value) > 1 else 'single' if isinstance(value, list) else 'scalar'
+        receipt = Path(os.environ['RECEIPT_DIR'])
+        receipt.mkdir(parents=True, exist_ok=True)
+        (receipt / (name + '.json')).write_text(json.dumps({'evaluation': value, 'documented_mean': mean, 'interactive_envelopes': i, 'episode_envelopes': u, 'episode_reward': result.reward, 'claims': len(cli_env.calls), 'released': cli_env.released, 'package': cb.__file__, 'core': core.__file__, 'episode_module': run_episode.__module__}, indent=2))
+        (receipt / (name + '-interactive.log')).write_text(interactive)
+        (receipt / (name + '-episode.log')).write_text(unified)
+        if os.environ.get('ASSERT_MEAN') == '1':
+>           assert i == [pytest.approx(mean)], 'interactive envelope must follow documented mean'
+E           AssertionError: interactive envelope must follow documented mean
+E           assert [1.0] == [0.3333333333333333 ± 3.3e-07]
+E             
+E             At index 0 diff: 1.0 != 0.3333333333333333 ± 3.3e-07
+E             Use -v to get more diff
+
+${HEAD_WORKTREE}/libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py:65: AssertionError
+=============================== warnings summary ===============================
+cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[multi]
+cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[multi]
+cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[scalar]
+cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[scalar]
+cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[single]
+cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[single]
+  ${HEAD_WORKTREE}/libs/cua-bench/cua_bench/tracing.py:67: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat(timespec="milliseconds") + "Z",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED libs/cua-bench/cua_bench/tests/test_4990_reward_paths_evidence.py::test_actual_reward_paths[multi]
+1 failed, 2 passed, 6 warnings in 0.84s
