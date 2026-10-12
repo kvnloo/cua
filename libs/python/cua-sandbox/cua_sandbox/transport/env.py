@@ -88,7 +88,8 @@ def novnc_page_url(base: str) -> str:
 
 # Aliases the spacesd's KeySpec also accepts (cua_spacesd_client::KeySpec::parse);
 # key_down/key_up go through ComputerService/Keyboard JSON, which needs the
-# proto enum name, so resolve them here the same way.
+# proto enum name. Resolve aliases and valid names like KeySpec, but preserve
+# Python's single-character input semantics ("a" is a character, "KEY_A" named).
 _KEY_ALIASES = {
     "ctrl": "CONTROL",
     "control": "CONTROL",
@@ -148,6 +149,49 @@ _NAMED_KEYS = {
     "PAUSE",
     "NUM_LOCK",
     *(f"F{n}" for n in range(1, 25)),
+    # Physical keys from cua/env/v1/computer.proto; UNSPECIFIED is not a key.
+    *"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    *(f"DIGIT_{n}" for n in range(10)),
+    "MINUS",
+    "EQUAL",
+    "BRACKET_LEFT",
+    "BRACKET_RIGHT",
+    "BACKSLASH",
+    "SEMICOLON",
+    "QUOTE",
+    "BACKQUOTE",
+    "COMMA",
+    "PERIOD",
+    "SLASH",
+    "INTL_BACKSLASH",
+    *(f"NUMPAD_{n}" for n in range(10)),
+    "NUMPAD_ADD",
+    "NUMPAD_SUBTRACT",
+    "NUMPAD_MULTIPLY",
+    "NUMPAD_DIVIDE",
+    "NUMPAD_DECIMAL",
+    "NUMPAD_ENTER",
+    "NUMPAD_EQUAL",
+    "MEDIA_PLAY_PAUSE",
+    "MEDIA_STOP",
+    "MEDIA_NEXT",
+    "MEDIA_PREVIOUS",
+    "VOLUME_UP",
+    "VOLUME_DOWN",
+    "VOLUME_MUTE",
+    "BRIGHTNESS_UP",
+    "BRIGHTNESS_DOWN",
+    "EJECT",
+    "POWER",
+    "SLEEP",
+    "BROWSER_BACK",
+    "BROWSER_FORWARD",
+    "BROWSER_REFRESH",
+    "BROWSER_HOME",
+    "BROWSER_SEARCH",
+    "LAUNCH_MAIL",
+    "LAUNCH_APP1",
+    "LAUNCH_APP2",
 }
 _BUTTONS = {
     "left": "MOUSE_BUTTON_LEFT",
@@ -160,12 +204,12 @@ _BUTTONS = {
 
 def key_input(key: str) -> dict:
     """``cua.env.v1.KeyInput`` JSON for a key name or a single character."""
+    if len(key) == 1:
+        return {"character": key}
     alias = _KEY_ALIASES.get(key.lower())
     upper = alias or key.upper().removeprefix("KEY_").replace("-", "_").replace(" ", "_")
     if upper in _NAMED_KEYS:
         return {"named": f"KEY_{upper}"}
-    if len(key) == 1:
-        return {"character": key}
     raise ValueError(f"unknown key {key!r}")
 
 

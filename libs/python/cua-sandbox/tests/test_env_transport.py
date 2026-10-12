@@ -20,6 +20,45 @@ from cua_sandbox.transport.env import EnvTransport, env_url, key_input
 from tests._fake_env import FakeEnv
 
 
+# Valid canonical Key names from cua/env/v1/computer.proto (not the sentinel).
+CANONICAL_KEY_NAMES = """
+KEY_SHIFT KEY_SHIFT_LEFT KEY_SHIFT_RIGHT KEY_CONTROL KEY_CONTROL_LEFT
+KEY_CONTROL_RIGHT KEY_ALT KEY_ALT_LEFT KEY_ALT_RIGHT KEY_META
+KEY_META_LEFT KEY_META_RIGHT KEY_FN KEY_CAPS_LOCK KEY_ENTER
+KEY_TAB KEY_SPACE KEY_BACKSPACE KEY_DELETE KEY_ESCAPE
+KEY_INSERT KEY_HOME KEY_END KEY_PAGE_UP KEY_PAGE_DOWN
+KEY_ARROW_UP KEY_ARROW_DOWN KEY_ARROW_LEFT KEY_ARROW_RIGHT KEY_CONTEXT_MENU
+KEY_HELP KEY_F1 KEY_F2 KEY_F3 KEY_F4
+KEY_F5 KEY_F6 KEY_F7 KEY_F8 KEY_F9
+KEY_F10 KEY_F11 KEY_F12 KEY_F13 KEY_F14
+KEY_F15 KEY_F16 KEY_F17 KEY_F18 KEY_F19
+KEY_F20 KEY_F21 KEY_F22 KEY_F23 KEY_F24
+KEY_A KEY_B KEY_C KEY_D KEY_E
+KEY_F KEY_G KEY_H KEY_I KEY_J
+KEY_K KEY_L KEY_M KEY_N KEY_O
+KEY_P KEY_Q KEY_R KEY_S KEY_T
+KEY_U KEY_V KEY_W KEY_X KEY_Y
+KEY_Z KEY_DIGIT_0 KEY_DIGIT_1 KEY_DIGIT_2 KEY_DIGIT_3
+KEY_DIGIT_4 KEY_DIGIT_5 KEY_DIGIT_6 KEY_DIGIT_7 KEY_DIGIT_8
+KEY_DIGIT_9 KEY_MINUS KEY_EQUAL KEY_BRACKET_LEFT KEY_BRACKET_RIGHT
+KEY_BACKSLASH KEY_SEMICOLON KEY_QUOTE KEY_BACKQUOTE KEY_COMMA
+KEY_PERIOD KEY_SLASH KEY_INTL_BACKSLASH KEY_NUMPAD_0 KEY_NUMPAD_1
+KEY_NUMPAD_2 KEY_NUMPAD_3 KEY_NUMPAD_4 KEY_NUMPAD_5 KEY_NUMPAD_6
+KEY_NUMPAD_7 KEY_NUMPAD_8 KEY_NUMPAD_9 KEY_NUMPAD_ADD KEY_NUMPAD_SUBTRACT
+KEY_NUMPAD_MULTIPLY KEY_NUMPAD_DIVIDE KEY_NUMPAD_DECIMAL KEY_NUMPAD_ENTER KEY_NUMPAD_EQUAL
+KEY_NUM_LOCK KEY_PRINT_SCREEN KEY_SCROLL_LOCK KEY_PAUSE KEY_MEDIA_PLAY_PAUSE
+KEY_MEDIA_STOP KEY_MEDIA_NEXT KEY_MEDIA_PREVIOUS KEY_VOLUME_UP KEY_VOLUME_DOWN
+KEY_VOLUME_MUTE KEY_BRIGHTNESS_UP KEY_BRIGHTNESS_DOWN KEY_EJECT KEY_POWER
+KEY_SLEEP KEY_BROWSER_BACK KEY_BROWSER_FORWARD KEY_BROWSER_REFRESH KEY_BROWSER_HOME
+KEY_BROWSER_SEARCH KEY_LAUNCH_MAIL KEY_LAUNCH_APP1 KEY_LAUNCH_APP2
+""".split()
+
+
+@pytest.mark.parametrize("key", CANONICAL_KEY_NAMES)
+def test_canonical_key_vocabulary(key):
+    assert key_input(key) == {"named": key}
+
+
 def sandbox_with(env: FakeEnv, **kwargs) -> Sandbox:
     async def factory():
         return env
@@ -134,6 +173,53 @@ async def test_keyboard_actions():
         ("keyboard_json", {"down": {"key": {"named": "KEY_SHIFT"}}}),
         ("keyboard_json", {"up": {"key": {"character": "a"}}}),
     ]
+
+
+@pytest.mark.parametrize("operation", ["down", "up"])
+@pytest.mark.parametrize("key", ["KEY_A", "KEY_NUMPAD_ENTER"])
+async def test_held_canonical_keys(operation, key):
+    env = FakeEnv()
+    sb = sandbox_with(env)
+
+    await getattr(sb.keyboard, f"key_{operation}")(key)
+
+    assert env.calls == [("keyboard_json", {operation: {"key": {"named": key}}})]
+
+
+@pytest.mark.parametrize("operation", ["down", "up"])
+@pytest.mark.parametrize(
+    "key, expected",
+    [
+        ("a", {"character": "a"}),
+        ("A", {"character": "A"}),
+        ("0", {"character": "0"}),
+        ("!", {"character": "!"}),
+        ("é", {"character": "é"}),
+        ("shift", {"named": "KEY_SHIFT"}),
+        ("Shift", {"named": "KEY_SHIFT"}),
+        ("shift-left", {"named": "KEY_SHIFT_LEFT"}),
+        ("ctrl", {"named": "KEY_CONTROL"}),
+    ],
+)
+async def test_held_key_controls(operation, key, expected):
+    env = FakeEnv()
+    sb = sandbox_with(env)
+
+    await getattr(sb.keyboard, f"key_{operation}")(key)
+
+    assert env.calls == [("keyboard_json", {operation: {"key": expected}})]
+
+
+@pytest.mark.parametrize("operation", ["down", "up"])
+@pytest.mark.parametrize("key", ["hyperdrive", "KEY_HYPERDRIVE", "KEY_UNSPECIFIED"])
+async def test_held_unknown_keys_never_dispatch(operation, key):
+    env = FakeEnv()
+    sb = sandbox_with(env)
+
+    with pytest.raises(ValueError, match=f"^unknown key {key!r}$"):
+        await getattr(sb.keyboard, f"key_{operation}")(key)
+
+    assert env.calls == []
 
 
 @pytest.mark.parametrize(
