@@ -52,5 +52,29 @@ class ObserveTests(unittest.TestCase):
         self.assertEqual(["full_output" in call for call in driver.calls], [True, False])
 
 
+    def test_permission_denied_never_retries_without_the_flag(self) -> None:
+        class PermissionDeniedDriver(FakeDriver):
+            async def call(self, name, arguments):
+                self.calls.append(dict(arguments))
+                raise DriverToolError("get_window_state failed: permission denied", "permission_denied")
+
+        driver = PermissionDeniedDriver(refuse_full_output=False)
+        with self.assertRaises(DriverToolError):
+            asyncio.run(observe(driver, TASK, self.pid, self.window_id))
+        self.assertEqual(len(driver.calls), 1)
+        self.assertTrue(driver.calls[0]["full_output"])
+
+    def test_retry_preserves_timeout_and_capture_arguments(self) -> None:
+        driver = FakeDriver(refuse_full_output=True)
+        asyncio.run(observe(driver, TASK, self.pid, self.window_id, timeout_ms=5000))
+        self.assertEqual(len(driver.calls), 2)
+        for call in driver.calls:
+            self.assertEqual(call["timeout_ms"], 5000)
+            self.assertEqual(call["include_screenshot"], True)
+            self.assertEqual(call["include_accessibility_tree"], True)
+        self.assertTrue(driver.calls[0]["full_output"])
+        self.assertNotIn("full_output", driver.calls[1])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -113,7 +113,7 @@ async function findWindow(driver: Driver, pid: number, title: string) {
   throw new Error(`window ${JSON.stringify(title)} of pid ${pid} did not appear`);
 }
 
-async function observe(
+export async function observe(
   driver: Driver,
   task: NativeTask,
   pid: number,
