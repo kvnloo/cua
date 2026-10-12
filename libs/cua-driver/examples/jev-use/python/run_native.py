@@ -111,7 +111,10 @@ async def observe(
     except DriverToolError as error:
         # Drivers before 0.35 always return the full response and refuse the
         # unknown argument.
-        if error.code not in (None, "invalid_arguments") or "unknown argument full_output" not in str(error):
+        if (
+            error.code not in (None, "invalid_arguments")
+            or "unknown argument full_output" not in str(error)
+        ):
             raise
         arguments.pop("full_output")
         payload = await driver.call("get_window_state", arguments)
