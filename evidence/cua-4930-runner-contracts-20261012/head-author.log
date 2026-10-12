@@ -1,0 +1,46 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $EVIDENCE_ROOT/venv/bin/python
+rootdir: $EVIDENCE_ROOT/source/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 36 items
+
+cua_bench/tests/test_run_benchmark.py::TestTaskResult::test_task_result_creation PASSED [  2%]
+cua_bench/tests/test_run_benchmark.py::TestTaskResult::test_task_result_with_error PASSED [  5%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_creation PASSED [  8%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_all_success PASSED [ 11%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_all_failed PASSED [ 13%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_oracle PASSED [ 16%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_with_agent PASSED [ 19%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_failure PASSED [ 22%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_not_found PASSED [ 25%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_empty_dataset PASSED [ 27%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_task_filter_no_match PASSED [ 30%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmarkE2E::test_run_benchmark_oracle PASSED [ 33%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmarkE2E::test_run_benchmark_task_filter PASSED [ 36%]
+cua_bench/tests/test_run_benchmark.py::TestRunInteractiveE2E::test_run_interactive_returns_env PASSED [ 38%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value0] PASSED [ 41%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value1] PASSED [ 44%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value2] PASSED [ 47%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value3] PASSED [ 50%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[True] PASSED [ 52%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[False] PASSED [ 55%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[1.0] PASSED [ 58%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[None] PASSED [ 61%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[nan] PASSED [ 63%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[inf] PASSED [ 66%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[-0.1] PASSED [ 69%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[1.1] PASSED [ 72%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_missing_evaluator_cannot_claim_success PASSED [ 75%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_setup_only_cannot_claim_success_even_if_evaluator_would_pass PASSED [ 77%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_cleanup_failure_revokes_success_and_keeps_steps PASSED [ 80%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_mid_execution_failure_retains_completed_step_count PASSED [ 83%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[0] PASSED [ 86%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[-1] PASSED [ 88%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[False] PASSED [ 91%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[True] PASSED [ 94%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[1.5] PASSED [ 97%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[2] PASSED [100%]
+
+============================== 36 passed in 3.18s ==============================

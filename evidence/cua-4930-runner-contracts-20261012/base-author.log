@@ -1,0 +1,24 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $EVIDENCE_ROOT/venv/bin/python
+rootdir: $EVIDENCE_ROOT/base-source/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 14 items
+
+cua_bench/tests/test_run_benchmark.py::TestTaskResult::test_task_result_creation PASSED [  7%]
+cua_bench/tests/test_run_benchmark.py::TestTaskResult::test_task_result_with_error PASSED [ 14%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_creation PASSED [ 21%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_all_success PASSED [ 28%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_all_failed PASSED [ 35%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_oracle PASSED [ 42%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_with_agent PASSED [ 50%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_failure PASSED [ 57%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_not_found PASSED [ 64%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_empty_dataset PASSED [ 71%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_task_filter_no_match PASSED [ 78%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmarkE2E::test_run_benchmark_oracle PASSED [ 85%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmarkE2E::test_run_benchmark_task_filter PASSED [ 92%]
+cua_bench/tests/test_run_benchmark.py::TestRunInteractiveE2E::test_run_interactive_returns_env PASSED [100%]
+
+============================== 14 passed in 3.17s ==============================
