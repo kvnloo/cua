@@ -1,0 +1,128 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $HEAD_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 8 items
+
+cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[cancel-execute_action] EVIDENCE {"event": {"action": {"type": "ClickAction", "x": 1, "y": 2}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": null, "execution_id": "independent-cancellation-fixture", "execution_status": "returned", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.383889+00:00"}, "method": "execute_action", "mutations": 0, "outcome": "cancel", "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 0, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": true, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": true, "verified_action_count": 1}}
+FAILED
+cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[cancel-click_element] EVIDENCE {"event": {"action": {"selector_sha256": "f9f720dd6002e2d0523b1ec135350088164e063a992bd0a9110802587b5ee788", "type": "click_element"}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": null, "execution_id": "independent-cancellation-fixture", "execution_status": "returned", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.429717+00:00"}, "method": "click_element", "mutations": 0, "outcome": "cancel", "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 0, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": true, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": true, "verified_action_count": 1}}
+FAILED
+cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[return-execute_action] EVIDENCE {"event": {"action": {"type": "ClickAction", "x": 1, "y": 2}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": null, "execution_id": "independent-cancellation-fixture", "execution_status": "returned", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.433790+00:00"}, "method": "execute_action", "mutations": 1, "outcome": "return", "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 0, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": true, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": true, "verified_action_count": 1}}
+PASSED
+cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[return-click_element] EVIDENCE {"event": {"action": {"selector_sha256": "f9f720dd6002e2d0523b1ec135350088164e063a992bd0a9110802587b5ee788", "type": "click_element"}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": null, "execution_id": "independent-cancellation-fixture", "execution_status": "returned", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.435223+00:00"}, "method": "click_element", "mutations": 1, "outcome": "return", "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 0, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": true, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": true, "verified_action_count": 1}}
+PASSED
+cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[error-execute_action] EVIDENCE {"event": {"action": {"type": "ClickAction", "x": 1, "y": 2}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": "RuntimeError", "execution_id": "independent-cancellation-fixture", "execution_status": "failed", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.436743+00:00"}, "method": "execute_action", "mutations": 0, "outcome": "error", "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 1, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": false, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": false, "verified_action_count": 1}}
+PASSED
+cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[error-click_element] EVIDENCE {"event": {"action": {"selector_sha256": "f9f720dd6002e2d0523b1ec135350088164e063a992bd0a9110802587b5ee788", "type": "click_element"}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": "RuntimeError", "execution_id": "independent-cancellation-fixture", "execution_status": "failed", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.438165+00:00"}, "method": "click_element", "mutations": 0, "outcome": "error", "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 1, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": false, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": false, "verified_action_count": 1}}
+PASSED
+cua_bench/tests/test_independent_4929_cancellation.py::test_offline_verifier_rejects_actual_cancelled_receipt[execute_action] OFFLINE_EVIDENCE {"event": {"action": {"type": "ClickAction", "x": 1, "y": 2}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": null, "execution_id": "independent-cancellation-fixture", "execution_status": "returned", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.439552+00:00"}, "method": "execute_action", "mutations": 0, "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 0, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": true, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": true, "verified_action_count": 1}}
+FAILED
+cua_bench/tests/test_independent_4929_cancellation.py::test_offline_verifier_rejects_actual_cancelled_receipt[click_element] OFFLINE_EVIDENCE {"event": {"action": {"selector_sha256": "f9f720dd6002e2d0523b1ec135350088164e063a992bd0a9110802587b5ee788", "type": "click_element"}, "after": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "before": {"sha256": "865044c7f037c99fa67e0bcdc4f020ff293799c91bdb67b59461c678c651d428", "size_bytes": 38}, "error_type": null, "execution_id": "independent-cancellation-fixture", "execution_status": "returned", "schema_version": "cua-bench-executed-action/v1", "sequence": 1, "timestamp": "2026-10-12T12:34:07.444209+00:00"}, "method": "click_element", "mutations": 0, "verifier": {"checks": {"actions": true, "cleanup": true, "oracle": true}, "errors": [], "evidence_consistent": true, "execution_id": "independent-cancellation-fixture", "failed_action_count": 0, "limitations": ["Verifies internal artifact consistency only, not screenshot authenticity", "Does not independently re-execute or trustlessly validate the environment oracle", "Cannot establish that the recording intercepted all device actions"], "run_accepted": true, "schema_version": "cua-bench-verification/v1", "task_index": 0, "task_success": true, "valid": true, "verified_action_count": 1}}
+FAILED
+
+=================================== FAILURES ===================================
+________ test_receipt_distinguishes_cancellation[cancel-execute_action] ________
+
+tmp_path = PosixPath('$RESULTS_ROOT/probe-temp/test_receipt_distinguishes_can0')
+method = 'execute_action', outcome = 'cancel'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("method", ["execute_action", "click_element"])
+    @pytest.mark.parametrize("outcome", ["cancel", "return", "error"])
+    async def test_receipt_distinguishes_cancellation(tmp_path, method, outcome):
+        event, desktop, report = await produced_receipt(tmp_path, method, outcome)
+        print("EVIDENCE", json.dumps({"method": method, "outcome": outcome,
+            "mutations": desktop.mutations, "event": event, "verifier": report}, sort_keys=True))
+        if outcome == "return":
+            assert event["execution_status"] == "returned"
+            assert event["error_type"] is None
+            assert report["run_accepted"] is True
+        elif outcome == "error":
+            assert event["execution_status"] == "failed"
+            assert event["error_type"] == "RuntimeError"
+            assert report["failed_action_count"] == 1
+            assert report["run_accepted"] is False
+        else:
+>           assert event["execution_status"] == "failed"
+E           AssertionError: assert 'returned' == 'failed'
+E             
+E             - failed
+E             + returned
+
+cua_bench/tests/test_independent_4929_cancellation.py:88: AssertionError
+________ test_receipt_distinguishes_cancellation[cancel-click_element] _________
+
+tmp_path = PosixPath('$RESULTS_ROOT/probe-temp/test_receipt_distinguishes_can1')
+method = 'click_element', outcome = 'cancel'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("method", ["execute_action", "click_element"])
+    @pytest.mark.parametrize("outcome", ["cancel", "return", "error"])
+    async def test_receipt_distinguishes_cancellation(tmp_path, method, outcome):
+        event, desktop, report = await produced_receipt(tmp_path, method, outcome)
+        print("EVIDENCE", json.dumps({"method": method, "outcome": outcome,
+            "mutations": desktop.mutations, "event": event, "verifier": report}, sort_keys=True))
+        if outcome == "return":
+            assert event["execution_status"] == "returned"
+            assert event["error_type"] is None
+            assert report["run_accepted"] is True
+        elif outcome == "error":
+            assert event["execution_status"] == "failed"
+            assert event["error_type"] == "RuntimeError"
+            assert report["failed_action_count"] == 1
+            assert report["run_accepted"] is False
+        else:
+>           assert event["execution_status"] == "failed"
+E           AssertionError: assert 'returned' == 'failed'
+E             
+E             - failed
+E             + returned
+
+cua_bench/tests/test_independent_4929_cancellation.py:88: AssertionError
+____ test_offline_verifier_rejects_actual_cancelled_receipt[execute_action] ____
+
+tmp_path = PosixPath('$RESULTS_ROOT/probe-temp/test_offline_verifier_rejects_0')
+method = 'execute_action'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("method", ["execute_action", "click_element"])
+    async def test_offline_verifier_rejects_actual_cancelled_receipt(tmp_path, method):
+        event, desktop, report = await produced_receipt(tmp_path, method, "cancel")
+        print("OFFLINE_EVIDENCE", json.dumps({"method": method, "mutations": desktop.mutations,
+            "event": event, "verifier": report}, sort_keys=True))
+        assert desktop.mutations == 0
+        assert report["checks"]["oracle"] is True
+        assert report["checks"]["cleanup"] is True
+        assert report["checks"]["actions"] is True
+>       assert report["run_accepted"] is False
+E       assert True is False
+
+cua_bench/tests/test_independent_4929_cancellation.py:102: AssertionError
+____ test_offline_verifier_rejects_actual_cancelled_receipt[click_element] _____
+
+tmp_path = PosixPath('$RESULTS_ROOT/probe-temp/test_offline_verifier_rejects_1')
+method = 'click_element'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("method", ["execute_action", "click_element"])
+    async def test_offline_verifier_rejects_actual_cancelled_receipt(tmp_path, method):
+        event, desktop, report = await produced_receipt(tmp_path, method, "cancel")
+        print("OFFLINE_EVIDENCE", json.dumps({"method": method, "mutations": desktop.mutations,
+            "event": event, "verifier": report}, sort_keys=True))
+        assert desktop.mutations == 0
+        assert report["checks"]["oracle"] is True
+        assert report["checks"]["cleanup"] is True
+        assert report["checks"]["actions"] is True
+>       assert report["run_accepted"] is False
+E       assert True is False
+
+cua_bench/tests/test_independent_4929_cancellation.py:102: AssertionError
+=========================== short test summary info ============================
+FAILED cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[cancel-execute_action]
+FAILED cua_bench/tests/test_independent_4929_cancellation.py::test_receipt_distinguishes_cancellation[cancel-click_element]
+FAILED cua_bench/tests/test_independent_4929_cancellation.py::test_offline_verifier_rejects_actual_cancelled_receipt[execute_action]
+FAILED cua_bench/tests/test_independent_4929_cancellation.py::test_offline_verifier_rejects_actual_cancelled_receipt[click_element]
+========================= 4 failed, 4 passed in 2.45s ==========================

@@ -1,0 +1,32 @@
+ROOTS
+HEAD_WORKTREE: isolated sparse worktree atb90c58e627dd7cdc71eb6de5b7cfbbe14c502f9b.
+ENV_ROOT: existing official PyPI wheel setup; interpreter ENV_ROOT/venv/bin/python, Python3.12.14.
+RESULTS_ROOT: fresh writable output/temp directory. Do not reuse existing pytest basetemp.
+
+PREFLIGHT
+PYTHONDONTWRITEBYTECODE=1 "$ENV_ROOT/venv/bin/python" -c 'import datasets,PIL,jinja2; print(datasets.__version__,PIL.__version__,jinja2.__version__)'
+Output:5.1.0 12.3.0 3.1.6. No new installs/sync/OS packages or SDK builds.
+
+PREPARATION
+git fetch --depth=1 --filter=blob:none origin b90c58e627dd7cdc71eb6de5b7cfbbe14c502f9b
+git worktree add --no-checkout -b evidence/cua-4929-cancel-receipts-20261012 "$HEAD_WORKTREE" b90c58e627dd7cdc71eb6de5b7cfbbe14c502f9b
+git -C "$HEAD_WORKTREE" config --worktree core.sparseCheckout true
+git -C "$HEAD_WORKTREE" sparse-checkout set --no-cone /libs/cua-bench/ /AGENTS.md /CONTRIBUTING.md /TESTING.md /.agents/skills/
+git -C "$HEAD_WORKTREE" read-tree -mu HEAD
+AGENTS.md is absent on this historical candidate head; canonical factory AGENTS/control-plane/HITL/registry were refreshed. CONTRIBUTING.md was read. No fabricated instructions from absent files.
+
+OWNER EVIDENCE/VERIFIER (cwd HEAD_WORKTREE/libs/cua-bench)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$HEAD_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_evidence_contract.py cua_bench/tests/test_verify_execution.py -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/owner-temp"
+Exit0:17 passed in2.51s.
+
+HEAD-ONLY INDEPENDENT PROBE (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$HEAD_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_independent_4929_cancellation.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/probe-temp"
+Exit1:4 failed,4 passed in2.45s. Two recording failures and two offline-verifier acceptance failures; normal/RuntimeError controls pass for both execute_action and click_element.
+
+BASE ABSENCE CHECK (metadata only)
+git fetch --depth=1 --filter=tree:0 origin 7cc4bd0bfc3ce1a3246ae47fe02948dc9f64f010
+git ls-tree 7cc4bd0bfc3ce1a3246ae47fe02948dc9f64f010 -- libs/cua-bench/cua_bench/batch/action_evidence.py libs/cua-bench/cua_bench/verify_execution.py libs/cua-bench/cua_bench/evidence_contract.py
+Output empty; all three feature files absent. No base adapter/verifier tests fabricated or executed.
+
+CLAIM AUDIT LIMIT
+Exact4929 fork search returned no mirror; canonical factory/project records and author-topic PRs were refreshed. A broader alias issue search hit HTTP504 at GraphQL; no retry or alternate route was used for that failed search. No permission denial occurred. This is a bounded overlap check, not a full factory-wide audit.

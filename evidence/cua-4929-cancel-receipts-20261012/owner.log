@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $HEAD_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 17 items
+
+cua_bench/tests/test_evidence_contract.py::test_valid_shared_oracle PASSED [  5%]
+cua_bench/tests/test_evidence_contract.py::test_reject_boolean_sequence PASSED [ 11%]
+cua_bench/tests/test_evidence_contract.py::test_reject_missing_observation_hash PASSED [ 17%]
+cua_bench/tests/test_evidence_contract.py::test_reject_forged_oracle_verdict PASSED [ 23%]
+cua_bench/tests/test_evidence_contract.py::test_finite_reward_above_one_is_valid_per_solver PASSED [ 29%]
+cua_bench/tests/test_evidence_contract.py::test_failed_event_is_valid_evidence_but_not_success PASSED [ 35%]
+cua_bench/tests/test_verify_execution.py::test_complete_receipts_pass_internal_consistency PASSED [ 41%]
+cua_bench/tests/test_verify_execution.py::test_wrong_execution_id_fails_closed PASSED [ 47%]
+cua_bench/tests/test_verify_execution.py::test_missing_action_evidence_fails_closed PASSED [ 52%]
+cua_bench/tests/test_verify_execution.py::test_forged_oracle_success_is_detected PASSED [ 58%]
+cua_bench/tests/test_verify_execution.py::test_cleanup_residual_is_rejected PASSED [ 64%]
+cua_bench/tests/test_verify_execution.py::test_oracle_only_mode_allows_no_agent_stream PASSED [ 70%]
+cua_bench/tests/test_verify_execution.py::test_finite_negative_reward_uses_explicit_threshold PASSED [ 76%]
+cua_bench/tests/test_verify_execution.py::test_failed_action_cannot_prove_successful_execution PASSED [ 82%]
+cua_bench/tests/test_verify_execution.py::test_missing_screenshot_observation_fails_closed PASSED [ 88%]
+cua_bench/tests/test_verify_execution.py::test_failed_task_can_have_consistent_evidence PASSED [ 94%]
+cua_bench/tests/test_verify_execution.py::test_finite_reward_above_one_is_consistent_with_solver_contract PASSED [100%]
+
+============================== 17 passed in 2.51s ==============================
