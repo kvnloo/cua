@@ -6,7 +6,7 @@ created: 2026-10-12
 last_updated: 2026-10-12
 status: draft
 discussion: https://github.com/kvnloo/cua/issues/93
-rfc_pr:
+rfc_pr: https://github.com/kvnloo/cua/pull/134
 implementation: []
 supersedes:
 superseded_by:
