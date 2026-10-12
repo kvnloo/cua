@@ -1,0 +1,142 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- ENV_ROOT/venv/bin/python
+rootdir: BASE_WORKTREE/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_local_reconnect_deletes FAILED [  5%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[disconnect] PASSED [ 10%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[context_exit] PASSED [ 15%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_class_delete_dispatches_to_local_manager PASSED [ 20%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_disconnect_retains_local_handle FAILED [ 25%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_legacy_state_without_native_handle_is_not_deleted PASSED [ 30%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_direct_url_destroy_never_deletes_local_manager PASSED [ 35%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_name_and_ephemeral_do_not_establish_local_reconnect_ownership PASSED [ 40%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[cloud] PASSED [ 45%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[other_name] PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[unavailable] PASSED [ 55%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[False] PASSED [ 60%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[True] PASSED [ 65%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_cloud_dispatch_has_precedence_over_local_reconnect PASSED [ 70%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_fleet_claim_release_has_precedence_over_local_reconnect PASSED [ 75%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_released_fleet_claim_does_not_fall_back_to_local_delete PASSED [ 80%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_cancellation_keeps_existing_error_semantics PASSED [ 85%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_error_does_not_skip_explicit_local_delete FAILED [ 90%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_local_delete_error_remains_best_effort FAILED [ 95%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_with_snapshots_still_deletes FAILED [100%]
+
+=================================== FAILURES ===================================
+_____________ test_explicit_destroy_after_local_reconnect_deletes ______________
+
+local_record = <tests.test_local_reconnect_destroy.RecordingLocal object at 0xREDACTED>
+
+    async def test_explicit_destroy_after_local_reconnect_deletes(local_record):
+        sb = await reconnect()
+        await sb.destroy()
+>       assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
+E       AssertionError: assert [('connect', ...orded-local')] == [('connect', ...orded-local')]
+E
+E         Right contains one more item: ('handle_delete', 'recorded-local')
+E
+E         Full diff:
+E           [
+E               (
+E                   'connect',...
+E
+E         ...Full output truncated (7 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py:138: AssertionError
+_________ test_explicit_destroy_after_disconnect_retains_local_handle __________
+
+local_record = <tests.test_local_reconnect_destroy.RecordingLocal object at 0xREDACTED>
+
+    async def test_explicit_destroy_after_disconnect_retains_local_handle(local_record):
+        sb = await reconnect()
+        await sb.disconnect()
+        assert not local_record.deleted
+        await sb.destroy()
+>       assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
+E       AssertionError: assert [('connect', ...orded-local')] == [('connect', ...orded-local')]
+E
+E         Right contains one more item: ('handle_delete', 'recorded-local')
+E
+E         Full diff:
+E           [
+E               (
+E                   'connect',...
+E
+E         ...Full output truncated (7 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py:166: AssertionError
+__________ test_disconnect_error_does_not_skip_explicit_local_delete ___________
+
+local_record = <tests.test_local_reconnect_destroy.RecordingLocal object at 0xREDACTED>
+
+    async def test_disconnect_error_does_not_skip_explicit_local_delete(local_record):
+        sb = await reconnect()
+        sb._transport.disconnect = AsyncMock(side_effect=OSError("disconnect failed"))
+        await sb.destroy()
+        sb._transport.disconnect.assert_awaited_once()
+>       assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
+E       AssertionError: assert [('connect', ...orded-local')] == [('connect', ...orded-local')]
+E
+E         Right contains one more item: ('handle_delete', 'recorded-local')
+E
+E         Full diff:
+E           [
+E               (
+E                   'connect',...
+E
+E         ...Full output truncated (7 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py:266: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.sandbox:sandbox.py:1211 Failed to disconnect transport for sandbox 'recorded-local'
+_________________ test_local_delete_error_remains_best_effort __________________
+
+local_record = <tests.test_local_reconnect_destroy.RecordingLocal object at 0xREDACTED>
+caplog = <_pytest.logging.LogCaptureFixture object at 0xREDACTED>
+
+    async def test_local_delete_error_remains_best_effort(local_record, caplog):
+        sb = await reconnect()
+        local_record.delete_error = OSError("recording delete failed")
+        await sb.destroy()
+>       assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
+E       AssertionError: assert [('connect', ...orded-local')] == [('connect', ...orded-local')]
+E
+E         Right contains one more item: ('handle_delete', 'recorded-local')
+E
+E         Full diff:
+E           [
+E               (
+E                   'connect',...
+E
+E         ...Full output truncated (7 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py:274: AssertionError
+______________ test_explicit_destroy_with_snapshots_still_deletes ______________
+
+local_record = <tests.test_local_reconnect_destroy.RecordingLocal object at 0xREDACTED>
+caplog = <_pytest.logging.LogCaptureFixture object at 0xREDACTED>
+
+    async def test_explicit_destroy_with_snapshots_still_deletes(local_record, caplog):
+        sb = await reconnect()
+        sb._has_snapshots = True
+        await sb.destroy()
+>       assert local_record.deleted
+E       assert False
+E        +  where False = <tests.test_local_reconnect_destroy.RecordingLocal object at 0xREDACTED>.deleted
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py:283: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  cua_sandbox.sandbox:sandbox.py:1189 Destroying sandbox recorded-local which has snapshots — forks referencing those snapshots will break. Use Sandbox.ephemeral() which auto-stops instead of deleting when snapshots exist.
+=========================== short test summary info ============================
+FAILED libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_local_reconnect_deletes
+FAILED libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_disconnect_retains_local_handle
+FAILED libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_error_does_not_skip_explicit_local_delete
+FAILED libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_local_delete_error_remains_best_effort
+FAILED libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_with_snapshots_still_deletes
+========================= 5 failed, 15 passed in 0.11s =========================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- ENV_ROOT/venv/bin/python
+rootdir: WORKTREE/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_local_reconnect_deletes PASSED [  5%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[disconnect] PASSED [ 10%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[context_exit] PASSED [ 15%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_class_delete_dispatches_to_local_manager PASSED [ 20%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_disconnect_retains_local_handle PASSED [ 25%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_legacy_state_without_native_handle_is_not_deleted PASSED [ 30%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_direct_url_destroy_never_deletes_local_manager PASSED [ 35%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_name_and_ephemeral_do_not_establish_local_reconnect_ownership PASSED [ 40%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[cloud] PASSED [ 45%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[other_name] PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[unavailable] PASSED [ 55%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[False] PASSED [ 60%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[True] PASSED [ 65%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_cloud_dispatch_has_precedence_over_local_reconnect PASSED [ 70%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_fleet_claim_release_has_precedence_over_local_reconnect PASSED [ 75%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_released_fleet_claim_does_not_fall_back_to_local_delete PASSED [ 80%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_cancellation_keeps_existing_error_semantics PASSED [ 85%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_error_does_not_skip_explicit_local_delete PASSED [ 90%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_local_delete_error_remains_best_effort PASSED [ 95%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_with_snapshots_still_deletes PASSED [100%]
+
+============================== 20 passed in 0.07s ==============================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

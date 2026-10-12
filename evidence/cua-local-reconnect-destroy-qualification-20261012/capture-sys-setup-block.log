@@ -1,0 +1,793 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- ENV_ROOT/venv/bin/python
+rootdir: WORKTREE/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_local_reconnect_deletes ERROR [  5%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[disconnect] ERROR [ 10%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[context_exit] ERROR [ 15%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_class_delete_dispatches_to_local_manager ERROR [ 20%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_disconnect_retains_local_handle ERROR [ 25%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_legacy_state_without_native_handle_is_not_deleted ERROR [ 30%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_direct_url_destroy_never_deletes_local_manager ERROR [ 35%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_name_and_ephemeral_do_not_establish_local_reconnect_ownership ERROR [ 40%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[cloud] ERROR [ 45%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[other_name] ERROR [ 50%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[unavailable] ERROR [ 55%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[False] ERROR [ 60%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[True] ERROR [ 65%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_cloud_dispatch_has_precedence_over_local_reconnect ERROR [ 70%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_fleet_claim_release_has_precedence_over_local_reconnect ERROR [ 75%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_released_fleet_claim_does_not_fall_back_to_local_delete ERROR [ 80%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_cancellation_keeps_existing_error_semantics ERROR [ 85%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_error_does_not_skip_explicit_local_delete ERROR [ 90%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_local_delete_error_remains_best_effort ERROR [ 95%]
+libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_with_snapshots_still_deletes ERROR [100%]
+
+==================================== ERRORS ====================================
+____ ERROR at setup of test_explicit_destroy_after_local_reconnect_deletes _____
+
+self = <Coroutine test_explicit_destroy_after_local_reconnect_deletes>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+__ ERROR at setup of test_reconnect_exit_preserves_local_sandbox[disconnect] ___
+
+self = <Coroutine test_reconnect_exit_preserves_local_sandbox[disconnect]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_reconnect_exit_preserves_local_sandbox[context_exit] __
+
+self = <Coroutine test_reconnect_exit_preserves_local_sandbox[context_exit]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_______ ERROR at setup of test_class_delete_dispatches_to_local_manager ________
+
+self = <Coroutine test_class_delete_dispatches_to_local_manager>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_explicit_destroy_after_disconnect_retains_local_handle _
+
+self = <Coroutine test_explicit_destroy_after_disconnect_retains_local_handle>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+___ ERROR at setup of test_legacy_state_without_native_handle_is_not_deleted ___
+
+self = <Coroutine test_legacy_state_without_native_handle_is_not_deleted>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+____ ERROR at setup of test_direct_url_destroy_never_deletes_local_manager _____
+
+self = <Coroutine test_direct_url_destroy_never_deletes_local_manager>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_name_and_ephemeral_do_not_establish_local_reconnect_ownership _
+
+self = <Coroutine test_name_and_ephemeral_do_not_establish_local_reconnect_ownership>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+__ ERROR at setup of test_unverified_reconnect_handle_is_never_deleted[cloud] __
+
+self = <Coroutine test_unverified_reconnect_handle_is_never_deleted[cloud]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_unverified_reconnect_handle_is_never_deleted[other_name] _
+
+self = <Coroutine test_unverified_reconnect_handle_is_never_deleted[other_name]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_unverified_reconnect_handle_is_never_deleted[unavailable] _
+
+self = <Coroutine test_unverified_reconnect_handle_is_never_deleted[unavailable]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_runtime_precedence_preserves_stop_delete_dispatch[False] _
+
+self = <Coroutine test_runtime_precedence_preserves_stop_delete_dispatch[False]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_runtime_precedence_preserves_stop_delete_dispatch[True] _
+
+self = <Coroutine test_runtime_precedence_preserves_stop_delete_dispatch[True]>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+__ ERROR at setup of test_cloud_dispatch_has_precedence_over_local_reconnect ___
+
+self = <Coroutine test_cloud_dispatch_has_precedence_over_local_reconnect>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_fleet_claim_release_has_precedence_over_local_reconnect _
+
+self = <Coroutine test_fleet_claim_release_has_precedence_over_local_reconnect>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_released_fleet_claim_does_not_fall_back_to_local_delete _
+
+self = <Coroutine test_released_fleet_claim_does_not_fall_back_to_local_delete>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_disconnect_cancellation_keeps_existing_error_semantics _
+
+self = <Coroutine test_disconnect_cancellation_keeps_existing_error_semantics>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_ ERROR at setup of test_disconnect_error_does_not_skip_explicit_local_delete __
+
+self = <Coroutine test_disconnect_error_does_not_skip_explicit_local_delete>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+________ ERROR at setup of test_local_delete_error_remains_best_effort _________
+
+self = <Coroutine test_local_delete_error_remains_best_effort>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+_____ ERROR at setup of test_explicit_destroy_with_snapshots_still_deletes _____
+
+self = <Coroutine test_explicit_destroy_with_snapshots_still_deletes>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:558:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../cua4930-setup/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:926: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+libs/python/cua-sandbox/tests/conftest.py:154: in _isolate_live_env
+    monkeypatch.setenv("CUA_HOME", str(tmp_path_factory.mktemp("cua-home")))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py:1342: in unlink
+    os.unlink(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (PosixPath('RESULTS_ROOT/final-owner-temp/cua-homecurrent'),)
+kwargs = {}
+
+    def forbidden(*args, **kwargs):
+>       raise AssertionError("native execution, network or filesystem deletion forbidden")
+E       AssertionError: native execution, network or filesystem deletion forbidden
+
+../cua136-results/pure_python_pytest.py:26: AssertionError
+=========================== short test summary info ============================
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_local_reconnect_deletes
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[disconnect]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_reconnect_exit_preserves_local_sandbox[context_exit]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_class_delete_dispatches_to_local_manager
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_after_disconnect_retains_local_handle
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_legacy_state_without_native_handle_is_not_deleted
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_direct_url_destroy_never_deletes_local_manager
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_name_and_ephemeral_do_not_establish_local_reconnect_ownership
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[cloud]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[other_name]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_unverified_reconnect_handle_is_never_deleted[unavailable]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[False]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_runtime_precedence_preserves_stop_delete_dispatch[True]
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_cloud_dispatch_has_precedence_over_local_reconnect
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_fleet_claim_release_has_precedence_over_local_reconnect
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_released_fleet_claim_does_not_fall_back_to_local_delete
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_cancellation_keeps_existing_error_semantics
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_disconnect_error_does_not_skip_explicit_local_delete
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_local_delete_error_remains_best_effort
+ERROR libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py::test_explicit_destroy_with_snapshots_still_deletes
+============================== 20 errors in 0.63s ==============================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

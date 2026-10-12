@@ -1,0 +1,53 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- ENV_ROOT/venv/bin/python
+rootdir: WORKTREE/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 12 items
+
+libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience::test_delete_vm_runs_even_if_disconnect_fails PASSED [  8%]
+libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience::test_runtime_stop_runs_even_if_delete_vm_fails PASSED [ 16%]
+libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience::test_destroy_succeeds_when_all_steps_fail PASSED [ 25%]
+libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience::test_destroy_happy_path PASSED [ 33%]
+libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience::test_non_cloud_transport_skips_delete_vm PASSED [ 41%]
+libs/python/cua-sandbox/tests/test_agentless_transport.py::test_only_local_lume_sandboxes_qualify PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_agentless_transport.py::test_spacesd_wins_when_it_answers PASSED [ 58%]
+libs/python/cua-sandbox/tests/test_agentless_transport.py::test_shell_and_screen_use_the_sdk_fallback PASSED [ 66%]
+libs/python/cua-sandbox/tests/test_agentless_transport.py::test_other_sandboxes_keep_the_vnc_fallback PASSED [ 75%]
+libs/python/cua-sandbox/tests/test_agentless_transport.py::test_the_native_guest_display_never_prints_its_password FAILED [ 83%]
+libs/python/cua-sandbox/tests/test_env_transport_forward.py::test_url_sandbox_forwards_through_an_sdk_handle PASSED [ 91%]
+libs/python/cua-sandbox/tests/test_env_transport_forward.py::test_non_numeric_ports_are_rejected_before_connecting PASSED [100%]
+
+=================================== FAILURES ===================================
+___________ test_the_native_guest_display_never_prints_its_password ____________
+
+    def test_the_native_guest_display_never_prints_its_password():
+        """The real binding: ``GuestDisplay`` is an opaque object. Its repr and
+        str are ``object``'s (no fields), so the password shows only through
+        the explicit ``url_with_password()``."""
+>       from cua import _native
+
+libs/python/cua-sandbox/tests/test_agentless_transport.py:113:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1322: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:1262: in _find_spec
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <__main__.RefuseNativeSDK object at 0xREDACTED>, fullname = 'cua'
+path = None, target = None
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cua" or fullname.startswith("cua."):
+>           raise AssertionError("native SDK import forbidden by the in-memory test boundary")
+E           AssertionError: native SDK import forbidden by the in-memory test boundary
+
+../cua136-results/pure_python_pytest.py:11: AssertionError
+=========================== short test summary info ============================
+FAILED libs/python/cua-sandbox/tests/test_agentless_transport.py::test_the_native_guest_display_never_prints_its_password
+========================= 1 failed, 11 passed in 0.09s =========================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

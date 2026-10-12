@@ -1,0 +1,21 @@
+Final candidate cwd /workspace/scratch/cua136; exactHEAD325b38bf2771cba7ef955955f56371e99fba6eca:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/nonnumbered-owner-temp
+Original base cwd /workspace/scratch/cua136-base, basea329fcf435191655a8dc8271c0df9ea824c2b564, finaloverlayidentical:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136-base/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/nonnumbered-base-temp
+Safe adjacent cwd /workspace/scratch/cua136:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience libs/python/cua-sandbox/tests/test_agentless_transport.py libs/python/cua-sandbox/tests/test_env_transport_forward.py -k 'not the_native_guest_display_never_prints_its_password' --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/safe-adjacent-temp
+Before each run: test ! -e BASETEMP && test ! -L BASETEMP; abort if either fails. Never reuse/clear an existing basetemp.
+Lint and format:
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff check libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py
+git diff --check a329fcf435191655a8dc8271c0df9ea824c2b564 HEAD
+Baseexit1behavioral5F15P; candidate/adjacent/lint/format exits0. Framework/node-selection failures are separate preserved attempts.
+
+INDEPENDENT XHIGH RERUNS
+set -o noclobber; every log and basetemp verified absent; basetemp also verified not symlink.
+Candidate cwd /workspace/scratch/cua136
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/critic-final-owner-temp > /workspace/scratch/cua136-results/critic-final-owner.log 2>&1
+Base cwd /workspace/scratch/cua136-base
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136-base/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/critic-final-base-temp > /workspace/scratch/cua136-results/critic-final-base.log 2>&1
+Adjacent cwd /workspace/scratch/cua136
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua136/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua136-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_vm_cleanup.py::TestDestroyResilience libs/python/cua-sandbox/tests/test_agentless_transport.py libs/python/cua-sandbox/tests/test_env_transport_forward.py -k 'not the_native_guest_display_never_prints_its_password' --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua136-results/critic-final-adjacent-temp > /workspace/scratch/cua136-results/critic-final-adjacent.log 2>&1
