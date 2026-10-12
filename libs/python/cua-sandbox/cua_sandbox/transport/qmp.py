@@ -274,26 +274,25 @@ class QMPTransport(Transport):
     async def _mouse_scroll(
         self, x: int, y: int, scroll_x: int = 0, scroll_y: int = 3, **_: Any
     ) -> None:
-        """Scroll via button 4/5 (up/down) presses."""
+        """Scroll via independent vertical and horizontal wheel-button presses."""
         # Move to position first
         await self._mouse_move(x, y)
-        # QMP wheel: positive scroll_y = scroll up (button 4), negative = down (button 5)
-        if scroll_y > 0:
-            btn_name = "wheel-up"
-        elif scroll_y < 0:
-            btn_name = "wheel-down"
-        else:
-            return
-        for _ in range(abs(scroll_y)):
-            await self._execute(
-                "input-send-event",
-                {
-                    "events": [
-                        {"type": "btn", "data": {"down": True, "button": btn_name}},
-                        {"type": "btn", "data": {"down": False, "button": btn_name}},
-                    ]
-                },
-            )
+        # Keep vertical delivery first; each axis is a sequence of wheel notches.
+        for amount, positive, negative in (
+            (scroll_y, "wheel-up", "wheel-down"),
+            (scroll_x, "wheel-right", "wheel-left"),
+        ):
+            btn_name = positive if amount > 0 else negative
+            for _ in range(abs(amount)):
+                await self._execute(
+                    "input-send-event",
+                    {
+                        "events": [
+                            {"type": "btn", "data": {"down": True, "button": btn_name}},
+                            {"type": "btn", "data": {"down": False, "button": btn_name}},
+                        ]
+                    },
+                )
 
     async def _drag(
         self, start_x: int, start_y: int, end_x: int, end_y: int, button: str = "left", **_: Any
