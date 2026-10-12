@@ -313,13 +313,37 @@ class QMPTransport(Transport):
 
     async def _type_text(self, text: str, **_: Any) -> None:
         """Type text character by character via send-key."""
+        # US-style shifted ASCII is text-specific; direct key APIs keep _KEY_MAP.
+        shifted = {
+            "~": "grave_accent",
+            "!": "1",
+            "@": "2",
+            "#": "3",
+            "$": "4",
+            "%": "5",
+            "^": "6",
+            "&": "7",
+            "*": "8",
+            "(": "9",
+            ")": "0",
+            "_": "minus",
+            "+": "equal",
+            "{": "bracket_left",
+            "}": "bracket_right",
+            "|": "backslash",
+            ":": "semicolon",
+            '"': "apostrophe",
+            "<": "comma",
+            ">": "dot",
+            "?": "slash",
+        }
         for ch in text:
-            qcode = _KEY_MAP.get(ch.lower())
+            qcode = shifted.get(ch) or _KEY_MAP.get(ch.lower())
             if qcode is None:
                 logger.warning(f"QMP: unmapped character {ch!r}, skipping")
                 continue
             keys: List[Dict] = []
-            if ch.isupper() or ch in '~!@#$%^&*()_+{}|:"<>?':
+            if ch.isupper() or ch in shifted:
                 keys.append({"type": "qcode", "data": "shift"})
             keys.append({"type": "qcode", "data": qcode})
             await self._execute("send-key", {"keys": keys, "hold-time": 50})
