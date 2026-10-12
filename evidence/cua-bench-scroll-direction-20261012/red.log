@@ -1,0 +1,232 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 22 items / 11 deselected / 11 selected
+
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-up--1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-down-1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-up--1] ERROR
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-down-1] ERROR
+cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[up--3] ERROR
+cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[down-3] ERROR
+cua_bench/tests/test_remote_session.py::test_direct_sandbox_positive_scroll_is_native_up ERROR
+
+==================================== ERRORS ====================================
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[scroll-50-1-up--1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[scroll-50-1-down-1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[scroll-350-3-up--1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+_ ERROR at setup of test_scroll_direction_reaches_native_contract[scroll-350-3-down-1] _
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+__ ERROR at setup of test_legacy_scroll_alias_reaches_native_contract[up--3] ___
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+__ ERROR at setup of test_legacy_scroll_alias_reaches_native_contract[down-3] __
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+______ ERROR at setup of test_direct_sandbox_positive_scroll_is_native_up ______
+
+    @pytest.fixture
+    def scroll_transport_session():
+        from cua_sandbox import Sandbox
+        from cua_sandbox.transport.env import EnvTransport
+    
+        client = RecordingScrollClient()
+    
+        async def factory():
+            return client
+    
+        sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+>       session = remote.RemoteDesktopSession.from_sandbox(sandbox, width=1280, height=720)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: type object 'RemoteDesktopSession' has no attribute 'from_sandbox'
+
+cua_bench/tests/test_remote_session.py:39: AttributeError
+=========================== short test summary info ============================
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-up--1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-down-1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-up--1]
+ERROR cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-down-1]
+ERROR cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[up--3]
+ERROR cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[down-3]
+ERROR cua_bench/tests/test_remote_session.py::test_direct_sandbox_positive_scroll_is_native_up
+====================== 11 deselected, 11 errors in 1.17s =======================

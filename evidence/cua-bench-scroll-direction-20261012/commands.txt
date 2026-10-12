@@ -1,0 +1,36 @@
+ROOTS
+WORKTREE: isolated branch dot/cua/bench-scroll-direction-20261012, basef982ea064bb1f6e29f6f2004e5021407f7006320, codecandidatec1bdaf4d743dfca113095b595c53afc5e7cf04a3.
+ENV_ROOT: existing official PyPI wheel environment, Python3.12.14.
+RESULTS_ROOT: fresh writable test output directories; use new basetemp directories.
+
+BASELINE (cwd WORKTREE/libs/cua-bench, regression test overlay only; production still exact base)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH="$WORKTREE/libs/cua-bench:$WORKTREE/libs/python/cua-sandbox" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_remote_session.py -k 'reaches_native_contract or direct_sandbox_positive' -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/red-corrected-temp"
+Corrected fixture:10FAIL/1PASS/11deselected in1.17s. Original red.log recorded11setupERRORS from mistakenly calling nonexistent from_sandbox, corrected to actual public attach before baseline; those errors are not behavioralRED.
+
+CANDIDATE OWNING (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH="$WORKTREE/libs/cua-bench:$WORKTREE/libs/python/cua-sandbox" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_remote_session.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/green-temp"
+22PASS in1.35s;11new real-package composition cases plus11preexisting owner cases using their existing mock boundaries.
+
+ADJACENT (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH="$WORKTREE/libs/cua-bench:$WORKTREE/libs/python/cua-sandbox" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_actions.py cua_bench/tests/test_ale_compat.py -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/adjacent-temp"
+43PASS in0.75s.
+
+SDK CONTROL (cwd WORKTREE/libs/python/cua-sandbox)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH="$WORKTREE/libs/python/cua-sandbox" "$ENV_ROOT/venv/bin/python" -m pytest tests/test_env_transport.py -k scroll -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/sdk-temp"
+1PASS/23deselected in0.29s; existing owner recording-client test, not native MockServer or desktop.
+
+LINT (cwd WORKTREE)
+Ruff was absent. Inspected official PyPI wheel-only dry-run report before installing declared lightweight devtool. No other new dependency or compile.
+"$ENV_ROOT/venv/bin/python" -m pip --isolated install --dry-run --only-binary=:all: --no-cache-dir --index-url https://pypi.org/simple --report "$RESULTS_ROOT/ruff-plan.json" ruff
+"$ENV_ROOT/venv/bin/python" -m pip --isolated install --only-binary=:all: --no-cache-dir --no-deps --no-compile --require-hashes --index-url https://pypi.org/simple -r "$RESULTS_ROOT/ruff-requirement.txt"
+"$ENV_ROOT/venv/bin/python" -m ruff check libs/cua-bench/cua_bench/computers/remote.py libs/cua-bench/cua_bench/compat/legacy_interface.py libs/cua-bench/cua_bench/tests/test_remote_session.py
+Ruff0.17.0:All checks passed. git diff --check:PASS.
+
+INDEPENDENT CRITIC RERUNS
+Owning cwd WORKTREE/libs/cua-bench:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$WORKTREE/libs/cua-bench:$WORKTREE/libs/python/cua-sandbox" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_remote_session.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/critic-owner-temp"
+22PASS in1.56s.
+SDK cwd WORKTREE/libs/python/cua-sandbox:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$WORKTREE/libs/cua-bench:$WORKTREE/libs/python/cua-sandbox" "$ENV_ROOT/venv/bin/python" -m pytest tests/test_env_transport.py -k scroll -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/critic-sdk-temp"
+1PASS/23deselected in0.35s.
+See original sanitized critic logs and critic receipt for exact scope; no source-only review substituted for these reruns.
