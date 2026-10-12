@@ -1,0 +1,22 @@
+Independent xhigh supplemental static applicability verdict — CUA #139, 2026-10-12
+
+Verdict: static source applicability confirmed; original LIMITED PASS remains unchanged.
+
+Tested base: f87f1915270afe8b645036d698809f35cbe5721c
+Later observed main: 97b2394fc1173588e04af6901385a167d7f89029
+Tested candidate: cdfac29ce38efab17639812178cecb6211275d94
+Reviewed documentation receipt: 7d399fe2c9ed326b35837d64f426542e1f8831c2
+
+Both independent read-only comparisons returned empty output and exit 0:
+GIT_NO_LAZY_FETCH=1 git diff --exit-code f87f1915270afe8b645036d698809f35cbe5721c 97b2394fc1173588e04af6901385a167d7f89029 -- libs/python/cua-sandbox
+GIT_NO_LAZY_FETCH=1 git diff --exit-code cdfac29ce38efab17639812178cecb6211275d94 7d399fe2c9ed326b35837d64f426542e1f8831c2 -- libs/python/cua-sandbox
+cwd: /workspace/scratch/cua-qmp-horizontal
+
+Whole owning-package tree IDs match:
+  base and later main: fad0d6a5adfa59c2357b46d5ff77be6448db0381
+  tested candidate and documentation receipt: 64636b32b0404901d40fc153b3bb6d2b02914111
+The complete tested-candidate-to-receipt diff contains only new evidence files. The reviewed worktree is clean. No production, owning tests or package sources changed.
+
+late-main.json accurately records the later observed main identity and empty package diff; its pending-inspection status can now be updated to this confirmed static result. The recorded pre-push fail-fast stop is parent-provided publication history; this reviewer did not query remote publication state.
+
+Execution remains the original pinned base and candidate only. No later-main tests, extra reruns or broader dependency/native certification were performed or inferred. No network, native execution, cleanup, source edits or push occurred. Only this authorized supplemental result file was written; the old receipt is preserved.

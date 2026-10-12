@@ -1,0 +1,6 @@
+Preserved publication gate result (before any push):
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+AssertionError: STOP: latest main changed; compare and requalify before push
+
+The set -euo pipefail shell exited1 before git push. Fresh git ls-remote observed main97b2394fc1173588e04af6901385a167d7f89029 and target fork branch absent. This was a source-freshness assertion, not a permission denial. Fetched new exact head; whole owning package and relevant guidance comparisons are empty. No executable correction or additional test is needed for unchanged source; later-main applicability is static, not later-main execution.
