@@ -1,0 +1,25 @@
+All pytest cwd: /workspace/scratch/cua135/libs/python/cua-sandbox. Existing source roots are loaded; no package install.
+First public baseline (production exact base):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport.py -k held -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/red-temp
+Initial owning baseline with public tests only:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/base-owner-temp
+Final owning baseline (production exact base; final test overlay):
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/base-vocabulary-temp
+Fixed final owning:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/green-owner-temp
+Fixed adjacent:
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport_forward.py tests/test_agentless_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/adjacent-temp
+Lint/format cwd /workspace/scratch/cua135:
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff check libs/python/cua-sandbox/cua_sandbox/transport/env.py libs/python/cua-sandbox/tests/test_env_transport.py
+/workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check libs/python/cua-sandbox/cua_sandbox/transport/env.py libs/python/cua-sandbox/tests/test_env_transport.py
+git diff --check
+All baseline exits 1 (behavioral assertion/rejection); green/adjacent/lint/format exit0.
+Source census: extract enum Key names from actual computer.proto; exclude KEY_UNSPECIFIED; assert equality with production allowlist and test canonical fixture. Source hashes use git show REV:path and SHA256; helper is called directly from imported package, never extracted.
+
+INDEPENDENT XHIGH CRITIC — cwd /workspace/scratch/cua135/libs/python/cua-sandbox
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/critic-owner-temp
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport_forward.py tests/test_agentless_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/critic-adjacent-temp
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff check cua_sandbox/transport/env.py tests/test_env_transport.py
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check cua_sandbox/transport/env.py tests/test_env_transport.py
+git -C /workspace/scratch/cua135 diff --check a329fcf435191655a8dc8271c0df9ea824c2b564 1ec915074dcc62a65faa109a359a6e361710d6d2
+All exit0. Fresh temp paths checked before execution. Owning196PASS2.08s, adjacent7PASS0.36s, lint/format/committed-range whitespace PASS.

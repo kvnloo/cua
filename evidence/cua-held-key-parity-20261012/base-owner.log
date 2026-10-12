@@ -1,0 +1,220 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- ENV_ROOT/venv/bin/python
+rootdir: WORKTREE/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 52 items
+
+tests/test_env_transport.py::test_connect_never_probes_the_guest PASSED  [  1%]
+tests/test_env_transport.py::test_scroll_sends_position_and_wheel_deltas PASSED [  3%]
+tests/test_env_transport.py::test_mouse_actions_use_typed_calls_and_pointer_json PASSED [  5%]
+tests/test_env_transport.py::test_keyboard_actions PASSED                [  7%]
+tests/test_env_transport.py::test_held_canonical_keys[KEY_A-down] FAILED [  9%]
+tests/test_env_transport.py::test_held_canonical_keys[KEY_A-up] FAILED   [ 11%]
+tests/test_env_transport.py::test_held_canonical_keys[KEY_NUMPAD_ENTER-down] FAILED [ 13%]
+tests/test_env_transport.py::test_held_canonical_keys[KEY_NUMPAD_ENTER-up] FAILED [ 15%]
+tests/test_env_transport.py::test_held_key_controls[a-expected0-down] PASSED [ 17%]
+tests/test_env_transport.py::test_held_key_controls[a-expected0-up] PASSED [ 19%]
+tests/test_env_transport.py::test_held_key_controls[A-expected1-down] PASSED [ 21%]
+tests/test_env_transport.py::test_held_key_controls[A-expected1-up] PASSED [ 23%]
+tests/test_env_transport.py::test_held_key_controls[0-expected2-down] PASSED [ 25%]
+tests/test_env_transport.py::test_held_key_controls[0-expected2-up] PASSED [ 26%]
+tests/test_env_transport.py::test_held_key_controls[!-expected3-down] PASSED [ 28%]
+tests/test_env_transport.py::test_held_key_controls[!-expected3-up] PASSED [ 30%]
+tests/test_env_transport.py::test_held_key_controls[\xe9-expected4-down] PASSED [ 32%]
+tests/test_env_transport.py::test_held_key_controls[\xe9-expected4-up] PASSED [ 34%]
+tests/test_env_transport.py::test_held_key_controls[shift-expected5-down] PASSED [ 36%]
+tests/test_env_transport.py::test_held_key_controls[shift-expected5-up] PASSED [ 38%]
+tests/test_env_transport.py::test_held_key_controls[Shift-expected6-down] PASSED [ 40%]
+tests/test_env_transport.py::test_held_key_controls[Shift-expected6-up] PASSED [ 42%]
+tests/test_env_transport.py::test_held_key_controls[shift-left-expected7-down] PASSED [ 44%]
+tests/test_env_transport.py::test_held_key_controls[shift-left-expected7-up] PASSED [ 46%]
+tests/test_env_transport.py::test_held_key_controls[ctrl-expected8-down] PASSED [ 48%]
+tests/test_env_transport.py::test_held_key_controls[ctrl-expected8-up] PASSED [ 50%]
+tests/test_env_transport.py::test_held_unknown_keys_never_dispatch[hyperdrive-down] PASSED [ 51%]
+tests/test_env_transport.py::test_held_unknown_keys_never_dispatch[hyperdrive-up] PASSED [ 53%]
+tests/test_env_transport.py::test_held_unknown_keys_never_dispatch[KEY_HYPERDRIVE-down] PASSED [ 55%]
+tests/test_env_transport.py::test_held_unknown_keys_never_dispatch[KEY_HYPERDRIVE-up] PASSED [ 57%]
+tests/test_env_transport.py::test_held_unknown_keys_never_dispatch[KEY_UNSPECIFIED-down] PASSED [ 59%]
+tests/test_env_transport.py::test_held_unknown_keys_never_dispatch[KEY_UNSPECIFIED-up] PASSED [ 61%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[ctrl-expected0] PASSED [ 63%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[cmd-expected1] PASSED [ 65%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[KEY_ESCAPE-expected2] PASSED [ 67%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[page-down-expected3] PASSED [ 69%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[f5-expected4] PASSED [ 71%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[left-expected5] PASSED [ 73%]
+tests/test_env_transport.py::test_key_names_resolve_like_the_driver[\xe9-expected6] PASSED [ 75%]
+tests/test_env_transport.py::test_unknown_key_names_are_rejected PASSED  [ 76%]
+tests/test_env_transport.py::test_get_active_title_reads_the_focused_window PASSED [ 78%]
+tests/test_env_transport.py::test_get_active_title_is_empty_without_a_focused_window PASSED [ 80%]
+tests/test_env_transport.py::test_shell_run_maps_process_output PASSED   [ 82%]
+tests/test_env_transport.py::test_background_shell_and_terminal_use_pty_processes PASSED [ 84%]
+tests/test_env_transport.py::test_files_round_trip PASSED                [ 86%]
+tests/test_env_transport.py::test_clipboard_screen_and_environment PASSED [ 88%]
+tests/test_env_transport.py::test_raw_rpc_passthrough PASSED             [ 90%]
+tests/test_env_transport.py::test_without_spacesd_the_agentless_fallback_takes_over PASSED [ 92%]
+tests/test_env_transport.py::test_without_spacesd_or_fallback_interfaces_raise PASSED [ 94%]
+tests/test_env_transport.py::test_the_driver_is_retried_until_ready_timeout PASSED [ 96%]
+tests/test_env_transport.py::test_env_url_brackets_ipv6 PASSED           [ 98%]
+tests/test_env_transport.py::test_computer_server_ws_url_is_rejected_with_guidance PASSED [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_held_canonical_keys[KEY_A-down] _____________________
+
+operation = 'down', key = 'KEY_A'
+
+    @pytest.mark.parametrize("operation", ["down", "up"])
+    @pytest.mark.parametrize("key", ["KEY_A", "KEY_NUMPAD_ENTER"])
+    async def test_held_canonical_keys(operation, key):
+        env = FakeEnv()
+        sb = sandbox_with(env)
+
+>       await getattr(sb.keyboard, f"key_{operation}")(key)
+
+tests/test_env_transport.py:145:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+cua_sandbox/interfaces/keyboard.py:27: in key_down
+    await self._t.send("key_down", key=key)
+cua_sandbox/transport/env.py:359: in send
+    return await handler(client, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cua_sandbox/transport/env.py:728: in _do_key_down
+    await client.keyboard_json(json.dumps({"down": {"key": key_input(key)}}))
+                                                           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+key = 'KEY_A'
+
+    def key_input(key: str) -> dict:
+        """``cua.env.v1.KeyInput`` JSON for a key name or a single character."""
+        alias = _KEY_ALIASES.get(key.lower())
+        upper = alias or key.upper().removeprefix("KEY_").replace("-", "_").replace(" ", "_")
+        if upper in _NAMED_KEYS:
+            return {"named": f"KEY_{upper}"}
+        if len(key) == 1:
+            return {"character": key}
+>       raise ValueError(f"unknown key {key!r}")
+E       ValueError: unknown key 'KEY_A'
+
+cua_sandbox/transport/env.py:169: ValueError
+______________________ test_held_canonical_keys[KEY_A-up] ______________________
+
+operation = 'up', key = 'KEY_A'
+
+    @pytest.mark.parametrize("operation", ["down", "up"])
+    @pytest.mark.parametrize("key", ["KEY_A", "KEY_NUMPAD_ENTER"])
+    async def test_held_canonical_keys(operation, key):
+        env = FakeEnv()
+        sb = sandbox_with(env)
+
+>       await getattr(sb.keyboard, f"key_{operation}")(key)
+
+tests/test_env_transport.py:145:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+cua_sandbox/interfaces/keyboard.py:30: in key_up
+    await self._t.send("key_up", key=key)
+cua_sandbox/transport/env.py:359: in send
+    return await handler(client, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cua_sandbox/transport/env.py:731: in _do_key_up
+    await client.keyboard_json(json.dumps({"up": {"key": key_input(key)}}))
+                                                         ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+key = 'KEY_A'
+
+    def key_input(key: str) -> dict:
+        """``cua.env.v1.KeyInput`` JSON for a key name or a single character."""
+        alias = _KEY_ALIASES.get(key.lower())
+        upper = alias or key.upper().removeprefix("KEY_").replace("-", "_").replace(" ", "_")
+        if upper in _NAMED_KEYS:
+            return {"named": f"KEY_{upper}"}
+        if len(key) == 1:
+            return {"character": key}
+>       raise ValueError(f"unknown key {key!r}")
+E       ValueError: unknown key 'KEY_A'
+
+cua_sandbox/transport/env.py:169: ValueError
+_______________ test_held_canonical_keys[KEY_NUMPAD_ENTER-down] ________________
+
+operation = 'down', key = 'KEY_NUMPAD_ENTER'
+
+    @pytest.mark.parametrize("operation", ["down", "up"])
+    @pytest.mark.parametrize("key", ["KEY_A", "KEY_NUMPAD_ENTER"])
+    async def test_held_canonical_keys(operation, key):
+        env = FakeEnv()
+        sb = sandbox_with(env)
+
+>       await getattr(sb.keyboard, f"key_{operation}")(key)
+
+tests/test_env_transport.py:145:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+cua_sandbox/interfaces/keyboard.py:27: in key_down
+    await self._t.send("key_down", key=key)
+cua_sandbox/transport/env.py:359: in send
+    return await handler(client, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cua_sandbox/transport/env.py:728: in _do_key_down
+    await client.keyboard_json(json.dumps({"down": {"key": key_input(key)}}))
+                                                           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+key = 'KEY_NUMPAD_ENTER'
+
+    def key_input(key: str) -> dict:
+        """``cua.env.v1.KeyInput`` JSON for a key name or a single character."""
+        alias = _KEY_ALIASES.get(key.lower())
+        upper = alias or key.upper().removeprefix("KEY_").replace("-", "_").replace(" ", "_")
+        if upper in _NAMED_KEYS:
+            return {"named": f"KEY_{upper}"}
+        if len(key) == 1:
+            return {"character": key}
+>       raise ValueError(f"unknown key {key!r}")
+E       ValueError: unknown key 'KEY_NUMPAD_ENTER'
+
+cua_sandbox/transport/env.py:169: ValueError
+________________ test_held_canonical_keys[KEY_NUMPAD_ENTER-up] _________________
+
+operation = 'up', key = 'KEY_NUMPAD_ENTER'
+
+    @pytest.mark.parametrize("operation", ["down", "up"])
+    @pytest.mark.parametrize("key", ["KEY_A", "KEY_NUMPAD_ENTER"])
+    async def test_held_canonical_keys(operation, key):
+        env = FakeEnv()
+        sb = sandbox_with(env)
+
+>       await getattr(sb.keyboard, f"key_{operation}")(key)
+
+tests/test_env_transport.py:145:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+cua_sandbox/interfaces/keyboard.py:30: in key_up
+    await self._t.send("key_up", key=key)
+cua_sandbox/transport/env.py:359: in send
+    return await handler(client, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cua_sandbox/transport/env.py:731: in _do_key_up
+    await client.keyboard_json(json.dumps({"up": {"key": key_input(key)}}))
+                                                         ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+key = 'KEY_NUMPAD_ENTER'
+
+    def key_input(key: str) -> dict:
+        """``cua.env.v1.KeyInput`` JSON for a key name or a single character."""
+        alias = _KEY_ALIASES.get(key.lower())
+        upper = alias or key.upper().removeprefix("KEY_").replace("-", "_").replace(" ", "_")
+        if upper in _NAMED_KEYS:
+            return {"named": f"KEY_{upper}"}
+        if len(key) == 1:
+            return {"character": key}
+>       raise ValueError(f"unknown key {key!r}")
+E       ValueError: unknown key 'KEY_NUMPAD_ENTER'
+
+cua_sandbox/transport/env.py:169: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_env_transport.py::test_held_canonical_keys[KEY_A-down] - Va...
+FAILED tests/test_env_transport.py::test_held_canonical_keys[KEY_A-up] - Valu...
+FAILED tests/test_env_transport.py::test_held_canonical_keys[KEY_NUMPAD_ENTER-down]
+FAILED tests/test_env_transport.py::test_held_canonical_keys[KEY_NUMPAD_ENTER-up]
+========================= 4 failed, 48 passed in 1.96s =========================

@@ -1,0 +1,15 @@
+Independent xhigh critic verdict: PASS for Python held-key encoding fix 1ec915074dcc62a65faa109a359a6e361710d6d2. No code corrections needed.
+Owning196PASS2.08s; adjacent7PASS0.36s; Ruff lint/format and committed-diff whitespace PASS.
+Compared production allowlist and literal test inventory to actual proto: all144valid names, no missing/extra, excludingKEY_UNSPECIFIED. Public down/up cases encodeKEY_A andKEY_NUMPAD_ENTER. Character precedence preserves ordinary letters, digits, punctuation and single-character Unicode. Invalid names produce exact refusal with no keyboard JSON dispatch.
+Verified genuine import paths, all12source hashes, dependency versions and sanitized critic logs. Independently checked extra Unicode é/😀/ß/İ and space controls at helper boundary.
+Baseline89FAIL107PASS was reviewed, not independently rerun. Packet faithfully distinguishes helper checks, public recording-client composition and source-only backend findings. Native delivery unverified; ToolBackend limitations preserved.
+Receipt-review corrections: append exact critic commands and clarify log-only sanitation. Applied; no further tests needed for documentation-only edits.
+No production edits, installs, native execution, cleanup, pushes or upstream actions by critic.
+
+INDEPENDENT XHIGH CRITIC — cwd /workspace/scratch/cua135/libs/python/cua-sandbox
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/critic-owner-temp
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH=/workspace/scratch/cua135/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python -m pytest tests/test_env_transport_forward.py tests/test_agentless_transport.py -v -p no:cacheprovider --basetemp=/workspace/scratch/cua135-results/critic-adjacent-temp
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff check cua_sandbox/transport/env.py tests/test_env_transport.py
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check cua_sandbox/transport/env.py tests/test_env_transport.py
+git -C /workspace/scratch/cua135 diff --check a329fcf435191655a8dc8271c0df9ea824c2b564 1ec915074dcc62a65faa109a359a6e361710d6d2
+All exit0. Fresh temp paths checked before execution. Owning196PASS2.08s, adjacent7PASS0.36s, lint/format/committed-range whitespace PASS.
