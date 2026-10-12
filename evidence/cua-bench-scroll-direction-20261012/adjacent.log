@@ -1,0 +1,53 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 43 items
+
+cua_bench/tests/test_actions.py::TestReprToAction::test_click_action PASSED [  2%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_right_click_action PASSED [  4%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_double_click_action PASSED [  6%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_middle_click_action PASSED [  9%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_drag_action_with_duration PASSED [ 11%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_drag_action_default_duration PASSED [ 13%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_move_to_action_with_duration PASSED [ 16%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_move_to_action_default_duration PASSED [ 18%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_scroll_action_up PASSED [ 20%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_scroll_action_down PASSED [ 23%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_scroll_action_defaults PASSED [ 25%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_type_action PASSED [ 27%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_type_action_empty_text PASSED [ 30%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_type_action_special_chars PASSED [ 32%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_key_action PASSED [ 34%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_key_action_special_keys PASSED [ 37%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_hotkey_action PASSED [ 39%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_hotkey_action_multiple_keys PASSED [ 41%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_hotkey_action_single_key PASSED [ 44%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_done_action PASSED [ 46%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_wait_action_with_seconds PASSED [ 48%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_wait_action_default_seconds PASSED [ 51%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_wait_action_integer_seconds PASSED [ 53%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_none PASSED [ 55%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_non_string PASSED [ 58%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_empty_string PASSED [ 60%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_malformed_string PASSED [ 62%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_unknown_action PASSED [ 65%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_malformed_args PASSED [ 67%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_invalid_input_missing_required_args PASSED [ 69%]
+cua_bench/tests/test_actions.py::TestReprToAction::test_whitespace_handling PASSED [ 72%]
+cua_bench/tests/test_actions.py::TestReprRoundTrip::test_all_actions_round_trip PASSED [ 74%]
+cua_bench/tests/test_ale_compat.py::test_transport_selection PASSED      [ 76%]
+cua_bench/tests/test_ale_compat.py::test_private_attributes_keep_their_meaning PASSED [ 79%]
+cua_bench/tests/test_ale_compat.py::test_client_only_session_speaks_computer_server PASSED [ 81%]
+cua_bench/tests/test_ale_compat.py::test_run_command_legacy_semantics_by_default PASSED [ 83%]
+cua_bench/tests/test_ale_compat.py::test_strict_exit_codes_opt_in PASSED [ 86%]
+cua_bench/tests/test_ale_compat.py::test_ale_init_computer_skip_wait_and_interface PASSED [ 88%]
+cua_bench/tests/test_ale_compat.py::test_ale_resilient_send_command_patch_applies PASSED [ 90%]
+cua_bench/tests/test_ale_compat.py::test_computer_alias_and_run PASSED   [ 93%]
+cua_bench/tests/test_ale_compat.py::test_sandbox_session_has_the_cua_computer_surface PASSED [ 95%]
+cua_bench/tests/test_ale_compat.py::test_sandbox_shell_timeout_is_none_unless_asked PASSED [ 97%]
+cua_bench/tests/test_ale_compat.py::test_computer_server_timeout_bounds_the_wait PASSED [100%]
+
+============================== 43 passed in 0.75s ==============================

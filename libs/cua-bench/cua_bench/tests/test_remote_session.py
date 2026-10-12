@@ -1,6 +1,7 @@
 """Hermetic tests for RemoteDesktopSession over a faked cua_sandbox (no VM, no network)."""
 
 import base64
+import json
 import sys
 import types
 from types import SimpleNamespace
@@ -9,6 +10,76 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from cua_bench.computers import remote
 from cua_bench.types import ClickAction, DragAction, HotkeyAction, ScrollAction
+
+
+class RecordingScrollClient:
+    """Only the native client boundary is fake; record its pointer JSON."""
+
+    def __init__(self):
+        self.pointers = []
+
+    async def pointer_json(self, payload):
+        self.pointers.append(json.loads(payload))
+
+    async def displays(self):
+        return json.dumps([{"primary": True, "nativeSize": {"width": 1280, "height": 720}}])
+
+
+@pytest.fixture
+def scroll_transport_session():
+    from cua_sandbox import Sandbox
+    from cua_sandbox.transport.env import EnvTransport
+
+    client = RecordingScrollClient()
+
+    async def factory():
+        return client
+
+    sandbox = Sandbox(EnvTransport(env_factory=factory), name="scroll-contract")
+    session = remote.RemoteDesktopSession.attach(sandbox, width=1280, height=720)
+    return session, sandbox, client
+
+
+def assert_native_scroll(client, x, y, delta_y):
+    assert client.pointers == [{"scroll": {
+        "position": {"x": float(x), "y": float(y)},
+        "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+    }}]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+@pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+@pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+async def test_scroll_direction_reaches_native_contract(
+    scroll_transport_session, direction, sign, amount, notches, entrypoint
+):
+    session, _, client = scroll_transport_session
+    if entrypoint == "execute_action":
+        await session.execute_action(ScrollAction(direction=direction, amount=amount))
+    else:
+        await session.scroll(direction, amount)
+    print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+        "amount": amount, "native": client.pointers}, sort_keys=True))
+    assert_native_scroll(client, 640, 360, sign * notches)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("direction,delta_y", [("up", -3), ("down", 3)])
+async def test_legacy_scroll_alias_reaches_native_contract(scroll_transport_session, direction, delta_y):
+    session, _, client = scroll_transport_session
+    await getattr(session.interface, "scroll_" + direction)(3)
+    print("SCROLL_EVIDENCE", json.dumps({"entrypoint": "legacy", "direction": direction,
+        "native": client.pointers}, sort_keys=True))
+    assert_native_scroll(client, 640, 360, delta_y)
+
+
+@pytest.mark.asyncio
+async def test_direct_sandbox_positive_scroll_is_native_up(scroll_transport_session):
+    _, sandbox, client = scroll_transport_session
+    await sandbox.mouse.scroll(17, 29, scroll_x=0, scroll_y=3)
+    print("SCROLL_CONTROL", json.dumps(client.pointers, sort_keys=True))
+    assert_native_scroll(client, 17, 29, -3)
 
 
 def _fake_sandbox():
@@ -97,7 +168,7 @@ async def test_actions_map_to_sandbox_interfaces(fake_sdk):
     await session.execute_action(HotkeyAction(keys=["ctrl", "c"]))
     sb.keyboard.keypress.assert_awaited_once_with(["ctrl", "c"])
     await session.execute_action(ScrollAction(direction="up", amount=300))
-    sb.mouse.scroll.assert_awaited_once_with(960, 540, scroll_x=0, scroll_y=-3)
+    sb.mouse.scroll.assert_awaited_once_with(960, 540, scroll_x=0, scroll_y=3)
 
 
 @pytest.mark.asyncio
@@ -156,7 +227,7 @@ async def test_scroll_convenience_method(fake_sdk):
     _, sb = fake_sdk
     session = remote.RemoteDesktopSession(api_url="http://h:3211")
     await session.scroll("down", 200)
-    sb.mouse.scroll.assert_awaited_once_with(960, 540, scroll_x=0, scroll_y=2)
+    sb.mouse.scroll.assert_awaited_once_with(960, 540, scroll_x=0, scroll_y=-2)
 
 
 @pytest.mark.asyncio

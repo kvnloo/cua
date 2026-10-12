@@ -951,7 +951,7 @@ class RemoteDesktopSession:
 
         elif isinstance(action, ScrollAction):
             clicks = max(1, abs(action.amount) // 100)
-            if action.direction == "up":
+            if action.direction == "down":
                 clicks = -clicks
             await sb.mouse.scroll(self._width // 2, self._height // 2, scroll_x=0, scroll_y=clicks)
 

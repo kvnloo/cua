@@ -1,0 +1,43 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 22 items
+
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1] SCROLL_EVIDENCE {"amount": 50, "direction": "up", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1] SCROLL_EVIDENCE {"amount": 50, "direction": "down", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1] SCROLL_EVIDENCE {"amount": 350, "direction": "up", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1] SCROLL_EVIDENCE {"amount": 350, "direction": "down", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-up--1] SCROLL_EVIDENCE {"amount": 50, "direction": "up", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-down-1] SCROLL_EVIDENCE {"amount": 50, "direction": "down", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-up--1] SCROLL_EVIDENCE {"amount": 350, "direction": "up", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-down-1] SCROLL_EVIDENCE {"amount": 350, "direction": "down", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[up--3] SCROLL_EVIDENCE {"direction": "up", "entrypoint": "legacy", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[down-3] SCROLL_EVIDENCE {"direction": "down", "entrypoint": "legacy", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+PASSED
+cua_bench/tests/test_remote_session.py::test_direct_sandbox_positive_scroll_is_native_up SCROLL_CONTROL [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 17.0, "y": 29.0}, "unit": "SCROLL_UNIT_LINE"}}]
+PASSED
+cua_bench/tests/test_remote_session.py::test_client_only_mode_connects_by_url PASSED
+cua_bench/tests/test_remote_session.py::test_full_lifecycle_uses_the_runner_lifecycle PASSED
+cua_bench/tests/test_remote_session.py::test_full_lifecycle_windows_and_cloud PASSED
+cua_bench/tests/test_remote_session.py::test_actions_map_to_sandbox_interfaces PASSED
+cua_bench/tests/test_remote_session.py::test_python_command_ships_source_and_parses_result PASSED
+cua_bench/tests/test_remote_session.py::test_python_command_raises_on_missing_result PASSED
+cua_bench/tests/test_remote_session.py::test_parse_memory_mb PASSED
+cua_bench/tests/test_remote_session.py::test_scroll_convenience_method PASSED
+cua_bench/tests/test_remote_session.py::test_sandbox_refs_connect_by_ref PASSED
+cua_bench/tests/test_remote_session.py::test_screen_origin_is_the_client_area PASSED
+cua_bench/tests/test_remote_session.py::test_click_element_scrolls_into_view_and_picks_options PASSED
+
+============================== 22 passed in 1.35s ==============================

@@ -1,0 +1,474 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 22 items / 11 deselected / 11 selected
+
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1] SCROLL_EVIDENCE {"amount": 50, "direction": "up", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1] SCROLL_EVIDENCE {"amount": 50, "direction": "down", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1] SCROLL_EVIDENCE {"amount": 350, "direction": "up", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1] SCROLL_EVIDENCE {"amount": 350, "direction": "down", "entrypoint": "execute_action", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-up--1] SCROLL_EVIDENCE {"amount": 50, "direction": "up", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-down-1] SCROLL_EVIDENCE {"amount": 50, "direction": "down", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -1.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-up--1] SCROLL_EVIDENCE {"amount": 350, "direction": "up", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-down-1] SCROLL_EVIDENCE {"amount": 350, "direction": "down", "entrypoint": "scroll", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[up--3] SCROLL_EVIDENCE {"direction": "up", "entrypoint": "legacy", "native": [{"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[down-3] SCROLL_EVIDENCE {"direction": "down", "entrypoint": "legacy", "native": [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}]}
+FAILED
+cua_bench/tests/test_remote_session.py::test_direct_sandbox_positive_scroll_is_native_up SCROLL_CONTROL [{"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 17.0, "y": 29.0}, "unit": "SCROLL_UNIT_LINE"}}]
+PASSED
+
+=================================== FAILURES ===================================
+___ test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1] ___
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'up', sign = -1, amount = 50, notches = 1
+entrypoint = 'execute_action'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = -1
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 1.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -1.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+__ test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1] ___
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'down', sign = 1, amount = 50, notches = 1
+entrypoint = 'execute_action'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = 1
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -1.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 1.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+__ test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1] ___
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'up', sign = -1, amount = 350, notches = 3
+entrypoint = 'execute_action'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = -3
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 3.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -3.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+__ test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1] __
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'down', sign = 1, amount = 350, notches = 3
+entrypoint = 'execute_action'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = 3
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -3.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 3.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+_______ test_scroll_direction_reaches_native_contract[scroll-50-1-up--1] _______
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'up', sign = -1, amount = 50, notches = 1, entrypoint = 'scroll'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = -1
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 1.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -1.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+______ test_scroll_direction_reaches_native_contract[scroll-50-1-down-1] _______
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'down', sign = 1, amount = 50, notches = 1, entrypoint = 'scroll'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = 1
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -1.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 1.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+______ test_scroll_direction_reaches_native_contract[scroll-350-3-up--1] _______
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'up', sign = -1, amount = 350, notches = 3, entrypoint = 'scroll'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = -3
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 3.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -3.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+______ test_scroll_direction_reaches_native_contract[scroll-350-3-down-1] ______
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'down', sign = 1, amount = 350, notches = 3, entrypoint = 'scroll'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,sign", [("up", -1), ("down", 1)])
+    @pytest.mark.parametrize("amount,notches", [(50, 1), (350, 3)])
+    @pytest.mark.parametrize("entrypoint", ["execute_action", "scroll"])
+    async def test_scroll_direction_reaches_native_contract(
+        scroll_transport_session, direction, sign, amount, notches, entrypoint
+    ):
+        session, _, client = scroll_transport_session
+        if entrypoint == "execute_action":
+            await session.execute_action(ScrollAction(direction=direction, amount=amount))
+        else:
+            await session.scroll(direction, amount)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": entrypoint, "direction": direction,
+            "amount": amount, "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, sign * notches)
+
+cua_bench/tests/test_remote_session.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = 3
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -3.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 3.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+___________ test_legacy_scroll_alias_reaches_native_contract[up--3] ____________
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'up', delta_y = -3
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,delta_y", [("up", -3), ("down", 3)])
+    async def test_legacy_scroll_alias_reaches_native_contract(scroll_transport_session, direction, delta_y):
+        session, _, client = scroll_transport_session
+        await getattr(session.interface, "scroll_" + direction)(3)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": "legacy", "direction": direction,
+            "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, delta_y)
+
+cua_bench/tests/test_remote_session.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = -3
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 3.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -3.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+___________ test_legacy_scroll_alias_reaches_native_contract[down-3] ___________
+
+scroll_transport_session = (<cua_bench.computers.remote.RemoteDesktopSession object at <object-address>>, Sandbox(name='scroll-contract', transport=EnvTransport), <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>)
+direction = 'down', delta_y = 3
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("direction,delta_y", [("up", -3), ("down", 3)])
+    async def test_legacy_scroll_alias_reaches_native_contract(scroll_transport_session, direction, delta_y):
+        session, _, client = scroll_transport_session
+        await getattr(session.interface, "scroll_" + direction)(3)
+        print("SCROLL_EVIDENCE", json.dumps({"entrypoint": "legacy", "direction": direction,
+            "native": client.pointers}, sort_keys=True))
+>       assert_native_scroll(client, 640, 360, delta_y)
+
+cua_bench/tests/test_remote_session.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <cua_bench.tests.test_remote_session.RecordingScrollClient object at <object-address>>
+x = 640, y = 360, delta_y = 3
+
+    def assert_native_scroll(client, x, y, delta_y):
+>       assert client.pointers == [{"scroll": {
+            "position": {"x": float(x), "y": float(y)},
+            "deltaX": 0.0, "deltaY": float(delta_y), "unit": "SCROLL_UNIT_LINE",
+        }}]
+E       AssertionError: assert [{'scroll': {..._UNIT_LINE'}}] == [{'scroll': {..._UNIT_LINE'}}]
+E         
+E         At index 0 diff: {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': -3.0, 'unit': 'SCROLL_UNIT_LINE'}} != {'scroll': {'position': {'x': 640.0, 'y': 360.0}, 'deltaX': 0.0, 'deltaY': 3.0, 'unit': 'SCROLL_UNIT_LINE'}}
+E         
+E         Full diff:
+E           [
+E               {
+E                   'scroll': {...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+cua_bench/tests/test_remote_session.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-up--1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-50-1-down-1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-up--1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[execute_action-350-3-down-1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-up--1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-50-1-down-1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-up--1]
+FAILED cua_bench/tests/test_remote_session.py::test_scroll_direction_reaches_native_contract[scroll-350-3-down-1]
+FAILED cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[up--3]
+FAILED cua_bench/tests/test_remote_session.py::test_legacy_scroll_alias_reaches_native_contract[down-3]
+================= 10 failed, 1 passed, 11 deselected in 1.17s ==================
