@@ -13,7 +13,7 @@ const pid = Number(fixture.pid);
 const windowId = Number(fixture.window_id);
 const task = { scope: { windowTitle: 'Fixture' } } as unknown as NativeTask;
 
-function mockDriver(rejectFull = false, rejectOther = false) {
+function mockDriver(rejectFull = false, rejectOther = false, legacyCode?: string) {
   const calls: Record<string, unknown>[] = [];
   const driver = {
     async call(name: string, args: Record<string, unknown>) {
@@ -21,7 +21,7 @@ function mockDriver(rejectFull = false, rejectOther = false) {
       calls.push({ ...args });
       if (rejectOther) throw new DriverToolError('get_window_state failed: permission denied', 'permission_denied');
       if (rejectFull && args.full_output === true) {
-        throw new DriverToolError('get_window_state failed: unknown argument full_output');
+        throw new DriverToolError('get_window_state failed: unknown argument full_output', legacyCode);
       }
       return fixture;
     },
@@ -56,4 +56,31 @@ test('native observe does not retry unrelated Driver refusals', async () => {
     error instanceof DriverToolError && error.code === 'permission_denied'
   );
   assert.equal(calls.length, 1);
+});
+
+test('native observe refuses a coded permission error quoting an older unknown argument', async () => {
+  const calls: Record<string, unknown>[] = [];
+  const driver = {
+    async call(name: string, args: Record<string, unknown>) {
+      assert.equal(name, 'get_window_state');
+      calls.push({ ...args });
+      throw new DriverToolError(
+        'get_window_state failed: permission denied; prior unknown argument full_output',
+        'permission_denied'
+      );
+    },
+  } as unknown as Driver;
+  await assert.rejects(observe(driver, task, pid, windowId), (error: unknown) =>
+    error instanceof DriverToolError && error.code === 'permission_denied'
+  );
+  assert.equal(calls.length, 1);
+});
+
+test('native observe retries a coded invalid_arguments legacy full_output refusal', async () => {
+  const { driver, calls } = mockDriver(true, false, 'invalid_arguments');
+  const result = await observe(driver, task, pid, windowId);
+  assert.ok(result.elements.length > 0);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].full_output, true);
+  assert.equal(Object.hasOwn(calls[1], 'full_output'), false);
 });

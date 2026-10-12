@@ -64,6 +64,36 @@ class ObserveTests(unittest.TestCase):
         self.assertEqual(len(driver.calls), 1)
         self.assertTrue(driver.calls[0]["full_output"])
 
+    def test_coded_permission_refusal_quoting_legacy_argument_is_not_retried(self) -> None:
+        class PermissionDeniedWithDiagnostic(FakeDriver):
+            async def call(self, name, arguments):
+                self.calls.append(dict(arguments))
+                raise DriverToolError(
+                    "get_window_state failed: permission denied; prior unknown argument full_output",
+                    "permission_denied",
+                )
+
+        driver = PermissionDeniedWithDiagnostic(refuse_full_output=False)
+        with self.assertRaises(DriverToolError):
+            asyncio.run(observe(driver, TASK, self.pid, self.window_id))
+        self.assertEqual(len(driver.calls), 1)
+
+    def test_coded_invalid_arguments_legacy_fallback_preserves_compatibility(self) -> None:
+        class LegacyInvalidArguments(FakeDriver):
+            async def call(self, name, arguments):
+                self.calls.append(dict(arguments))
+                if "full_output" in arguments:
+                    raise DriverToolError(
+                        "get_window_state failed: unknown argument full_output",
+                        "invalid_arguments",
+                    )
+                return json.loads(FIXTURE.read_text())
+
+        driver = LegacyInvalidArguments(refuse_full_output=True)
+        observation = asyncio.run(observe(driver, TASK, self.pid, self.window_id))
+        self.assertTrue(observation.elements)
+        self.assertEqual(["full_output" in c for c in driver.calls], [True, False])
+
     def test_retry_preserves_timeout_and_capture_arguments(self) -> None:
         driver = FakeDriver(refuse_full_output=True)
         asyncio.run(observe(driver, TASK, self.pid, self.window_id, timeout_ms=5000))
