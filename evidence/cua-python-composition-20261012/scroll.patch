@@ -1,0 +1,28 @@
+diff --git a/libs/cua-bench/cua_bench/compat/legacy_interface.py b/libs/cua-bench/cua_bench/compat/legacy_interface.py
+index fe8cc210..2cb5e9d5 100644
+--- a/libs/cua-bench/cua_bench/compat/legacy_interface.py
++++ b/libs/cua-bench/cua_bench/compat/legacy_interface.py
+@@ -640,8 +640,8 @@ _SANDBOX_COMMANDS = {
+     "double_click": _mouse("double_click"),
+     "move_cursor": _cmd_move,
+     "drag_to": _cmd_drag_to,
+-    "scroll_down": lambda iface, p: _scroll(iface, int(p.get("clicks", 1))),
+-    "scroll_up": lambda iface, p: _scroll(iface, -int(p.get("clicks", 1))),
++    "scroll_down": lambda iface, p: _scroll(iface, -int(p.get("clicks", 1))),
++    "scroll_up": lambda iface, p: _scroll(iface, int(p.get("clicks", 1))),
+     "type_text": _cmd_type,
+     "press_key": _cmd_key,
+     "hotkey": _cmd_keys,
+diff --git a/libs/cua-bench/cua_bench/computers/remote.py b/libs/cua-bench/cua_bench/computers/remote.py
+index 862129ed..dcc1dd1e 100644
+--- a/libs/cua-bench/cua_bench/computers/remote.py
++++ b/libs/cua-bench/cua_bench/computers/remote.py
+@@ -951,7 +951,7 @@ class RemoteDesktopSession:
+ 
+         elif isinstance(action, ScrollAction):
+             clicks = max(1, abs(action.amount) // 100)
+-            if action.direction == "up":
++            if action.direction == "down":
+                 clicks = -clicks
+             await sb.mouse.scroll(self._width // 2, self._height // 2, scroll_x=0, scroll_y=clicks)
+ 

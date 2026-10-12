@@ -1,0 +1,22 @@
+# LIMITED: resolved-reference Python composition
+
+Pinned base: 6984010502583a8fb5c667e76063a65b5a6a0a67. Exact full code: e3a1afe079924dac20926a9ce12eacfcaddfb697. Production is the unchanged union of published c1bdaf4d743dfca113095b595c53afc5e7cf04a3 (scroll), 1ec915074dcc62a65faa109a359a6e361710d6d2 (keys), and 2d5fa18645a758db37ca2d8759fd6a06324348a7 (destroy). No new production design. Original carriers #132/#133/#135/#136 remain separate and untouched.
+
+The genuine RemoteDesktopSession(local:recorded-local), Sandbox.connect, reference resolution after parse, local reconnect factory, RuntimeInfo, EnvTransport, production input actions and lifecycle dispatch execute. Reused #136 separated manager/handle and in-memory state fixtures are unchanged. Added only recording handle.spacesd(timeout_ms), keyboard/pointer JSON client, and the explicitly authorized recording _refs.parse seam: assert exact literal local:recorded-local and return genuine Python Ref('local','recorded-local'). **Native reference parsing is mocked and unverified. This qualifies Python composition after a resolved reference, not native parsing itself.** Native SDK import/access, external network, filesystem deletion and persistence remain refused. No real VM/container, guest RPC or deletion occurs. Fake delete records a call and toggles a flag. Headless execution and existing telemetry guards remain enabled.
+
+| Identical three cases | Result | Intended failure |
+| --- | --- | --- |
+| Full union | 3 PASS | none |
+| Omit scroll | 2 FAIL / 1 PASS | reversed deltaY |
+| Omit canonical keys | 2 FAIL / 1 PASS | ValueError unknown KEY_A / KEY_NUMPAD_ENTER |
+| Omit destroy | 3 FAIL | missing recorded bound-handle deletion, including no-services control |
+
+No setup/import/native-guard failure counts as behavioral RED. Joined cases prove no eager client, one spacesd(15000), ordered canonical key down / scroll(350) / matching key up, center(640,360), deltaX=0, deltaY=-3 for up / +3 for down, line units; session.close clears transport client and preserves state/deletion flag; explicit destroy dispatches exactly the original handle.delete without manager delete, another spacesd acquisition, or action replay. The no-services stored state retains services: {}; production RuntimeInfo has guest_server_port=None. Actual Python SpacesdNotAvailable occurs before client/action dispatch, followed by preserving close and bound-handle destroy. The unchanged fake handle.info still advertises env; this checks recorded-state refusal, not native service-discovery consistency.
+
+Existing interpreter Python3.12.14, pytest9.1.1, pytest-asyncio1.4.0, anyio4.15.1, Ruff0.17.0, cua0.4.1, cua-sandbox0.9.0, datasets5.1.0, Pillow12.3.0. Exact metadata and commands are attached. No installs/sync. All cases use unchanged public #136 refusal harness, capture=sys, cache disabled, unique verified-absent basetemps and nonnumbered pytest isolation preparation. Sanitized logs replace local worktree paths; commands retain exact runnable local paths. Production patch provenance and SHA256 manifest accompany this receipt.
+
+Credit Dillon DuPont / ddupont808 (original Sandbox 7d1fa31fb6ed1d5565fad6eef756044be76061e4; maintained SDK reconnect 9166817485ae53f3966935c13878a8196d79a399; #1249 merge 03a1415db060d6d726742aeeab5ca53413242c82), and r33drichards (cleanup resilience da9098b21ccb9694230b7c347914d3013556c45f). Pinned official attribution evidence is retained in the #136 f27dc27ae2e2e177e3ae049c46080f8aca6eb90e receipt. New evidence commits identify OpenAI Codex; no fabricated human signoff/coauthor.
+
+Independent critic receipt accompanies final publication. This evidence does not qualify native input/backend deletion, desktop, hosted CI or upstream acceptance. No upstream writes, default/force pushes, credential operations, cleanup or dashboard rewrites are authorized by this receipt.
+
+Independent xhigh verdict: **LIMITED PASS**, identical results on all four exact heads, unchanged source/fixture/harness bytes, all six executable files lint/format and whitespace PASS. See critic-receipt.txt for exact commands and limits.

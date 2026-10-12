@@ -1,0 +1,13 @@
+cd /workspace/scratch/cua137
+PYTHONPATH=/workspace/scratch/cua137/libs/python/cua-sandbox:/workspace/scratch/cua137/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/full-trace-temp
+
+cd /workspace/scratch/cua137-no-scroll
+PYTHONPATH=/workspace/scratch/cua137-no-scroll/libs/python/cua-sandbox:/workspace/scratch/cua137-no-scroll/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/no-scroll-first-temp
+
+cd /workspace/scratch/cua137-no-keys
+PYTHONPATH=/workspace/scratch/cua137-no-keys/libs/python/cua-sandbox:/workspace/scratch/cua137-no-keys/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/no-keys-first-temp
+
+cd /workspace/scratch/cua137-no-destroy
+PYTHONPATH=/workspace/scratch/cua137-no-destroy/libs/python/cua-sandbox:/workspace/scratch/cua137-no-destroy/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/no-destroy-first-temp
+
+Every basetemp was verified absent and not a symlink before execution. Never reuse/clear it.

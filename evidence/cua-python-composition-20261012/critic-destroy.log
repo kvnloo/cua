@@ -1,0 +1,154 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <NO_DESTROY>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+libs/python/cua-sandbox/tests/test_local_input_composition.py::test_joined_local_input_close_then_explicit_destroy[KEY_A-up--3] FAILED [ 33%]
+libs/python/cua-sandbox/tests/test_local_input_composition.py::test_joined_local_input_close_then_explicit_destroy[KEY_NUMPAD_ENTER-down-3] FAILED [ 66%]
+libs/python/cua-sandbox/tests/test_local_input_composition.py::test_reconnect_without_spacesd_refuses_before_client_but_can_destroy FAILED [100%]
+
+=================================== FAILURES ===================================
+_______ test_joined_local_input_close_then_explicit_destroy[KEY_A-up--3] _______
+
+joined_record = (<tests.test_local_reconnect_destroy.RecordingLocal object at 0x7fdfe0c66030>, <tests.test_local_input_composition.RecordingInputClient object at 0x7fdfe0c660c0>)
+key = 'KEY_A', direction = 'up', delta_y = -3
+
+    @pytest.mark.parametrize(
+        "key,direction,delta_y", [("KEY_A", "up", -3), ("KEY_NUMPAD_ENTER", "down", 3)]
+    )
+    async def test_joined_local_input_close_then_explicit_destroy(
+        joined_record, key, direction, delta_y
+    ):
+        record, client = joined_record
+        session = RemoteDesktopSession(api_url=f"local:{NAME}", width=1280, height=720, headless=True)
+        assert session.sandbox is None and record.calls == [] and client.trace == []
+        await session.start()
+        sb = session.sandbox
+        assert record.parser_calls == ["local:recorded-local"]
+        assert sb._transport._native_sandbox is record.handle
+        assert sb._transport._client is None
+        assert record.calls == [("connect", NAME)] and client.trace == []
+    
+        await sb.keyboard.key_down(key)
+        await session.execute_action(ScrollAction(direction=direction, amount=350))
+        await sb.keyboard.key_up(key)
+        expected = [
+            ("keyboard_json", {"down": {"key": {"named": key}}}),
+            (
+                "pointer_json",
+                {
+                    "scroll": {
+                        "position": {"x": 640.0, "y": 360.0},
+                        "deltaX": 0.0,
+                        "deltaY": float(delta_y),
+                        "unit": "SCROLL_UNIT_LINE",
+                    }
+                },
+            ),
+            ("keyboard_json", {"up": {"key": {"named": key}}}),
+        ]
+        assert client.trace == expected
+        assert record.calls == [("connect", NAME), ("spacesd", 15000)]
+        assert sb._transport._client is client
+    
+        await session.close()
+        assert session.sandbox is None and not session._initialized
+        assert not record.deleted and NAME in record.state
+        assert sb._transport._client is None and not sb._transport._connected
+        assert record.calls == [("connect", NAME), ("spacesd", 15000)]
+        assert client.trace == expected
+    
+        await sb.destroy()
+>       assert record.deleted
+E       assert False
+E        +  where False = <tests.test_local_reconnect_destroy.RecordingLocal object at 0x7fdfe0c66030>.deleted
+
+libs/python/cua-sandbox/tests/test_local_input_composition.py:103: AssertionError
+_ test_joined_local_input_close_then_explicit_destroy[KEY_NUMPAD_ENTER-down-3] _
+
+joined_record = (<tests.test_local_reconnect_destroy.RecordingLocal object at 0x7fdfe0c65550>, <tests.test_local_input_composition.RecordingInputClient object at 0x7fdfe0c654f0>)
+key = 'KEY_NUMPAD_ENTER', direction = 'down', delta_y = 3
+
+    @pytest.mark.parametrize(
+        "key,direction,delta_y", [("KEY_A", "up", -3), ("KEY_NUMPAD_ENTER", "down", 3)]
+    )
+    async def test_joined_local_input_close_then_explicit_destroy(
+        joined_record, key, direction, delta_y
+    ):
+        record, client = joined_record
+        session = RemoteDesktopSession(api_url=f"local:{NAME}", width=1280, height=720, headless=True)
+        assert session.sandbox is None and record.calls == [] and client.trace == []
+        await session.start()
+        sb = session.sandbox
+        assert record.parser_calls == ["local:recorded-local"]
+        assert sb._transport._native_sandbox is record.handle
+        assert sb._transport._client is None
+        assert record.calls == [("connect", NAME)] and client.trace == []
+    
+        await sb.keyboard.key_down(key)
+        await session.execute_action(ScrollAction(direction=direction, amount=350))
+        await sb.keyboard.key_up(key)
+        expected = [
+            ("keyboard_json", {"down": {"key": {"named": key}}}),
+            (
+                "pointer_json",
+                {
+                    "scroll": {
+                        "position": {"x": 640.0, "y": 360.0},
+                        "deltaX": 0.0,
+                        "deltaY": float(delta_y),
+                        "unit": "SCROLL_UNIT_LINE",
+                    }
+                },
+            ),
+            ("keyboard_json", {"up": {"key": {"named": key}}}),
+        ]
+        assert client.trace == expected
+        assert record.calls == [("connect", NAME), ("spacesd", 15000)]
+        assert sb._transport._client is client
+    
+        await session.close()
+        assert session.sandbox is None and not session._initialized
+        assert not record.deleted and NAME in record.state
+        assert sb._transport._client is None and not sb._transport._connected
+        assert record.calls == [("connect", NAME), ("spacesd", 15000)]
+        assert client.trace == expected
+    
+        await sb.destroy()
+>       assert record.deleted
+E       assert False
+E        +  where False = <tests.test_local_reconnect_destroy.RecordingLocal object at 0x7fdfe0c65550>.deleted
+
+libs/python/cua-sandbox/tests/test_local_input_composition.py:103: AssertionError
+_____ test_reconnect_without_spacesd_refuses_before_client_but_can_destroy _____
+
+joined_record = (<tests.test_local_reconnect_destroy.RecordingLocal object at 0x7fdfe0c659d0>, <tests.test_local_input_composition.RecordingInputClient object at 0x7fdfe0c66390>)
+
+    async def test_reconnect_without_spacesd_refuses_before_client_but_can_destroy(joined_record):
+        record, client = joined_record
+        record.state[NAME]["services"] = {}
+        session = RemoteDesktopSession(api_url=f"local:{NAME}", width=1280, height=720, headless=True)
+        await session.start()
+        sb = session.sandbox
+        assert record.parser_calls == ["local:recorded-local"]
+        assert record.calls == [("connect", NAME)] and sb._transport._client is None
+        with pytest.raises(SpacesdNotAvailable, match="this sandbox's image does not run cua-spacesd"):
+            await sb.keyboard.key_down("KEY_A")
+        assert record.calls == [("connect", NAME)] and client.trace == []
+        await session.close()
+        assert not record.deleted and NAME in record.state
+        await sb.destroy()
+>       assert record.deleted and record.calls == [("connect", NAME), ("handle_delete", NAME)]
+E       assert (False)
+E        +  where False = <tests.test_local_reconnect_destroy.RecordingLocal object at 0x7fdfe0c659d0>.deleted
+
+libs/python/cua-sandbox/tests/test_local_input_composition.py:125: AssertionError
+=========================== short test summary info ============================
+FAILED libs/python/cua-sandbox/tests/test_local_input_composition.py::test_joined_local_input_close_then_explicit_destroy[KEY_A-up--3]
+FAILED libs/python/cua-sandbox/tests/test_local_input_composition.py::test_joined_local_input_close_then_explicit_destroy[KEY_NUMPAD_ENTER-down-3]
+FAILED libs/python/cua-sandbox/tests/test_local_input_composition.py::test_reconnect_without_spacesd_refuses_before_client_but_can_destroy
+============================== 3 failed in 0.06s ===============================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

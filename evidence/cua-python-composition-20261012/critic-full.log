@@ -1,0 +1,24 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <FULL>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+libs/python/cua-sandbox/tests/test_local_input_composition.py::test_joined_local_input_close_then_explicit_destroy[KEY_A-up--3] PASSED [ 33%]
+libs/python/cua-sandbox/tests/test_local_input_composition.py::test_joined_local_input_close_then_explicit_destroy[KEY_NUMPAD_ENTER-down-3] PASSED [ 66%]
+libs/python/cua-sandbox/tests/test_local_input_composition.py::test_reconnect_without_spacesd_refuses_before_client_but_can_destroy PASSED [100%]
+
+==================================== PASSES ====================================
+_______ test_joined_local_input_close_then_explicit_destroy[KEY_A-up--3] _______
+----------------------------- Captured stdout call -----------------------------
+JOINED_TRACE {"actions": [["keyboard_json", {"down": {"key": {"named": "KEY_A"}}}], ["pointer_json", {"scroll": {"deltaX": 0.0, "deltaY": -3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}], ["keyboard_json", {"up": {"key": {"named": "KEY_A"}}}]], "calls": [["connect", "recorded-local"], ["spacesd", 15000], ["handle_delete", "recorded-local"]]}
+_ test_joined_local_input_close_then_explicit_destroy[KEY_NUMPAD_ENTER-down-3] _
+----------------------------- Captured stdout call -----------------------------
+JOINED_TRACE {"actions": [["keyboard_json", {"down": {"key": {"named": "KEY_NUMPAD_ENTER"}}}], ["pointer_json", {"scroll": {"deltaX": 0.0, "deltaY": 3.0, "position": {"x": 640.0, "y": 360.0}, "unit": "SCROLL_UNIT_LINE"}}], ["keyboard_json", {"up": {"key": {"named": "KEY_NUMPAD_ENTER"}}}]], "calls": [["connect", "recorded-local"], ["spacesd", 15000], ["handle_delete", "recorded-local"]]}
+_____ test_reconnect_without_spacesd_refuses_before_client_but_can_destroy _____
+----------------------------- Captured stdout call -----------------------------
+REFUSAL_TRACE {"actions": [], "calls": [["connect", "recorded-local"], ["handle_delete", "recorded-local"]]}
+============================== 3 passed in 0.03s ===============================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

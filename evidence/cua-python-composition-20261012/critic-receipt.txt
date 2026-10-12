@@ -1,0 +1,61 @@
+Independent xhigh critic receipt — CUA #137, 2026-10-12
+
+Verdict: LIMITED PASS for Python composition after an explicitly mocked resolved reference.
+
+Exact tested heads:
+  full:       e3a1afe079924dac20926a9ce12eacfcaddfb697
+  no-scroll:  4b151d8b8e05b6aa86e20db83dd508fa0f85f256
+  no-keys:    eaecf743cdc81fc4ef79b44b303695abc3a45e18
+  no-destroy: 59a88794b5c3ba65ae1d483e9c70d5cd78881533
+  pinned base:6984010502583a8fb5c667e76063a65b5a6a0a67
+
+Independent reruns:
+  full:       3 PASS, exit 0
+  no-scroll:  2 FAIL / 1 PASS, exit 1; deltaY +3 instead of -3 for up and -3 instead of +3 for down
+  no-keys:    2 FAIL / 1 PASS, exit 1; ValueError unknown key 'KEY_A' / 'KEY_NUMPAD_ENTER' at first public key_down
+  no-destroy: 3 FAIL, exit 1; missing recorded deletion after preserving close
+All expected failures reached product assertions or genuine key conversion; none was a setup, import or native/network/deletion-guard failure. Every final run printed the native-SDK-unloaded boundary. The full log includes the actual three JSON traces.
+
+Hashes independently verified:
+  joined test SHA256: f6dcd1748f3ef97d7ae82dd8482418e502e960fb963d0c8e1ea33bdebcc33b3a
+  reused separated fixture SHA256: b36044b0dc0d1e97309d2c6d4b2bd87cc0fe7faaa9c021b03f1acd57f2e109cc
+  harness SHA256: e61a9d50901912c77cd7f59304e7323bfbe80e88d08fc2a85b0ebe3d620de82d
+Both test files are byte-identical in all four committed heads and worktrees. The fixture is also identical to published 1f858bfa. The harness is byte-identical to the qualified #136 harness; native/import/network/unlink refusals and the supported nonnumbered preparation remain intact.
+
+All four full production files match the exact originating commit bytes: scroll c1bdaf4d, keys 1ec91507, destroy 2d5fa186. Each omission head differs from full only in its originating production paths; omitted paths equal pinned base, and the other paths equal full. The production _refs.py file is unchanged in every head. No candidate or control source was modified by this critic.
+
+The parser seam asserts the exact literal local:recorded-local, records it, and returns the genuine Ref(local, recorded-local). Production resolve, connect factory, local-state transport, RuntimeInfo, EnvTransport, public key_down/key_up, bench ScrollAction and lifecycle methods then execute. This seam substitutes native parsing, so native qualified-reference parsing is mocked and unverified.
+
+The joined trace assertions check no eager client, one spacesd(15000) acquisition on the exact original handle, canonical down/scroll/up payload order, center coordinates, horizontal delta, vertical signs, units, cached client identity, clearing on close, preservation before explicit destroy, original-handle deletion, and no extra client acquisition or action replay. The separate manager and bound-handle signatures/events prevent conflating manager.delete(name) with handle.delete().
+
+The refusal control uses stored state services:{}; RuntimeInfo guest_server_port is therefore None. The unchanged fake handle.info still advertises env. It demonstrates refusal based on the recorded state before client/action dispatch; it does not qualify native service-discovery consistency. The no-keys control's refusal case passes because this refusal precedes key conversion.
+
+Ruff check --no-cache, Ruff format --check --no-cache for all six changed executable files, and committed git diff --check passed independently. Exact interpreter metadata matches the recorded selected inventory: Python 3.12.14, pytest 9.1.1, pytest-asyncio 1.4.0, anyio 4.15.1, Ruff 0.17.0.
+
+Limitations: this three-case receipt qualifies sequential Python command composition and inert cleanup dispatch only. It does not requalify all canonical keys, legacy scroll routes, concurrent lifecycle behavior, physical held-key state, native input/parser/provider execution, actual backend or filesystem deletion, desktop behavior, hosted CI or upstream acceptance. Existing atomic receipts remain separate. No broad matrix was run.
+
+README fidelity: corrected the no-services wording to distinguish stored state from RuntimeInfo and to disclose unchanged fake handle metadata. No further material code or evidence defect found.
+
+Execution safeguards: each basetemp was verified absent and not a symlink before use; set -o noclobber preserved existing logs. No existing directory was reused or cleared. No install, SDK/native import, external network action, cleanup, production edit, credential operation, or push was performed by the critic.
+
+Exact executed commands (each shell also used set -o noclobber):
+
+cwd /workspace/scratch/cua137
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua137/libs/python/cua-sandbox:/workspace/scratch/cua137/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/critic-full-temp > /workspace/scratch/cua137-results/critic-full.log 2>&1
+
+cwd /workspace/scratch/cua137-no-scroll
+test ! -e /workspace/scratch/cua137-results/critic-scroll-temp && test ! -L /workspace/scratch/cua137-results/critic-scroll-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua137-no-scroll/libs/python/cua-sandbox:/workspace/scratch/cua137-no-scroll/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/critic-scroll-temp > /workspace/scratch/cua137-results/critic-scroll.log 2>&1
+
+cwd /workspace/scratch/cua137-no-keys
+test ! -e /workspace/scratch/cua137-results/critic-keys-temp && test ! -L /workspace/scratch/cua137-results/critic-keys-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua137-no-keys/libs/python/cua-sandbox:/workspace/scratch/cua137-no-keys/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/critic-keys-temp > /workspace/scratch/cua137-results/critic-keys.log 2>&1
+
+cwd /workspace/scratch/cua137-no-destroy
+test ! -e /workspace/scratch/cua137-results/critic-destroy-temp && test ! -L /workspace/scratch/cua137-results/critic-destroy-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua137-no-destroy/libs/python/cua-sandbox:/workspace/scratch/cua137-no-destroy/libs/cua-bench /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua137-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_local_input_composition.py --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua137-results/critic-destroy-temp > /workspace/scratch/cua137-results/critic-destroy.log 2>&1
+
+Independent lint/format cwd /workspace/scratch/cua137:
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff check --no-cache libs/python/cua-sandbox/tests/test_local_input_composition.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/cua_sandbox/transport/env.py libs/cua-bench/cua_bench/computers/remote.py libs/cua-bench/cua_bench/compat/legacy_interface.py
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check --no-cache libs/python/cua-sandbox/tests/test_local_input_composition.py libs/python/cua-sandbox/tests/test_local_reconnect_destroy.py libs/python/cua-sandbox/cua_sandbox/sandbox.py libs/python/cua-sandbox/cua_sandbox/transport/env.py libs/cua-bench/cua_bench/computers/remote.py libs/cua-bench/cua_bench/compat/legacy_interface.py
+GIT_NO_LAZY_FETCH=1 git diff --check 6984010502583a8fb5c667e76063a65b5a6a0a67 e3a1afe079924dac20926a9ce12eacfcaddfb697
+
+Supporting files: critic-full.log, critic-scroll.log, critic-keys.log, critic-destroy.log, critic-source.log under /workspace/scratch/cua137-results.
+
