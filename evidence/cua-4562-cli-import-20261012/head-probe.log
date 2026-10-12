@@ -1,0 +1,82 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $HEAD_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+cua_bench/tests/test_independent_4562_cli_import.py::test_cli_import_reaches_selected_class[default-and-explicit] [90mFound config at: $RESULTS_ROOT/head-probe-temp/test_cli_import_reaches_select0/home/project/.cua[0m
+EVIDENCE {"configured_import": "selected_agent:CliAgent", "default_agent": true, "explicit_import": true, "instance_marker": "registered", "options_import": "selected_agent:RegisteredAgent", "oracle": false, "parsed_import": "selected_agent:CliAgent", "selected_class": "RegisteredAgent"}
+FAILED
+cua_bench/tests/test_independent_4562_cli_import.py::test_cli_import_reaches_selected_class[no-default-explicit] [90mFound config at: $RESULTS_ROOT/head-probe-temp/test_cli_import_reaches_select1/home/project/.cua[0m
+EVIDENCE {"configured_import": "selected_agent:CliAgent", "default_agent": false, "explicit_import": true, "instance_marker": "cli", "options_import": "selected_agent:CliAgent", "oracle": false, "parsed_import": "selected_agent:CliAgent", "selected_class": "CliAgent"}
+PASSED
+cua_bench/tests/test_independent_4562_cli_import.py::test_cli_import_reaches_selected_class[default-only] [90mFound config at: $RESULTS_ROOT/head-probe-temp/test_cli_import_reaches_select2/home/project/.cua[0m
+EVIDENCE {"configured_import": "selected_agent:RegisteredAgent", "default_agent": true, "explicit_import": false, "instance_marker": "registered", "options_import": "selected_agent:RegisteredAgent", "oracle": false, "parsed_import": null, "selected_class": "RegisteredAgent"}
+PASSED
+
+=================================== FAILURES ===================================
+_________ test_cli_import_reaches_selected_class[default-and-explicit] _________
+
+tmp_path = PosixPath('$RESULTS_ROOT/head-probe-temp/test_cli_import_reaches_select0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at <object-address>>
+default_agent = True, explicit_import = True, expected = 'CliAgent'
+
+    @pytest.mark.parametrize(
+        "default_agent,explicit_import,expected",
+        [(True, True, "CliAgent"), (False, True, "CliAgent"), (True, False, "RegisteredAgent")],
+        ids=["default-and-explicit", "no-default-explicit", "default-only"],
+    )
+    def test_cli_import_reaches_selected_class(tmp_path, monkeypatch, default_agent, explicit_import, expected):
+        home = tmp_path / "home"
+        project = home / "project"
+        task = project / "task"
+        task.mkdir(parents=True)
+        state = home / "state"
+        state.mkdir()
+        monkeypatch.setenv("HOME", str(home))
+        monkeypatch.setenv("CUA_HOME", str(state))
+        monkeypatch.chdir(project)
+        config_dir = project / ".cua"
+        config_dir.mkdir()
+        (config_dir / "config.yaml").write_text("agent:\n  name: first\n" if default_agent else "{}\n")
+        (config_dir / "agents.yaml").write_text(
+            "agents:\n  - name: first\n    import_path: selected_agent:RegisteredAgent\n"
+        )
+        (project / "selected_agent.py").write_text(
+            "class RegisteredAgent:\n    marker = 'registered'\n\n"
+            "class CliAgent:\n    marker = 'cli'\n"
+        )
+        monkeypatch.syspath_prepend(str(project))
+        monkeypatch.delitem(sys.modules, "selected_agent", raising=False)
+        importlib.invalidate_caches()
+        argv = ["run", "task", str(task)]
+        if explicit_import:
+            argv.extend(["--agent-import-path", "selected_agent:CliAgent"])
+        parsed = build_parser().parse_args(argv)
+        parsed_import = parsed.agent_import_path
+        configured = _apply_config_defaults_for_task(parsed)
+        configured_import = configured.agent_import_path
+        opts = agent_options(configured)
+        loaded = load_agent_class(opts)
+        instance = loaded()
+        print("EVIDENCE", json.dumps({
+            "default_agent": default_agent, "explicit_import": explicit_import,
+            "parsed_import": parsed_import, "configured_import": configured_import,
+            "options_import": opts.agent_import_path, "selected_class": loaded.__name__,
+            "instance_marker": instance.marker, "oracle": opts.oracle,
+        }, sort_keys=True))
+        if explicit_import:
+            assert parsed_import == configured_import == "selected_agent:CliAgent"
+        assert opts.oracle is False
+>       assert loaded.__name__ == expected
+E       AssertionError: assert 'RegisteredAgent' == 'CliAgent'
+E         
+E         - CliAgent
+E         + RegisteredAgent
+
+$HEAD_WORKTREE/libs/cua-bench/cua_bench/tests/test_independent_4562_cli_import.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED cua_bench/tests/test_independent_4562_cli_import.py::test_cli_import_reaches_selected_class[default-and-explicit]
+========================= 1 failed, 2 passed in 2.68s ==========================

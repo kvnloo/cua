@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $HEAD_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 13 items
+
+cua_bench/tests/test_config_loader.py::test_cua_cli_state_dir_in_home_is_not_a_project_config PASSED [  7%]
+cua_bench/tests/test_config_loader.py::test_nearest_project_config_below_home_is_found PASSED [ 15%]
+cua_bench/tests/test_config_loader.py::test_agents_yaml_alone_marks_a_project PASSED [ 23%]
+cua_bench/tests/test_config_loader.py::test_a_bare_cua_dir_is_skipped_for_a_real_one_above PASSED [ 30%]
+cua_bench/tests/test_config_loader.py::test_search_outside_home_walks_to_the_root PASSED [ 38%]
+cua_bench/tests/test_config_loader.py::test_nothing_above_home_is_read PASSED [ 46%]
+cua_bench/tests/test_config_loader.py::test_cli_agent_uses_its_own_import_and_defaults PASSED [ 53%]
+cua_bench/tests/test_config_loader.py::test_configuration_layers_follow_documented_priority PASSED [ 61%]
+cua_bench/tests/test_config_loader.py::test_switching_agent_does_not_inherit_another_import[cua-agent] PASSED [ 69%]
+cua_bench/tests/test_config_loader.py::test_switching_agent_does_not_inherit_another_import[docker-only] PASSED [ 76%]
+cua_bench/tests/test_config_loader.py::test_explicit_cli_import_still_wins PASSED [ 84%]
+cua_bench/tests/test_config_loader.py::test_registered_agent_without_import_preserves_configured_import PASSED [ 92%]
+cua_bench/tests/test_config_loader.py::test_cli_applies_the_selected_custom_agent PASSED [100%]
+
+============================== 13 passed in 2.71s ==============================

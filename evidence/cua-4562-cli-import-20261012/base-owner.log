@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $BASE_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 6 items
+
+cua_bench/tests/test_config_loader.py::test_cua_cli_state_dir_in_home_is_not_a_project_config PASSED [ 16%]
+cua_bench/tests/test_config_loader.py::test_nearest_project_config_below_home_is_found PASSED [ 33%]
+cua_bench/tests/test_config_loader.py::test_agents_yaml_alone_marks_a_project PASSED [ 50%]
+cua_bench/tests/test_config_loader.py::test_a_bare_cua_dir_is_skipped_for_a_real_one_above PASSED [ 66%]
+cua_bench/tests/test_config_loader.py::test_search_outside_home_walks_to_the_root PASSED [ 83%]
+cua_bench/tests/test_config_loader.py::test_nothing_above_home_is_read PASSED [100%]
+
+============================== 6 passed in 0.10s ===============================

@@ -1,0 +1,36 @@
+ROOTS
+HEAD_WORKTREE: isolated sparse worktree at65b7ec52e774216fceb8b6afb146e60472a63069.
+BASE_WORKTREE: isolated sparse worktree at35751f65f121ccb93bf4434bb453b97b58ad4ca7.
+ENV_ROOT: reused existing official-wheel setup; interpreter ENV_ROOT/venv/bin/python (Python3.12.14).
+RESULTS_ROOT: new writable evidence output/temp directory. Use fresh basetemp locations.
+
+PREPARATION
+git fetch --depth=1 --filter=blob:none origin 65b7ec52e774216fceb8b6afb146e60472a63069 35751f65f121ccb93bf4434bb453b97b58ad4ca7
+git worktree add --no-checkout -b evidence/cua-4562-cli-import-20261012 "$HEAD_WORKTREE" 65b7ec52e774216fceb8b6afb146e60472a63069
+git worktree add --no-checkout -b evidence/cua-4562-cli-base-20261012 "$BASE_WORKTREE" 35751f65f121ccb93bf4434bb453b97b58ad4ca7
+For each worktree, set worktree core.sparseCheckout=true, include /libs/cua-bench/ /AGENTS.md /CONTRIBUTING.md /TESTING.md, and run git read-tree -mu HEAD. Head also includes /.agents/skills/.
+Copy identical test_independent_4562_cli_import.py into each worktree's libs/cua-bench/cua_bench/tests/. No owner test overlay or production change.
+PYTHONDONTWRITEBYTECODE=1 "$ENV_ROOT/venv/bin/python" -c 'import yaml,pytest,pytest_asyncio; print(yaml.__version__,pytest.__version__,pytest_asyncio.__version__)'
+Output:6.0.3 9.1.1 1.4.0.
+
+HEAD OWNER (cwd HEAD_WORKTREE/libs/cua-bench)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$HEAD_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_config_loader.py -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/head-owner-temp"
+Exit0:13 passed in2.71s.
+
+HEAD IDENTICAL PROBE (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$HEAD_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_independent_4562_cli_import.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/head-probe-temp"
+Exit1:1 failed,2 passed in2.68s.
+
+BASE OWNER (cwd BASE_WORKTREE/libs/cua-bench)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$BASE_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_config_loader.py -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/base-owner-temp"
+Exit0:6 passed in0.10s.
+
+BASE IDENTICAL PROBE (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONPATH="$BASE_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_independent_4562_cli_import.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/base-probe-temp"
+Exit1:1 failed,2 passed in2.89s.
+
+SOURCE CONTRACT CHECKS
+git show HEAD:docs/content/docs/cua-bench/guides/benchmarks.mdx | rg -n -C 3 'agent-import-path'
+git rev-parse HEAD:libs/cua-bench/cua_bench/cli/commands/run.py
+git rev-parse 35751f65f121ccb93bf4434bb453b97b58ad4ca7:libs/cua-bench/cua_bench/cli/commands/run.py
+Both output147f8944143a25e9799ae379ec32f4299b383197. Official GitHub file metadata at observed main d6174517b4a9f70f5626ed176a02340ff825f5d0 confirms the same blob. Main is source-only, not executed.
