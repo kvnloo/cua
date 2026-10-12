@@ -54,6 +54,27 @@ def _offline_image_manifests(monkeypatch):
     assert "cua" not in sys.modules
 
 
+class RecordingHandle:
+    def __init__(self, owner):
+        self.owner = owner
+
+    def info(self):
+        if self.owner.info_error:
+            raise self.owner.info_error
+        return SimpleNamespace(
+            location=self.owner.location,
+            name=self.owner.handle_name,
+            runtime="container",
+            services={"env": 3211},
+        )
+
+    async def delete(self):
+        self.owner.calls.append(("handle_delete", NAME))
+        if self.owner.delete_error:
+            raise self.owner.delete_error
+        self.owner.deleted = True
+
+
 class RecordingLocal:
     def __init__(self):
         self.calls = []
@@ -62,6 +83,7 @@ class RecordingLocal:
         self.handle_name = NAME
         self.delete_error = None
         self.info_error = None
+        self.handle = RecordingHandle(self)
         self.state = {
             NAME: {
                 "name": NAME,
@@ -77,22 +99,11 @@ class RecordingLocal:
     async def connect(self, name):
         self.calls.append(("connect", name))
         assert name == NAME
-        return self
+        return self.handle
 
-    def info(self):
-        if self.info_error:
-            raise self.info_error
-        return SimpleNamespace(
-            location=self.location,
-            name=self.handle_name,
-            runtime="container",
-            services={"env": 3211},
-        )
-
-    async def delete(self, name=None):
-        self.calls.append(("delete", name or NAME))
-        if self.delete_error:
-            raise self.delete_error
+    async def delete(self, name):
+        self.calls.append(("manager_delete", name))
+        assert name == NAME
         self.deleted = True
 
 
@@ -124,7 +135,7 @@ async def reconnect():
 async def test_explicit_destroy_after_local_reconnect_deletes(local_record):
     sb = await reconnect()
     await sb.destroy()
-    assert local_record.calls == [("connect", NAME), ("delete", NAME)]
+    assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
     assert local_record.deleted
 
 
@@ -143,7 +154,7 @@ async def test_reconnect_exit_preserves_local_sandbox(local_record, preserve):
 
 async def test_class_delete_dispatches_to_local_manager(local_record):
     await Sandbox.delete(NAME, local=True)
-    assert local_record.calls == [("delete", NAME)]
+    assert local_record.calls == [("manager_delete", NAME)]
     assert local_record.deleted and NAME not in local_record.state
 
 
@@ -152,7 +163,7 @@ async def test_explicit_destroy_after_disconnect_retains_local_handle(local_reco
     await sb.disconnect()
     assert not local_record.deleted
     await sb.destroy()
-    assert local_record.calls == [("connect", NAME), ("delete", NAME)]
+    assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
     assert local_record.deleted
 
 
@@ -173,7 +184,7 @@ async def test_direct_url_destroy_never_deletes_local_manager(local_record):
 
 async def test_name_and_ephemeral_do_not_establish_local_reconnect_ownership(local_record):
     sb = Sandbox(
-        EnvTransport(url="http://recording.invalid:3211", native_sandbox=local_record),
+        EnvTransport(url="http://recording.invalid:3211", native_sandbox=local_record.handle),
         name=NAME,
         _ephemeral=True,
         _telemetry_enabled=False,
@@ -252,7 +263,7 @@ async def test_disconnect_error_does_not_skip_explicit_local_delete(local_record
     sb._transport.disconnect = AsyncMock(side_effect=OSError("disconnect failed"))
     await sb.destroy()
     sb._transport.disconnect.assert_awaited_once()
-    assert local_record.calls == [("connect", NAME), ("delete", NAME)]
+    assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
     assert local_record.deleted
 
 
@@ -260,7 +271,7 @@ async def test_local_delete_error_remains_best_effort(local_record, caplog):
     sb = await reconnect()
     local_record.delete_error = OSError("recording delete failed")
     await sb.destroy()
-    assert local_record.calls == [("connect", NAME), ("delete", NAME)]
+    assert local_record.calls == [("connect", NAME), ("handle_delete", NAME)]
     assert not local_record.deleted
     assert "Failed to delete" in caplog.text
 
