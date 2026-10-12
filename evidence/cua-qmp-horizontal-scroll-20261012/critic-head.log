@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <HEAD>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 10 items
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[2-0-expected0] PASSED [ 10%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[-2-0-expected1] PASSED [ 20%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[2-3-expected2] PASSED [ 30%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[-2--3-expected3] PASSED [ 40%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[0-0-expected4] PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[0-3-expected5] PASSED [ 60%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[0--3-expected6] PASSED [ 70%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[1-0-expected7] PASSED [ 80%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[-3-0-expected8] PASSED [ 90%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_default_vertical_scroll_control PASSED [100%]
+
+==================================== PASSES ====================================
+________ test_public_scroll_preserves_each_signed_notch[2-0-expected0] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 2, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-right"}}, {"type": "btn", "data": {"down": false, "button": "wheel-right"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-right"}}, {"type": "btn", "data": {"down": false, "button": "wheel-right"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[-2-0-expected1] ________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": -2, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[2-3-expected2] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 2, "y": 3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-right"}}, {"type": "btn", "data": {"down": false, "button": "wheel-right"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-right"}}, {"type": "btn", "data": {"down": false, "button": "wheel-right"}}]}]]}
+_______ test_public_scroll_preserves_each_signed_notch[-2--3-expected3] ________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": -2, "y": -3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[0-0-expected4] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 0, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[0-3-expected5] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 0, "y": 3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[0--3-expected6] ________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 0, "y": -3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[1-0-expected7] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 1, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-right"}}, {"type": "btn", "data": {"down": false, "button": "wheel-right"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[-3-0-expected8] ________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": -3, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-left"}}, {"type": "btn", "data": {"down": false, "button": "wheel-left"}}]}]]}
+============================== 10 passed in 0.03s ==============================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused

@@ -1,0 +1,54 @@
+{
+  "original_qmp": {
+    "url": "https://github.com/trycua/cua/pull/1218",
+    "author": "ddupont808",
+    "head": "17e2613e65045d75c11678acba5518d349a25adb",
+    "merge": "7d1fa31fb6ed1d5565fad6eef756044be76061e4",
+    "merged": "2026-03-26T00:53:18Z",
+    "original_mouse_scroll_hunk": "+    async def _mouse_scroll(\n+        self, x: int, y: int, scroll_x: int = 0, scroll_y: int = 3, **_: Any\n+    ) -> None:\n+        \"\"\"Scroll via button 4/5 (up/down) presses.\"\"\"\n+        # Move to position first\n+        await self._mouse_move(x, y)\n+        # QMP wheel: positive scroll_y = scroll up (button 4), negative = down (button 5)\n+        if scroll_y > 0:\n+            btn_name = \"wheel-up\"\n+        elif scroll_y < 0:\n+            btn_name = \"wheel-down\"\n+        else:\n+            return\n+        for _ in range(abs(scroll_y)):\n+            await self._execute(\n+                \"input-send-event\",\n+                {\n+                    \"events\": [\n+                        {\"type\": \"btn\", \"data\": {\"down\": True, \"button\": btn_name}},\n+                        {\"type\": \"btn\", \"data\": {\"down\": False, \"button\": btn_name}},\n+                    ]\n+                },\n+            )\n+"
+  },
+  "neighbors": [
+    {
+      "number": 1432,
+      "title": "Fix PPM double-read race condition in QMP screenshot",
+      "head": "b8a1e22edd738ebb3f4022341be24f6ccb098370",
+      "author": "hobostay"
+    },
+    {
+      "number": 1420,
+      "title": "fix: await telemetry.shutdown in stop() and re-throw auth timeout error",
+      "head": "cd06110273d1dda8a3ed54669c7b32f0763870ca",
+      "author": "Ricardo-M-L"
+    },
+    {
+      "number": 1337,
+      "title": "fix(agent): fix drag coordinates and scroll direction for Anthropic models",
+      "head": "18921a0b19c8aa0ac349112850b4d82bd0a1ff60",
+      "author": "octo-patch"
+    },
+    {
+      "number": 1783,
+      "title": "Add pixel wheel scrolling for canvas apps",
+      "head": "0c2811492f7d793debfddba6379926436e31da3f",
+      "author": "milind-soni"
+    }
+  ],
+  "qemu": {
+    "url": "https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html#enum-InputButton",
+    "observed_date": "2026-10-12",
+    "supported_horizontal_buttons": [
+      "wheel-left",
+      "wheel-right"
+    ],
+    "button_event_fields": [
+      "button",
+      "down"
+    ],
+    "claim": "Official master reference supports horizontal button names and boolean press/release events; independent per-axis notches, no simultaneous/diagonal or installed-QEMU version claim."
+  },
+  "fork_scroll_heads": {
+    "codex/interactive-scroll-routing": "2b4baafc8ac3e8c3285ddf83b540402306359baf",
+    "fix/xy-scrolling": "8c49ce317abe17ca7624421b19d224331a2ea556"
+  },
+  "ownership_limit": "Bounded symbols/claims/current neighboring diffs and fork tip source checked; not exhaustive global ownership proof."
+}

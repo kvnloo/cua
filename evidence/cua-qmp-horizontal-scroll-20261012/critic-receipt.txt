@@ -1,0 +1,59 @@
+Independent xhigh critic receipt — CUA #139 horizontal QMP slice, 2026-10-12
+
+Verdict: LIMITED PASS for scoped Python horizontal wheel-notch dispatch. No unexpected regression or substantive defect found within the declared integer-notch cases.
+
+Exact candidate: cdfac29ce38efab17639812178cecb6211275d94
+Exact base: f87f1915270afe8b645036d698809f35cbe5721c
+
+Independent actual reruns:
+  exact base with identical ten-case overlay: 6 FAIL / 4 PASS; exit 1
+  exact candidate owning file: 10 PASS; exit 0
+  candidate adjacent agentless file: 4 PASS / 1 native-only case DESELECTED; exit 0
+  Ruff check --no-cache: PASS
+  Ruff format --check --no-cache: PASS; two files already formatted
+  committed git diff --check base..candidate: PASS
+
+All six base failures are missing horizontal wheel commands after successful public Mouse.scroll return None: horizontal +2/-2, same-sign mixed +2x/+3y and -2x/-3y, and horizontal magnitudes +1/-3. The tests reach command-count assertions, not setup/import/guard failures. Zero, vertical +3/-3 and default vertical3 controls pass on both revisions. Every final run reports the native SDK unloaded.
+
+The candidate assertions independently hard-code the initial scaled position (2559,4550 for 100,100 at 1280x720), check exactly one initial cursor move, matching Boolean down/up pairs for each wheel button, per-axis signed names and notch counts, and total command count. The expected mapping does not repeat the production axis loop. Mixed-axis Counter checks intentionally do not certify combined-axis ordering, simultaneous diagonal gestures or timing. Source inspection confirms vertical commands are invoked before horizontal ones; this is implementation order, not an external ordering requirement.
+
+Protocol semantics independently checked through read-only official QEMU documentation on 2026-10-12:
+https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html#enum-InputButton
+The official master reference lists wheel-left and wheel-right as InputButton values. InputBtnEvent uses button and Boolean down fields. This corroborates payload names and down/up representation, not installed-QEMU version, guest-device support or actual delivery. The Python Mouse docstring supplies positive horizontal-right and wheel-notch units; its signature annotates integer amounts. Negative horizontal maps to the signed-axis counterpart wheel-left. The unchanged EnvTransport preserves the horizontal sign.
+
+Real source Sandbox, Mouse, QMPTransport construction/send/_mouse_scroll/_mouse_move execute. Only _execute is replaced by the inert ordered command recorder; constructor tempfile.mkdtemp returns an already prepared unique nonnumbered pytest directory. No QMP connect/disconnect, socket transport, native SDK, QEMU, VM/container, guest RPC, physical input, state persistence or filesystem cleanup executes. Read-only documentation browsing is separate from refused test/runtime network access.
+
+Source and hash checks passed:
+  matched test SHA256: 957782b0611f3e656343ae7c1280e5a85e7152748e101ee039c972072d4ee06c
+  unchanged qualified harness SHA256: e61a9d50901912c77cd7f59304e7323bfbe80e88d08fc2a85b0ebe3d620de82d
+  base QMP Git blob: 46f5173d8092d74c07721b903891c2426858d2ec
+  base QMP SHA256: c47a4de7b222baf5b410fbac264019013ea68094abe9c7a41e27e634a5a49854
+  head QMP Git blob: e09f44827dff816c41e740856ae2ebcdeb1cc030
+  head QMP SHA256: 81567719bfeb8e88e82b654c1750c2946d61f1f0f88a2f6de2661b936399d183
+Working production/test bytes equal the exact committed sources. The base test is an identical untracked overlay, historically absent. Only qmp.py and the new owning test differ between the pinned commits; deleting only the _mouse_scroll AST leaves the whole production AST identical. Mouse and EnvTransport sources are unchanged. Drag remains exact base behavior, so this does not stack the #138 repair. Harness bytes equal the qualified #137 harness, retaining all refusal guards and supported nonnumbered preparation. Exact-interpreter selected version inventory matches.
+
+README review: documented-versus-inferred sign wording was corrected; independent notches, zero retaining cursor positioning, vertical-only preservation, source-backed vertical-first order, no stacked drag, fake boundaries and QEMU-version/delivery exclusions are accurate. Provided original #1218 _mouse_scroll hunk agrees with the original ignored horizontal parameter; neighboring PR metadata remains distinct. Historical attribution and ownership are assessed from the supplied receipts, not an independent live GitHub ownership sweep.
+
+Limits: no broader numeric validation, non-integer/pixel/high-resolution amounts, cross-sign mixed matrix, cancellation/fault injection, axis-order contract, guest/backend compatibility, live QMP acknowledgements, physical output, native library or hosted CI qualification. Only the approved ten owning cases and four pure adjacent cases were executed on their specified heads.
+
+All basetemps were checked absent and not symlinks before use; logs used set -o noclobber. No existing directory was reused or cleared. No production/test edits, installs, SDK/native execution, test/runtime socket network, deletion, cleanup, credentials or push were performed. Only authorized critic result files were written.
+
+Exact pytest commands, each shell using set -o noclobber:
+
+cwd /workspace/scratch/cua-qmp-horizontal-base
+test ! -e /workspace/scratch/cua-qmp-horizontal-results/critic-base-temp && test ! -L /workspace/scratch/cua-qmp-horizontal-results/critic-base-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua-qmp-horizontal-base/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-horizontal-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-horizontal-results/critic-base-temp > /workspace/scratch/cua-qmp-horizontal-results/critic-base.log 2>&1
+
+cwd /workspace/scratch/cua-qmp-horizontal
+test ! -e /workspace/scratch/cua-qmp-horizontal-results/critic-head-temp && test ! -L /workspace/scratch/cua-qmp-horizontal-results/critic-head-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua-qmp-horizontal/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-horizontal-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py --capture=sys --show-capture=all -rP -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-horizontal-results/critic-head-temp > /workspace/scratch/cua-qmp-horizontal-results/critic-head.log 2>&1
+
+cwd /workspace/scratch/cua-qmp-horizontal
+test ! -e /workspace/scratch/cua-qmp-horizontal-results/critic-adjacent-temp && test ! -L /workspace/scratch/cua-qmp-horizontal-results/critic-adjacent-temp && PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTHONPATH=/workspace/scratch/cua-qmp-horizontal/libs/python/cua-sandbox /workspace/scratch/cua4930-setup/venv/bin/python /workspace/scratch/cua-qmp-horizontal-results/pure_python_pytest.py libs/python/cua-sandbox/tests/test_agentless_transport.py -k 'not the_native_guest_display_never_prints_its_password' --capture=sys -v -p no:cacheprovider --basetemp=/workspace/scratch/cua-qmp-horizontal-results/critic-adjacent-temp > /workspace/scratch/cua-qmp-horizontal-results/critic-adjacent.log 2>&1
+
+Lint/format cwd /workspace/scratch/cua-qmp-horizontal/libs/python/cua-sandbox:
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff check --no-cache cua_sandbox/transport/qmp.py tests/test_qmp_horizontal_scroll.py
+PYTHONDONTWRITEBYTECODE=1 /workspace/scratch/cua4930-setup/venv/bin/python -m ruff format --check --no-cache cua_sandbox/transport/qmp.py tests/test_qmp_horizontal_scroll.py
+
+Whitespace cwd /workspace/scratch/cua-qmp-horizontal:
+GIT_NO_LAZY_FETCH=1 git diff --check f87f1915270afe8b645036d698809f35cbe5721c cdfac29ce38efab17639812178cecb6211275d94
+
+Supporting result files: critic-base.log, critic-head.log, critic-adjacent.log and critic-source.log under /workspace/scratch/cua-qmp-horizontal-results.

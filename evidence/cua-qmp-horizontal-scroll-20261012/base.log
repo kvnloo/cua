@@ -1,0 +1,440 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <EXISTING_VENV>/bin/python
+rootdir: <HEAD>/libs/python/cua-sandbox
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 10 items
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[2-0-expected0] FAILED [ 10%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[-2-0-expected1] FAILED [ 20%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[2-3-expected2] FAILED [ 30%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[-2--3-expected3] FAILED [ 40%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[0-0-expected4] PASSED [ 50%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[0-3-expected5] PASSED [ 60%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[0--3-expected6] PASSED [ 70%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[1-0-expected7] FAILED [ 80%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_public_scroll_preserves_each_signed_notch[-3-0-expected8] FAILED [ 90%]
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py::test_default_vertical_scroll_control PASSED [100%]
+
+=================================== FAILURES ===================================
+________ test_public_scroll_preserves_each_signed_notch[2-0-expected0] _________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('input-send-event', {'events': [{'type': 'abs', 'data': {...}}, {'type': 'abs', 'data': {...}}]})])
+scroll_x = 2, scroll_y = 0, expected = {'wheel-right': 2}
+
+    @pytest.mark.parametrize(
+        "scroll_x,scroll_y,expected",
+        [
+            (2, 0, {"wheel-right": 2}),
+            (-2, 0, {"wheel-left": 2}),
+            (2, 3, {"wheel-right": 2, "wheel-up": 3}),
+            (-2, -3, {"wheel-left": 2, "wheel-down": 3}),
+            (0, 0, {}),
+            (0, 3, {"wheel-up": 3}),
+            (0, -3, {"wheel-down": 3}),
+            (1, 0, {"wheel-right": 1}),
+            (-3, 0, {"wheel-left": 3}),
+        ],
+    )
+    async def test_public_scroll_preserves_each_signed_notch(
+        recorded_qmp, scroll_x, scroll_y, expected
+    ):
+        sb, commands = recorded_qmp
+        result = await sb.mouse.scroll(100, 100, scroll_x=scroll_x, scroll_y=scroll_y)
+        assert result is None
+        print("SCROLL_TRACE", json.dumps({"x": scroll_x, "y": scroll_y, "commands": commands}))
+>       assert_notches(commands, expected)
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+commands = [('input-send-event', {'events': [{'type': 'abs', 'data': {'axis': 'x', 'value': 2559}}, {'type': 'abs', 'data': {'axis': 'y', 'value': 4550}}]})]
+expected = {'wheel-right': 2}
+
+    def assert_notches(commands, expected):
+        assert commands[0] == (
+            "input-send-event",
+            {
+                "events": [
+                    {"type": "abs", "data": {"axis": "x", "value": 2559}},
+                    {"type": "abs", "data": {"axis": "y", "value": 4550}},
+                ]
+            },
+        )
+        buttons = []
+        for name, arguments in commands[1:]:
+            assert name == "input-send-event"
+            down, up = arguments["events"]
+            button = down["data"]["button"]
+            assert down == {"type": "btn", "data": {"down": True, "button": button}}
+            assert up == {"type": "btn", "data": {"down": False, "button": button}}
+            buttons.append(button)
+        # Mixed axes are independent notches, with no simultaneous/diagonal promise.
+>       assert Counter(buttons) == Counter(expected)
+E       AssertionError: assert Counter() == Counter({'wheel-right': 2})
+E
+E         Right contains 1 more item:
+E         {'wheel-right': 2}
+E
+E         Full diff:
+E         - Counter({
+E         ?         ^...
+E
+E         ...Full output truncated (4 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:48: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 2, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[-2-0-expected1] ________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('input-send-event', {'events': [{'type': 'abs', 'data': {...}}, {'type': 'abs', 'data': {...}}]})])
+scroll_x = -2, scroll_y = 0, expected = {'wheel-left': 2}
+
+    @pytest.mark.parametrize(
+        "scroll_x,scroll_y,expected",
+        [
+            (2, 0, {"wheel-right": 2}),
+            (-2, 0, {"wheel-left": 2}),
+            (2, 3, {"wheel-right": 2, "wheel-up": 3}),
+            (-2, -3, {"wheel-left": 2, "wheel-down": 3}),
+            (0, 0, {}),
+            (0, 3, {"wheel-up": 3}),
+            (0, -3, {"wheel-down": 3}),
+            (1, 0, {"wheel-right": 1}),
+            (-3, 0, {"wheel-left": 3}),
+        ],
+    )
+    async def test_public_scroll_preserves_each_signed_notch(
+        recorded_qmp, scroll_x, scroll_y, expected
+    ):
+        sb, commands = recorded_qmp
+        result = await sb.mouse.scroll(100, 100, scroll_x=scroll_x, scroll_y=scroll_y)
+        assert result is None
+        print("SCROLL_TRACE", json.dumps({"x": scroll_x, "y": scroll_y, "commands": commands}))
+>       assert_notches(commands, expected)
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+commands = [('input-send-event', {'events': [{'type': 'abs', 'data': {'axis': 'x', 'value': 2559}}, {'type': 'abs', 'data': {'axis': 'y', 'value': 4550}}]})]
+expected = {'wheel-left': 2}
+
+    def assert_notches(commands, expected):
+        assert commands[0] == (
+            "input-send-event",
+            {
+                "events": [
+                    {"type": "abs", "data": {"axis": "x", "value": 2559}},
+                    {"type": "abs", "data": {"axis": "y", "value": 4550}},
+                ]
+            },
+        )
+        buttons = []
+        for name, arguments in commands[1:]:
+            assert name == "input-send-event"
+            down, up = arguments["events"]
+            button = down["data"]["button"]
+            assert down == {"type": "btn", "data": {"down": True, "button": button}}
+            assert up == {"type": "btn", "data": {"down": False, "button": button}}
+            buttons.append(button)
+        # Mixed axes are independent notches, with no simultaneous/diagonal promise.
+>       assert Counter(buttons) == Counter(expected)
+E       AssertionError: assert Counter() == Counter({'wheel-left': 2})
+E
+E         Right contains 1 more item:
+E         {'wheel-left': 2}
+E
+E         Full diff:
+E         - Counter({
+E         ?         ^...
+E
+E         ...Full output truncated (4 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:48: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": -2, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[2-3-expected2] _________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('input-send-event', {'events': [{'type': 'abs', 'data': {...}}, {'type'...'data': {...}}]}), ('input-send-event', {'events': [{'type': 'btn', 'data': {...}}, {'type': 'btn', 'data': {...}}]})])
+scroll_x = 2, scroll_y = 3, expected = {'wheel-right': 2, 'wheel-up': 3}
+
+    @pytest.mark.parametrize(
+        "scroll_x,scroll_y,expected",
+        [
+            (2, 0, {"wheel-right": 2}),
+            (-2, 0, {"wheel-left": 2}),
+            (2, 3, {"wheel-right": 2, "wheel-up": 3}),
+            (-2, -3, {"wheel-left": 2, "wheel-down": 3}),
+            (0, 0, {}),
+            (0, 3, {"wheel-up": 3}),
+            (0, -3, {"wheel-down": 3}),
+            (1, 0, {"wheel-right": 1}),
+            (-3, 0, {"wheel-left": 3}),
+        ],
+    )
+    async def test_public_scroll_preserves_each_signed_notch(
+        recorded_qmp, scroll_x, scroll_y, expected
+    ):
+        sb, commands = recorded_qmp
+        result = await sb.mouse.scroll(100, 100, scroll_x=scroll_x, scroll_y=scroll_y)
+        assert result is None
+        print("SCROLL_TRACE", json.dumps({"x": scroll_x, "y": scroll_y, "commands": commands}))
+>       assert_notches(commands, expected)
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+commands = [('input-send-event', {'events': [{'type': 'abs', 'data': {'axis': 'x', 'value': 2559}}, {'type': 'abs', 'data': {'axi...btn', 'data': {'down': True, 'button': 'wheel-up'}}, {'type': 'btn', 'data': {'down': False, 'button': 'wheel-up'}}]})]
+expected = {'wheel-right': 2, 'wheel-up': 3}
+
+    def assert_notches(commands, expected):
+        assert commands[0] == (
+            "input-send-event",
+            {
+                "events": [
+                    {"type": "abs", "data": {"axis": "x", "value": 2559}},
+                    {"type": "abs", "data": {"axis": "y", "value": 4550}},
+                ]
+            },
+        )
+        buttons = []
+        for name, arguments in commands[1:]:
+            assert name == "input-send-event"
+            down, up = arguments["events"]
+            button = down["data"]["button"]
+            assert down == {"type": "btn", "data": {"down": True, "button": button}}
+            assert up == {"type": "btn", "data": {"down": False, "button": button}}
+            buttons.append(button)
+        # Mixed axes are independent notches, with no simultaneous/diagonal promise.
+>       assert Counter(buttons) == Counter(expected)
+E       AssertionError: assert Counter({'wheel-up': 3}) == Counter({'whe...el-right': 2})
+E
+E         Omitting 1 identical items, use -vv to show
+E         Right contains 1 more item:
+E         {'wheel-right': 2}
+E
+E         Full diff:
+E           Counter({...
+E
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:48: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 2, "y": 3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}]]}
+_______ test_public_scroll_preserves_each_signed_notch[-2--3-expected3] ________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('input-send-event', {'events': [{'type': 'abs', 'data': {...}}, {'type'...'data': {...}}]}), ('input-send-event', {'events': [{'type': 'btn', 'data': {...}}, {'type': 'btn', 'data': {...}}]})])
+scroll_x = -2, scroll_y = -3, expected = {'wheel-left': 2, 'wheel-down': 3}
+
+    @pytest.mark.parametrize(
+        "scroll_x,scroll_y,expected",
+        [
+            (2, 0, {"wheel-right": 2}),
+            (-2, 0, {"wheel-left": 2}),
+            (2, 3, {"wheel-right": 2, "wheel-up": 3}),
+            (-2, -3, {"wheel-left": 2, "wheel-down": 3}),
+            (0, 0, {}),
+            (0, 3, {"wheel-up": 3}),
+            (0, -3, {"wheel-down": 3}),
+            (1, 0, {"wheel-right": 1}),
+            (-3, 0, {"wheel-left": 3}),
+        ],
+    )
+    async def test_public_scroll_preserves_each_signed_notch(
+        recorded_qmp, scroll_x, scroll_y, expected
+    ):
+        sb, commands = recorded_qmp
+        result = await sb.mouse.scroll(100, 100, scroll_x=scroll_x, scroll_y=scroll_y)
+        assert result is None
+        print("SCROLL_TRACE", json.dumps({"x": scroll_x, "y": scroll_y, "commands": commands}))
+>       assert_notches(commands, expected)
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+commands = [('input-send-event', {'events': [{'type': 'abs', 'data': {'axis': 'x', 'value': 2559}}, {'type': 'abs', 'data': {'axi..., 'data': {'down': True, 'button': 'wheel-down'}}, {'type': 'btn', 'data': {'down': False, 'button': 'wheel-down'}}]})]
+expected = {'wheel-left': 2, 'wheel-down': 3}
+
+    def assert_notches(commands, expected):
+        assert commands[0] == (
+            "input-send-event",
+            {
+                "events": [
+                    {"type": "abs", "data": {"axis": "x", "value": 2559}},
+                    {"type": "abs", "data": {"axis": "y", "value": 4550}},
+                ]
+            },
+        )
+        buttons = []
+        for name, arguments in commands[1:]:
+            assert name == "input-send-event"
+            down, up = arguments["events"]
+            button = down["data"]["button"]
+            assert down == {"type": "btn", "data": {"down": True, "button": button}}
+            assert up == {"type": "btn", "data": {"down": False, "button": button}}
+            buttons.append(button)
+        # Mixed axes are independent notches, with no simultaneous/diagonal promise.
+>       assert Counter(buttons) == Counter(expected)
+E       AssertionError: assert Counter({'wheel-down': 3}) == Counter({'whe...eel-left': 2})
+E
+E         Omitting 1 identical items, use -vv to show
+E         Right contains 1 more item:
+E         {'wheel-left': 2}
+E
+E         Full diff:
+E           Counter({...
+E
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:48: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": -2, "y": -3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[1-0-expected7] _________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('input-send-event', {'events': [{'type': 'abs', 'data': {...}}, {'type': 'abs', 'data': {...}}]})])
+scroll_x = 1, scroll_y = 0, expected = {'wheel-right': 1}
+
+    @pytest.mark.parametrize(
+        "scroll_x,scroll_y,expected",
+        [
+            (2, 0, {"wheel-right": 2}),
+            (-2, 0, {"wheel-left": 2}),
+            (2, 3, {"wheel-right": 2, "wheel-up": 3}),
+            (-2, -3, {"wheel-left": 2, "wheel-down": 3}),
+            (0, 0, {}),
+            (0, 3, {"wheel-up": 3}),
+            (0, -3, {"wheel-down": 3}),
+            (1, 0, {"wheel-right": 1}),
+            (-3, 0, {"wheel-left": 3}),
+        ],
+    )
+    async def test_public_scroll_preserves_each_signed_notch(
+        recorded_qmp, scroll_x, scroll_y, expected
+    ):
+        sb, commands = recorded_qmp
+        result = await sb.mouse.scroll(100, 100, scroll_x=scroll_x, scroll_y=scroll_y)
+        assert result is None
+        print("SCROLL_TRACE", json.dumps({"x": scroll_x, "y": scroll_y, "commands": commands}))
+>       assert_notches(commands, expected)
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+commands = [('input-send-event', {'events': [{'type': 'abs', 'data': {'axis': 'x', 'value': 2559}}, {'type': 'abs', 'data': {'axis': 'y', 'value': 4550}}]})]
+expected = {'wheel-right': 1}
+
+    def assert_notches(commands, expected):
+        assert commands[0] == (
+            "input-send-event",
+            {
+                "events": [
+                    {"type": "abs", "data": {"axis": "x", "value": 2559}},
+                    {"type": "abs", "data": {"axis": "y", "value": 4550}},
+                ]
+            },
+        )
+        buttons = []
+        for name, arguments in commands[1:]:
+            assert name == "input-send-event"
+            down, up = arguments["events"]
+            button = down["data"]["button"]
+            assert down == {"type": "btn", "data": {"down": True, "button": button}}
+            assert up == {"type": "btn", "data": {"down": False, "button": button}}
+            buttons.append(button)
+        # Mixed axes are independent notches, with no simultaneous/diagonal promise.
+>       assert Counter(buttons) == Counter(expected)
+E       AssertionError: assert Counter() == Counter({'wheel-right': 1})
+E
+E         Right contains 1 more item:
+E         {'wheel-right': 1}
+E
+E         Full diff:
+E         - Counter({
+E         ?         ^...
+E
+E         ...Full output truncated (4 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:48: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 1, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[-3-0-expected8] ________
+
+recorded_qmp = (Sandbox(name=None, transport=QMPTransport), [('input-send-event', {'events': [{'type': 'abs', 'data': {...}}, {'type': 'abs', 'data': {...}}]})])
+scroll_x = -3, scroll_y = 0, expected = {'wheel-left': 3}
+
+    @pytest.mark.parametrize(
+        "scroll_x,scroll_y,expected",
+        [
+            (2, 0, {"wheel-right": 2}),
+            (-2, 0, {"wheel-left": 2}),
+            (2, 3, {"wheel-right": 2, "wheel-up": 3}),
+            (-2, -3, {"wheel-left": 2, "wheel-down": 3}),
+            (0, 0, {}),
+            (0, 3, {"wheel-up": 3}),
+            (0, -3, {"wheel-down": 3}),
+            (1, 0, {"wheel-right": 1}),
+            (-3, 0, {"wheel-left": 3}),
+        ],
+    )
+    async def test_public_scroll_preserves_each_signed_notch(
+        recorded_qmp, scroll_x, scroll_y, expected
+    ):
+        sb, commands = recorded_qmp
+        result = await sb.mouse.scroll(100, 100, scroll_x=scroll_x, scroll_y=scroll_y)
+        assert result is None
+        print("SCROLL_TRACE", json.dumps({"x": scroll_x, "y": scroll_y, "commands": commands}))
+>       assert_notches(commands, expected)
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+commands = [('input-send-event', {'events': [{'type': 'abs', 'data': {'axis': 'x', 'value': 2559}}, {'type': 'abs', 'data': {'axis': 'y', 'value': 4550}}]})]
+expected = {'wheel-left': 3}
+
+    def assert_notches(commands, expected):
+        assert commands[0] == (
+            "input-send-event",
+            {
+                "events": [
+                    {"type": "abs", "data": {"axis": "x", "value": 2559}},
+                    {"type": "abs", "data": {"axis": "y", "value": 4550}},
+                ]
+            },
+        )
+        buttons = []
+        for name, arguments in commands[1:]:
+            assert name == "input-send-event"
+            down, up = arguments["events"]
+            button = down["data"]["button"]
+            assert down == {"type": "btn", "data": {"down": True, "button": button}}
+            assert up == {"type": "btn", "data": {"down": False, "button": button}}
+            buttons.append(button)
+        # Mixed axes are independent notches, with no simultaneous/diagonal promise.
+>       assert Counter(buttons) == Counter(expected)
+E       AssertionError: assert Counter() == Counter({'wheel-left': 3})
+E
+E         Right contains 1 more item:
+E         {'wheel-left': 3}
+E
+E         Full diff:
+E         - Counter({
+E         ?         ^...
+E
+E         ...Full output truncated (4 lines hidden), use '-vv' to show
+
+libs/python/cua-sandbox/tests/test_qmp_horizontal_scroll.py:48: AssertionError
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": -3, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}]]}
+==================================== PASSES ====================================
+________ test_public_scroll_preserves_each_signed_notch[0-0-expected4] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 0, "y": 0, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[0-3-expected5] _________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 0, "y": 3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-up"}}, {"type": "btn", "data": {"down": false, "button": "wheel-up"}}]}]]}
+________ test_public_scroll_preserves_each_signed_notch[0--3-expected6] ________
+----------------------------- Captured stdout call -----------------------------
+SCROLL_TRACE {"x": 0, "y": -3, "commands": [["input-send-event", {"events": [{"type": "abs", "data": {"axis": "x", "value": 2559}}, {"type": "abs", "data": {"axis": "y", "value": 4550}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}], ["input-send-event", {"events": [{"type": "btn", "data": {"down": true, "button": "wheel-down"}}, {"type": "btn", "data": {"down": false, "button": "wheel-down"}}]}]]}
+========================= 6 failed, 4 passed in 0.08s ==========================
+PURE_PYTHON_BOUNDARY native SDK unloaded; network and filesystem deletion refused
