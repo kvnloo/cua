@@ -866,6 +866,8 @@ class Sandbox:
         """The sandbox name (`None` until a cloud sandbox is bound)."""
         self._runtime = _runtime
         self._runtime_info = _runtime_info
+        # Bound only by the native local named-reconnect path, never by a name alone.
+        self._local_reconnect_handle: Any = None
         self._ephemeral = _ephemeral
         self._has_snapshots = False
         self._claim_handle: Any = None
@@ -1223,6 +1225,16 @@ class Sandbox:
                     await self._runtime.stop(vm_name)
             except Exception:
                 logger.warning("Failed to stop/delete runtime for sandbox %r", self.name)
+        elif (
+            self._local_reconnect_handle is not None
+            and self._runtime is None
+            and self._runtime_info is None
+            and self.location == "local"
+        ):
+            try:
+                await self._local_reconnect_handle.delete()
+            except Exception:
+                logger.warning("Failed to delete reconnected local sandbox %r", self.name)
 
     async def screenshot(
         self, text: Optional[str] = None, format: str = "png", quality: int = 95
@@ -2644,6 +2656,17 @@ class Sandbox:
             else:
                 transport = await _local_state_transport(name, state)
             sb = cls(transport, name=name, _ephemeral=False, _telemetry_enabled=telemetry_enabled)
+            if isinstance(transport, EnvTransport) and transport._native_sandbox is not None:
+                handle = transport._native_sandbox
+                try:
+                    info = handle.info()
+                except Exception:
+                    info = None
+                if (
+                    getattr(info, "location", None) == "local"
+                    and getattr(info, "name", None) == name
+                ):
+                    sb._local_reconnect_handle = handle
             await sb._connect()
             _record_sandbox_create(sb, image=None, local=local, ephemeral=False, t_start=_t_start)
             return sb
