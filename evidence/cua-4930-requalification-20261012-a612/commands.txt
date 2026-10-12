@@ -1,0 +1,44 @@
+PORTABLE ROOT MAPPING
+HEAD_WORKTREE: isolated sparse Git worktree at a612deae0d16da95d3bfcb8c45ea610fd9b0e3f5.
+BASELINE_WORKTREE: isolated sparse Git worktree at cc7326d6ffd71fcf9a157e4498924ab47431d467.
+ENV_ROOT: existing official-wheel Python 3.12.14 setup directory; interpreter ENV_ROOT/venv/bin/python.
+RESULTS_ROOT: writable output/temp directory for this new dated run. Never reuse an existing pytest basetemp.
+Original absolute machine roots are replaced by these variables; arguments, selected tests, result counts and command order are unchanged.
+
+SOURCE PREPARATION
+git fetch --depth=1 --filter=blob:none origin a612deae0d16da95d3bfcb8c45ea610fd9b0e3f5
+git worktree add --no-checkout -b evidence/cua-4930-requal-a612-20261012 "$HEAD_WORKTREE" a612deae0d16da95d3bfcb8c45ea610fd9b0e3f5
+git config extensions.worktreeConfig true
+git -C "$HEAD_WORKTREE" config --worktree core.sparseCheckout true
+git -C "$HEAD_WORKTREE" sparse-checkout set --no-cone /libs/cua-bench/ /AGENTS.md /CONTRIBUTING.md /TESTING.md /.agents/skills/
+git -C "$HEAD_WORKTREE" read-tree -mu HEAD
+Copy the identical test_independent_4930.py from historical evidence commit ae8dd2cadfd3dc3bc47c1eab27315ff2a381c012 into HEAD_WORKTREE/libs/cua-bench/cua_bench/tests/.
+Initial copy used a relative path inappropriate to the package cwd and failed without creating a file; it was corrected before the probe run. This was a missing relative destination, not a permission denial or alternate execution route.
+
+OWNER CURRENT HEAD (cwd HEAD_WORKTREE/libs/cua-bench)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 CUA_BENCH_NO_BANNER=1 PYTHONPATH="$HEAD_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_run_benchmark.py -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/owner-temp"
+Result: exit 0, 49 passed in 3.46s.
+
+INHERITED PROBES CURRENT HEAD (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 CUA_BENCH_NO_BANNER=1 PYTHONPATH="$HEAD_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_independent_4930.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/probe-temp"
+Result: exit 1, 2 failed in 3.17s, intended behavioral assertions reached.
+
+BASELINE PREPARATION
+git worktree add --no-checkout -b evidence/cua-4930-requal-baseline-cc-20261012 "$BASELINE_WORKTREE" cc7326d6ffd71fcf9a157e4498924ab47431d467
+git -C "$BASELINE_WORKTREE" config --worktree core.sparseCheckout true
+git -C "$BASELINE_WORKTREE" sparse-checkout set --no-cone /libs/cua-bench/ /AGENTS.md /CONTRIBUTING.md /TESTING.md
+git -C "$BASELINE_WORKTREE" read-tree -mu HEAD
+cp "$HEAD_WORKTREE/libs/cua-bench/cua_bench/tests/test_run_benchmark.py" "$BASELINE_WORKTREE/libs/cua-bench/cua_bench/tests/test_run_benchmark.py"
+cp "$HEAD_WORKTREE/libs/cua-bench/cua_bench/tests/test_independent_4930.py" "$BASELINE_WORKTREE/libs/cua-bench/cua_bench/tests/test_independent_4930.py"
+Only current tests are overlaid; baseline production source remains exact cc7326d6.
+
+CURRENT OWNER TESTS ON PRIOR-HEAD PRODUCT (cwd BASELINE_WORKTREE/libs/cua-bench)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 CUA_BENCH_NO_BANNER=1 PYTHONPATH="$BASELINE_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_run_benchmark.py -v -p no:cacheprovider --basetemp="$RESULTS_ROOT/baseline-owner-temp"
+Result: exit 1, 36 passed and 13 failed in 3.81s. All 13 failures are the owner's new validation/discovery/cleanup cases. This overlay is distinct from cc7326d6's own historical 36-test suite.
+
+INHERITED PROBES PRIOR HEAD (same cwd)
+PYTHONDONTWRITEBYTECODE=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 CUA_BENCH_NO_BANNER=1 PYTHONPATH="$BASELINE_WORKTREE/libs/cua-bench" "$ENV_ROOT/venv/bin/python" -m pytest cua_bench/tests/test_independent_4930.py -v -s -p no:cacheprovider --basetemp="$RESULTS_ROOT/baseline-probe-temp"
+Result: exit 1, 2 failed; exact timing is retained in baseline-probes.log. Same inherited mean/oracle behavior.
+
+LIMITS
+Original PR base 7cc4bd0b was not rerun in this dated receipt; original 14-pass/2-probe-failure results remain in ae8dd2ca. No install/sync, native SDK build, desktop, VM, Docker or upstream action. Production code remains untouched. No newly introduced cleanup/validation defect was established by these bounded tests.

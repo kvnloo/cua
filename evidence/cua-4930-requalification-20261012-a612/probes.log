@@ -1,0 +1,72 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $HEAD_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+cua_bench/tests/test_independent_4930.py::test_valid_components_observe_documented_mean EVIDENCE {"error": null, "reward": 1.0, "steps": 1, "success": true, "task_path": "$RESULTS_ROOT/probe-temp/test_valid_components_observe_0/task", "variant_id": 0}
+FAILED
+cua_bench/tests/test_independent_4930.py::test_partial_oracle_failure_keeps_two_completed_steps EVIDENCE {"environment_steps": 2, "result": {"error": "independent oracle failure after two completed steps", "reward": 0.0, "steps": 0, "success": false, "task_path": "$RESULTS_ROOT/probe-temp/test_partial_oracle_failure_ke0/task", "variant_id": 0}, "session_closed": true}
+FAILED
+
+=================================== FAILURES ===================================
+________________ test_valid_components_observe_documented_mean _________________
+
+tmp_path = PosixPath('$RESULTS_ROOT/probe-temp/test_valid_components_observe_0')
+
+    @pytest.mark.asyncio
+    async def test_valid_components_observe_documented_mean(tmp_path):
+        result = await cb.run_single_task(task_dir(tmp_path), agent_fn=lambda *_: cb.DoneAction())
+        print("EVIDENCE", json.dumps(vars(result), sort_keys=True))
+        assert result.error is None
+        assert result.steps == 1
+>       assert result.reward == pytest.approx(1 / 3)
+E       assert 1.0 == 0.3333333333333333 ± 3.3e-07
+E         
+E         comparison failed
+E         Obtained: 1.0
+E         Expected: 0.3333333333333333 ± 3.3e-07
+
+cua_bench/tests/test_independent_4930.py:38: AssertionError
+____________ test_partial_oracle_failure_keeps_two_completed_steps _____________
+
+tmp_path = PosixPath('$RESULTS_ROOT/probe-temp/test_partial_oracle_failure_ke0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at <object-address>>
+
+    @pytest.mark.asyncio
+    async def test_partial_oracle_failure_keeps_two_completed_steps(tmp_path, monkeypatch):
+        original_make = runners.make
+        observed = []
+    
+        def capture_make(*args, **kwargs):
+            env = original_make(*args, **kwargs)
+            observed.append(env)
+    
+            async def failing_solver(task, session):
+                await env.step(cb.DoneAction())
+                await env.step(cb.DoneAction())
+                raise RuntimeError("independent oracle failure after two completed steps")
+    
+            env.solve_task_fn = failing_solver
+            return env
+    
+        monkeypatch.setattr(runners, "make", capture_make)
+        result = await cb.run_single_task(task_dir(tmp_path), oracle=True)
+        env = observed[0]
+        print("EVIDENCE", json.dumps({"result": vars(result), "environment_steps": env.step_count, "session_closed": env.session is None}, sort_keys=True))
+        assert env.step_count == 2
+        assert env.session is None
+        assert result.success is False
+        assert result.reward == 0.0
+        assert result.error == "independent oracle failure after two completed steps"
+>       assert result.steps == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = TaskResult(task_path='$RESULTS_ROOT/probe-temp/test_partial_oracle_failure_ke0/task', variant_id=0, success=False, reward=0.0, steps=0, error='independent oracle failure after two completed steps').steps
+
+cua_bench/tests/test_independent_4930.py:68: AssertionError
+=========================== short test summary info ============================
+FAILED cua_bench/tests/test_independent_4930.py::test_valid_components_observe_documented_mean
+FAILED cua_bench/tests/test_independent_4930.py::test_partial_oracle_failure_keeps_two_completed_steps
+============================== 2 failed in 3.17s ===============================

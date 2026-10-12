@@ -1,0 +1,334 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- $ENV_ROOT/venv/bin/python
+rootdir: $BASELINE_WORKTREE/libs/cua-bench
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 49 items
+
+cua_bench/tests/test_run_benchmark.py::TestTaskResult::test_task_result_creation PASSED [  2%]
+cua_bench/tests/test_run_benchmark.py::TestTaskResult::test_task_result_with_error PASSED [  4%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_creation PASSED [  6%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_all_success PASSED [  8%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkResult::test_benchmark_result_all_failed PASSED [ 10%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_oracle PASSED [ 12%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_with_agent PASSED [ 14%]
+cua_bench/tests/test_run_benchmark.py::TestRunSingleTaskE2E::test_run_single_task_failure PASSED [ 16%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_not_found PASSED [ 18%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_empty_dataset PASSED [ 20%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmark::test_run_benchmark_task_filter_no_match PASSED [ 22%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmarkE2E::test_run_benchmark_oracle PASSED [ 24%]
+cua_bench/tests/test_run_benchmark.py::TestRunBenchmarkE2E::test_run_benchmark_task_filter PASSED [ 26%]
+cua_bench/tests/test_run_benchmark.py::TestRunInteractiveE2E::test_run_interactive_returns_env PASSED [ 28%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value0] PASSED [ 30%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value1] PASSED [ 32%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value2] PASSED [ 34%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_secondary_reward_cannot_claim_success[value3] PASSED [ 36%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[True] PASSED [ 38%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[False] PASSED [ 40%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[1.0] PASSED [ 42%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[None] PASSED [ 44%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[nan] PASSED [ 46%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[inf] PASSED [ 48%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[-0.1] PASSED [ 51%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_reward_cannot_claim_success[1.1] PASSED [ 53%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_missing_evaluator_cannot_claim_success PASSED [ 55%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_setup_only_cannot_claim_success_even_if_evaluator_would_pass PASSED [ 57%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_cleanup_failure_revokes_success_and_keeps_steps PASSED [ 59%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_mid_execution_failure_retains_completed_step_count PASSED [ 61%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[0] PASSED [ 63%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[-1] PASSED [ 65%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[False] PASSED [ 67%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[True] PASSED [ 69%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[1.5] PASSED [ 71%]
+cua_bench/tests/test_run_benchmark.py::TestEvaluatorRewardFailClosed::test_invalid_step_budget_cannot_score_initial_state[2] PASSED [ 73%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[0] FAILED [ 75%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[-1] FAILED [ 77%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[True] FAILED [ 79%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[1.5] FAILED [ 81%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[2] FAILED [ 83%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[0] FAILED [ 85%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[-1] FAILED [ 87%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[True] FAILED [ 89%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[1.5] FAILED [ 91%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[2] FAILED [ 93%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_variant_discovery_failure_is_not_silently_scored FAILED [ 95%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_discovery_environment_is_closed_before_execution FAILED [ 97%]
+cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_discovery_cleanup_failure_blocks_benchmark FAILED [100%]
+
+=================================== FAILURES ===================================
+_ TestBenchmarkDiscoveryFailClosed.test_invalid_parallelism_rejected_before_task_discovery[0] _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec0')
+parallel = 0
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("parallel", [0, -1, True, 1.5, "2"])
+    async def test_invalid_parallelism_rejected_before_task_discovery(self, tmp_path, parallel):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_parallel must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_parallel must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec0'
+
+cua_bench/tests/test_run_benchmark.py:600: AssertionError
+_ TestBenchmarkDiscoveryFailClosed.test_invalid_parallelism_rejected_before_task_discovery[-1] _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec1')
+parallel = -1
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("parallel", [0, -1, True, 1.5, "2"])
+    async def test_invalid_parallelism_rejected_before_task_discovery(self, tmp_path, parallel):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_parallel must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_parallel must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec1'
+
+cua_bench/tests/test_run_benchmark.py:600: AssertionError
+_ TestBenchmarkDiscoveryFailClosed.test_invalid_parallelism_rejected_before_task_discovery[True] _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec2')
+parallel = True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("parallel", [0, -1, True, 1.5, "2"])
+    async def test_invalid_parallelism_rejected_before_task_discovery(self, tmp_path, parallel):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_parallel must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_parallel must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec2'
+
+cua_bench/tests/test_run_benchmark.py:600: AssertionError
+_ TestBenchmarkDiscoveryFailClosed.test_invalid_parallelism_rejected_before_task_discovery[1.5] _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec3')
+parallel = 1.5
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("parallel", [0, -1, True, 1.5, "2"])
+    async def test_invalid_parallelism_rejected_before_task_discovery(self, tmp_path, parallel):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_parallel must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_parallel must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec3'
+
+cua_bench/tests/test_run_benchmark.py:600: AssertionError
+_ TestBenchmarkDiscoveryFailClosed.test_invalid_parallelism_rejected_before_task_discovery[2] _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec4')
+parallel = '2'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("parallel", [0, -1, True, 1.5, "2"])
+    async def test_invalid_parallelism_rejected_before_task_discovery(self, tmp_path, parallel):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_parallel must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_parallel must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_parallelism_rejec4'
+
+cua_bench/tests/test_run_benchmark.py:600: AssertionError
+___ TestBenchmarkDiscoveryFailClosed.test_invalid_variant_limit_rejected[0] ____
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej0')
+limit = 0
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("limit", [0, -1, True, 1.5, "2"])
+    async def test_invalid_variant_limit_rejected(self, tmp_path, limit):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_variants must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_variants must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej0'
+
+cua_bench/tests/test_run_benchmark.py:607: AssertionError
+___ TestBenchmarkDiscoveryFailClosed.test_invalid_variant_limit_rejected[-1] ___
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej1')
+limit = -1
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("limit", [0, -1, True, 1.5, "2"])
+    async def test_invalid_variant_limit_rejected(self, tmp_path, limit):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_variants must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_variants must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej1'
+
+cua_bench/tests/test_run_benchmark.py:607: AssertionError
+__ TestBenchmarkDiscoveryFailClosed.test_invalid_variant_limit_rejected[True] __
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej2')
+limit = True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("limit", [0, -1, True, 1.5, "2"])
+    async def test_invalid_variant_limit_rejected(self, tmp_path, limit):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_variants must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_variants must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej2'
+
+cua_bench/tests/test_run_benchmark.py:607: AssertionError
+__ TestBenchmarkDiscoveryFailClosed.test_invalid_variant_limit_rejected[1.5] ___
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej3')
+limit = 1.5
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("limit", [0, -1, True, 1.5, "2"])
+    async def test_invalid_variant_limit_rejected(self, tmp_path, limit):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_variants must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_variants must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej3'
+
+cua_bench/tests/test_run_benchmark.py:607: AssertionError
+___ TestBenchmarkDiscoveryFailClosed.test_invalid_variant_limit_rejected[2] ____
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej4')
+limit = '2'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("limit", [0, -1, True, 1.5, "2"])
+    async def test_invalid_variant_limit_rejected(self, tmp_path, limit):
+        import cua_bench.runners as runners
+>       with pytest.raises(ValueError, match="max_variants must be a positive integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'max_variants must be a positive integer'
+E         Actual message: 'No tasks found in dataset: $RESULTS_ROOT/baseline-owner-temp/test_invalid_variant_limit_rej4'
+
+cua_bench/tests/test_run_benchmark.py:607: AssertionError
+_ TestBenchmarkDiscoveryFailClosed.test_variant_discovery_failure_is_not_silently_scored _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_variant_discovery_failure0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at <object-address>>
+
+    @pytest.mark.asyncio
+    async def test_variant_discovery_failure_is_not_silently_scored(self, tmp_path, monkeypatch):
+        import cua_bench.runners as runners
+    
+        task_dir = tmp_path / "task"
+        task_dir.mkdir()
+        (task_dir / "main.py").write_text("# fixture\n")
+    
+        def broken_make(*args, **kwargs):
+            raise RuntimeError("invalid task fixture")
+    
+        monkeypatch.setattr(runners, "make", broken_make)
+>       with pytest.raises(RuntimeError, match="Unable to discover variants"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+cua_bench/tests/test_run_benchmark.py:622: Failed
+_ TestBenchmarkDiscoveryFailClosed.test_discovery_environment_is_closed_before_execution _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_discovery_environment_is_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at <object-address>>
+
+    @pytest.mark.asyncio
+    async def test_discovery_environment_is_closed_before_execution(self, tmp_path, monkeypatch):
+        import cua_bench.runners as runners
+    
+        task_dir = tmp_path / "task"
+        task_dir.mkdir()
+        (task_dir / "main.py").write_text("# fixture\n")
+    
+        calls = {"closed": 0}
+    
+        class DiscoveryEnvironment:
+            def tasks_config_fn(self):
+                return [object()]
+    
+            async def close(self):
+                calls["closed"] += 1
+    
+        def make_for_discovery(*args, **kwargs):
+            return DiscoveryEnvironment()
+    
+        async def fake_run(*args, **kwargs):
+            assert calls["closed"] == 1
+            return runners.TaskResult(
+                task_path=str(task_dir), variant_id=0, success=False,
+                reward=0.0, steps=0, error="not executed"
+            )
+    
+        monkeypatch.setattr(runners, "make", make_for_discovery)
+        monkeypatch.setattr(runners, "run_single_task", fake_run)
+        await runners.run_benchmark(tmp_path)
+>       assert calls["closed"] == 1
+E       assert 0 == 1
+
+cua_bench/tests/test_run_benchmark.py:656: AssertionError
+_ TestBenchmarkDiscoveryFailClosed.test_discovery_cleanup_failure_blocks_benchmark _
+
+self = <cua_bench.tests.test_run_benchmark.TestBenchmarkDiscoveryFailClosed object at <object-address>>
+tmp_path = PosixPath('$RESULTS_ROOT/baseline-owner-temp/test_discovery_cleanup_failure0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at <object-address>>
+
+    @pytest.mark.asyncio
+    async def test_discovery_cleanup_failure_blocks_benchmark(self, tmp_path, monkeypatch):
+        import cua_bench.runners as runners
+    
+        task_dir = tmp_path / "task"
+        task_dir.mkdir()
+        (task_dir / "main.py").write_text("# fixture\n")
+    
+        class DiscoveryEnvironment:
+            def tasks_config_fn(self):
+                return [object()]
+    
+            async def close(self):
+                raise RuntimeError("cleanup failure")
+    
+        monkeypatch.setattr(runners, "make", lambda *a, **k: DiscoveryEnvironment())
+>       with pytest.raises(RuntimeError, match="Unable to close discovery environment"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+cua_bench/tests/test_run_benchmark.py:674: Failed
+=========================== short test summary info ============================
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[0]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[-1]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[True]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[1.5]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_parallelism_rejected_before_task_discovery[2]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[0]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[-1]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[True]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[1.5]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_invalid_variant_limit_rejected[2]
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_variant_discovery_failure_is_not_silently_scored
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_discovery_environment_is_closed_before_execution
+FAILED cua_bench/tests/test_run_benchmark.py::TestBenchmarkDiscoveryFailClosed::test_discovery_cleanup_failure_blocks_benchmark
+======================== 13 failed, 36 passed in 3.81s =========================
