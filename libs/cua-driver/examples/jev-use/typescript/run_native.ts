@@ -137,7 +137,11 @@ export async function observe(
   } catch (error) {
     // Drivers before 0.35 always return the full response and refuse the
     // unknown argument.
-    if (!(error instanceof DriverToolError && error.message.includes('unknown argument full_output'))) {
+    const isLegacyFullOutputRefusal =
+      error instanceof DriverToolError &&
+      (error.code === undefined || error.code === 'invalid_arguments') &&
+      error.message.includes('unknown argument full_output');
+    if (!isLegacyFullOutputRefusal) {
       throw error;
     }
     payload = await driver.call('get_window_state', read);
