@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 from cua_sandbox import Image, Sandbox, _sdk
-from cua_sandbox._config import FLEET_CREDENTIALS_MISSING, has_fleet_session
+from cua_sandbox._config import _global_config, has_fleet_session
 from cua_sandbox.image import resolve_image_kind
 from cua_sandbox.transport.env import EnvTransport
 
@@ -167,15 +167,18 @@ async def test_request_service_passes_headers():
     }
 
 
-# ── Missing Fleet credentials and the `cua auth login` session ─────────────
+# ── Missing Fleet endpoint and the `cua auth login` session ────────────────
 
 
-async def test_no_credentials_names_every_way_out():
+async def test_no_fleet_endpoint_names_supported_options(monkeypatch):
+    monkeypatch.delenv("CUA_FLEET_BASE_URL", raising=False)
+    monkeypatch.setattr(_global_config, "fleet_base_url", None)
     with pytest.raises(Exception) as info:
         await Sandbox.create(Image.from_registry("python:3.12-slim"), local=False)
-    assert FLEET_CREDENTIALS_MISSING in str(info.value)
-    assert "cua auth login" in FLEET_CREDENTIALS_MISSING
-    assert "local=True" in FLEET_CREDENTIALS_MISSING
+    message = str(info.value)
+    assert "Set CUA_FLEET_BASE_URL" in message
+    assert "configure(fleet_base_url=...)" in message
+    assert "`cua` CLI (https://cua.ai)" in message
 
 
 def test_the_cua_auth_login_session_counts_as_fleet_access(monkeypatch, tmp_path):
