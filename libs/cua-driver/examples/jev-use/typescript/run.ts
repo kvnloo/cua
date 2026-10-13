@@ -113,6 +113,11 @@ export class Driver {
     private readonly session: string
   ) {}
 
+  // Guarded completion binds its proof to the exact session used for calls.
+  get sessionLabel(): string {
+    return this.session;
+  }
+
   async call(name: string, args: Record<string, unknown>): Promise<Record<string, any>> {
     const result = await this.client.callTool({
       name,
