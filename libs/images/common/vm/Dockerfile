@@ -19,10 +19,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Same retry as the rootfs: under qemu-user (foreign arch) python postinsts
 # (cloud-init) intermittently segfault; re-running the configure step passes.
-RUN dpkg-query -W -f '${Package}\n' | sort >/tmp/rootfs-packages \
+RUN --mount=type=bind,source=common/vm/select-kernel-package.sh,target=/tmp/select-kernel-package.sh \
+    dpkg-query -W -f '${Package}\n' | sort >/tmp/rootfs-packages \
  && apt-get update \
+ && kernel_package="$(sh /tmp/select-kernel-package.sh)" \
  && for attempt in 1 2 3; do apt-get install -y --no-install-recommends \
-      linux-image-virtual initramfs-tools \
+      "$kernel_package" initramfs-tools \
       systemd systemd-sysv systemd-resolved systemd-timesyncd udev dbus kmod \
       netplan.io cloud-init cloud-guest-utils openssh-server qemu-guest-agent \
       iproute2 iputils-ping e2fsprogs sudo ca-certificates \
