@@ -65,9 +65,11 @@ async fn a_cloud_create_out_of_credit_is_a_typed_error_with_the_billing_page() {
                 m,
                 "You're out of Cua Cloud credit. Add credit at https://run.cua.ai/billing"
             );
+            // The legacy Fleet error is preserved, but its CTA now points
+            // to the Cua account app instead of the retired Fleet portal.
             assert_eq!(
                 cua_spaces_app_core::billing::credit_notice(&m).map(|n| n.url),
-                Some("https://run.cua.ai/billing".into())
+                Some(cua_spaces_app_core::billing::BILLING_URL.into())
             );
         }
         Err(e) => panic!("expected CloudCreditExhausted, got {e:?}"),
