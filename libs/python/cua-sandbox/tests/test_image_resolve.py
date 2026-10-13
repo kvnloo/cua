@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 from cua_sandbox import Image, Sandbox, _sdk
-from cua_sandbox._config import has_fleet_session
+from cua_sandbox._config import _global_config, has_fleet_session
 from cua_sandbox.image import resolve_image_kind
 from cua_sandbox.transport.env import EnvTransport
 
@@ -167,11 +167,12 @@ async def test_request_service_passes_headers():
     }
 
 
-# ── Missing Fleet credentials and the `cua auth login` session ─────────────
+# ── Missing Fleet endpoint and the `cua auth login` session ────────────────
 
 
 async def test_no_fleet_endpoint_names_supported_options(monkeypatch):
     monkeypatch.delenv("CUA_FLEET_BASE_URL", raising=False)
+    monkeypatch.setattr(_global_config, "fleet_base_url", None)
     with pytest.raises(Exception) as info:
         await Sandbox.create(Image.from_registry("python:3.12-slim"), local=False)
     message = str(info.value)
