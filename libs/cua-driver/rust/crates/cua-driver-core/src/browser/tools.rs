@@ -788,7 +788,7 @@ impl BrowserMotionPolicyTool {
                     }
                 },
                 "required": ["target_id", "tab_id", "mode"],
-                "additionalProperties": true
+                "additionalProperties": false
             }),
             read_only: false,
             destructive: false,
