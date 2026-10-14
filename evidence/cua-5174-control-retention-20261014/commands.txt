@@ -1,0 +1,13 @@
+# Run from the extracted packet root with Python 3.12 and the recorded dependency versions.
+# SITE and PYTHON below are local paths chosen by the person replaying the packet.
+# No installation is performed by these commands.
+SITE=/path/to/existing/environment/lib/python3.12/site-packages
+PYTHON=/path/to/python3.12
+mkdir -p home tmp
+for row in 'head retained' 'head controls' 'base controls' 'no_context_cleanup retained' 'no_context_cleanup controls' 'single_result_dict retained' 'single_result_dict controls'; do
+  set -- $row
+  env -i PATH=/usr/bin:/bin HOME="$PWD/home" TMPDIR="$PWD/tmp" CUA_EVIDENCE_SITE="$SITE" DO_NOT_TRACK=1 CUA_TELEMETRY_ENABLED=false CUA_TELEMETRY=0 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 timeout 30 "$PYTHON" -I -B -S run.py "$1" "$2"
+  echo "variant=$1 suite=$2 exit=$?"
+done
+# Expected: no_context_cleanup controls and single_result_dict controls exit 1.
+# Every other row exits 0. Import probe denial is recorded and explained in README.

@@ -1,0 +1,23 @@
+--- head/cua_sandbox/interfaces/tunnel.py
++++ no_context_cleanup/cua_sandbox/interfaces/tunnel.py
+@@ -88,7 +88,8 @@
+         return await self._open()
+ 
+     async def __aexit__(self, *_) -> None:
+-        await asyncio.gather(*(self._t.close_tunnel(i) for i in self._infos))
++        # Deliberate incorrect mutation: context exit leaks its open handles.
++        pass
+         self._infos.clear()
+ 
+     async def _close_one(self, info: TunnelInfo) -> None:
+--- head/cua_sandbox/interfaces/tunnel.py
++++ single_result_dict/cua_sandbox/interfaces/tunnel.py
+@@ -79,7 +79,7 @@
+ 
+     def _result(self) -> Union[TunnelInfo, Dict[int | str, TunnelInfo]]:
+         if len(self._infos) == 1:
+-            return self._infos[0]
++            return {self._infos[0].sandbox_port: self._infos[0]}
+         return {i.sandbox_port: i for i in self._infos}
+ 
+     # ── async context manager ─────────────────────────────────────────────────
