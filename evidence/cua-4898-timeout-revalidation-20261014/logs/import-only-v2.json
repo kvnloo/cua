@@ -1,0 +1,72 @@
+{
+  "mode": "head",
+  "qualification": "file-level, separately pinned genuine dependency",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "dependency_commit": "2600a2abb095a70e01a56bfe8f8308a03b4cdc67",
+  "isolation": "sanitized environment, bounded process, Python defense-in-depth guards",
+  "source": {
+    "git_blob": "524413d0cc3fbe662805010c320ba4f2537aa7a2",
+    "sha256": "60266d6a5ebd9aa05926c2f2fecc0ef9e96cb36264102b44dff6922647d4f68d",
+    "path": "/workspace/shared/cua-timeout-revalidation-20261014/source/worker_server.py"
+  },
+  "imports": [
+    {
+      "module": "cua_bench",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/__init__.py",
+      "sha256": "729b4ef93dacff0920386731cee31b11c1358abb6f6e1a141807db3d076e44cd"
+    },
+    {
+      "module": "cua_bench.actions",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/actions.py",
+      "sha256": "b1a8055900863e20ae83271cc5634cc5e4a20619d4eb6e96bd6e291d510a2654"
+    },
+    {
+      "module": "cua_bench.compat",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/compat/__init__.py",
+      "sha256": "7c450e658a516145dca0e24baff43ba4f768ab6de08495ac41099ceb7884377d"
+    },
+    {
+      "module": "cua_bench.computers",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/computers/__init__.py",
+      "sha256": "8000de47f4bd806b0353b01b78cc822448a06b783c27fffa73d3754a3dae62ff"
+    },
+    {
+      "module": "cua_bench.computers.base",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/computers/base.py",
+      "sha256": "646a47b66a3c505842a1b5e78cca061f485bbf52d29ce83906398072927b5ce1"
+    },
+    {
+      "module": "cua_bench.computers.remote",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/computers/remote.py",
+      "sha256": "65bca166ce0831bf438793d1bfb3519906182579da882e2f02f1fac8c2be7739"
+    },
+    {
+      "module": "cua_bench.core",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/core.py",
+      "sha256": "75bc7b668bcdcf0674a4771ae728671d5edcdd05d3efa5a2945de2355f98d38f"
+    },
+    {
+      "module": "cua_bench.decorators",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/decorators.py",
+      "sha256": "634cb22c592c96e9ffb278a6f9fcbe8798347703abc187d452eb2f897abca031"
+    },
+    {
+      "module": "cua_bench.types",
+      "path": "/workspace/shared/cua-triage-20261014/libs/cua-bench/cua_bench/types.py",
+      "sha256": "5fade45cd623c45832ba0770c0ae0301522339dfc2387294f9e4016c5106b5d1"
+    }
+  ],
+  "cases": [],
+  "status": "IMPORT_ONLY_PASS",
+  "suppressed_import_threads": [
+    {
+      "module": "cua_4898_worker_server",
+      "function": "_timeout_checker",
+      "daemon": true
+    }
+  ],
+  "guard_denials": [],
+  "live_threads": [
+    "MainThread"
+  ]
+}

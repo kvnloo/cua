@@ -1,0 +1,12 @@
+Working directory: the evidence packet root.
+
+All child runs use the existing Python 3.12.14 interpreter and dependencies, without installs.
+
+timeout --signal=TERM --kill-after=2s 20s env -i PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/usr/bin:/bin HOME=/workspace/shared/cua-timeout-revalidation-20261014/home LC_ALL=C.UTF-8 CUA_BENCH_COMPUTER_ALIAS=0 CUA_TELEMETRY_ENABLED=false /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python -I -B /workspace/shared/cua-timeout-revalidation-20261014/probe.py --mode head --import-only
+
+timeout --signal=TERM --kill-after=2s 20s env -i PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/usr/bin:/bin HOME=/workspace/shared/cua-timeout-revalidation-20261014/home LC_ALL=C.UTF-8 CUA_BENCH_COMPUTER_ALIAS=0 CUA_TELEMETRY_ENABLED=false /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python -I -B /workspace/shared/cua-timeout-revalidation-20261014/probe.py --mode head
+
+timeout --signal=TERM --kill-after=2s 20s env -i PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/usr/bin:/bin HOME=/workspace/shared/cua-timeout-revalidation-20261014/home LC_ALL=C.UTF-8 CUA_BENCH_COMPUTER_ALIAS=0 CUA_TELEMETRY_ENABLED=false /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python -I -B /workspace/shared/cua-timeout-revalidation-20261014/probe.py --mode mutant
+
+Expected exits: import/head 0; deliberate mutant 2, with exactly refreshed and exact_timeout_boundary failing.
+For another machine, substitute its evidence packet path, empty HOME and Python 3.12 interpreter while retaining -I -B, the sanitized environment, limits, source hashes and genuine dependency files.

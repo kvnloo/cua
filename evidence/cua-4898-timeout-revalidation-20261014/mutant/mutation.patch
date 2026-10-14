@@ -1,0 +1,11 @@
+--- exact-head/worker_server.py
++++ DELIBERATE_MUTANT/worker_server.py
+@@ -197,7 +197,7 @@
+             if env_id in active_envs:
+                 if expired_at is not None:
+                     state = env_map.get(env_id)
+-                    if state is None or expired_at - state.last_accessed <= state.timeout:
++                    if state is None:
+                         return
+                 if env_id in env_map:
+                     state = env_map.pop(env_id)
