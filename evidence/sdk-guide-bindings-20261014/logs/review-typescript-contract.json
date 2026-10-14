@@ -1,0 +1,148 @@
+{
+  "status": "PASS",
+  "compiler": "Version 5.9.3",
+  "package_version": "0.33.4",
+  "node_types_version": "22.20.4",
+  "undici_types_version": "6.21.0",
+  "ubjs_core_version": "0.31.0-3",
+  "skip_lib_check": false,
+  "declaration_sha256": {
+    "package/dist/electron.d.ts": "bdf00d92d9b32ed0cb5b5ea73d2831a00708cd72a51181b3030fff42c39af4d9",
+    "package/dist/embedded.d.ts": "4f3f8e36496011e099d65e72de8c9f56a24dbeccfd3182cd4964cfd05341a94b",
+    "package/dist/fleet.d.ts": "b7d783193493ab9bfc3fdfb340298e57b4df201327dc41cf3c220e15a4c63739",
+    "package/dist/index.d.ts": "8834b6c37075145525a0556a1eeb32fd72c918e1f1198587c8032e47a615a2b6",
+    "package/dist/native/cua_driver_contract-ffi.d.ts": "e1cd2daaa0607debac2e7f4516e87f7d3d97132ed772030628b1ce224715b589",
+    "package/dist/native/cua_driver_contract.d.ts": "ee05cda532cc0d7823eaa6b3b7b4e37b532381a62038ff404224db2bc139c731",
+    "package/dist/native/cua_driver_sdk-ffi.d.ts": "118c755841a773f3a4cd2568a975ddcfa1a8cc9b25ff7c4be87c91bfa4b96f91",
+    "package/dist/native/cua_driver_sdk.d.ts": "91b1546173d8fbc5adf921ce5e5591853ca70d7c41c975d22df923aab17d8e42",
+    "package/dist/native/index.d.ts": "5f870717de6802c8172d86d9cdf13e6c44a18fa7753d560ecc55683402c5604f",
+    "package/dist/native/node-runtime.d.ts": "4193166679f0e08b297388c73168ba7d9e878a73f333f0f59360a4c3604d556e"
+  },
+  "toolchain_sha256": {
+    "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/tsc.js": "2cffde0b8c6760dfb0b5b0382bbb7e00ba6a8b2d981b9205b256a700a481d983",
+    "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/_tsc.js": "e8f349eabd48486bdb2bf9dc1a00c89d58297270c54b745838879e2859194419",
+    "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/package.json": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+    "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/@types/node/package.json": "f24c6b704fa4fdb2633cd4787fb0533cdca3cd15ab4a02b031c6c2e462cd380a",
+    "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/undici-types/package.json": "11f873b423b96a5ad444a099685ca6b9de1379dcd83fd8d368e757ddb53658e4"
+  },
+  "rows": [
+    {
+      "name": "valid_fields",
+      "command": [
+        "node",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "--skipLibCheck",
+        "false",
+        "--typeRoots",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/@types",
+        "--types",
+        "node",
+        "valid_fields.mts"
+      ],
+      "exit_code": 0,
+      "diagnostic_codes": [],
+      "output": "",
+      "pass": true
+    },
+    {
+      "name": "bad_verified",
+      "command": [
+        "node",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "--skipLibCheck",
+        "false",
+        "--typeRoots",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/@types",
+        "--types",
+        "node",
+        "bad_verified.mts"
+      ],
+      "exit_code": 2,
+      "diagnostic_codes": [
+        "TS2339"
+      ],
+      "output": "bad_verified.mts(3,34): error TS2339: Property 'verified' does not exist on type 'ToolResult'.\n",
+      "pass": true
+    },
+    {
+      "name": "bad_boolean_verification",
+      "command": [
+        "node",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "--skipLibCheck",
+        "false",
+        "--typeRoots",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/@types",
+        "--types",
+        "node",
+        "bad_boolean_verification.mts"
+      ],
+      "exit_code": 2,
+      "diagnostic_codes": [
+        "TS2322"
+      ],
+      "output": "bad_boolean_verification.mts(3,14): error TS2322: Type 'VerifyStateOutput | undefined' is not assignable to type 'boolean'.\n  Type 'undefined' is not assignable to type 'boolean'.\n",
+      "pass": true
+    },
+    {
+      "name": "missing_raw_json",
+      "command": [
+        "node",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "--skipLibCheck",
+        "false",
+        "--typeRoots",
+        "/workspace/scratch/df37e4e44cce/tokenomics/node_modules/@types",
+        "--types",
+        "node",
+        "missing_raw_json.mts"
+      ],
+      "exit_code": 2,
+      "diagnostic_codes": [
+        "TS2741"
+      ],
+      "output": "missing_raw_json.mts(2,7): error TS2741: Property 'rawJson' is missing in type '{ text: string; images: never[]; isError: false; degraded: false; }' but required in type 'ToolResult'.\n",
+      "pass": true
+    }
+  ],
+  "rows_passed": 4,
+  "not_run": [
+    "JavaScript SDK runtime import",
+    "native Node FFI",
+    "driver instance",
+    "desktop operations",
+    "exact-main TypeScript package build"
+  ]
+}

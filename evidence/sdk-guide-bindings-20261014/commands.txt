@@ -1,0 +1,22 @@
+Qualification environment: assistant sandbox, Linux x86_64, Python 3.12.14, Node installed runtime.
+
+Download and provenance:
+- Read https://pypi.org/pypi/cua-driver/0.35.4/json; choose only the manylinux_2_31_x86_64 wheel.
+- Download the exact wheel URL in artifact-provenance.json with a 40,000,000-byte cap; check metadata size and SHA-256 before use.
+- Read https://registry.npmjs.org/@trycua%2fcua-driver/0.33.4 and @ubjs/core/0.31.0-3 metadata; download only their exact tarballs, cap at 2,000,000 and 1,000,000 bytes respectively, and verify SHA-512 SRI.
+- Extract only ordinary files under the intended package directories; verify every extracted cua-driver npm member against its tar entry. No package scripts run.
+- Python generated file Git blob hashes were computed as SHA1(b"blob " + byte_length + NUL + file_bytes) and compared to exact-head GitHub blob SHAs.
+
+Installation (network disabled for the installer):
+python -m venv --without-pip .venv
+UV_CACHE_DIR="$PWD/uv-cache" uv pip install --python .venv/bin/python --no-index --no-deps ./cua_driver-0.35.4-py3-none-manylinux_2_31_x86_64.whl
+
+Python replay:
+HOME="$PWD/home" XDG_CONFIG_HOME="$PWD/xdg-config" XDG_CACHE_HOME="$PWD/xdg-cache" XDG_DATA_HOME="$PWD/xdg-data" .venv/bin/python -I -B python_contract_probe.py > logs/python-contract.json
+
+TypeScript replay:
+python typescript_contract_probe.py --tsc /workspace/scratch/df37e4e44cce/tokenomics/node_modules/typescript/lib/tsc.js --type-roots /workspace/scratch/df37e4e44cce/tokenomics/node_modules/@types > logs/typescript-contract.json
+
+The recorded sandbox paths identify the existing compiler. For another host, supply equivalent paths to the exact compiler and Node type versions. The runner invokes real node/tsc with --noEmit --strict --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck false --types node, once per .mts consumer. Each complete command, exit code and diagnostic is retained in logs/typescript-contract.json.
+
+Initial TypeScript preflight without --typeRoots/--types node returned TS2503 (missing NodeJS namespace). Existing @types/node 22.20.4 and undici-types 6.21.0 were then supplied; no declarations were changed or skipped.

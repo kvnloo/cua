@@ -1,0 +1,44 @@
+{
+  "cua_driver-0.35.4-py3-none-manylinux_2_31_x86_64.whl": {
+    "bytes": 34491500,
+    "sha256_verified": true,
+    "sri_verified": false
+  },
+  "cua-driver-0.33.4.tgz": {
+    "bytes": 82827,
+    "sha256_verified": true,
+    "sri_verified": true,
+    "extracted_files_checked": 22,
+    "extracted_all_match": true
+  },
+  "ubjs-core-0.31.0-3.tgz": {
+    "bytes": 44743,
+    "sha256_verified": true,
+    "sri_verified": true,
+    "extracted_files_checked": 138,
+    "extracted_all_match": true
+  },
+  "installed_wheel_parity": {
+    "matching_files": 12,
+    "changed_files": [
+      "cua_driver-0.35.4.dist-info/RECORD"
+    ],
+    "record_delta": "--- \n+++ \n@@ -1,13 +1,18 @@\n+../../../bin/cua-driver,sha256=bggG6V0rOUiobT050oqYxvibevb38z6xYR20aZJZxbY,354\n+cua_driver-0.35.4.dist-info/INSTALLER,sha256=5hhM4Q4mYTT9z6QB6PGpUAW81PGNFrYrdXMj4oM_6ak,2\n+cua_driver-0.35.4.dist-info/METADATA,sha256=Vr-evGtpzihsk8hqKdVaVzU5a3iuLOhSsTNSiKUn5O0,8861\n+cua_driver-0.35.4.dist-info/RECORD,,\n+cua_driver-0.35.4.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0\n+cua_driver-0.35.4.dist-info/WHEEL,sha256=6kEHIqFYjY5eANaYDpXuA9xsZcaenEAXMXM0lXZUHbc,106\n+cua_driver-0.35.4.dist-info/direct_url.json,sha256=sXkhSN4pB5VhdLN0IYyQuTOA2nQrapxfW7lv-3rWZ8U,140\n+cua_driver-0.35.4.dist-info/entry_points.txt,sha256=4isuiuj2kkshAu09Tuf1Pg-ZEyKNk8vfNCsfUYxm1CE,56\n+cua_driver-0.35.4.dist-info/uv_cache.json,sha256=y-ugzScGSLsr4sR4F44BNyQ95c8sa8ZSDxVNgg3MkTQ,127\n cua_driver/__init__.py,sha256=jbGvDER-t-7gmwhiIACSFRhTX9Z-SCCXZcQGH_EUlYw,11985\n cua_driver/__main__.py,sha256=vLeKYoPcbaafMziHmuNKDy2-6jtETkw91D8XDSkio4c,399\n cua_driver/_daemon.py,sha256=9s6XoIq1wSS6AhCwDkS9ZStBzKWpriClEaZAkJPo8B4,2910\n cua_driver/_native.py,sha256=aN74fFRpdBZc4xrxjfSZiYzMxNVgYGiT1n4jFVlN4mA,468632\n cua_driver/_native_contract.py,sha256=ZQMxpbeX6Yi3ws62AVHWrjA-FD6h4PP8k67qLrOwadg,308311\n+cua_driver/bin/cua-driver,sha256=viZ779jwrClPztls31dj2hnT-xUmdF_v1HJ03qEHqT4,59606440\n cua_driver/fleet.py,sha256=QZUYMH-E033lCeFA7M4gyVp3FkzReZDOGJ-tHylN--s,3153\n cua_driver/libcua_driver_sdk.so,sha256=1urbv63j3Jpuu6-AKWQNU-1F13WR99x4EOaBhlG_qnU,49268296\n cua_driver/wrapper.py,sha256=fgDiFLAn8lJTfEtp-yH5VDVcCTkNCqihZ7YSR-85OGg,2922\n-cua_driver/bin/cua-driver,sha256=viZ779jwrClPztls31dj2hnT-xUmdF_v1HJ03qEHqT4,59606440\n-cua_driver-0.35.4.dist-info/METADATA,sha256=Vr-evGtpzihsk8hqKdVaVzU5a3iuLOhSsTNSiKUn5O0,8861\n-cua_driver-0.35.4.dist-info/WHEEL,sha256=6kEHIqFYjY5eANaYDpXuA9xsZcaenEAXMXM0lXZUHbc,106\n-cua_driver-0.35.4.dist-info/entry_points.txt,sha256=4isuiuj2kkshAu09Tuf1Pg-ZEyKNk8vfNCsfUYxm1CE,56\n-cua_driver-0.35.4.dist-info/RECORD,,\n",
+    "explanation": "Installer updates RECORD and adds installation metadata/entrypoint; installed package source and native payload files match the wheel exactly."
+  },
+  "typescript/package/package.json": {
+    "name": "@trycua/cua-driver",
+    "version": "0.33.4",
+    "scripts": null
+  },
+  "typescript/node_modules/@ubjs/core/package.json": {
+    "name": "@ubjs/core",
+    "version": "0.31.0-3",
+    "scripts": {
+      "build": "npm run build:esm && npm run build:cjs && npm run build:cjs-pkgjson",
+      "build:esm": "tsc -p tsconfig.esm.json",
+      "build:cjs": "tsc -p tsconfig.cjs.json",
+      "build:cjs-pkgjson": "node -e \"require('fs').writeFileSync('dist/cjs/package.json', JSON.stringify({type:'commonjs'}))\""
+    }
+  }
+}
