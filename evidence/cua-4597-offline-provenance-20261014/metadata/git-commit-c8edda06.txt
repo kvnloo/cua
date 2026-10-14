@@ -1,0 +1,31 @@
+tree ac583c3741d32e78a6713a04474dab8e3e9184a5
+parent 1553a3f360ea12155be3bc77e27c427ca62f967a
+author wszkxlllll <142909575+wszkxlllll@users.noreply.github.com> 1791032579 +0800
+committer GitHub <noreply@github.com> 1791032579 -0700
+gpgsig -----BEGIN PGP SIGNATURE-----
+ 
+ wsFcBAABCAAQBQJqwP0ECRC1aQ7uu5UhlAAARcAQAEJxuYYsfC793o5+vCLe7CLv
+ LQxK0CvXVh3pkpd0w5SvUyOOiL/sQtdm1t4RqkGPY8uQ4CzatBq+V4np65eWZ9RL
+ jd2L6C1fBZIE3rmlj3dqucaUIqmL1HsVE6drQd2wdR4dpHvMeyGO0lQWWn6AehHD
+ Q13AKfoBHsUmhZFMRGspE3MvRUwnNdWa6IXHHvZPOInxwpkI1yy3VEEJ66vRjF9u
+ AAgMgFKsk6RysUgLQFDejgQbYWuSIaFzOdjmBSgxjhijuEt++KdjA3agkoFNR9Pj
+ CU2rb3FNa4O1WpTPlZDvADqwol0j93WBnIFb+YUD41sBHNFSZXdkLobmV/xCZ1Zb
+ 9cxKHqvJ2kRPfYWQxzuMglHqVJW1LFxz+4bJrWAvTPWoZse4Y40ueNnBpVrRbI94
+ N2CsAcPXdDU08DRJeebDInnC7nHB2Ep1bkE4Mlfo3AWsVTFyhQy8Q/EvleHlJe9f
+ 3Tsdpuq7KKGGg+CRTRWqo2d3MjVDF/WJMXdv2mJ3p/+tzMOr2wUkZOiVaFMHhkzc
+ lD1jPKx10olUjOs1YInhhFIWLbd0O0AjyPpROkkxeGfk2JA/ebKJhqOERaepKW2c
+ 0UWYb2tVOhmLT3RnxAvjPIqOyLqzbfjGzrmsMWPrEVqBLNpcJX2EksaeYPvuMwpu
+ W9QoBLJt2VkzLgGzl4yI
+ =Wv74
+ -----END PGP SIGNATURE-----
+ 
+
+fix(cua-driver): drain Windows foreground input before restoring focus (#4500)
+
+Foreground type_text/press_key restored the previous foreground window a fixed 40 ms after SendInput, before slow-to-process targets had read the queued tail, so text after line breaks was lost (#4477). Attach to the foreground thread's input queue before inserting, append an unassigned-VK sentinel, and restore only after the target has read it (bounded at 2 s). Adds WPF/WinUI3 multiline fixtures with an app-owned state oracle and foreground single-line/multiline text tests.
+
+Fixes #4477
+
+Co-authored-by: Dillon DuPont <dillondupont808@gmail.com>
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Hv7NU2xZDx8fqykTXiaDuj
