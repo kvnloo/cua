@@ -1,0 +1,258 @@
+FFFFF...FFFFF..                                                          [100%]
+=================================== FAILURES ===================================
+________________ test_public_shell_forwards_explicit_timeout[0] ________________
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb851...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84d371a0>)
+timeout = 0
+
+    @pytest.mark.parametrize("timeout", [0, 1, 10, 75])
+    async def test_public_shell_forwards_explicit_timeout(recorded_adb, timeout):
+        sandbox, _, calls, _, _ = recorded_adb
+        loop_thread = threading.get_ident()
+
+        result = await sandbox.shell.run("echo hello", timeout=timeout)
+
+        assert (result.stdout, result.stderr, result.returncode, result.success) == (
+            "out\n",
+            "warn\n",
+            0,
+            True,
+        )
+        assert len(calls) == 1
+        args, received_timeout, worker_thread = calls[0]
+        assert args == [
+            "/recorded/android-sdk/platform-tools/adb",
+            "-s",
+            "recorded-android",
+            "shell",
+            "[ -f /data/local/tmp/.cua_env ] && . /data/local/tmp/.cua_env; echo hello",
+        ]
+>       assert received_timeout == timeout
+E       assert 15 == 0
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:61: AssertionError
+________________ test_public_shell_forwards_explicit_timeout[1] ________________
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb851...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cfc2c0>)
+timeout = 1
+
+    @pytest.mark.parametrize("timeout", [0, 1, 10, 75])
+    async def test_public_shell_forwards_explicit_timeout(recorded_adb, timeout):
+        sandbox, _, calls, _, _ = recorded_adb
+        loop_thread = threading.get_ident()
+
+        result = await sandbox.shell.run("echo hello", timeout=timeout)
+
+        assert (result.stdout, result.stderr, result.returncode, result.success) == (
+            "out\n",
+            "warn\n",
+            0,
+            True,
+        )
+        assert len(calls) == 1
+        args, received_timeout, worker_thread = calls[0]
+        assert args == [
+            "/recorded/android-sdk/platform-tools/adb",
+            "-s",
+            "recorded-android",
+            "shell",
+            "[ -f /data/local/tmp/.cua_env ] && . /data/local/tmp/.cua_env; echo hello",
+        ]
+>       assert received_timeout == timeout
+E       assert 15 == 1
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:61: AssertionError
+_______________ test_public_shell_forwards_explicit_timeout[10] ________________
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb851...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84d2f4c0>)
+timeout = 10
+
+    @pytest.mark.parametrize("timeout", [0, 1, 10, 75])
+    async def test_public_shell_forwards_explicit_timeout(recorded_adb, timeout):
+        sandbox, _, calls, _, _ = recorded_adb
+        loop_thread = threading.get_ident()
+
+        result = await sandbox.shell.run("echo hello", timeout=timeout)
+
+        assert (result.stdout, result.stderr, result.returncode, result.success) == (
+            "out\n",
+            "warn\n",
+            0,
+            True,
+        )
+        assert len(calls) == 1
+        args, received_timeout, worker_thread = calls[0]
+        assert args == [
+            "/recorded/android-sdk/platform-tools/adb",
+            "-s",
+            "recorded-android",
+            "shell",
+            "[ -f /data/local/tmp/.cua_env ] && . /data/local/tmp/.cua_env; echo hello",
+        ]
+>       assert received_timeout == timeout
+E       assert 15 == 10
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:61: AssertionError
+_______________ test_public_shell_forwards_explicit_timeout[75] ________________
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb851...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cfd260>)
+timeout = 75
+
+    @pytest.mark.parametrize("timeout", [0, 1, 10, 75])
+    async def test_public_shell_forwards_explicit_timeout(recorded_adb, timeout):
+        sandbox, _, calls, _, _ = recorded_adb
+        loop_thread = threading.get_ident()
+
+        result = await sandbox.shell.run("echo hello", timeout=timeout)
+
+        assert (result.stdout, result.stderr, result.returncode, result.success) == (
+            "out\n",
+            "warn\n",
+            0,
+            True,
+        )
+        assert len(calls) == 1
+        args, received_timeout, worker_thread = calls[0]
+        assert args == [
+            "/recorded/android-sdk/platform-tools/adb",
+            "-s",
+            "recorded-android",
+            "shell",
+            "[ -f /data/local/tmp/.cua_env ] && . /data/local/tmp/.cua_env; echo hello",
+        ]
+>       assert received_timeout == timeout
+E       assert 15 == 75
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:61: AssertionError
+______________ test_public_shell_keeps_its_thirty_second_default _______________
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb851...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84d2cf40>)
+
+    async def test_public_shell_keeps_its_thirty_second_default(recorded_adb):
+        sandbox, _, calls, _, _ = recorded_adb
+
+        await sandbox.shell.run("echo hello")
+
+        assert len(calls) == 1
+>       assert calls[0][1] == 30
+E       assert 15 == 30
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:71: AssertionError
+_ test_direct_shell_aliases_keep_default_and_forward_overrides[options1-45-shell] _
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb84d...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cf45e0>)
+action = 'shell', options = {'timeout': 45}, expected_timeout = 45
+
+    @pytest.mark.parametrize("action", ["shell", "execute", "run_command"])
+    @pytest.mark.parametrize("options,expected_timeout", [({}, 15), ({"timeout": 45}, 45)])
+    async def test_direct_shell_aliases_keep_default_and_forward_overrides(
+        recorded_adb, action, options, expected_timeout
+    ):
+        _, transport, calls, _, _ = recorded_adb
+
+        result = await transport.send(action, command="echo hello", **options)
+
+        assert result == {"stdout": "out\n", "stderr": "warn\n", "returncode": 0}
+        assert len(calls) == 1
+>       assert calls[0][1] == expected_timeout
+E       assert 15 == 45
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:85: AssertionError
+_ test_direct_shell_aliases_keep_default_and_forward_overrides[options1-45-execute] _
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb84d...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cf4900>)
+action = 'execute', options = {'timeout': 45}, expected_timeout = 45
+
+    @pytest.mark.parametrize("action", ["shell", "execute", "run_command"])
+    @pytest.mark.parametrize("options,expected_timeout", [({}, 15), ({"timeout": 45}, 45)])
+    async def test_direct_shell_aliases_keep_default_and_forward_overrides(
+        recorded_adb, action, options, expected_timeout
+    ):
+        _, transport, calls, _, _ = recorded_adb
+
+        result = await transport.send(action, command="echo hello", **options)
+
+        assert result == {"stdout": "out\n", "stderr": "warn\n", "returncode": 0}
+        assert len(calls) == 1
+>       assert calls[0][1] == expected_timeout
+E       assert 15 == 45
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:85: AssertionError
+_ test_direct_shell_aliases_keep_default_and_forward_overrides[options1-45-run_command] _
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb84d...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cf4720>)
+action = 'run_command', options = {'timeout': 45}, expected_timeout = 45
+
+    @pytest.mark.parametrize("action", ["shell", "execute", "run_command"])
+    @pytest.mark.parametrize("options,expected_timeout", [({}, 15), ({"timeout": 45}, 45)])
+    async def test_direct_shell_aliases_keep_default_and_forward_overrides(
+        recorded_adb, action, options, expected_timeout
+    ):
+        _, transport, calls, _, _ = recorded_adb
+
+        result = await transport.send(action, command="echo hello", **options)
+
+        assert result == {"stdout": "out\n", "stderr": "warn\n", "returncode": 0}
+        assert len(calls) == 1
+>       assert calls[0][1] == expected_timeout
+E       assert 15 == 45
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:85: AssertionError
+___ test_public_shell_propagates_original_timeout_without_retry[options0-30] ___
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb84e...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cf4680>)
+options = {}, expected_timeout = 30
+
+    @pytest.mark.parametrize("options,expected_timeout", [({}, 30), ({"timeout": 4}, 4)])
+    async def test_public_shell_propagates_original_timeout_without_retry(
+        recorded_adb, options, expected_timeout
+    ):
+        sandbox, _, calls, _, fail_with = recorded_adb
+        error = subprocess.TimeoutExpired("recorded adb", expected_timeout, output=b"partial")
+        fail_with(error)
+
+        with pytest.raises(subprocess.TimeoutExpired) as caught:
+            await sandbox.shell.run("echo hello", **options)
+
+        assert caught.value is error
+        assert caught.value.output == b"partial"
+        assert len(calls) == 1
+>       assert calls[0][1] == expected_timeout
+E       assert 15 == 30
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:102: AssertionError
+___ test_public_shell_propagates_original_timeout_without_retry[options1-4] ____
+
+recorded_adb = (Sandbox(name='recorded-android', transport=ADBTransport), <cua_sandbox.transport.adb.ADBTransport object at 0x7ffb84e...rgs=[], returncode=0, stdout=b'out\n', stderr=b'warn\n'), <function recorded_adb.<locals>.fail_with at 0x7ffb84cf6480>)
+options = {'timeout': 4}, expected_timeout = 4
+
+    @pytest.mark.parametrize("options,expected_timeout", [({}, 30), ({"timeout": 4}, 4)])
+    async def test_public_shell_propagates_original_timeout_without_retry(
+        recorded_adb, options, expected_timeout
+    ):
+        sandbox, _, calls, _, fail_with = recorded_adb
+        error = subprocess.TimeoutExpired("recorded adb", expected_timeout, output=b"partial")
+        fail_with(error)
+
+        with pytest.raises(subprocess.TimeoutExpired) as caught:
+            await sandbox.shell.run("echo hello", **options)
+
+        assert caught.value is error
+        assert caught.value.output == b"partial"
+        assert len(calls) == 1
+>       assert calls[0][1] == expected_timeout
+E       assert 15 == 4
+
+libs/python/cua-sandbox/tests/test_adb_transport.py:102: AssertionError
+=========================== short test summary info ============================
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_forwards_explicit_timeout[0]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_forwards_explicit_timeout[1]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_forwards_explicit_timeout[10]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_forwards_explicit_timeout[75]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_keeps_its_thirty_second_default
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_direct_shell_aliases_keep_default_and_forward_overrides[options1-45-shell]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_direct_shell_aliases_keep_default_and_forward_overrides[options1-45-execute]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_direct_shell_aliases_keep_default_and_forward_overrides[options1-45-run_command]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_propagates_original_timeout_without_retry[options0-30]
+FAILED libs/python/cua-sandbox/tests/test_adb_transport.py::test_public_shell_propagates_original_timeout_without_retry[options1-4]
+10 failed, 5 passed in 0.15s
