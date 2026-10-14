@@ -1,0 +1,52 @@
+{
+  "status": "VERIFIED_CDP_PREFLIGHT_ONLY",
+  "n_pairs": 30,
+  "n_attempts": 60,
+  "source_candidate": "kvnloo/cua#110@7694da458342198dbce7f97eaa623450dcb022eb",
+  "chromium": "Chromium 144.0.7559.96 built on Debian GNU/Linux 13 (trixie)",
+  "python": "3.13.5",
+  "collected_at_utc": "2026-10-14T20:35:16.897511+00:00",
+  "browser": "isolated local headless Chromium",
+  "independent_oracle": "page-owned journal length exactly 1 and DOM count=1",
+  "paired_order": "AB/BA alternating",
+  "controls": {
+    "exactly_one_mutation": true,
+    "same_page_html": true,
+    "same_action": true,
+    "same_viewport": true,
+    "policy_changed_only": true,
+    "real_CUA_Driver_used": false
+  },
+  "verified": {
+    "default": 30,
+    "reduce": 30
+  },
+  "median_screenshot_hash_changes": {
+    "default": 4.0,
+    "reduce": 0.0
+  },
+  "median_screenshot_duration_ms": {
+    "default": 16.275056499999998,
+    "reduce": 16.372662499999997
+  },
+  "action_to_oracle_p50_ms": {
+    "default": 54.5795545,
+    "reduce": 53.666246
+  },
+  "action_to_oracle_p95_ms": {
+    "default": 65.8544863,
+    "reduce": 67.34504065
+  },
+  "paired_action_to_oracle_delta_reduce_minus_default_p50_ms": -0.6942735000000013,
+  "paired_median_delta_bootstrap_95pct_ms": [
+    -1.9915124999999954,
+    0.5854970000000002
+  ],
+  "limits": [
+    "No CUA Driver or MCP transport; not an upstream performance result",
+    "Playwright applies CDP directly; no CUA policy/permissions verified",
+    "Decorative animation fixture is designed to honor prefers-reduced-motion; general sites may not",
+    "Latency includes Playwright caller overhead; frame-hash churn is not wall-clock improvement",
+    "No assertions about production screenshots/model latency or native Wayland."
+  ]
+}
