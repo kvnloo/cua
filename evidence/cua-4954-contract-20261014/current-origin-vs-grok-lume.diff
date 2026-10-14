@@ -1,0 +1,28 @@
+--- ./source-origin/libs/python/cua-sandbox/cua_sandbox/runtime/lume.py	2026-10-14 07:24:28.041229401 -0500
++++ ./grok-source/libs/python/cua-sandbox/cua_sandbox/runtime/lume.py	2026-10-14 07:27:01.046453926 -0500
+@@ -159,7 +159,8 @@
+                 )
+             if vm.get("status") in ("stopped", "suspended"):
+                 logger.info(f"Base VM '{base_name}' already exists (stopped) — skipping pull")
+-                return CheckpointInfo(name=base_name, runtime_type="lume", created_at=time.time())
++                # Lume's VM details carry no creation time; leave created_at unknown.
++                return CheckpointInfo(name=base_name, runtime_type="lume")
+ 
+         oci_ref = _macos_ref(image)
+         logger.info(f"Pulling base image '{oci_ref}' → '{base_name}' (first time only)...")
+@@ -244,13 +245,12 @@
+ 
+     async def list_checkpoints(self):  # -> list[CheckpointInfo]
+         """Return VMs that are checkpoints (cua-base-* or cua-ckpt-* prefix)."""
+-        import time
+-
+         from cua_sandbox.runtime.base import CheckpointInfo
+ 
+         vms = await self.list()
++        # Lume's VM details carry no creation time; leave created_at unknown.
+         return [
+-            CheckpointInfo(name=v["name"], runtime_type="lume", created_at=time.time())
++            CheckpointInfo(name=v["name"], runtime_type="lume")
+             for v in vms
+             if v["name"].startswith("cua-base-") or v["name"].startswith(self._CHECKPOINT_PREFIX)
+         ]

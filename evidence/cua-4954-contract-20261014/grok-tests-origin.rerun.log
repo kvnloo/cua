@@ -1,0 +1,78 @@
+SOURCE: libs/python/cua-sandbox/cua_sandbox/runtime/lume.py
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- <python-environment>/bin/python
+cachedir: .pytest_cache
+rootdir: /dev
+configfile: null
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+../../../dev::test_list_checkpoints_does_not_invent_created_at FAILED    [ 50%]
+../../../dev::test_reused_base_vm_does_not_invent_created_at FAILED      [100%]
+
+=================================== FAILURES ===================================
+_______________ test_list_checkpoints_does_not_invent_created_at _______________
+
+runtime = <cua_sandbox.runtime.lume.LumeRuntime object at 0x7f32e0cbdee0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f32df9bdf10>
+
+    async def test_list_checkpoints_does_not_invent_created_at(runtime, monkeypatch):
+        async def fake_list():
+            return [{"name": "cua-base-macos"}, {"name": "cua-ckpt-old"}, {"name": "my-sandbox"}]
+    
+        monkeypatch.setattr(runtime, "list", fake_list)
+        clock = iter([1000.0, 2000.0, 3000.0, 4000.0])
+        monkeypatch.setattr("time.time", lambda: next(clock))
+    
+        first = await runtime.list_checkpoints()
+        second = await runtime.list_checkpoints()
+    
+        assert [c.name for c in first] == ["cua-base-macos", "cua-ckpt-old"]
+>       assert [c.created_at for c in first] == [0.0, 0.0]
+E       AssertionError: assert [1000.0, 2000.0] == [0.0, 0.0]
+E         
+E         At index 0 diff: 1000.0 != 0.0
+E         
+E         Full diff:
+E           [
+E         -     0.0,
+E         +     1000.0,...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+cua-checkpoint-public-packet-20261014/grok-source/libs/python/cua-sandbox/tests/test_lume_checkpoint_created_at.py:27: AssertionError
+________________ test_reused_base_vm_does_not_invent_created_at ________________
+
+runtime = <cua_sandbox.runtime.lume.LumeRuntime object at 0x7f32df9bdf70>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f32df9be990>
+
+    async def test_reused_base_vm_does_not_invent_created_at(runtime, monkeypatch):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json={"name": "cua-base-macos", "status": "stopped"})
+    
+        real_client = httpx.AsyncClient
+        monkeypatch.setattr(
+            httpx,
+            "AsyncClient",
+            lambda *a, **kw: real_client(transport=httpx.MockTransport(handler)),
+        )
+        monkeypatch.setattr("time.time", lambda: 1234.0)
+    
+        info = await runtime.ensure_base(image=None, base_name="cua-base-macos")
+    
+        assert info.name == "cua-base-macos"
+>       assert info.created_at == 0.0
+E       AssertionError: assert 1234.0 == 0.0
+E        +  where 1234.0 = CheckpointInfo(name='cua-base-macos', runtime_type='lume', created_at=1234.0, metadata={}).created_at
+
+cua-checkpoint-public-packet-20261014/grok-source/libs/python/cua-sandbox/tests/test_lume_checkpoint_created_at.py:46: AssertionError
+=============================== warnings summary ===============================
+cua-adb-timeout-venv/lib/python3.12/site-packages/_pytest/config/__init__.py:864
+  <python-environment>/lib/python3.12/site-packages/_pytest/config/__init__.py:864: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; guards
+    self.import_plugin(arg, consider_entry_points=True)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../dev::test_list_checkpoints_does_not_invent_created_at - Asser...
+FAILED ../../../dev::test_reused_base_vm_does_not_invent_created_at - Asserti...
+========================= 2 failed, 1 warning in 0.05s =========================

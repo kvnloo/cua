@@ -1,0 +1,63 @@
+{
+  "source": "libs/python/cua-sandbox/cua_sandbox/runtime/lume.py",
+  "default_created_at": 0.0,
+  "list_first": [
+    {
+      "name": "cua-base-example",
+      "runtime_type": "lume",
+      "created_at": 100.0,
+      "metadata": {}
+    },
+    {
+      "name": "cua-ckpt-old",
+      "runtime_type": "lume",
+      "created_at": 100.0,
+      "metadata": {}
+    }
+  ],
+  "list_second": [
+    {
+      "name": "cua-base-example",
+      "runtime_type": "lume",
+      "created_at": 200.0,
+      "metadata": {}
+    },
+    {
+      "name": "cua-ckpt-old",
+      "runtime_type": "lume",
+      "created_at": 200.0,
+      "metadata": {}
+    }
+  ],
+  "existing_base": {
+    "stopped": {
+      "first": 300.0,
+      "second": 400.0,
+      "requests": [
+        [
+          "GET",
+          "http://localhost:7777/lume/vms/cua-base-example"
+        ],
+        [
+          "GET",
+          "http://localhost:7777/lume/vms/cua-base-example"
+        ]
+      ]
+    },
+    "suspended": {
+      "first": 300.0,
+      "second": 400.0,
+      "requests": [
+        [
+          "GET",
+          "http://localhost:7777/lume/vms/cua-base-example"
+        ],
+        [
+          "GET",
+          "http://localhost:7777/lume/vms/cua-base-example"
+        ]
+      ]
+    }
+  },
+  "scope": "Real Python package, deterministic fake clocks, list stub and httpx MockTransport only. Native SDK loads, processes, and sockets refused by guards.py. No live Lume or guest evidence; no candidate fix or unknown-time sentinel assertion."
+}
