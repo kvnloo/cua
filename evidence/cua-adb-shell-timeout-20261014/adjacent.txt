@@ -1,0 +1,224 @@
+...............FFF.FFF....                                               [100%]
+=================================== FAILURES ===================================
+_____________ test_background_shell_and_terminal_use_pty_processes _____________
+
+    def sdk() -> Any:
+        """Import and return the ``cua`` SDK module."""
+        try:
+>           import cua  # noqa: PLC0415 - imported lazily on purpose
+            ^^^^^^^^^^
+
+libs/python/cua-sandbox/cua_sandbox/_sdk.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_adb_guards._NoNativeSDK object at 0x7f3706f5a6c0>, fullname = 'cua'
+path = None, target = None
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cua" or fullname.startswith("cua."):
+>           raise ImportError("native cua SDK deliberately unavailable in adapter qualification")
+E           ImportError: native cua SDK deliberately unavailable in adapter qualification
+
+evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py:13: ImportError
+
+The above exception was the direct cause of the following exception:
+
+    async def test_background_shell_and_terminal_use_pty_processes():
+        env = FakeEnv()
+        sb = sandbox_with(env)
+
+>       background = await sb.shell.run("sleep 60", background=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+libs/python/cua-sandbox/tests/test_env_transport.py:194:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+libs/python/cua-sandbox/cua_sandbox/interfaces/shell.py:40: in run
+    session = await self._t.pty_create(command=command)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/transport/env.py:580: in pty_create
+    n = native()
+        ^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/_sdk.py:78: in native
+    return sdk()._native
+           ^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def sdk() -> Any:
+        """Import and return the ``cua`` SDK module."""
+        try:
+            import cua  # noqa: PLC0415 - imported lazily on purpose
+        # OSError: the package is present but its native library was never built
+        # or staged (a source checkout), which ctypes reports while loading it.
+        except (ImportError, OSError) as error:  # pragma: no cover - packaging error
+>           raise ImportError(
+                "cua-sandbox needs the `cua` SDK (the native cua-sdk binding). "
+                "Install it with `pip install cua` or, in the repo, "
+                "`uv pip install -e libs/cua/python` after building cua-sdk."
+            ) from error
+E           ImportError: cua-sandbox needs the `cua` SDK (the native cua-sdk binding). Install it with `pip install cua` or, in the repo, `uv pip install -e libs/cua/python` after building cua-sdk.
+
+libs/python/cua-sandbox/cua_sandbox/_sdk.py:62: ImportError
+____________________________ test_files_round_trip _____________________________
+
+    async def test_files_round_trip():
+        env = FakeEnv()
+        sb = sandbox_with(env)
+        payload = bytes(range(256)) * 4
+
+        await sb.files.write_bytes("/tmp/blob", payload)
+        await sb.files.write_text("/tmp/note.txt", "héllo")
+        await sb.files.make_dir("/tmp/dir")
+
+        assert await sb.files.read_bytes("/tmp/blob") == payload
+        assert await sb.files.read_bytes("/tmp/blob", offset=10, length=5) == payload[10:15]
+        assert await sb.files.read_text("/tmp/note.txt") == "héllo"
+        assert await sb.files.exists("/tmp/blob") is True
+>       assert await sb.files.exists("/tmp/missing") is False
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+libs/python/cua-sandbox/tests/test_env_transport.py:226:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+libs/python/cua-sandbox/cua_sandbox/interfaces/files.py:48: in exists
+    result = await self._t.send("file_exists", path=path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/transport/env.py:359: in send
+    return await handler(client, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/transport/env.py:768: in _do_file_exists
+    entry = await self._stat(client, path)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/transport/env.py:761: in _stat
+    return await client.stat(path)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests._fake_env.FakeEnv object at 0x7f3703eafd70>, path = '/tmp/missing'
+
+    async def stat(self, path: str) -> Any:
+        if path in self.files:
+            return SimpleNamespace(kind="file", size=len(self.files[path]), path=path, name=path)
+        if path in self.dirs:
+            return SimpleNamespace(kind="directory", size=0, path=path, name=path)
+>       raise _not_found(path)
+E       FileNotFoundError: /tmp/missing
+
+libs/python/cua-sandbox/tests/_fake_env.py:154: FileNotFoundError
+____________________ test_clipboard_screen_and_environment _____________________
+
+    def sdk() -> Any:
+        """Import and return the ``cua`` SDK module."""
+        try:
+>           import cua  # noqa: PLC0415 - imported lazily on purpose
+            ^^^^^^^^^^
+
+libs/python/cua-sandbox/cua_sandbox/_sdk.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_adb_guards._NoNativeSDK object at 0x7f3706f5a6c0>, fullname = 'cua'
+path = None, target = None
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cua" or fullname.startswith("cua."):
+>           raise ImportError("native cua SDK deliberately unavailable in adapter qualification")
+E           ImportError: native cua SDK deliberately unavailable in adapter qualification
+
+evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py:13: ImportError
+
+The above exception was the direct cause of the following exception:
+
+    async def test_clipboard_screen_and_environment():
+        env = FakeEnv(os_family="macos")
+        sb = sandbox_with(env)
+
+        await sb.clipboard.set("copied")
+        assert await sb.clipboard.get() == "copied"
+>       png = await sb.screenshot()
+              ^^^^^^^^^^^^^^^^^^^^^
+
+libs/python/cua-sandbox/tests/test_env_transport.py:245:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+libs/python/cua-sandbox/cua_sandbox/sandbox.py:1231: in screenshot
+    data = await self._transport.screenshot(format=format, quality=quality)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/transport/env.py:370: in screenshot
+    n = native()
+        ^^^^^^^^
+libs/python/cua-sandbox/cua_sandbox/_sdk.py:78: in native
+    return sdk()._native
+           ^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def sdk() -> Any:
+        """Import and return the ``cua`` SDK module."""
+        try:
+            import cua  # noqa: PLC0415 - imported lazily on purpose
+        # OSError: the package is present but its native library was never built
+        # or staged (a source checkout), which ctypes reports while loading it.
+        except (ImportError, OSError) as error:  # pragma: no cover - packaging error
+>           raise ImportError(
+                "cua-sandbox needs the `cua` SDK (the native cua-sdk binding). "
+                "Install it with `pip install cua` or, in the repo, "
+                "`uv pip install -e libs/cua/python` after building cua-sdk."
+            ) from error
+E           ImportError: cua-sandbox needs the `cua` SDK (the native cua-sdk binding). Install it with `pip install cua` or, in the repo, `uv pip install -e libs/cua/python` after building cua-sdk.
+
+libs/python/cua-sandbox/cua_sandbox/_sdk.py:62: ImportError
+____________ test_without_spacesd_the_agentless_fallback_takes_over ____________
+
+    async def test_without_spacesd_the_agentless_fallback_takes_over():
+>       from cua._native import CuaError
+
+libs/python/cua-sandbox/tests/test_env_transport.py:287:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_adb_guards._NoNativeSDK object at 0x7f3706f5a6c0>, fullname = 'cua'
+path = None, target = None
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cua" or fullname.startswith("cua."):
+>           raise ImportError("native cua SDK deliberately unavailable in adapter qualification")
+E           ImportError: native cua SDK deliberately unavailable in adapter qualification
+
+evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py:13: ImportError
+______________ test_without_spacesd_or_fallback_interfaces_raise _______________
+
+    async def test_without_spacesd_or_fallback_interfaces_raise():
+>       from cua._native import CuaError
+
+libs/python/cua-sandbox/tests/test_env_transport.py:304:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_adb_guards._NoNativeSDK object at 0x7f3706f5a6c0>, fullname = 'cua'
+path = None, target = None
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cua" or fullname.startswith("cua."):
+>           raise ImportError("native cua SDK deliberately unavailable in adapter qualification")
+E           ImportError: native cua SDK deliberately unavailable in adapter qualification
+
+evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py:13: ImportError
+________________ test_the_driver_is_retried_until_ready_timeout ________________
+
+    async def test_the_driver_is_retried_until_ready_timeout():
+>       from cua._native import CuaError
+
+libs/python/cua-sandbox/tests/test_env_transport.py:315:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cua_adb_guards._NoNativeSDK object at 0x7f3706f5a6c0>, fullname = 'cua'
+path = None, target = None
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cua" or fullname.startswith("cua."):
+>           raise ImportError("native cua SDK deliberately unavailable in adapter qualification")
+E           ImportError: native cua SDK deliberately unavailable in adapter qualification
+
+evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py:13: ImportError
+=========================== short test summary info ============================
+FAILED libs/python/cua-sandbox/tests/test_env_transport.py::test_background_shell_and_terminal_use_pty_processes
+FAILED libs/python/cua-sandbox/tests/test_env_transport.py::test_files_round_trip
+FAILED libs/python/cua-sandbox/tests/test_env_transport.py::test_clipboard_screen_and_environment
+FAILED libs/python/cua-sandbox/tests/test_env_transport.py::test_without_spacesd_the_agentless_fallback_takes_over
+FAILED libs/python/cua-sandbox/tests/test_env_transport.py::test_without_spacesd_or_fallback_interfaces_raise
+FAILED libs/python/cua-sandbox/tests/test_env_transport.py::test_the_driver_is_retried_until_ready_timeout
+6 failed, 20 passed in 0.20s

@@ -1,0 +1,33 @@
+# Executed in assistant sandbox, Python 3.12.14. No Android/ADB/native SDK runtime.
+# Install once using official PyPI/vendor packages and a writable local cache:
+UV_CACHE_DIR=/path/to/writable/cache uv venv --python 3.12 /path/to/venv
+UV_CACHE_DIR=/path/to/writable/cache uv pip install --python /path/to/venv/bin/python --no-sources --extra-index-url https://wheels.cua.ai/simple -e libs/python/cua-sandbox pytest pytest-asyncio ruff
+# Exact installed versions: environment.json. Current dependency declarations govern.
+# The original default cache was read-only; install succeeded with scratch cache.
+
+export CUA_TELEMETRY_ENABLED=false
+export PYTHONPATH="$PWD/evidence/cua-adb-shell-timeout-20261014:$PWD/libs/python/cua-sandbox"
+PY=/path/to/venv/bin/python
+RUFF=/path/to/venv/bin/ruff
+
+# RED: base 8ccf531fb54b6e4f974437a8c2f5af7abc4d45d6 plus the identical final test.
+# Test SHA256 50e5aea42511bf4bcfc2d5c93efb037812c3bb492b9680bfc2d3bc8475782dd6.
+# Baseline production was unchanged. 10 failed, 5 passed; exit 1.
+"$PY" -m pytest -p cua_adb_guards libs/python/cua-sandbox/tests/test_adb_transport.py -q
+
+# GREEN: exact code commit 16386a256a7a7d5deae7f3c54e73ea77b3dae250.
+# Identical test: 15 passed; exit 0.
+"$PY" -m pytest -p cua_adb_guards libs/python/cua-sandbox/tests/test_adb_transport.py -q
+
+# Initial broad adjacent attempt: 20 passed, 6 native-dependent failures under guard.
+# Not behavioral regressions; retained in adjacent.txt. The native library stayed unloaded.
+"$PY" -m pytest -p cua_adb_guards libs/python/cua-sandbox/tests/test_env_transport.py libs/python/cua-sandbox/tests/test_env_transport_forward.py -q
+# An attempted --deselect using repository-relative paths did not match node IDs;
+# it repeated the same six guard-dependent failures. Log: adjacent-deselection-mismatch.txt.
+
+# Corrected bounded adjacent run, unchanged guards: 20 passed, 6 deselected; exit 0.
+"$PY" -m pytest -p cua_adb_guards libs/python/cua-sandbox/tests/test_env_transport.py libs/python/cua-sandbox/tests/test_env_transport_forward.py -q -k 'not background_shell_and_terminal_use_pty_processes and not files_round_trip and not clipboard_screen_and_environment and not without_spacesd and not the_driver_is_retried_until_ready_timeout'
+
+"$RUFF" check libs/python/cua-sandbox/cua_sandbox/transport/adb.py libs/python/cua-sandbox/tests/test_adb_transport.py evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py
+"$RUFF" format --check libs/python/cua-sandbox/cua_sandbox/transport/adb.py libs/python/cua-sandbox/tests/test_adb_transport.py evidence/cua-adb-shell-timeout-20261014/cua_adb_guards.py
+git diff --check
