@@ -487,6 +487,7 @@ pub fn is_computer_action(tool_name: &str, operation: ToolOperation) -> bool {
                         | "window.activate"
                         | "window.frame.set"
                         | "browser.navigate"
+                        | "browser.motion.policy"
                         | "browser.input.click"
                         | "browser.input.type"
                 )
