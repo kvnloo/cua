@@ -38,7 +38,16 @@ def _one_of(value, allowed):
 
 
 def _finite_ms(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value >= 0
+    # Cross-language JSONL timing uses IEEE-754 numbers. Above 2**53-1,
+    # integer-millisecond inputs are not faithfully comparable by JS readers;
+    # unbounded Python ints can also raise OverflowError in math.isfinite.
+    # This limit is ~285,000 years of milliseconds, never a real task latency.
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and 0 <= value <= (2**53 - 1)
+        and math.isfinite(value)
+    )
 
 
 def _ci(samples: list[float], iterations: int = 4000) -> tuple[float, float]:
@@ -97,6 +106,11 @@ def analyze(rows: list[dict]) -> dict:
             errors.append(f"{prefix}: runner lifetime cannot be shorter than verified outcome")
         if r.get("fallback_used") is True and (not isinstance(times, dict) or not _finite_ms(times.get("fallback_ms")) or times["fallback_ms"] == 0):
             errors.append(f"{prefix}: fallback latency must be measured, not zeroed")
+        if isinstance(times, dict) and all(_finite_ms(times.get(k)) for k in TIMES):
+            if times["fallback_ms"] > times["t_runner_ms"]:
+                errors.append(f"{prefix}: fallback latency exceeds total runner lifetime")
+            if r.get("fallback_used") is False and times["fallback_ms"] != 0:
+                errors.append(f"{prefix}: unused fallback has nonzero charged latency")
         if type(r.get("fallback_used")) is not bool:
             errors.append(f"{prefix}: fallback_used must be boolean")
         actions = r.get("actions")
@@ -140,6 +154,10 @@ def analyze(rows: list[dict]) -> dict:
                 errors.append(f"{tag}: refused delivery requires a proven non-dispatch")
             if action.get("delivery") == "refused" and action.get("effect") == "verified":
                 errors.append(f"{tag}: refused delivery contradicts verified effect")
+            if action.get("effect") == "verified" and action.get("may_have_landed") is not True:
+                errors.append(f"{tag}: verified effect contradicts proven nonlanding")
+            if action.get("delivery") == "unknown" and action.get("may_have_landed") is False:
+                errors.append(f"{tag}: unknown delivery cannot assert proven nonlanding")
             if action.get("delivery") == "unknown" and r.get("outcome") == "verified" and action.get("reconciled_by_fresh_oracle") is not True:
                 errors.append(f"{tag}: unknown delivery needs explicit independent reconciliation")
             if action.get("replayed") is True and (action.get("may_have_landed") is True or action.get("delivery") in ("applied", "unknown")):
