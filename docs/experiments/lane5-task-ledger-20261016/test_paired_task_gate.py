@@ -188,6 +188,32 @@ class GateTests(unittest.TestCase):
             self.assertFalse(report["valid"])
             self.assertIn("speed_eligible must be boolean", " ".join(report["errors"]))
 
+    def test_action_safety_flags_must_be_real_booleans(self):
+        # Truthy strings/integers are not acknowledgements of safe retry state.
+        for key, bad in (
+            ("replayed", "true"),
+            ("cancelled", 1),
+            ("may_have_landed", "false"),
+            ("reconciled_by_fresh_oracle", "true"),
+        ):
+            with self.subTest(key=key):
+                rows = pairs(2)
+                rows[0]["actions"][0][key] = bad
+                self.assertFalse(analyze(rows)["valid"])
+                self.assertIn(f"{key} must be boolean", " ".join(analyze(rows)["errors"]))
+
+    def test_verified_task_cannot_have_only_refusals(self):
+        rows = pairs(2)
+        rows[0]["actions"][0].update(delivery="refused", effect="none", may_have_landed=False)
+        self.assertFalse(analyze(rows)["valid"])
+        self.assertIn("no verified mutation effect", " ".join(analyze(rows)["errors"]))
+
+    def test_applied_cannot_claim_may_have_landed_false(self):
+        rows = pairs(2)
+        rows[0]["actions"][0]["may_have_landed"] = False
+        self.assertFalse(analyze(rows)["valid"])
+        self.assertIn("applied", " ".join(analyze(rows)["errors"]))
+
     def test_incomplete_pair_is_not_counted(self):
         rows = pairs(2)[:-1]
         report = analyze(rows)
