@@ -187,7 +187,11 @@ def analyze(rows: list[dict]) -> dict:
 
     pairs: list[tuple[dict, dict]] = []
     order = Counter()
-    for pair_id, both in sorted(by_pair.items()):
+    first_arm_sequence: list[str] = []
+    # Preserve first occurrence order in the append-only JSONL execution log.
+    # Lexicographic sorting of pair ids ("10" before "2") would invent an
+    # order unrelated to execution and mask clustered AB/BA runs.
+    for pair_id, both in by_pair.items():
         arms = Counter(row.get("arm") for row in both if _one_of(row.get("arm"), ARMS))
         if len(both) != 2 or any(arms[arm] != 1 for arm in ARMS):
             errors.append(f"pair {pair_id}: missing/duplicate arm (all attempts required)")
@@ -200,6 +204,7 @@ def analyze(rows: list[dict]) -> dict:
         slots = sorted(both, key=lambda r: r["slot"])
         if slots[0].get("arm") in ARMS:
             order[slots[0]["arm"]] += 1
+            first_arm_sequence.append(slots[0]["arm"])
         for key in MATCH_FIELDS:
             if a.get(key) != b.get(key):
                 errors.append(f"pair {pair_id}: unmatched {key}")
@@ -208,6 +213,23 @@ def analyze(rows: list[dict]) -> dict:
         pairs.append((a, b))
     if pairs and abs(order["run_steps"] - order["run_script"]) > 1:
         errors.append("arm order unbalanced; use AB/BA alternation")
+    # Balanced totals still allow all A-first pairs to precede all B-first
+    # pairs, confounding arm with time/warmup. Reject non-interleaved orders.
+    # This only validates the *declared* JSONL order; a raw timestamp/runtime
+    # audit remains necessary before treating measurements as Driver evidence.
+    if any(left == right for left, right in zip(first_arm_sequence, first_arm_sequence[1:])):
+        errors.append("arm order not AB/BA interleaved in append-only pair sequence")
+
+    # A matched pair is not necessarily a matched *experiment*. A pooled
+    # whole-task A/B cohort cannot quietly mix driver binaries, providers,
+    # fixtures, tasks, permissions or hosts between pairs. Per-pair reset
+    # snapshot digests may vary, so initial_state_sha is intentionally omitted.
+    cohort_fields = tuple(k for k in MATCH_FIELDS if k != "initial_state_sha") + ("evidence_class",)
+    if pairs:
+        baseline = pairs[0][0]
+        for field in cohort_fields:
+            if any(a.get(field) != baseline.get(field) for a, _ in pairs[1:]):
+                errors.append(f"mixed cohort {field} across A/B pairs")
 
     verified_pairs = [
         (a, b) for a, b in pairs
