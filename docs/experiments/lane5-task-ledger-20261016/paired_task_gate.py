@@ -136,6 +136,8 @@ def analyze(rows: list[dict]) -> dict:
                 previous = prior_mutation[mutation]
                 if previous.get("delivery") != "refused" or previous.get("may_have_landed") is not False or previous.get("cancelled") is True:
                     errors.append(f"{tag}: duplicate logical mutation after potentially applied/unknown/cancelled attempt")
+            if action.get("replayed") is True and _nonempty(mutation) and mutation not in prior_mutation:
+                errors.append(f"{tag}: replay flag without a recorded prior attempt for this logical mutation")
             if _nonempty(mutation):
                 prior_mutation[mutation] = action
             # These are safety facts, not truthy hints. In particular, an
@@ -169,7 +171,11 @@ def analyze(rows: list[dict]) -> dict:
         if r.get("outcome") == "verified" and not any(
             isinstance(action, dict) and (
                 (action.get("effect") == "verified" and action.get("delivery") in ("applied", "attempted", "unknown"))
-                or (action.get("delivery") == "unknown" and action.get("reconciled_by_fresh_oracle") is True)
+                or (
+                    action.get("delivery") == "unknown"
+                    and action.get("effect") == "unknown"
+                    and action.get("reconciled_by_fresh_oracle") is True
+                )
             )
             for action in actions
         ):
