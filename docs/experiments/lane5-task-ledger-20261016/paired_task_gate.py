@@ -170,7 +170,7 @@ def analyze(rows: list[dict]) -> dict:
             continue
         a = next(row for row in both if row["arm"] == "run_steps")
         b = next(row for row in both if row["arm"] == "run_script")
-        if set((a.get("slot"), b.get("slot"))) != {0, 1}:
+        if type(a.get("slot")) is not int or type(b.get("slot")) is not int or {a["slot"], b["slot"]} != {0, 1}:
             errors.append(f"pair {pair_id}: both slots must occur exactly once")
             continue
         slots = sorted(both, key=lambda r: r["slot"])
