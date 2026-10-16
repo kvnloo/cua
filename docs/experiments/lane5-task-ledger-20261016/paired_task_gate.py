@@ -67,6 +67,8 @@ def analyze(rows: list[dict]) -> dict:
             errors.append(f"{prefix}: actual route is absent or not the named arm")
         if r.get("outcome") not in OUTCOMES:
             errors.append(f"{prefix}: outcome missing or invalid")
+        if type(r.get("speed_eligible")) is not bool:
+            errors.append(f"{prefix}: speed_eligible must be boolean")
         if r.get("slot") not in (0, 1) or isinstance(r.get("slot"), bool):
             errors.append(f"{prefix}: invalid paired slot")
         for key in MATCH_FIELDS:
@@ -175,6 +177,13 @@ def analyze(rows: list[dict]) -> dict:
         and (interval[1] < 0 or interval[0] > 0)
     )
     all_native = len(rows) > 0 and all(isinstance(r, dict) and r.get("evidence_class") == "native_driver" for r in rows)
+    # Every field above is supplied by the ledger author. A forged ledger can
+    # declare itself native_driver, invent independent observations, and choose
+    # timings that produce a nonzero bootstrap interval. Even if source/build
+    # digests look well formed, none of their bytes are authenticated here.
+    # Consequently this offline tool may identify a candidate for an external
+    # Driver+oracle audit, but MUST NOT certify a performance claim.
+    audit_candidate = bool(statistical_signal and all_native and all(r.get("speed_eligible") is True for r in rows))
     return {
         "classification": "LOCAL_LEDGER_QA_ONLY; NOT_DRIVER_CERTIFICATION",
         "valid": not errors,
@@ -187,11 +196,15 @@ def analyze(rows: list[dict]) -> dict:
         "paired_script_minus_steps_median_ms": statistics.median(differences) if differences else None,
         "paired_bootstrap_95pct_ms": interval,
         "statistical_signal_only": bool(statistical_signal),
-        "speed_claim_eligible": bool(statistical_signal and all_native),
+        "candidate_for_external_driver_audit": audit_candidate,
+        "speed_claim_eligible": False,
         "external_source_oracle_audit": "REQUIRED; ledger fields are asserted, not authenticated",
-        "speed_claim_blockers": ([] if statistical_signal and all_native else [
-            "reject latency claim: non-native scope, incomplete/invalid/unsafe evidence, <20 verified matched pairs, or CI overlaps zero"
-        ]),
+        "speed_claim_blockers": [
+            "offline ledger cannot authenticate Driver execution, build/source bytes, or the independent oracle",
+            *([] if audit_candidate else [
+                "also requires native scope, safe complete matched pairs, 20+ verified pairs, a nonzero interval, and both arms marked speed_eligible"
+            ]),
+        ],
     }
 
 

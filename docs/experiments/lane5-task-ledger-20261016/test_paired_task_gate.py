@@ -157,6 +157,37 @@ class GateTests(unittest.TestCase):
         self.assertTrue(result["statistical_signal_only"])
         self.assertFalse(result["speed_claim_eligible"])
 
+    def test_fake_native_attestation_cannot_authorize_speed_claim(self):
+        # Native provenance labels and SHA-shaped strings are self-asserted;
+        # these rows are synthetic fixture data, not real Driver executions.
+        rows = pairs(20, improvement=25)
+        for item in rows:
+            item["evidence_class"] = "native_driver"
+        report = analyze(rows)
+        self.assertTrue(report["valid"])
+        self.assertTrue(report["statistical_signal_only"])
+        self.assertTrue(report["candidate_for_external_driver_audit"])
+        self.assertFalse(report["speed_claim_eligible"])
+        self.assertIn("cannot authenticate", " ".join(report["speed_claim_blockers"]))
+
+    def test_native_rows_explicitly_ineligible_are_not_an_audit_candidate(self):
+        rows = pairs(20, improvement=25)
+        for item in rows:
+            item["evidence_class"] = "native_driver"
+            item["speed_eligible"] = False
+        report = analyze(rows)
+        self.assertTrue(report["statistical_signal_only"])
+        self.assertFalse(report["candidate_for_external_driver_audit"])
+        self.assertFalse(report["speed_claim_eligible"])
+
+    def test_speed_eligible_must_be_boolean(self):
+        for bogus in ("true", 1, None):
+            rows = pairs(2)
+            rows[0]["speed_eligible"] = bogus
+            report = analyze(rows)
+            self.assertFalse(report["valid"])
+            self.assertIn("speed_eligible must be boolean", " ".join(report["errors"]))
+
     def test_incomplete_pair_is_not_counted(self):
         rows = pairs(2)[:-1]
         report = analyze(rows)
