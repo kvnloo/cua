@@ -119,8 +119,20 @@ def analyze(rows: list[dict]) -> dict:
                     errors.append(f"{tag}: duplicate logical mutation after potentially applied/unknown/cancelled attempt")
             if _nonempty(mutation):
                 prior_mutation[mutation] = action
+            # These are safety facts, not truthy hints. In particular, an
+            # acknowledgement-loss/cancellation ledger must not smuggle a
+            # string or integer past the retry guard.
+            for flag in ("may_have_landed", "replayed", "cancelled"):
+                if type(action.get(flag)) is not bool:
+                    errors.append(f"{tag}: {flag} must be boolean")
+            if "reconciled_by_fresh_oracle" in action and type(action["reconciled_by_fresh_oracle"]) is not bool:
+                errors.append(f"{tag}: reconciled_by_fresh_oracle must be boolean")
             if action.get("delivery") not in DELIVERIES or action.get("effect") not in EFFECTS:
                 errors.append(f"{tag}: invalid delivery/effect classification")
+            if action.get("delivery") == "applied" and action.get("may_have_landed") is not True:
+                errors.append(f"{tag}: applied delivery contradicts may_have_landed=false/unknown")
+            if action.get("delivery") == "refused" and action.get("may_have_landed") is not False:
+                errors.append(f"{tag}: refused delivery requires a proven non-dispatch")
             if action.get("delivery") == "refused" and action.get("effect") == "verified":
                 errors.append(f"{tag}: refused delivery contradicts verified effect")
             if action.get("delivery") == "unknown" and r.get("outcome") == "verified" and action.get("reconciled_by_fresh_oracle") is not True:
@@ -131,6 +143,14 @@ def analyze(rows: list[dict]) -> dict:
                 errors.append(f"{tag}: unsafe replay after cancellation")
             if action.get("effect") == "verified" and not (isinstance(oracle, dict) and oracle.get("independent") is True and oracle.get("fresh_after_action") is True):
                 errors.append(f"{tag}: verified effect has no fresh independent oracle")
+        if r.get("outcome") == "verified" and not any(
+            isinstance(action, dict) and (
+                (action.get("effect") == "verified" and action.get("delivery") in ("applied", "attempted", "unknown"))
+                or (action.get("delivery") == "unknown" and action.get("reconciled_by_fresh_oracle") is True)
+            )
+            for action in actions
+        ):
+            errors.append(f"{prefix}: verified task has no verified mutation effect")
         if r.get("outcome") == "verified" and not _nonempty(r.get("final_effect_sha")):
             errors.append(f"{prefix}: verified outcome missing independent final-effect digest")
         if r.get("outcome") != "verified" and r.get("speed_eligible") is True:
