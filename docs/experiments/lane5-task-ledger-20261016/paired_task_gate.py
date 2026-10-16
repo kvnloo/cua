@@ -32,6 +32,11 @@ def _nonempty(value):
     return isinstance(value, str) and bool(value.strip())
 
 
+def _one_of(value, allowed):
+    """Membership for untrusted JSON enums: reject arrays/maps rather than crash."""
+    return isinstance(value, str) and value in allowed
+
+
 def _finite_ms(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value >= 0
 
@@ -61,11 +66,11 @@ def analyze(rows: list[dict]) -> dict:
             errors.append(f"{prefix}: missing pair_id")
             continue
         by_pair[pair].append(r)
-        if r.get("arm") not in ARMS:
+        if not _one_of(r.get("arm"), ARMS):
             errors.append(f"{prefix}: unrecognized arm")
         if r.get("route_actual") != r.get("arm"):
             errors.append(f"{prefix}: actual route is absent or not the named arm")
-        if r.get("outcome") not in OUTCOMES:
+        if not _one_of(r.get("outcome"), OUTCOMES):
             errors.append(f"{prefix}: outcome missing or invalid")
         if type(r.get("speed_eligible")) is not bool:
             errors.append(f"{prefix}: speed_eligible must be boolean")
@@ -78,7 +83,7 @@ def analyze(rows: list[dict]) -> dict:
             errors.append(f"{prefix}: driver_source_sha must be a full 40-character git SHA")
         if not re.fullmatch(r"[a-f0-9]{64}", str(r.get("driver_build_sha", ""))):
             errors.append(f"{prefix}: driver_build_sha must be a full SHA256 binary digest")
-        if r.get("evidence_class") not in EVIDENCE_CLASSES:
+        if not _one_of(r.get("evidence_class"), EVIDENCE_CLASSES):
             errors.append(f"{prefix}: evidence class missing (native_driver/browser_cdp/synthetic)")
         oracle = r.get("oracle")
         if not isinstance(oracle, dict) or oracle.get("independent") is not True or oracle.get("fresh_after_action") is not True:
@@ -90,7 +95,7 @@ def analyze(rows: list[dict]) -> dict:
             errors.append(f"{prefix}: timing missing/nonfinite/negative (failures still count)")
         elif times["t_runner_ms"] < times["t_oracle_ms"]:
             errors.append(f"{prefix}: runner lifetime cannot be shorter than verified outcome")
-        if r.get("fallback_used") is True and (not isinstance(times, dict) or times.get("fallback_ms", 0) <= 0):
+        if r.get("fallback_used") is True and (not isinstance(times, dict) or not _finite_ms(times.get("fallback_ms")) or times["fallback_ms"] == 0):
             errors.append(f"{prefix}: fallback latency must be measured, not zeroed")
         if type(r.get("fallback_used")) is not bool:
             errors.append(f"{prefix}: fallback_used must be boolean")
@@ -127,7 +132,7 @@ def analyze(rows: list[dict]) -> dict:
                     errors.append(f"{tag}: {flag} must be boolean")
             if "reconciled_by_fresh_oracle" in action and type(action["reconciled_by_fresh_oracle"]) is not bool:
                 errors.append(f"{tag}: reconciled_by_fresh_oracle must be boolean")
-            if action.get("delivery") not in DELIVERIES or action.get("effect") not in EFFECTS:
+            if not _one_of(action.get("delivery"), DELIVERIES) or not _one_of(action.get("effect"), EFFECTS):
                 errors.append(f"{tag}: invalid delivery/effect classification")
             if action.get("delivery") == "applied" and action.get("may_have_landed") is not True:
                 errors.append(f"{tag}: applied delivery contradicts may_have_landed=false/unknown")
@@ -159,7 +164,7 @@ def analyze(rows: list[dict]) -> dict:
     pairs: list[tuple[dict, dict]] = []
     order = Counter()
     for pair_id, both in sorted(by_pair.items()):
-        arms = Counter(row.get("arm") for row in both)
+        arms = Counter(row.get("arm") for row in both if _one_of(row.get("arm"), ARMS))
         if len(both) != 2 or any(arms[arm] != 1 for arm in ARMS):
             errors.append(f"pair {pair_id}: missing/duplicate arm (all attempts required)")
             continue
@@ -187,7 +192,10 @@ def analyze(rows: list[dict]) -> dict:
         and isinstance(a.get("timing"), dict) and isinstance(b.get("timing"), dict)
         and _finite_ms(a["timing"].get("t_oracle_ms")) and _finite_ms(b["timing"].get("t_oracle_ms"))
     ]
-    counts = {arm: dict(Counter(r.get("outcome", "invalid") for r in rows if isinstance(r, dict) and r.get("arm") == arm)) for arm in ARMS}
+    counts = {arm: dict(Counter(
+        r.get("outcome") if _one_of(r.get("outcome"), OUTCOMES) else "invalid"
+        for r in rows if isinstance(r, dict) and r.get("arm") == arm
+    )) for arm in ARMS}
     differences = [b["timing"]["t_oracle_ms"] - a["timing"]["t_oracle_ms"] for a, b in verified_pairs]
     interval = list(_ci(differences)) if len(differences) >= 2 else None
     # Gate a performance *claim*, not the validity of the safety/evidence tests.
