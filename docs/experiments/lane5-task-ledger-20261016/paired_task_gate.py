@@ -65,6 +65,7 @@ def _ci(samples: list[float], iterations: int = 4000) -> tuple[float, float]:
 def analyze(rows: list[dict]) -> dict:
     errors: list[str] = []
     by_pair: dict[str, list[dict]] = defaultdict(list)
+    pair_positions: dict[str, list[int]] = defaultdict(list)
     for i, r in enumerate(rows):
         prefix = f"row {i}"
         if not isinstance(r, dict):
@@ -75,6 +76,7 @@ def analyze(rows: list[dict]) -> dict:
             errors.append(f"{prefix}: missing pair_id")
             continue
         by_pair[pair].append(r)
+        pair_positions[pair].append(i)
         if not _one_of(r.get("arm"), ARMS):
             errors.append(f"{prefix}: unrecognized arm")
         if r.get("route_actual") != r.get("arm"):
@@ -201,6 +203,14 @@ def analyze(rows: list[dict]) -> dict:
         if type(a.get("slot")) is not int or type(b.get("slot")) is not int or {a["slot"], b["slot"]} != {0, 1}:
             errors.append(f"pair {pair_id}: both slots must occur exactly once")
             continue
+        # Append-only JSONL order is the only chronology available here.
+        # A pair must be complete before another pair starts, and claimed
+        # slots must match arrival order rather than fabricated metadata.
+        positions = pair_positions[pair_id]
+        if positions[1] != positions[0] + 1:
+            errors.append(f"pair {pair_id}: pair records are nonadjacent in JSONL chronology")
+        if both[0].get("slot") != 0 or both[1].get("slot") != 1:
+            errors.append(f"pair {pair_id}: JSONL row order disagrees with declared slot")
         slots = sorted(both, key=lambda r: r["slot"])
         if slots[0].get("arm") in ARMS:
             order[slots[0]["arm"]] += 1

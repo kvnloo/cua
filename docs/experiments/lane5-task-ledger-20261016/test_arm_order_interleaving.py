@@ -11,10 +11,15 @@ from test_paired_task_gate import pairs
 
 
 def order_pairs(rows, first_arm_by_pair):
-    for r in rows:
-        first = first_arm_by_pair[int(r["pair_id"])]
-        r["slot"] = 0 if r["arm"] == first else 1
-    return rows
+    # Reorder the actual append-only rows as well as their slot declarations.
+    # Changing slot metadata alone cannot establish an execution order.
+    chronological = []
+    for i in range(0, len(rows), 2):
+        pair = rows[i : i + 2]
+        first = first_arm_by_pair[int(pair[0]["pair_id"])]
+        pair.sort(key=lambda r: r["arm"] != first)
+        chronological.extend(dict(r, slot=slot) for slot, r in enumerate(pair))
+    return chronological
 
 
 class InterleavingTests(unittest.TestCase):
