@@ -1,0 +1,14 @@
+--- a/docs/experiments/lane5-task-ledger-20261016/paired_task_gate.py
++++ b/docs/experiments/lane5-task-ledger-20261016/paired_task_gate.py
+@@ -64,6 +64,11 @@
+
+ def analyze(rows: list[dict]) -> dict:
+     errors: list[str] = []
++    # Zero attempted tasks is not a completed or auditable benchmark. In
++    # particular, an empty/whitespace-only JSONL must fail the same gate
++    # as a malformed or incomplete pair (rather than reporting valid=True).
++    if not rows:
++        errors.append("ledger: no task attempts recorded")
+     by_pair: dict[str, list[dict]] = defaultdict(list)
+     pair_positions: dict[str, list[int]] = defaultdict(list)
+     for i, r in enumerate(rows):
