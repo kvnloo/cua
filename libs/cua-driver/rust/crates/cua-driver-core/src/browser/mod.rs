@@ -42,9 +42,9 @@ pub mod download;
 pub mod engine;
 mod grant;
 mod keyed_gates;
-mod motion_policy;
 #[cfg(test)]
 pub(crate) mod mock_cdp;
+mod motion_policy;
 mod mutation;
 pub mod platform;
 pub mod pointer;
