@@ -886,18 +886,22 @@ impl Tool for BrowserMotionPolicyTool {
             )
             .await
         {
-            Ok(_) => ToolResult::text(format!("browser motion policy for {tab_id}: {mode}"))
-                .with_structured(json!({
-                    "status": "ok",
-                    "target_id": target_id,
-                    "tab_id": tab_id,
-                    "mode": mode,
-                    "prefer_reduced_motion": motion_policy.prefers_reduced_motion(),
-                    "browser_generation": validated.record.generation,
-                    "scope": "driver_owned_tab",
-                    "css_injected": false,
-                })),
-            Err(error) => ToolResult::error(format!("Emulation.setEmulatedMedia failed: {error}")),
+            Ok(_) => ToolResult::text(format!(
+                "browser motion policy for {tab_id}: {mode}"
+            ))
+            .with_structured(json!({
+                "status": "ok",
+                "target_id": target_id,
+                "tab_id": tab_id,
+                "mode": mode,
+                "prefer_reduced_motion": motion_policy.prefers_reduced_motion(),
+                "browser_generation": validated.record.generation,
+                "scope": "driver_owned_tab",
+                "css_injected": false,
+            })),
+            Err(error) => ToolResult::error(format!(
+                "Emulation.setEmulatedMedia failed: {error}"
+            )),
         }
     }
 }
