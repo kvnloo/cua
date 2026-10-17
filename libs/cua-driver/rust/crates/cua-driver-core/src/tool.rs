@@ -596,6 +596,7 @@ pub(crate) fn advertised_runtime_input_schema(tool_name: &str, schema: &Value) -
 ///   `recording.replay`, `recording.install_dependency`
 /// - `page.action`
 /// - `browser.state`, `browser.prepare`, `browser.navigate`,
+///   `browser.motion.policy`,
 ///   `browser.input.click`, `browser.input.type`, `browser.input.files`,
 ///   `browser.dialog`
 /// - `driver.update_check`, `driver.probe`
@@ -733,6 +734,7 @@ pub fn default_capabilities_for(tool_name: &str) -> Vec<String> {
         "get_browser_state" => &["browser.state"],
         "browser_prepare" => &["browser.prepare"],
         "browser_navigate" => &["browser.navigate"],
+        "browser_motion_policy" => &["browser.motion.policy"],
         "browser_click" => &["browser.input.click"],
         "browser_type" => &["browser.input.type"],
         "browser_dialog" => &["browser.dialog"],
@@ -6261,6 +6263,7 @@ mod capability_tests {
         "get_browser_state",
         "browser_prepare",
         "browser_navigate",
+        "browser_motion_policy",
         "browser_click",
         "browser_type",
         "browser_dialog",
@@ -6351,6 +6354,7 @@ mod capability_tests {
         "browser.state",
         "browser.prepare",
         "browser.navigate",
+        "browser.motion.policy",
         "browser.input.click",
         "browser.input.type",
         "browser.input.files",
