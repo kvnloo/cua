@@ -1,0 +1,25 @@
+ImportError while loading conftest '/mnt/zer0models/promotion-first-20261016/cua-5374/libs/python/cua-sandbox/tests/conftest.py'.
+tests/conftest.py:23: in <module>
+    from cua_sandbox.sandbox import Sandbox
+cua_sandbox/__init__.py:25: in <module>
+    from cua_sandbox import pools  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cua_sandbox/pools.py:15: in <module>
+    from cua_sandbox._autopool import (
+cua_sandbox/_autopool.py:42: in <module>
+    from cua_sandbox.pool import _ClaimHandle
+cua_sandbox/pool.py:12: in <module>
+    from cua_sandbox.sandbox import Sandbox
+cua_sandbox/sandbox.py:94: in <module>
+    from cua_sandbox.interfaces import (
+cua_sandbox/interfaces/__init__.py:1: in <module>
+    from cua_sandbox.interfaces.apps import Apps
+cua_sandbox/interfaces/apps.py:5: in <module>
+    from cua_sandbox.interfaces.shell import CommandResult
+cua_sandbox/interfaces/shell.py:7: in <module>
+    from cua_sandbox.transport.base import Transport
+cua_sandbox/transport/__init__.py:5: in <module>
+    from cua_sandbox.transport.fleet import FleetTransport
+cua_sandbox/transport/fleet.py:25: in <module>
+    from fleet_sdk import HttpHeader, HttpRequest, HttpRequestBuilder
+E   ModuleNotFoundError: No module named 'fleet_sdk'

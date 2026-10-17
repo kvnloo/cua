@@ -1,0 +1,15 @@
+ImportError while loading conftest '/mnt/zer0models/promotion-first-20261016/cua-5374/libs/python/cua-sandbox/tests/conftest.py'.
+tests/conftest.py:23: in <module>
+    from cua_sandbox.sandbox import Sandbox
+cua_sandbox/__init__.py:25: in <module>
+    from cua_sandbox import pools  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cua_sandbox/pools.py:15: in <module>
+    from cua_sandbox._autopool import (
+cua_sandbox/_autopool.py:41: in <module>
+    from cua_sandbox.image import Image, cloud_registry_image
+cua_sandbox/image.py:30: in <module>
+    from cua_sandbox.generated.image_models import ImageFileReference, ImageResource
+cua_sandbox/generated/image_models.py:13: in <module>
+    from jsonschema import Draft202012Validator as _Draft202012Validator
+E   ModuleNotFoundError: No module named 'jsonschema'
