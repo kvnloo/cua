@@ -1154,9 +1154,7 @@ pub fn screenshot_display_dispatch() -> anyhow::Result<Vec<u8>> {
         // Do not allow a failed full-layout capture to cascade into the
         // first-output native/ext fallbacks below. A partial image paired with
         // union desktop coordinates is worse than an explicit refusal.
-        if hyprland::is_session()
-            && hyprland::active_output_count().is_ok_and(|count| count > 1)
-        {
+        if hyprland::is_session() && hyprland::active_output_count().is_ok_and(|count| count > 1) {
             return capture_via_grim().map_err(|error| {
                 anyhow::anyhow!(
                     "multi-output Hyprland display capture requires full-layout grim capture: {error:#}"
