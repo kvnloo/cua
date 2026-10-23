@@ -108,14 +108,24 @@ def spawn(name, extra=()):
     if not shutil.which(executable):
         raise RuntimeError('Unavailable app: ' + executable)
     rows = processes()
-    proc = subprocess.Popen([executable, *extra], stdin=subprocess.DEVNULL,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                            start_new_session=True)
+    log = root / (executable + '.log')
+    with log.open('a') as output:
+        proc = subprocess.Popen([executable, *extra], stdin=subprocess.DEVNULL,
+                                stdout=output, stderr=output, start_new_session=True)
     identity = process_identity(proc.pid)
     if identity is None:
         raise RuntimeError('Launched app exited before ownership could be recorded')
     rows.append(dict(identity, app=name))
     pidfile.write_text(json.dumps(rows))
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        if any(window['identity'] == identity for window in windows()):
+            return
+        if not alive(identity):
+            break
+        time.sleep(.05)
+    detail = log.read_text(errors='replace')[-500:] if log.exists() else ''
+    raise RuntimeError('Owned app did not present a verified window: ' + executable + ' ' + detail)
 timer_code = "import pathlib,sys,time; time.sleep(int(sys.argv[1])); pathlib.Path('/tmp/hobbylm-eval/timer-expired').touch()"
 def timer_state():
     try:
@@ -292,7 +302,7 @@ elif mode == 'key':
     key = p['key']
     if key not in ('VOLUME_DOWN','VOLUME_UP','MUTE'): raise ValueError('Unsupported key')
     if key == 'MUTE': run(['pactl','set-sink-mute','@DEFAULT_SINK@','1'], True)
-    else: run(['pactl','set-sink-volume','@DEFAULT_SINK@','5%-' if key == 'VOLUME_DOWN' else '5%+'],True)
+    else: run(['pactl','set-sink-volume','@DEFAULT_SINK@','-5%' if key == 'VOLUME_DOWN' else '+5%'],True)
     result = {'key':key}
 elif mode == 'dark':
     set_theme(p['enabled'])

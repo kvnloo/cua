@@ -63,6 +63,8 @@ class CodexRuntime:
             'model_reasoning_effort="low"',
             "-c",
             "developer_instructions=" + json.dumps(system),
+            "-c",
+            "project_doc_max_bytes=0",
         ]
         for feature in (
             "shell_tool",
