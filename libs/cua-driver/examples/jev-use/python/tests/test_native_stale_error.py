@@ -50,7 +50,15 @@ class StaleErrorTest(unittest.TestCase):
 
 
 class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
-    async def run_case(self, code: str | None, *, effect_refused: bool = False, always_refuse: bool = False) -> tuple[str, list[dict], list[dict], dict]:
+    async def run_case(
+        self,
+        code: str | None,
+        *,
+        canonical: bool = False,
+        effect_refused: bool = False,
+        always_refuse: bool = False,
+        conflicting_top_level_stale: bool = False,
+    ) -> tuple[str, list[dict], list[dict], dict]:
         payload = json.loads(
             (ROOT / "fixtures/native/gtk3-window-state-initial-v1.json").read_text(encoding="utf-8")
         )
@@ -96,7 +104,13 @@ class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
                     elif name == "click":
                         actions.append(dict(arguments))
                         if always_refuse or len(actions) == 1 or code not in (None, "stale_element_token"):
-                            structured = {} if code is None else {"code": code}
+                            structured = (
+                                {}
+                                if code is None
+                                else {"error": {"code": code}} if canonical else {"code": code}
+                            )
+                            if conflicting_top_level_stale:
+                                structured["code"] = "stale_element_token"
                             if effect_refused:
                                 structured["effect"] = "refused"
                             return SimpleNamespace(
@@ -136,24 +150,33 @@ class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_non_stale_code_stops_without_redispatch(self) -> None:
         for code in ("permission_denied", "tool_invocation_failed", "future_error"):
-            with self.subTest(code=code):
-                outcome, actions, reads, result = await self.run_case(code)
-                self.assertEqual(outcome, "unknown")
-                self.assertEqual(len(actions), 1)
-                self.assertEqual(len(reads), 1)
-                self.assertEqual(result["state"]["counter"], 0)
-                self.assertEqual(result["events"][-1]["phase"], "action")
-                self.assertFalse(
-                    any(
-                        event.get("action_error") == "stale_element_token"
-                        for event in result["events"]
+            for canonical in (False, True):
+                with self.subTest(code=code, canonical=canonical):
+                    outcome, actions, reads, result = await self.run_case(
+                        code, canonical=canonical
                     )
-                )
+                    self.assertEqual(outcome, "unknown")
+                    self.assertEqual(len(actions), 1)
+                    self.assertEqual(len(reads), 1)
+                    self.assertEqual(result["state"]["counter"], 0)
+                    self.assertEqual(result["events"][-1]["phase"], "action")
+                    self.assertFalse(
+                        any(
+                            event.get("action_error") == "stale_element_token"
+                            for event in result["events"]
+                        )
+                    )
 
     async def test_true_stale_and_code_less_legacy_refusals_reobserve(self) -> None:
-        for code in ("stale_element_token", None):
-            with self.subTest(code=code):
-                outcome, actions, reads, result = await self.run_case(code)
+        for code, canonical in (
+            ("stale_element_token", False),
+            ("stale_element_token", True),
+            (None, False),
+        ):
+            with self.subTest(code=code, canonical=canonical):
+                outcome, actions, reads, result = await self.run_case(
+                    code, canonical=canonical
+                )
                 self.assertEqual(outcome, "verified")
                 self.assertEqual(len(actions), 2)
                 self.assertEqual(len(reads), 2)
@@ -167,40 +190,68 @@ class NativeStaleLoopTest(unittest.IsolatedAsyncioTestCase):
                     1,
                 )
 
-
-
     async def test_effect_refused_without_mcp_error_does_not_hide_denial(self) -> None:
         for code in ("permission_denied", "tool_invocation_failed", "future_error"):
-            with self.subTest(code=code):
-                outcome, actions, reads, result = await self.run_case(code, effect_refused=True)
-                self.assertEqual(outcome, "unknown")
-                self.assertEqual(len(actions), 1)
-                self.assertEqual(len(reads), 1)
-                self.assertEqual(result["state"]["counter"], 0)
-                self.assertEqual(result["events"][-1]["phase"], "action")
+            for canonical in (False, True):
+                with self.subTest(code=code, canonical=canonical):
+                    outcome, actions, reads, result = await self.run_case(
+                        code, canonical=canonical, effect_refused=True
+                    )
+                    self.assertEqual(outcome, "unknown")
+                    self.assertEqual(len(actions), 1)
+                    self.assertEqual(len(reads), 1)
+                    self.assertEqual(result["state"]["counter"], 0)
+                    self.assertEqual(result["events"][-1]["phase"], "action")
 
     async def test_effect_refused_stale_reobserves_using_fresh_token(self) -> None:
-        outcome, actions, reads, result = await self.run_case(
-            "stale_element_token", effect_refused=True
-        )
-        self.assertEqual(outcome, "verified")
-        self.assertEqual(len(actions), 2)
-        self.assertEqual(len(reads), 2)
-        self.assertNotEqual(actions[0]["element_token"], actions[1]["element_token"])
-        self.assertEqual(result["state"]["counter"], 3)
+        for canonical in (False, True):
+            with self.subTest(canonical=canonical):
+                outcome, actions, reads, result = await self.run_case(
+                    "stale_element_token", canonical=canonical, effect_refused=True
+                )
+                self.assertEqual(outcome, "verified")
+                self.assertEqual(len(actions), 2)
+                self.assertEqual(len(reads), 2)
+                self.assertNotEqual(actions[0]["element_token"], actions[1]["element_token"])
+                self.assertEqual(result["state"]["counter"], 3)
 
     async def test_persistent_refusal_stale_stops_bounded_recovery(self) -> None:
-        outcome, actions, reads, result = await self.run_case(
-            "stale_element_token", effect_refused=True, always_refuse=True
-        )
-        self.assertEqual(outcome, "abstained")
-        self.assertEqual(len(actions), 3)
-        self.assertEqual(len(reads), 3)
-        self.assertEqual(len({a["element_token"] for a in actions}), 3)
-        self.assertEqual(result["state"]["counter"], 0)
-        self.assertEqual(result["events"][-1]["reason"], "no_progress")
-        self.assertEqual(result["events"][-1]["pattern"], "recovery")
-        self.assertEqual(result["events"][-1]["streak"], 3)
+        for canonical in (False, True):
+            with self.subTest(canonical=canonical):
+                outcome, actions, reads, result = await self.run_case(
+                    "stale_element_token",
+                    canonical=canonical,
+                    effect_refused=True,
+                    always_refuse=True,
+                )
+                self.assertEqual(outcome, "abstained")
+                self.assertEqual(len(actions), 3)
+                self.assertEqual(len(reads), 3)
+                self.assertEqual(len({a["element_token"] for a in actions}), 3)
+                self.assertEqual(result["state"]["counter"], 0)
+                self.assertEqual(result["events"][-1]["reason"], "no_progress")
+                self.assertEqual(result["events"][-1]["pattern"], "recovery")
+                self.assertEqual(result["events"][-1]["streak"], 3)
+
+    async def test_canonical_denial_overrides_conflicting_legacy_stale_code(self) -> None:
+        # A canonical non-stale error must win even if older metadata says stale.
+        for code in ("permission_denied", "tool_invocation_failed", "future_error"):
+            for effect_refused in (False, True):
+                with self.subTest(code=code, effect_refused=effect_refused):
+                    outcome, actions, reads, result = await self.run_case(
+                        code,
+                        canonical=True,
+                        effect_refused=effect_refused,
+                        conflicting_top_level_stale=True,
+                    )
+                    self.assertEqual(outcome, "unknown")
+                    self.assertEqual(len(actions), 1)
+                    self.assertEqual(len(reads), 1)
+                    self.assertEqual(result["state"]["counter"], 0)
+                    self.assertEqual(result["events"][-1]["phase"], "action")
+                    self.assertFalse(
+                        any("action_error" in event for event in result["events"])
+                    )
 
 if __name__ == "__main__":
     unittest.main()
