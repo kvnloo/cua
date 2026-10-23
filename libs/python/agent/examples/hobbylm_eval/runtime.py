@@ -5,6 +5,7 @@ adjacent artifact_manifest.json are accepted. HobbyLM's audited Python modules
 are imported directly, not through Transformers' remote-code loader. No pickle
 checkpoints, PEFT code execution, quantization, or desktop access is involved.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -38,7 +39,11 @@ def _cpu_model() -> str | None:
         with Path("/proc/cpuinfo").open() as stream:
             for line in stream:
                 key, separator, value = line.partition(":")
-                if separator and key.strip() in {"model name", "Hardware", "Processor"} and value.strip():
+                if (
+                    separator
+                    and key.strip() in {"model name", "Hardware", "Processor"}
+                    and value.strip()
+                ):
                     return value.strip()
     except OSError:
         pass
@@ -71,13 +76,17 @@ def _verify_artifacts(path: str | Path, role: str) -> tuple[Path, dict]:
 def _hobby_model_class(directory: Path):
     # These modules have already passed the release's pinned SHA256 checks.
     # A private package supplies their relative import without changing sys.path.
-    package_name = "_cua_audited_hobbylm_" + hashlib.sha256(str(directory).encode()).hexdigest()[:16]
+    package_name = (
+        "_cua_audited_hobbylm_" + hashlib.sha256(str(directory).encode()).hexdigest()[:16]
+    )
     package = types.ModuleType(package_name)
     package.__path__ = [str(directory)]
     sys.modules[package_name] = package
     try:
         for name in ("configuration_hobbylm", "modeling_hobbylm"):
-            spec = importlib.util.spec_from_file_location(f"{package_name}.{name}", directory / f"{name}.py")
+            spec = importlib.util.spec_from_file_location(
+                f"{package_name}.{name}", directory / f"{name}.py"
+            )
             if spec is None or spec.loader is None:
                 raise ImportError(f"Cannot import audited module {name}")
             module = importlib.util.module_from_spec(spec)
@@ -95,16 +104,27 @@ def _hobby_model_class(directory: Path):
 
 def _merge_lora(model, state: dict, config: dict, torch) -> int:
     """Merge the published PEFT linear A/B weights with strict shape checks."""
-    if (config.get("peft_type") != "LORA" or config.get("task_type") != "CAUSAL_LM"
-            or config.get("bias") != "none" or config.get("fan_in_fan_out", False)
-            or config.get("use_dora", False) or config.get("use_rslora", False)
-            or config.get("modules_to_save") or config.get("rank_pattern")
-            or config.get("alpha_pattern")):
+    if (
+        config.get("peft_type") != "LORA"
+        or config.get("task_type") != "CAUSAL_LM"
+        or config.get("bias") != "none"
+        or config.get("fan_in_fan_out", False)
+        or config.get("use_dora", False)
+        or config.get("use_rslora", False)
+        or config.get("modules_to_save")
+        or config.get("rank_pattern")
+        or config.get("alpha_pattern")
+    ):
         raise ValueError("Unsupported LoRA configuration")
     if set(config.get("target_modules", [])) != _TARGETS:
         raise ValueError("Unexpected LoRA target modules")
     rank, alpha = config.get("r"), config.get("lora_alpha")
-    if type(rank) is not int or rank <= 0 or not isinstance(alpha, (int, float)) or not math.isfinite(alpha):
+    if (
+        type(rank) is not int
+        or rank <= 0
+        or not isinstance(alpha, (int, float))
+        or not math.isfinite(alpha)
+    ):
         raise ValueError("Invalid LoRA rank or alpha")
     pairs = {}
     for key, value in state.items():
@@ -116,8 +136,11 @@ def _merge_lora(model, state: dict, config: dict, torch) -> int:
             raise ValueError(f"Duplicate LoRA tensor: {name}/{side}")
         pairs[name][side] = value
     modules = dict(model.named_modules())
-    expected = {name for name, module in modules.items()
-                if name.rsplit(".", 1)[-1] in _TARGETS and isinstance(module, torch.nn.Linear)}
+    expected = {
+        name
+        for name, module in modules.items()
+        if name.rsplit(".", 1)[-1] in _TARGETS and isinstance(module, torch.nn.Linear)
+    }
     if not pairs or set(pairs) != expected:
         raise ValueError("LoRA tensors do not cover exactly the model's target linear modules")
     # Validate every key and shape before modifying any model weight.
@@ -125,8 +148,12 @@ def _merge_lora(model, state: dict, config: dict, torch) -> int:
         if set(pair) != {"A", "B"}:
             raise ValueError(f"Incomplete LoRA pair: {name}")
         a, b, weight = pair["A"], pair["B"], modules[name].weight
-        if (a.ndim != 2 or b.ndim != 2 or tuple(a.shape) != (rank, weight.shape[1])
-                or tuple(b.shape) != (weight.shape[0], rank)):
+        if (
+            a.ndim != 2
+            or b.ndim != 2
+            or tuple(a.shape) != (rank, weight.shape[1])
+            or tuple(b.shape) != (weight.shape[0], rank)
+        ):
             raise ValueError(f"LoRA shape mismatch: {name}")
         if a.dtype != torch.float32 or b.dtype != torch.float32 or weight.dtype != torch.float32:
             raise ValueError(f"LoRA merge requires FP32 tensors: {name}")
@@ -157,7 +184,9 @@ class _TextRuntime:
             if self.device.index is None:
                 self.device = torch.device("cuda", torch.cuda.current_device())
             total = torch.cuda.get_device_properties(self.device).total_memory
-            torch.cuda.set_per_process_memory_fraction(min(GPU_LIMIT_BYTES / total, 0.9), self.device)
+            torch.cuda.set_per_process_memory_fraction(
+                min(GPU_LIMIT_BYTES / total, 0.9), self.device
+            )
             # FP32 router decisions must not silently use TF32 matmul.
             torch.backends.cuda.matmul.allow_tf32 = False
             torch.backends.cudnn.allow_tf32 = False
@@ -191,8 +220,13 @@ class _TextRuntime:
         inputs = torch.tensor([ids], dtype=torch.long, device=self.device)
         with torch.inference_mode():
             for index in range(max_new):
-                result = self.model(input_ids=inputs, past_key_values=past, use_cache=True,
-                                    return_dict=True, **self._last_logits)
+                result = self.model(
+                    input_ids=inputs,
+                    past_key_values=past,
+                    use_cache=True,
+                    return_dict=True,
+                    **self._last_logits,
+                )
                 next_id = int(result.logits[0, -1].argmax().item())
                 if next_id in self.eos_ids:
                     reason = "eos"
@@ -206,19 +240,32 @@ class _TextRuntime:
         if self.device.type == "cuda":
             torch.cuda.synchronize(self.device)
         seconds = time.perf_counter() - started
-        return {"raw": self.tok.decode(output, skip_special_tokens=False, clean_up_tokenization_spaces=False),
-                "seconds": seconds, "prompt_tokens": len(ids), "output_tokens": len(output),
-                "total_tokens": len(ids) + len(output), "finish_reason": reason,
-                "dtype": "float32",
-                "hardware": {
-                    "gpu_name": torch.cuda.get_device_name(self.device) if self.device.type == "cuda" else None,
-                    "cpu_model": _cpu_model(),
-                },
-                # Allocator peaks since model loading, NOT total process VRAM.
-                "memory": {
-                    "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(self.device) if self.device.type == "cuda" else None,
-                    "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved(self.device) if self.device.type == "cuda" else None,
-                }}
+        return {
+            "raw": self.tok.decode(
+                output, skip_special_tokens=False, clean_up_tokenization_spaces=False
+            ),
+            "seconds": seconds,
+            "prompt_tokens": len(ids),
+            "output_tokens": len(output),
+            "total_tokens": len(ids) + len(output),
+            "finish_reason": reason,
+            "dtype": "float32",
+            "hardware": {
+                "gpu_name": torch.cuda.get_device_name(self.device)
+                if self.device.type == "cuda"
+                else None,
+                "cpu_model": _cpu_model(),
+            },
+            # Allocator peaks since model loading, NOT total process VRAM.
+            "memory": {
+                "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(self.device)
+                if self.device.type == "cuda"
+                else None,
+                "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved(self.device)
+                if self.device.type == "cuda"
+                else None,
+            },
+        }
 
 
 class HobbyRuntime(_TextRuntime):
@@ -228,31 +275,52 @@ class HobbyRuntime(_TextRuntime):
         base, base_spec = _verify_artifacts(base_path, "base")
         adapter, adapter_spec = _verify_artifacts(adapter_path, "adapter")
         config = json.loads((adapter / "adapter_config.json").read_text())
-        if (config.get("revision") != base_spec["revision"]
-                or config.get("base_model_name_or_path") != base_spec["repository"]):
+        if (
+            config.get("revision") != base_spec["revision"]
+            or config.get("base_model_name_or_path") != base_spec["repository"]
+        ):
             raise ValueError("The adapter does not target the pinned base revision")
         torch = self._configure(device)
         from safetensors.torch import load_file
         from transformers import GPT2TokenizerFast
 
         model_class = _hobby_model_class(base)
-        self.tok = GPT2TokenizerFast.from_pretrained(str(base), local_files_only=True, cache_dir=str(CACHE_DIR / "hf"))
+        self.tok = GPT2TokenizerFast.from_pretrained(
+            str(base), local_files_only=True, cache_dir=str(CACHE_DIR / "hf")
+        )
         self.model = model_class.from_pretrained(
-            str(base), local_files_only=True, use_safetensors=True, torch_dtype=torch.float32,
-            device_map={"": str(self.device)}, low_cpu_mem_usage=True, attn_implementation="sdpa",
+            str(base),
+            local_files_only=True,
+            use_safetensors=True,
+            torch_dtype=torch.float32,
+            device_map={"": str(self.device)},
+            low_cpu_mem_usage=True,
+            attn_implementation="sdpa",
             cache_dir=str(CACHE_DIR / "hf"),
         )
-        merged = _merge_lora(self.model, load_file(str(adapter / "adapter_model.safetensors"), device="cpu"), config, torch)
+        merged = _merge_lora(
+            self.model,
+            load_file(str(adapter / "adapter_model.safetensors"), device="cpu"),
+            config,
+            torch,
+        )
         # eval() already disables bias updates. Also freeze the release's explicit rate.
         for module in self.model.modules():
             if hasattr(module, "bias_update_rate"):
                 module.bias_update_rate = 0.0
-        self.identity = {"base": base_spec, "adapter": adapter_spec, "merged_modules": merged, "dtype": "float32"}
+        self.identity = {
+            "base": base_spec,
+            "adapter": adapter_spec,
+            "merged_modules": merged,
+            "dtype": "float32",
+        }
         self._finish_loading()
 
     def _encode(self, system: str, user: str) -> list[int]:
         # Exact training format, deliberately NOT the instruct tokenizer template.
-        return self.tok(f"SYSTEM: {system}\nUSER: {user}\nASSISTANT:", add_special_tokens=False).input_ids
+        return self.tok(
+            f"SYSTEM: {system}\nUSER: {user}\nASSISTANT:", add_special_tokens=False
+        ).input_ids
 
 
 class SmallLocalRuntime(_TextRuntime):
@@ -261,6 +329,7 @@ class SmallLocalRuntime(_TextRuntime):
     The caller supplies the same system, action allowlist, and semantic user
     state as HobbyRuntime. Only the model's native chat serialization differs.
     """
+
     _last_logits = {"num_logits_to_keep": 1}
 
     def __init__(self, model_path, device: str = "cpu"):
@@ -268,11 +337,22 @@ class SmallLocalRuntime(_TextRuntime):
         torch = self._configure(device)
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
-        self.tok = AutoTokenizer.from_pretrained(str(path), local_files_only=True, trust_remote_code=False, cache_dir=str(CACHE_DIR / "hf"))
+        self.tok = AutoTokenizer.from_pretrained(
+            str(path),
+            local_files_only=True,
+            trust_remote_code=False,
+            cache_dir=str(CACHE_DIR / "hf"),
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
-            str(path), local_files_only=True, trust_remote_code=False, use_safetensors=True,
-            torch_dtype=torch.float32, device_map={"": str(self.device)}, low_cpu_mem_usage=True,
-            attn_implementation="sdpa", cache_dir=str(CACHE_DIR / "hf"),
+            str(path),
+            local_files_only=True,
+            trust_remote_code=False,
+            use_safetensors=True,
+            torch_dtype=torch.float32,
+            device_map={"": str(self.device)},
+            low_cpu_mem_usage=True,
+            attn_implementation="sdpa",
+            cache_dir=str(CACHE_DIR / "hf"),
         )
         self.identity = {"baseline": spec, "dtype": "float32"}
         self._finish_loading()
@@ -280,7 +360,8 @@ class SmallLocalRuntime(_TextRuntime):
     def _encode(self, system: str, user: str) -> list[int]:
         return self.tok.apply_chat_template(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            tokenize=True, add_generation_prompt=True,
+            tokenize=True,
+            add_generation_prompt=True,
         )
 
 
@@ -293,8 +374,12 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=main.__doc__)
     parser.add_argument("--runtime", choices=("hobby", "local"), required=True)
     parser.add_argument("--base", type=Path, default=CACHE_DIR / "models" / "hobbylm-1B-instruct")
-    parser.add_argument("--adapter", type=Path, default=CACHE_DIR / "models" / "hobbylm-1B-computer-use")
-    parser.add_argument("--model", type=Path, default=CACHE_DIR / "models" / "Qwen2.5-0.5B-Instruct")
+    parser.add_argument(
+        "--adapter", type=Path, default=CACHE_DIR / "models" / "hobbylm-1B-computer-use"
+    )
+    parser.add_argument(
+        "--model", type=Path, default=CACHE_DIR / "models" / "Qwen2.5-0.5B-Instruct"
+    )
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args(argv)
     os.environ["HF_HUB_OFFLINE"] = "1"

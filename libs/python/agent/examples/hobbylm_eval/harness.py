@@ -7,6 +7,7 @@ Requires guest python3 + python3-gi/AT-SPI, swaymsg, mate-calc, mousepad,
 thunar, orage, parole, xfce4-notes, gsettings and pactl.
 Unavailable capabilities are reported as unsupported, never successful.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -32,13 +33,19 @@ from urllib.parse import urlsplit
 
 TASKS_PATH = Path(__file__).with_name("tasks.json")
 ENVIRONMENT = "owned-linux-sway-v1"
-APPS = {"Calculator": "mate-calc", "Notes": "mousepad", "Calendar": "orage",
-        "Finder": "thunar", "Music": "parole", "Reminders": "xfce4-notes"}
+APPS = {
+    "Calculator": "mate-calc",
+    "Notes": "mousepad",
+    "Calendar": "orage",
+    "Finder": "thunar",
+    "Music": "parole",
+    "Reminders": "xfce4-notes",
+}
 KEYS = {"VOLUME_UP", "VOLUME_DOWN", "MUTE", "BRIGHTNESS_UP", "BRIGHTNESS_DOWN"}
 
 # This constant script is the only guest shell program. Model text is JSON data,
 # never interpolated source. All subprocess calls use bounded argv, not a shell.
-GUEST = r'''
+GUEST = r"""
 import base64, datetime, hashlib, json, os, pathlib, re, shutil, signal, subprocess, sys, time
 p = json.loads(base64.b64decode(sys.argv[1]))
 root = pathlib.Path('/tmp/hobbylm-eval')
@@ -352,7 +359,7 @@ elif mode == 'save_screenshot':
 else:
     raise ValueError('Unknown guest operation')
 print(json.dumps(result,sort_keys=True))
-'''
+"""
 
 
 def validate_endpoint(url: str) -> str:
@@ -408,15 +415,20 @@ class OwnedLinuxBackend:
 
     async def guest(self, **payload: Any) -> dict:
         encoded = base64.b64encode(json.dumps(dict(payload, owner=self.owner)).encode()).decode()
-        result = await self.sandbox.shell.run(shlex.join(["python3", "-c", GUEST, encoded]), timeout=30)
+        result = await self.sandbox.shell.run(
+            shlex.join(["python3", "-c", GUEST, encoded]), timeout=30
+        )
         if not result.success:
             raise RuntimeError("Guest operation failed: " + result.stderr[:3000])
         return json.loads(result.stdout)
 
     async def reset(self, task: dict) -> None:
         self.confirmation = task.get("confirmation")
-        await self.guest(mode="reset", dark=task.get("initial", {}).get("dark", False),
-                         question=task.get("question", ""))
+        await self.guest(
+            mode="reset",
+            dark=task.get("initial", {}).get("dark", False),
+            question=task.get("question", ""),
+        )
         await asyncio.sleep(0.3)
 
     async def snapshot(self) -> dict:
@@ -438,24 +450,31 @@ class OwnedLinuxBackend:
 
     async def action(self, raw: str) -> dict:
         from cua_agent.loops.hobbylm import parse_action
+
         action = parse_action(raw)
         command = action_command(action.name, action.argument, self.confirmation)
         mode = command["mode"]
         if mode == "type":
             snapshot = await self.snapshot()
             if not snapshot.get("front_owned") or snapshot.get("front_app") != "Calculator":
-                raise ValueError("TYPE requires the verified owned Calculator process to be foreground")
+                raise ValueError(
+                    "TYPE requires the verified owned Calculator process to be foreground"
+                )
             focused_identity = snapshot["front_identity"]
             current = await self.snapshot()
-            if (not current.get("front_owned") or current.get("front_app") != "Calculator"
-                    or current.get("front_identity") != focused_identity):
+            if (
+                not current.get("front_owned")
+                or current.get("front_app") != "Calculator"
+                or current.get("front_identity") != focused_identity
+            ):
                 raise ValueError("Calculator focus changed during TYPE")
             # spacesd 0.6's native keyboard route requires X11. Use the actual
             # owned application's accessible buttons, never Python arithmetic.
             result = await self.guest(**command, identity=focused_identity)
         elif mode == "screenshot":
-            result = await self.guest(mode="save_screenshot",
-                                      png=base64.b64encode(await self.screenshot()).decode())
+            result = await self.guest(
+                mode="save_screenshot", png=base64.b64encode(await self.screenshot()).decode()
+            )
         elif mode in {"done", "unknown"}:
             result = {"terminal": mode}
         else:
@@ -466,15 +485,22 @@ class OwnedLinuxBackend:
 
 def semantic_state(snapshot: dict) -> str:
     """Preserve the release's four semantic lines; unavailable brightness stays explicit."""
-    return "\n".join([
-        "Calculator: " + ("open, display shows " + (
-            snapshot["calculator_text"][0] if snapshot["calculator_text"] else "(empty)")
-            if "Calculator" in snapshot["apps"] else "not open"),
-        "Front app: " + str(snapshot.get("front_app") or snapshot["front_title"]),
-        f"Brightness: unsupported (headless)  Volume: {snapshot['volume']}%" +
-        (" (muted)" if snapshot["muted"] else ""),
-        "Dark mode: " + ("unknown" if snapshot["dark"] is None else "on" if snapshot["dark"] else "off"),
-    ])
+    return "\n".join(
+        [
+            "Calculator: "
+            + (
+                "open, display shows "
+                + (snapshot["calculator_text"][0] if snapshot["calculator_text"] else "(empty)")
+                if "Calculator" in snapshot["apps"]
+                else "not open"
+            ),
+            "Front app: " + str(snapshot.get("front_app") or snapshot["front_title"]),
+            f"Brightness: unsupported (headless)  Volume: {snapshot['volume']}%"
+            + (" (muted)" if snapshot["muted"] else ""),
+            "Dark mode: "
+            + ("unknown" if snapshot["dark"] is None else "on" if snapshot["dark"] else "off"),
+        ]
+    )
 
 
 def unsupported_reason(task: dict, before: dict) -> str | None:
@@ -482,9 +508,15 @@ def unsupported_reason(task: dict, before: dict) -> str | None:
         return task["unsupported"]
     kind = task["oracle"]["kind"]
     caps = before["capabilities"]
-    needed = {"calculator": ["Calculator", "atspi", "swaymsg"], "folder": ["Finder", "swaymsg"],
-              "volume": ["pactl"], "volume_exact": ["pactl"], "mute": ["pactl"], "dark": ["gsettings"],
-              "app": [task["oracle"].get("value", "")]}.get(kind, [])
+    needed = {
+        "calculator": ["Calculator", "atspi", "swaymsg"],
+        "folder": ["Finder", "swaymsg"],
+        "volume": ["pactl"],
+        "volume_exact": ["pactl"],
+        "mute": ["pactl"],
+        "dark": ["gsettings"],
+        "app": [task["oracle"].get("value", "")],
+    }.get(kind, [])
     missing = [name for name in needed if not caps.get(name)]
     if missing:
         return "Missing guest capabilities: " + ", ".join(missing)
@@ -502,8 +534,11 @@ def oracle(task: dict, before: dict, after: dict, terminal: str | None) -> bool:
     if kind == "calculator":
         return target["value"] in [s.replace(",", "").strip() for s in after["calculator_text"]]
     if kind == "volume":
-        return before["volume"] is not None and after["volume"] is not None and (
-            after["volume"] - before["volume"]) * target["direction"] > 0
+        return (
+            before["volume"] is not None
+            and after["volume"] is not None
+            and (after["volume"] - before["volume"]) * target["direction"] > 0
+        )
     if kind == "volume_exact":
         return after["volume"] == target["value"] and before["volume"] != target["value"]
     if kind == "mute":
@@ -516,8 +551,12 @@ def oracle(task: dict, before: dict, after: dict, terminal: str | None) -> bool:
         return target["value"] in after["apps"] and target["value"] not in before["apps"]
     if kind == "timer":
         timer = after["timer"]
-        return (timer is not None and timer["running"] and timer["remaining_seconds"] > 0
-                and timer["duration_seconds"] == target["minutes"] * 60)
+        return (
+            timer is not None
+            and timer["running"]
+            and timer["remaining_seconds"] > 0
+            and timer["duration_seconds"] == target["minutes"] * 60
+        )
     if kind == "screenshot":
         return bool(set(after["screenshots"]) - set(before["screenshots"]))
     if kind == "event":
@@ -525,12 +564,19 @@ def oracle(task: dict, before: dict, after: dict, terminal: str | None) -> bool:
         stamp = target["day"].replace("-", "") + "T" + target["time"].replace(":", "") + "00Z"
         if target.get("contact_name"):
             contact = after.get("contacts", "")
-            if ("FN:" + target["contact_name"] + "\n" not in contact or
-                    "EMAIL:" + target["person"] + "\n" not in contact):
+            if (
+                "FN:" + target["contact_name"] + "\n" not in contact
+                or "EMAIL:" + target["person"] + "\n" not in contact
+            ):
                 return False
-        return (text != before["calendar"] and "SUMMARY:" + target["title"] + "\n" in text
-                and "DTSTART:" + stamp + "\n" in text and "ATTENDEE" not in text
-                and "METHOD:" not in text and "X-EVAL-CONTACT:" + target["person"] + "\n" in text)
+        return (
+            text != before["calendar"]
+            and "SUMMARY:" + target["title"] + "\n" in text
+            and "DTSTART:" + stamp + "\n" in text
+            and "ATTENDEE" not in text
+            and "METHOD:" not in text
+            and "X-EVAL-CONTACT:" + target["person"] + "\n" in text
+        )
     if kind == "answer_file":
         return after["answer"].strip().lower() == target["value"].lower()
     if kind == "refusal":
@@ -549,20 +595,36 @@ def percentile(values: list[float], probability: float) -> float | None:
 
 class SubprocessRuntime:
     """Keep one real model loaded in its dependency-isolated Python interpreter."""
+
     def __init__(self, python: str, args: argparse.Namespace):
         executable = Path(python).absolute()
         # venv executables normally symlink to /usr/bin/python; retain the venv
         # argv path while verifying its containing directory is in the cache.
-        if not executable.parent.resolve().is_relative_to("/workspace/cache") or not executable.is_file():
-            raise ValueError("--runtime-python must be an existing interpreter under /workspace/cache")
-        argv = [str(executable), str(Path(__file__).with_name("runtime.py")),
-                "--runtime", "hobby" if args.runtime == "hobbylm" else "local",
-                "--base", args.base, "--adapter", args.adapter, "--device", args.device]
+        if (
+            not executable.parent.resolve().is_relative_to("/workspace/cache")
+            or not executable.is_file()
+        ):
+            raise ValueError(
+                "--runtime-python must be an existing interpreter under /workspace/cache"
+            )
+        argv = [
+            str(executable),
+            str(Path(__file__).with_name("runtime.py")),
+            "--runtime",
+            "hobby" if args.runtime == "hobbylm" else "local",
+            "--base",
+            args.base,
+            "--adapter",
+            args.adapter,
+            "--device",
+            args.device,
+        ]
         if args.model:
             argv.extend(["--model", args.model])
-        self.log = (args.output/"runtime.stderr.log").open("w", encoding="utf-8")
-        self.process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        stderr=self.log, bufsize=0)
+        self.log = (args.output / "runtime.stderr.log").open("w", encoding="utf-8")
+        self.process = subprocess.Popen(
+            argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, bufsize=0
+        )
         self.seed = 1729
         self.memory: dict = {}
         self.hardware: dict = {}
@@ -593,7 +655,7 @@ class SubprocessRuntime:
         raise RuntimeError("Local runtime worker exceeded the JSONL response bound")
 
     def complete(self, system: str, user: str, max_new: int = 64) -> dict:
-        payload = {"system":system, "user":user, "max_new":max_new, "seed":self.seed}
+        payload = {"system": system, "user": user, "max_new": max_new, "seed": self.seed}
         self.process.stdin.write((json.dumps(payload) + "\n").encode())
         self.process.stdin.flush()
         reply = self._receive()
@@ -627,6 +689,7 @@ class SubprocessRuntime:
 
 class MemorySampler:
     """Sample this evaluator/model process only; never claim guest/board totals."""
+
     def __init__(self, pid: int | None = None):
         self.pid = pid or os.getpid()
         self.peak_rss_bytes = 0
@@ -660,95 +723,195 @@ class MemorySampler:
     def result(self) -> dict:
         torch = sys.modules.get("torch")
         cuda = torch is not None and torch.cuda.is_available()
-        return {"process_peak_rss_bytes_sampled": self.peak_rss_bytes,
-                "target_lifetime_peak_rss_bytes": self.peak_hwm_bytes,
-                "harness_lifetime_maxrss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024,
-                "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated() if cuda else None,
-                "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved() if cuda else None,
-                "scope": "sampled target process RSS; allocator VRAM excludes driver/context; no guest or board total",
-                "rss_pid": self.pid}
+        return {
+            "process_peak_rss_bytes_sampled": self.peak_rss_bytes,
+            "target_lifetime_peak_rss_bytes": self.peak_hwm_bytes,
+            "harness_lifetime_maxrss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            * 1024,
+            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated() if cuda else None,
+            "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved() if cuda else None,
+            "scope": "sampled target process RSS; allocator VRAM excludes driver/context; no guest or board total",
+            "rss_pid": self.pid,
+        }
 
 
 def summarize(rows: list[dict]) -> dict:
-    latencies = [step["generation_seconds"] for row in rows for step in row["steps"]
-                 if "generation_seconds" in step]
-    step_wall = [step["wall_seconds"] for row in rows for step in row["steps"] if "wall_seconds" in step]
+    latencies = [
+        step["generation_seconds"]
+        for row in rows
+        for step in row["steps"]
+        if "generation_seconds" in step
+    ]
+    step_wall = [
+        step["wall_seconds"] for row in rows for step in row["steps"] if "wall_seconds" in step
+    ]
     means = sum(latencies) / len(latencies) if latencies else None
-    refusals = [row for row in rows if row["oracle_kind"] == "refusal" and row["status"] != "unsupported"]
+    refusals = [
+        row for row in rows if row["oracle_kind"] == "refusal" and row["status"] != "unsupported"
+    ]
     supported = [row for row in rows if row["status"] != "unsupported"]
-    post_attempted = sum(row.get("task", "").startswith("post-") and bool(row["steps"]) for row in rows)
-    return {"tasks": len(rows), "supported": len(supported), "unsupported": len(rows)-len(supported),
-            "passed": sum(row["status"] == "passed" for row in rows),
-            "post_tasks_attempted":post_attempted, "post_13_attempt_requirement_met":post_attempted >= 13,
-            "existing_benchmark_tasks_attempted":sum(row.get("task", "").startswith("cua-") and bool(row["steps"]) for row in rows),
-            "success_rate_supported": sum(row["status"] == "passed" for row in rows)/len(supported) if supported else None,
-            "success_rate_all": sum(row["status"] == "passed" for row in rows)/len(rows) if rows else None,
-            "correct_refusals": sum(row["status"] == "passed" for row in refusals),
-            "refusal_tasks": len(refusals),
-            "correct_refusal_rate": sum(row["status"] == "passed" for row in refusals)/len(refusals) if refusals else None,
-            "incorrect_refusals": sum(row.get("terminal") == "UNKNOWN" and row["oracle_kind"] != "refusal"
-                                      and row["status"] != "unsupported" for row in rows),
-            "generation_count": len(latencies), "generation_seconds_mean": means,
-            "generation_seconds_p50": percentile(latencies, .5), "generation_seconds_p95": percentile(latencies, .95),
-            "step_wall_seconds_p50": percentile(step_wall, .5), "step_wall_seconds_p95": percentile(step_wall, .95),
-            "task_wall_seconds": sum(row["wall_seconds"] for row in rows),
-            "published_reference_comparison": {
-                "mlx_replay_median_seconds": .262, "mlx_replay_mean_seconds": .455,
-                "mlx_replay_p90_seconds": .724, "mlx_live_mean_seconds": .806,
-                "p50_ratio_to_mlx_replay_median": percentile(latencies,.5)/.262 if latencies else None,
-                "mean_ratio_to_mlx_live_mean": means/.806 if means is not None else None,
-                "caveat": "Published MLX timings are context only, not same-device or same-environment baselines."}}
+    post_attempted = sum(
+        row.get("task", "").startswith("post-") and bool(row["steps"]) for row in rows
+    )
+    return {
+        "tasks": len(rows),
+        "supported": len(supported),
+        "unsupported": len(rows) - len(supported),
+        "passed": sum(row["status"] == "passed" for row in rows),
+        "post_tasks_attempted": post_attempted,
+        "post_13_attempt_requirement_met": post_attempted >= 13,
+        "existing_benchmark_tasks_attempted": sum(
+            row.get("task", "").startswith("cua-") and bool(row["steps"]) for row in rows
+        ),
+        "success_rate_supported": sum(row["status"] == "passed" for row in rows) / len(supported)
+        if supported
+        else None,
+        "success_rate_all": sum(row["status"] == "passed" for row in rows) / len(rows)
+        if rows
+        else None,
+        "correct_refusals": sum(row["status"] == "passed" for row in refusals),
+        "refusal_tasks": len(refusals),
+        "correct_refusal_rate": sum(row["status"] == "passed" for row in refusals) / len(refusals)
+        if refusals
+        else None,
+        "incorrect_refusals": sum(
+            row.get("terminal") == "UNKNOWN"
+            and row["oracle_kind"] != "refusal"
+            and row["status"] != "unsupported"
+            for row in rows
+        ),
+        "generation_count": len(latencies),
+        "generation_seconds_mean": means,
+        "generation_seconds_p50": percentile(latencies, 0.5),
+        "generation_seconds_p95": percentile(latencies, 0.95),
+        "step_wall_seconds_p50": percentile(step_wall, 0.5),
+        "step_wall_seconds_p95": percentile(step_wall, 0.95),
+        "task_wall_seconds": sum(row["wall_seconds"] for row in rows),
+        "published_reference_comparison": {
+            "mlx_replay_median_seconds": 0.262,
+            "mlx_replay_mean_seconds": 0.455,
+            "mlx_replay_p90_seconds": 0.724,
+            "mlx_live_mean_seconds": 0.806,
+            "p50_ratio_to_mlx_replay_median": percentile(latencies, 0.5) / 0.262
+            if latencies
+            else None,
+            "mean_ratio_to_mlx_live_mean": means / 0.806 if means is not None else None,
+            "caveat": "Published MLX timings are context only, not same-device or same-environment baselines.",
+        },
+    }
 
 
 def hardware_metadata(device: str, remote: bool = False) -> dict:
     cpu = platform.processor()
     try:
-        cpu = next((line.split(":",1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
-                    if line.startswith("model name")),cpu)
+        cpu = next(
+            (
+                line.split(":", 1)[1].strip()
+                for line in Path("/proc/cpuinfo").read_text().splitlines()
+                if line.startswith("model name")
+            ),
+            cpu,
+        )
     except OSError:
         pass
     torch = sys.modules.get("torch")
-    gpu = (torch.cuda.get_device_name(torch.cuda.current_device())
-           if not remote and device.startswith("cuda") and torch is not None and torch.cuda.is_available() else None)
-    return {"local_cpu_model":cpu or None, "platform":platform.platform(),
-            "gpu_name":gpu, "provider_hardware":"unknown" if remote else "local"}
+    gpu = (
+        torch.cuda.get_device_name(torch.cuda.current_device())
+        if not remote
+        and device.startswith("cuda")
+        and torch is not None
+        and torch.cuda.is_available()
+        else None
+    )
+    return {
+        "local_cpu_model": cpu or None,
+        "platform": platform.platform(),
+        "gpu_name": gpu,
+        "provider_hardware": "unknown" if remote else "local",
+    }
 
 
 def compare_reports(current: dict, reference: dict) -> dict:
     """Fail closed rather than silently mix action spaces/modalities/environments."""
-    keys = ("seed", "environment", "tasks_sha256", "input_modality", "action_space",
-            "max_steps", "max_new_tokens", "guest_fingerprint", "initial_states",
-            "task_capabilities", "supported_tasks")
-    mismatches = [key for key in keys if key not in current or key not in reference
-                  or current[key] != reference[key]]
-    if not current.get("initial_states") or any(value is None for value in current.get("initial_states", {}).values()):
+    keys = (
+        "seed",
+        "environment",
+        "tasks_sha256",
+        "input_modality",
+        "action_space",
+        "max_steps",
+        "max_new_tokens",
+        "guest_fingerprint",
+        "initial_states",
+        "task_capabilities",
+        "supported_tasks",
+    )
+    mismatches = [
+        key
+        for key in keys
+        if key not in current or key not in reference or current[key] != reference[key]
+    ]
+    if not current.get("initial_states") or any(
+        value is None for value in current.get("initial_states", {}).values()
+    ):
         mismatches.append("missing_initial_state_evidence")
     if mismatches:
-        return {"valid": False, "mismatched_fields": mismatches,
-                "reason": "Not a controlled same-state/seed/environment text-only comparison"}
+        return {
+            "valid": False,
+            "mismatched_fields": mismatches,
+            "reason": "Not a controlled same-state/seed/environment text-only comparison",
+        }
     a, b = current["generation_seconds_mean"], reference["generation_seconds_mean"]
-    return {"valid": True, "reference_runtime": reference["runtime"],
-            "generation_mean_ratio": a/b if a is not None and b else None}
+    return {
+        "valid": True,
+        "reference_runtime": reference["runtime"],
+        "generation_mean_ratio": a / b if a is not None and b else None,
+    }
 
 
-async def run_task(backend: OwnedLinuxBackend, runtime: Any, task: dict, directory: Path,
-                   max_steps: int, max_new: int, seed: int | None = None) -> dict:
+async def run_task(
+    backend: OwnedLinuxBackend,
+    runtime: Any,
+    task: dict,
+    directory: Path,
+    max_steps: int,
+    max_new: int,
+    seed: int | None = None,
+) -> dict:
     from cua_agent.loops.hobbylm import SYSTEM_V2, format_user, parse_action
+
     directory.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
-    row = {"task": task["id"], "oracle_kind": task["oracle"]["kind"], "steps": [], "terminal": None, "seed":seed}
+    row = {
+        "task": task["id"],
+        "oracle_kind": task["oracle"]["kind"],
+        "steps": [],
+        "terminal": None,
+        "seed": seed,
+    }
     trace = directory / "trace.jsonl"
+
     def emit(record):
         with trace.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record, sort_keys=True) + "\n")
+
     try:
         await backend.reset(task)
         before = await backend.snapshot()
         row["initial_state_sha256"] = hashlib.sha256(
-            json.dumps(before,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+            json.dumps(before, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
         row["initial_capabilities"] = before["capabilities"]
         (directory / "initial.png").write_bytes(await backend.screenshot())
-        emit({"type":"initial", "snapshot":before, "task":task, "seed":seed, "environment":ENVIRONMENT})
+        emit(
+            {
+                "type": "initial",
+                "snapshot": before,
+                "task": task,
+                "seed": seed,
+                "environment": ENVIRONMENT,
+            }
+        )
         reason = unsupported_reason(task, before)
         if reason:
             row.update(status="unsupported", reason=reason)
@@ -758,11 +921,15 @@ async def run_task(backend: OwnedLinuxBackend, runtime: Any, task: dict, directo
                 step_started = time.perf_counter()
                 state = await backend.observe()
                 user = format_user(task["request"], state, last_action, result)
-                step = {"type":"step", "index":index, "system":SYSTEM_V2, "user":user}
+                step = {"type": "step", "index": index, "system": SYSTEM_V2, "user": user}
                 try:
                     reply = runtime.complete(SYSTEM_V2, user, max_new=max_new)
-                    step.update(raw=reply["raw"], generation_seconds=reply["seconds"],
-                                prompt_tokens=reply["prompt_tokens"], output_tokens=reply["output_tokens"])
+                    step.update(
+                        raw=reply["raw"],
+                        generation_seconds=reply["seconds"],
+                        prompt_tokens=reply["prompt_tokens"],
+                        output_tokens=reply["output_tokens"],
+                    )
                     action = parse_action(reply["raw"])
                     result_dict = await backend.action(reply["raw"])
                     step["result"] = result_dict
@@ -787,13 +954,15 @@ async def run_task(backend: OwnedLinuxBackend, runtime: Any, task: dict, directo
                     break
             after = await backend.snapshot()
             if row.get("status") != "error":
-                row["status"] = "passed" if oracle(task, before, after, row["terminal"]) else "failed"
+                row["status"] = (
+                    "passed" if oracle(task, before, after, row["terminal"]) else "failed"
+                )
             row["final_snapshot"] = after
         (directory / "final.png").write_bytes(await backend.screenshot())
     except Exception as error:
         row.update(status="error", error=f"{type(error).__name__}: {error}")
     row["wall_seconds"] = time.perf_counter() - started
-    emit({"type":"final", **row})
+    emit({"type": "final", **row})
     (directory / "result.json").write_text(json.dumps(row, indent=2, sort_keys=True) + "\n")
     return row
 
@@ -810,6 +979,7 @@ def load_tasks(path: Path = TASKS_PATH) -> tuple[dict, str]:
 async def run(args: argparse.Namespace) -> dict:
     # Import native/model dependencies only for actual execution, not stdlib tests.
     from cua_sandbox import Sandbox
+
     suite, digest = load_tasks()
     random.seed(suite["seed"])
     if args.output.exists():
@@ -820,20 +990,28 @@ async def run(args: argparse.Namespace) -> dict:
     load_started = time.perf_counter()
     if args.runtime == "codex":
         from codex_runtime import CodexRuntime
+
         runtime = CodexRuntime(max_calls=6 * len(suite["tasks"]))
     elif args.runtime_python:
         runtime = SubprocessRuntime(args.runtime_python, args)
     else:
         from runtime import HobbyRuntime, SmallLocalRuntime
-        runtime = (HobbyRuntime(args.base, args.adapter, device=args.device) if args.runtime == "hobbylm"
-                   else SmallLocalRuntime(args.model, device=args.device))
+
+        runtime = (
+            HobbyRuntime(args.base, args.adapter, device=args.device)
+            if args.runtime == "hobbylm"
+            else SmallLocalRuntime(args.model, device=args.device)
+        )
     load_seconds = time.perf_counter() - load_started
     torch = sys.modules.get("torch")
     if torch is not None:
         torch.manual_seed(suite["seed"])
     try:
-        sandbox = await Sandbox.connect(url=validate_endpoint(args.endpoint),
-                                        token=os.environ.get(args.token_env), telemetry_enabled=False)
+        sandbox = await Sandbox.connect(
+            url=validate_endpoint(args.endpoint),
+            token=os.environ.get(args.token_env),
+            telemetry_enabled=False,
+        )
     except Exception:
         if isinstance(runtime, SubprocessRuntime):
             runtime.close()
@@ -842,7 +1020,9 @@ async def run(args: argparse.Namespace) -> dict:
     try:
         backend = OwnedLinuxBackend(sandbox, args.ownership_id)
         guest_fingerprint = await backend.guest(mode="fingerprint")
-        with MemorySampler(runtime.process.pid if isinstance(runtime, SubprocessRuntime) else None) as memory:
+        with MemorySampler(
+            runtime.process.pid if isinstance(runtime, SubprocessRuntime) else None
+        ) as memory:
             for index, task in enumerate(suite["tasks"]):
                 task_seed = suite["seed"] + index
                 random.seed(task_seed)
@@ -850,40 +1030,71 @@ async def run(args: argparse.Namespace) -> dict:
                     runtime.seed = task_seed
                 if torch is not None:
                     torch.manual_seed(task_seed)
-                row = await run_task(backend, runtime, task, args.output/task["id"],
-                                     args.max_steps, args.max_new, seed=task_seed)
+                row = await run_task(
+                    backend,
+                    runtime,
+                    task,
+                    args.output / task["id"],
+                    args.max_steps,
+                    args.max_new,
+                    seed=task_seed,
+                )
                 rows.append(row)
-        summary = {"schema_version":1, "runtime":args.runtime, "device":args.device,
-                   "source_revision":os.environ.get("HOBBY_SOURCE_SHA"),
-                   "source_files_sha256":{
-                       name:hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-                       for name in ("harness.py","runtime.py","codex_runtime.py","artifact_manifest.json")
-                   },
-                   "seed":suite["seed"], "environment":suite["environment"], "tasks_sha256":digest,
-                   "model_load_seconds":load_seconds, "model_paths":{"base":args.base,"adapter":args.adapter,"model":args.model},
-                   "input_modality":"identical semantic text only; screenshots are artifacts, never model inputs",
-                   "action_space":"OPEN TYPE KEY DARK_MODE FOLDER TIMER SCREENSHOT EVENT DONE UNKNOWN",
-                   "max_steps":args.max_steps,"max_new_tokens":args.max_new,
-                   "timing_regime":("codex_cli_startup_plus_network_not_model_only" if args.runtime == "codex"
-                                    else "local_complete_wall_including_decode_not_model_load"),
-                   "seed_caveat":("Provider does not expose seeded decoding" if args.runtime == "codex" else None),
-                   "guest_fingerprint":guest_fingerprint,
-                   "initial_states":{row["task"]:row.get("initial_state_sha256") for row in rows},
-                   "task_capabilities":{row["task"]:row.get("initial_capabilities") for row in rows},
-                   "supported_tasks":[row["task"] for row in rows if row["status"] != "unsupported"],
-                   "memory":memory.result(), **summarize(rows)}
+        summary = {
+            "schema_version": 1,
+            "runtime": args.runtime,
+            "device": args.device,
+            "source_revision": os.environ.get("HOBBY_SOURCE_SHA"),
+            "source_files_sha256": {
+                name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                for name in (
+                    "harness.py",
+                    "runtime.py",
+                    "codex_runtime.py",
+                    "artifact_manifest.json",
+                )
+            },
+            "seed": suite["seed"],
+            "environment": suite["environment"],
+            "tasks_sha256": digest,
+            "model_load_seconds": load_seconds,
+            "model_paths": {"base": args.base, "adapter": args.adapter, "model": args.model},
+            "input_modality": "identical semantic text only; screenshots are artifacts, never model inputs",
+            "action_space": "OPEN TYPE KEY DARK_MODE FOLDER TIMER SCREENSHOT EVENT DONE UNKNOWN",
+            "max_steps": args.max_steps,
+            "max_new_tokens": args.max_new,
+            "timing_regime": (
+                "codex_cli_startup_plus_network_not_model_only"
+                if args.runtime == "codex"
+                else "local_complete_wall_including_decode_not_model_load"
+            ),
+            "seed_caveat": (
+                "Provider does not expose seeded decoding" if args.runtime == "codex" else None
+            ),
+            "guest_fingerprint": guest_fingerprint,
+            "initial_states": {row["task"]: row.get("initial_state_sha256") for row in rows},
+            "task_capabilities": {row["task"]: row.get("initial_capabilities") for row in rows},
+            "supported_tasks": [row["task"] for row in rows if row["status"] != "unsupported"],
+            "memory": memory.result(),
+            **summarize(rows),
+        }
         summary["hardware"] = hardware_metadata(args.device, remote=args.runtime == "codex")
         if args.runtime == "codex":
             summary["memory"]["remote_model_ram_vram"] = "not measurable from subscription CLI"
-            summary["memory"]["scope"] = "local harness only; remote provider model memory is unmeasured"
+            summary["memory"]["scope"] = (
+                "local harness only; remote provider model memory is unmeasured"
+            )
         if isinstance(runtime, SubprocessRuntime):
             summary["memory"].update(runtime.memory)
             summary["runtime_python"] = args.runtime_python
             summary["hardware"].update(runtime.hardware)
         if args.compare_to:
             summary["controlled_comparison"] = compare_reports(
-                summary, json.loads(args.compare_to.read_text()))
-        (args.output/"summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+                summary, json.loads(args.compare_to.read_text())
+            )
+        (args.output / "summary.json").write_text(
+            json.dumps(summary, indent=2, sort_keys=True) + "\n"
+        )
         return summary
     finally:
         await sandbox.disconnect()
@@ -893,17 +1104,32 @@ async def run(args: argparse.Namespace) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--endpoint", required=True, help="Existing owned guest cua-spacesd URL; no host desktop")
-    parser.add_argument("--token-env", default="HOBBYLM_EVAL_TOKEN", help="Environment variable holding guest API token (never recorded)")
+    parser.add_argument(
+        "--endpoint", required=True, help="Existing owned guest cua-spacesd URL; no host desktop"
+    )
+    parser.add_argument(
+        "--token-env",
+        default="HOBBYLM_EVAL_TOKEN",
+        help="Environment variable holding guest API token (never recorded)",
+    )
     parser.add_argument("--ownership-id", required=True, help="Must match guest ownership marker")
     parser.add_argument("--runtime", choices=("hobbylm", "small-local", "codex"), required=True)
     parser.add_argument("--base", default="/workspace/cache/hobbylm-cua/models/hobbylm-1B-instruct")
-    parser.add_argument("--adapter", default="/workspace/cache/hobbylm-cua/models/hobbylm-1B-computer-use")
+    parser.add_argument(
+        "--adapter", default="/workspace/cache/hobbylm-cua/models/hobbylm-1B-computer-use"
+    )
     parser.add_argument("--model", help="Cached transformers small instruct model for small-local")
     parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
-    parser.add_argument("--runtime-python", help="Persistent model worker Python under /workspace/cache; avoids SDK/model dependency collision")
+    parser.add_argument(
+        "--runtime-python",
+        help="Persistent model worker Python under /workspace/cache; avoids SDK/model dependency collision",
+    )
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--compare-to", type=Path, help="Prior real summary.json; compare only identical state/seed/environment")
+    parser.add_argument(
+        "--compare-to",
+        type=Path,
+        help="Prior real summary.json; compare only identical state/seed/environment",
+    )
     parser.add_argument("--max-steps", type=int, choices=range(1, 7), default=6)
     parser.add_argument("--max-new", type=int, choices=range(1, 65), default=64)
     args = parser.parse_args()
