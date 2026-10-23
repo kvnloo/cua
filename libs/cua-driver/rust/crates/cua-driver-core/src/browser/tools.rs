@@ -799,6 +799,24 @@ impl BrowserMotionPolicyTool {
     }
 }
 
+/// Refuse before opening the endpoint on profiles that v0 may not modify.
+/// Revalidation after this preflight still enforces the live binding and owner.
+fn motion_policy_non_driver_owned_refusal(
+    endpoint_access_class: EndpointAccessClass,
+    mode: &str,
+) -> ToolResult {
+    BrowserRefusal::new(
+        BrowserRefusalCode::BrowserWrongTargetRefused,
+        "browser_motion_policy v0 is limited to driver-owned isolated browser tabs; existing user profiles and embedded applications are unchanged",
+    )
+    .with_detail(json!({
+        "reason": "motion_policy_driver_owned_only",
+        "endpoint_access_class": endpoint_access_class,
+        "requested_mode": mode,
+    }))
+    .to_tool_result()
+}
+
 #[async_trait]
 impl Tool for BrowserMotionPolicyTool {
     fn def(&self) -> &ToolDef {
@@ -855,6 +873,17 @@ impl Tool for BrowserMotionPolicyTool {
             Ok(guard) => guard,
             Err(refusal) => return refusal.to_tool_result(),
         };
+        // An approved personal/embedded endpoint must never be contacted for
+        // motion-policy emulation, even if live CDP revalidation would fail.
+        // The subsequent revalidation still protects driver-owned bindings.
+        let bound = match self.engine.store.get_target(&session, &target_id) {
+            Ok(record) => record,
+            Err(refusal) => return refusal.to_tool_result(),
+        };
+        if bound.endpoint_access_class != EndpointAccessClass::DriverOwned {
+            return motion_policy_non_driver_owned_refusal(bound.endpoint_access_class, &mode);
+        }
+
         let validated = match self
             .engine
             .revalidate_for_mutation(&session, &target_id, Some(&tab_id))
@@ -865,16 +894,10 @@ impl Tool for BrowserMotionPolicyTool {
         };
 
         if validated.record.endpoint_access_class != EndpointAccessClass::DriverOwned {
-            return BrowserRefusal::new(
-                BrowserRefusalCode::BrowserWrongTargetRefused,
-                "browser_motion_policy v0 is limited to driver-owned isolated browser tabs; existing user profiles and embedded applications are unchanged",
-            )
-            .with_detail(json!({
-                "reason": "motion_policy_driver_owned_only",
-                "endpoint_access_class": validated.record.endpoint_access_class,
-                "requested_mode": mode,
-            }))
-            .to_tool_result();
+            return motion_policy_non_driver_owned_refusal(
+                validated.record.endpoint_access_class,
+                &mode,
+            );
         }
 
         match validated
@@ -2892,6 +2915,149 @@ mod tests {
                 "browser_pointer"
             ]
         );
+    }
+
+    fn motion_policy_fixture_target(
+        engine: &Arc<BrowserEngine>,
+        session: &str,
+        endpoint_access_class: EndpointAccessClass,
+    ) -> (String, String) {
+        use crate::browser::store::{TabRecord, TargetRecord};
+        use crate::browser::types::{EndpointTransport, Rect};
+        use std::collections::HashMap;
+
+        let tab_id = engine.store.mint_tab_id();
+        let target_id = engine.store.mint_target(
+            session,
+            TargetRecord {
+                target_id: String::new(),
+                pid: 1,
+                window_id: 7,
+                // No mock server is needed: unauthorized classes must refuse
+                // before any WebSocket connection or CDP request is attempted.
+                ws_url: "ws://127.0.0.1:9/devtools/browser/unreachable".into(),
+                endpoint_owner_pid: 1,
+                endpoint_transport: EndpointTransport::LegacyJsonVersion,
+                endpoint_access_class,
+                generation: 1,
+                transport_session: None,
+                fingerprint: ProcessFingerprint {
+                    pid: 1,
+                    start_time: Some(1),
+                    executable: None,
+                },
+                native_title: "MockChrome".into(),
+                native_bounds: Rect::new(0.0, 0.0, 800.0, 600.0),
+                cdp_target_id: "mock-cdp-tab".into(),
+                cdp_window_id: Some(7),
+                quality: BindingQuality::Exact,
+                tabs: HashMap::from([(
+                    tab_id.clone(),
+                    TabRecord {
+                        tab_id: tab_id.clone(),
+                        cdp_target_id: "mock-cdp-tab".into(),
+                        title: "Fixture".into(),
+                        url: "https://example.test/".into(),
+                        active: Some(true),
+                        generation: 1,
+                        snapshots: HashMap::new(),
+                    },
+                )]),
+            },
+        );
+        (target_id, tab_id)
+    }
+
+    #[tokio::test]
+    async fn motion_policy_refuses_non_driver_owned_profiles_without_cdp() {
+        // Cover every non-driver-owned endpoint class with both mutations,
+        // including the reset path. The fixture deliberately has no CDP server.
+        for (access, wire_name) in [
+            (
+                EndpointAccessClass::ExistingProfileApproved,
+                "existing_profile_approved",
+            ),
+            (
+                EndpointAccessClass::EmbeddedApplication,
+                "embedded_application",
+            ),
+            (
+                EndpointAccessClass::ExternalConsumerBrowser,
+                "external_consumer_browser",
+            ),
+        ] {
+            let engine = engine();
+            let (target_id, tab_id) =
+                motion_policy_fixture_target(&engine, "policy-owner", access);
+            let tool = BrowserMotionPolicyTool::new(engine);
+            for mode in ["reduce", "default"] {
+                let result = tool
+                    .invoke(json!({
+                        "target_id": target_id,
+                        "tab_id": tab_id,
+                        "session": "policy-owner",
+                        "mode": mode,
+                    }))
+                    .await;
+                let receipt = structured(&result);
+                assert_eq!(receipt["status"], "refused");
+                assert_eq!(receipt["refusal"]["code"], "browser_wrong_target_refused");
+                assert_eq!(
+                    receipt["refusal"]["detail"]["reason"],
+                    "motion_policy_driver_owned_only"
+                );
+                assert_eq!(receipt["refusal"]["detail"]["endpoint_access_class"], wire_name);
+                assert_eq!(receipt["refusal"]["detail"]["requested_mode"], mode);
+            }
+
+            // A valid capability minted for one session cannot be reused by
+            // another session, regardless of the endpoint's access class.
+            let foreign = tool
+                .invoke(json!({
+                    "target_id": target_id,
+                    "tab_id": tab_id,
+                    "session": "different-session",
+                    "mode": "reduce",
+                }))
+                .await;
+            assert_eq!(structured(&foreign)["refusal"]["code"], "browser_binding_stale");
+        }
+    }
+
+    #[tokio::test]
+    async fn motion_policy_rejects_invalid_mode_and_missing_session_before_lookup() {
+        let tool = BrowserMotionPolicyTool::new(engine());
+        let base = json!({
+            "target_id": "nonexistent",
+            "tab_id": "nonexistent",
+            "session": "explicit-session",
+            "mode": "reduced",
+        });
+        let invalid = tool.invoke(base).await;
+        assert_eq!(invalid.is_error, Some(true));
+        assert!(matches!(
+            &invalid.content[0],
+            Content::Text { text, .. } if text.contains("mode must be")
+        ));
+
+        for session in [None, Some("default"), Some("")] {
+            let mut args = json!({
+                "target_id": "nonexistent",
+                "tab_id": "nonexistent",
+                "mode": "reduce",
+            });
+            if let Some(sid) = session {
+                args["session"] = json!(sid);
+            }
+            let result = tool.invoke(args).await;
+            assert_eq!(result.is_error, Some(true));
+        }
+
+        let def = tool.def();
+        assert_eq!(def.input_schema["additionalProperties"], false);
+        assert_eq!(def.input_schema["properties"]["mode"]["enum"], json!(["reduce", "default"]));
+        assert!(def.idempotent);
+        assert!(!def.read_only);
     }
 
     #[test]
