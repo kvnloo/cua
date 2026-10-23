@@ -113,11 +113,6 @@ python3 "$EXPERIMENT/bounded-gpu.py" -- "$PY" "$EXPERIMENT/harness.py" \
   --model "$MODELS/Qwen2.5-0.5B-Instruct" --device cuda \
   --output /workspace/cache/hobbylm-cua/results/qwen \
   --compare-to /workspace/cache/hobbylm-cua/results/hobbylm/summary.json
-
-"$PY" "$EXPERIMENT/harness.py" \
-  --endpoint http://127.0.0.1:13211 --ownership-id HobbyCuaEval \
-  --runtime codex --device cpu --output /workspace/cache/hobbylm-cua/results/codex \
-  --compare-to /workspace/cache/hobbylm-cua/results/hobbylm/summary.json
 ```
 
 The GPU wrapper checks IO pressure, applies `nice -n10`, limits the run to 1,800
@@ -125,12 +120,11 @@ seconds, and stops only its process group if a new GPU process appears. It also
 stops at 4,768 MiB of attributed VRAM. Existing user processes are never stopped.
 CPU runs use `--device cpu` without that wrapper.
 
-The subscription control uses an existing ChatGPT login through `codex exec`,
-model `gpt-6.1-sol`, a read-only sandbox, disabled native tools/config discovery,
-and bounded calls. It must not initiate a new login. Its latency includes CLI
-startup and network time. Remote model memory, seeded decoding, and a matching
-output-token cap are not available. The Qwen control is a small text model, not
-Qwen-VL and not a standard screenshot-conditioned Cua baseline.
+Codex use and strong-model baselines are skipped by the operator's later
+instruction. The archived failed authentication attempts remain evidence only,
+not a model score. The active matrix runner launches only the two local arms.
+The Qwen control is a small text model, not Qwen-VL and not a standard
+screenshot-conditioned Cua baseline.
 
 ## Evidence and limitations
 
