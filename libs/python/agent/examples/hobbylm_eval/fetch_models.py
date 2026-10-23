@@ -3,6 +3,7 @@
 Usage: python fetch_models.py [--models base adapter baseline]
 Uses only the standard library. No credentials or model code are loaded.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -41,12 +42,16 @@ def fetch(cache: Path, roles: list[str]) -> None:
             if _matches(target, record):
                 print(f"cached {role}/{filename} {record['sha256']}", flush=True)
                 continue
-            expected_url = f"https://huggingface.co/{spec['repository']}/resolve/{spec['revision']}/{filename}"
+            expected_url = (
+                f"https://huggingface.co/{spec['repository']}/resolve/{spec['revision']}/{filename}"
+            )
             if record["url"] != expected_url:
                 raise ValueError(f"Artifact URL does not match its pin: {role}/{filename}")
             temporary = None
             try:
-                with tempfile.NamedTemporaryFile(dir=directory, prefix=".download-", delete=False) as stream:
+                with tempfile.NamedTemporaryFile(
+                    dir=directory, prefix=".download-", delete=False
+                ) as stream:
                     temporary = Path(stream.name)
                     with urllib.request.urlopen(expected_url, timeout=120) as response:
                         digest, size = hashlib.sha256(), 0
@@ -69,7 +74,12 @@ def fetch(cache: Path, roles: list[str]) -> None:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE)
-    parser.add_argument("--models", nargs="+", choices=("base", "adapter", "baseline"), default=["base", "adapter", "baseline"])
+    parser.add_argument(
+        "--models",
+        nargs="+",
+        choices=("base", "adapter", "baseline"),
+        default=["base", "adapter", "baseline"],
+    )
     args = parser.parse_args(argv)
     fetch(args.cache_dir, args.models)
     return 0

@@ -480,12 +480,12 @@ def unsupported_reason(task: dict, before: dict) -> str | None:
     kind = task["oracle"]["kind"]
     caps = before["capabilities"]
     needed = {"calculator": ["Calculator", "atspi", "swaymsg"], "folder": ["Finder", "swaymsg"],
-              "volume": ["pactl"], "mute": ["pactl"], "dark": ["gsettings"],
+              "volume": ["pactl"], "volume_exact": ["pactl"], "mute": ["pactl"], "dark": ["gsettings"],
               "app": [task["oracle"].get("value", "")]}.get(kind, [])
     missing = [name for name in needed if not caps.get(name)]
     if missing:
         return "Missing guest capabilities: " + ", ".join(missing)
-    if kind in {"volume", "mute"} and before["volume"] is None:
+    if kind in {"volume", "volume_exact", "mute"} and before["volume"] is None:
         return "Guest PulseAudio/PipeWire sink unavailable"
     if kind == "dark" and before["dark"] is None:
         return "Guest GTK theme property unavailable"
@@ -501,6 +501,8 @@ def oracle(task: dict, before: dict, after: dict, terminal: str | None) -> bool:
     if kind == "volume":
         return before["volume"] is not None and after["volume"] is not None and (
             after["volume"] - before["volume"]) * target["direction"] > 0
+    if kind == "volume_exact":
+        return after["volume"] == target["value"] and before["volume"] != target["value"]
     if kind == "mute":
         return after["muted"] is True and before["muted"] is False
     if kind == "dark":

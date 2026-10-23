@@ -121,6 +121,13 @@ an exact preconfirmed fixture and never send invitations. This does not prove
 macOS Contacts/Calendar permissions, a real y/n interaction, or invitation delivery.
 The two existing Wordpad benchmark questions exceed the frozen calculator-only
 `TYPE` action space. They are coverage failures, not benchmark successes.
+Three pinned OSWorld instructions also run: maximum volume, infeasible Bluetooth,
+and infeasible Python 4. They come from Cua Bench's pinned OSWorld revision.
+`osworld-source.json` retains their original configurations and expected predicates.
+The maximum-volume task retains its exact 100% target. Six 5% decisions from
+the fixed 50% initial state cannot reach that target. This structural failure is
+not removed or relabeled as success. These three adapted cases do not establish
+an official OSWorld aggregate score or general GUI competence.
 
 The published 0.262-second figure is MLX replay **median**, not live mean.
 The replay mean is 0.455 seconds. The published live mean is 0.806 seconds.

@@ -5,6 +5,7 @@ and an allowlisted ``hobby_action(action: str)`` callable in ComputerAgent.tools
 The executor owns platform mapping and event confirmation. No model output is
 interpreted as shell code. The native prompt is Apache-2.0 Fuel Labs material.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -90,7 +91,8 @@ def _text(message: dict[str, Any]) -> str:
     if isinstance(content, str):
         return content
     return "\n".join(
-        item["text"] for item in content
+        item["text"]
+        for item in content
         if isinstance(item, dict) and isinstance(item.get("text"), str)
     )
 
@@ -100,34 +102,49 @@ class HobbyLMConfig:
     """Use the existing function-tool seam for the ten semantic actions."""
 
     async def predict_step(
-        self, messages, model, tools=None, max_retries=None, stream=False,
-        computer_handler=None, _on_api_start=None, _on_api_end=None,
-        _on_usage=None, _on_screenshot=None, **kwargs,
+        self,
+        messages,
+        model,
+        tools=None,
+        max_retries=None,
+        stream=False,
+        computer_handler=None,
+        _on_api_start=None,
+        _on_api_end=None,
+        _on_usage=None,
+        _on_screenshot=None,
+        **kwargs,
     ):
         if stream:
             raise ValueError("HobbyLM local loop does not support streaming")
         runtime = kwargs.get("hobby_runtime")
         observe = kwargs.get("hobby_observe")
-        if runtime is None or not callable(getattr(runtime, "complete", None)) or not callable(observe):
+        if (
+            runtime is None
+            or not callable(getattr(runtime, "complete", None))
+            or not callable(observe)
+        ):
             raise ValueError("hobby_runtime.complete and hobby_observe are required")
-        if not any(tool.get("name", tool.get("function", {}).get("name")) == "hobby_action"
-                   for tool in (tools or [])):
+        if not any(
+            tool.get("name", tool.get("function", {}).get("name")) == "hobby_action"
+            for tool in (tools or [])
+        ):
             raise ValueError("Register an allowlisted hobby_action function tool")
         request_index = next(
-            (i for i in range(len(messages) - 1, -1, -1)
-             if messages[i].get("role") == "user"), None
+            (i for i in range(len(messages) - 1, -1, -1) if messages[i].get("role") == "user"), None
         )
         if request_index is None:
             raise ValueError("A user request is required")
         request = _text(messages[request_index])
         calls = {
-            item.get("call_id"): item for item in messages[request_index + 1:]
+            item.get("call_id"): item
+            for item in messages[request_index + 1 :]
             if item.get("type") == "function_call" and item.get("name") == "hobby_action"
         }
         if len(calls) >= 6:
             raise ValueError("HobbyLM six-action limit reached")
         last_action = result = None
-        for item in messages[request_index + 1:]:
+        for item in messages[request_index + 1 :]:
             if item.get("type") == "function_call_output" and item.get("call_id") in calls:
                 last_action = json.loads(calls[item["call_id"]]["arguments"])["action"]
                 result = str(item.get("output", ""))
@@ -154,12 +171,22 @@ class HobbyLMConfig:
             await _on_usage(usage)
         if action.name in {"DONE", "UNKNOWN"}:
             text = "Done." if action.name == "DONE" else "I can't do that one offline."
-            output = [{"type": "message", "role": "assistant", "content": [
-                {"type": "output_text", "text": text}
-            ]}]
+            output = [
+                {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "output_text", "text": text}],
+                }
+            ]
         else:
-            output = [{"type": "function_call", "call_id": uuid.uuid4().hex,
-                       "name": "hobby_action", "arguments": json.dumps({"action": str(action)})}]
+            output = [
+                {
+                    "type": "function_call",
+                    "call_id": uuid.uuid4().hex,
+                    "name": "hobby_action",
+                    "arguments": json.dumps({"action": str(action)}),
+                }
+            ]
         return {"output": output, "usage": usage}
 
     async def predict_click(self, model, image_b64, instruction, **kwargs):

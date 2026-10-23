@@ -4,6 +4,7 @@
 Usage: python bounded-gpu.py -- COMMAND ARG ...
 No model or GUI imports. Exits 75 when busy. Never stops another process.
 """
+
 import json
 import os
 import signal
@@ -19,7 +20,10 @@ MAX_MIB = 4768  # <= 5,000,000,000 bytes including driver/context attribution
 def processes():
     result = subprocess.run(
         ["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"],
-        capture_output=True, text=True, timeout=5, check=True,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=True,
     )
     rows = {}
     for line in result.stdout.splitlines():
@@ -31,9 +35,17 @@ def processes():
 def main():
     if len(sys.argv) < 3 or sys.argv[1] != "--":
         raise SystemExit("Usage: bounded-gpu.py -- COMMAND ARG ...")
-    pressure = dict(field.split("=") for field in Path("/proc/pressure/io").read_text().splitlines()[0].split()[1:])
+    pressure = dict(
+        field.split("=")
+        for field in Path("/proc/pressure/io").read_text().splitlines()[0].split()[1:]
+    )
     if float(pressure["avg10"]) >= 40:
-        print(json.dumps({"status": "busy", "reason": "io_pressure", "some_avg10": pressure["avg10"]}), flush=True)
+        print(
+            json.dumps(
+                {"status": "busy", "reason": "io_pressure", "some_avg10": pressure["avg10"]}
+            ),
+            flush=True,
+        )
         return 75
     baseline = processes()
     child = subprocess.Popen(["nice", "-n10", *sys.argv[2:]], start_new_session=True)
@@ -67,7 +79,12 @@ def main():
                     os.killpg(child.pid, signal.SIGKILL)
                 break
             if now - last_echo >= 60:
-                print(json.dumps({"status": "running", "elapsed_s": round(now - start), "peak_gpu_mib": peak}), flush=True)
+                print(
+                    json.dumps(
+                        {"status": "running", "elapsed_s": round(now - start), "peak_gpu_mib": peak}
+                    ),
+                    flush=True,
+                )
                 last_echo = now
             time.sleep(0.5)
         code = child.wait()
@@ -76,9 +93,18 @@ def main():
             os.killpg(child.pid, signal.SIGTERM)
             child.wait(timeout=5)
         raise
-    print(json.dumps({"status": "stopped" if reason else "complete", "reason": reason,
-                      "exit_code": code, "peak_gpu_mib": peak,
-                      "wall_s": time.monotonic() - start}), flush=True)
+    print(
+        json.dumps(
+            {
+                "status": "stopped" if reason else "complete",
+                "reason": reason,
+                "exit_code": code,
+                "peak_gpu_mib": peak,
+                "wall_s": time.monotonic() - start,
+            }
+        ),
+        flush=True,
+    )
     return 124 if reason else code
 
 

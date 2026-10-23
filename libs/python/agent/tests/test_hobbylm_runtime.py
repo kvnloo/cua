@@ -317,6 +317,7 @@ def test_cuda_allocator_cap_is_at_most_five_decimal_gigabytes(monkeypatch):
     fake_torch.device = torch.device
     fake_torch.cuda = types.SimpleNamespace(
         is_available=lambda: True,
+        current_device=lambda: 0,
         get_device_properties=lambda device: types.SimpleNamespace(total_memory=total),
         set_per_process_memory_fraction=lambda fraction, device: calls.append((fraction, device)),
     )
@@ -326,7 +327,7 @@ def test_cuda_allocator_cap_is_at_most_five_decimal_gigabytes(monkeypatch):
     )
     monkeypatch.setitem(sys.modules, "torch", fake_torch)
     instance = object.__new__(runtime.HobbyRuntime)
-    instance._configure("cuda:0")
+    instance._configure("cuda")
     assert runtime.GPU_LIMIT_BYTES == 5_000_000_000
     assert calls[0][0] * total <= 5_000_000_000
     assert calls[0][1] == torch.device("cuda:0")

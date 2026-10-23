@@ -154,6 +154,8 @@ class _TextRuntime:
         if self.device.type == "cuda":
             if not torch.cuda.is_available():
                 raise RuntimeError("CUDA is unavailable. Select device='cpu'.")
+            if self.device.index is None:
+                self.device = torch.device("cuda", torch.cuda.current_device())
             total = torch.cuda.get_device_properties(self.device).total_memory
             torch.cuda.set_per_process_memory_fraction(min(GPU_LIMIT_BYTES / total, 0.9), self.device)
             # FP32 router decisions must not silently use TF32 matmul.

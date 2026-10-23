@@ -32,11 +32,11 @@ def task(kind, **target):
 
 
 class SuiteTests(unittest.TestCase):
-    def test_frozen_suite_has_post_variants_and_two_existing_benchmarks(self):
+    def test_frozen_suite_has_post_variants_and_existing_benchmarks(self):
         suite, digest = harness.load_tasks()
         self.assertGreaterEqual(sum(t["id"].startswith("post-") for t in suite["tasks"]),13)
         existing = [t for t in suite["tasks"] if t["id"].startswith("cua-")]
-        self.assertEqual(len(existing),2)
+        self.assertEqual(len(existing),5)
         self.assertTrue(all(t["source"].startswith("libs/cua-bench/tasks/") for t in existing))
         self.assertEqual(len(digest),64)
         self.assertEqual(suite["seed"],1729)
@@ -105,6 +105,10 @@ class OracleTests(unittest.TestCase):
         self.assertTrue(harness.oracle(task("volume",direction=1),before,after,"DONE"))
         self.assertFalse(harness.oracle(task("volume",direction=-1),before,after,"DONE"))
         self.assertFalse(harness.oracle(task("dark",value=False),before,after,"DONE"))
+        after["volume"] = 99
+        self.assertFalse(harness.oracle(task("volume_exact",value=100),before,after,"DONE"))
+        after["volume"] = 100
+        self.assertTrue(harness.oracle(task("volume_exact",value=100),before,after,"DONE"))
 
     def test_refusal_requires_unchanged_state_and_unknown(self):
         before, after = snapshot(), snapshot()
