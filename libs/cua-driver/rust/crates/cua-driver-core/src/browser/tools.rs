@@ -876,7 +876,11 @@ impl Tool for BrowserMotionPolicyTool {
         // An approved personal/embedded endpoint must never be contacted for
         // motion-policy emulation, even if live CDP revalidation would fail.
         // The subsequent revalidation still protects driver-owned bindings.
-        let access_class = match self.engine.store.get_target_access_class(&session, &target_id) {
+        let access_class = match self
+            .engine
+            .store
+            .get_target_access_class(&session, &target_id)
+        {
             Ok(class) => class,
             Err(refusal) => return refusal.to_tool_result(),
         };
@@ -3039,11 +3043,8 @@ mod tests {
     #[tokio::test]
     async fn motion_policy_driver_owned_preflight_keeps_live_lifecycle_validation() {
         let engine = engine();
-        let (target_id, tab_id) = motion_policy_fixture_target(
-            &engine,
-            "policy-owner",
-            EndpointAccessClass::DriverOwned,
-        );
+        let (target_id, tab_id) =
+            motion_policy_fixture_target(&engine, "policy-owner", EndpointAccessClass::DriverOwned);
         let tool = BrowserMotionPolicyTool::new(engine);
 
         for mode in ["reduce", "default"] {
