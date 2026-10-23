@@ -300,6 +300,17 @@ impl BrowserStore {
         self.next()
     }
 
+    /// Preserve the same stale-capability refusal for both target lookups.
+    fn target_binding_stale(target_id: &str) -> BrowserRefusal {
+        BrowserRefusal::new(
+            BrowserRefusalCode::BrowserBindingStale,
+            format!(
+                "target {target_id} is not a live binding in this session — \
+                 re-run get_browser_state with pid + window_id"
+            ),
+        )
+    }
+
     /// Look up a target capability. Unknown ids — including ids minted
     /// by a *different* session — refuse with `browser_binding_stale`:
     /// the capability is simply not valid here.
@@ -314,15 +325,24 @@ impl BrowserStore {
             .get(session)
             .and_then(|s| s.targets.get(target_id))
             .cloned()
-            .ok_or_else(|| {
-                BrowserRefusal::new(
-                    BrowserRefusalCode::BrowserBindingStale,
-                    format!(
-                        "target {target_id} is not a live binding in this session — \
-                         re-run get_browser_state with pid + window_id"
-                    ),
-                )
-            })
+            .ok_or_else(|| Self::target_binding_stale(target_id))
+    }
+
+    /// Read just the bound endpoint access class, without cloning the
+    /// target's tabs or snapshots. This cached hint is not mutation authority;
+    /// callers must still revalidate a driver-owned binding before dispatch.
+    pub fn get_target_access_class(
+        &self,
+        session: &str,
+        target_id: &str,
+    ) -> Result<EndpointAccessClass, BrowserRefusal> {
+        self.inner
+            .lock()
+            .unwrap()
+            .get(session)
+            .and_then(|s| s.targets.get(target_id))
+            .map(|target| target.endpoint_access_class)
+            .ok_or_else(|| Self::target_binding_stale(target_id))
     }
 
     /// Mutate a stored target in place. No-op if it disappeared.
@@ -586,6 +606,39 @@ mod tests {
         assert_eq!(err.code, BrowserRefusalCode::BrowserBindingStale);
         let err = store.get_target("sess-b", &tid).unwrap_err();
         assert_eq!(err.code, BrowserRefusalCode::BrowserBindingStale);
+    }
+
+    #[test]
+    fn target_access_class_lookup_preserves_session_scope_and_stale_errors() {
+        let (store, target_id, _, _) = store_with_ref();
+        assert_eq!(
+            store.get_target_access_class("sess-a", &target_id).unwrap(),
+            EndpointAccessClass::EmbeddedApplication
+        );
+        store.update_target("sess-a", &target_id, |target| {
+            target.endpoint_access_class = EndpointAccessClass::DriverOwned;
+        });
+        assert_eq!(
+            store.get_target_access_class("sess-a", &target_id).unwrap(),
+            EndpointAccessClass::DriverOwned
+        );
+
+        for (session, id) in [("sess-b", target_id.as_str()), ("sess-a", "bt-unknown")] {
+            let narrow = store.get_target_access_class(session, id).unwrap_err();
+            let full = store.get_target(session, id).unwrap_err();
+            assert_eq!(narrow.code, full.code);
+            assert_eq!(narrow.message, full.message);
+            assert_eq!(narrow.detail, full.detail);
+        }
+
+        store.remove_session("sess-a");
+        let narrow = store
+            .get_target_access_class("sess-a", &target_id)
+            .unwrap_err();
+        let full = store.get_target("sess-a", &target_id).unwrap_err();
+        assert_eq!(narrow.code, full.code);
+        assert_eq!(narrow.message, full.message);
+        assert_eq!(narrow.detail, full.detail);
     }
 
     #[test]

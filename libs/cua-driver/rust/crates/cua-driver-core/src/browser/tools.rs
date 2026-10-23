@@ -876,12 +876,12 @@ impl Tool for BrowserMotionPolicyTool {
         // An approved personal/embedded endpoint must never be contacted for
         // motion-policy emulation, even if live CDP revalidation would fail.
         // The subsequent revalidation still protects driver-owned bindings.
-        let bound = match self.engine.store.get_target(&session, &target_id) {
-            Ok(record) => record,
+        let access_class = match self.engine.store.get_target_access_class(&session, &target_id) {
+            Ok(class) => class,
             Err(refusal) => return refusal.to_tool_result(),
         };
-        if bound.endpoint_access_class != EndpointAccessClass::DriverOwned {
-            return motion_policy_non_driver_owned_refusal(bound.endpoint_access_class, &mode);
+        if access_class != EndpointAccessClass::DriverOwned {
+            return motion_policy_non_driver_owned_refusal(access_class, &mode);
         }
 
         let validated = match self
@@ -2926,6 +2926,13 @@ mod tests {
         use crate::browser::types::{EndpointTransport, Rect};
         use std::collections::HashMap;
 
+        // Driver-owned controls bypass the existing-profile generation grant
+        // and must reach the live lifecycle check in revalidation.
+        let generation = if endpoint_access_class == EndpointAccessClass::DriverOwned {
+            0
+        } else {
+            1
+        };
         let tab_id = engine.store.mint_tab_id();
         let target_id = engine.store.mint_target(
             session,
@@ -2933,13 +2940,13 @@ mod tests {
                 target_id: String::new(),
                 pid: 1,
                 window_id: 7,
-                // No mock server is needed: unauthorized classes must refuse
-                // before any WebSocket connection or CDP request is attempted.
+                // No CDP server: non-owned classes must refuse before contact;
+                // the driver-owned control must fail the live lifecycle check.
                 ws_url: "ws://127.0.0.1:9/devtools/browser/unreachable".into(),
                 endpoint_owner_pid: 1,
                 endpoint_transport: EndpointTransport::LegacyJsonVersion,
                 endpoint_access_class,
-                generation: 1,
+                generation,
                 transport_session: None,
                 fingerprint: ProcessFingerprint {
                     pid: 1,
@@ -2959,7 +2966,7 @@ mod tests {
                         title: "Fixture".into(),
                         url: "https://example.test/".into(),
                         active: Some(true),
-                        generation: 1,
+                        generation,
                         snapshots: HashMap::new(),
                     },
                 )]),
@@ -2987,8 +2994,7 @@ mod tests {
             ),
         ] {
             let engine = engine();
-            let (target_id, tab_id) =
-                motion_policy_fixture_target(&engine, "policy-owner", access);
+            let (target_id, tab_id) = motion_policy_fixture_target(&engine, "policy-owner", access);
             let tool = BrowserMotionPolicyTool::new(engine);
             for mode in ["reduce", "default"] {
                 let result = tool
@@ -3006,7 +3012,10 @@ mod tests {
                     receipt["refusal"]["detail"]["reason"],
                     "motion_policy_driver_owned_only"
                 );
-                assert_eq!(receipt["refusal"]["detail"]["endpoint_access_class"], wire_name);
+                assert_eq!(
+                    receipt["refusal"]["detail"]["endpoint_access_class"],
+                    wire_name
+                );
                 assert_eq!(receipt["refusal"]["detail"]["requested_mode"], mode);
             }
 
@@ -3020,7 +3029,41 @@ mod tests {
                     "mode": "reduce",
                 }))
                 .await;
-            assert_eq!(structured(&foreign)["refusal"]["code"], "browser_binding_stale");
+            assert_eq!(
+                structured(&foreign)["refusal"]["code"],
+                "browser_binding_stale"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn motion_policy_driver_owned_preflight_keeps_live_lifecycle_validation() {
+        let engine = engine();
+        let (target_id, tab_id) = motion_policy_fixture_target(
+            &engine,
+            "policy-owner",
+            EndpointAccessClass::DriverOwned,
+        );
+        let tool = BrowserMotionPolicyTool::new(engine);
+
+        for mode in ["reduce", "default"] {
+            let result = tool
+                .invoke(json!({
+                    "target_id": target_id,
+                    "tab_id": tab_id,
+                    "session": "policy-owner",
+                    "mode": mode,
+                }))
+                .await;
+            let receipt = structured(&result);
+            let refusal = &receipt["refusal"];
+            assert_eq!(receipt["status"], "refused");
+            assert_eq!(refusal["code"], "browser_consent_required");
+            assert_eq!(
+                refusal["message"],
+                "the driver-owned browser lifecycle ended; prepare and bind it again"
+            );
+            assert!(refusal.get("detail").is_none());
         }
     }
 
@@ -3055,7 +3098,10 @@ mod tests {
 
         let def = tool.def();
         assert_eq!(def.input_schema["additionalProperties"], false);
-        assert_eq!(def.input_schema["properties"]["mode"]["enum"], json!(["reduce", "default"]));
+        assert_eq!(
+            def.input_schema["properties"]["mode"]["enum"],
+            json!(["reduce", "default"])
+        );
         assert!(def.idempotent);
         assert!(!def.read_only);
     }
