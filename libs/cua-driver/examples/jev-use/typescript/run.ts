@@ -105,41 +105,38 @@ export class Driver {
     private readonly session: string
   ) {}
 
+  // Guarded completion binds its proof to the exact session used for calls.
+  get sessionLabel(): string {
+    return this.session;
+  }
+
   async call(name: string, args: Record<string, unknown>): Promise<Record<string, any>> {
     const result = await this.client.callTool({
       name,
       arguments: { ...args, session: this.session },
     });
-    if (result.isError) {
-      const structured = result.structuredContent as Record<string, unknown> | undefined;
-      const refusalCode = (structured?.refusal as Record<string, unknown> | undefined)?.code;
-      const code =
-        typeof structured?.code === 'string' && structured.code
-          ? structured.code
-          : typeof refusalCode === 'string' && refusalCode
-            ? refusalCode
-            : undefined;
-      const escalation = structured?.escalation as Record<string, unknown> | undefined;
-      const recommended =
-        typeof escalation?.recommended === 'string' && escalation.recommended
-          ? escalation.recommended
-          : undefined;
-      throw new DriverToolError(
-        `${name} failed: ${JSON.stringify(result.content)}`,
-        code,
-        recommended
-      );
-    }
     const data = result.structuredContent as Record<string, any> | undefined;
-    if (!data) throw new Error(`${name} returned no structured result`);
-    if (data.status === 'refused' || data.refusal) {
-      const code = data.refusal?.code;
-      // DriverToolError is an Error, so existing handlers still match.
-      throw new DriverToolError(
-        `${name} refused: ${JSON.stringify(data.refusal ?? data)}`,
-        typeof code === 'string' && code ? code : undefined
+    // All refusal envelopes must preserve the same recovery metadata.
+    const failed = Boolean(result.isError) || data?.effect === 'refused';
+    if (failed || data?.status === 'refused' || data?.refusal) {
+      const canonicalCode = (data?.error as Record<string, unknown> | undefined)?.code;
+      const refusalCode = (data?.refusal as Record<string, unknown> | undefined)?.code;
+      const code = [canonicalCode, data?.code, refusalCode].find(
+        (value): value is string => typeof value === 'string' && value.length > 0
       );
+      const escalation = data?.escalation as Record<string, unknown> | undefined;
+      // A present canonical target wins; never turn an invalid/session target
+      // into a legacy foreground hint.
+      const target = escalation && Object.prototype.hasOwnProperty.call(escalation, 'target')
+        ? escalation.target
+        : escalation?.recommended;
+      const recommended = typeof target === 'string' && target ? target : undefined;
+      const message = failed
+        ? `${name} failed: ${JSON.stringify(result.content)}`
+        : `${name} refused: ${JSON.stringify(data?.refusal ?? data)}`;
+      throw new DriverToolError(message, code, recommended);
     }
+    if (!data) throw new Error(`${name} returned no structured result`);
     return data;
   }
 }
