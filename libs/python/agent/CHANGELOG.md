@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (downstream experiment)
+
+- Add an opt-in `hobbylm/local` semantic-state loop and a reproducible Linux
+  evaluation with local and subscription controls. No host desktop is used.
+
 ## [0.9.1](https://github.com/trycua/cua/compare/agent-v0.9.0...agent-v0.9.1) (2026-10-19)
 
 

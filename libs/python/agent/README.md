@@ -9,3 +9,12 @@ Computer-Use framework with liteLLM integration for running agentic workflows on
 
 > [!WARNING]
 > **Removed:** the `omni` extra (`cua-agent[omni]`) is gone. It pulled in `cua-som`, which is deprecated, no longer maintained and licensed under AGPL-3.0. The omniparser loop still works if you install `cua-som` yourself (`pip install cua-som`); it will not receive updates or fixes.
+
+## Downstream HobbyLM experiment
+
+This fork includes a [HobbyLM-1B experiment](examples/hobbylm_eval/README.md).
+The `hobbylm/local` loop uses semantic text state and ten allowlisted actions.
+It does not consume screenshots or predict arbitrary desktop interactions.
+The experiment includes a pinned offline runtime, Linux sandbox tasks, matched
+small-model and subscription controls, independent state checks, and run traces.
+This does not change the package's upstream deprecation status.
