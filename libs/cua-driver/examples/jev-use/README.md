@@ -100,6 +100,10 @@ performed it, counted only from the runner's own successful actions and never
 read from the app. A step's candidate also says which earlier step must be done
 first, for example Save waits for the note to be entered.
 
+For refused actions, canonical `error.code` takes precedence over legacy codes
+and diagnostic text. A non-stale denial ends with an unknown outcome without
+another dispatch, even when its message resembles a stale-token error.
+
 Visual regions from OmniParser are parsed, from the same `capture_id`, only
 when the tree offers nothing to act through: Driver reports `ax_tree_empty`, a
 complete tree lacks a task's declared visual target, or a non-truncated tree,
