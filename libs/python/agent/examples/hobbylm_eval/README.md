@@ -172,6 +172,10 @@ node with `HOBBY_SOURCE_SHA` set to the exact committed source head. Use the
 shared quiet lock, at most two CPUs, and a 60-second heartbeat. The script does
 not start a model or a desktop.
 
+The unit gate explicitly creates a seeded Python 3.11 environment with `uv`.
+The pinned Torch 2.5.1 runtime has no wheel for the fleet node's Python 3.14
+default, so the gate does not inherit that interpreter.
+
 ```sh
 docker stop hobbylm-cua-eval-owned
 docker rm hobbylm-cua-eval-owned
