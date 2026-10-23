@@ -18,7 +18,7 @@ python3 -m venv "$VENV"
     'opentelemetry-api' 'opentelemetry-sdk' 'opentelemetry-exporter-otlp-proto-http'
 export CUA_TELEMETRY=0 CUA_TELEMETRY_ENABLED=false OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2
 "$VENV/bin/python" -m pytest libs/python/core/tests libs/python/agent/tests -q --tb=short
-"$VENV/bin/python" -m ruff check \
+"$VENV/bin/python" -m ruff check --no-fix \
     libs/python/agent/cua_agent/loops/hobbylm.py \
     libs/python/agent/examples/hobbylm_eval \
     libs/python/agent/tests/test_hobbylm*.py

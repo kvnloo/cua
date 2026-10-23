@@ -455,7 +455,7 @@ class OwnedLinuxBackend:
 
 
 def semantic_state(snapshot: dict) -> str:
-    """Only independently observed text goes to every runtime, never PNG bytes."""
+    """Preserve the release's four semantic lines; unavailable brightness stays explicit."""
     return "\n".join([
         "Calculator: " + ("open, display shows " + (
             snapshot["calculator_text"][0] if snapshot["calculator_text"] else "(empty)")
@@ -464,13 +464,6 @@ def semantic_state(snapshot: dict) -> str:
         f"Brightness: unsupported (headless)  Volume: {snapshot['volume']}%" +
         (" (muted)" if snapshot["muted"] else ""),
         "Dark mode: " + ("unknown" if snapshot["dark"] is None else "on" if snapshot["dark"] else "off"),
-        "Open apps: " + ", ".join(snapshot["apps"]),
-        "Timer (actual owned countdown process): " + str(snapshot["timer"]),
-        "Owned local calendar: " + snapshot["calendar"],
-        "Owned contact names: " + ", ".join(re.findall(r"^FN:(.+)$", snapshot.get("contacts", ""), re.M)),
-        "Saved screenshots: " + str(len(snapshot["screenshots"])),
-        "Owned benchmark question: " + snapshot["question"],
-        "Owned benchmark answer: " + snapshot["answer"],
     ])
 
 
@@ -742,7 +735,7 @@ async def run_task(backend: OwnedLinuxBackend, runtime: Any, task: dict, directo
         await backend.reset(task)
         before = await backend.snapshot()
         row["initial_state_sha256"] = hashlib.sha256(
-            semantic_state(before).encode()).hexdigest()
+            json.dumps(before,sort_keys=True,separators=(",",":")).encode()).hexdigest()
         row["initial_capabilities"] = before["capabilities"]
         (directory / "initial.png").write_bytes(await backend.screenshot())
         emit({"type":"initial", "snapshot":before, "task":task, "seed":seed, "environment":ENVIRONMENT})
