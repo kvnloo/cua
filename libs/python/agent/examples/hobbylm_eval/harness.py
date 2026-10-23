@@ -226,7 +226,7 @@ def snapshot():
             'calendar':calendar.read_text() if calendar.exists() else '',
             'contacts':(root/'contact.vcf').read_text() if (root/'contact.vcf').exists() else '',
             'answer':answer.read_text() if answer.exists() else '',
-            'screenshots':sorted(f.name for f in root.glob('capture-*.png')),
+            'screenshots':sorted(f.name for f in (root/'Desktop').glob('capture-*.png')),
             'question':(root/'Desktop'/'question.txt').read_text() if (root/'Desktop'/'question.txt').exists() else ''}
 mode = p['mode']
 if mode == 'snapshot':
@@ -250,7 +250,7 @@ elif mode == 'reset':
         path = root / name
         if path.is_symlink(): raise RuntimeError('Refusing symlink fixture')
         path.unlink(missing_ok=True)
-    for path in root.glob('capture-*.png'):
+    for path in list(root.glob('capture-*.png')) + list((root/'Desktop').glob('capture-*.png')):
         path.unlink()
     for folder in ('Desktop','Downloads','Documents'):
         (root/folder).mkdir(exist_ok=True)
@@ -347,7 +347,7 @@ elif mode == 'save_screenshot':
     data = base64.b64decode(p['png'],validate=True)
     if not data.startswith(b'\x89PNG\r\n\x1a\n'): raise ValueError('Not PNG')
     digest = hashlib.sha256(data).hexdigest()
-    (root/('capture-'+digest+'.png')).write_bytes(data)
+    (root/'Desktop'/('capture-'+digest+'.png')).write_bytes(data)
     result = {'sha256':digest}
 else:
     raise ValueError('Unknown guest operation')

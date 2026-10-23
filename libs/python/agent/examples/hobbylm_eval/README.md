@@ -6,6 +6,37 @@ The `hobbylm/local` loop registers through the existing Cua Agent loop registry.
 It emits the existing function-tool contract. It does not change Cua protocols.
 The package remains deprecated upstream.
 
+## Measured results
+
+The primary matrix ran at `461f073b759ca18b71f8af0d3bca26b1bd3f0924`.
+All local arms used the same owned desktop, initial states, capabilities, seeds,
+semantic prompt, and action allowlist. Each attempted 28 post-derived cases and
+three existing OSWorld cases. Four other tasks remain explicitly unsupported.
+
+| Arm | Supported success | Correct refusals | Decisions | Model p50 / p95 | Controller wall | Attributed GPU peak |
+|---|---:|---:|---:|---:|---:|---:|
+| HobbyLM FP32, RTX 3080 Ti | 22/31 (71.0%) | 4/6 | 58 | 1.194 / 3.464 s | 275.67 s | 4666 MiB |
+| Qwen2.5-0.5B FP32, same GPU | 9/31 (29.0%) | 0/6 | 186 | 0.247 / 0.705 s | 340.20 s | 2388 MiB |
+| GPT-6.1-Sol subscription | Unavailable, not a model score | Unmeasured | 0 | Unmeasured | 888.79 s of failed routing attempts | Remote memory unmeasured |
+
+The subscription CLI reported an existing ChatGPT login, but all 31 task attempts
+failed before generation. A bounded diagnostic identified workspace-routing
+discovery `unauthorized (401)`. No new login, token transfer, or account change
+was attempted. Do not interpret its raw zero-success summary as model performance.
+
+The MacBook Air claim is a **0.262 s MLX replay median** and **0.806 s live mean**.
+Our HobbyLM mean is 1.492 s. These are not same-hardware or same-task comparisons.
+An exploratory richer-state prompt produced 1/31. Restoring the released
+four-line observation improved transfer. Those exploratory runs are separate.
+
+[The archive manifest](results/archive-manifest.json) links the 3.2 MB archive of
+all JSONL traces, actual initial/per-step/final PNGs, controller receipts, and
+exploratory runs. Raw summaries and the authentication classification are adjacent.
+After the matrix, only the deterministic screenshot destination changed from the
+private fixture root to its owned Desktop. The real destination and PNG were
+requalified without new model inference. Model inputs and SHA-only feedback did
+not change. Formatting-only changes also preserve the evaluated Python AST.
+
 ## Artifacts and provenance
 
 - Source: [Fuel Labs HobbyLM](https://github.com/fuellabs-ai/hobbylm-1b/tree/98cca6f3bb128251d6204038cdc37ef4597b8388/computer-use).
