@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-from unittest.mock import Mock
 
 import pytest
 
@@ -57,15 +56,23 @@ def test_invalid_actions_fail_closed(raw):
         parse_action(raw)
 
 
+class ScriptedRuntime:
+    """Concrete callable with JSON-compatible state for agent callback hooks."""
+
+    def __init__(self, *responses: str):
+        self.pending = [
+            {"raw": raw, "seconds": 0.1, "prompt_tokens": 20, "output_tokens": 2}
+            for raw in responses
+        ]
+        self.calls: list[tuple[str, str, int]] = []
+
+    def complete(self, system: str, user: str, max_new: int = 64) -> dict:
+        self.calls.append((system, user, max_new))
+        return self.pending.pop(0)
+
+
 def runtime(*responses):
-    return Mock(
-        complete=Mock(
-            side_effect=[
-                {"raw": raw, "seconds": 0.1, "prompt_tokens": 20, "output_tokens": 2}
-                for raw in responses
-            ]
-        )
-    )
+    return ScriptedRuntime(*responses)
 
 
 def test_prompt_native_user_contract():
@@ -86,6 +93,11 @@ def test_real_agent_dispatch_and_feedback():
     async def run():
         observed = {"state": "Calculator: closed"}
         actions = []
+        callback_responses = []
+
+        class ResponseRecorder:
+            async def on_responses(self, kwargs, response):
+                callback_responses.append((kwargs, response))
 
         async def hobby_action(action: str) -> str:
             """Execute one validated semantic action."""
@@ -100,6 +112,7 @@ def test_real_agent_dispatch_and_feedback():
         agent = ComputerAgent(
             model="hobbylm/local",
             tools=[hobby_action],
+            callbacks=[ResponseRecorder()],
             telemetry_enabled=False,
             max_retries=0,
             hobby_runtime=model,
@@ -111,16 +124,32 @@ def test_real_agent_dispatch_and_feedback():
         ]
         assert actions == ["OPEN Calculator", "TYPE 600/4="]
         assert chunks[-1]["output"][0]["content"][0]["text"] == "Done."
-        first = model.complete.call_args_list[0]
-        assert first.args == (
+        assert len(model.calls) == 3
+        assert model.calls[0] == (
             SYSTEM_V2,
             format_user("split 600 among 4 people", "Calculator: closed"),
+            64,
         )
-        second = model.complete.call_args_list[1].args[1]
+        second = model.calls[1][1]
         assert "Last action: OPEN Calculator. Result: Calculator opened." in second
         assert "display shows 0" in second
         assert "image" not in second
+        third = model.calls[2][1]
+        assert "Last action: TYPE 600/4=. Result: display changed from 0 to 150." in third
+        assert "display shows 150" in third
         assert chunks[0]["usage"]["total_tokens"] == 22
+        assert [response["output"][0]["type"] for _, response in callback_responses] == [
+            "function_call",
+            "function_call",
+            "message",
+        ]
+        assert callback_responses[0][0]["hobby_runtime"]["calls"] == [
+            [
+                SYSTEM_V2,
+                format_user("split 600 among 4 people", "Calculator: closed"),
+                64,
+            ]
+        ]
 
     asyncio.run(run())
 

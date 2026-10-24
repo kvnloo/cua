@@ -170,6 +170,18 @@ The unit gate explicitly creates a seeded Python 3.11 environment with `uv`.
 The pinned Torch 2.5.1 runtime has no wheel for the fleet node's Python 3.14
 default, so the gate does not inherit that interpreter.
 
+The MBP off-groot test at source head `204031ec668d154c8c20572ec6be39e18cc02217`
+reported **256 passed, 1 failed, 2 skipped**. Its sole failure was the
+`ComputerAgent` dispatch/feedback test: the fixture passed a
+`unittest.mock.Mock` as `hobby_runtime`. The mock synthesized a `model_dump`
+method when the unchanged `on_responses` callback serializer inspected the
+runtime argument, returning another `Mock` that `json.dumps` rejected. The
+fixture now uses a concrete scripted runtime with JSON-compatible state and
+records the actual `ComputerAgent` dispatch, feedback, and callback payloads.
+This does not change the model loop, production serializer, or frozen matrix.
+**The repair is source-only until an exact-new-head off-groot unit run passes.**
+The previous Ruff PASS applies to the earlier head, not this repair.
+
 ```sh
 docker stop hobbylm-cua-eval-owned
 docker rm hobbylm-cua-eval-owned
