@@ -1,0 +1,116 @@
+{
+  "caveat": "Pinned instructions and equivalent state predicates, adapted to the owned Sway desktop; not an official OSWorld aggregate score. Max-volume task starts at 50 percent with six decisions of five percent each, so its action-budget limit is retained as a real failure, not weakened.",
+  "cua_extension": "libs/cua-bench/tasks/osworld/upstream.py",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/xlang-ai/OSWorld",
+  "revision": "b138d348256078fa634fc3b73567a7337c793e6b",
+  "tasks": [
+    {
+      "evaluator": {
+        "expected": {
+          "rules": {
+            "expected": "100\n"
+          },
+          "type": "rule"
+        },
+        "func": "exact_match",
+        "result": {
+          "command": "pulseaudio --start\npactl list sinks | grep '^[[:space:]]Volume:' | head -n 1 | awk '{print $5}' | sed 's/%//g'",
+          "shell": true,
+          "type": "vm_command_line"
+        }
+      },
+      "id": "28cc3b7e-b194-4bc9-8353-d04c0f4d56d2",
+      "instruction": "The volume of my system is too small. Can you help me turn up to the max volume?",
+      "task": {
+        "config": [
+          {
+            "parameters": {
+              "command": [
+                "python",
+                "-c",
+                "import pyautogui; import time; pyautogui.click({SCREEN_WIDTH_HALF}, {SCREEN_HEIGHT_HALF}); time.sleep(0.5);"
+              ]
+            },
+            "type": "execute"
+          }
+        ],
+        "evaluator": {
+          "expected": {
+            "rules": {
+              "expected": "100\n"
+            },
+            "type": "rule"
+          },
+          "func": "exact_match",
+          "result": {
+            "command": "pulseaudio --start\npactl list sinks | grep '^[[:space:]]Volume:' | head -n 1 | awk '{print $5}' | sed 's/%//g'",
+            "shell": true,
+            "type": "vm_command_line"
+          }
+        },
+        "fixed_ip": false,
+        "id": "28cc3b7e-b194-4bc9-8353-d04c0f4d56d2",
+        "instruction": "The volume of my system is too small. Can you help me turn up to the max volume?",
+        "possibility_of_env_change": "low",
+        "proxy": false,
+        "related_apps": [
+          "os"
+        ],
+        "snapshot": "os",
+        "source": "https://help.ubuntu.com/lts/ubuntu-help/sound-volume.html.en",
+        "trajectory": "trajectories/"
+      },
+      "url": "https://github.com/xlang-ai/OSWorld/blob/b138d348256078fa634fc3b73567a7337c793e6b/evaluation_examples/examples/os/28cc3b7e-b194-4bc9-8353-d04c0f4d56d2.json"
+    },
+    {
+      "evaluator": {
+        "func": "infeasible"
+      },
+      "id": "b3d4a89c-53f2-4d6b-8b6a-541fb5d205fa",
+      "instruction": "I want to switch on the Bluetooth. Can you help me?",
+      "task": {
+        "config": [],
+        "evaluator": {
+          "func": "infeasible"
+        },
+        "fixed_ip": false,
+        "id": "b3d4a89c-53f2-4d6b-8b6a-541fb5d205fa",
+        "instruction": "I want to switch on the Bluetooth. Can you help me?",
+        "possibility_of_env_change": "low",
+        "proxy": false,
+        "related_apps": [
+          "os"
+        ],
+        "snapshot": "os",
+        "source": "https://help.ubuntu.com/lts/ubuntu-help/bluetooth-turn-on-off.html.en",
+        "trajectory": "trajectories/"
+      },
+      "url": "https://github.com/xlang-ai/OSWorld/blob/b138d348256078fa634fc3b73567a7337c793e6b/evaluation_examples/examples/os/b3d4a89c-53f2-4d6b-8b6a-541fb5d205fa.json"
+    },
+    {
+      "evaluator": {
+        "func": "infeasible"
+      },
+      "id": "c288e301-e626-4b98-a1ab-159dcb162af5",
+      "instruction": "Please set the default Python version to Python4 on my Ubuntu system.",
+      "task": {
+        "evaluator": {
+          "func": "infeasible"
+        },
+        "fixed_ip": false,
+        "id": "c288e301-e626-4b98-a1ab-159dcb162af5",
+        "instruction": "Please set the default Python version to Python4 on my Ubuntu system.",
+        "possibility_of_env_change": "low",
+        "proxy": false,
+        "related_apps": [
+          "os"
+        ],
+        "snapshot": "os",
+        "source": "https://stackoverflow.com/questions/41986507/unable-to-set-default-python-version-to-python3-in-ubuntu",
+        "trajectory": "trajectories/"
+      },
+      "url": "https://github.com/xlang-ai/OSWorld/blob/b138d348256078fa634fc3b73567a7337c793e6b/evaluation_examples/examples/os/c288e301-e626-4b98-a1ab-159dcb162af5.json"
+    }
+  ]
+}
