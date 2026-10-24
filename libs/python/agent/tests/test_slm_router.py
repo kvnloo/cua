@@ -4,10 +4,12 @@ import json
 from pathlib import Path
 import sys
 import unittest
+import tempfile
 
 ROUTER = Path(__file__).resolve().parents[1] / 'examples/slm_router'
 sys.path.insert(0, str(ROUTER))
 import corpus
+import remote
 
 class RouterContracts(unittest.TestCase):
     @classmethod
@@ -69,6 +71,48 @@ class RouterContracts(unittest.TestCase):
         self.assertTrue(corpus.correct(n,'EVENT Sandbox review | 2030-01-02 | 14:00 UTC | none'))
         self.assertFalse(corpus.correct(n,'EVENT Sandbox review | 2030-01-02 | 14:00 | none'))
         self.assertFalse(corpus.correct(n,'EVENT Sandbox review | 2030-01-02 | 14:00 UTC | stranger'))
+
+class RemoteInferenceTransport(unittest.TestCase):
+    def test_protocol_ignores_admission_logs_and_stops_cleanly(self):
+        program = """
+import json, sys
+print('fleet: admitted fixture worker', flush=True)
+print('SLM_ROUTER_RPC ' + json.dumps({'ready': True}), flush=True)
+for line in sys.stdin:
+    request = json.loads(line)
+    if request.get('stop'):
+        print('SLM_ROUTER_RPC ' + json.dumps({'stopped': True}), flush=True)
+        break
+    print('SLM_ROUTER_RPC ' + json.dumps({'model': request['model'], 'node': request['node']}), flush=True)
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            client = remote.Client([sys.executable, '-u', '-c', program],
+                                   Path(directory) / 'worker.log', timeout=5)
+            try:
+                self.assertEqual(client.complete('candidate', {'user': 'state'}),
+                                 {'model': 'candidate', 'node': {'user': 'state'}})
+            finally:
+                client.close()
+            self.assertEqual(client.process.returncode, 0)
+
+    def test_worker_error_is_not_an_inference_result(self):
+        program = """
+import json, sys
+print('SLM_ROUTER_RPC ' + json.dumps({'ready': True}), flush=True)
+for line in sys.stdin:
+    stop = json.loads(line).get('stop')
+    print('SLM_ROUTER_RPC ' + json.dumps({'stopped': True} if stop else {'error': 'unsafe memory pressure'}), flush=True)
+    if stop:
+        break
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            client = remote.Client([sys.executable, '-u', '-c', program],
+                                   Path(directory) / 'worker.log', timeout=5)
+            try:
+                with self.assertRaisesRegex(RuntimeError, 'unsafe memory pressure'):
+                    client.complete('candidate', {})
+            finally:
+                client.close()
 
 if __name__=='__main__':
     unittest.main()

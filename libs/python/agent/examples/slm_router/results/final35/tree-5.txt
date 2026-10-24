@@ -1,0 +1,16 @@
+|--- train_quality:qwen25-15 <= 0.41
+|   |--- family=audio <= 0.50
+|   |   |--- train_quality:qwen3-17 <= 0.46
+|   |   |   |--- train_quality:qwen3-4 <= 0.19
+|   |   |   |   |--- class: qwen25-15
+|   |   |   |--- train_quality:qwen3-4 >  0.19
+|   |   |   |   |--- class: qwen3-4
+|   |   |--- train_quality:qwen3-17 >  0.46
+|   |   |   |--- class: qwen3-17
+|   |--- family=audio >  0.50
+|   |   |--- class: qwen3-06
+|--- train_quality:qwen25-15 >  0.41
+|   |--- train_quality:qwen3-06 <= 0.86
+|   |   |--- class: qwen25-15
+|   |--- train_quality:qwen3-06 >  0.86
+|   |   |--- class: qwen25-15

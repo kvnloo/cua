@@ -15,6 +15,7 @@ import collect
 import corpus
 import experiment
 import jev_bridge
+import remote
 
 class RoutedRuntime:
     def __init__(self, args, policy, manifest, bundle):
@@ -25,6 +26,7 @@ class RoutedRuntime:
         self.depth=0
         self.events=[]
         self.seed=1729
+        self.remote=None
 
     def begin(self, task):
         self.depth=0
@@ -55,24 +57,43 @@ class RoutedRuntime:
         routing_s=time.perf_counter()-router_started
         if selected not in self.bundle['candidates']:
             raise ValueError('policy selected an unavailable model')
-        switch_s=0.
-        if self.current!=selected:
-            load_started=time.perf_counter()
-            self.close()
-            self.engine=collect.Engine(self.manifest['server'],self.models[selected],self.args.gpu_layers,self.args.threads,
-                                       log=self.args.out/(f'{self.policy.replace(":","-")}-{selected}.log'))
-            self.engine.start()
-            self.current=selected
-            switch_s=time.perf_counter()-load_started
-        reply=self.engine.complete(node)
+        if self.args.remote_command:
+            if self.remote is None:
+                command=[part.replace('{policy}',self.policy.replace(':','-'))
+                         for part in json.loads(self.args.remote_command.read_text())]
+                self.remote=remote.Client(command,
+                                          self.args.out/(self.policy.replace(':','-')+'-remote-worker.log'))
+            response=self.remote.complete(selected,node)
+            reply=response['reply']
+            switch_s=response['switch_load_s']
+            command=response['command']
+            evidence=response['backend_evidence']
+            if response['model_sha256']!=self.models[selected]['sha256']:
+                raise ValueError('remote inference model SHA256 does not match frozen manifest')
+        else:
+            switch_s=0.
+            if self.current!=selected:
+                load_started=time.perf_counter()
+                self.close()
+                self.engine=collect.Engine(self.manifest['server'],self.models[selected],self.args.gpu_layers,self.args.threads,
+                                           log=self.args.out/(f'{self.policy.replace(":","-")}-{selected}.log'))
+                self.engine.start()
+                self.current=selected
+                switch_s=time.perf_counter()-load_started
+            reply=self.engine.complete(node)
+            command=self.engine.command
+            evidence=dict(self.engine.backend_evidence)
         elapsed=time.perf_counter()-started
         event={'task':self.task['id'],'depth':self.depth,'policy':self.policy,'selected_model':selected,
                'router_s':routing_s,'switch_load_s':switch_s,'generation_s':reply['latency_s'],
-               'total_complete_s':elapsed,'raw':reply['output'],'command':self.engine.command,
-               'backend_evidence':dict(self.engine.backend_evidence),
+               'total_complete_s':elapsed,'raw':reply['output'],'command':command,
+               'backend_evidence':evidence,
                'model_sha256':self.models[selected].get('sha256'),'decoding_seed':self.seed,
                'jev':self.route_evidence if self.policy=='R1' else None,
                'user_sha256':hashlib.sha256(user.encode()).hexdigest()}
+        if self.args.remote_command:
+            event['remote_memory']={key:response[key] for key in ('memory_before','memory_after')}
+            event['remote_admission']=self.remote.ready
         self.events.append(event)
         with (self.args.out/'routing-events.jsonl').open('a') as stream:
             stream.write(json.dumps(event)+'\n')
@@ -82,6 +103,9 @@ class RoutedRuntime:
                 'output_tokens':timings.get('predicted_n',0)}
 
     def close(self):
+        if self.remote is not None:
+            self.remote.close()
+            self.remote=None
         if self.engine is not None:
             self.engine.close()
         self.engine=None
@@ -167,6 +191,7 @@ if __name__=='__main__':
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--policy',action='append',required=True)
     p.add_argument('--jev-bridge',type=Path)
+    p.add_argument('--remote-command',type=Path,help='JSON argv for a finite stdin/stdout worker, including fleet admission and quiet locks')
     p.add_argument('--device',default='groot')
     p.add_argument('--gpu-layers',type=int,default=0)
     p.add_argument('--threads',type=int,default=2)

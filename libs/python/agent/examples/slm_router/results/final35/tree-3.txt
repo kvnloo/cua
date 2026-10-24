@@ -1,0 +1,19 @@
+|--- train_quality:qwen3-4 <= 0.80
+|   |--- train_quality:qwen3-17 <= 0.06
+|   |   |--- train_quality:qwen3-4 <= 0.12
+|   |   |   |--- observation_chars <= 233.50
+|   |   |   |   |--- class: qwen3-17
+|   |   |   |--- observation_chars >  233.50
+|   |   |   |   |--- class: qwen3-17
+|   |   |--- train_quality:qwen3-4 >  0.12
+|   |   |   |--- class: qwen3-4
+|   |--- train_quality:qwen3-17 >  0.06
+|   |   |--- class: qwen3-17
+|--- train_quality:qwen3-4 >  0.80
+|   |--- last_action=KEY <= 0.50
+|   |   |--- observation_chars <= 168.50
+|   |   |   |--- class: qwen25-05
+|   |   |--- observation_chars >  168.50
+|   |   |   |--- class: qwen3-17
+|   |--- last_action=KEY >  0.50
+|   |   |--- class: qwen3-4
