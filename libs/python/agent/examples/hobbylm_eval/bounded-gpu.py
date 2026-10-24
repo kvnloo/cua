@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from xml.etree import ElementTree
 
 MAX_SECONDS = 1800
 MAX_MIB = 4768  # <= 5,000,000,000 bytes including driver/context attribution
@@ -19,16 +20,17 @@ MAX_MIB = 4768  # <= 5,000,000,000 bytes including driver/context attribution
 
 def processes():
     result = subprocess.run(
-        ["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"],
+        ["nvidia-smi", "-q", "-x"],
         capture_output=True,
         text=True,
         timeout=5,
         check=True,
     )
     rows = {}
-    for line in result.stdout.splitlines():
-        pid, memory = line.split(",", 1)
-        rows[int(pid)] = int(memory.strip())
+    for process in ElementTree.fromstring(result.stdout).findall(".//process_info"):
+        pid = int(process.findtext("pid"))
+        memory = int(process.findtext("used_memory").split()[0])
+        rows[pid] = rows.get(pid, 0) + memory
     return rows
 
 

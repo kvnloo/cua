@@ -423,5 +423,43 @@ class SubprocessRuntimeTests(unittest.TestCase):
         self.assertEqual(worker.memory["cuda_peak_allocated_bytes"], 123)
 
 
+class GPUAdmissionTests(unittest.TestCase):
+    def load_watchdog(self):
+        path = PATH.with_name("bounded-gpu.py")
+        spec = importlib.util.spec_from_file_location("hobbylm_gpu_watchdog", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_graphics_and_compute_processes_are_both_guarded(self):
+        watchdog = self.load_watchdog()
+        xml = (
+            "<nvidia_smi_log><gpu><processes>"
+            "<process_info><pid>11</pid><type>C</type>"
+            "<used_memory>12 MiB</used_memory></process_info>"
+            "<process_info><pid>22</pid><type>G</type>"
+            "<used_memory>34 MiB</used_memory></process_info>"
+            "</processes></gpu></nvidia_smi_log>"
+        )
+        with mock.patch.object(
+            watchdog.subprocess, "run", return_value=types.SimpleNamespace(stdout=xml)
+        ) as command:
+            self.assertEqual(watchdog.processes(), {11: 12, 22: 34})
+        self.assertEqual(command.call_args.args[0], ["nvidia-smi", "-q", "-x"])
+
+    def test_unknown_gpu_memory_fails_closed_before_launch(self):
+        watchdog = self.load_watchdog()
+        xml = (
+            "<nvidia_smi_log><gpu><processes><process_info><pid>11</pid>"
+            "<used_memory>N/A</used_memory>"
+            "</process_info></processes></gpu></nvidia_smi_log>"
+        )
+        with mock.patch.object(
+            watchdog.subprocess, "run", return_value=types.SimpleNamespace(stdout=xml)
+        ):
+            with self.assertRaises(ValueError):
+                watchdog.processes()
+
+
 if __name__ == "__main__":
     unittest.main()

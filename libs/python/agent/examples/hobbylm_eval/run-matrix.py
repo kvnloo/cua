@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the three matched arms sequentially and retain exact controller wall times."""
+"""Run the two matched local arms and retain exact controller wall times."""
 import argparse
 import json
 import os
@@ -24,18 +24,17 @@ def main():
                        HOBBY_SOURCE_SHA=args.source_sha,
                        HOBBYLM_EVAL_TOKEN="hobbylm-owned-local-eval")
     receipts = []
-    for name, runtime in (("hobbylm", "hobbylm"), ("qwen", "small-local"), ("codex", "codex")):
+    for name, runtime in (("hobbylm", "hobbylm"), ("qwen", "small-local")):
         output = args.output / name
         command = [python, str(here / "harness.py"), "--endpoint", "http://127.0.0.1:13211",
                    "--ownership-id", "HobbyCuaEval", "--runtime", runtime,
                    "--output", str(output)]
-        if runtime != "codex":
-            command += ["--device", "cuda", "--runtime-python", model_python,
-                        "--base", str(models / "hobbylm-1B-instruct"),
-                        "--adapter", str(models / "hobbylm-1B-computer-use")]
-            if runtime == "small-local":
-                command += ["--model", str(models / "Qwen2.5-0.5B-Instruct")]
-            command = [python, str(here / "bounded-gpu.py"), "--", *command]
+        command += ["--device", "cuda", "--runtime-python", model_python,
+                    "--base", str(models / "hobbylm-1B-instruct"),
+                    "--adapter", str(models / "hobbylm-1B-computer-use")]
+        if runtime == "small-local":
+            command += ["--model", str(models / "Qwen2.5-0.5B-Instruct")]
+        command = [python, str(here / "bounded-gpu.py"), "--", *command]
         reference = args.output / "hobbylm" / "summary.json"
         if name != "hobbylm" and reference.exists():
             command += ["--compare-to", str(reference)]
