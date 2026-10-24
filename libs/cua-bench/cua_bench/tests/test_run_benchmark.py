@@ -232,6 +232,80 @@ async def evaluate(task, session):
         assert result.error is not None
 
 
+class _RecordedEvaluator:
+    """Inert gym environment for checking run_single_task's scoring contract."""
+
+    solve_task_fn = object()
+    evaluate_task_fn = object()
+
+    def __init__(self, evaluation):
+        self.evaluation = evaluation
+        self.step_count = 2
+        self.closed = False
+        self.solve_calls = 0
+
+    async def reset(self, task_id):
+        assert task_id == 0
+        return b"recorded screenshot", object()
+
+    async def solve(self):
+        self.solve_calls += 1
+
+    async def evaluate(self):
+        return self.evaluation
+
+    async def close(self):
+        self.closed = True
+
+
+class TestRunSingleTaskEvaluatorComponents:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("evaluation", "reward", "success"),
+        [
+            pytest.param([1.0, 0.0, 0.0], 1.0 / 3, False, id="component-mean"),
+            pytest.param([0.0, 1.0], 0.5, True, id="threshold-boundary"),
+            pytest.param([0.25], 0.25, False, id="single-component"),
+            pytest.param(0.75, 0.75, True, id="scalar-control"),
+            pytest.param({"reward": 0.5}, 0.5, True, id="dict-control"),
+        ],
+    )
+    async def test_evaluator_reward_and_success(self, monkeypatch, evaluation, reward, success):
+        from cua_bench import runners
+
+        env = _RecordedEvaluator(evaluation)
+
+        def fake_make(path, *, split):
+            assert path == "fixture"
+            assert split == "train"
+            return env
+
+        monkeypatch.setattr(runners, "make", fake_make)
+        result = await run_single_task(Path("fixture"), oracle=True)
+
+        assert result.error is None
+        assert result.reward == pytest.approx(reward)
+        assert result.success is success
+        assert result.steps == 2
+        assert env.solve_calls == 1
+        assert env.closed is True
+
+    @pytest.mark.asyncio
+    async def test_invalid_later_component_is_not_silently_ignored(self, monkeypatch):
+        from cua_bench import runners
+
+        env = _RecordedEvaluator([1.0, object()])
+        monkeypatch.setattr(runners, "make", lambda path, *, split: env)
+
+        result = await run_single_task(Path("fixture"), oracle=True)
+
+        assert result.success is False
+        assert result.reward == 0.0
+        assert result.error is not None
+        assert env.solve_calls == 1
+        assert env.closed is True
+
+
 class TestRunBenchmark:
     """Tests for run_benchmark function."""
 
