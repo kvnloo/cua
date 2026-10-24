@@ -140,7 +140,8 @@ async def run_single_task(
             if isinstance(result, (int, float)):
                 reward = float(result)
             elif isinstance(result, list) and len(result) > 0:
-                reward = float(result[0])
+                # Evaluator components contribute equally to the task reward.
+                reward = float(sum(result) / len(result))
             elif isinstance(result, dict) and "reward" in result:
                 reward = float(result["reward"])
 
