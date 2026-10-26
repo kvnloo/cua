@@ -12,6 +12,7 @@ from http import HTTPStatus
 import importlib.util
 import json
 from pathlib import Path
+import time
 
 ROOT = Path(__file__).resolve().parents[3]
 ORIGINAL = ROOT / "libs/cua-driver/examples/jev-use/fixture_server.py"
@@ -44,6 +45,22 @@ class AuditedState(_module.FixtureState):
 
 
 class AuditedHandler(_module.FixtureHandler):
+    def do_POST(self) -> None:  # noqa: N802
+        if self.path == "/submit" and self.server.dispatch_delay_s:
+            time.sleep(self.server.dispatch_delay_s)
+        super().do_POST()
+
+    def _send(self, status, content_type: str, body: bytes) -> None:
+        # Synthetic fault: state.submit has already committed, but acknowledgement
+        # may be delayed beyond the caller timeout. Never mutate after _send.
+        if self.path == "/submit" and int(status) == 200 and self.server.ack_delay_s:
+            time.sleep(self.server.ack_delay_s)
+        try:
+            super()._send(status, content_type, body)
+        except (BrokenPipeError, ConnectionResetError):
+            # The test caller deliberately dropped the acknowledgement.
+            pass
+
     def do_GET(self) -> None:  # noqa: N802
         if self.path == "/audit":
             self._send(HTTPStatus.OK, "application/json",
@@ -53,8 +70,13 @@ class AuditedHandler(_module.FixtureHandler):
 
 
 class AuditedFixtureServer(_module.FixtureServer):
-    def __init__(self, address: tuple[str, int], *, visual: bool = False):
+    def __init__(self, address: tuple[str, int], *, visual: bool = False,
+                 ack_delay_s: float = 0.0, dispatch_delay_s: float = 0.0):
+        if not 0 <= ack_delay_s <= 2 or not 0 <= dispatch_delay_s <= 2:
+            raise ValueError("synthetic delays must be within 0..2 seconds")
         super().__init__(address, visual=visual)
+        self.ack_delay_s = ack_delay_s
+        self.dispatch_delay_s = dispatch_delay_s
         self.state = AuditedState()
         self.RequestHandlerClass = AuditedHandler
 
