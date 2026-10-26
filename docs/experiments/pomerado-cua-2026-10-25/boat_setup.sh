@@ -57,6 +57,17 @@ checked_branch="$(git -C "$repo_root" symbolic-ref -q --short HEAD || true)"
 [[ "$head" == "$expected_head" ]] || die "HEAD drift: observed $head, expected $expected_head"
 [[ -z "$(git -C "$repo_root" status --porcelain --untracked-files=all)" ]] ||
   die "source tree has tracked or untracked files; refuse unverifiable build"
+
+# Git status hides changed tracked files with assume-unchanged/skip-worktree
+# index flags. A HEAD/clean-checkout claim must reject either.
+reject_git_index_flags() {
+  local index_flags
+  index_flags="$(git -C "$1" ls-files -v)" || die "cannot inspect tracked index flags"
+  if grep -E '^[a-zS] ' <<< "$index_flags" >/dev/null; then
+    die "tracked source hidden from Git status (assume-unchanged/skip-worktree)"
+  fi
+}
+reject_git_index_flags "$repo_root"
 [[ -f "$repo_root/libs/cua-driver/rust/Cargo.toml" ]] ||
   die "full source checkout required; Boat's fixture-only bundle cannot build Driver"
 

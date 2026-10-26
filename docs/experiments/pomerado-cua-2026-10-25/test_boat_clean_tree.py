@@ -5,6 +5,7 @@ These tests never start Boat, CUA, Chrome, Pomerado, or an API client.
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -47,6 +48,43 @@ class BoatCleanTreeTests(unittest.TestCase):
         (cache / "cua-driver").write_bytes(b"cache")
         self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
 
+
+    def _run_exact_index_gate(self) -> subprocess.CompletedProcess[str]:
+        """Execute the production shell gate against a disposable Git repo."""
+        script = Path(__file__).with_name("boat_setup.sh").read_text()
+        match = re.search(r"(?ms)^reject_git_index_flags\(\) \{\n.*?^\}\n", script)
+        self.assertIsNotNone(match, "index flag guard missing from Boat setup")
+        self.assertIn('reject_git_index_flags "$repo_root"', script)
+        program = (
+            "set -euo pipefail\n"
+            'die() { echo "$*" >&2; exit 2; }\n'
+            + match.group(0)
+            + 'reject_git_index_flags "$1"\n'
+        )
+        return subprocess.run(
+            ["bash", "-c", program, "guard", str(self.repo)],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+
+    def test_no_hidden_index_flags_allows_clean_tree(self) -> None:
+        result = self._run_exact_index_gate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_assume_unchanged_does_not_hide_tampered_tracked_source(self) -> None:
+        _git(self.repo, "update-index", "--assume-unchanged", "Cargo.toml")
+        (self.repo / "Cargo.toml").write_text("[workspace]\n# hidden tampering\n")
+        self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
+        self.assertIn("h Cargo.toml", _git(self.repo, "ls-files", "-v"))
+        result = self._run_exact_index_gate()
+        self.assertEqual(result.returncode, 2, result.stderr)
+
+    def test_skip_worktree_does_not_hide_tampered_tracked_source(self) -> None:
+        _git(self.repo, "update-index", "--skip-worktree", "Cargo.toml")
+        (self.repo / "Cargo.toml").write_text("[workspace]\n# hidden tampering\n")
+        self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
+        self.assertIn("S Cargo.toml", _git(self.repo, "ls-files", "-v"))
+        result = self._run_exact_index_gate()
+        self.assertEqual(result.returncode, 2, result.stderr)
 
 if __name__ == "__main__":
     unittest.main()
