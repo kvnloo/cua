@@ -80,7 +80,8 @@ fi
 # cache is safe to reuse; an old PATH release or a stale target binary is not.
 (
   cd "$rust_dir"
-  CARGO_TARGET_DIR="$rust_dir/target" cargo build --locked --release -p cua-driver --bin cua-driver
+  CUA_DRIVER_GIT_SHA="$head" CARGO_TARGET_DIR="$rust_dir/target" \
+    cargo build --locked --release -p cua-driver --bin cua-driver
 ) || die "branch source Driver build failed"
 [[ -f "$branch_binary" && -x "$branch_binary" && ! -L "$branch_binary" ]] ||
   die "missing/non-executable/symlinked branch Driver artifact: $branch_binary"
@@ -105,7 +106,18 @@ printf 'BOAT_BRANCH_DRIVER: ref=%s head=%s version=%s sha256=%s\n' \
 
 evidence_root="$(mktemp -d "${TMPDIR:-/tmp}/cua-boat-jev.XXXXXXXX")"
 [[ -d "$evidence_root" && ! -L "$evidence_root" ]] || die "cannot create fresh evidence directory"
-python3 - "$evidence_root/preflight.json" "$head" "$driver_version" "$binary_sha256" <<'PY'
+# Matching semver alone cannot prove the executable is from this commit.
+# Doctor reports the running /proc/self/exe digest and embedded source SHA.
+# Unrelated Doctor environment probes can fail; require its exact build block.
+doctor_exit=0
+cua-driver doctor --json > "$evidence_root/driver-doctor.json" || doctor_exit=$?
+python3 "$script_dir/boat_preflight.py" attest \
+  --doctor-file "$evidence_root/driver-doctor.json" \
+  --expected-version "$expected_version" \
+  --expected-head "$head" \
+  --expected-sha256 "$binary_sha256"
+printf 'BOAT_BRANCH_DRIVER_DOCTOR_EXIT: %s (separate from build identity)\n' "$doctor_exit"
+python3 - "$evidence_root/preflight.json" "$head" "$driver_version" "$binary_sha256" "$doctor_exit" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -116,6 +128,8 @@ out = {
     "source_head": sys.argv[2],
     "driver_version": sys.argv[3],
     "driver_binary_sha256": sys.argv[4],
+    "doctor_exit_code": int(sys.argv[5]),
+    "doctor_build_identity_verified": True,
     "chromium_path": "/opt/google/chrome/google-chrome",
     "pomerado_mints": "NOT_RUN",
     "pomerado_trials": "NOT_RUN",
