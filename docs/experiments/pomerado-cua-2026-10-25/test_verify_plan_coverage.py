@@ -111,6 +111,14 @@ class CoverageTests(unittest.TestCase):
         self.p['manifest_sha256']=digest({k:v for k,v in self.p.items() if k!='manifest_sha256'})
         self.fail_case('assigned route mismatch')
 
+    def test_malformed_block_identity_is_rejected_as_coverage_error(self):
+        self.rows[0]['block_id'] = []
+        self.fail_case('invalid block_id')
+
+    def test_unhashable_route_is_rejected_as_coverage_error(self):
+        self.rows[0]['route_observed'] = []
+        self.fail_case('missing/invalid observed route')
+
     def test_missing_preregistered_order_fails(self):
         self.p['blocks'][1]['order']='ABBA'
         for j,a in enumerate('ABBA'):
