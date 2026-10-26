@@ -86,5 +86,54 @@ class BoatCleanTreeTests(unittest.TestCase):
         result = self._run_exact_index_gate()
         self.assertEqual(result.returncode, 2, result.stderr)
 
+
+    def _run_exact_ignored_source_gate(self) -> subprocess.CompletedProcess[str]:
+        """Execute the production ignored-source guard against disposable Git."""
+        script = Path(__file__).with_name("boat_setup.sh").read_text()
+        match = re.search(r"(?ms)^reject_ignored_driver_sources\\(\\) \\{\\n.*?^\\}\\n", script)
+        self.assertIsNotNone(match, "ignored source guard missing from Boat setup")
+        self.assertIn('reject_ignored_driver_sources "$repo_root"', script)
+        program = (
+            "set -euo pipefail\\n"
+            'die() { echo "$*" >&2; exit 2; }\\n'
+            + match.group(0)
+            + 'reject_ignored_driver_sources "$1"\\n'
+        )
+        return subprocess.run(
+            ["bash", "-c", program, "guard", str(self.repo)],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+
+    def test_git_ignored_build_script_must_block_branch_build(self) -> None:
+        # A Git local exclude can hide an untracked Cargo auto-build script
+        # from status/ls-files -v without changing the reviewed HEAD.
+        crate = self.repo / "libs/cua-driver/rust/crates/cua-driver"
+        crate.mkdir(parents=True)
+        (self.repo / ".git/info/exclude").write_text("build.rs\\n")
+        (crate / "build.rs").write_text('fn main() { println!("cargo:warning=unexpected"); }\\n')
+        self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
+        self.assertEqual(self._run_exact_index_gate().returncode, 0)
+        result = self._run_exact_ignored_source_gate()
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("ignored untracked Driver files", result.stderr)
+
+    def test_ignored_driver_env_must_block_branch_build(self) -> None:
+        crate = self.repo / "libs/cua-driver/rust/crates/cua-driver"
+        crate.mkdir(parents=True)
+        (self.repo / ".git/info/exclude").write_text(".env\\n")
+        (crate / ".env").write_text("FIXTURE_ONLY=1\\n")
+        self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
+        result = self._run_exact_ignored_source_gate()
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("ignored untracked Driver files", result.stderr)
+
+    def test_ignored_rust_target_cache_stays_allowed(self) -> None:
+        cache = self.repo / "libs/cua-driver/rust/target/release"
+        cache.mkdir(parents=True)
+        (cache / "cua-driver").write_bytes(b"ignored-cargo-cache")
+        self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
+        result = self._run_exact_ignored_source_gate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 if __name__ == "__main__":
     unittest.main()
