@@ -111,6 +111,51 @@ class CoverageTests(unittest.TestCase):
         self.p['manifest_sha256']=digest({k:v for k,v in self.p.items() if k!='manifest_sha256'})
         self.fail_case('assigned route mismatch')
 
+    def _large_plan(self):
+        import random
+        reg = prereg()
+        reg['design']['negative_variants'] = [f'negative_{i}' for i in range(10)]
+        reg['design']['blocks_per_order'] = 15
+        reg['design']['blocks_per_workflow_variant'] = 30
+        rng = random.Random(reg['design']['seed'])
+        blocks = []
+        for variant in ['default', *reg['design']['negative_variants']]:
+            orders = ['ABBA'] * 15 + ['BAAB'] * 15
+            rng.shuffle(orders)
+            for num, order in enumerate(orders, 1):
+                blocks.append({
+                    'block_id':f'read_only:browser-fixture-form:{variant}:{num:03}',
+                    'workflow':'browser-fixture-form', 'variant':variant, 'order':order,
+                    'attempts':[{'position':j,'arm_assigned':arm,
+                                 'route_assigned_not_observed':'cua-driver' if arm=='A' else 'pomerado-mcp',
+                                 'status':'NOT_RUN','effect_kind_planned':'read',
+                                 'blind_retry':'PROHIBITED'}
+                                for j, arm in enumerate(order, 1)]})
+        rng.shuffle(blocks)
+        plan_data = {'schema':'cua.pomerado.assignment.v1', 'status':'NOT_RUN',
+                     'evidence_class':'PLAN_ONLY', 'actual_executions':0,
+                     'candidate_head_sha':HEAD, 'prereg_sha256':digest(reg),
+                     'seed':reg['design']['seed'], 'phase':'read_only',
+                     'read_only_proof_sha256':None, 'blocks_per_variant':30,
+                     'trials_per_block':4,
+                     'cohort_orders':{v:{'ABBA':15,'BAAB':15} for v in ['default', *reg['design']['negative_variants']]},
+                     'block_count':330,'planned_attempt_count':1320,'blocks':blocks}
+        plan_data['manifest_sha256']=digest(plan_data)
+        return reg, plan_data, receipts(plan_data)
+
+    def test_full_330_block_synthetic_coverage_scales_without_execution(self):
+        reg,p,rs=self._large_plan()
+        outcome=verify(p,rs,expected_head=HEAD,prereg=reg)
+        self.assertEqual(outcome['blocks'],330)
+        self.assertEqual(outcome['received_attempts'],1320)
+        self.assertIsNone(outcome['cua_vs_pomerado_verified_trials'])
+
+    def test_dropping_full_block_from_1320_synthetic_receipts_fails(self):
+        reg,p,rs=self._large_plan()
+        rs=rs[4:]
+        with self.assertRaisesRegex(CoverageError,'4 planned attempts missing'):
+            verify(p,rs,expected_head=HEAD,prereg=reg)
+
     def test_malformed_block_identity_is_rejected_as_coverage_error(self):
         self.rows[0]['block_id'] = []
         self.fail_case('invalid block_id')
