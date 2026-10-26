@@ -166,6 +166,21 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         for field in (*VERSION_PINS, "effect_kind", "fixture_instance_before"):
             must(len({group[0][field] for group in groups}) == 1,
                  f"cohort {workflow}/{variant}: mixed {field} across blocks")
+    # The frozen block schedule may interleave cohorts. Per-block checks
+    # alone cannot detect hidden resets or writes BETWEEN whole blocks.
+    # Chain independent audit counters across all collected attempts in each
+    # fixture incarnation, irrespective of cohort. This verifies receipt
+    # consistency only, not actual executor routes or oracle authenticity.
+    by_instance: dict[str, list[dict]] = defaultdict(list)
+    for row in rows:
+        by_instance[row["fixture_instance_before"]].append(row)
+    for instance, attempts in by_instance.items():
+        attempts.sort(key=lambda r: r["reset_epoch_before"])
+        for previous, current in zip(attempts, attempts[1:]):
+            must(current["reset_epoch_before"] == previous["reset_epoch_after"] + 1,
+                 f"fixture {instance}: missing/extra interblock reset")
+            must(current["total_commits_before"] == previous["total_commits_after"],
+                 f"fixture {instance}: lifetime writes missing between blocks")
     return cohorts
 
 

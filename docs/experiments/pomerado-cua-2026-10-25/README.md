@@ -273,3 +273,18 @@ After independent evidence and maintainer selection, a caller-side origin/task-s
 ### Consecutive trial handoff (2026-10-26, UNIT-only)
 
 For positions 1–4 in each ABBA/BAAB block, individually verify exactly one independent reset between attempts: the next pretrial `/audit.reset_epoch` must be the prior posttrial epoch + 1, on the same fixture `instance_id`. The next pretrial `total_commit_count` must equal the prior posttrial count. A missed/double reset or intertrial write invalidates the block even if each individual pre/post pair looks clean. Preserve receipts for all refusals, timeouts, and fallbacks. This gate checks **internal consistency, not authentication** of route execution or independent oracle evidence. Cross-block scheduling still requires an externally retained frozen manifest and independently checked observations; no actual A/B comparison has run.
+
+### Cross-block audit continuity (2026-10-26; UNIT controls only)
+
+ABBA/BAAB **per-block** audit continuity cannot detect an unlogged reset or
+write between complete blocks. The analyzer now orders all collected trials by
+independent `/audit reset_epoch` within each fixture `instance_id`, including
+interleaved cohort variants, then requires exactly one reset and zero unlogged
+writes between adjacent attempts. Partial/disconnected sessions must not be
+reported as a complete comparable benchmark.
+
+This detects only receipt consistency; self-asserted route/oracle evidence is
+not authentication. Preserve the externally pinned pre-execution manifest SHA,
+regenerate manifests after PREREG changes, include every failed/fallback trial,
+and independently verify actual routes and oracle traces. No CUA/Pomerado A/B,
+Pomerado mint, or new Avrea/Boat execution is established by these tests.

@@ -1,12 +1,16 @@
 """Synthetic UNIT tests for the Pomerado/CUA receipt verifier; not runtime evidence."""
 
 import copy
+import re
 import unittest
 
 from analyze_receipts import InvalidReceipts, summarize
 
 
 def block(block_id="b1", order="ABBA"):
+    # Consecutive synthetic IDs simulate one uninterrupted fixture session.
+    match = re.fullmatch(r"b([1-9][0-9]*)", block_id)
+    offset = (int(match.group(1)) - 1) * 4 if match else 0
     rows = []
     for position, arm in enumerate(order, start=1):
         rows.append({
@@ -44,10 +48,10 @@ def block(block_id="b1", order="ABBA"):
             "audit_after": 1,
             "audit_evidence": f"synthetic-independent-audit-{position}",
             # UNIT fixture models fresh resets + cumulative writes in order.
-            "reset_epoch_before": position,
-            "reset_epoch_after": position,
-            "total_commits_before": position - 1,
-            "total_commits_after": position,
+            "reset_epoch_before": offset + position,
+            "reset_epoch_after": offset + position,
+            "total_commits_before": offset + position - 1,
+            "total_commits_after": offset + position,
             "fixture_instance_before": "a" * 32,
             "fixture_instance_after": "a" * 32,
         })
@@ -58,7 +62,7 @@ class ReceiptValidationTests(unittest.TestCase):
     def test_valid_unit_is_never_presented_as_real_speedup(self):
         rows = []
         for n in range(30):
-            rows.extend(block(f"b{n}", "ABBA" if n % 2 == 0 else "BAAB"))
+            rows.extend(block(f"b{n + 1}", "ABBA" if n % 2 == 0 else "BAAB"))
         c = summarize(rows)["cohorts"]["form-submit/default"]
         self.assertEqual(c["status"], "NOT_READY")
         self.assertIsNone(c["paired_median_B_minus_A_ms"])
