@@ -1,0 +1,55 @@
+{
+  "schema": "cua.pomerado.receipt_adversarial_local.v1",
+  "classification": "UNIT_ONLY_NO_CUA_NO_POMERADO_EXECUTION",
+  "date_utc": "2026-10-26",
+  "tracking_issue": "https://github.com/kvnloo/cua/issues/161",
+  "draft_pr": "https://github.com/kvnloo/cua/pull/162",
+  "goal_lock": {
+    "objective": "Independently verifiable CUA Driver A vs Pomerado caller-side task execution with ABBA/BAAB blocks, zero unauthorized/duplicate writes, exact version pins",
+    "target_repo": "kvnloo/cua",
+    "target_branch": "exp/pomerado-site-procedure-20261025",
+    "observed_initial_head": "5fe02936e315f08c626395e3dbf85017926e247d",
+    "fixture": "libs/cua-driver/examples/jev-use/fixture_server.py",
+    "pomerado_integration": "NOT_MINTED",
+    "cua_vs_pomerado_real_trials": 0
+  },
+  "exact_code_pins": {
+    "original_analyzer_blob_sha1": "52dd5d6415cb610cac558170dbd2c45208ff5508",
+    "original_analyzer_unit_test_blob_sha1": "da90d8513ebfa38d71614dca213051bab8ecb24c",
+    "patched_analyzer_blob_sha1": "b04f966b1af623da2ff68617b4463de7cfbbefb2",
+    "new_adversarial_test_blob_sha1": "a9f2a1e09f65b23f5062ea40d04639194bd1f91b",
+    "validation": "git hash-object matched both original files and both updated GitHub blobs"
+  },
+  "local_execution": {
+    "environment": "isolated Debian Linux, Python 3.13.5, standard-library unittest",
+    "pre_patch_adversarial_6": {
+      "passed": 1,
+      "failed": 5,
+      "expected_failures": true
+    },
+    "post_patch_analyzer_tests_16": {
+      "passed": 16,
+      "failed": 0,
+      "errors": 0
+    },
+    "full_repo_packet_41": {
+      "status": "NOT_RUN",
+      "note": "Existing 35 expected packet tests plus six adversarial tests are now wired into existing downstream CI; this file does not claim all 41 executed in this turn."
+    },
+    "scenario_checks": [
+      "nonzero audit_before after reset rejected",
+      "mixed CUA Driver commit pin across blocks rejected",
+      "mixed Pomerado build/mint pin across blocks rejected",
+      "mixed read/write semantics across blocks rejected",
+      "REAL rows with non-SHA prose implementation pins rejected",
+      "synthetic UNIT rows cannot produce a timing comparison"
+    ]
+  },
+  "limitations": [
+    "SHA format checks do not authenticate an artifact or distinguish self-labeled REAL rows from fabricated data; external hash readback and route-trace attestation are required for any future real comparison.",
+    "Fixture HTTP and synthetic receipt tests are not CUA Driver or Pomerado task executions.",
+    "Avrea, Boat, and Pomerado API were not used; none were authorized for spend in this run.",
+    "GitHub Actions workflow jobs and new branch check-runs were not observed; no CI green claim."
+  ],
+  "next_gate": "Prove actual executable route and independent oracle on a permitted isolated browser; bind raw route/oracle/audit logs to trial receipts and execute preregistered ABBA/BAAB blocks."
+}
