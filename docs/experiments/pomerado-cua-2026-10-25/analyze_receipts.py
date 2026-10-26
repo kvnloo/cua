@@ -13,8 +13,16 @@ import statistics
 import sys
 
 SCHEMA = "cua.pomerado.trial.v1"
-ORDERS = {"ABBA", "BAAB"}
-ROUTES = {"cua-driver", "pomerado-mcp", "fallback-cua", "blocked"}
+ARM_ROUTE = {"A": "cua-driver", "B": "pomerado-mcp", "C": "opencli-adapter-cdp"}
+ROUTES = {*ARM_ROUTE.values(), "fallback-cua", "blocked"}
+
+
+def pair_of(order: str) -> str | None:
+    """x+y+y+x for two distinct arms (ABBA/BAAB for the original design); else None."""
+    if (len(order) == 4 and order[0] == order[3] and order[1] == order[2]
+            and order[0] != order[1] and set(order) <= set(ARM_ROUTE)):
+        return "".join(sorted({order[0], order[1]}))
+    return None
 OUTCOMES = {"verified", "refuted", "unknown", "abstained"}
 PINS = ("workflow", "variant", "input_fingerprint", "fixture_sha", "caller_sha",
         "driver_sha", "pomerado_sha")
@@ -59,7 +67,7 @@ def percentile(values: list[float], fraction: float) -> float:
     return ordered[max(0, math.ceil(len(ordered) * fraction) - 1)]
 
 
-def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
+def validate(rows: list[dict]) -> dict[tuple[str, str, str], list[list[dict]]]:
     must(bool(rows), "no receipts: NOT_RUN, cannot evaluate")
     seen: set[str] = set()
     blocks: dict[str, list[dict]] = defaultdict(list)
@@ -83,7 +91,12 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         seen.add(row["run_id"])
         must(type(row["position"]) is int and 1 <= row["position"] <= 4,
              f"row {line}: invalid position")
-        must(row["arm"] in {"A", "B"}, f"row {line}: invalid arm")
+        must(row["arm"] in ARM_ROUTE, f"row {line}: invalid arm")
+        if row["arm"] == "C":
+            must(nonempty(row.get("opencli_sha")), f"row {line}: arm C needs opencli_sha")
+            if row["evidence_class"] == "REAL":
+                must(EXACT_DIGEST.fullmatch(row["opencli_sha"]) is not None,
+                     f"row {line}: unverifiable opencli_sha (expected exact SHA)")
         must(row["route_observed"] in ROUTES, f"row {line}: invalid actual route")
         must(row["oracle_outcome"] in OUTCOMES, f"row {line}: invalid oracle outcome")
         must(row["reset_verified"] is True, f"row {line}: reset not independently verified")
@@ -114,36 +127,42 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
             must(delta <= 1, f"row {line}: duplicate committed write, found {delta}")
         blocks[row["block_id"]].append(row)
 
-    cohorts: dict[tuple[str, str], list[list[dict]]] = defaultdict(list)
+    cohorts: dict[tuple[str, str, str], list[list[dict]]] = defaultdict(list)
     for block_id, group in blocks.items():
         must(len(group) == 4, f"block {block_id}: expected exactly four trials")
         group.sort(key=lambda r: r["position"])
         must([r["position"] for r in group] == [1, 2, 3, 4],
              f"block {block_id}: positions incomplete or duplicated")
         order = "".join(r["arm"] for r in group)
-        must(order in ORDERS, f"block {block_id}: not ABBA/BAAB")
+        pair = pair_of(order)
+        must(pair is not None, f"block {block_id}: not a two-arm ABBA/BAAB-style order")
         for field in (*PINS, "effect_kind"):
             must(len({r[field] for r in group}) == 1,
                  f"block {block_id}: mismatched {field}")
-        cohorts[group[0]["workflow"], group[0]["variant"]].append(group)
+        cohorts[group[0]["workflow"], group[0]["variant"], pair].append(group)
     # A valid trial order is not enough: changing either implementation or
     # read/write semantics between blocks invalidates the paired comparison.
     # Keep each variant a separate cohort; allow different pins across variants.
-    for (workflow, variant), groups in cohorts.items():
+    for (workflow, variant, pair), groups in cohorts.items():
         for field in (*VERSION_PINS, "effect_kind"):
             must(len({group[0][field] for group in groups}) == 1,
                  f"cohort {workflow}/{variant}: mixed {field} across blocks")
+        if "C" in pair:
+            shas = {r["opencli_sha"] for g in groups for r in g if r["arm"] == "C"}
+            must(len(shas) == 1, f"cohort {workflow}/{variant}: mixed opencli_sha across blocks")
     return cohorts
 
 
 def summarize(rows: list[dict], minimum_blocks: int = 30) -> dict:
     cohorts = validate(rows)
     result: dict = {"schema": "cua.pomerado.analysis.v1", "attempts": len(rows), "cohorts": {}}
-    for (workflow, variant), blocks in sorted(cohorts.items()):
+    for (workflow, variant, pair), blocks in sorted(cohorts.items()):
+        first, second = pair
         trials = [trial for block in blocks for trial in block]
         counts = Counter("".join(r["arm"] for r in block) for block in blocks)
         problems = []
-        if len(blocks) < minimum_blocks or min(counts.get("ABBA", 0), counts.get("BAAB", 0)) < minimum_blocks // 2:
+        forward, backward = first + second + second + first, second + first + first + second
+        if len(blocks) < minimum_blocks or min(counts.get(forward, 0), counts.get(backward, 0)) < minimum_blocks // 2:
             problems.append("insufficient balanced paired blocks")
         if any(r["evidence_class"] != "REAL" for r in trials):
             problems.append("non-real/unit evidence present")
@@ -154,15 +173,17 @@ def summarize(rows: list[dict], minimum_blocks: int = 30) -> dict:
             problems.append("unsafe or uncertain side effect")
         if any(r["fallback_count"] for r in trials):
             problems.append("fallback present (retain attempted-arm accounting)")
-        if any(r["route_observed"] != ("cua-driver" if r["arm"] == "A" else "pomerado-mcp")
-               for r in trials):
+        if any(r["route_observed"] != ARM_ROUTE[r["arm"]] for r in trials):
             problems.append("requested route was not always exercised")
         if len({r["browser_version"] for r in trials}) != 1:
             problems.append("browser-version comparability confound")
-        if not any(r["mint_ms"] > 0 for r in trials if r["arm"] == "B"):
-            problems.append("mint preparation cost not measured")
+        for prepared in (arm for arm in pair if arm != "A"):
+            if not any(r["mint_ms"] > 0 for r in trials if r["arm"] == prepared):
+                problems.append("mint preparation cost not measured"
+                                if prepared == "B" else
+                                f"arm {prepared} preparation cost not measured")
         arms = {}
-        for arm in ("A", "B"):
+        for arm in pair:
             subset = [r for r in trials if r["arm"] == arm]
             durations = [r["elapsed_ms"] for r in subset]
             arms[arm] = {
@@ -182,18 +203,19 @@ def summarize(rows: list[dict], minimum_blocks: int = 30) -> dict:
         delta = None
         if not problems:
             per_block_deltas = [
-                statistics.mean(r["elapsed_ms"] for r in block if r["arm"] == "B")
-                - statistics.mean(r["elapsed_ms"] for r in block if r["arm"] == "A")
+                statistics.mean(r["elapsed_ms"] for r in block if r["arm"] == second)
+                - statistics.mean(r["elapsed_ms"] for r in block if r["arm"] == first)
                 for block in blocks
             ]
             delta = statistics.median(per_block_deltas)
-        result["cohorts"][f"{workflow}/{variant}"] = {
+        label = f"{workflow}/{variant}" if pair == "AB" else f"{workflow}/{variant}[{pair}]"
+        result["cohorts"][label] = {
             "status": "COMPARABLE_DESCRIPTIVE_ONLY" if not problems else "NOT_READY",
             "reasons": problems,
             "blocks": len(blocks),
             "orders": dict(counts),
             "arms": arms,
-            "paired_median_B_minus_A_ms": delta,
+            f"paired_median_{second}_minus_{first}_ms": delta,
             "note": "warm comparison does not include cold mint; show its measured cost separately",
         }
     return result

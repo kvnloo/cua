@@ -189,3 +189,42 @@ python3 -m unittest discover \
 ## Upstream promotion gate
 
 After independent evidence and maintainer selection, a caller-side origin/task-scoped plugin or example could expose Pomerado. It is never a built-in Driver dependency or state authority. Pomerado write permission must be independently granted; CUA authorization does not authorize its external calls. Fail closed on unknown effects, site changes or expired scope.
+
+## Arm C (opencli adapter over CDP) and arm-B MCP glue (2026-10-26)
+
+Added on `exp/opencli-arm-20261026`. Caller-side only; no driver change; no model call; no token.
+Credit: Pomerado is MIT (Pomerado AI, Inc.); opencli is jackwener/opencli (downstream fork kvnloo/opencli).
+
+- `arm_c/jev/read-status.js` (read) and `arm_c/jev/submit-value.js` (write, `access: 'write'`, needs
+  `--confirm-write yes`): copy to `~/.opencli/clis/jev/`. Both refuse any origin except
+  `http://127.0.0.1:PORT`. `navigateBefore: false`, because the default would be `https://<domain>`.
+- `run_arm_c.py`: one attempt, one receipt, `arm=C`, `route_observed=opencli-adapter-cdp`. It sets
+  `OPENCLI_CDP_ENDPOINT` (extension and daemon are bypassed). Chromium is started by the caller with
+  `--remote-debugging-port` (attach-only, identical warm state for every arm). Extra receipt field
+  `opencli_sha` (REAL: exact SHA or `sha256:`) is required on arm C rows and fixed per cohort.
+- `run_arm_b.py` + `mcp_stdio.py`: spawns `pomerado-mcp serve --artifact DIR` (no model request), speaks
+  newline-delimited MCP JSON-RPC, calls one tool, polls `get_job` only for a pending job, never calls
+  `provide_input`, never replays. A read attempt refuses a tool without `readOnlyHint`. The artifact must be
+  minted separately (blocked until the owner approves budget); this script never mints.
+- `arm_common.py`: reset via `POST /reset`, require empty `/state` and `/audit` `commit_count == 0`, run, read
+  the oracle again, and judge from `/state` and `/audit` rather than the arm's own report. Failures are recorded
+  as `route_observed=blocked`, with `fallback_count` 0. Writes need `--allow-write` and a 64-hex read-only proof.
+  Default evidence class is `UNIT`; `REAL` requires exact SHA pins.
+- `plan_blocks.py --arms ABC` plans pairwise blocks AB, AC, BC (four attempts each, XYYX/YXXY), with
+  `arm_pair` on each block. The default `--arms AB` output is byte-identical to before (same manifest hash).
+  `verify_plan_coverage.py` still accepts two-arm AB plans only, and rejects a three-arm plan.
+- `analyze_receipts.py` accepts arms A, B, C. A block is two arms in XYYX order. Each pair is its own cohort:
+  `workflow/variant` for AB (unchanged keys), `workflow/variant[AC]` otherwise, with
+  `paired_median_<second>_minus_<first>_ms`. Each non-A arm in a pair needs a measured `mint_ms`.
+
+Tests (UNIT only: fake `opencli` and fake `pomerado-mcp` executables on the real audited fixture):
+
+```bash
+python3 -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_*.py' -v
+```
+
+Local smoke (mbp, 2026-10-26, UNIT-labelled, NOT an A/B result): `opencli adapter check jev/read-status` passed; three
+`run_arm_c.py` read attempts against the audited fixture with Chrome 155.0.8059.79 (headless, CDP attach) and opencli
+916705f were oracle-verified with `audit_after == audit_before == 0`. Wall time was 42.6 s (cold, first call), then
+about 10 to 14 s warm, which is dominated by opencli process start and CDP attach. Arm B has no real artifact yet
+(mint is blocked on the owner's budget approval), so its glue is covered only by the fake-server tests.

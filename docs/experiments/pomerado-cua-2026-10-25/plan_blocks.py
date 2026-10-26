@@ -19,6 +19,9 @@ SCHEMA = "cua.pomerado.assignment.v1"
 SHA40 = re.compile(r"[0-9a-f]{40}\Z")
 SHA64 = re.compile(r"[0-9a-f]{64}\Z")
 LABEL = re.compile(r"[a-z0-9][a-z0-9_-]*\Z")
+# Arm C (opencli adapter over CDP) was added by exp/opencli-arm-20261026. Blocks stay
+# four attempts and two arms each; a three-arm study is the pairwise set AB, AC, BC.
+ARM_ROUTE = {"A": "cua-driver", "B": "pomerado-mcp", "C": "opencli-adapter-cdp"}
 
 
 class PlanError(ValueError):
@@ -37,7 +40,14 @@ def digest(value: object) -> str:
 
 def build_plan(prereg: dict, *, head_sha: str, phase: str = "read_only",
                read_only_proof_sha256: str | None = None,
-               variants: list[str] | None = None) -> dict:
+               variants: list[str] | None = None,
+               arms: tuple[str, ...] = ("A", "B")) -> dict:
+    require(isinstance(arms, (tuple, list)) and 2 <= len(arms) <= 3
+            and len(set(arms)) == len(arms) and all(a in ARM_ROUTE for a in arms)
+            and list(arms) == sorted(arms),
+            "arms must be a sorted subset of A, B, C with at least two arms")
+    pairs = [(x, y) for i, x in enumerate(arms) for y in arms[i + 1:]]
+    two_arm = list(arms) == ["A", "B"]
     require(isinstance(prereg, dict) and prereg.get("schema") == "cua.pomerado.prereg.v1",
             "not the pinned preregistration schema")
     require(prereg.get("status") == "PREREGISTERED_NOT_RUN",
@@ -82,35 +92,45 @@ def build_plan(prereg: dict, *, head_sha: str, phase: str = "read_only",
     rng = random.Random(seed)
     blocks = []
     for variant in chosen:
-        order_list = ["ABBA"] * per_order + ["BAAB"] * per_order
-        rng.shuffle(order_list)
-        for n, order in enumerate(order_list, 1):
-            block_id = f"{phase}:{workflow}:{variant}:{n:03d}"
-            blocks.append({
-                "block_id": block_id,
-                "workflow": workflow,
-                "variant": variant,
-                "order": order,
-                "attempts": [{
-                    "position": pos,
-                    "arm_assigned": arm,
-                    "route_assigned_not_observed": "cua-driver" if arm == "A" else "pomerado-mcp",
-                    "status": "NOT_RUN",
-                    "reset_before": "MUST_VERIFY_INDEPENDENTLY",
-                    "state_oracle": "GET /state",
-                    "mutation_oracle": "GET /audit",
-                    "effect_kind_planned": "read" if phase == "read_only" else "write",
-                    "blind_retry": "PROHIBITED",
-                } for pos, arm in enumerate(order, 1)],
-            })
+        for x, y in pairs:
+            orders = (x + y + y + x, y + x + x + y)
+            order_list = [orders[0]] * per_order + [orders[1]] * per_order
+            rng.shuffle(order_list)
+            for n, order in enumerate(order_list, 1):
+                pair_tag = "" if two_arm else f"{x}{y}:"
+                block_id = f"{phase}:{workflow}:{variant}:{pair_tag}{n:03d}"
+                block = {
+                    "block_id": block_id,
+                    "workflow": workflow,
+                    "variant": variant,
+                    "order": order,
+                    "attempts": [{
+                        "position": pos,
+                        "arm_assigned": arm,
+                        "route_assigned_not_observed": ARM_ROUTE[arm],
+                        "status": "NOT_RUN",
+                        "reset_before": "MUST_VERIFY_INDEPENDENTLY",
+                        "state_oracle": "GET /state",
+                        "mutation_oracle": "GET /audit",
+                        "effect_kind_planned": "read" if phase == "read_only" else "write",
+                        "blind_retry": "PROHIBITED",
+                    } for pos, arm in enumerate(order, 1)],
+                }
+                if not two_arm:
+                    block["arm_pair"] = x + y
+                blocks.append(block)
     # Shuffle complete blocks, not trial order; interleave scenario cohorts.
     rng.shuffle(blocks)
     counts: dict[str, dict[str, int]] = {}
     for variant in chosen:
-        tally = Counter(b["order"] for b in blocks if b["variant"] == variant)
-        require(tally == Counter({"ABBA": per_order, "BAAB": per_order}),
-                f"lost paired balance for {variant}")
-        counts[variant] = dict(sorted(tally.items()))
+        for x, y in pairs:
+            orders = (x + y + y + x, y + x + x + y)
+            tally = Counter(b["order"] for b in blocks if b["variant"] == variant
+                            and (two_arm or b["arm_pair"] == x + y))
+            require(tally == Counter({orders[0]: per_order, orders[1]: per_order}),
+                    f"lost paired balance for {variant}")
+            key = variant if two_arm else f"{variant}/{x}{y}"
+            counts[key] = dict(sorted(tally.items()))
     manifest = {
         "schema": SCHEMA,
         "evidence_class": "PLAN_ONLY",
@@ -129,6 +149,8 @@ def build_plan(prereg: dict, *, head_sha: str, phase: str = "read_only",
         "planned_attempt_count": 4 * len(blocks),
         "blocks": blocks,
     }
+    if not two_arm:
+        manifest["arms"] = list(arms)
     manifest["manifest_sha256"] = digest(manifest)
     return manifest
 
@@ -140,13 +162,15 @@ def main() -> int:
     parser.add_argument("--phase", choices=("read_only", "synthetic_write"), default="read_only")
     parser.add_argument("--read-only-proof-sha256")
     parser.add_argument("--variant", action="append", dest="variants", help="one cohort; repeatable")
+    parser.add_argument("--arms", default="AB",
+                        help="AB (default, original design) or ABC for pairwise AB, AC, BC blocks")
     parser.add_argument("--output", type=Path, help="write immutable plan JSON (default stdout)")
     args = parser.parse_args()
     try:
         prereg = json.loads(args.prereg.read_text(encoding="utf-8"))
         plan = build_plan(prereg, head_sha=args.head_sha, phase=args.phase,
                           read_only_proof_sha256=args.read_only_proof_sha256,
-                          variants=args.variants)
+                          variants=args.variants, arms=tuple(args.arms))
     except (ValueError, OSError) as error:
         parser.error(str(error))
     serialized = json.dumps(plan, indent=2, sort_keys=True) + "\n"
