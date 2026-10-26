@@ -6,6 +6,7 @@ No sudo, browser, CUA, Pomerado, network, or mint is used.
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import shutil
@@ -15,7 +16,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 
-from boat_preflight import inspect_chrome, validate_driver_version
+from boat_preflight import inspect_chrome, validate_driver_build, validate_driver_version
 
 
 class ChromePreflightFakeRootTests(unittest.TestCase):
@@ -138,6 +139,57 @@ class DriverPinTests(unittest.TestCase):
         completed = subprocess.run(["bash", "-n", str(script)],
                                    capture_output=True, text=True, check=False)
         self.assertEqual(completed.returncode, 0, completed.stderr)
+
+
+class DriverBinaryIdentityTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.head = "a" * 40
+        self.digest = "b" * 64
+        self.build = {
+            "version": "0.34.0",
+            "git_sha": self.head,
+            "exe_sha256": self.digest,
+        }
+
+    def check_build(self, value) -> None:
+        validate_driver_build(value, "0.34.0", self.head, self.digest)
+
+    def test_exact_executable_identity_accepts(self) -> None:
+        self.check_build(self.build)
+
+    def test_missing_doctor_build_refused(self) -> None:
+        with self.assertRaisesRegex(ValueError, "BRANCH_DRIVER_IDENTITY_MISMATCH"):
+            self.check_build(None)
+
+    def test_stale_same_version_binary_refused(self) -> None:
+        build = {**self.build, "git_sha": "c" * 40}
+        with self.assertRaisesRegex(ValueError, "git_sha"):
+            self.check_build(build)
+
+    def test_replaced_executable_refused(self) -> None:
+        build = {**self.build, "exe_sha256": "d" * 64}
+        with self.assertRaisesRegex(ValueError, "exe_sha256"):
+            self.check_build(build)
+
+    def test_attest_cli_rejects_fake_doctor_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            doctor = Path(tmp) / "doctor.json"
+            doctor.write_text(json.dumps({"build": {
+                **self.build, "exe_sha256": "d" * 64,
+            }}))
+            checker = Path(__file__).with_name("boat_preflight.py")
+            command = [
+                sys.executable, str(checker), "attest",
+                "--doctor-file", str(doctor),
+                "--expected-version", "0.34.0",
+                "--expected-head", self.head,
+                "--expected-sha256", self.digest,
+            ]
+            completed = subprocess.run(
+                command, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("BRANCH_DRIVER_IDENTITY_MISMATCH", completed.stderr)
 
 
 if __name__ == "__main__":
