@@ -116,7 +116,8 @@
       "fixture_instance_before": "32 lowercase hex bytes from independent /audit instance_id immediately after pretrial reset; no customer credential",
       "fixture_instance_after": "same /audit fixture instance_id after attempted task; any change invalidates trial and cohort",
       "intertrial_chain": "within each ABBA/BAAB block in position order, next reset_epoch_before = previous reset_epoch_after + 1 and next total_commits_before = previous total_commits_after, with one fixed instance ID",
-      "cross_block_chain": "For one isolated fixture instance, all submitted trials, including interleaved cohorts, form a continuous counter sequence ordered by reset_epoch_before: each next epoch = previous after + 1; each next total_commits_before = previous total_commits_after. This does not authenticate route/oracle claims."
+      "cross_block_chain": "For one isolated fixture instance, all submitted trials, including interleaved cohorts, form a continuous counter sequence ordered by reset_epoch_before: each next epoch = previous after + 1; each next total_commits_before = previous total_commits_after. This does not authenticate route/oracle claims.",
+      "manifest_audited_order": "For each audited fixture incarnation, independently collected reset_epoch_before counters must be consecutive and must follow the pre-registered shuffled manifest's block/position order, regardless of JSONL line order. This is self-consistency, not timestamp/route/oracle authentication; ordering across different fixture instances remains unverified without an external timeline."
     }
   },
   "fail_closed": [
@@ -161,6 +162,11 @@
     {
       "reason": "Per-block audit chains could still hide resets or writes between complete ABBA/BAAB blocks. Require continuous fixture-instance reset/write counters across all collected trials, including interleaved cohorts.",
       "status": "AMENDED_BEFORE_AB; isolated UNIT-only control, real CUA/Pomerado A/B NOT_RUN",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Assignment-completeness alone allowed executing entire ABBA/BAAB blocks in a different order than the frozen randomized manifest. Check audited reset chronology against the manifest per fixture process; flag cross-instance global order as unverified.",
+      "status": "AMENDED_BEFORE_AB; isolated UNIT predicate controls only; real Driver/Pomerado A/B NOT_RUN",
       "experiment_claims": "NOT_RUN"
     }
   ]

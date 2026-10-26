@@ -163,6 +163,42 @@ def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict,
     missing = sorted(set(expectations) - observed)
     if missing:
         raise CoverageError(f"{len(missing)} planned attempts missing, first: {missing[0]}")
+    # A complete multiset of attempts does not prove that the randomized
+    # manifest order was followed. Audit reset epochs provide an independent
+    # ordering cue per fixture process, regardless of JSONL line order.
+    # Cross-instance ordering still needs an external, authenticated timeline.
+    has_audit_order = any(
+        r.get("evidence_class") == "REAL"
+        or "reset_epoch_before" in r
+        or "fixture_instance_before" in r for r in rows
+    )
+    checked_instances = 0
+    if has_audit_order:
+        manifest_rank = {
+            (block["block_id"], attempt["position"]): rank
+            for rank, (block, attempt) in enumerate(
+                (block, attempt) for block in blocks for attempt in block["attempts"]
+            )
+        }
+        by_instance: dict[str, list[tuple[int, int]]] = {}
+        for n, row in enumerate(rows, 1):
+            instance = row.get("fixture_instance_before")
+            epoch = row.get("reset_epoch_before")
+            require(isinstance(instance, str)
+                    and re.fullmatch(r"[0-9a-f]{32}", instance) is not None,
+                    f"receipt {n}: missing/invalid audited fixture instance")
+            require(type(epoch) is int and epoch >= 0,
+                    f"receipt {n}: missing/invalid audited reset epoch")
+            by_instance.setdefault(instance, []).append(
+                (epoch, manifest_rank[row["block_id"], row["position"]]))
+        for instance, observed_epochs in by_instance.items():
+            observed_epochs.sort()
+            for previous, current in zip(observed_epochs, observed_epochs[1:]):
+                require(current[0] == previous[0] + 1,
+                        f"fixture {instance}: missing/replayed audited reset epoch")
+                require(current[1] > previous[1],
+                        f"fixture {instance}: observed order differs from frozen block schedule")
+        checked_instances = len(by_instance)
     return {
         "schema": "cua.pomerado.coverage.v1",
         "status": "COVERAGE_COMPLETE_NOT_AUTHENTICATED",
@@ -173,6 +209,9 @@ def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict,
         "received_attempts": len(rows),
         "blocks": len(blocks),
         "route_mismatches": route_mismatches,
+        "audited_manifest_order": "CONSISTENT_NOT_AUTHENTICATED" if has_audit_order else "NOT_CHECKED",
+        "audited_fixture_instances": checked_instances,
+        "cross_instance_global_order": "UNVERIFIED" if checked_instances > 1 else "NOT_APPLICABLE",
         "cua_vs_pomerado_verified_trials": None,
         "warning": "Coverage cannot authenticate route/oracle/audit evidence or establish real execution.",
     }

@@ -111,6 +111,49 @@ class CoverageTests(unittest.TestCase):
         self.p['manifest_sha256']=digest({k:v for k,v in self.p.items() if k!='manifest_sha256'})
         self.fail_case('assigned route mismatch')
 
+
+    def _audited_receipts(self):
+        rows = copy.deepcopy(self.rows)
+        for epoch, row in enumerate(rows, 1):
+            row['evidence_class'] = 'UNIT'
+            row['fixture_instance_before'] = 'a' * 32
+            row['reset_epoch_before'] = epoch
+        return rows
+
+    def test_audited_manifest_order_survives_shuffled_jsonl(self):
+        rows = self._audited_receipts()
+        rows.reverse()  # Receipt file line order is NOT execution order.
+        result = verify(self.p, rows, expected_head=HEAD, prereg=self.prereg,
+                        expected_manifest_sha256=self.p['manifest_sha256'])
+        self.assertEqual(result['audited_manifest_order'],
+                         'CONSISTENT_NOT_AUTHENTICATED')
+        self.assertEqual(result['audited_fixture_instances'], 1)
+        self.assertIsNone(result['cua_vs_pomerado_verified_trials'])
+
+    def test_swapped_complete_abba_baab_blocks_rejected(self):
+        rows = self._audited_receipts()
+        # Each individual four-attempt block retains ABBA/BAAB and one reset
+        # per attempt. Only the pre-randomized FULL BLOCK execution order drifts.
+        for index, row in enumerate(rows):
+            row['reset_epoch_before'] = index + 5 if index < 4 else index - 3
+        with self.assertRaisesRegex(CoverageError, 'frozen block schedule'):
+            verify(self.p, rows, expected_head=HEAD, prereg=self.prereg,
+                   expected_manifest_sha256=self.p['manifest_sha256'])
+
+    def test_duplicate_audited_epoch_rejected(self):
+        rows = self._audited_receipts()
+        rows[1]['reset_epoch_before'] = rows[0]['reset_epoch_before']
+        with self.assertRaisesRegex(CoverageError, 'missing/replayed audited reset epoch'):
+            verify(self.p, rows, expected_head=HEAD, prereg=self.prereg,
+                   expected_manifest_sha256=self.p['manifest_sha256'])
+
+    def test_partial_audit_metadata_fails_closed(self):
+        rows = self._audited_receipts()
+        del rows[3]['fixture_instance_before']
+        with self.assertRaisesRegex(CoverageError, 'missing/invalid audited fixture instance'):
+            verify(self.p, rows, expected_head=HEAD, prereg=self.prereg,
+                   expected_manifest_sha256=self.p['manifest_sha256'])
+
     def _large_plan(self):
         import random
         reg = prereg()
