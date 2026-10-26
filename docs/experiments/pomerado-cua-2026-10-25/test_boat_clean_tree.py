@@ -131,10 +131,10 @@ class BoatCleanTreeTests(unittest.TestCase):
         # Cargo reads .cargo/config.toml in the build directory's ancestors.
         # Git can hide a rustc-wrapper assignment outside rust/, even while
         # status, index flags, and the previous rust-only guard all pass.
-        (self.repo / ".git/info/exclude").write_text(".cargo/\\n")
+        (self.repo / ".git/info/exclude").write_text(".cargo/\n")
         config = self.repo / ".cargo/config.toml"
         config.parent.mkdir(parents=True)
-        config.write_text('[build]\\nrustc-wrapper = "/tmp/unused-wrapper"\\n')
+        config.write_text('[build]\nrustc-wrapper = "/tmp/unused-wrapper"\n')
         self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
         self.assertEqual(self._run_exact_index_gate().returncode, 0)
         result = self._run_exact_ignored_source_gate()
@@ -142,10 +142,10 @@ class BoatCleanTreeTests(unittest.TestCase):
         self.assertIn("ignored untracked Driver files", result.stderr)
 
     def test_ignored_intermediate_cargo_config_must_block_branch_build(self) -> None:
-        (self.repo / ".git/info/exclude").write_text(".cargo/\\n")
+        (self.repo / ".git/info/exclude").write_text(".cargo/\n")
         config = self.repo / "libs/cua-driver/.cargo/config.toml"
         config.parent.mkdir(parents=True)
-        config.write_text('[build]\\nrustc-wrapper = "/tmp/unused-wrapper"\\n')
+        config.write_text('[build]\nrustc-wrapper = "/tmp/unused-wrapper"\n')
         self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
         result = self._run_exact_ignored_source_gate()
         self.assertEqual(result.returncode, 2, result.stderr)
