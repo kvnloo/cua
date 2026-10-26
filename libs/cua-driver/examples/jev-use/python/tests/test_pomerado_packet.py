@@ -30,7 +30,7 @@ class PomeradoExperimentGateTests(unittest.TestCase):
             check=False,
         )
         self.assertEqual(result.returncode, 0, result.stderr[-3000:])
-        self.assertIn("Ran 7 tests", result.stderr)
+        self.assertIn("Ran 16 tests", result.stderr)
 
     def test_fixture_is_original_source_not_a_parallel_mock(self):
         data = FIXTURE.read_bytes()
