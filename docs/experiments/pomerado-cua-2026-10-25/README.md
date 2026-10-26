@@ -186,6 +186,27 @@ python3 -m unittest discover \
   -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_*.py' -v
 ~~~
 
+## Audited synthetic fixture reset barrier (2026-10-26; no CUA/Pomerado)
+
+A late `POST /submit` from trial N could previously land after a successful
+`POST /reset` and appear as trial N+1's first committed write. Even a matching
+`/state` value plus `/audit.commit_count == 1` would then misattribute the
+effect. The downstream-only `audit_fixture.py` now returns **HTTP 409** rather
+than resetting while any *observed in-flight* submit is dispatching or awaiting
+its acknowledgement; after the request settles, reconciliation and an explicit
+reset can proceed. This does **not** authorize an automatic retry of the
+original write.
+
+Two new real-HTTP fixture regression controls cover the dispatch-delay and
+lost-ack windows. Both failed against the previous exact audit fixture and
+passed with this guard, alongside the original nine HTTP fixture controls
+(11/11 locally, three runs). This is **FIXTURE_HTTP_ONLY**, not browser, Driver,
+Pomerado, Avrea or Boat evidence. The guard cannot detect requests still queued
+*outside the HTTP handler* or prove which external executor submitted a write.
+Operators must quiesce both executors, reconcile uncertainty, then independently
+verify `/state`, `/audit` and route receipts before starting a new ABBA/BAAB
+trial. No actual A/B experiment is unblocked by these tests alone.
+
 ## Upstream promotion gate
 
 After independent evidence and maintainer selection, a caller-side origin/task-scoped plugin or example could expose Pomerado. It is never a built-in Driver dependency or state authority. Pomerado write permission must be independently granted; CUA authorization does not authorize its external calls. Fail closed on unknown effects, site changes or expired scope.
