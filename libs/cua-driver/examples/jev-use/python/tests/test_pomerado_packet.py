@@ -33,7 +33,7 @@ class PomeradoExperimentGateTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr[-3000:])
         count = re.search(r"\bRan (\d+) tests?\b", result.stderr)
         self.assertIsNotNone(count, "unittest test count missing from discovery output")
-        self.assertGreaterEqual(int(count.group(1)), 82, "required experiment tests were dropped")
+        self.assertGreaterEqual(int(count.group(1)), 84, "required experiment tests were dropped")
 
     def test_fixture_is_original_source_not_a_parallel_mock(self):
         data = FIXTURE.read_bytes()
