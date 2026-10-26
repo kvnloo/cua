@@ -105,6 +105,82 @@ descriptive comparison. This tool never launches a runner, model or site.
 
 The checker rejects malformed/mismatched four-trial blocks and missing proof; it publishes NOT_READY rather than timing claims unless coverage/safety criteria are met. Publish complete sanitized receipts and exact source/build/artifact pins. Report attempted + verified counts, route evidence, p50/p95 end-to-end time *including failures*, cold mint cost and warm amortization. Never call a mock-only result a live-provider benchmark.
 
+## Boat VM lane (2026-10-26) — FIXTURE_BROWSER_ONLY, not an A/B result
+
+This is **operator-supplied environment evidence**, not a confirmed execution
+of a CUA/Pomerado comparison or of this branch's Driver. Environment: Boat
+disposable Ubuntu 24.04, 4 vCPUs, real Chromium 151.
+
+| Observation | Evidence class / conclusion |
+| --- | --- |
+| Experiment Python unittest suite: **56/56** passed | UNIT_ONLY; validates packet and fixture logic, not Driver/Pomerado tool dispatch |
+| `smoke_browser.py --repeat 5`: **40/40** passed in Chromium 151 | **FIXTURE_BROWSER_ONLY**; `read_only`, `submit`, `duplicate_target` refused ambiguous, `renamed_target` refused changed, `visual_only`, `origin_escape` refused origin, `wrong_input`, `uncertain_commit` reconciled without repeat (five repetitions each). This script explicitly uses Playwright, **not** CUA or Pomerado |
+| Boat's preinstalled `cua-driver --version`: **0.23.2** (latest component version reported at investigation: **0.38.0**) | NOT branch-built. Its `browser_prepare` refused with `browser_route_unavailable` until **both `/opt` and `/opt/google`** were changed to `root:root`; no successful branch Driver route is established |
+| Pomerado **0.4.0-canary.399** MCP exposed `get_job`, `provide_input`, `cancel_job`, `mint` with no API key | MCP discovery only. No mint, integration execution, cost, or Pomerado website procedure proof |
+
+**Every A/B trial cell remains `NOT_RUN`.** No 30-block/variant cohort, no
+Driver-versus-Pomerado outcome, no warm-reuse savings, and no mint budget was
+tested. Do not import these smoke counts as trial receipts.
+
+### Branch-built Driver + Chrome safety preflight on a fresh Boat VM
+
+`boat_setup.sh` is a separate opt-in CUA **mock fixture setup probe**, not the
+Pomerado arm. Run it only inside a **full clean checkout** of Draft PR #162's
+`exp/pomerado-site-procedure-20261025` branch, with Cargo, uv, Python 3.12,
+a working local Linux desktop/Chromium session, and the reviewed exact PR
+head SHA. The existing CI `boat-fixture-only` bundle copies only fixture
+files; it is **not** a full branch checkout and cannot run this source build.
+
+~~~sh
+# Supply the SHA copied from the *current PR head*, not a locally assumed ref.
+PR_HEAD=<reviewed-40-character-PR-162-head-SHA>
+bash docs/experiments/pomerado-cua-2026-10-25/boat_setup.sh \
+  --expected-head "$PR_HEAD"
+
+# ONLY after inspecting any exact sudo chown/chmod recommendations, opt in:
+bash docs/experiments/pomerado-cua-2026-10-25/boat_setup.sh \
+  --expected-head "$PR_HEAD" --fix-ownership
+~~~
+
+The default **refuses before build/launch** if Chrome is missing, symlinked,
+not root-owned (`uid=0`, `gid=0`), or group/other-writable at `/`, `/opt`,
+`/opt/google`, `/opt/google/chrome` or the browser executable. It prints
+exact one-path remediations, for example `sudo chown root:root /opt`
+and `sudo chown root:root /opt/google`, **without** changing ownership. The
+flag performs only explicit, nonrecursive owner/mode repairs of existing
+non-symlink paths, then rechecks; missing/unsafe path types still refuse.
+
+The script rejects wrong branch/head or modified tracked sources, records
+the preinstalled Driver version without selecting it, **builds** CUA Driver
+with `cargo build --locked --release -p cua-driver --bin cua-driver` from
+the exact checkout, and checks the resulting selected `cua-driver --version`
+against the Rust workspace version. The only allowed active Driver is the
+source-built `libs/cua-driver/rust/target/release/cua-driver`, passed to the
+Jev MCP runner as `CUA_DRIVER_BIN`; version equality **alone** is not treated
+as source identity. A build/selection/version mismatch refuses. It retains
+head, version and binary SHA-256 in a private temporary preflight receipt.
+
+Only after those gates, the script starts `fixture_server.py --port 0`,
+verifies a loopback `/state` clean oracle, shuts that process down, then runs
+`verify_setup.py --output-dir` on a **fresh, previously nonexistent** evidence
+directory (the verifier owns its own fixture). Results stay in an isolated
+`/tmp/cua-boat-jev.*` directory for inspection; a failure is never promoted
+to a passed setup claim. This tests the mock CUA Driver path **only** when
+actually executed, not Pomerado or A/B.
+
+Unprivileged, bats-free fake-root tests (no real `/opt`, sudo, model, network
+or browser) and syntax checks:
+
+~~~sh
+python3 -m unittest discover \
+  -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_boat_setup.py' -v
+bash -n docs/experiments/pomerado-cua-2026-10-25/boat_setup.sh
+shellcheck docs/experiments/pomerado-cua-2026-10-25/boat_setup.sh
+# Then rerun the full existing packet (these are UNIT, never A/B):
+python3 -m unittest discover \
+  -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_*.py' -v
+~~~
+
 ## Upstream promotion gate
 
 After independent evidence and maintainer selection, a caller-side origin/task-scoped plugin or example could expose Pomerado. It is never a built-in Driver dependency or state authority. Pomerado write permission must be independently granted; CUA authorization does not authorize its external calls. Fail closed on unknown effects, site changes or expired scope.
