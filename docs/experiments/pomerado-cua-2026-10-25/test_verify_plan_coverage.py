@@ -49,10 +49,10 @@ class CoverageTests(unittest.TestCase):
 
     def fail_case(self, term):
         with self.assertRaisesRegex(CoverageError, term):
-            verify(self.p, self.rows, expected_head=HEAD, prereg=self.prereg)
+            verify(self.p, self.rows, expected_head=HEAD, prereg=self.prereg, expected_manifest_sha256=self.p["manifest_sha256"])
 
     def test_complete_coverage_is_integrity_only_not_a_b_claim(self):
-        output=verify(self.p,self.rows,expected_head=HEAD,prereg=self.prereg)
+        output=verify(self.p,self.rows,expected_head=HEAD,prereg=self.prereg, expected_manifest_sha256=self.p["manifest_sha256"])
         self.assertEqual(output['status'],'COVERAGE_COMPLETE_NOT_AUTHENTICATED')
         self.assertIsNone(output['cua_vs_pomerado_verified_trials'])
         self.assertEqual(output['received_attempts'],8)
@@ -84,7 +84,7 @@ class CoverageTests(unittest.TestCase):
 
     def test_real_route_fallback_counts_confounds(self):
         self.rows[1]['route_observed']='fallback-cua'
-        self.assertEqual(verify(self.p,self.rows,expected_head=HEAD,prereg=self.prereg)['route_mismatches'],1)
+        self.assertEqual(verify(self.p,self.rows,expected_head=HEAD,prereg=self.prereg, expected_manifest_sha256=self.p["manifest_sha256"])['route_mismatches'],1)
 
     def test_plan_digest_tampering_fails(self):
         self.p['blocks'][0]['order']='BAAB'
@@ -92,7 +92,7 @@ class CoverageTests(unittest.TestCase):
 
     def test_external_sha_mismatch_fails(self):
         with self.assertRaisesRegex(CoverageError,'plan HEAD'):
-            verify(self.p,self.rows,expected_head='f'*40,prereg=self.prereg)
+            verify(self.p,self.rows,expected_head='f'*40,prereg=self.prereg, expected_manifest_sha256=self.p["manifest_sha256"])
 
     def test_modified_prereg_fails_source_digest_check(self):
         self.prereg['design']['seed'] += 1
@@ -145,7 +145,7 @@ class CoverageTests(unittest.TestCase):
 
     def test_full_330_block_synthetic_coverage_scales_without_execution(self):
         reg,p,rs=self._large_plan()
-        outcome=verify(p,rs,expected_head=HEAD,prereg=reg)
+        outcome=verify(p,rs,expected_head=HEAD,prereg=reg, expected_manifest_sha256=p["manifest_sha256"])
         self.assertEqual(outcome['blocks'],330)
         self.assertEqual(outcome['received_attempts'],1320)
         self.assertIsNone(outcome['cua_vs_pomerado_verified_trials'])
@@ -154,7 +154,7 @@ class CoverageTests(unittest.TestCase):
         reg,p,rs=self._large_plan()
         rs=rs[4:]
         with self.assertRaisesRegex(CoverageError,'4 planned attempts missing'):
-            verify(p,rs,expected_head=HEAD,prereg=reg)
+            verify(p,rs,expected_head=HEAD,prereg=reg, expected_manifest_sha256=p["manifest_sha256"])
 
     def test_malformed_block_identity_is_rejected_as_coverage_error(self):
         self.rows[0]['block_id'] = []

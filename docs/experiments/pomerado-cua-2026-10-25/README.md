@@ -89,8 +89,11 @@ python3 docs/experiments/pomerado-cua-2026-10-25/verify_plan_coverage.py \
   --plan /tmp/pomerado-plan.json \
   --receipts /path/to/redacted-real-receipts.jsonl \
   --prereg docs/experiments/pomerado-cua-2026-10-25/PREREG.json \
-  --expected-head "$(git rev-parse HEAD)"
+  --expected-head "$(git rev-parse HEAD)" \
+  --expected-manifest-sha256 "$INDEPENDENT_PREEXEC_MANIFEST_SHA256"
 ~~~
+
+Capture `INDEPENDENT_PREEXEC_MANIFEST_SHA256` from the **canonical `manifest_sha256` field** in a separate, immutable, reviewed pre-execution handoff, before any trial receipts. Never derive it from the plan being validated: a self-digest can be recomputed after balanced ABBA/BAAB assignments change. Missing/mismatched external pins now fail closed; neither digest authenticates execution or independent oracles.
 
 The exact 40-character HEAD must match the **pre-execution** plan's candidate
 SHA, not whichever source HEAD is current after later edits. Coverage fails

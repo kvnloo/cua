@@ -33,7 +33,8 @@ def digest(obj: dict) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict) -> dict:
+def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict,
+           expected_manifest_sha256: str) -> dict:
     """Check exactly one receipt per planned attempt; no execution claim."""
     require(isinstance(plan, dict), "expected plan object")
     require(plan.get("schema") == PLAN_SCHEMA, "wrong plan schema")
@@ -54,12 +55,17 @@ def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict) ->
     require(plan.get("blocks_per_variant") == design.get("blocks_per_workflow_variant")
             and plan.get("trials_per_block") == design.get("attempts_per_block"),
             "planned sample size disagrees with prereg")
+    require(isinstance(expected_manifest_sha256, str) and
+            SHA64.fullmatch(expected_manifest_sha256) is not None,
+            "external manifest SHA256 pin must be exactly 64 lowercase hex characters")
     recorded = plan.get("manifest_sha256")
     require(isinstance(recorded, str) and SHA64.fullmatch(recorded) is not None,
             "missing manifest SHA")
     unsigned = dict(plan)
     unsigned.pop("manifest_sha256")
     require(digest(unsigned) == recorded, "plan manifest digest mismatch")
+    require(recorded == expected_manifest_sha256,
+            "external manifest SHA256 pin mismatch: assignments changed since preregistration")
     require(plan.get("phase") in {"read_only", "synthetic_write"}, "invalid phase")
     if plan["phase"] == "synthetic_write":
         proof = plan.get("read_only_proof_sha256")
@@ -188,12 +194,15 @@ def main() -> int:
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--receipts", type=Path, required=True)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--expected-manifest-sha256", required=True,
+                        help="independently retained pre-execution canonical manifest digest")
     parser.add_argument("--prereg", type=Path, required=True)
     opts = parser.parse_args()
     try:
         result = verify(json.loads(opts.plan.read_text(encoding="utf-8")),
                         load_jsonl(opts.receipts), expected_head=opts.expected_head,
-                        prereg=json.loads(opts.prereg.read_text(encoding="utf-8")))
+                        prereg=json.loads(opts.prereg.read_text(encoding="utf-8")),
+                        expected_manifest_sha256=opts.expected_manifest_sha256)
     except (CoverageError, ValueError, OSError) as exc:
         parser.exit(2, json.dumps({"status": "COVERAGE_INVALID", "error": str(exc)}) + "\n")
     print(json.dumps(result, sort_keys=True, indent=2))
