@@ -14,7 +14,7 @@ CUA Driver retains its own observation/action authority. A Pomerado MCP tool exe
 
 Success requires reducing **verified end-to-end task** cost, net of build, verification, errors and fallbacks, without wrong-target or unauthorized effects.
 
-## Existing resettable fixture — no duplicate server
+## Original resettable fixture + downstream-only audited wrapper
 
 Reuse the repository-owned fixture:
 
@@ -45,7 +45,30 @@ Only run A/B after read-only parity. Use ABBA/BAAB blocks with independent reset
 
 ### Negative/changed-site cohorts
 
-Pre-register label/selector churn, two plausible Submit buttons, changed form ancestor, stale document, wrong task inputs, unexpected redirect/origin, MCP unavailable, login expiry, unknown write outcome and concurrent resets. Expect refusal or a fresh bounded fallback. Write experiments use only the synthetic resettable form **after** read-only parity and separate permission validation. Never repeat a possibly committed write before independent /state reconciliation.
+Pre-register label/selector churn, two plausible Submit buttons, changed form ancestor, stale document, wrong task inputs, unexpected redirect/origin, MCP unavailable, login expiry, unknown write outcome and concurrent resets. Expect refusal or a fresh bounded fallback. Write experiments use only the synthetic resettable form **after** read-only parity and separate permission validation. Never blindly repeat a possibly committed write. The original /state endpoint shows only the last value, not mutation count. Use the opt-in downstream /audit wrapper for synthetic write accounting, and **fail closed after an ambiguous timeout**: a momentarily empty /state and /audit does not rule out a delayed commit in flight. Require an independently bounded quiescence/reconciliation protocol before any further write; the tests explicitly demonstrate a write that lands after a caller timeout.
+
+
+## Offline randomized trial manifest (no executor)
+
+`plan_blocks.py` freezes a seed-derived, interleaved schedule without sending any
+network traffic or creating real result receipts. For the frozen fixture and ten
+negative variants it produces **330 planned blocks, 1,320 planned attempts**:
+15 ABBA and 15 BAAB blocks per variant, 4 attempts per block. This is **only a
+plan**, not 1,320 executions or evidence of a performance improvement.
+
+~~~sh
+python3 docs/experiments/pomerado-cua-2026-10-25/plan_blocks.py \
+  --head-sha "$(git rev-parse HEAD)" \
+  --output /tmp/pomerado-plan.json
+python3 -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_*.py' -v
+~~~
+
+Each manifest pins the exact candidate HEAD, preregistration digest, seed and
+manifest digest, with arm *assignment* explicitly separate from a traced
+executed route. Every attempt still requires independent reset, /state
+verification, and /audit accounting where available. The synthetic-write
+*planning* mode requires a read-only proof SHA256 and remains non-executing; it
+does not establish consent, a spend budget, or a verified read-only result.
 
 ## Evidence
 
