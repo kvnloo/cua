@@ -449,6 +449,7 @@ mod tests {
             name: Some(name.to_owned()),
             value: None,
             checked: None,
+            expanded: None,
             enabled: None,
             selected: None,
             description: None,

@@ -27,6 +27,31 @@ pub struct AtspiIdentity {
     pub frame_path: String,
 }
 
+/// A toggle can be indeterminate; it must not prove either binary state.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CheckedState {
+    Boolean(bool),
+    Mixed,
+}
+
+impl CheckedState {
+    pub fn as_bool(self) -> Option<bool> {
+        match self {
+            Self::Boolean(value) => Some(value),
+            Self::Mixed => None,
+        }
+    }
+}
+
+impl serde::Serialize for CheckedState {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Self::Boolean(value) => serializer.serialize_bool(*value),
+            Self::Mixed => serializer.serialize_str("mixed"),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct AtspiNode {
     pub element_index: Option<usize>,
@@ -34,10 +59,12 @@ pub struct AtspiNode {
     pub name: Option<String>,
     pub value: Option<String>,
     /// Checked state when the accessibility backend exposes one for a toggle.
-    pub checked: Option<bool>,
+    pub checked: Option<CheckedState>,
+    /// Expansion state only when the backend advertises Expandable.
+    pub expanded: Option<bool>,
     /// Enabled state when the accessibility backend returned a state set.
     pub enabled: Option<bool>,
-    /// Toggle/selection state for selectable controls.
+    /// Selection state for controls advertising Selectable (not Checked).
     pub selected: Option<bool>,
     pub description: Option<String>,
     pub actions: Vec<String>,
@@ -671,6 +698,7 @@ fn walk_via_x11_properties(xid: u64, query: Option<&str>) -> AtspiTreeResult {
         },
         value: None,
         checked: None,
+        expanded: None,
         enabled: None,
         selected: None,
         description: if wm_class.is_empty() {
@@ -812,6 +840,7 @@ mod budget_tests {
                 name: Some(name.into()),
                 value: None,
                 checked: None,
+                expanded: None,
                 enabled: Some(true),
                 selected: None,
                 description: None,

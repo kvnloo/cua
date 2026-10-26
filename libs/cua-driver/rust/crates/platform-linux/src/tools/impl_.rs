@@ -716,6 +716,12 @@ fn build_element_entry(
     if let Some(enabled) = n.enabled {
         entry["enabled"] = json!(enabled);
     }
+    if let Some(checked) = n.checked {
+        entry["checked"] = json!(checked);
+    }
+    if let Some(expanded) = n.expanded {
+        entry["expanded"] = json!(expanded);
+    }
     if let Some(selected) = n.selected {
         entry["selected"] = json!(selected);
     }

@@ -195,6 +195,7 @@ mod tests {
             name: None,
             value: None,
             checked: None,
+            expanded: None,
             enabled: None,
             selected: None,
             description: None,
