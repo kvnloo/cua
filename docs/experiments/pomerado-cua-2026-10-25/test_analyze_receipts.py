@@ -47,6 +47,8 @@ def block(block_id="b1", order="ABBA"):
             "reset_epoch_after": 1,
             "total_commits_before": 0,
             "total_commits_after": 1,
+            "fixture_instance_before": "a" * 32,
+            "fixture_instance_after": "a" * 32,
         })
     return rows
 

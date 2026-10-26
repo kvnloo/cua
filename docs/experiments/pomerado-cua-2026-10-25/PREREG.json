@@ -112,7 +112,9 @@
       "reset_epoch_before": "nonnegative /audit reset_epoch immediately after independent pretrial reset",
       "reset_epoch_after": "same /audit reset_epoch after the attempted trial; any change invalid",
       "total_commits_before": "nonnegative monotonic fixture-process write count after reset",
-      "total_commits_after": "monotonic fixture-process count after trial; delta must match /audit commit delta"
+      "total_commits_after": "monotonic fixture-process count after trial; delta must match /audit commit delta",
+      "fixture_instance_before": "32 lowercase hex bytes from independent /audit instance_id immediately after pretrial reset; no customer credential",
+      "fixture_instance_after": "same /audit fixture instance_id after attempted task; any change invalidates trial and cohort"
     }
   },
   "fail_closed": [
@@ -142,6 +144,11 @@
     {
       "reason": "Per-reset /audit journal can erase earlier writes if a second successful /reset occurs during a trial; require unchanged reset_epoch and matching lifetime mutation delta before any A/B.",
       "status": "AMENDED_BEFORE_AB; local synthetic HTTP and UNIT only; no Driver/Pomerado A/B",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Monotonic fixture reset/write counters both restart at zero on fixture process replacement; a same-port restart can hide writes and mimic clean oracle counters. Add per-process incarnation ID to independent /audit probes, and require a fixed identity within attempts/ABBA/BAAB cohorts.",
+      "status": "AMENDED_BEFORE_AB; red-green local synthetic HTTP and UNIT controls only; no CUA or Pomerado A/B executed",
       "experiment_claims": "NOT_RUN"
     }
   ]

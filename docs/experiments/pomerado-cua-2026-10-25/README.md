@@ -238,6 +238,34 @@ The amended fixture exposed `total_commit_count == 2` and a changed epoch.
 New tests and analyzer controls are **fixture HTTP / UNIT only**, not
 proof of Driver, Pomerado, Avrea, Boat, or real A/B execution.
 
+## Fixture-process incarnation gate (2026-10-26; FIXTURE_HTTP_ONLY + UNIT_ONLY)
+
+An audited-fixture **restart on the same TCP port** resets both `reset_epoch`
+and `total_commit_count`. Two committed writes before the restart can therefore
+disappear from a post-restart `/audit` check with the *same* integer counters.
+Neither `/state` nor per-reset counts can detect that loss.
+
+The downstream-only `/audit` response now includes a **new 128-bit random
+`instance_id` for each fixture process**, stable across ordinary resets. Trial
+receipts must record `fixture_instance_before` and `fixture_instance_after`
+from **independent** pre/post `/audit` reads. The receipt analyzer requires
+matching 32-character lowercase hex values per trial and the same fixture
+instance across trials in each ABBA/BAAB cohort. A restart invalidates that
+comparison; it does **not** authorize retrying a possibly committed write.
+
+The red reproduction used the original fixture and analyzer exact Git blobs:
+two real synthetic HTTP commits before stopping the fixture, then a fresh
+fixture bound to the same port, reset to the same epoch and zero counters.
+Before the patch, there was no process identity to compare and fabricated
+receipts with mismatched identities were accepted. After the patch, 35
+focused tests passed twice locally on GitHub-identical original source plus
+the proposed exact patch: 14 fixture-HTTP and 21 UNIT cases per run. Full
+repository CI/Boat/Avrea and real CUA-vs-Pomerado comparison remain NOT_RUN.
+The nonce is a *restart detector*, not authentication of route or oracle
+provenance, and cannot detect lost writes outside a single fixture process.
+All offline trial plans must be regenerated and independently re-pinned
+after the preregistration change.
+
 ## Upstream promotion gate
 
 After independent evidence and maintainer selection, a caller-side origin/task-scoped plugin or example could expose Pomerado. It is never a built-in Driver dependency or state authority. Pomerado write permission must be independently granted; CUA authorization does not authorize its external calls. Fail closed on unknown effects, site changes or expired scope.

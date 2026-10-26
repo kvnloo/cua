@@ -20,6 +20,7 @@ PINS = ("workflow", "variant", "input_fingerprint", "fixture_sha", "caller_sha",
         "driver_sha", "pomerado_sha")
 VERSION_PINS = ("fixture_sha", "caller_sha", "driver_sha", "pomerado_sha")
 EXACT_DIGEST = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})\Z")
+EXACT_INSTANCE = re.compile(r"[0-9a-f]{32}\Z")
 REQUIRED = {
     "schema", "evidence_class", "run_id", "block_id", "position", "arm",
     "workflow", "variant", "input_fingerprint", "fixture_sha", "caller_sha",
@@ -31,6 +32,7 @@ REQUIRED = {
     "effect_kind", "audit_before", "audit_after", "audit_evidence",
     "reset_epoch_before", "reset_epoch_after",
     "total_commits_before", "total_commits_after",
+    "fixture_instance_before", "fixture_instance_after",
 }
 
 
@@ -116,6 +118,15 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
                       "total_commits_before", "total_commits_after"):
             must(type(row[field]) is int and row[field] >= 0,
                  f"row {line}: invalid {field}")
+        # Monotonic counters reset when the fixture process restarts. A new
+        # process can report the same epoch and zero counters after hidden
+        # writes; require a fresh random instance ID from BOTH /audit probes.
+        for field in ("fixture_instance_before", "fixture_instance_after"):
+            must(isinstance(row[field], str)
+                 and EXACT_INSTANCE.fullmatch(row[field]) is not None,
+                 f"row {line}: invalid {field}")
+        must(row["fixture_instance_after"] == row["fixture_instance_before"],
+             f"row {line}: fixture instance changed during a trial")
         must(row["reset_epoch_after"] == row["reset_epoch_before"],
              f"row {line}: reset epoch changed during a trial")
         must(row["total_commits_after"] - row["total_commits_before"] == delta,
@@ -136,7 +147,7 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
              f"block {block_id}: positions incomplete or duplicated")
         order = "".join(r["arm"] for r in group)
         must(order in ORDERS, f"block {block_id}: not ABBA/BAAB")
-        for field in (*PINS, "effect_kind"):
+        for field in (*PINS, "effect_kind", "fixture_instance_before"):
             must(len({r[field] for r in group}) == 1,
                  f"block {block_id}: mismatched {field}")
         cohorts[group[0]["workflow"], group[0]["variant"]].append(group)
@@ -144,7 +155,7 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
     # read/write semantics between blocks invalidates the paired comparison.
     # Keep each variant a separate cohort; allow different pins across variants.
     for (workflow, variant), groups in cohorts.items():
-        for field in (*VERSION_PINS, "effect_kind"):
+        for field in (*VERSION_PINS, "effect_kind", "fixture_instance_before"):
             must(len({group[0][field] for group in groups}) == 1,
                  f"cohort {workflow}/{variant}: mixed {field} across blocks")
     return cohorts

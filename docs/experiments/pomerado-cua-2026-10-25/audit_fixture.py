@@ -12,6 +12,7 @@ from http import HTTPStatus
 import importlib.util
 import json
 from pathlib import Path
+from secrets import token_hex
 import time
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -29,6 +30,7 @@ class AuditedState(_module.FixtureState):
         self._inflight_submissions = 0
         self._reset_epoch = 0
         self._total_commit_count = 0
+        self._instance_id = token_hex(16)  # fixture-process nonce, not a credential
 
     def begin_submit(self) -> None:
         with self._lock:
@@ -66,7 +68,8 @@ class AuditedState(_module.FixtureState):
         with self._lock:
             return {"commit_count": len(self._commits), "commits": list(self._commits),
                     "reset_epoch": self._reset_epoch,
-                    "total_commit_count": self._total_commit_count}
+                    "total_commit_count": self._total_commit_count,
+                    "instance_id": self._instance_id}
 
 
 class AuditedHandler(_module.FixtureHandler):
