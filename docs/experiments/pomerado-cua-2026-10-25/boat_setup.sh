@@ -68,6 +68,19 @@ reject_git_index_flags() {
   fi
 }
 reject_git_index_flags "$repo_root"
+
+# Git status also hides ignored untracked inputs. Cargo may discover a build.rs
+# dropped into a driver crate even if .git/info/exclude or core.excludesFile
+# conceals it; allow only the explicit Rust target/ build cache.
+reject_ignored_driver_sources() {
+  local ignored
+  ignored="$(git -C "$1" ls-files --others --ignored --exclude-standard -- \
+    'libs/cua-driver/rust/' ':(exclude)libs/cua-driver/rust/target/**')" ||
+    die "cannot inspect ignored Driver source candidates"
+  [[ -z "$ignored" ]] ||
+    die "ignored untracked Driver files outside target/; refuse unverifiable build"
+}
+reject_ignored_driver_sources "$repo_root"
 [[ -f "$repo_root/libs/cua-driver/rust/Cargo.toml" ]] ||
   die "full source checkout required; Boat's fixture-only bundle cannot build Driver"
 
