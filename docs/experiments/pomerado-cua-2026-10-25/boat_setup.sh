@@ -55,8 +55,8 @@ head="$(git -C "$repo_root" rev-parse --verify HEAD)" || die "not a Git checkout
 checked_branch="$(git -C "$repo_root" symbolic-ref -q --short HEAD || true)"
 [[ "$checked_branch" == "$branch" ]] || die "wrong branch: ${checked_branch:-detached}; expected $branch"
 [[ "$head" == "$expected_head" ]] || die "HEAD drift: observed $head, expected $expected_head"
-[[ -z "$(git -C "$repo_root" status --porcelain --untracked-files=no)" ]] ||
-  die "tracked source files modified; refuse unverifiable build"
+[[ -z "$(git -C "$repo_root" status --porcelain --untracked-files=all)" ]] ||
+  die "source tree has tracked or untracked files; refuse unverifiable build"
 [[ -f "$repo_root/libs/cua-driver/rust/Cargo.toml" ]] ||
   die "full source checkout required; Boat's fixture-only bundle cannot build Driver"
 
