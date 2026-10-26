@@ -133,6 +133,8 @@ def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict) ->
         require(isinstance(row, dict), f"receipt {n} is not an object")
         bid, pos, arm, run_id = (row.get(k) for k in
                                  ("block_id", "position", "arm", "run_id"))
+        require(isinstance(bid, str) and bool(bid.strip()),
+                f"receipt {n}: invalid block_id")
         require(type(pos) is int and 1 <= pos <= 4, f"receipt {n}: invalid position")
         key = (bid, pos)
         require(key in expectations, f"receipt {n}: not in frozen plan")
@@ -147,7 +149,7 @@ def verify(plan: dict, rows: list[dict], *, expected_head: str, prereg: dict) ->
                 f"receipt {n}: arm/workflow/variant disagrees with plan")
         require(row.get("effect_kind") == ("read" if plan["phase"] == "read_only" else "write"),
                 f"receipt {n}: effect class disagrees with frozen phase")
-        require(row.get("route_observed") in
+        require(isinstance(row.get("route_observed"), str) and row["route_observed"] in
                 {"cua-driver", "pomerado-mcp", "fallback-cua", "blocked"},
                 f"receipt {n}: missing/invalid observed route")
         if row["route_observed"] != ("cua-driver" if arm == "A" else "pomerado-mcp"):
