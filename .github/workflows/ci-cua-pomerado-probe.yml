@@ -34,6 +34,23 @@ jobs:
           echo "Commit: $GITHUB_SHA"
           echo "Evidence class: UNIT_ONLY; Pomerado mints: 0; CUA Driver A/B pairs: 0"
 
+  pomerado-cli-no-mint:
+    # This checks package setup only. It supplies no API key, launches no mint,
+    # and creates no customer/site integrations.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.21.0"
+      - name: Validate Node version required by Pomerado
+        run: |
+          node -e 'const [major,minor] = process.versions.node.split(".").map(Number); if(major!==24 || minor<21) process.exit(1)'
+      - name: Exercise local open-source MCP CLI help without a model call
+        env:
+          OPENAI_API_KEY: ""
+        run: npx -y -p pomerado pomerado-mcp --help
+
   chromium-fixture-only:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
