@@ -1,0 +1,102 @@
+{
+  "schema": "cua.pomerado.local-evidence.v1",
+  "captured": "2026-10-25 evening America/Chicago (2026-10-26 UTC)",
+  "qualification": "REAL_ORIGINAL_FIXTURE_HTTP_ONLY; NOT_CUA_OR_POMERADO",
+  "source_pins": {
+    "original_jev_fixture_git_blob": "055500f713ba2c33d8544096f4084ebb108757ce",
+    "test_fixture_http_git_blob": "a2785326b1b636204d02eba0ef82315bb5d2741b",
+    "audited_fixture_git_blob": "fd4f0a9d960a2cb257ab9a4fbbd4fb09b0b40eef",
+    "test_audit_fixture_git_blob": "00a968e553ff2a1d9366f8d8617111c42b220078",
+    "verification": "git hash-object of container copies matched corresponding GitHub blob SHAs"
+  },
+  "environment": {
+    "os": "Debian 13 sandbox",
+    "python": "3.13.5",
+    "chromium": "144.0.7559.96",
+    "playwright": "1.57.0",
+    "native_CUA_driver": "NOT_INSTALLED",
+    "node": "22.16.0 (Pomerado requires Node 24.21+)",
+    "github_network": "DNS_BLOCKED",
+    "api_key": "NONE"
+  },
+  "executed": [
+    {
+      "suite": "test_fixture_http.py",
+      "real_http": true,
+      "methods": 9,
+      "passed": 9,
+      "failed": 0,
+      "wall_seconds": 6.083,
+      "checks": [
+        "read no-effect",
+        "synthetic submit and /state",
+        "reset",
+        "reject empty submit",
+        "404 unknown paths",
+        "HTML response escape",
+        "visual-only role",
+        "50 concurrent reads",
+        "expose no duplicate counter"
+      ]
+    },
+    {
+      "suite": "test_audit_fixture.py",
+      "real_http": true,
+      "methods": 9,
+      "passed": 9,
+      "failed": 0,
+      "wall_seconds": 6.544,
+      "checks": [
+        "first commit recorded",
+        "duplicate repeat counted twice",
+        "reset journal",
+        "refusal non-commit",
+        "redacted digest",
+        "20 parallel writes ordered",
+        "lost-ACK after commit",
+        "late commit after caller timeout"
+      ]
+    }
+  ],
+  "nonqualifying_attempts": [
+    {
+      "suite": "Chromium HTTP navigation smoke (24 cases)",
+      "attempted": 24,
+      "success": 0,
+      "blocker": "Chrome administrator policy ERR_BLOCKED_BY_ADMINISTRATOR blocks 127.0.0.1 navigation, even with Playwright route interception. No CUA or Pomerado action attempted.",
+      "class": "HOST_POLICY_BLOCKED_NOT_PRODUCT_FAILURE"
+    },
+    {
+      "suite": "Pomerado local mint/MCP",
+      "attempted": 0,
+      "blocker": "Node below required version; OpenAI API key and approved budget unavailable"
+    },
+    {
+      "suite": "Avrea workflow",
+      "attempted": 0,
+      "blocker": "Runner installation and authorization not verified"
+    },
+    {
+      "suite": "Boat sandbox",
+      "attempted": 0,
+      "blocker": "No BOAT_API_KEY available; billing/manual dispatch explicitly gated"
+    },
+    {
+      "suite": "CUA-vs-Pomerado matched A/B",
+      "attempted": 0,
+      "blocker": "No minted integration or compatible real-driver execution environment"
+    }
+  ],
+  "findings": [
+    "Existing /state JSON retains last submitted value only and cannot prove absence of duplicate commits.",
+    "Downstream /audit synthetic fixture adds monotonic per-reset commit sequences and hashed value fingerprints; 2 identical writes are now distinguishable.",
+    "Lost acknowledgement after commit and timed-out dispatch before eventual commit both demonstrate why blind retries are invalid.",
+    "No speedup, API cost, cross-browser behavior, or production reliability claim is supported by these fixture-only tests."
+  ],
+  "next_gates": [
+    "Run existing pinned CI on GitHub-hosted runner (trigger/permissions currently unverified), with original fixture and Chrome.",
+    "Run Pomerado local package setup on Node 24.21+ WITHOUT mint or model request.",
+    "After separately approved API budget, mint read-only Pomerado integration in owned synthetic browser, then validate separate authority.",
+    "Run 30 balanced ABBA/BAAB blocks per cohort with original /audit journal, whole-task and cold-build accounting."
+  ]
+}
