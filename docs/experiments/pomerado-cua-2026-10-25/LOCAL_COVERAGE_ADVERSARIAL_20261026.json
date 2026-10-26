@@ -1,0 +1,79 @@
+{
+  "schema": "cua.pomerado.coverage_adversarial_local.v1",
+  "date_utc": "2026-10-26",
+  "classification": "UNIT_ONLY_PLAN_RECEIPT_INTEGRITY_NO_REAL_CUA_OR_POMERADO",
+  "issue": "https://github.com/kvnloo/cua/issues/161",
+  "draft_pr": "https://github.com/kvnloo/cua/pull/162",
+  "candidate_branch": "exp/pomerado-site-procedure-20261025",
+  "observed_pre_evidence_head": "29c9170dd30acaffe2c4837bdc83569ece2647a8",
+  "exact_git_blob_sha1": {
+    "verify_plan_coverage_py": "ab4b2b426bc7bd4667b5243d0501f06d5dcae7d3",
+    "test_verify_plan_coverage_py": "4c569393ef6a5a8fbf968e4645fac1814e823a4c"
+  },
+  "method": "GitHub connector changes compared to local source using git hash-object; exact remote Git blob SHAs match locally tested bytes.",
+  "environment": {
+    "os": "Debian 13",
+    "python": "3.13.5",
+    "tools": "Python stdlib unittest only",
+    "external_runner": "NONE"
+  },
+  "locally_executed": {
+    "test_cases": 19,
+    "passed": 19,
+    "failed": 0,
+    "errors": 0,
+    "suite": "python -m unittest discover -s /mnt/data/pomerado_gate -p test_*.py -q",
+    "elapsed_seconds": 0.021
+  },
+  "unit_scenarios": [
+    "complete 2-block ABBA/BAAB synthetic coverage remains NOT_AUTHENTICATED",
+    "missing one attempted run rejected",
+    "dropped entire four-trial block rejected",
+    "replayed attempt rejected",
+    "unregistered extra attempt rejected",
+    "wrong assigned arm rejected",
+    "wrong read/write phase rejected",
+    "observed route fallback counted without erasing attempted-arm attribution",
+    "tampered plan digest rejected",
+    "externally provided exact HEAD mismatch rejected",
+    "tampered prereg source digest rejected",
+    "invalid claimed observed route rejected",
+    "duplicate run_id rejected",
+    "changed planned route rejected even if manifest rehashed",
+    "unbalanced preregistered order rejected even if manifest rehashed",
+    "unhashable malformed block id fails closed",
+    "unhashable malformed route fails closed",
+    "330 synthetic balanced blocks / 1320 synthetic receipts cover all planned attempts and remain NOT_AUTHENTICATED",
+    "removing entire block from 1320 synthetic receipts rejected"
+  ],
+  "scope": {
+    "planned_blocks_at_scale": 330,
+    "planned_attempts_at_scale": 1320,
+    "synthetic_receipt_verifications": true,
+    "actual_cua_driver_attempts": 0,
+    "actual_pomerado_attempts": 0,
+    "real_browser_tests_this_turn": 0,
+    "actual_paid_provider_usage": 0,
+    "actual_avrea_executions": 0,
+    "actual_boat_executions": 0
+  },
+  "head_state_observed": {
+    "exact_head_workflow_runs": 0,
+    "commit_statuses": 0,
+    "new_pr_comments": 0,
+    "reviews": 0,
+    "conclusion": "CI not verified; do not claim 60-test repo packet passed"
+  },
+  "caveats": [
+    "The complete-receipt checker only validates plan/receipt consistency and cannot prove actual CUA/Pomerado route execution, independent oracles, or timing.",
+    "Only the 19 new coverage unit cases were run locally on GitHub SHA-matched source; existing 41 test cases were not rerun in this turn.",
+    "The GitHub Actions/Avrea/Boat staged jobs had no observed workflow runs for the checked commit.",
+    "The explicit external expected HEAD and original prereg source are required inputs to catch post-plan drift; neither grants execution authority.",
+    "The 1320 synthetic receipt records are fabricated only to test scaling and omission detection, not benchmark observations."
+  ],
+  "next_gates": [
+    "Run full 60-case fixture/packet suite when permitted CI or full repository tree is available.",
+    "Prove execution route with independently captured source-artifact-matched traces and audit journal before any REAL benchmark.",
+    "Never omit failed attempts or fallback traces from the preregistered plan; no new paid/privileged operations without separate authorization."
+  ]
+}
