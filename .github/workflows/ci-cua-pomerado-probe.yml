@@ -1,0 +1,116 @@
+name: "CI: Pomerado CUA experiment"
+
+on:
+  pull_request:
+    paths:
+      - "docs/experiments/pomerado-cua-2026-10-25/**"
+      - "libs/cua-driver/examples/jev-use/python/tests/test_pomerado_packet.py"
+      - ".github/workflows/ci-cua-pomerado-probe.yml"
+  workflow_dispatch:
+    inputs:
+      run_boat:
+        description: "Explicitly run a billable Boat sandbox (requires user-set flag/key)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  receipt-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify receipt analyzer and safety controls (UNIT only)
+        run: |
+          python -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_*.py' -v
+          python -m unittest discover -s libs/cua-driver/examples/jev-use/python/tests -p 'test_pomerado_packet.py' -v
+      - run: |
+          echo "Commit: $GITHUB_SHA"
+          echo "Evidence class: UNIT_ONLY; Pomerado mints: 0; CUA Driver A/B pairs: 0"
+
+  chromium-fixture-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check playwright==1.57.0
+      - name: Install Chromium only if hosted image has no browser
+        run: |
+          if ! command -v google-chrome && ! command -v chromium; then
+            python -m playwright install --with-deps chromium
+          fi
+      - name: Original CUA fixture, real Chrome (NOT CUA/Pomerado)
+        run: |
+          python docs/experiments/pomerado-cua-2026-10-25/smoke_browser.py \
+            --repeat 3 --output /tmp/pomerado-fixture-smoke.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pomerado-fixture-only
+          path: /tmp/pomerado-fixture-smoke.jsonl
+          if-no-files-found: ignore
+          retention-days: 7
+
+  avrea-fixture-only:
+    # Never schedules unless owner installed Avrea and explicitly opted in.
+    if: vars.CUA_POMERADO_AVREA_ENABLED == 'true'
+    runs-on: avrea-ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install playwright==1.57.0
+      - run: |
+          if ! command -v google-chrome && ! command -v chromium; then
+            python -m playwright install --with-deps chromium
+          fi
+      - run: python docs/experiments/pomerado-cua-2026-10-25/smoke_browser.py --repeat 3
+
+  boat-fixture-only:
+    # Requires manual dispatch, opt-in repo variable, and a Boat CI key.
+    # No scheduled or pull-request-triggered sandbox can bill the account.
+    if: github.event_name == 'workflow_dispatch' && inputs.run_boat == true && vars.CUA_POMERADO_BOAT_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BOAT_API_KEY: ${{ secrets.BOAT_API_KEY }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Require operator key
+        run: test -n "$BOAT_API_KEY"
+      - name: Fetch noninteractive official Boat CLI
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL 'https://boat.dev/api/boat/cli/download?platform=linux-x64&channel=prod' \
+            -o "$HOME/.local/bin/boat"
+          chmod +x "$HOME/.local/bin/boat"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Authenticate using stdin, not command arguments
+        run: printf '%s' "$BOAT_API_KEY" | boat login --key-stdin --json
+      - name: Bundle only public fixture and packet, not monorepo credentials
+        run: |
+          mkdir -p "$RUNNER_TEMP/pomerado-bundle/libs/cua-driver/examples/jev-use"
+          mkdir -p "$RUNNER_TEMP/pomerado-bundle/docs/experiments/pomerado-cua-2026-10-25"
+          cp libs/cua-driver/examples/jev-use/fixture_server.py \
+            "$RUNNER_TEMP/pomerado-bundle/libs/cua-driver/examples/jev-use/"
+          cp docs/experiments/pomerado-cua-2026-10-25/{smoke_browser.py,analyze_receipts.py,test_analyze_receipts.py,PREREG.json} \
+            "$RUNNER_TEMP/pomerado-bundle/docs/experiments/pomerado-cua-2026-10-25/"
+      - name: Disposable Boat small sandbox, cleanup handled by boat run
+        run: |
+          cd "$RUNNER_TEMP/pomerado-bundle"
+          boat run --type small --push . -- \
+            bash -lc 'set -e; python3 -m venv /tmp/pomerado-venv; \
+            /tmp/pomerado-venv/bin/pip install playwright==1.57.0; \
+            /tmp/pomerado-venv/bin/python -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p "test_*.py" -v; \
+            /tmp/pomerado-venv/bin/python docs/experiments/pomerado-cua-2026-10-25/smoke_browser.py --repeat 3'
