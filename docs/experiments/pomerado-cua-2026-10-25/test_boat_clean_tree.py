@@ -90,14 +90,14 @@ class BoatCleanTreeTests(unittest.TestCase):
     def _run_exact_ignored_source_gate(self) -> subprocess.CompletedProcess[str]:
         """Execute the production ignored-source guard against disposable Git."""
         script = Path(__file__).with_name("boat_setup.sh").read_text()
-        match = re.search(r"(?ms)^reject_ignored_driver_sources\\(\\) \\{\\n.*?^\\}\\n", script)
+        match = re.search(r"(?ms)^reject_ignored_driver_sources\(\) \{\n.*?^\}\n", script)
         self.assertIsNotNone(match, "ignored source guard missing from Boat setup")
         self.assertIn('reject_ignored_driver_sources "$repo_root"', script)
         program = (
-            "set -euo pipefail\\n"
-            'die() { echo "$*" >&2; exit 2; }\\n'
+            "set -euo pipefail\n"
+            'die() { echo "$*" >&2; exit 2; }\n'
             + match.group(0)
-            + 'reject_ignored_driver_sources "$1"\\n'
+            + 'reject_ignored_driver_sources "$1"\n'
         )
         return subprocess.run(
             ["bash", "-c", program, "guard", str(self.repo)],
@@ -109,8 +109,8 @@ class BoatCleanTreeTests(unittest.TestCase):
         # from status/ls-files -v without changing the reviewed HEAD.
         crate = self.repo / "libs/cua-driver/rust/crates/cua-driver"
         crate.mkdir(parents=True)
-        (self.repo / ".git/info/exclude").write_text("build.rs\\n")
-        (crate / "build.rs").write_text('fn main() { println!("cargo:warning=unexpected"); }\\n')
+        (self.repo / ".git/info/exclude").write_text("build.rs\n")
+        (crate / "build.rs").write_text('fn main() { println!("cargo:warning=unexpected"); }\n')
         self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
         self.assertEqual(self._run_exact_index_gate().returncode, 0)
         result = self._run_exact_ignored_source_gate()
@@ -120,8 +120,8 @@ class BoatCleanTreeTests(unittest.TestCase):
     def test_ignored_driver_env_must_block_branch_build(self) -> None:
         crate = self.repo / "libs/cua-driver/rust/crates/cua-driver"
         crate.mkdir(parents=True)
-        (self.repo / ".git/info/exclude").write_text(".env\\n")
-        (crate / ".env").write_text("FIXTURE_ONLY=1\\n")
+        (self.repo / ".git/info/exclude").write_text(".env\n")
+        (crate / ".env").write_text("FIXTURE_ONLY=1\n")
         self.assertEqual(_git(self.repo, "status", "--porcelain", "--untracked-files=all"), "")
         result = self._run_exact_ignored_source_gate()
         self.assertEqual(result.returncode, 2, result.stderr)
