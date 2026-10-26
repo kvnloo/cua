@@ -25,6 +25,7 @@ REQUIRED = {
     "elapsed_ms", "model_calls", "input_tokens", "output_tokens",
     "wrong_target", "unauthorized_effect", "duplicate_effect",
     "uncertain_effect", "fallback_count", "mint_ms",
+    "effect_kind", "audit_before", "audit_after", "audit_evidence",
 }
 
 
@@ -66,7 +67,7 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         must(row["schema"] == SCHEMA, f"row {line}: wrong schema")
         must(row["evidence_class"] in {"REAL", "UNIT"}, f"row {line}: bad evidence class")
         for field in ("run_id", "block_id", *PINS, "browser_version",
-                      "route_evidence", "oracle_evidence"):
+                      "route_evidence", "oracle_evidence", "audit_evidence"):
             must(nonempty(row[field]), f"row {line}: missing {field}")
         must(row["run_id"] not in seen, f"row {line}: duplicate run_id")
         seen.add(row["run_id"])
@@ -84,6 +85,21 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         for field in ("model_calls", "input_tokens", "output_tokens", "fallback_count"):
             must(type(row[field]) is int and row[field] >= 0,
                  f"row {line}: invalid {field}")
+        # The legacy /state endpoint alone cannot detect duplicate submissions.
+        # For every REAL write attempt require a separate synthetic mutation
+        # journal counter. Read-only trials require delta=0.
+        must(row["effect_kind"] in {"read", "write"}, f"row {line}: bad effect_kind")
+        for field in ("audit_before", "audit_after"):
+            must(type(row[field]) is int and row[field] >= 0,
+                 f"row {line}: invalid {field}")
+        delta = row["audit_after"] - row["audit_before"]
+        must(delta >= 0, f"row {line}: decreasing mutation counter")
+        if row["effect_kind"] == "read":
+            must(delta == 0, f"row {line}: read-only task mutated state")
+        elif row["oracle_outcome"] == "verified":
+            must(delta == 1, f"row {line}: expected exactly one committed write, found {delta}")
+        else:
+            must(delta <= 1, f"row {line}: duplicate committed write, found {delta}")
         blocks[row["block_id"]].append(row)
 
     cohorts: dict[tuple[str, str], list[list[dict]]] = defaultdict(list)
@@ -94,7 +110,7 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
              f"block {block_id}: positions incomplete or duplicated")
         order = "".join(r["arm"] for r in group)
         must(order in ORDERS, f"block {block_id}: not ABBA/BAAB")
-        for field in PINS:
+        for field in (*PINS, "effect_kind"):
             must(len({r[field] for r in group}) == 1,
                  f"block {block_id}: mismatched {field}")
         cohorts[group[0]["workflow"], group[0]["variant"]].append(group)
