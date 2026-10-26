@@ -39,6 +39,10 @@ def block(block_id="b1", order="ABBA"):
             "uncertain_effect": False,
             "fallback_count": 0,
             "mint_ms": 250 if position == 2 else 0,
+            "effect_kind": "write",
+            "audit_before": 0,
+            "audit_after": 1,
+            "audit_evidence": f"synthetic-independent-audit-{position}",
         })
     return rows
 
@@ -76,6 +80,25 @@ class ReceiptValidationTests(unittest.TestCase):
         rows[1]["fallback_count"] = 1
         c = summarize(rows, minimum_blocks=1)["cohorts"]["form-submit/default"]
         self.assertIn("fallback present (retain attempted-arm accounting)", c["reasons"])
+
+    def test_write_without_audit_is_rejected(self):
+        rows = block()
+        rows[0].pop("audit_evidence")
+        with self.assertRaisesRegex(InvalidReceipts, "missing"):
+            summarize(rows)
+
+    def test_duplicate_commit_is_rejected_despite_matching_state(self):
+        rows = block()
+        rows[0]["audit_after"] = 2
+        with self.assertRaisesRegex(InvalidReceipts, "exactly one committed write"):
+            summarize(rows)
+
+    def test_read_only_case_with_commit_is_rejected(self):
+        rows = block()
+        for row in rows:
+            row["effect_kind"] = "read"
+        with self.assertRaisesRegex(InvalidReceipts, "read-only task mutated state"):
+            summarize(rows)
 
     def test_reject_nonfinite_time(self):
         rows = copy.deepcopy(block())
