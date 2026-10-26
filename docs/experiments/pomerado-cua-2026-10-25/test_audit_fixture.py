@@ -47,7 +47,8 @@ class MutationAuditTests(unittest.TestCase):
             self.assertEqual(response.status, 204)
 
     def test_empty_audit(self):
-        self.assertEqual(self.read("/audit"), {"commit_count": 0, "commits": []})
+        self.assertEqual(self.read("/audit"), {"commit_count": 0, "commits": [],
+                                                "reset_epoch": 0, "total_commit_count": 0})
         self.assertEqual(self.read("/state"), {"submitted": None})
 
     def test_one_submission_has_one_independent_commit(self):

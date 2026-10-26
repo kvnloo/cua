@@ -27,6 +27,8 @@ class AuditedState(_module.FixtureState):
         super().__init__()
         self._commits = []
         self._inflight_submissions = 0
+        self._reset_epoch = 0
+        self._total_commit_count = 0
 
     def begin_submit(self) -> None:
         with self._lock:
@@ -40,6 +42,7 @@ class AuditedState(_module.FixtureState):
         fingerprint = hashlib.sha256(value.encode("utf-8")).hexdigest()
         with self._lock:
             self._submitted = value
+            self._total_commit_count += 1
             self._commits.append({"sequence": len(self._commits) + 1,
                                   "value_sha256": fingerprint})
 
@@ -52,6 +55,7 @@ class AuditedState(_module.FixtureState):
                 return False
             self._submitted = None
             self._commits = []
+            self._reset_epoch += 1
             return True
 
     def reset(self) -> None:
@@ -60,7 +64,9 @@ class AuditedState(_module.FixtureState):
 
     def audit(self):
         with self._lock:
-            return {"commit_count": len(self._commits), "commits": list(self._commits)}
+            return {"commit_count": len(self._commits), "commits": list(self._commits),
+                    "reset_epoch": self._reset_epoch,
+                    "total_commit_count": self._total_commit_count}
 
 
 class AuditedHandler(_module.FixtureHandler):

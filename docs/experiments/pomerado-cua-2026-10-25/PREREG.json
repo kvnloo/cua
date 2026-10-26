@@ -108,7 +108,11 @@
       "effect_kind": "read | write, must match across all trials in a block",
       "audit_before": "nonnegative independent reset journal counter",
       "audit_after": "nonnegative counter after action/fallback/uncertain outcome",
-      "audit_evidence": "nonempty redacted independent /audit receipt; mandatory even for read trials"
+      "audit_evidence": "nonempty redacted independent /audit receipt; mandatory even for read trials",
+      "reset_epoch_before": "nonnegative /audit reset_epoch immediately after independent pretrial reset",
+      "reset_epoch_after": "same /audit reset_epoch after the attempted trial; any change invalid",
+      "total_commits_before": "nonnegative monotonic fixture-process write count after reset",
+      "total_commits_after": "monotonic fixture-process count after trial; delta must match /audit commit delta"
     }
   },
   "fail_closed": [
@@ -133,6 +137,11 @@
     {
       "reason": "Discovered original /state cannot distinguish duplicate writes. Added mandatory independent /audit counts BEFORE any real CUA-vs-Pomerado A/B trial. No original cohorts/order/stopping criteria weakened.",
       "status": "AMENDED_BEFORE_AB; original fixture-only HTTP tests executed; no Pomerado mint or CUA A/B trials",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Per-reset /audit journal can erase earlier writes if a second successful /reset occurs during a trial; require unchanged reset_epoch and matching lifetime mutation delta before any A/B.",
+      "status": "AMENDED_BEFORE_AB; local synthetic HTTP and UNIT only; no Driver/Pomerado A/B",
       "experiment_claims": "NOT_RUN"
     }
   ]

@@ -210,6 +210,34 @@ Operators must quiesce both executors, reconcile uncertainty, then independently
 verify `/state`, `/audit` and route receipts before starting a new ABBA/BAAB
 trial. No actual A/B experiment is unblocked by these tests alone.
 
+
+## Monotonic write oracle amendment (2026-10-26; fixture HTTP + UNIT only)
+
+An additional reset **between two completed submissions** previously erased
+the first write from the per-reset `/audit` journal. A trial with two actual
+effects then appeared to have only one commit. The downstream-only fixture
+now exposes `reset_epoch` (increments on each accepted reset) and
+`total_commit_count` (monotonic for the fixture process) alongside
+`commit_count` and the redacted per-reset journal.
+
+Receipts must capture both monotonic counters **before and after each
+attempt**. The analyzer refuses a changed epoch, decreasing or noninteger
+counts, or a lifetime write delta different from the per-reset write delta.
+These gates apply to all outcome classes and must never be inferred from the
+tool response or self-reported route. Resets rejected with 409 do not advance
+the epoch. External host/process restart, connections not yet handled, and
+fabricated receipts remain distinct risks; quiescence, source/binary pins,
+independent route traces, and exact pre-execution manifest SHA256 are still
+required. Previously generated offline plans must be regenerated after this
+preregistration amendment and their digest independently retained.
+
+In a local loopback reproduction against the former exact audit fixture
+(blob `218dcccac0f2f410038a24b7eae2f82b78074468`), two identical
+submits separated by a reset yielded `/audit.commit_count == 1`.
+The amended fixture exposed `total_commit_count == 2` and a changed epoch.
+New tests and analyzer controls are **fixture HTTP / UNIT only**, not
+proof of Driver, Pomerado, Avrea, Boat, or real A/B execution.
+
 ## Upstream promotion gate
 
 After independent evidence and maintainer selection, a caller-side origin/task-scoped plugin or example could expose Pomerado. It is never a built-in Driver dependency or state authority. Pomerado write permission must be independently granted; CUA authorization does not authorize its external calls. Fail closed on unknown effects, site changes or expired scope.

@@ -34,6 +34,7 @@ class ReceiptAdversarialTests(unittest.TestCase):
         for row in rows[4:]:
             row["effect_kind"] = "read"
             row["audit_after"] = 0
+            row["total_commits_after"] = 0
         with self.assertRaisesRegex(InvalidReceipts, "mixed effect_kind"):
             summarize(rows)
 

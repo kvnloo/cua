@@ -43,6 +43,10 @@ def block(block_id="b1", order="ABBA"):
             "audit_before": 0,
             "audit_after": 1,
             "audit_evidence": f"synthetic-independent-audit-{position}",
+            "reset_epoch_before": 1,
+            "reset_epoch_after": 1,
+            "total_commits_before": 0,
+            "total_commits_after": 1,
         })
     return rows
 
@@ -90,6 +94,7 @@ class ReceiptValidationTests(unittest.TestCase):
     def test_duplicate_commit_is_rejected_despite_matching_state(self):
         rows = block()
         rows[0]["audit_after"] = 2
+        rows[0]["total_commits_after"] = 2
         with self.assertRaisesRegex(InvalidReceipts, "exactly one committed write"):
             summarize(rows)
 

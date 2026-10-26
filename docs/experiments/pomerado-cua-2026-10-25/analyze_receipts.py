@@ -29,6 +29,8 @@ REQUIRED = {
     "wrong_target", "unauthorized_effect", "duplicate_effect",
     "uncertain_effect", "fallback_count", "mint_ms",
     "effect_kind", "audit_before", "audit_after", "audit_evidence",
+    "reset_epoch_before", "reset_epoch_after",
+    "total_commits_before", "total_commits_after",
 }
 
 
@@ -106,6 +108,18 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
              f"row {line}: nonzero audit_before after claimed independent reset")
         delta = row["audit_after"] - row["audit_before"]
         must(delta >= 0, f"row {line}: decreasing mutation counter")
+        # A reset between two writes can erase the per-reset audit journal,
+        # turning two real effects into an apparent delta of one. Require an
+        # unchanged independently observed reset epoch and a matching lifetime
+        # mutation delta for every trial, including read-only and failures.
+        for field in ("reset_epoch_before", "reset_epoch_after",
+                      "total_commits_before", "total_commits_after"):
+            must(type(row[field]) is int and row[field] >= 0,
+                 f"row {line}: invalid {field}")
+        must(row["reset_epoch_after"] == row["reset_epoch_before"],
+             f"row {line}: reset epoch changed during a trial")
+        must(row["total_commits_after"] - row["total_commits_before"] == delta,
+             f"row {line}: lifetime mutation count mismatch")
         if row["effect_kind"] == "read":
             must(delta == 0, f"row {line}: read-only task mutated state")
         elif row["oracle_outcome"] == "verified":
