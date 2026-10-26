@@ -37,5 +37,50 @@ class ResetEpochReceiptTests(unittest.TestCase):
             summarize(rows)
 
 
+    def test_ordered_write_chain_remains_unit_not_benchmark(self):
+        rows = block()
+        self.assertEqual([r["reset_epoch_before"] for r in rows], [1, 2, 3, 4])
+        self.assertEqual([r["total_commits_before"] for r in rows], [0, 1, 2, 3])
+        report = summarize(rows, minimum_blocks=1)["cohorts"]["form-submit/default"]
+        self.assertEqual(report["status"], "NOT_READY")
+
+    def test_read_only_chain_with_zero_writes_remains_unit(self):
+        rows = block()
+        for row in rows:
+            row["effect_kind"] = "read"
+            row["audit_after"] = 0
+            row["total_commits_before"] = 0
+            row["total_commits_after"] = 0
+        report = summarize(rows, minimum_blocks=1)["cohorts"]["form-submit/default"]
+        self.assertEqual(report["status"], "NOT_READY")
+
+    def test_missing_reset_between_trials_refused(self):
+        rows = block()
+        rows[1]["reset_epoch_before"] -= 1
+        rows[1]["reset_epoch_after"] -= 1
+        with self.assertRaisesRegex(InvalidReceipts, "missing/extra intertrial reset"):
+            summarize(rows)
+
+    def test_extra_reset_between_trials_refused(self):
+        rows = block()
+        rows[1]["reset_epoch_before"] += 1
+        rows[1]["reset_epoch_after"] += 1
+        with self.assertRaisesRegex(InvalidReceipts, "missing/extra intertrial reset"):
+            summarize(rows)
+
+    def test_hidden_write_between_trials_refused(self):
+        rows = block()
+        rows[1]["total_commits_before"] += 1
+        rows[1]["total_commits_after"] += 1
+        with self.assertRaisesRegex(InvalidReceipts, "lifetime writes missing"):
+            summarize(rows)
+
+    def test_rolled_back_lifetime_counter_between_trials_refused(self):
+        rows = block()
+        rows[1]["total_commits_before"] = 0
+        rows[1]["total_commits_after"] = 1
+        with self.assertRaisesRegex(InvalidReceipts, "lifetime writes missing"):
+            summarize(rows)
+
 if __name__ == "__main__":
     unittest.main()

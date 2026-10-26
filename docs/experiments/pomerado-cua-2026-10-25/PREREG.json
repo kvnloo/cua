@@ -114,7 +114,8 @@
       "total_commits_before": "nonnegative monotonic fixture-process write count after reset",
       "total_commits_after": "monotonic fixture-process count after trial; delta must match /audit commit delta",
       "fixture_instance_before": "32 lowercase hex bytes from independent /audit instance_id immediately after pretrial reset; no customer credential",
-      "fixture_instance_after": "same /audit fixture instance_id after attempted task; any change invalidates trial and cohort"
+      "fixture_instance_after": "same /audit fixture instance_id after attempted task; any change invalidates trial and cohort",
+      "intertrial_chain": "within each ABBA/BAAB block in position order, next reset_epoch_before = previous reset_epoch_after + 1 and next total_commits_before = previous total_commits_after, with one fixed instance ID"
     }
   },
   "fail_closed": [
@@ -149,6 +150,11 @@
     {
       "reason": "Monotonic fixture reset/write counters both restart at zero on fixture process replacement; a same-port restart can hide writes and mimic clean oracle counters. Add per-process incarnation ID to independent /audit probes, and require a fixed identity within attempts/ABBA/BAAB cohorts.",
       "status": "AMENDED_BEFORE_AB; red-green local synthetic HTTP and UNIT controls only; no CUA or Pomerado A/B executed",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Within ordered ABBA/BAAB block attempts, each independent pretrial reset must increase reset_epoch by exactly one from the preceding posttrial oracle probe, and the lifetime write counter must carry forward unchanged between consecutive probes. Per-trial valid receipts alone could conceal missed/doubled resets or out-of-trial commits. Added before any real A/B trial.",
+      "status": "AMENDED_BEFORE_AB; local UNIT-only consistency controls, real CUA/Pomerado A/B NOT_RUN",
       "experiment_claims": "NOT_RUN"
     }
   ]

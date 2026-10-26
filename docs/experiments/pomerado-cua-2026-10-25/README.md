@@ -269,3 +269,7 @@ after the preregistration change.
 ## Upstream promotion gate
 
 After independent evidence and maintainer selection, a caller-side origin/task-scoped plugin or example could expose Pomerado. It is never a built-in Driver dependency or state authority. Pomerado write permission must be independently granted; CUA authorization does not authorize its external calls. Fail closed on unknown effects, site changes or expired scope.
+
+### Consecutive trial handoff (2026-10-26, UNIT-only)
+
+For positions 1–4 in each ABBA/BAAB block, individually verify exactly one independent reset between attempts: the next pretrial `/audit.reset_epoch` must be the prior posttrial epoch + 1, on the same fixture `instance_id`. The next pretrial `total_commit_count` must equal the prior posttrial count. A missed/double reset or intertrial write invalidates the block even if each individual pre/post pair looks clean. Preserve receipts for all refusals, timeouts, and fallbacks. This gate checks **internal consistency, not authentication** of route execution or independent oracle evidence. Cross-block scheduling still requires an externally retained frozen manifest and independently checked observations; no actual A/B comparison has run.

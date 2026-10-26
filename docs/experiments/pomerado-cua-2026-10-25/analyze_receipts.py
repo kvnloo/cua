@@ -150,6 +150,14 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         for field in (*PINS, "effect_kind", "fixture_instance_before"):
             must(len({r[field] for r in group}) == 1,
                  f"block {block_id}: mismatched {field}")
+        # Planned positions are execution order: independently reset exactly
+        # once between each pair, and keep the same fixture's lifetime count.
+        # This is receipt consistency, not route/oracle authentication.
+        for previous, current in zip(group, group[1:]):
+            must(current["reset_epoch_before"] == previous["reset_epoch_after"] + 1,
+                 f"block {block_id}: missing/extra intertrial reset")
+            must(current["total_commits_before"] == previous["total_commits_after"],
+                 f"block {block_id}: lifetime writes missing between trials")
         cohorts[group[0]["workflow"], group[0]["variant"]].append(group)
     # A valid trial order is not enough: changing either implementation or
     # read/write semantics between blocks invalidates the paired comparison.
