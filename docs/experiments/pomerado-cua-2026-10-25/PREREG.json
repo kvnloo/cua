@@ -25,7 +25,10 @@
     "state": "GET /state",
     "reset": "POST /reset",
     "baseline_runner": "libs/cua-driver/examples/jev-use/python/run.py",
-    "write_after_read_gate": true
+    "write_after_read_gate": true,
+    "original_fixture_blob": "055500f713ba2c33d8544096f4084ebb108757ce",
+    "audit_wrapper": "docs/experiments/pomerado-cua-2026-10-25/audit_fixture.py",
+    "write_oracle": "GET /audit commit_count and hashed mutation journal"
   },
   "arms": {
     "A": "current CUA caller, including the equivalent run_steps/run_script route when applicable",
@@ -101,7 +104,11 @@
       "duplicate_effect": "boolean",
       "uncertain_effect": "boolean",
       "fallback_count": "nonnegative integer",
-      "mint_ms": "finite nonnegative preparation time"
+      "mint_ms": "finite nonnegative preparation time",
+      "effect_kind": "read | write, must match across all trials in a block",
+      "audit_before": "nonnegative independent reset journal counter",
+      "audit_after": "nonnegative counter after action/fallback/uncertain outcome",
+      "audit_evidence": "nonempty redacted independent /audit receipt; mandatory even for read trials"
     }
   },
   "fail_closed": [
@@ -121,5 +128,12 @@
     "real_minimum_blocks_per_cohort": 30,
     "verified_outcome_every_attempt": true,
     "claim": "Only report paired deltas after balanced real coverage and safety gates, including all attempted runs and build cost"
-  }
+  },
+  "prereg_amendments": [
+    {
+      "reason": "Discovered original /state cannot distinguish duplicate writes. Added mandatory independent /audit counts BEFORE any real CUA-vs-Pomerado A/B trial. No original cohorts/order/stopping criteria weakened.",
+      "status": "AMENDED_BEFORE_AB; original fixture-only HTTP tests executed; no Pomerado mint or CUA A/B trials",
+      "experiment_claims": "NOT_RUN"
+    }
+  ]
 }
