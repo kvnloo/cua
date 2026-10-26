@@ -133,7 +133,7 @@ files; it is **not** a full branch checkout and cannot run this source build.
 
 ~~~sh
 # Supply the SHA copied from the *current PR head*, not a locally assumed ref.
-PR_HEAD=<reviewed-40-character-PR-162-head-SHA>
+PR_HEAD='replace-with-current-reviewed-40-character-PR-head-SHA'
 bash docs/experiments/pomerado-cua-2026-10-25/boat_setup.sh \
   --expected-head "$PR_HEAD"
 
