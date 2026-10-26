@@ -11,6 +11,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import sys
+import time
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -83,6 +84,40 @@ class MutationAuditTests(unittest.TestCase):
         receipt = json.dumps(self.read("/audit"))
         self.assertNotIn("synthetic-private-value", receipt)
         self.assertIn("value_sha256", receipt)
+
+    def _delayed_server(self, *, ack_delay_s=0.0, dispatch_delay_s=0.0):
+        server = AuditedFixtureServer(("127.0.0.1", 0),
+                                      ack_delay_s=ack_delay_s,
+                                      dispatch_delay_s=dispatch_delay_s)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join, 5)
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        return f"http://127.0.0.1:{server.server_port}"
+
+    def test_commit_then_lost_ack_is_reconciled_without_retry(self):
+        base = self._delayed_server(ack_delay_s=0.2)
+        request = Request(base + "/submit", data=b"value=synthetic", method="POST")
+        with self.assertRaises(TimeoutError):
+            urlopen(request, timeout=0.025)
+        with urlopen(base + "/audit", timeout=3) as response:
+            self.assertEqual(json.load(response)["commit_count"], 1)
+        time.sleep(0.25)
+        with urlopen(base + "/audit", timeout=3) as response:
+            self.assertEqual(json.load(response)["commit_count"], 1)
+
+    def test_dispatch_timeout_may_commit_later(self):
+        base = self._delayed_server(dispatch_delay_s=0.2)
+        request = Request(base + "/submit", data=b"value=synthetic", method="POST")
+        with self.assertRaises(TimeoutError):
+            urlopen(request, timeout=0.025)
+        with urlopen(base + "/audit", timeout=3) as response:
+            self.assertEqual(json.load(response)["commit_count"], 0)
+        # Absence at the timeout is NOT proof that a delayed write cannot land.
+        time.sleep(0.25)
+        with urlopen(base + "/audit", timeout=3) as response:
+            self.assertEqual(json.load(response)["commit_count"], 1)
 
     def test_parallel_commits_get_unique_total_order(self):
         with ThreadPoolExecutor(max_workers=8) as pool:
