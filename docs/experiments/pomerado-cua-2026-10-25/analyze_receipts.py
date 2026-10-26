@@ -7,6 +7,7 @@ import argparse
 from collections import Counter, defaultdict
 import json
 import math
+import re
 from pathlib import Path
 import statistics
 import sys
@@ -17,6 +18,8 @@ ROUTES = {"cua-driver", "pomerado-mcp", "fallback-cua", "blocked"}
 OUTCOMES = {"verified", "refuted", "unknown", "abstained"}
 PINS = ("workflow", "variant", "input_fingerprint", "fixture_sha", "caller_sha",
         "driver_sha", "pomerado_sha")
+VERSION_PINS = ("fixture_sha", "caller_sha", "driver_sha", "pomerado_sha")
+EXACT_DIGEST = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})\Z")
 REQUIRED = {
     "schema", "evidence_class", "run_id", "block_id", "position", "arm",
     "workflow", "variant", "input_fingerprint", "fixture_sha", "caller_sha",
@@ -69,6 +72,13 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         for field in ("run_id", "block_id", *PINS, "browser_version",
                       "route_evidence", "oracle_evidence", "audit_evidence"):
             must(nonempty(row[field]), f"row {line}: missing {field}")
+        # A free-text pin cannot identify an exact real executable/source.
+        # Shape checking is necessary, not sufficient: independent retrieval
+        # and hash verification of the artifact are still required.
+        if row["evidence_class"] == "REAL":
+            for field in VERSION_PINS:
+                must(EXACT_DIGEST.fullmatch(row[field]) is not None,
+                     f"row {line}: unverifiable {field} (expected exact SHA)")
         must(row["run_id"] not in seen, f"row {line}: duplicate run_id")
         seen.add(row["run_id"])
         must(type(row["position"]) is int and 1 <= row["position"] <= 4,
@@ -92,6 +102,8 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
         for field in ("audit_before", "audit_after"):
             must(type(row[field]) is int and row[field] >= 0,
                  f"row {line}: invalid {field}")
+        must(row["audit_before"] == 0,
+             f"row {line}: nonzero audit_before after claimed independent reset")
         delta = row["audit_after"] - row["audit_before"]
         must(delta >= 0, f"row {line}: decreasing mutation counter")
         if row["effect_kind"] == "read":
@@ -114,6 +126,13 @@ def validate(rows: list[dict]) -> dict[tuple[str, str], list[list[dict]]]:
             must(len({r[field] for r in group}) == 1,
                  f"block {block_id}: mismatched {field}")
         cohorts[group[0]["workflow"], group[0]["variant"]].append(group)
+    # A valid trial order is not enough: changing either implementation or
+    # read/write semantics between blocks invalidates the paired comparison.
+    # Keep each variant a separate cohort; allow different pins across variants.
+    for (workflow, variant), groups in cohorts.items():
+        for field in (*VERSION_PINS, "effect_kind"):
+            must(len({group[0][field] for group in groups}) == 1,
+                 f"cohort {workflow}/{variant}: mixed {field} across blocks")
     return cohorts
 
 
