@@ -7,6 +7,7 @@ pure inspection function for unprivileged unit tests; it cannot launch Driver.
 from __future__ import annotations
 
 import argparse
+import json
 from dataclasses import dataclass
 import os
 from pathlib import Path
@@ -83,6 +84,25 @@ def validate_driver_version(observed: str, expected_version: str) -> None:
         )
 
 
+def validate_driver_build(
+    build: object, expected_version: str, expected_head: str, expected_sha256: str
+) -> None:
+    """Doctor must report the identity of its *executing* image, not a label."""
+    if not isinstance(build, dict):
+        raise ValueError("BRANCH_DRIVER_IDENTITY_MISMATCH: missing doctor.build")
+    expected = {
+        "version": expected_version,
+        "git_sha": expected_head,
+        "exe_sha256": expected_sha256,
+    }
+    for key, value in expected.items():
+        if build.get(key) != value:
+            raise ValueError(
+                f"BRANCH_DRIVER_IDENTITY_MISMATCH: doctor.build.{key} "
+                f"got {build.get(key)!r}, expected {value!r}"
+            )
+
+
 def browser_preflight(*, fix_ownership: bool = False) -> int:
     findings = inspect_chrome()
     if not findings:
@@ -127,7 +147,25 @@ def main() -> int:
     version = choices.add_parser("version", help="refuse any unexpected Driver version")
     version.add_argument("--observed", required=True)
     version.add_argument("--expected", required=True)
+    attest = choices.add_parser("attest", help="reject a stale executable SHA/source")
+    attest.add_argument("--doctor-file", type=Path, required=True)
+    attest.add_argument("--expected-version", required=True)
+    attest.add_argument("--expected-head", required=True)
+    attest.add_argument("--expected-sha256", required=True)
     args = parser.parse_args()
+    if args.command == "attest":
+        try:
+            with args.doctor_file.open(encoding="utf-8") as stream:
+                details = json.load(stream)
+            validate_driver_build(
+                details.get("build") if isinstance(details, dict) else None,
+                args.expected_version, args.expected_head, args.expected_sha256,
+            )
+        except (ValueError, OSError) as error:
+            print(f"BLOCKED: {error}", file=sys.stderr)
+            return 2
+        print("BRANCH_DRIVER_BINARY_IDENTITY_OK")
+        return 0
     if args.command == "browser":
         return browser_preflight(fix_ownership=args.fix_ownership)
     try:
