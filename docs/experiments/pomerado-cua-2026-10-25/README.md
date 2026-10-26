@@ -153,12 +153,17 @@ non-symlink paths, then rechecks; missing/unsafe path types still refuse.
 The script rejects wrong branch/head or modified tracked sources, records
 the preinstalled Driver version without selecting it, **builds** CUA Driver
 with `cargo build --locked --release -p cua-driver --bin cua-driver` from
-the exact checkout, and checks the resulting selected `cua-driver --version`
-against the Rust workspace version. The only allowed active Driver is the
-source-built `libs/cua-driver/rust/target/release/cua-driver`, passed to the
-Jev MCP runner as `CUA_DRIVER_BIN`; version equality **alone** is not treated
-as source identity. A build/selection/version mismatch refuses. It retains
-head, version and binary SHA-256 in a private temporary preflight receipt.
+the exact checkout, embedding the reviewed Git HEAD, and checks the
+selected `cua-driver --version` against the Rust workspace version. It also
+reads `cua-driver doctor --json` and **refuses** if the *running executable's*
+`build.version`, `build.git_sha` or `build.exe_sha256` disagrees with the
+expected version, reviewed HEAD or independently hashed file. The only
+allowed active Driver is the source-built
+`libs/cua-driver/rust/target/release/cua-driver`, passed to the Jev MCP
+runner as `CUA_DRIVER_BIN`. Version equality **alone** does not prove source
+identity. The temporary private receipt retains HEAD, version, binary SHA-256
+and the separate Doctor environment-probe exit code; unrelated Doctor probe
+errors never become proof of browser readiness.
 
 Only after those gates, the script starts `fixture_server.py --port 0`,
 verifies a loopback `/state` clean oracle, shuts that process down, then runs
