@@ -26,6 +26,15 @@ class AuditedState(_module.FixtureState):
     def __init__(self):
         super().__init__()
         self._commits = []
+        self._inflight_submissions = 0
+
+    def begin_submit(self) -> None:
+        with self._lock:
+            self._inflight_submissions += 1
+
+    def end_submit(self) -> None:
+        with self._lock:
+            self._inflight_submissions -= 1
 
     def submit(self, value: str) -> None:
         fingerprint = hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -34,10 +43,20 @@ class AuditedState(_module.FixtureState):
             self._commits.append({"sequence": len(self._commits) + 1,
                                   "value_sha256": fingerprint})
 
-    def reset(self) -> None:
+    def try_reset(self) -> bool:
+        # A concurrent delayed submit can otherwise commit into the *next*
+        # trial and be mistaken for that arm's first write. Reject resets
+        # until every observed in-flight submit has settled.
         with self._lock:
+            if self._inflight_submissions:
+                return False
             self._submitted = None
             self._commits = []
+            return True
+
+    def reset(self) -> None:
+        if not self.try_reset():
+            raise RuntimeError("cannot reset with in-flight synthetic submissions")
 
     def audit(self):
         with self._lock:
@@ -46,9 +65,23 @@ class AuditedState(_module.FixtureState):
 
 class AuditedHandler(_module.FixtureHandler):
     def do_POST(self) -> None:  # noqa: N802
-        if self.path == "/submit" and self.server.dispatch_delay_s:
-            time.sleep(self.server.dispatch_delay_s)
-        super().do_POST()
+        if self.path == "/reset":
+            if not self.server.state.try_reset():
+                self._send(HTTPStatus.CONFLICT, "text/plain",
+                           b"submit still in flight; reconcile before reset")
+                return
+            self._send(HTTPStatus.NO_CONTENT, "text/plain", b"")
+            return
+        if self.path != "/submit":
+            super().do_POST()
+            return
+        self.server.state.begin_submit()
+        try:
+            if self.server.dispatch_delay_s:
+                time.sleep(self.server.dispatch_delay_s)
+            super().do_POST()
+        finally:
+            self.server.state.end_submit()
 
     def _send(self, status, content_type: str, body: bytes) -> None:
         # Synthetic fault: state.submit has already committed, but acknowledgement
