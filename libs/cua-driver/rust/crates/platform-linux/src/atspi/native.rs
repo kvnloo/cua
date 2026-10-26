@@ -481,7 +481,8 @@ struct Visited<'a> {
     /// tooltip there ("Play"/"Pause", "Look in"), GTK its tooltip text.
     description: String,
     value: Option<String>,
-    checked: Option<bool>,
+    checked: Option<super::CheckedState>,
+    expanded: Option<bool>,
     enabled: Option<bool>,
     selected: Option<bool>,
     selectable: bool,
@@ -1597,14 +1598,11 @@ async fn collect_visited_bounded_opts<'a>(
         };
         let focused = matches!(state_r.as_ref(), Some(Ok(s)) if s.contains(State::Focused));
         let role_lower = role.to_ascii_lowercase();
-        let checked = if role_lower.contains("check") {
-            state_r
-                .as_ref()
-                .and_then(|state| state.as_ref().ok())
-                .map(|state| state.contains(State::Checked))
-        } else {
-            None
-        };
+        let ControlStates {
+            checked,
+            expanded: expanded_state,
+            selected,
+        } = control_states(state_r.as_ref().and_then(|state| state.as_ref().ok()));
         let enabled = state_r
             .as_ref()
             .and_then(|state| state.as_ref().ok())
@@ -1622,20 +1620,6 @@ async fn collect_visited_bounded_opts<'a>(
             .and_then(|state| state.as_ref().ok())
             .is_some_and(|state| state.contains(State::Expanded));
         let under_menubar = menubar_children.remove(&(oref.name.clone(), oref.path.clone()));
-        let selected = if role_lower.contains("check") {
-            checked
-        } else if role_lower.contains("radio")
-            || role_lower.contains("list item")
-            || role_lower.contains("menu item")
-            || matches!(role_lower.as_str(), "tab" | "page tab" | "tab item")
-        {
-            state_r
-                .as_ref()
-                .and_then(|state| state.as_ref().ok())
-                .map(|state| state.contains(State::Selected) || state.contains(State::Checked))
-        } else {
-            None
-        };
 
         // Collect action names, numeric value, and (crucially) Text-interface
         // content. Only touch `proxies` when an interface is actually present,
@@ -1857,6 +1841,7 @@ async fn collect_visited_bounded_opts<'a>(
             description,
             value,
             checked,
+            expanded: expanded_state,
             enabled,
             selected,
             selectable,
@@ -2168,6 +2153,7 @@ fn render(visited: &[Visited<'_>], only_frame: Option<usize>) -> (String, Vec<At
                 },
                 value: v.value.clone().filter(|s| !s.is_empty()),
                 checked: v.checked,
+                expanded: v.expanded,
                 enabled: v.enabled,
                 selected: v.selected,
                 description: (!description_parts.is_empty()).then(|| description_parts.join("; ")),
@@ -2274,6 +2260,32 @@ const MENU_PEEK_CHILDREN: usize = 3;
 /// (e.g. `1.0`), so `value="..."` fields stay byte-compatible.
 fn format_value(v: f64) -> String {
     format!("{v:?}")
+}
+
+pub(crate) struct ControlStates {
+    pub checked: Option<super::CheckedState>,
+    pub expanded: Option<bool>,
+    pub selected: Option<bool>,
+}
+
+/// Capability flags distinguish a known false state from an inapplicable one.
+/// A failed or timed-out GetState must not manufacture any negative evidence.
+pub(crate) fn control_states(state: Option<&StateSet>) -> ControlStates {
+    ControlStates {
+        checked: state.filter(|s| s.contains(State::Checkable)).map(|s| {
+            if s.contains(State::Indeterminate) {
+                super::CheckedState::Mixed
+            } else {
+                super::CheckedState::Boolean(s.contains(State::Checked))
+            }
+        }),
+        expanded: state
+            .filter(|s| s.contains(State::Expandable))
+            .map(|s| s.contains(State::Expanded)),
+        selected: state
+            .filter(|s| s.contains(State::Selectable))
+            .map(|s| s.contains(State::Selected)),
+    }
 }
 
 /// Interpret the positive AT-SPI states that establish user operability.

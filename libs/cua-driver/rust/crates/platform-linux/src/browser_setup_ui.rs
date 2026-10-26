@@ -377,7 +377,9 @@ impl SetupUiHandle {
             exact_setup_checkbox(&tree.nodes, self.descriptor, self.trusted_setup_navigation)
                 .ok()
                 .flatten()
-                .filter(|node| node.checked == Some(true))
+                .filter(|node| {
+                    node.checked.and_then(crate::atspi::CheckedState::as_bool) == Some(true)
+                })
                 .and_then(|node| node.element_index)
                 .is_some_and(|index| crate::atspi::perform_action(self.pid, index).is_ok());
         if restored {
@@ -547,7 +549,7 @@ fn set_remote_debugging(
             Err(error) => return Err(handle.abort(error)),
         };
         match exact_setup_checkbox(&tree.nodes, descriptor, handle.trusted_setup_navigation) {
-            Ok(Some(node)) => match node.checked {
+            Ok(Some(node)) => match node.checked.and_then(crate::atspi::CheckedState::as_bool) {
                 Some(state) if state == desired_enabled => {
                     if desired_enabled && handle.enable_attempted {
                         handle.enabled_remote_debugging = true;
@@ -587,10 +589,18 @@ fn set_remote_debugging(
                                 "the exact Microsoft Edge remote-debugging checkbox became stale before the trusted click"
                             )
                         })?;
-                        if checkbox.checked == Some(desired_enabled) {
+                        if checkbox
+                            .checked
+                            .and_then(crate::atspi::CheckedState::as_bool)
+                            == Some(desired_enabled)
+                        {
                             return Ok(false);
                         }
-                        if checkbox.checked != Some(!desired_enabled) {
+                        if checkbox
+                            .checked
+                            .and_then(crate::atspi::CheckedState::as_bool)
+                            != Some(!desired_enabled)
+                        {
                             anyhow::bail!(
                                 "the exact Microsoft Edge remote-debugging checkbox had an unknown state before the trusted click"
                             );
@@ -685,6 +695,7 @@ mod tests {
             name: Some(name.to_owned()),
             value: value.map(str::to_owned),
             checked: None,
+            expanded: None,
             enabled: None,
             selected: None,
             description: None,
@@ -701,7 +712,7 @@ mod tests {
     #[test]
     fn checkbox_requires_exact_url_heading_and_unique_action() {
         let mut checkbox = node("check box", descriptor().checkbox_label, None, &["toggle"]);
-        checkbox.checked = Some(false);
+        checkbox.checked = Some(crate::atspi::CheckedState::Boolean(false));
         let nodes = vec![
             node(
                 "entry",
@@ -717,7 +728,8 @@ mod tests {
             exact_setup_checkbox(&nodes, descriptor(), false)
                 .unwrap()
                 .unwrap()
-                .checked,
+                .checked
+                .and_then(crate::atspi::CheckedState::as_bool),
             Some(false)
         );
 
