@@ -81,6 +81,28 @@ python3 docs/experiments/pomerado-cua-2026-10-25/analyze_receipts.py /path/to/re
 python3 -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_*.py' -v
 ~~~
 
+Before accepting a complete cohort, validate **every planned attempt** against the
+immutable plan, separately from the per-receipt analyzer:
+
+~~~sh
+python3 docs/experiments/pomerado-cua-2026-10-25/verify_plan_coverage.py \
+  --plan /tmp/pomerado-plan.json \
+  --receipts /path/to/redacted-real-receipts.jsonl \
+  --prereg docs/experiments/pomerado-cua-2026-10-25/PREREG.json \
+  --expected-head "$(git rev-parse HEAD)"
+~~~
+
+The exact 40-character HEAD must match the **pre-execution** plan's candidate
+SHA, not whichever source HEAD is current after later edits. Coverage fails
+closed if even an entire four-attempt block is omitted, if a planned attempt
+is replayed, if the A/B order or route assignment was changed, or if the
+preregistration and manifest digests disagree. Observed fallbacks are counted
+as attribution confounds, never silently discarded. **A passing result only
+proves plan/receipt consistency**, not actual CUA or Pomerado execution,
+authority, independent oracles, or timing. Complete coverage and the
+independent /state + /audit evidence gates are all required before any real
+descriptive comparison. This tool never launches a runner, model or site.
+
 The checker rejects malformed/mismatched four-trial blocks and missing proof; it publishes NOT_READY rather than timing claims unless coverage/safety criteria are met. Publish complete sanitized receipts and exact source/build/artifact pins. Report attempted + verified counts, route evidence, p50/p95 end-to-end time *including failures*, cold mint cost and warm amortization. Never call a mock-only result a live-provider benchmark.
 
 ## Upstream promotion gate
