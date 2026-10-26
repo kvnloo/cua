@@ -1,0 +1,47 @@
+{
+  "schema": "cua.pomerado.offline-plan-evidence.v1",
+  "evidence_class": "LOCAL_UNIT_ONLY",
+  "status": "VERIFIED_LOCAL_UNIT_NOT_PRODUCT",
+  "candidate_head": "0d1831f3aafea1b1b6bbe28d0bd63275007f2edb",
+  "pinned_sources": {
+    "docs/experiments/pomerado-cua-2026-10-25/PREREG.json": "797b8b1c4ab499f0c0999b0d8176a40e746ea0a0",
+    "docs/experiments/pomerado-cua-2026-10-25/plan_blocks.py": "36136e75ee67c6a5ca5cffd376154f65ea24f34b",
+    "docs/experiments/pomerado-cua-2026-10-25/test_plan_blocks.py": "3b02f770366edf4f5b3d9624c30a7c9dfcc399f4"
+  },
+  "pin_verification": "The locally executed script and test file git-blob SHA1 values matched GitHub blobs. The complete locally tested 5316-byte PREREG.json matched GitHub blob 797b8b1c4ab499f0c0999b0d8176a40e746ea0a0.",
+  "reproducer": "python3 -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_plan_blocks.py' -v && python3 docs/experiments/pomerado-cua-2026-10-25/plan_blocks.py --head-sha 0d1831f3aafea1b1b6bbe28d0bd63275007f2edb --output /tmp/pomerado-plan.json",
+  "local_unit_test": {
+    "runner": "Python 3 standard-library unittest; isolated container; zero network/model/browser calls",
+    "tests_discovered": 7,
+    "passed": 7,
+    "failed": 0,
+    "scope": "Determinism, seed sensitivity, prereg tamper gate, 11x ABBA/BAAB balance, read-only gate, assignment ≠ observed route, no execution",
+    "github_actions_verified": false
+  },
+  "manifest": {
+    "schema": "cua.pomerado.assignment.v1",
+    "prereg_sha256": "1eab6574aab4428ad4d86cf87e676c3ebec8edab683119821a00320f82b06f5b",
+    "manifest_sha256": "bc97616025e4afc9a5685749bd46c67a267fc588c29080b955c4e72795a90d63",
+    "seed": 20261025,
+    "cohorts": 11,
+    "planned_blocks": 330,
+    "planned_attempts": 1320,
+    "ABBA_per_cohort": 15,
+    "BAAB_per_cohort": 15,
+    "actual_executions": 0,
+    "status": "NOT_RUN"
+  },
+  "external_status": {
+    "github_actions_head_workflow_runs_observed": 0,
+    "avrea_runner_execution_observed": 0,
+    "boat_vm_execution_observed": 0,
+    "pomerado_mints_observed": 0,
+    "cua_driver_comparison_runs": 0
+  },
+  "limitations": [
+    "These are verified local planning unit tests only: no real CUA or Pomerado behavior or latency was measured.",
+    "The supplied read-only proof SHA only gates offline write planning; it does not authenticate real evidence, confer execution authority, or grant a budget.",
+    "No Actions workflow/check records observed on candidate branch. Runner configuration and CI registration not independently verifiable with available access.",
+    "Any downstream candidate SHA change requires regenerating the offline manifest."
+  ]
+}
