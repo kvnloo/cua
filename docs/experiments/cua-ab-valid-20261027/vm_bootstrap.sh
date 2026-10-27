@@ -65,11 +65,13 @@ mkdir -p "$HOME/.opencli/clis/jev"
 cp docs/experiments/cua-ab-valid-20261027/adapters/jev/*.js "$HOME/.opencli/clis/jev/"
 opencli_version="$("$opencli" --version 2>/dev/null | tail -n1)"
 
+# Let boot-time image provisioning finish first (it writes under /opt for minutes after "ready").
+boot_wait="$( { timeout 150 systemctl is-system-running --wait 2>/dev/null || true; } | tail -n1)"
 # Boot-time image provisioning can re-own /opt after the first repair (seen on 4 of 10 VMs in
 # the first wave: browser_prepare refused before any attempt). Re-repair and require the two
 # directories to stay root-owned for 3 consecutive seconds before the shard starts.
 stable=0
-for (( i=0; i<90 && stable<3; i++ )); do
+for (( i=0; i<90 && stable<5; i++ )); do
   if [[ "$(stat -c %u /opt)" == "0" && "$(stat -c %u /opt/google)" == "0" ]]; then
     stable=$((stable+1))
   else
@@ -77,7 +79,7 @@ for (( i=0; i<90 && stable<3; i++ )); do
   fi
   sleep 1
 done
-(( stable >= 3 )) || { echo "BLOCKED: /opt ownership did not stay root" >&2; exit 2; }
+(( stable >= 5 )) || { echo "BLOCKED: /opt ownership did not stay root" >&2; exit 2; }
 
 chrome="/opt/google/chrome/google-chrome"
 chrome_version="$("$chrome" --version 2>/dev/null || echo unknown)"
@@ -100,6 +102,7 @@ pins = {
   "chrome_version": "$chrome_version", "node_version": "$(node --version)",
   "python_version": platform.python_version(), "nproc": "$(nproc)",
   "mem_kb": "$(awk '/MemTotal/{print $2}' /proc/meminfo)", "opt_ownership_fix": "$opt_fix",
+  "boot_state": "$boot_wait", "uptime_s": "$(cut -d' ' -f1 /proc/uptime)",
 }
 Path(sys.argv[1]).write_text(json.dumps(pins, sort_keys=True))
 print("H2HPINS " + json.dumps(pins, sort_keys=True))
