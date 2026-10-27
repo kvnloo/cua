@@ -1,0 +1,156 @@
+{
+  "schema": "cua.h2h.tasks.v1",
+  "status": "PREREGISTERED_NOT_RUN",
+  "fixture_commit": "6e74bfadd82790312f0ab46ae7ed48027f8aca56",
+  "fixture_path": "libs/cua-driver/examples/jev-use/fixture_server.py",
+  "fixture_blob_sha": "055500f713ba2c33d8544096f4084ebb108757ce",
+  "tasks": [
+    {
+      "id": "H2H-T01",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Read the document title from the initial fixture page. Return JSON with key title only. Do not modify any state.",
+      "oracle": {
+        "title": "Cua Driver Jev fixture"
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T02",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Read the main level-one heading. Return JSON with key heading only. Do not modify any state.",
+      "oracle": {
+        "heading": "Cua Driver + TypeSafe Jev fixture"
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T03",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Read the instructional paragraph above the form. Return JSON with key instruction only. Do not modify any state.",
+      "oracle": {
+        "instruction": "Enter the verification value and submit it."
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T04",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Read the form textbox's accessible name and whether it is required. Return JSON keys textbox_accessible_name and required. Do not enter text.",
+      "oracle": {
+        "textbox_accessible_name": "verification value",
+        "required": true
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T05",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Read the semantic Submit button's visible label and declared button type. Return JSON keys button_label and button_type. Do not click.",
+      "oracle": {
+        "button_label": "Submit",
+        "button_type": "submit"
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T06",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Inspect the form's declared HTTP method and relative action path. Return JSON keys form_method and form_action. Do not submit.",
+      "oracle": {
+        "form_method": "post",
+        "form_action": "/submit"
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T07",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Read the form's output status text and return the value after status= as JSON key status. Do not modify any state.",
+      "oracle": {
+        "status": "waiting"
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T08",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "Count textbox controls and semantic Submit buttons on the page. Return JSON keys textbox_count and submit_button_count. Do not click or type.",
+      "oracle": {
+        "textbox_count": 1,
+        "submit_button_count": 1
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T09",
+      "fixture_mode": "default",
+      "start_path": "/",
+      "navigation_paths": [
+        "/",
+        "/state"
+      ],
+      "instruction": "Read the heading at the root page, then navigate to /state within this fixture origin and return JSON keys heading and submitted from the JSON response. Do not alter fixture state.",
+      "oracle": {
+        "heading": "Cua Driver + TypeSafe Jev fixture",
+        "submitted": null
+      },
+      "max_steps": 6,
+      "timeout_s": 45
+    },
+    {
+      "id": "H2H-T10",
+      "fixture_mode": "visual_submit",
+      "start_path": "/",
+      "navigation_paths": [
+        "/"
+      ],
+      "instruction": "On the fixture's visual-submit variant, read the text of the presentational Submit control and count semantic Submit buttons. Return JSON keys presentational_submit_text and submit_button_count. Do not click.",
+      "oracle": {
+        "presentational_submit_text": "Submit",
+        "submit_button_count": 0
+      },
+      "max_steps": 4,
+      "timeout_s": 45
+    }
+  ]
+}
