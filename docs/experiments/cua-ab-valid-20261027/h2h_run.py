@@ -45,7 +45,7 @@ from mcp_stdio import McpStdioClient  # noqa: E402
 
 SCHEMA = "cua.h2h.attempt.v1"
 SEED = 20261027
-SHARDS = 5
+SHARDS = 10
 BLOCKS_PER_CELL_PER_SHARD = 4  # 2 ABBA + 2 BAAB per (mode, effect) per shard
 TOOL = {"A": "cua", "B": "opencli"}
 FIELD_NAME, SUBMIT_NAME = "verification value", "Submit"
@@ -262,6 +262,15 @@ class Shard:
                 exe[name] = os.readlink(f"/proc/{pid}/exe")
             except OSError as error:
                 exe[name] = f"unreadable: {type(error).__name__}"
+        # Process-start baselines (not attempts): explains the CLI-per-call share of opencli warm time.
+        for name, argv in (("opencli_version_ms", [*self.opencli, "--version"]),
+                           ("cua_driver_version_ms", [self.a.driver, "--version"])):
+            samples = []
+            for _ in range(5):
+                t0 = time.perf_counter()
+                subprocess.run(argv, capture_output=True, check=False, timeout=30)
+                samples.append(round((time.perf_counter() - t0) * 1000.0, 1))
+            exe[name] = samples
         self.emit("H2HMETA", exe)
 
     def invoke(self, tool: str, mode: str, effect: str, value: str | None):
