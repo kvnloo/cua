@@ -1,0 +1,53 @@
+{
+  "schema": "cua.pomerado.fixture_incarnation_adversarial.v1",
+  "date_utc": "2026-10-26",
+  "classification": "FIXTURE_HTTP_ONLY_AND_UNIT_ONLY__NOT_CUA_OR_POMERADO",
+  "source_branch": "exp/pomerado-site-procedure-20261025",
+  "baseline_head": "ce11f090548d1e6e20926f575a116c2c2b4e437d",
+  "original_blobs": {
+    "original_fixture": "055500f713ba2c33d8544096f4084ebb108757ce",
+    "audited_fixture": "25567fb133a0d2d030c9fd15a5f99542721a3626",
+    "receipt_analyzer": "5cfe9b50951553076e8f7598b2e243f908efafdb",
+    "audit_fixture_tests": "eb66412d9bdf460983e470cbc76de4fb2b52d697",
+    "receipt_unit_tests": "93afff09a26e7439c0eda5514a37c930cd01bd3d"
+  },
+  "expected_patched_blobs": {
+    "audited_fixture": "ecd609bb151b98d59c78747685d27415a26e39d9",
+    "receipt_analyzer": "74cccb8b19441eb54632a12c8df975f4b8811b99",
+    "audit_fixture_tests": "a57b252ada99bc19ab742cecd80c52a7518ec2b9",
+    "receipt_unit_tests": "4532bcc9847f8409b031c2e01337be2bf823eb1a",
+    "new_http_tests": "914111ef88c2cf43d91829ae942cfb4445f97f5c",
+    "new_unit_tests": "d9ba16d29c8979a6ffcf6c36b897f3b6fdd55790"
+  },
+  "red_reproduction": {
+    "method": "Local exact GitHub blob copy (git hash-object verified), real loopback HTTP plus synthetic UNIT receipts.",
+    "vulnerable_condition": "Two independent /submit commits, fixture server restart and /reset on same TCP port, counters match pretrial despite lost writes; no instance identity.",
+    "outcome": "8 new test methods failed overall against old source (2 HTTP KeyErrors; negative receipt controls fail-open, including four invalid-ID subtests); one positive UNIT control passed."
+  },
+  "green_reproduction": {
+    "environment": "Debian 13, Python 3.13.5, standard-library HTTP server and unittest; NO browser/Driver/Pomerado/Boat/Avrea",
+    "command": "python -m unittest -q test_audit_incarnation test_receipt_incarnation test_analyze_receipts test_receipt_reset_epoch test_audit_fixture test_audit_epoch",
+    "repetitions": 2,
+    "tests_per_repetition": 35,
+    "passed_per_repetition": 35,
+    "fixture_http_per_repetition": 14,
+    "unit_per_repetition": 21,
+    "failed": 0,
+    "errors": 0,
+    "result_class": "FIXTURE_HTTP_AND_UNIT_ONLY"
+  },
+  "expected_full_packet_after_commit": 113,
+  "full_packet_ci": "NOT_VERIFIED",
+  "actual_cua_driver_attempts": 0,
+  "actual_pomerado_attempts": 0,
+  "actual_abba_baab_blocks": 0,
+  "model_mints": 0,
+  "paid_boat_or_avrea_executions": 0,
+  "caveats": [
+    "The fixture nonce detects restarts only when trustworthy independent /audit probes are preserved. It is not an authenticated route trace.",
+    "Writes lost on process death cannot be recovered by a new in-memory fixture; invalidate the trial and reconcile externally.",
+    "No API/Boat/Avrea spending or provisioning, no upstream/default-branch change.",
+    "Changed preregistration invalidates older pre-execution manifest pins; regenerate and independently retain digest before real execution."
+  ],
+  "original_author_credit": "Pomerado AI, Inc. (MIT) and CUA original contributors retained."
+}

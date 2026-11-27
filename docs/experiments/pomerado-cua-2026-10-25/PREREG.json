@@ -1,0 +1,173 @@
+{
+  "schema": "cua.pomerado.prereg.v1",
+  "status": "PREREGISTERED_NOT_RUN",
+  "issue": "https://github.com/kvnloo/cua/issues/161",
+  "dependencies": [
+    "https://github.com/kvnloo/cua/issues/93",
+    "https://github.com/kvnloo/cua/issues/107",
+    "https://github.com/kvnloo/cua/issues/10",
+    "https://github.com/kvnloo/cua/issues/74",
+    "https://github.com/trycua/cua/issues/3963"
+  ],
+  "ownership": {
+    "driver_changed": false,
+    "caller_side_only": true,
+    "default_off": true,
+    "external_runtime_separate_authority": true
+  },
+  "budget": {
+    "mint_model_api_calls": "BLOCKED_UNTIL_OWNER_APPROVES_BUDGET",
+    "live_provider": "BLOCKED_UNTIL_OWNER_APPROVES_BUDGET",
+    "real_site_accounts": false
+  },
+  "fixture": {
+    "server": "libs/cua-driver/examples/jev-use/fixture_server.py",
+    "state": "GET /state",
+    "reset": "POST /reset",
+    "baseline_runner": "libs/cua-driver/examples/jev-use/python/run.py",
+    "write_after_read_gate": true,
+    "original_fixture_blob": "055500f713ba2c33d8544096f4084ebb108757ce",
+    "audit_wrapper": "docs/experiments/pomerado-cua-2026-10-25/audit_fixture.py",
+    "write_oracle": "GET /audit commit_count and hashed mutation journal"
+  },
+  "arms": {
+    "A": "current CUA caller, including the equivalent run_steps/run_script route when applicable",
+    "B": "Pomerado local separately authorized site/task-specific deterministic MCP integration"
+  },
+  "preflight": [
+    "Pin Git commit/package/binary/artifact SHAs and browser version",
+    "Node 24.21+ and locally permitted Chromium present",
+    "Verify loopback minter support using a read-only task",
+    "Confirm external MCP tool's site/task/read authority",
+    "Validate independent fixture reset and oracle",
+    "No real accounts, persistent secrets or production effects"
+  ],
+  "design": {
+    "evidence_minimum": "REAL",
+    "blocks_per_workflow_variant": 30,
+    "blocks_per_order": 15,
+    "orders": [
+      "ABBA",
+      "BAAB"
+    ],
+    "attempts_per_block": 4,
+    "seed": 20261025,
+    "amortization_uses": [
+      1,
+      5,
+      20,
+      100
+    ],
+    "first_fixture": "browser-fixture-form",
+    "read_only_first": true,
+    "negative_variants": [
+      "label_churn",
+      "duplicate_submit",
+      "ancestor_change",
+      "stale_ref",
+      "wrong_input",
+      "origin_redirect",
+      "mcp_unavailable",
+      "login_required",
+      "uncertain_write",
+      "concurrent_reset"
+    ]
+  },
+  "receipt_schema": {
+    "id": "cua.pomerado.trial.v1",
+    "fields": {
+      "schema": "literal",
+      "evidence_class": "REAL | UNIT (only REAL qualifies)",
+      "run_id": "unique nonempty string",
+      "block_id": "nonempty, 4 attempts per block",
+      "position": "integer 1..4; unique",
+      "arm": "A | B in ABBA or BAAB order",
+      "workflow": "nonempty",
+      "variant": "default or negative cohort",
+      "input_fingerprint": "redacted digest identical within block",
+      "fixture_sha": "pinned source SHA",
+      "caller_sha": "pinned source SHA",
+      "driver_sha": "pinned binary/source SHA",
+      "pomerado_sha": "pinned package+artifact SHA",
+      "browser_version": "pinned exact version",
+      "route_observed": "cua-driver | pomerado-mcp | fallback-cua | blocked",
+      "route_evidence": "redacted trace reference",
+      "reset_verified": "boolean independent pretrial",
+      "oracle_outcome": "verified | refuted | unknown | abstained",
+      "oracle_evidence": "nonempty external oracle receipt reference",
+      "elapsed_ms": "finite positive whole-task wall time",
+      "model_calls": "nonnegative integer",
+      "input_tokens": "nonnegative integer",
+      "output_tokens": "nonnegative integer",
+      "wrong_target": "boolean",
+      "unauthorized_effect": "boolean",
+      "duplicate_effect": "boolean",
+      "uncertain_effect": "boolean",
+      "fallback_count": "nonnegative integer",
+      "mint_ms": "finite nonnegative preparation time",
+      "effect_kind": "read | write, must match across all trials in a block",
+      "audit_before": "nonnegative independent reset journal counter",
+      "audit_after": "nonnegative counter after action/fallback/uncertain outcome",
+      "audit_evidence": "nonempty redacted independent /audit receipt; mandatory even for read trials",
+      "reset_epoch_before": "nonnegative /audit reset_epoch immediately after independent pretrial reset",
+      "reset_epoch_after": "same /audit reset_epoch after the attempted trial; any change invalid",
+      "total_commits_before": "nonnegative monotonic fixture-process write count after reset",
+      "total_commits_after": "monotonic fixture-process count after trial; delta must match /audit commit delta",
+      "fixture_instance_before": "32 lowercase hex bytes from independent /audit instance_id immediately after pretrial reset; no customer credential",
+      "fixture_instance_after": "same /audit fixture instance_id after attempted task; any change invalidates trial and cohort",
+      "intertrial_chain": "within each ABBA/BAAB block in position order, next reset_epoch_before = previous reset_epoch_after + 1 and next total_commits_before = previous total_commits_after, with one fixed instance ID",
+      "cross_block_chain": "For one isolated fixture instance, all submitted trials, including interleaved cohorts, form a continuous counter sequence ordered by reset_epoch_before: each next epoch = previous after + 1; each next total_commits_before = previous total_commits_after. This does not authenticate route/oracle claims.",
+      "manifest_audited_order": "For each audited fixture incarnation, independently collected reset_epoch_before counters must be consecutive and must follow the pre-registered shuffled manifest's block/position order, regardless of JSONL line order. This is self-consistency, not timestamp/route/oracle authentication; ordering across different fixture instances remains unverified without an external timeline."
+    }
+  },
+  "fail_closed": [
+    "No stale CUA reference replay",
+    "No inherited Driver authority",
+    "No automatic writes, account access or cloud",
+    "No blind repeat after unknown-effect mutation",
+    "No route-mismatch performance credit",
+    "No origin escalation"
+  ],
+  "acceptance": {
+    "hard_zero": [
+      "wrong_target",
+      "unauthorized_effect",
+      "duplicate_effect"
+    ],
+    "real_minimum_blocks_per_cohort": 30,
+    "verified_outcome_every_attempt": true,
+    "claim": "Only report paired deltas after balanced real coverage and safety gates, including all attempted runs and build cost"
+  },
+  "prereg_amendments": [
+    {
+      "reason": "Discovered original /state cannot distinguish duplicate writes. Added mandatory independent /audit counts BEFORE any real CUA-vs-Pomerado A/B trial. No original cohorts/order/stopping criteria weakened.",
+      "status": "AMENDED_BEFORE_AB; original fixture-only HTTP tests executed; no Pomerado mint or CUA A/B trials",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Per-reset /audit journal can erase earlier writes if a second successful /reset occurs during a trial; require unchanged reset_epoch and matching lifetime mutation delta before any A/B.",
+      "status": "AMENDED_BEFORE_AB; local synthetic HTTP and UNIT only; no Driver/Pomerado A/B",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Monotonic fixture reset/write counters both restart at zero on fixture process replacement; a same-port restart can hide writes and mimic clean oracle counters. Add per-process incarnation ID to independent /audit probes, and require a fixed identity within attempts/ABBA/BAAB cohorts.",
+      "status": "AMENDED_BEFORE_AB; red-green local synthetic HTTP and UNIT controls only; no CUA or Pomerado A/B executed",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Within ordered ABBA/BAAB block attempts, each independent pretrial reset must increase reset_epoch by exactly one from the preceding posttrial oracle probe, and the lifetime write counter must carry forward unchanged between consecutive probes. Per-trial valid receipts alone could conceal missed/doubled resets or out-of-trial commits. Added before any real A/B trial.",
+      "status": "AMENDED_BEFORE_AB; local UNIT-only consistency controls, real CUA/Pomerado A/B NOT_RUN",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Per-block audit chains could still hide resets or writes between complete ABBA/BAAB blocks. Require continuous fixture-instance reset/write counters across all collected trials, including interleaved cohorts.",
+      "status": "AMENDED_BEFORE_AB; isolated UNIT-only control, real CUA/Pomerado A/B NOT_RUN",
+      "experiment_claims": "NOT_RUN"
+    },
+    {
+      "reason": "Assignment-completeness alone allowed executing entire ABBA/BAAB blocks in a different order than the frozen randomized manifest. Check audited reset chronology against the manifest per fixture process; flag cross-instance global order as unverified.",
+      "status": "AMENDED_BEFORE_AB; isolated UNIT predicate controls only; real Driver/Pomerado A/B NOT_RUN",
+      "experiment_claims": "NOT_RUN"
+    }
+  ]
+}

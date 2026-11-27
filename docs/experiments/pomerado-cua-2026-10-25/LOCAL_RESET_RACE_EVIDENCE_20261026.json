@@ -1,0 +1,57 @@
+{
+  "schema": "cua.pomerado.reset_race_local.v1",
+  "date_utc": "2026-10-26",
+  "classification": "FIXTURE_HTTP_ONLY_NOT_CUA_VS_POMERADO",
+  "issue": "https://github.com/kvnloo/cua/issues/161",
+  "draft_pr": "https://github.com/kvnloo/cua/pull/162",
+  "observed_pre_patch_head": "ed35b16f8c182aea716f3cb5eb2794d43488a492",
+  "original_exact_git_blobs": {
+    "fixture_server_py": "055500f713ba2c33d8544096f4084ebb108757ce",
+    "audit_fixture_py": "fd4f0a9d960a2cb257ab9a4fbbd4fb09b0b40eef",
+    "test_audit_fixture_py": "00a968e553ff2a1d9366f8d8617111c42b220078"
+  },
+  "patched_exact_git_blobs": {
+    "audit_fixture_py": "218dcccac0f2f410038a24b7eae2f82b78074468",
+    "test_audit_reset_gate_py": "2d4f82d084d02d0df9abb9de2b438833dbda311a",
+    "test_pomerado_packet_py": "760d2c22cecf059c331d924411f6c89de3495ecc"
+  },
+  "environment": {
+    "os": "Debian 13",
+    "python": "3.13.5",
+    "runner": "local Python stdlib unittest + real loopback HTTP",
+    "boat": "NOT_RUN",
+    "avrea": "NOT_RUN"
+  },
+  "red_pre_patch": {
+    "tests": 2,
+    "expected_reset_http": 409,
+    "observed_reset_http": 204,
+    "failed": 2,
+    "reason": "POST /reset was accepted during a pending synthetic POST /submit, allowing delayed prior work to cross a trial reset boundary"
+  },
+  "green_post_patch": {
+    "runs": 3,
+    "tests_per_run": 11,
+    "passed_per_run": 11,
+    "failed": 0,
+    "command": "python -m unittest discover -s docs/experiments/pomerado-cua-2026-10-25 -p 'test_audit*.py' -v",
+    "existing_fixture_http_controls": 9,
+    "new_reset_conflict_controls": 2
+  },
+  "behavior": "Reject HTTP reset with 409 while a request is already registered as in-flight, before dispatch or while ACK is delayed; after completion reconcile and reset explicitly.",
+  "scope": {
+    "actual_cua_driver_trials": 0,
+    "actual_pomerado_trials": 0,
+    "actual_abba_baab_blocks": 0,
+    "pomerado_mints": 0,
+    "paid_api_calls": 0,
+    "real_browser_runs": 0
+  },
+  "limitations": [
+    "The reset gate does not recognize requests still queued before the HTTP handler begins; it is not a complete cross-trial quiescence proof.",
+    "It cannot independently attest CUA/Pomerado route execution, external user authorization, or outcome truth.",
+    "The full experiment packet with the updated 94-test minimum was not run locally; GitHub CI/Boat/Avrea remain separately unverified.",
+    "The runner must still reconcile uncertain writes independently, stop all prior clients, and never blind-retry."
+  ],
+  "contributor_credit": "Original CUA authors retain credit; external Pomerado (MIT, Pomerado AI, Inc.) was not modified or contacted."
+}
