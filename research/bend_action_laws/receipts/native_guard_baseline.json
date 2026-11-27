@@ -1,0 +1,71 @@
+{
+  "scope": "actual pure recipe-local resolver; semantic fixture inputs; no model/GUI/transport",
+  "source": "$MEASURED_CUA_SOURCE/guarded_completion.py",
+  "sha256": "b89ba47e67b0b3da4c90078d0c19c517f469e4bd385ae554bc14ead72adb8a99",
+  "records": [
+    {
+      "case": "unique",
+      "ns_per_call": [
+        4911.118,
+        4793.684,
+        4814.091,
+        4872.505,
+        4808.655
+      ],
+      "median_ns": 4814.091,
+      "telemetry": {
+        "status": "accepted",
+        "prior_ref": "p1:1",
+        "fresh_ref": "p2:1",
+        "verification_field": "contains_required_token",
+        "submit_matches": 1,
+        "session": "session-a"
+      }
+    },
+    {
+      "case": "ambiguous",
+      "ns_per_call": [
+        4991.979,
+        4935.26,
+        5061.136,
+        4987.136,
+        4975.45
+      ],
+      "median_ns": 4987.136,
+      "telemetry": {
+        "status": "declined",
+        "reason": "submit_not_unique"
+      }
+    },
+    {
+      "case": "missing",
+      "ns_per_call": [
+        3177.399,
+        16415.15,
+        4011.203,
+        3841.378,
+        3123.509
+      ],
+      "median_ns": 3841.378,
+      "telemetry": {
+        "status": "declined",
+        "reason": "submit_not_unique"
+      }
+    },
+    {
+      "case": "stale",
+      "ns_per_call": [
+        4581.034,
+        4584.189,
+        4472.6,
+        4469.83,
+        4474.124
+      ],
+      "median_ns": 4474.124,
+      "telemetry": {
+        "status": "declined",
+        "reason": "ref_reused"
+      }
+    }
+  ]
+}
