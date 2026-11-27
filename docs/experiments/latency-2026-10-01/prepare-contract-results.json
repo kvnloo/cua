@@ -1,0 +1,70 @@
+[
+  {
+    "case": "cold",
+    "prepare_ns": 56928,
+    "fresh_commit_check_ns": 33958,
+    "mutation_count": 0,
+    "telemetry": {
+      "status": "accepted",
+      "prior_ref": "p1:1",
+      "fresh_ref": "p2:1",
+      "verification_field": "contains_required_token",
+      "submit_matches": 1,
+      "session": "s1"
+    },
+    "fresh_ref": "p2:1",
+    "latency_claim": "none: pure contract projection, no action overlap tested"
+  },
+  {
+    "case": "correct_prediction",
+    "prepare_ns": 21186,
+    "fresh_commit_check_ns": 23914,
+    "mutation_count": 0,
+    "telemetry": {
+      "status": "accepted",
+      "prior_ref": "p1:1",
+      "fresh_ref": "p2:1",
+      "verification_field": "contains_required_token",
+      "submit_matches": 1,
+      "session": "s1"
+    },
+    "fresh_ref": "p2:1",
+    "latency_claim": "none: pure contract projection, no action overlap tested"
+  },
+  {
+    "case": "wrong_prediction",
+    "prepare_ns": 16077,
+    "fresh_commit_check_ns": 18923,
+    "mutation_count": 0,
+    "telemetry": {
+      "status": "declined",
+      "reason": "candidate_not_unique"
+    },
+    "fresh_ref": null,
+    "latency_claim": "none: pure contract projection, no action overlap tested"
+  },
+  {
+    "case": "invalidated_prediction",
+    "prepare_ns": 14581,
+    "fresh_commit_check_ns": 12772,
+    "mutation_count": 0,
+    "telemetry": {
+      "status": "declined",
+      "reason": "submit_not_unique"
+    },
+    "fresh_ref": null,
+    "latency_claim": "none: pure contract projection, no action overlap tested"
+  },
+  {
+    "case": "stale_preparation",
+    "prepare_ns": 13865,
+    "fresh_commit_check_ns": 14551,
+    "mutation_count": 0,
+    "telemetry": {
+      "status": "declined",
+      "reason": "session_mismatch"
+    },
+    "fresh_ref": null,
+    "latency_claim": "none: pure contract projection, no action overlap tested"
+  }
+]

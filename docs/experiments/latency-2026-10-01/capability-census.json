@@ -1,0 +1,136 @@
+{
+  "source_sha": "a0bca744067d04f05904319d3d919be30c336556",
+  "browser_live_census_status": "BLOCKED: owned local fixture cannot be opened with available browser API; no measured browser node/task coverage percentage",
+  "browser_fields": {
+    "dom_node": {
+      "status": "source-inferred",
+      "evidence": "browser semantic.rs DOMSnapshot layout join"
+    },
+    "accessibility_node": {
+      "status": "source-inferred",
+      "evidence": "SemanticNode.ax_id, browser/semantic.rs113"
+    },
+    "backend_node_id": {
+      "status": "source-inferred",
+      "evidence": "RefEntry.backend_node_id internal only, store.rs148"
+    },
+    "runtime_handle": {
+      "status": "source-inferred",
+      "evidence": "DOM.resolveNode ephemeral objectId tools.rs1108; not serialized durable authority"
+    },
+    "role_name_value_state": {
+      "status": "source-inferred",
+      "evidence": "SemanticNode role/name/value/states"
+    },
+    "geometry": {
+      "status": "source-inferred",
+      "evidence": "DOM.getBoxModel and LayoutIndex"
+    },
+    "focus_enabled": {
+      "status": "source-inferred",
+      "evidence": "semantic.rs disabled/focused state filters"
+    },
+    "supported_actions": {
+      "status": "source-inferred",
+      "evidence": "RefEntry.actions; tools.rs semantic action availability check"
+    },
+    "cdp_identity": {
+      "status": "source-inferred",
+      "evidence": "TargetRecord/FrameRef, private scoped connection"
+    },
+    "session_generation_snapshot": {
+      "status": "source-inferred",
+      "evidence": "BrowserStore.resolve_ref same session + snapshot generation"
+    },
+    "events": {
+      "status": "source-inferred",
+      "evidence": "CdpConnection.subscribe existing demultiplexer"
+    },
+    "keyboard_shortcut": {
+      "status": "unavailable",
+      "evidence": "not measured from local Chromium fixture"
+    },
+    "app_command": {
+      "status": "unavailable",
+      "evidence": "not measured from local Chromium fixture"
+    },
+    "direct_api_ipc_candidate": {
+      "status": "unavailable",
+      "evidence": "no trace or route qualification executed"
+    }
+  },
+  "native_observed_fields": {
+    "role_name_state": "observed AT-SPI checkbox/text/menu states",
+    "geometry": "observed window bounds; element bounds not exposed in text snapshot",
+    "focus_enabled": "observed focused/disabled flags",
+    "actions": "indexed semantic click exercised; text setValue unsupported",
+    "events": "subscription API unavailable",
+    "session_generation": "opaque to exposed native tool; not current PR validation",
+    "visibility": "AX included hidden menus/toolbars; cannot equate all nodes to currently visible controls"
+  },
+  "potential_task_deletion": [
+    {
+      "task": "button_submit",
+      "potential_stages": [
+        "screenshot",
+        "vision_parse",
+        "pointer_click"
+      ],
+      "conditional_stages": [
+        "model_decision_if_existing_guard_proves_obligation"
+      ],
+      "potential_count": 3,
+      "status": "hypothesis, except native explicit-pointer-call deletion observed; no generic chooser skip"
+    },
+    {
+      "task": "text_entry",
+      "potential_stages": [
+        "screenshot",
+        "vision_parse",
+        "pointer_target_discovery"
+      ],
+      "conditional_stages": [],
+      "potential_count": 3,
+      "status": "hypothesis, except native explicit-pointer-call deletion observed; no generic chooser skip"
+    },
+    {
+      "task": "native_checkbox_toggle",
+      "potential_stages": [
+        "screenshot",
+        "vision_parse",
+        "explicit_pointer_click_call"
+      ],
+      "conditional_stages": [],
+      "potential_count": 3,
+      "status": "hypothesis, except native explicit-pointer-call deletion observed; no generic chooser skip"
+    },
+    {
+      "task": "canvas_only_control",
+      "potential_stages": [],
+      "conditional_stages": [],
+      "potential_count": 0,
+      "status": "hypothesis, except native explicit-pointer-call deletion observed; no generic chooser skip"
+    }
+  ],
+  "actual_work_deleted": {
+    "p0_mock_provider_calls_per_two_action_task": 1,
+    "p0_observations": 0,
+    "p0_screenshots": 0,
+    "native_explicit_pointer_click_calls_per_toggle": 1,
+    "native_raw_pointer_events": null,
+    "event_fixture_fixed_sleeps_per_normal_completion": 1,
+    "event_fixture_fresh_reads": 0
+  },
+  "task_stage_requirements": {
+    "browser": "unmeasured; requires live fixture",
+    "native_checkbox": {
+      "screenshot": "setup only",
+      "vision_parsing": "none",
+      "model_decision": "none within deterministic test loop",
+      "pointer": "route A only explicit pointer call",
+      "keyboard": "none per trial",
+      "polling": "two explicit fresh reads, not polling loop",
+      "sleep": "none explicit; tool internal waits unknown"
+    }
+  }
+}
